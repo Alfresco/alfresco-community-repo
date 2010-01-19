@@ -33,14 +33,15 @@ DROP TABLE alf_content_url;                     --(optional)
 CREATE TABLE alf_content_url
 (
    id INT8 NOT NULL,
-   version INT8 NOT NULL,
    content_url VARCHAR(255) NOT NULL,
    content_url_short VARCHAR(12) NOT NULL,
    content_url_crc INT8 NOT NULL,
    content_size INT8 NOT NULL,
+   orphan_time INT8 NULL,
    PRIMARY KEY (id)
 );
-CREATE INDEX idx_alf_cont_url_crc ON alf_content_url (content_url_short, content_url_crc);
+CREATE UNIQUE INDEX idx_alf_conturl_cr ON alf_content_url (content_url_short, content_url_crc);
+CREATE INDEX idx_alf_conturl_ot ON alf_content_url (orphan_time);
 CREATE SEQUENCE alf_content_url_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE alf_content_data
@@ -58,12 +59,6 @@ CREATE TABLE alf_content_data
    PRIMARY KEY (id)
 );
 CREATE SEQUENCE alf_content_data_seq START WITH 1 INCREMENT BY 1;
-
-CREATE TABLE alf_content_clean
-(
-   content_url VARCHAR(255) NOT NULL
-);
-CREATE INDEX idx_alf_contentclean_url ON alf_content_clean (content_url);
 
 --
 -- Record script finish

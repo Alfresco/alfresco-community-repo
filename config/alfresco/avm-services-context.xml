@@ -44,6 +44,9 @@
 		<property name="newAvmNodeLinksDAO">
             <ref bean="newAvmNodeLinksDAO"/>
         </property>
+        <property name="contentDataDAO">
+            <ref bean="contentDataDAO"/>
+        </property>
 		<property name="avmStoreDAO">
 			<ref bean="avmStoreDAO"/>
 		</property>

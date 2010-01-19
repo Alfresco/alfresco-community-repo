@@ -143,10 +143,6 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
      */
     public void registerNewContentUrl(String contentUrl)
     {
-        if (!eagerOrphanCleanup)
-        {
-            return;
-        }
         Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_ROLLBACK_DELETION_URLS);
         urlsToDelete.add(contentUrl);
         // Register to listen for transaction rollback
@@ -158,7 +154,18 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
      */
     public void registerOrphanedContentUrl(String contentUrl)
     {
-        if (!eagerOrphanCleanup)
+        registerOrphanedContentUrl(contentUrl, false);
+    }
+
+    /**
+     * Queues orphaned content for post-transaction removal
+     * 
+     * @param force         <tt>true</tt> for force the post-commit URL deletion
+     *                      regardless of the setting {@link #setEagerOrphanCleanup(boolean)}.
+     */
+    public void registerOrphanedContentUrl(String contentUrl, boolean force)
+    {
+        if (!eagerOrphanCleanup && !force)
         {
             return;
         }

@@ -34,11 +34,9 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.repo.domain.contentclean.ContentCleanDAO;
+import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.db.NodeDaoService;
@@ -58,9 +56,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * @see org.alfresco.repo.content.cleanup.ContentStoreCleaner
@@ -95,33 +91,30 @@ public class ContentStoreCleanerTest extends TestCase
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
         AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("newAvmNodeDAO");
-        ContentCleanDAO contentCleanDAO = (ContentCleanDAO) ctx.getBean("contentCleanDAO");
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
-        ApplicationEventPublisher applicationEventPublisher = (ApplicationEventPublisher) ctx
-                .getBean("applicationEventPublisher");
-        
-        eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
-        eagerCleaner.setEagerOrphanCleanup(false);
         
         // we need a store
-        store = new FileContentStore(applicationEventPublisher, TempFileProvider.getTempDir().getAbsolutePath());
+        store = (ContentStore) ctx.getBean("fileContentStore");
         // and a listener
         listener = new DummyCleanerListener();
         // initialise record of deleted URLs
         deletedUrls = new ArrayList<String>(5);
         
-        // construct the test cleaner
+        // Construct the test cleaners
+        eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
+        eagerCleaner.setEagerOrphanCleanup(false);
+        eagerCleaner.setStores(Collections.singletonList(store));
+        eagerCleaner.setListeners(Collections.singletonList(listener));
+        
         cleaner = new ContentStoreCleaner();
+        cleaner.setEagerContentStoreCleaner(eagerCleaner);
         cleaner.setJobLockService(jobLockService);
-        cleaner.setContentCleanDAO(contentCleanDAO);
         cleaner.setContentDataDAO(contentDataDAO);
         cleaner.setTransactionService(transactionService);
         cleaner.setDictionaryService(dictionaryService);
         cleaner.setContentService(contentService);
         cleaner.setNodeDaoService(nodeDaoService);
         cleaner.setAvmNodeDAO(avmNodeDAO);
-        cleaner.setStores(Collections.singletonList(store));
-        cleaner.setListeners(Collections.singletonList(listener));
     }
     
     public void tearDown() throws Exception
@@ -293,18 +286,49 @@ public class ContentStoreCleanerTest extends TestCase
 
     public void testImmediateRemoval() throws Exception
     {
-        cleaner.setProtectDays(0);
-        // add some content to the store
-        ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
-        writer.putContent("ABC");
-        String contentUrl = writer.getContentUrl();
+        eagerCleaner.setEagerOrphanCleanup(false);
+        
+        final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
+        RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>()
+        {
+            public ContentData execute() throws Throwable
+            {
+                // Create some content
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
+                properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                NodeRef contentNodeRef = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.TYPE_CONTENT,
+                        properties).getChildRef();
+                ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.putContent("INITIAL CONTENT");
+                ContentData contentData = writer.getContentData();
+               
+                // Delete the first node
+                nodeService.deleteNode(contentNodeRef);
+
+                // Done
+                return contentData;
+            }
+        };
+        ContentData contentData = transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
+        // Make sure that the content URL still exists
+        ContentReader reader = contentService.getRawReader(contentData.getContentUrl());
+        assertNotNull(reader);
+        assertTrue("Content should not have been eagerly deleted.", reader.exists());
         
         // fire the cleaner
+        cleaner.setProtectDays(0);
         cleaner.execute();
         
+        reader = contentService.getRawReader(contentData.getContentUrl());
         // the content should have disappeared as it is not in the database
-        assertFalse("Unprotected content was not deleted", store.exists(contentUrl));
-        assertTrue("Content listener was not called", deletedUrls.contains(contentUrl));
+        assertFalse("Unprotected content was not deleted", reader.exists());
+        assertTrue("Content listener was not called", deletedUrls.contains(reader.getContentUrl()));
     }
     
     public void testProtectedRemoval() throws Exception

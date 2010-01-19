@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.domain.contentdata;
 
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -46,6 +47,14 @@ public interface ContentDataDAO
      * @return              the ContentData pair (id, ContentData) (never null)
      */
     Pair<Long, ContentData> createContentData(ContentData contentData);
+    
+    /**
+     * Update a content data instance
+     * 
+     * @param id            the unique ID of the entity
+     * @param contentData   the new data
+     */
+    void updateContentData(Long id, ContentData contentData);
 
     /**
      * @param id            the unique ID of the entity
@@ -77,13 +86,28 @@ public interface ContentDataDAO
      */
     public static interface ContentUrlHandler
     {
-        void handle(String contentUrl);
+        void handle(Long id, String contentUrl, Long orphanTime);
     }
     
     /**
-     * Enumerate all available content URLs
+     * Enumerate all available content URLs that were orphaned on or before the given time
      * 
-     * @param contentUrlHandler
+     * @param contentUrlHandler     the callback object to process the rows
+     * @param maxOrphanTime         the maximum orphan time
      */
-    void getAllContentUrls(ContentUrlHandler contentUrlHandler);
+    void getContentUrlsOrphaned(ContentUrlHandler contentUrlHandler, long maxOrphanTime);
+    
+    /**
+     * Enumerate all available content URLs that were orphaned on or before the given time
+     * 
+     * @param contentUrlHandler     the callback object to process the rows
+     * @param maxOrphanTime         the maximum orphan time
+     * @param maxResults            the maximum number of results (1 or greater)
+     */
+    void getContentUrlsOrphaned(ContentUrlHandler contentUrlHandler, long maxOrphanTime, int maxResults);
+    
+    /**
+     * Delete a batch of content URL entities.
+     */
+    int deleteContentUrls(List<Long> ids);
 }

@@ -47,10 +47,6 @@
       <property name="contentStoreCleaner" ref="eagerContentStoreCleaner"/>
    </bean>
    
-   <bean id="contentCleanDAO" class="org.alfresco.repo.domain.contentclean.ibatis.ContentCleanDAOImpl">
-      <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
-   </bean>
-   
    <bean id="propertyValueDAO" class="org.alfresco.repo.domain.propval.ibatis.PropertyValueDAOImpl">
       <property name="sqlMapClientTemplate" ref="propertyValueSqlMapClientTemplate"/>
       <property name="converter">

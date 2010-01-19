@@ -329,16 +329,20 @@ public class OrphanReaper
                         // First get rid of all child entries for the node.
                         AVMDAOs.Instance().fChildEntryDAO.deleteByParent(node);
                     }
-                    // This is not on, since content urls can be shared.
-                    // else if (node.getType() == AVMNodeType.PLAIN_FILE)
-                    // {
-                    // PlainFileNode file = (PlainFileNode)node;
-                    // String url = file.getContentData(null).getContentUrl();
-                    // if (url != null)
-                    // {
-                    // RawServices.Instance().getContentStore().delete(url);
-                    // }
-                    // }
+                    else if (node.getType() == AVMNodeType.PLAIN_FILE)
+                    {
+                        PlainFileNode file = (PlainFileNode)node;
+                        if (!file.isLegacyContentData())
+                        {
+                            Long contentDataId = file.getContentDataId();
+                            if (contentDataId != null)
+                            {
+                                // The ContentDataDAO will take care of dereferencing and cleanup
+                                AVMDAOs.Instance().contentDataDAO.deleteContentData(contentDataId);
+                            }
+                        }
+                    }
+                    // Finally, delete it
                     AVMDAOs.Instance().fAVMNodeDAO.delete(node);
                 }
                 return null;

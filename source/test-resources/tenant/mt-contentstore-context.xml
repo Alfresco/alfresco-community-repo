@@ -41,11 +41,17 @@
    
    <!-- override content store cleaner to use tenant routing file content store -->
    <!-- Performs the content cleanup -->
-   <bean id="contentStoreCleaner" parent="baseContentStoreCleaner">
+   <bean id="eagerContentStoreCleaner" class="org.alfresco.repo.content.cleanup.EagerContentStoreCleaner" init-method="init">
+      <property name="eagerOrphanCleanup" >
+         <value>${system.content.eagerOrphanCleanup}</value>
+      </property>
       <property name="stores" >
          <list>
             <ref bean="tenantFileContentStore" />
          </list>
+      </property>
+      <property name="listeners" >
+         <ref bean="deletedContentBackupListeners" />
       </property>
    </bean>
 

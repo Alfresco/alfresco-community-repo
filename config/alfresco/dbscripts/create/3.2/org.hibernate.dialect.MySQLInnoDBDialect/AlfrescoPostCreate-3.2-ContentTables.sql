@@ -31,12 +31,13 @@ DROP TABLE alf_content_url;                     --(optional)
 CREATE TABLE alf_content_url
 (
    id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
    content_url VARCHAR(255) NOT NULL,
    content_url_short VARCHAR(12) NOT NULL,
    content_url_crc BIGINT NOT NULL,
    content_size BIGINT NOT NULL,
-   UNIQUE INDEX idx_alf_cont_url_crc (content_url_short, content_url_crc),
+   orphan_time BIGINT NULL,
+   UNIQUE INDEX idx_alf_conturl_cr (content_url_short, content_url_crc),
+   INDEX idx_alf_conturl_ot (orphan_time),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
@@ -53,12 +54,6 @@ CREATE TABLE alf_content_data
    CONSTRAINT fk_alf_cont_enc FOREIGN KEY (content_encoding_id) REFERENCES alf_encoding (id),
    CONSTRAINT fk_alf_cont_loc FOREIGN KEY (content_locale_id) REFERENCES alf_locale (id),
    PRIMARY KEY (id)
-) ENGINE=InnoDB;
-
-CREATE TABLE alf_content_clean
-(
-   content_url VARCHAR(255) NOT NULL,
-   INDEX idx_alf_contentclean_url (content_url)
 ) ENGINE=InnoDB;
 
 --

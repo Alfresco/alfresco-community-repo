@@ -1962,10 +1962,6 @@
         </property>
     </bean>
 
-    <!--                   -->
-    <!-- Patch definitions -->
-    <!--                   -->
-    
     <bean id="patch.fixNameCrcValues-2" class="org.alfresco.repo.admin.patch.impl.FixNameCrcValuesPatch" parent="basePatch" >
         <property name="id"><value>patch.fixNameCrcValues-2</value></property>
         <property name="description"><value>patch.fixNameCrcValues.description</value></property>
@@ -2006,6 +2002,23 @@
                     <prop key="location">alfresco/workflow/invitation-nominated_processdefinition.xml</prop>
                     <prop key="mimetype">text/xml</prop>
                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V3.2-ContentTables2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.2-ContentTables2</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4001</value></property>
+        <property name="targetSchema"><value>4002</value></property>
+        <property name="scriptUrl">
+            <!-- Share a create script -->
+            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/AlfrescoSchemaUpdate-3.2-ContentTables2.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables" />
             </list>
         </property>
     </bean>

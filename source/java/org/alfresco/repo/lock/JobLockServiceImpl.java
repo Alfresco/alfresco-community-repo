@@ -31,6 +31,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -265,8 +266,11 @@ public class JobLockServiceImpl implements JobLockService
         try
         {
             int iterations = doWithRetry(getLockCallback, retryWait, retryCount);
-            // Bind in a listener
-            AlfrescoTransactionSupport.bindListener(txnListener);
+            // Bind in a listener, if we are in a transaction
+            if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+            {
+                AlfrescoTransactionSupport.bindListener(txnListener);
+            }
             // Success
             if (logger.isDebugEnabled())
             {

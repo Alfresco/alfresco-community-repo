@@ -102,7 +102,7 @@
     </bean>
     -->
     
-    <bean id="tempFileCleanerTrigger" class="org.alfresco.util.TriggerBean">
+    <bean id="tempFileCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean id="tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -120,17 +120,13 @@
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-        <!-- start after half an hour and repeat hourly -->
-        <property name="startDelayMinutes">
-            <value>30</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>60</value>
+        <!-- Repeat hourly on the half hour -->
+        <property name="cronExpression">
+            <value>0 30 * * * ?</value>
         </property>
     </bean>
 
-<!--
-    <bean id="fileContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean id="contentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.content.cleanup.ContentStoreCleanupJob</value>
         </property>
@@ -144,16 +140,15 @@
     </bean>
     <bean id="contentStoreCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
-            <ref bean="fileContentStoreCleanerJobDetail" />
+            <ref bean="contentStoreCleanerJobDetail" />
         </property>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
         <property name="cronExpression">
-            <value>0 0 4 * * ?</value>
+            <value>${system.content.orphanCleanup.cronExpression}</value>
         </property>
     </bean>
--->
 
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">

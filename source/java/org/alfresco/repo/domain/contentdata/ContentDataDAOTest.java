@@ -34,6 +34,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO.ContentUrlHandler;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -44,6 +45,7 @@ import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * @see ContentDataDAO
@@ -85,6 +87,32 @@ public class ContentDataDAOTest extends TestCase
         return txnHelper.doInTransaction(callback, false, false);
     }
     
+    private Pair<Long, ContentData> update(final Long id, final ContentData contentData)
+    {
+        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>()
+        {
+            public Pair<Long, ContentData> execute() throws Throwable
+            {
+                contentDataDAO.updateContentData(id, contentData);
+                return new Pair<Long, ContentData>(id, contentData);
+            }
+        };
+        return txnHelper.doInTransaction(callback, false, false);
+    }
+    
+    private void delete(final Long id)
+    {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                contentDataDAO.deleteContentData(id);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(callback, false, false);
+    }
+    
     /**
      * Retrieves and checks the ContentData for equality
      */
@@ -118,7 +146,15 @@ public class ContentDataDAOTest extends TestCase
     
     public void testGetWithInvalidId()
     {
-        assertNull("Expected null for invalid ID", contentDataDAO.getContentData(-1L));
+        try
+        {
+            contentDataDAO.getContentData(-1L);
+            fail("Invalid ContentData IDs must generate DataIntegrityViolationException.");
+        }
+        catch (DataIntegrityViolationException e)
+        {
+            // Expected
+        }
     }
     
     /**
@@ -164,13 +200,27 @@ public class ContentDataDAOTest extends TestCase
         getAndCheck(resultPairLower.getFirst(), contentDataLower);
     }
     
+    public void testUpdate() throws Exception
+    {
+        ContentData contentData = getContentData();
+        Pair<Long, ContentData> resultPair = create(contentData);
+        Long id = resultPair.getFirst();
+        // Update
+        contentData = ContentData.setMimetype(contentData, MimetypeMap.MIMETYPE_HTML);
+        contentData = ContentData.setEncoding(contentData, "UTF-16");
+        // Don't update the content itself
+        update(id, contentData);
+        // Check
+        getAndCheck(id, contentData);
+    }
+    
     public void testDelete() throws Exception
     {
         ContentData contentData = getContentData();
         
         Pair<Long, ContentData> resultPair = create(contentData);
         getAndCheck(resultPair.getFirst(), contentData);
-        contentDataDAO.deleteContentData(resultPair.getFirst());
+        delete(resultPair.getFirst());
         try
         {
             getAndCheck(resultPair.getFirst(), contentData);
@@ -180,6 +230,66 @@ public class ContentDataDAOTest extends TestCase
         {
             // Expected
         }
+    }
+    
+    public void testContentUrl_FetchingOrphansNoLimit() throws Exception
+    {
+        ContentData contentData = getContentData();
+        Pair<Long, ContentData> resultPair = create(contentData);
+        getAndCheck(resultPair.getFirst(), contentData);
+        delete(resultPair.getFirst());
+        // The content URL is orphaned
+        final String contentUrlOrphaned = contentData.getContentUrl();
+        final boolean[] found = new boolean[] {false}; 
+        
+        // Iterate over all orphaned content URLs and ensure that we hit the one we just orphaned
+        ContentUrlHandler handler = new ContentUrlHandler()
+        {
+            public void handle(Long id, String contentUrl, Long orphanTime)
+            {
+                // Check
+                if (id == null || contentUrl == null || orphanTime == null)
+                {
+                    fail("Invalid orphan data returned to handler: " + id + "-" + contentUrl + "-" + orphanTime);
+                }
+                // Did we get the one we wanted?
+                if (contentUrl.equals(contentUrlOrphaned))
+                {
+                    found[0] = true;
+                }
+            }
+        };
+        contentDataDAO.getContentUrlsOrphaned(handler, Long.MAX_VALUE);
+        assertTrue("Newly-orphaned content URL not found", found[0]);
+    }
+    
+    public void testContentUrl_FetchingOrphansWithLimit() throws Exception
+    {
+        // Orphan some content
+        for (int i = 0; i < 5; i++)
+        {
+            ContentData contentData = getContentData();
+            Pair<Long, ContentData> resultPair = create(contentData);
+            getAndCheck(resultPair.getFirst(), contentData);
+            delete(resultPair.getFirst());
+        }
+        final int[] count = new int[] {0}; 
+        
+        // Iterate over all orphaned content URLs and ensure that we hit the one we just orphaned
+        ContentUrlHandler handler = new ContentUrlHandler()
+        {
+            public void handle(Long id, String contentUrl, Long orphanTime)
+            {
+                // Check
+                if (id == null || contentUrl == null || orphanTime == null)
+                {
+                    fail("Invalid orphan data returned to handler: " + id + "-" + contentUrl + "-" + orphanTime);
+                }
+                count[0]++;
+            }
+        };
+        contentDataDAO.getContentUrlsOrphaned(handler, Long.MAX_VALUE, 5);
+        assertEquals("Expected exactly 5 results callbacks", 5, count[0]);
     }
     
     private static final String[] MIMETYPES = new String[]

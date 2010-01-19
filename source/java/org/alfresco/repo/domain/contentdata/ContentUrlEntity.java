@@ -43,11 +43,11 @@ public class ContentUrlEntity
     public static final String EMPTY_URL = "empty";
     
     private Long id;
-    private Long version;
     private String contentUrl;
     private String contentUrlShort;
     private long contentUrlCrc;
     private long size;
+    private Long orphanTime;
     
     public ContentUrlEntity()
     {
@@ -86,6 +86,7 @@ public class ContentUrlEntity
           .append("[ ID=").append(id)
           .append(", contentUrl=").append(contentUrl)
           .append(", size=").append(size)
+          .append(", orphanTime=").append(orphanTime)
           .append("]");
         return sb.toString();
     }
@@ -127,16 +128,6 @@ public class ContentUrlEntity
     public void setId(Long id)
     {
         this.id = id;
-    }
-
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion(Long version)
-    {
-        this.version = version;
     }
 
     public String getContentUrl()
@@ -194,5 +185,15 @@ public class ContentUrlEntity
     public void setSize(long size)
     {
         this.size = size;
+    }
+
+    public Long getOrphanTime()
+    {
+        return orphanTime;
+    }
+
+    public void setOrphanTime(Long orphanTime)
+    {
+        this.orphanTime = orphanTime;
     }
 }

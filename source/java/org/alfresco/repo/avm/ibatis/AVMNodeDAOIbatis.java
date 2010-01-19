@@ -20,7 +20,6 @@
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing" */
-
 package org.alfresco.repo.avm.ibatis;
 
 import java.util.ArrayList;
@@ -56,7 +55,6 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.avm.AVMVersionRootEntity;
 import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.namespace.QName;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -68,7 +66,6 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
 {
-    
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMNodeDAO#save(org.alfresco.repo.avm.AVMNode)
      */
@@ -380,10 +377,10 @@ class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
         if (node instanceof PlainFileNode)
         {
             PlainFileNode pfNode = (PlainFileNode)node;
-            nodeEntity.setEncoding(pfNode.getContentData().getEncoding());
-            nodeEntity.setMimetype(pfNode.getContentData().getMimetype());
-            nodeEntity.setContentUrl(pfNode.getContentData().getContentUrl());
-            nodeEntity.setLength(pfNode.getContentData().getSize());
+            nodeEntity.setEncoding(pfNode.getEncoding());
+            nodeEntity.setLength(pfNode.getLength());
+            nodeEntity.setMimetype(pfNode.getMimeType());
+            nodeEntity.setContentUrl(pfNode.getContentURL());
         }
         else if (node instanceof LayeredFileNode)
         {
@@ -429,9 +426,11 @@ class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
         if (nodeEntity.getType() == AVMNodeType.PLAIN_FILE)
         {
             node = new PlainFileNodeImpl();
-            
-            ContentData cd = new ContentData(nodeEntity.getContentUrl(), nodeEntity.getMimetype(), nodeEntity.getLength(), nodeEntity.getEncoding());
-            ((PlainFileNodeImpl)node).setContentData(cd);
+            PlainFileNodeImpl pfNode = (PlainFileNodeImpl) node;
+            pfNode.setMimeType(nodeEntity.getMimetype());
+            pfNode.setEncoding(nodeEntity.getEncoding());
+            pfNode.setLength(nodeEntity.getLength());
+            pfNode.setContentURL(nodeEntity.getContentUrl());
         }
         else if (nodeEntity.getType() == AVMNodeType.PLAIN_DIRECTORY)
         {

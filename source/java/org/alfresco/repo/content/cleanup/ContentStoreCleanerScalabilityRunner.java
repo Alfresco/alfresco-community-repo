@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Date;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.EmptyContentReader;
@@ -48,11 +49,13 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.tools.Repository;
 import org.alfresco.tools.ToolException;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -105,9 +108,9 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         
-        int orphanCount = 100000;
+        int orphanCount = 1000;
         
-        contentStore = new NullContentStore(orphanCount);
+        contentStore = new NullContentStore(10000);
         
         loadData(orphanCount);
     
@@ -220,11 +223,12 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                 }
             }
         };
-        // We use the default cleaner, but fix it up a bit
+        // We use the default cleaners, but fix them up a bit
+        EagerContentStoreCleaner eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
+        eagerCleaner.setListeners(Collections.singletonList(listener));
+        eagerCleaner.setStores(Collections.singletonList(contentStore));
         cleaner = (ContentStoreCleaner) ctx.getBean("contentStoreCleaner");
-        cleaner.setListeners(Collections.singletonList(listener));
         cleaner.setProtectDays(0);
-        cleaner.setStores(Collections.singletonList(contentStore));
         
         // The cleaner has its own txns
         cleaner.execute();
@@ -301,22 +305,10 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
     
     private class HibernateHelper extends HibernateDaoSupport
     {
-        private Method methodMakeNode;
-        private QName dataTypeDefContent;
         private QName contentQName;
         
         public HibernateHelper()
         {
-            Class<HibernateHelper> clazz = HibernateHelper.class;
-            try
-            {
-                methodMakeNode = clazz.getMethod("makeNode", new Class[] {ContentData.class});
-            }
-            catch (NoSuchMethodException e)
-            {
-                throw new RuntimeException("Failed to get methods");
-            }
-            dataTypeDefContent = DataTypeDefinition.CONTENT;
             contentQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "realContent");
         }
         /**
@@ -324,17 +316,9 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
          */
         public void makeNode(ContentData contentData)
         {
-            throw new UnsupportedOperationException("Fix this method up");
-//            StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-//            Long nodeId = nodeDaoService.newNode(storeRef, GUID.generate(), ContentModel.TYPE_CONTENT).getFirst();
-//            Node node = (Node) getHibernateTemplate().get(NodeImpl.class, nodeId);
-//            
-//            PropertyValue propertyValue = new PropertyValue(dataTypeDefContent, contentData);
-//            node.getProperties().put(contentQName, propertyValue);
-//            // persist the node
-//            getHibernateTemplate().save(node);
-//            
-//            txnResourceInterceptor.performManualCheck(methodMakeNode, 10);
+            StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+            Long nodeId = nodeDaoService.newNode(storeRef, GUID.generate(), ContentModel.TYPE_CONTENT).getFirst();
+            nodeDaoService.addNodeProperty(nodeId, contentQName, contentData);
         }
     }
 }

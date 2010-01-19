@@ -24,39 +24,32 @@
  */
 package org.alfresco.repo.content.cleanup;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
-import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.domain.contentclean.ContentCleanDAO;
-import org.alfresco.repo.domain.contentclean.ContentCleanDAO.ContentUrlBatchProcessor;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO.ContentUrlHandler;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.Pair;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * This component is responsible cleaning up orphaned content.
  * <p/>
+ * <b>TODO: Fix up new comments</b>
+ * 
  * Clean-up happens at two levels.<p/>
  * <u><b>Eager cleanup:</b></u> (since 3.2)<p/>
  * If {@link #setEagerOrphanCleanup(boolean) eager cleanup} is activated, then this
@@ -88,28 +81,36 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ContentStoreCleaner
 {
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentStoreCleaner"); 
+    private static final long LOCK_TTL = 30000L;
+    private static ThreadLocal<Pair<Long, String>> lockThreadLocal = new ThreadLocal<Pair<Long, String>>();
+    
     private static Log logger = LogFactory.getLog(ContentStoreCleaner.class);
     
     /** kept to notify the thread that it should quit */
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener("ContentStoreCleaner");
     
+    private EagerContentStoreCleaner eagerContentStoreCleaner;
     private JobLockService jobLockService;
-    private ContentCleanDAO contentCleanDAO;
     private ContentDataDAO contentDataDAO;
     private DictionaryService dictionaryService;
     private ContentService contentService;
     private NodeDaoService nodeDaoService;
     private AVMNodeDAO avmNodeDAO;
     private TransactionService transactionService;
-    private List<ContentStore> stores;
-    private List<ContentStoreCleanerListener> listeners;
     private int protectDays;
     
     public ContentStoreCleaner()
     {
-        this.stores = new ArrayList<ContentStore>(0);
-        this.listeners = new ArrayList<ContentStoreCleanerListener>(0);
         this.protectDays = 7;
+    }
+
+    /**
+     * Set the component that will do the physical deleting
+     */
+    public void setEagerContentStoreCleaner(EagerContentStoreCleaner eagerContentStoreCleaner)
+    {
+        this.eagerContentStoreCleaner = eagerContentStoreCleaner;
     }
 
     /**
@@ -118,14 +119,6 @@ public class ContentStoreCleaner
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
-    }
-
-    /**
-     * @param contentCleanDAO       DAO used for manipulating content URLs
-     */
-    public void setContentCleanDAO(ContentCleanDAO contentCleanDAO)
-    {
-        this.contentCleanDAO = contentCleanDAO;
     }
 
     /**
@@ -177,22 +170,6 @@ public class ContentStoreCleaner
     }
 
     /**
-     * @param stores the content stores to clean
-     */
-    public void setStores(List<ContentStore> stores)
-    {
-        this.stores = stores;
-    }
-
-    /**
-     * @param listeners the listeners that can react to deletions
-     */
-    public void setListeners(List<ContentStoreCleanerListener> listeners)
-    {
-        this.listeners = listeners;
-    }
-
-    /**
      * Set the minimum number of days old that orphaned content must be
      *      before deletion is possible.  The default is 7 days.
      * 
@@ -217,14 +194,13 @@ public class ContentStoreCleaner
     private void checkProperties()
     {
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
-        PropertyCheck.mandatory(this, "contentCleanerDAO", contentCleanDAO);
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
         PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
-        PropertyCheck.mandatory(this, "listeners", listeners);
+        PropertyCheck.mandatory(this, "eagerContentStoreCleaner", eagerContentStoreCleaner);
         
         // check the protect days
         if (protectDays < 0)
@@ -235,156 +211,70 @@ public class ContentStoreCleaner
         {
             logger.warn(
                     "Property 'protectDays' is set to 0.  " +
-                    "It is possible that in-transaction content will be deleted.");
+                    "Please ensure that your backup strategy is appropriate for this setting.");
         }
     }
     
-    private void removeContentUrlsPresentInMetadata(final ContentUrlBatchProcessor urlRemover)
+    /**
+     * Lazily update the job lock
+     */
+    private void refreshLock()
     {
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
-        // Remove all the Content URLs for the ADM repository
-        // Handlers that record the URLs
-        final ContentDataDAO.ContentUrlHandler contentUrlHandler = new ContentDataDAO.ContentUrlHandler()
+        Pair<Long, String> lockPair = lockThreadLocal.get();
+        if (lockPair == null)
         {
-            long lastLock = 0L;
-            public void handle(String contentUrl)
+            String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            Long lastLock = new Long(System.currentTimeMillis());
+            // We have not locked before
+            lockPair = new Pair<Long, String>(lastLock, lockToken);
+            lockThreadLocal.set(lockPair);
+        }
+        else
+        {
+            long now = System.currentTimeMillis();
+            long lastLock = lockPair.getFirst().longValue();
+            String lockToken = lockPair.getSecond();
+            // Only refresh the lock if we are past a threshold
+            if (now - lastLock > (long)(LOCK_TTL/2L))
             {
-                if (vmShutdownListener.isVmShuttingDown())
-                {
-                    throw new VmShutdownException();
-                }
-                urlRemover.processContentUrl(contentUrl);
-                // Check lock
-                long now = System.currentTimeMillis();
-                if (now - lastLock > (long)(LOCK_TTL/2L))
-                {
-                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
-                    lastLock = now;
-                }
+                jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL);
+                lastLock = System.currentTimeMillis();
+                lockPair = new Pair<Long, String>(lastLock, lockToken);
             }
-        };
-        final NodePropertyHandler nodePropertyHandler = new NodePropertyHandler()
-        {
-            long lastLock = 0L;
-            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
-            {
-                if (vmShutdownListener.isVmShuttingDown())
-                {
-                    throw new VmShutdownException();
-                }
-                // Convert the values to ContentData and extract the URLs
-                ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-                String contentUrl = contentData.getContentUrl();
-                if (contentUrl != null)
-                {
-                    urlRemover.processContentUrl(contentUrl);
-                }
-                // Check lock
-                long now = System.currentTimeMillis();
-                if (now - lastLock > (long)(LOCK_TTL/2L))
-                {
-                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
-                    lastLock = now;
-                }
-            }
-        };
-        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
-        // execute in READ-WRITE txn
-        RetryingTransactionCallback<Void> getUrlsCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                contentDataDAO.getAllContentUrls(contentUrlHandler);
-                nodeDaoService.getPropertyValuesByActualType(contentDataType, nodePropertyHandler);
-                return null;
-            };
-        };
-        txnHelper.doInTransaction(getUrlsCallback);
-        
-        // Do the same for the AVM repository.
-        final AVMNodeDAO.ContentUrlHandler handler = new AVMNodeDAO.ContentUrlHandler()
-        {
-            long lastLock = 0L;
-            public void handle(String contentUrl)
-            {
-                if (vmShutdownListener.isVmShuttingDown())
-                {
-                    throw new VmShutdownException();
-                }
-                urlRemover.processContentUrl(contentUrl);
-                // Check lock
-                long now = System.currentTimeMillis();
-                if (now - lastLock > (long)(LOCK_TTL/2L))
-                {
-                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
-                    lastLock = now;
-                }
-            }
-        };
-        // execute in READ-WRITE txn
-        RetryingTransactionCallback<Void> getAVMUrlsCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                avmNodeDAO.getContentUrls(handler);
-                return null;
-            }
-        };
-        txnHelper.doInTransaction(getAVMUrlsCallback);
-    }
-    
-    private void addContentUrlsPresentInStores(final ContentUrlBatchProcessor urlInserter)
-    {
-        org.alfresco.repo.content.ContentStore.ContentUrlHandler handler = new org.alfresco.repo.content.ContentStore.ContentUrlHandler()
-        {
-            long lastLock = 0L;
-            public void handle(String contentUrl)
-            {
-                if (vmShutdownListener.isVmShuttingDown())
-                {
-                    throw new VmShutdownException();
-                }
-                urlInserter.processContentUrl(contentUrl);
-                // Check lock
-                long now = System.currentTimeMillis();
-                if (now - lastLock > (long)(LOCK_TTL/2L))
-                {
-                    jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
-                    lastLock = now;
-                }
-            }
-        };
-        Date checkAllBeforeDate = new Date(System.currentTimeMillis() - (long) protectDays * 3600L * 1000L * 24L);
-        for (ContentStore store : stores)
-        {
-            store.getUrls(null, checkAllBeforeDate, handler);
         }
     }
     
-    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentStoreCleaner"); 
-    private static final long LOCK_TTL = 30000L;
+    /**
+     * Release the lock after the job completes
+     */
+    private void releaseLock()
+    {
+        Pair<Long, String> lockPair = lockThreadLocal.get();
+        if (lockPair != null)
+        {
+            // We can't release without a token
+            try
+            {
+                jobLockService.releaseLock(lockPair.getSecond(), LOCK_QNAME);
+            }
+            finally
+            {
+                // Reset
+                lockThreadLocal.set(null);
+            }
+        }
+        // else: We can't release without a token
+    }
+    
     public void execute()
     {
         checkProperties();
 
-        RetryingTransactionCallback<Void> executeCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                logger.debug("Content store cleanup started.");
-                // Get the lock without any waiting
-                // The lock will be refreshed, but the first lock starts the process
-                jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
-                executeInternal();
-                return null;
-            }
-        };
         try
         {
-            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            txnHelper.setMaxRetries(0);
-            txnHelper.doInTransaction(executeCallback);
+            logger.debug("Content store cleanup started.");
+            refreshLock();
+            executeInternal();
             // Done
             if (logger.isDebugEnabled())
             {
@@ -398,104 +288,68 @@ public class ContentStoreCleaner
             {
                 logger.debug("   Content store cleanup aborted.");
             }
+        }
+        finally
+        {
+            releaseLock();
         }
     }
     
-    public void executeInternal()
+    private void executeInternal()
     {
-        final ContentUrlBatchProcessor storeUrlDeleteHandler = new ContentUrlBatchProcessor()
-        {
-            long lastLock = 0L;
-            public void start()
-            {
-            }
-            public void processContentUrl(String contentUrl)
-            {
-                for (ContentStore store : stores)
-                {
-                    if (vmShutdownListener.isVmShuttingDown())
-                    {
-                        throw new VmShutdownException();
-                    }
-                    if (logger.isDebugEnabled())
-                    {
-                        if (store.isWriteSupported())
-                        {
-                            logger.debug("   Deleting content URL: " + contentUrl);
-                        }
-                    }
-                    for (ContentStoreCleanerListener listener : listeners)
-                    {
-                        listener.beforeDelete(store, contentUrl);
-                    }
-                    // Delete
-                    store.delete(contentUrl);
-                    // Check lock
-                    long now = System.currentTimeMillis();
-                    if (now - lastLock > (long)(LOCK_TTL/2L))
-                    {
-                        jobLockService.getTransactionalLock(LOCK_QNAME, LOCK_TTL);
-                        lastLock = now;
-                    }
-                }
-            }
-            public void end()
-            {
-            }
-        };
         // execute in READ-WRITE txn
-        RetryingTransactionCallback<Void> executeCallback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Integer> getAndDeleteWork = new RetryingTransactionCallback<Integer>()
         {
-            public Void execute() throws Exception
+            public Integer execute() throws Exception
             {
-                // Clean up
-                contentCleanDAO.cleanUp();
-                // Push all store URLs in
-                ContentUrlBatchProcessor urlInserter = contentCleanDAO.getUrlInserter();
-                try
-                {
-                    urlInserter.start();
-                    addContentUrlsPresentInStores(urlInserter);
-                }
-                finally
-                {
-                    urlInserter.end();
-                }
-                // Delete all content URLs
-                ContentUrlBatchProcessor urlRemover = contentCleanDAO.getUrlRemover();
-                try
-                {
-                    urlRemover.start();
-                    removeContentUrlsPresentInMetadata(urlRemover);
-                }
-                finally
-                {
-                    urlRemover.end();
-                }
-                // Any remaining URLs are URls present in the stores but not in the metadata
-                contentCleanDAO.listAllUrls(storeUrlDeleteHandler);
-                // Clean up
-                contentCleanDAO.cleanUp();
-                return null;
+                return cleanBatch(1000);
             };
         };
-        try
+        while (true)
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(executeCallback);
-            // Done
+            refreshLock();
+            Integer deleted = transactionService.getRetryingTransactionHelper().doInTransaction(getAndDeleteWork);
+            if (vmShutdownListener.isVmShuttingDown())
+            {
+                throw new VmShutdownException();
+            }
+            if (deleted.intValue() == 0)
+            {
+                // There is no more to process
+                break;
+            }
+            // There is still more to delete, so continue
             if (logger.isDebugEnabled())
             {
-                logger.debug("   Content store cleanup completed.");
+                logger.debug("   Removed " + deleted.intValue() + " orphaned content URLs.");
             }
         }
-        catch (VmShutdownException e)
+        // Done
+    }
+    
+    private int cleanBatch(final int batchSize)
+    {
+        final List<Long> idsToDelete = new ArrayList<Long>(batchSize);
+        ContentUrlHandler contentUrlHandler = new ContentUrlHandler()
         {
-            // Aborted
-            if (logger.isDebugEnabled())
+            public void handle(Long id, String contentUrl, Long orphanTime)
             {
-                logger.debug("   Content store cleanup aborted.");
+                // Pass the content URL to the eager cleaner for post-commit handling
+                eagerContentStoreCleaner.registerOrphanedContentUrl(contentUrl, true);
+                idsToDelete.add(id);
             }
+        };
+        final long maxOrphanTime = System.currentTimeMillis() - (protectDays * 24 * 3600 * 1000);
+        contentDataDAO.getContentUrlsOrphaned(contentUrlHandler, maxOrphanTime, batchSize);
+        // All the URLs have been passed off for eventual deletion.
+        // Just delete the DB data
+        int size = idsToDelete.size();
+        if (size > 0)
+        {
+            contentDataDAO.deleteContentUrls(idsToDelete);
         }
+        // Done
+        return size;
     }
 
     /**

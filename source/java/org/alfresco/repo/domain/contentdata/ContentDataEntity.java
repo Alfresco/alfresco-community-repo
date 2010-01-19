@@ -92,6 +92,18 @@ public class ContentDataEntity
         return sb.toString();
     }
     
+    public void incrementVersion()
+    {
+        if (version >= Short.MAX_VALUE)
+        {
+            this.version = 0L;
+        }
+        else
+        {
+            this.version++;
+        }
+    }
+    
     public Long getId()
     {
         return id;

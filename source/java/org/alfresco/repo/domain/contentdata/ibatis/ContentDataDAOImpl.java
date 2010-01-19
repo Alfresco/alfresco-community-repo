@@ -47,13 +47,15 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_URL_BY_ID = "alfresco.content.select_ContentUrlById";
     private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
     private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
-    private static final String SELECT_CONTENT_URLS = "alfresco.content.select_ContentUrls";
+    private static final String SELECT_CONTENT_URLS_BY_ORPHAN_TIME = "alfresco.content.select_ContentUrlByOrphanTime";
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
     private static final String INSERT_CONTENT_URL = "alfresco.content.insert_ContentUrl";
     private static final String INSERT_CONTENT_DATA = "alfresco.content.insert_ContentData";
+    private static final String UPDATE_CONTENT_URL_ORPHAN_TIME = "alfresco.content.update_ContentUrlOrphanTime";
+    private static final String UPDATE_CONTENT_DATA = "alfresco.content.update_ContentData";
     private static final String DELETE_CONTENT_DATA = "alfresco.content.delete_ContentData";
-    private static final String DELETE_CONTENT_URL = "alfresco.content.delete_ContentUrl";
+    private static final String DELETE_CONTENT_URLS = "alfresco.content.delete_ContentUrls";
     
     private SqlMapClientTemplate template;
 
@@ -66,9 +68,9 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
-        contentUrlEntity.setVersion(ContentUrlEntity.CONST_LONG_ZERO);
         contentUrlEntity.setContentUrl(contentUrl);
         contentUrlEntity.setSize(size);
+        contentUrlEntity.setOrphanTime(null);
         /* Long id = (Long) */ template.insert(INSERT_CONTENT_URL, contentUrlEntity);
         /*contentUrlEntity.setId(id);*/
         // Register the url as new
@@ -101,12 +103,56 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         return contentUrlEntity;
     }
 
-    @Override
-    protected int deleteContentUrlEntity(Long id)
+    public void getContentUrlsOrphaned(final ContentUrlHandler contentUrlHandler, long maxOrphanTime)
     {
-        Map<String, Object> params = new HashMap<String, Object>(11);
-        params.put("id", id);
-        return template.delete(DELETE_CONTENT_URL, params);
+        RowHandler rowHandler = new RowHandler()
+        {
+            public void handleRow(Object valueObject)
+            {
+                ContentUrlEntity contentUrlEntity = (ContentUrlEntity) valueObject;
+                contentUrlHandler.handle(
+                        contentUrlEntity.getId(),
+                        contentUrlEntity.getContentUrl(),
+                        contentUrlEntity.getOrphanTime());
+            }
+        };
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setOrphanTime(maxOrphanTime);
+        template.queryWithRowHandler(SELECT_CONTENT_URLS_BY_ORPHAN_TIME, contentUrlEntity, rowHandler);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void getContentUrlsOrphaned(final ContentUrlHandler contentUrlHandler, long maxOrphanTime, int maxResults)
+    {
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setOrphanTime(maxOrphanTime);
+        List<ContentUrlEntity> results = template.queryForList(
+                SELECT_CONTENT_URLS_BY_ORPHAN_TIME,
+                contentUrlEntity, 0, maxResults);
+        // Pass the result to the callback
+        for (ContentUrlEntity result : results)
+        {
+            contentUrlHandler.handle(
+                    result.getId(),
+                    result.getContentUrl(),
+                    result.getOrphanTime());
+        }
+    }
+    
+    public int updateContentUrlOrphanTime(Long id, long orphanTime)
+    {
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setId(id);
+        contentUrlEntity.setOrphanTime(orphanTime);
+        return template.update(UPDATE_CONTENT_URL_ORPHAN_TIME, contentUrlEntity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int deleteContentUrls(List<Long> ids)
+    {
+        return template.delete(DELETE_CONTENT_URLS, ids);
     }
 
     @Override
@@ -152,8 +198,29 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     }
 
     @Override
+    protected int updateContentDataEntity(ContentDataEntity entity)
+    {
+        entity.incrementVersion();
+        return template.update(UPDATE_CONTENT_DATA, entity);
+    }
+
+    @Override
     protected int deleteContentDataEntity(Long id)
     {
+        // Get the content urls
+        ContentDataEntity contentDataEntity = getContentDataEntity(id);
+        // This might be null as there is no constraint ensuring that the node points to a valid ContentData entity
+        if (contentDataEntity != null)
+        {
+            // Register the content URL for a later orphan-check
+            String contentUrl = contentDataEntity.getContentUrl();
+            if (contentUrl != null)
+            {
+                // It has been dereferenced and may be orphaned - we'll check later
+                registerDereferencedContentUrl(contentUrl);
+            }
+        }
+        // Issue the delete statement
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
         return template.delete(DELETE_CONTENT_DATA, params);
@@ -175,36 +242,9 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
             // Delete each one
             for (Long id : ids)
             {
-                // Get the content urls
-                ContentDataEntity contentDataEntity = getContentDataEntity(id);
-                // This might be null as there is no constraint ensuring that the node points to a valid ContentData entity
-                if (contentDataEntity == null)
-                {
-                    continue;
-                }
-                // Only check the content URLs if one is present
-                String contentUrl = contentDataEntity.getContentUrl();
                 // Delete the ContentData entity
                 deleteContentData(id);
-                // Check if the content URL was orphaned
-                if (contentUrl != null)
-                {
-                    // It has been dereferenced and may be orphaned - we'll check later
-                    registerDereferenceContentUrl(contentUrl);
-                }
             }
         }
-    }
-
-    public void getAllContentUrls(final ContentUrlHandler contentUrlHandler)
-    {
-        RowHandler rowHandler = new RowHandler()
-        {
-            public void handleRow(Object valueObject)
-            {
-                contentUrlHandler.handle((String)valueObject);
-            }
-        };
-        template.queryWithRowHandler(SELECT_CONTENT_URLS, rowHandler);
     }
 }

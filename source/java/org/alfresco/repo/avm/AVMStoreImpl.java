@@ -1900,7 +1900,9 @@ public class AVMStoreImpl implements AVMStore
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
         PlainFileNode file = (PlainFileNode)node;
-        file.setEncoding(encoding);
+        ContentData contentData = file.getContentData();
+        contentData = ContentData.setEncoding(contentData, encoding);
+        file.setContentData(contentData);
         
         AVMDAOs.Instance().fAVMNodeDAO.update(file);
     }
@@ -1925,7 +1927,9 @@ public class AVMStoreImpl implements AVMStore
             throw new AccessDeniedException("Not allowed to write properties: " + path);
         }
         PlainFileNode file = (PlainFileNode)node;
-        file.setMimeType(mimeType);
+        ContentData contentData = file.getContentData();
+        contentData = ContentData.setMimetype(contentData, mimeType);
+        file.setContentData(contentData);
         
         AVMDAOs.Instance().fAVMNodeDAO.update(file);
     }

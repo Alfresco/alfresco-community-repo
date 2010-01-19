@@ -103,6 +103,7 @@
              <ref bean="patch.db-V2.2-Person-3" />
              <ref bean="patch.db-V3.2-LockTables" />
              <ref bean="patch.db-V3.2-ContentTables" />
+             <ref bean="patch.db-V3.2-ContentTables2" />
              <ref bean="patch.db-V3.2-PropertyValueTables" />
              <ref bean="patch.db-V3.2-AuditTables" />
              <ref bean="patch.db-V3.2-Child-Assoc-QName-CRC" />

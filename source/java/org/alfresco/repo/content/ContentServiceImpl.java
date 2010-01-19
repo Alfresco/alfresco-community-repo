@@ -37,6 +37,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
+import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
@@ -63,14 +64,12 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
-
 
 /**
  * Service implementation acting as a level of indirection between the client
@@ -95,6 +94,8 @@ public class ContentServiceImpl implements ContentService
     
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
+    /** The cleaner that will ensure that rollbacks clean up after themselves */
+    private EagerContentStoreCleaner eagerContentStoreCleaner;
     /** the store to use.  Any multi-store support is provided by the store implementation. */
     private ContentStore store;
     /** the store for all temporarily created content */
@@ -112,14 +113,6 @@ public class ContentServiceImpl implements ContentService
     ClassPolicyDelegate<ContentServicePolicies.OnContentUpdatePolicy> onContentUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentPropertyUpdatePolicy> onContentPropertyUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
-    
-    /**
-     * @deprecated  Replaced by {@link #setRetryingTransactionHelper(RetryingTransactionHelper)}
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        logger.warn("Property 'transactionService' has been replaced by 'retryingTransactionHelper'.");
-    }
     
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
@@ -141,6 +134,11 @@ public class ContentServiceImpl implements ContentService
         this.transformerRegistry = transformerRegistry;
     }
     
+    public void setEagerContentStoreCleaner(EagerContentStoreCleaner eagerContentStoreCleaner)
+    {
+        this.eagerContentStoreCleaner = eagerContentStoreCleaner;
+    }
+
     public void setStore(ContentStore store)
     {
         this.store = store;
@@ -428,6 +426,8 @@ public class ContentServiceImpl implements ContentService
             ContentContext ctx = new ContentContext(null, null);
             // for this case, we just give back a valid URL into the content store
             ContentWriter writer = store.getWriter(ctx);
+            // Register the new URL for rollback cleanup
+            eagerContentStoreCleaner.registerNewContentUrl(writer.getContentUrl());
             // done
             return writer;
         }
@@ -439,6 +439,8 @@ public class ContentServiceImpl implements ContentService
         // can be wherever the store decides.
         ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef, propertyQName);
         ContentWriter writer = store.getWriter(ctx);
+        // Register the new URL for rollback cleanup
+        eagerContentStoreCleaner.registerNewContentUrl(writer.getContentUrl());
 
         // Special case for AVM repository.   
         Serializable contentValue = null;

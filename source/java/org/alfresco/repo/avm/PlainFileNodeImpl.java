@@ -20,23 +20,20 @@
  * FLOSS exception.  You should have recieved a copy of the text describing
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing" */
-
 package org.alfresco.repo.avm;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.avm.util.RawServices;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
-import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-
 
 /**
  * A plain old file. Contains a Content object.
@@ -45,26 +42,29 @@ import org.alfresco.service.namespace.QName;
 public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
 {
     static final long serialVersionUID = 8720376837929735294L;
+    
+    private static final String PREFIX_CONTENT_DATA_ID = "id:";
+    private static final String SUFFIX_CONTENT_DATA_NULL = "null";
 
     /**
-     * The Content URL.
+     * The content URL <b>OR</b> the ID of the ContentData entity
      */
-    private String fContentURL;
+    private String contentURL;
     
     /**
      * The Mime type.
      */
-    private String fMimeType;
+    private String mimeType;
     
     /**
      * The character encoding.
      */
-    private String fEncoding;
+    private String encoding;
     
     /**
      * The length of the file.
      */
-    private long fLength;
+    private long length;
     
     /**
      * Default constructor.
@@ -171,7 +171,6 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      * @param lPath The Lookup.
      * @return A diagnostic String representation.
      */
-//    @Override
     public String toString(Lookup lPath)
     {
         return "[PF:" + getId() + "]";
@@ -194,6 +193,7 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         {
             path = path + "/" + name;
         }
+        ContentData contentData = getContentData();
         return new AVMNodeDescriptor(path,
                                      name,
                                      AVMNodeType.PLAIN_FILE,
@@ -211,7 +211,7 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getLength(),
+                                     contentData == null ? 0L : contentData.getSize(),
                                      -1);
     }
 
@@ -224,6 +224,7 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = lPath.getRepresentedPath();
+        ContentData contentData = getContentData();
         return new AVMNodeDescriptor(path,
                                      path.substring(path.lastIndexOf("/") + 1),
                                      AVMNodeType.PLAIN_FILE,
@@ -241,7 +242,7 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getFileLength(),
+                                     contentData == null ? 0L : contentData.getSize(),
                                      -1);
     }
 
@@ -256,6 +257,7 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     {
         BasicAttributes attrs = getBasicAttributes();
         String path = parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
+        ContentData contentData = getContentData();
         return new AVMNodeDescriptor(path,
                                      name,
                                      AVMNodeType.PLAIN_FILE,
@@ -273,110 +275,125 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                                      false,
                                      -1,
                                      false,
-                                     getFileLength(),
+                                     contentData == null ? 0L : contentData.getSize(),
                                      -1);
     }
 
     /**
-     * Get the Content URL.
-     * @return The content URL.
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
      */
     public String getContentURL()
     {
-        return fContentURL;
+        return contentURL;
     }
 
     /**
-     * Set the Content URL.
-     * @param contentURL
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
      */
-    protected void setContentURL(String contentURL)
+    public void setContentURL(String contentURL)
     {
-        fContentURL = contentURL;
+        this.contentURL = contentURL;
     }
 
     /**
-     * Get the character encoding.
-     * @return The encoding.
-     */
-    public String getEncoding()
-    {
-        return fEncoding;
-    }
-
-    /**
-     * Set the character encoding.
-     * @param encoding The encoding to set.
-     */
-    public void setEncoding(String encoding)
-    {
-        fEncoding = encoding;
-    }
-
-    /**
-     * Get the file length.
-     * @return The file length or null if unknown.
-     */
-    public long getLength()
-    {
-        return fLength;
-    }
-    
-    /**
-     * Get the actual file length.
-     * @return The actual file length;
-     */
-    private long getFileLength()
-    {
-        if (getContentURL() == null)
-        {
-            return 0L;
-        }
-        ContentReader reader = RawServices.Instance().getContentStore().getReader(getContentURL());
-        return reader.getSize();
-    }
-
-    /**
-     * Set the file length.
-     * @param length The length of the file.
-     */
-    protected void setLength(long length)
-    {
-        fLength = length;
-    }
-
-    /**
-     * Get the mime type of the content.
-     * @return The Mime Type of the content.
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
      */
     public String getMimeType()
     {
-        return fMimeType;
+        return mimeType;
     }
 
     /**
-     * Set the Mime Type of the content.
-     * @param mimeType The Mime Type to set.
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
      */
     public void setMimeType(String mimeType)
     {
-        fMimeType = mimeType;
+        this.mimeType = mimeType;
     }
-    
+
+    /**
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
+     */
+    public String getEncoding()
+    {
+        return encoding;
+    }
+
+    /**
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
+     */
+    public void setEncoding(String encoding)
+    {
+        this.encoding = encoding;
+    }
+
+    /**
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
+     */
+    public long getLength()
+    {
+        return length;
+    }
+
+    /**
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
+     */
+    public void setLength(long length)
+    {
+        this.length = length;
+    }
+
     /**
      * Set the ContentData for this file.
      * @param contentData The value to set.
      */
     public void setContentData(ContentData contentData)
     {
-        setContentURL(contentData.getContentUrl());
-        setMimeType(contentData.getMimetype());
-        if (getMimeType() == null)
+        // Remove any legacy-stored attributes to avoid confusion
+        if (isLegacyContentData())
         {
-            throw new AVMException("Null mime type.");
+            // Wipe over the old values
+            contentURL = PREFIX_CONTENT_DATA_ID + SUFFIX_CONTENT_DATA_NULL;
+            encoding = null;
+            length = 0L;
+            mimeType = null;
         }
-        setEncoding(contentData.getEncoding());
-        setLength(contentData.getSize());
+        
+        Long oldContentDataId = getContentDataId();
+        Long newContentDataId = null;
+        if (oldContentDataId == null)
+        {
+            if (contentData != null)
+            {
+                // There was no reference before, so just create a new one
+                newContentDataId = AVMDAOs.Instance().contentDataDAO.createContentData(contentData).getFirst();
+            }
+        }
+        else
+        {
+            if (contentData != null)
+            {
+                // Update it.  The ID will remain the same.
+                AVMDAOs.Instance().contentDataDAO.updateContentData(oldContentDataId, contentData);
+                newContentDataId = oldContentDataId;
+            }
+            else
+            {
+                // Delete the old instance
+                AVMDAOs.Instance().contentDataDAO.deleteContentData(oldContentDataId);
+                newContentDataId = null;
+            }
+        }
+        
+        // Set the pointer to the ContentData instance
+        if (newContentDataId == null)
+        {
+            contentURL = PREFIX_CONTENT_DATA_ID + SUFFIX_CONTENT_DATA_NULL;
+        }
+        else
+        {
+            contentURL = PREFIX_CONTENT_DATA_ID + newContentDataId;
+        }
     }
 
     /**
@@ -389,12 +406,66 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         return getContentData();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.PlainFileNode#getContentData()
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * If the content URL contains the special prefix, <b>{@link PREFIX_CONTENT_DATA_ID}</b>,
+     * then the data is pulled directly from the {@link ContentDataDAO}.
      */
     public ContentData getContentData()
     {
-        return new ContentData(getContentURL(), getMimeType(), getLength(), getEncoding());
+        if (contentURL != null && contentURL.startsWith(PREFIX_CONTENT_DATA_ID))
+        {
+            Long contentDataId = getContentDataId();
+            try
+            {
+                return AVMDAOs.Instance().contentDataDAO.getContentData(contentDataId).getSecond();
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException(
+                        "AVM File node " + getId() + " has invalid ContentData id reference " + contentDataId,
+                        e);
+            }
+        }
+        else
+        {
+            // This deals with legacy data
+            return new ContentData(contentURL, mimeType, length, encoding);
+        }
+    }
+    
+    /**
+     * Checks the content URL and if it contains the {@link #PREFIX_CONTENT_DATA_ID prefix}
+     * indicating the an new ContentData storage ID, returns <tt>true</tt>.
+     */
+    public boolean isLegacyContentData()
+    {
+        return (contentURL == null || !contentURL.startsWith(PREFIX_CONTENT_DATA_ID));
+    }
+    
+    /**
+     * Get the ID of the ContentData as given by the string in the ContentURL of
+     * form <b>ID:12345</b>
+     */
+    public Long getContentDataId()
+    {
+        String idStr = contentURL.substring(3);
+        if (idStr.equals(SUFFIX_CONTENT_DATA_NULL))
+        {
+            // Nothing has been stored against this file
+            return null;
+        }
+        try
+        {
+            return Long.parseLong(idStr);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException(
+                    "AVM File node " + getId() + " has malformed ContentData id reference " + idStr,
+                    e);
+        }
     }
 }
 

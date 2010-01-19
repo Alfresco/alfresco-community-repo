@@ -34,8 +34,8 @@
             select nextVal('alf_content_url_seq')
         </selectKey>
         
-        insert into alf_content_url (id, version, content_url, content_url_short, content_url_crc, content_size) 
-        values (#id#, #version#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#)
+        insert into alf_content_url (id, content_url, content_url_short, content_url_crc, content_size, orphan_time) 
+        values (#id#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#, #orphanTime#)
         
     </insert>
     

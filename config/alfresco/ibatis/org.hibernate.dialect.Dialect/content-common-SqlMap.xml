@@ -34,11 +34,11 @@
   
     <resultMap id="result_ContentUrl" class="ContentUrl">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentUrl" column="content_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="contentUrlShort" column="content_url_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="contentUrlCrc" column="content_url_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="size" column="content_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="orphanTime" column="orphan_time" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
   
     <resultMap id="result_ContentData" class="ContentData">
@@ -88,8 +88,8 @@
     </sql>
     
     <sql id="insert_ContentUrl_AutoIncrement">
-        insert into alf_content_url (version, content_url, content_url_short, content_url_crc, content_size) 
-        values (#version#, #contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#)
+        insert into alf_content_url (content_url, content_url_short, content_url_crc, content_size, orphan_time) 
+        values (#contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#, #orphanTime#)
     </sql>
     
     <sql id="insert_ContentData_AutoIncrement">
@@ -174,14 +174,50 @@
             content_url_crc = #contentUrlCrc# and
             cd.id is null
     </select>
+    
+    <!-- Get content URL entities that were orphaned before a give time -->
+    <select id="select_ContentUrlByOrphanTime" parameterClass="ContentUrl" resultMap="result_ContentUrl">
+        <![CDATA[
+        select
+            cu.*
+        from
+            alf_content_url cu
+        where
+            cu.orphan_time <= #orphanTime#
+        ]]>
+    </select>
+    
+    <!-- Mark a content URL entity as orphaned -->
+    <update id="update_ContentUrlOrphanTime" parameterClass="ContentUrl">
+        update
+            alf_content_url
+        set
+            orphan_time = #orphanTime#
+        where
+            id = #id#
+    </update>
 
     <!-- Delete ContentUrl entity -->
-    <delete id="delete_ContentUrl" parameterMap="parameter_IdMap">
+    <delete id="delete_ContentUrls" parameterClass="list">
         delete
         from
             alf_content_url
         where
-            id = ?
+            id in
+        <iterate open="(" close=")" conjunction=",">
+            #[]#
+        </iterate>
+    </delete>
+
+    <!-- Delete ContentUrl entities orphaned before a given time -->
+    <delete id="delete_ContentUrlByOrphanTime" parameterClass="ContentUrl">
+        <![CDATA[
+        delete
+        from
+            alf_content_url
+        where
+            orphan_time <= #orphanTime#
+        ]]>
     </delete>
 
     <!-- Get the ContentData entity by ID -->
@@ -214,6 +250,22 @@
             np.actual_type_n = 3 and
             np.persisted_type_n = 3
     </select>
+    
+    <update id="update_ContentData" parameterClass="ContentData">
+        update
+           alf_content_data
+        set
+           version = #version#,
+           content_url_id = #contentUrlId#,
+           content_mimetype_id = #mimetypeId#,
+           content_encoding_id = #encodingId#,
+           content_locale_id = #localeId#
+        where
+           id = #id#
+        <isGreaterThan property="version" compareValue="1">
+            and version = (#version#-1)
+        </isGreaterThan>
+    </update>
 
     <!-- Delete ContentData entity -->
     <delete id="delete_ContentData" parameterMap="parameter_IdMap">
@@ -222,43 +274,6 @@
             alf_content_data
         where
             id = ?
-    </delete>
-
-    <!-- Select all content URLs -->
-    <select id="select_ContentUrls" resultClass="string">
-        select
-            content_url
-        from
-            alf_content_url
-    </select>
-
-    <!-- Insert a Content Clean URL -->
-    <insert id="insert_ContentCleanUrl" parameterClass="ContentClean" >
-        insert into alf_content_clean (content_url) values (#contentUrl#)
-    </insert>
-
-    <!-- Select all content clean URLs -->
-    <select id="select_ContentCleanUrls" resultClass="string">
-        select
-            content_url
-        from
-            alf_content_clean
-    </select>
-
-    <!-- Remove a Content Clean URL -->
-    <delete id="delete_ContentCleanUrl" parameterClass="ContentClean" >
-        delete
-        from
-            alf_content_clean
-        where
-            content_url = #contentUrl#
-    </delete>
-
-    <!-- Remove all Content Clean URLs -->
-    <delete id="delete_ContentCleanUrls" >
-        delete
-        from
-            alf_content_clean
     </delete>
 
 </sqlMap>

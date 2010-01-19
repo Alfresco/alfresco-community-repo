@@ -8,21 +8,26 @@ import org.alfresco.service.cmr.repository.ContentData;
  */
 public interface PlainFileNode extends FileNode
 {
-    /**
-     * Set the encoding of this file.
-     * @param encoding
-     */
-    public void setEncoding(String encoding);
+    public ContentData getContentData();
+    public void setContentData(ContentData contentData);
+    
+    public boolean isLegacyContentData();
+    public Long getContentDataId();
     
     /**
-     * Set the mime type of this file.
-     * @param mimeType
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
      */
-    public void setMimeType(String mimeType);
-
+    public String getContentURL();
     /**
-     * Special case.
-     * @return
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
      */
-    public ContentData getContentData();
+    public String getMimeType();
+    /**
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
+     */
+    public String getEncoding();
+    /**
+     * DAO accessor only.  <b>DO NOT USE</b> in code.
+     */
+    public long getLength();
 }

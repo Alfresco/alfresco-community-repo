@@ -177,7 +177,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
                   TypeDefinition typeDef = dd.getType(type);
                   if (typeDef == null)
                   {
-                     throw new AlfrescoRuntimeException("No Type Definition found for: " + property.Type + " - Was an Aspect expected?");
+                     logger.warn("No Type Definition found for: " + property.Type + " - Was an Aspect expected?");
+                     continue;
                   }
                   propDef = typeDef.getProperties().get(Repository.resolveToQName(property.Property));
                }
@@ -187,7 +188,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
                   AspectDefinition aspectDef = dd.getAspect(aspect);
                   if (aspectDef == null)
                   {
-                     throw new AlfrescoRuntimeException("No Aspect Definition found for: " + property.Aspect + " - Was a Type expected?");
+                     logger.warn("No Aspect Definition found for: " + property.Aspect + " - Was a Type expected?");
+                     continue;
                   }
                   propDef = aspectDef.getProperties().get(Repository.resolveToQName(property.Property));
                }

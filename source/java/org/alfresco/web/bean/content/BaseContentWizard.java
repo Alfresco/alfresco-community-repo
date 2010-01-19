@@ -42,11 +42,11 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -423,39 +423,37 @@ public abstract class BaseContentWizard extends BaseWizardBean
          containerNodeRef = new NodeRef(Repository.getStoreRef(), nodeId);
       }
       
-      FileInfo fileInfo = this.getFileFolderService().create(
-            containerNodeRef,
-            this.fileName,
-            Repository.resolveToQName(this.objectType));
-      NodeRef fileNodeRef = fileInfo.getNodeRef();
-      
-      // set the author aspect
-      Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
-      authorProps.put(ContentModel.PROP_AUTHOR, this.author);
-      this.getNodeService().addAspect(fileNodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Created file node for file: " + this.fileName);
-      
-      // apply the titled aspect - title and description
-      Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(3, 1.0f);
-      titledProps.put(ContentModel.PROP_TITLE, this.title);
-      titledProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-      this.getNodeService().addAspect(fileNodeRef, ContentModel.ASPECT_TITLED, titledProps);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Added titled aspect with properties: " + titledProps);
-      
-      // apply the inlineeditable aspect
+      // apply the inline editable aspect (by adding the property at create time)
+      Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(6);
       if (this.inlineEdit == true)
       {
-         Map<QName, Serializable> editProps = new HashMap<QName, Serializable>(1, 1.0f);
          editProps.put(ApplicationModel.PROP_EDITINLINE, this.inlineEdit);
-         this.getNodeService().addAspect(fileNodeRef, ApplicationModel.ASPECT_INLINEEDITABLE, editProps);
-         
          if (logger.isDebugEnabled())
             logger.debug("Added inlineeditable aspect with properties: " + editProps);
       }
+      
+      // set the name
+      editProps.put(ContentModel.PROP_NAME, this.fileName);
+      
+      // set the author property
+      editProps.put(ContentModel.PROP_AUTHOR, this.author);      
+      
+      // apply the titled aspect - title and description
+      editProps.put(ContentModel.PROP_TITLE, this.title);
+      editProps.put(ContentModel.PROP_DESCRIPTION, this.description);      
+      if (logger.isDebugEnabled())
+         logger.debug("Added titled aspect with properties: " + this.title + ", " + this.description);
+      
+      // create the node
+      NodeRef fileNodeRef = this.getNodeService().createNode(
+              containerNodeRef, 
+              ContentModel.ASSOC_CONTAINS, 
+              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.fileName), 
+              Repository.resolveToQName(this.objectType),
+              editProps).getChildRef();     
+      
+      if (logger.isDebugEnabled())
+          logger.debug("Created file node for file: " + this.fileName);
       
       // get a writer for the content and put the file
       ContentWriter writer = getContentService().getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);

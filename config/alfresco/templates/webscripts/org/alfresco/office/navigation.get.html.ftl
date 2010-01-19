@@ -31,21 +31,7 @@
          folderPath: "${url.serviceContext}/office/",
          ticket: "${session.ticket}"
       }<#if args.env??>, "${args.env}")</#if>);
-   //]]>
-
-   function wrapDocumentNames()
-   {
-      var i = 1;
-      for(var element = document.getElementById("document" + i); undefined != element; element = document.getElementById("document" + i))
-      {
-         var name = element.innerHTML;
-         htmlWordWrap(("document" + i), 32, name);
-         i += 1;
-      }
-   }
-
-   window.addEvent('load', wrapDocumentNames);
-   </script>
+   //]]></script>
 </head>
 <body>
 <div id="overlayPanel"></div>
@@ -73,7 +59,7 @@
          <img src="${url.context}${thisSpace.icon16}" alt="${thisSpace.name?html}" />
       </span>
       <span style="float: left; padding-left: 6px;">
-         <span class="bold">${thisSpace.name?html}</span><br />
+         <p class="ellipsis bold" style="width: 200px" title="${thisSpace.name?html}">${thisSpace.name?html}</p><br />
 <#if thisSpace.properties.description??>
          ${thisSpace.properties.description?html}
 </#if>
@@ -93,7 +79,8 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">${message("office.header.spaces_in", thisSpace.name?html)}</div></div>
+   <#assign title = message("office.header.spaces_in", thisSpace.name?html)>
+   <div class="headerWrapper"><div class="header" title="${title}">${title}</div></div>
    <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
 </div>
 
@@ -195,9 +182,9 @@
          </span>
          <span class="documentItemDetails">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
-            <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')"><span id="document${documentsFound}" class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')" title="${child.name?html}"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
-            <a href="${url.context}${child.url}" rel="_blank"><span id="document${documentsFound}" class="bold">${child.name?html}</span></a>
+            <a href="${url.context}${child.url}" rel="_blank" title="${child.name?html}"><span class="bold">${child.name?html}</span></a>
       </#if>
             <br />
       <#if child.properties.description??>

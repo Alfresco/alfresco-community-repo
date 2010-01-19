@@ -108,7 +108,8 @@
 </div>
 
 <div id="panelTags" class="tabPanel">
-   <div class="tabHeader"><#if d.isDocument>${message("office.header.document_tags.for", d.name?html)}<#else>${message("office.header.document_tags")}</#if></div>
+   <#assign title><#if d.isDocument>${message("office.header.document_tags.for", d.name?html)}<#else>${message("office.header.document_tags")}</#if></#assign>
+   <div class="tabHeader" title="${title}">${title}</div>
    <div id="tagList" class="containerTabMedium">
    <#if d.isDocument >
       <div class="addTagIcon"></div>
@@ -149,7 +150,8 @@
 </div>
 
 <div id="panelVersion" class="tabPanel tabPanelHidden">
-   <div class="tabHeader"><#if d.isDocument>${message("office.header.version_history.for", d.name?html)}<#else>${message("office.header.version_history")}</#if></div>
+   <#assign title><#if d.isDocument>${message("office.header.version_history.for", d.name?html)}<#else>${message("office.header.version_history")}</#if></#assign>
+   <div class="tabHeader" title="${title}">${title}</div>
    <div id="versionList" class="containerTabMedium">
       <table width="265">
    <#if d.isDocument >

@@ -11,9 +11,12 @@ function getCalendarContainer(site)
       calendar = site.createContainer("calendar");
    }
 
-   if (!calendar.isTagScope)
+   if(calendar != null)
    {
-      calendar.isTagScope = true;
+      if (!calendar.isTagScope)
+      {
+         calendar.isTagScope = true;
+      }
    }
    
    return calendar;

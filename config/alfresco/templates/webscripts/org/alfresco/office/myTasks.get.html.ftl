@@ -36,13 +36,6 @@
          folderPath: "${url.serviceContext}/office/",
          ticket: "${session.ticket}"
       });
-
-      function wrapNameForcibly()
-      {
-         htmlWordWrap("workflowName", 32, "${d.name?html}");
-      }
-
-      window.addEvent('load', wrapNameForcibly);
    //]]></script>
 </head>
 <body>
@@ -62,7 +55,14 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">${message("office.header.my_tasks")}<span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="${message("office.task.overdue")}" />=${message("office.task.overdue")}, <img src="${url.context}/images/office/task_today.gif" alt="${message("office.task.due_today")}" />=${message("office.task.due_today")}</span></div></div>
+   <div class="headerWrapper">
+      <div class="header">${message("office.header.my_tasks")}
+         <span class="taskKey">
+            <img src="${url.context}/images/office/task_overdue.gif" alt="${message("office.task.overdue")}" />=${message("office.task.overdue")},
+            <img src="${url.context}/images/office/task_today.gif" alt="${message("office.task.due_today")}" />=${message("office.task.due_today")}
+         </span>
+      </div>
+   </div>
 </div>
 
 <div id="taskList" class="containerMedium">
@@ -112,11 +112,11 @@
    <div id="nonStatusText">
 <#if args.w?? && d.isDocument>
       <div id="taskDetails">
-         <table width="100%">
+         <table width="260">
             <tr>
                <td valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="${message("office.action.start_workflow")}" /></td>
                <td>
-                  ${message("office.action.start_workflow")}:<br /><span id="workflowName" style="margin-left: 8px; width: 248px; font-weight: bold;"></span>
+                  ${message("office.action.start_workflow")}:<br /><p class="ellipsis" style="font-weight: bold; padding-left: 8px; width: 232px;" title="${d.name?html}">${d.name?html}</p>
                </td>
             </tr>
          </table>

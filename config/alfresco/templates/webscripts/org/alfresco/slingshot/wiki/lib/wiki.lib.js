@@ -67,10 +67,13 @@ function getWikiContainer(site)
    {
       wiki = site.createContainer("wiki");
    }
-
-   if (!wiki.isTagScope)
+   
+   if(wiki != null)
    {
-      wiki.isTagScope = true;
+      if (!wiki.isTagScope)
+      {
+         wiki.isTagScope = true;
+      }
    }
    
    return wiki;

@@ -43,7 +43,7 @@
    
    <div style="margin-top: 8px; font-weight: bold;">${task.name?html}:</div>
    <div class="taskResources">
-      <table width="100%">
+      <table width="260">
    <#list task.packageResources as res>
          <tr>
       <#if res.isDocument>
@@ -51,24 +51,23 @@
          <#if res.name?ends_with(extn) || res.name?ends_with(extnx)>
             <td width="16" valign="top"><a href="${url.context}${res.url}" target="_blank"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
-               <a href="#" onclick="ExternalComponent.openDocument('${relativePath?js_string}')" title="${message("office.action.open", res.name?html)}">${res.name?html}</a>
+               <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')" title="${message("office.action.open", res.name?html)}"><p class="ellipsis" style="width: 244px;">${res.name?html}</p></a>
          <#else>
             <td width="16" valign="top"><a href="${url.context}${res.url}" target="_blank" title="${message("office.action.open", res.name?html)}"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
-               <a href="${url.context}${res.url}" target="_blank">${res.name?html}</a>
+               <a href="${url.context}${res.url}" target="_blank" title="${res.name?html}"><p class="ellipsis" style="width: 244px;">${res.name?html}</p></a>
          </#if>
-               <br />
                ${message("office.property.modified")}: ${res.properties.modified?datetime} (${(res.size / 1024)?int}${message("office.unit.kb")})<br />
          <#if res.isLocked >
                <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.status.locked")}" />
          <#elseif res.hasAspect("cm:workingcopy")>
-               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkin','${res.id}');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkin")}" title="${message("office.action.checkin")}" /></a>
+               <a href="#" onclick="OfficeMyTasks.runTaskAction('${doc_actions}','checkin','${res.id}');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkin")}" title="${message("office.action.checkin")}" /></a>
          <#else>
-               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkout','${res.id}');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
+               <a href="#" onclick="OfficeMyTasks.runTaskAction('${doc_actions}','checkout','${res.id}');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
          </#if>
                <a href="#" onclick="ExternalComponent.insertDocument('${relativePath?js_string}', '${res.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
          <#if !res.name?ends_with(".pdf")>
-               <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','makepdf','${res.id}');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
+               <a href="#" onclick="OfficeMyTasks.runTaskAction('${doc_actions}','makepdf','${res.id}');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
          </#if>
             </td>
       <#else>

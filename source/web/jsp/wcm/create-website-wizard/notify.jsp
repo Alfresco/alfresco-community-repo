@@ -35,11 +35,14 @@
    
    window.onload = pageLoaded;
    var okEnabled;
+   var notifyEnabled = false;
    
    function pageLoaded()
    {
       document.getElementById("wizard:wizard-body:subject").focus();
       okEnabled = !document.getElementById("wizard:finish-button").disabled;
+      var radio = document.forms[0].elements["wizard:wizard-body:notify"];
+      notifyEnabled = radio[0].checked;
       checkButtonState();
    }
    
@@ -47,22 +50,32 @@
    {
       if (okEnabled)
       {
-         if (document.getElementById("wizard:wizard-body:subject").value.length == 0)
+         if (document.getElementById("wizard:wizard-body:subject").value.length > 0 || 
+             !notifyEnabled)
          {
-            document.getElementById("wizard:finish-button").disabled = true;
+            document.getElementById("wizard:finish-button").disabled = false;
+            document.getElementById("wizard:next-button").disabled = false;
          }
          else
          {
-            document.getElementById("wizard:finish-button").disabled = false;
+            document.getElementById("wizard:finish-button").disabled = true;
+            document.getElementById("wizard:next-button").disabled = true;
          }
       }
    }
+      
+   function checkNotify(notify)
+   {
+     notifyEnabled = notify.value == "yes";
+     checkButtonState();
+   }
+   
 </script>
 </f:verbatim>
 
 <h:panelGrid style="padding-bottom:12px" columns="1" cellpadding="2" cellspacing="2" border="0" width="100%">
    <h:outputText value="#{msg.send_email}" />
-   <h:selectOneRadio value="#{InviteWebsiteUsersWizard.notify}">
+   <h:selectOneRadio id="notify" value="#{InviteWebsiteUsersWizard.notify}" onclick="javascript:checkNotify(this);">
       <f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
       <f:selectItem itemValue="no" itemLabel="#{msg.no}" />
    </h:selectOneRadio>
@@ -80,7 +93,7 @@
    <h:panelGrid columns="4" cellspacing="1" cellpadding="1" border="0">
       <h:outputText value="#{msg.action_mail_template}:" />
       <h:selectOneMenu value="#{InviteWebsiteUsersWizard.mailHelper.template}">
-<f:selectItems value="#{InviteWebsiteUsersWizard.emailTemplates}" />
+         <f:selectItems value="#{InviteWebsiteUsersWizard.emailTemplates}" />
       </h:selectOneMenu>
       <h:commandButton value="#{msg.insert_template}" actionListener="#{InviteWebsiteUsersWizard.mailHelper.insertTemplate}" styleClass="wizardButton" />
       <h:commandButton value="#{msg.discard_template}" actionListener="#{InviteWebsiteUsersWizard.mailHelper.discardTemplate}" styleClass="wizardButton" disabled="#{InviteWebsiteUsersWizard.mailHelper.usingTemplate == null}" />

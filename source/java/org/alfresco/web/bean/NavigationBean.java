@@ -675,7 +675,10 @@ public class NavigationBean implements Serializable
       {
          if (this.currentNodeId == null)
          {
-            throw new AlfrescoRuntimeException("Cannot retrieve current Node if NodeId is null!");
+            // handle the possibility that we have no current location
+            // this is possible in cluster fail-over or due to a missing node
+            // default back to the current toolbar root location
+            this.processToolbarLocation(this.getToolbarLocation(), false);
          }
          
          if (s_logger.isDebugEnabled())
@@ -696,7 +699,7 @@ public class NavigationBean implements Serializable
          }
          catch (InvalidNodeRefException refErr)
          {
-        	FacesContext fc = FacesContext.getCurrentInstance();
+            FacesContext fc = FacesContext.getCurrentInstance();
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                   fc, ERROR_DELETED_FOLDER), new Object[] {this.currentNodeId}) );
             
@@ -715,10 +718,13 @@ public class NavigationBean implements Serializable
          SharedDeviceList shares = filesysConfig.getShares();
          Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
          
-         while ( shareEnum.hasMoreElements() && diskShare == null) {
-           SharedDevice curShare = shareEnum.nextElement();
-           if ( curShare.getContext() instanceof ContentContext)
-             diskShare = (DiskSharedDevice) curShare;
+         while (shareEnum.hasMoreElements() && diskShare == null)
+         {
+            SharedDevice curShare = shareEnum.nextElement();
+            if (curShare.getContext() instanceof ContentContext)
+            {
+               diskShare = (DiskSharedDevice)curShare;
+            }
          }
          
          if (diskShare != null)

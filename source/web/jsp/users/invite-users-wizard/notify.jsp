@@ -35,6 +35,7 @@
    
    window.onload = pageLoaded;
    var okEnabled;
+   var notifyEnabled = false;
    
    function pageLoaded()
    {
@@ -47,22 +48,31 @@
    {
       if (okEnabled)
       {
-         if (document.getElementById("wizard:wizard-body:subject").value.length == 0)
+         if (document.getElementById("wizard:wizard-body:subject").value.length > 0 || 
+             !notifyEnabled)
          {
-            document.getElementById("wizard:finish-button").disabled = true;
+            document.getElementById("wizard:finish-button").disabled = false;
+            document.getElementById("wizard:next-button").disabled = false;
          }
          else
          {
-            document.getElementById("wizard:finish-button").disabled = false;
+            document.getElementById("wizard:finish-button").disabled = true;
+            document.getElementById("wizard:next-button").disabled = true;
+         }
          }
       }
+      
+   function checkNotify(notify)
+   {
+     notifyEnabled = notify.value == "yes";
+     checkButtonState();
    }
 </script>
 </f:verbatim>
 
 <h:panelGrid style="padding-bottom:12px" columns="1" cellpadding="2" cellspacing="2" border="0" width="100%">
    <h:outputText value="#{msg.send_email}" />
-   <h:selectOneRadio value="#{WizardManager.bean.notify}">
+<h:selectOneRadio id="notify" value="#{WizardManager.bean.notify}" onchange="javascript:checkNotify(this);">
       <f:selectItem itemValue="yes" itemLabel="#{msg.yes}" />
       <f:selectItem itemValue="no" itemLabel="#{msg.no}" />
    </h:selectOneRadio>

@@ -5,7 +5,7 @@
    <#list containers as container>
       {
          "name": "${container.name}",
-         "description": "${container.properties.description!""}",
+         "description": "${container.properties.description!"Document Library"}",
          "nodeRef": "${container.nodeRef}",
          "type": "${container.typeShort}"
       }<#if container_has_next>,</#if>

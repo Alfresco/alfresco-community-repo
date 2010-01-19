@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>copy-to</shortname>
+  <shortname>add-child</shortname>
   <description>Document List Action - Add multiple files as children</description>
   <url>/slingshot/doclib/action/add-child/site/{site}/{container}/{path}</url>
   <url>/slingshot/doclib/action/add-child/site/{site}/{container}</url>

@@ -106,19 +106,14 @@ var ParseArgs =
          rootNode = siteNode.getContainer(containerId);
          if (rootNode === null)
          {
-            if (containerType !== undefined)
-            {
-               rootNode = siteNode.createContainer(containerId, containerType);
-            }
-            else
-            {
-               rootNode = siteNode.createContainer(containerId);
-            }
+            rootNode = siteNode.createContainer(containerId, containerType || "cm:folder");
             if (rootNode === null)
             {
                status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
                return null;
             }
+            
+            rootNode.properties["cm:description"] = "Document Library";
 
             /**
              * MOB-593: Add email alias on documentLibrary container creation
@@ -130,8 +125,8 @@ var ParseArgs =
                emailAlias += "-" + containerId;
             }
             rootNode.properties["emailserver:alias"] = emailAlias;
-            rootNode.save();
             */
+            rootNode.save();
          }
 
       }

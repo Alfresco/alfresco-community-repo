@@ -29,13 +29,11 @@ function runAction(p_params)
          return;
       }
 
-      // Ensure the file is versionable - but do not autoversion or create initial version
+      // Ensure the file is versionable
       if (!assetNode.hasAspect("cm:versionable"))
       {
-	      // Do not autoversion (we perform explicit checkout)
-	      var props = new Array(2);
-	      props["cm:autoVersion"] = false;
-	      props["cm:initialVersion"] = false;
+	      var props = new Array(1);
+	      props["cm:autoVersionOnUpdateProps"] = false;
 	      assetNode.addAspect("cm:versionable", props);
       }
  

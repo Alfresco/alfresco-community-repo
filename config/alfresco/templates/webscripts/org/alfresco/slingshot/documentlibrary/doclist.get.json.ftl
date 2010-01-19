@@ -11,15 +11,19 @@
    {
       "parent":
       {
-         <#if doclist.parent??>"nodeRef": "${doclist.parent.nodeRef}",</#if>
+   <#if doclist.parent??>
+         "nodeRef": "${doclist.parent.nodeRef}",
+   </#if>
          "permissions":
          {
             "userRole": "${user.role!""}",
             "userAccess":
             {
-               "create" : ${user.permissions.create?string},
-               "edit" : ${user.permissions.edit?string},
-               "delete" : ${user.permissions.delete?string}
+            <#list user.permissions?keys as perm>
+               <#if user.permissions[perm]?is_boolean>
+               "${perm?string}": ${user.permissions[perm]?string}<#if perm_has_next>,</#if>
+               </#if>
+            </#list>
             }
          }
       },
@@ -36,12 +40,6 @@
       <#assign d = item.asset>
       <#assign version = "1.0">
       <#if d.hasAspect("cm:versionable") && d.versionHistory?size != 0><#assign version = d.versionHistory[0].versionLabel></#if>
-      <#if item.owner??>
-         <#assign lockedBy = (item.owner.properties.firstName + " " + item.owner.properties.lastName)?trim>
-         <#assign lockedByUser = item.owner.properties.userName>
-      <#else>
-         <#assign lockedBy="" lockedByUser="">
-      </#if>
       <#if item.createdBy??>
          <#assign createdBy = (item.createdBy.properties.firstName + " " + item.createdBy.properties.lastName)?trim>
          <#assign createdByUser = item.createdBy.properties.userName>
@@ -54,6 +52,12 @@
       <#else>
          <#assign modifiedBy="" modifiedByUser="">
       </#if>
+      <#if item.lockedBy??>
+         <#assign lockedBy = (item.lockedBy.properties.firstName + " " + item.lockedBy.properties.lastName)?trim>
+         <#assign lockedByUser = item.lockedBy.properties.userName>
+      <#else>
+         <#assign lockedBy="" lockedByUser="">
+      </#if>
       <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
       {
          "index": ${item_index},
@@ -64,9 +68,7 @@
          "mimetype": "${d.mimetype!""}",
          "fileName": "<#if item.isLink>${item.linkAsset.name}<#else>${d.name}</#if>",
          "displayName": "${d.name?replace(workingCopyLabel, "")}",
-         "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",
-         "lockedBy": "${lockedBy}",
-         "lockedByUser": "${lockedByUser}",
+         "status": "<#list item.status?keys as s><#if item.status[s]?is_boolean && item.status[s] == true>${s}<#if s_has_next>,</#if></#if></#list>",
          "title": "${d.properties.title!""}",
          "description": "${d.properties.description!""}",
          "author": "${d.properties.author!""}",
@@ -76,6 +78,8 @@
          "modifiedOn": "<@dateFormat d.properties.modified />",
          "modifiedBy": "${modifiedBy}",
          "modifiedByUser": "${modifiedByUser}",
+         "lockedBy": "${lockedBy}",
+         "lockedByUser": "${lockedByUser}",
          "size": "${d.size?c}",
          "version": "${version}",
          "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
@@ -102,12 +106,14 @@
             ],
             "userAccess":
             {
-               "create": ${d.hasPermission("CreateChildren")?string},
-               "edit": ${d.hasPermission("Write")?string},
-               "delete": ${d.hasPermission("Delete")?string},
-               "permissions": ${d.hasPermission("ChangePermissions")?string}
+            <#list item.actionPermissions?keys as actionPerm>
+               <#if item.actionPermissions[actionPerm]?is_boolean>
+               "${actionPerm?string}": ${item.actionPermissions[actionPerm]?string}<#if actionPerm_has_next>,</#if>
+               </#if>
+            </#list>
             }
-         }
+         },
+         "custom": <#noescape>${item.custom}</#noescape>
       }<#if item_has_next>,</#if>
    </#list>
    ]

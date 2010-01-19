@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Authentication</shortname>
+  <description>Authentication stack information</description>
+  <url>/api/authentication</url>
+  <format default="json"/>
+  <authentication>none</authentication>
+  <transaction>none</transaction>
+</webscript>

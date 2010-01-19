@@ -1,9 +1,9 @@
-<#import "comment.lib.ftl" as commentLib/>
-<#import "../generic-paged-results.lib.ftl" as gen/>
+<#import "comment.lib.ftl" as commentLib>
+<#import "../generic-paged-results.lib.ftl" as gen>
 {
    "nodePermissions":
    {
-   <#if node.isLocked>
+   <#if node.isLocked || node.hasAspect("cm:workingcopy")>
       "create": false,
       "edit": false,
       "delete": false
@@ -14,6 +14,6 @@
    </#if>
    },
 <@gen.pagedResults data=data ; item>
-	<@commentLib.commentJSON item=item />
+   <@commentLib.commentJSON item=item parent=node />
 </@gen.pagedResults>
 }

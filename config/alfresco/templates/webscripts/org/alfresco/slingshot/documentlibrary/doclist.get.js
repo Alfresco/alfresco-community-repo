@@ -1,4 +1,4 @@
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/action-sets.lib.js">
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/evaluator.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
 
@@ -20,6 +20,22 @@ function getPerson(username)
       PeopleCache[username] = people.getPerson(username);
    }
    return PeopleCache[username];
+}
+
+/**
+ * Gets a person's full name
+ * @method getPersonName
+ * @param username {string} User name
+ */
+function getPersonName(username)
+{
+   var user = getPerson(username);
+   if (user)
+   {
+      // Return trimmed full name
+      return (user.properties.firstName + " " + user.properties.lastName).replace(/^\s+|\s+$/g, "");
+   }
+   return username;
 }
 
 /**
@@ -97,17 +113,32 @@ function main()
       }),
       query = filterParams.query;
 
-   // Query and sort the list before trimming to page chunks below
-   allAssets = search.luceneSearch(query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
+   // Query the assets - passing in sort and result limit parameters
+   if (query !== "")
+   {
+      allAssets = search.query(
+      {
+         query: query,
+         language: filterParams.language,
+         page:
+         {
+            maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+         },
+         sort: filterParams.sort,
+         templates: filterParams.templates,
+         namespace: (filterParams.namespace ? filterParams.namespace : null)
+      });
+   }
 
    // Ensure folders and folderlinks appear at the top of the list
-   folderAssets = [];
-   documentAssets = [];
+   var folderAssets = [],
+      documentAssets = [];
+   
    for each (asset in allAssets)
    {
       try
       {
-         if (asset.isContainer || asset.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
+         if (asset.isContainer || asset.typeShort == "app:folderlink")
          {
             folderAssets.push(asset);
          }
@@ -143,12 +174,11 @@ function main()
       startIndex = (pagePos - 1) * pageSize;
    
    assets = assets.slice(startIndex, pagePos * pageSize);
-   
-   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows, assetType, linkAsset, isLink,
-      location, qnamePaths, displayPaths, locationAsset;
+
+   var thumbnail, assetEvaluator, defaultLocation, location, qnamePaths, displayPaths, site, item;
 
    // Location if we're in a site
-   var defaultLocation =
+   defaultLocation =
    {
       site: parsedArgs.location.site,
       siteTitle: parsedArgs.location.siteTitle,
@@ -156,88 +186,33 @@ function main()
       path: parsedArgs.location.path,
       file: null
    };
+
+   // Evaluate parent container
+   var parent = Evaluator.run(parsedArgs.parentNode);
    
    // User permissions and role
    var user =
    {
-      permissions:
-      {
-   	   create: parsedArgs.parentNode.hasPermission("CreateChildren"),
-   	   edit: parsedArgs.parentNode.hasPermission("Write"),
-   	   "delete": parsedArgs.parentNode.hasPermission("Delete")
-      }
+      permissions: parent.actionPermissions
    };
    if (defaultLocation.site !== null)
    {
       user.role = parsedArgs.location.siteNode.getMembersRole(person.properties.userName);
    }
-   
-   // Locked/working copy status defines action set
+
+   // Loop through and evaluate each asset in this result set
    for each (asset in assets)
    {
-      itemStatus = [];
-      itemOwner = null;
-      createdBy = null;
-      modifiedBy = null;
-      activeWorkflows = [];
-      linkAsset = null;
-      isLink = false;
+      // Get evaluated properties.
+      item = Evaluator.run(asset);
+      // Note: Only access item.asset after this point, as a link may have been resolved.
 
-      // Asset status
-      if (asset.isLocked)
-      {
-         itemStatus.push("locked");
-         itemOwner = getPerson(asset.properties["cm:lockOwner"]);
-      }
-      if (asset.hasAspect("cm:workingcopy"))
-      {
-         itemStatus.push("workingCopy");
-         itemOwner = getPerson(asset.properties["cm:workingCopyOwner"]);
-      }
-      // Is this user the item owner?
-      if (itemOwner && (itemOwner.properties.userName == person.properties.userName))
-      {
-         itemStatus.push("lockedBySelf");
-      }
-      
-      // Get users
-      createdBy = getPerson(asset.properties["cm:creator"]);
-      modifiedBy = getPerson(asset.properties["cm:modifier"]);
-      
-      // Asset type
-      if (asset.isContainer)
-      {
-         assetType = "folder";
-      }
-      else if (asset.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
-      {
-         assetType = "folder";
-         isLink = true;
-      }
-      else if (asset.type == "{http://www.alfresco.org/model/application/1.0}filelink")
-      {
-         assetType = "document";
-         isLink = true;
-      }
-      else
-      {
-         assetType = "document";
-      }
-      
-      if (isLink)
-      {
-         /**
-          * NOTE: After this point, the "asset" object will be changed to a link's destination node
-          *       if the original node was a filelink type
-          */
-         linkAsset = asset;
-         asset = linkAsset.properties.destination;
-      }
-      
+      item.isFavourite = (favourites[item.asset.nodeRef] === true);
+
       // Does this collection of assets have potentially differering paths?
-      if (filterParams.variablePath || isLink)
+      if (filterParams.variablePath || item.isLink)
       {
-         locationAsset = (isLink && assetType == "document") ? linkAsset : asset;
+         locationAsset = (item.isLink && item.type == "document") ? item.linkAsset : item.asset;
 
          qnamePaths = locationAsset.qnamePath.split("/");
          displayPaths = locationAsset.displayPath.split("/");
@@ -252,7 +227,8 @@ function main()
                path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
                file: locationAsset.name
             };
-            var site = getSite(location.site);
+            
+            site = getSite(location.site);
             if (site != null)
             {
                location.siteTitle = site.title;
@@ -281,50 +257,29 @@ function main()
             file: asset.name
          };
       }
-
-      // Make sure we have a thumbnail
+      
+      // Resolved location
+      item.location = location;
+      
+      // Make sure we have a thumbnail.
       if (haveThumbnails)
       {
-         thumbnail = asset.getThumbnail(THUMBNAIL_NAME);
+         thumbnail = item.asset.getThumbnail(THUMBNAIL_NAME);
          if (thumbnail === null)
          {
             // No thumbnail, so queue creation
-            asset.createThumbnail(THUMBNAIL_NAME, true);
+            item.asset.createThumbnail(THUMBNAIL_NAME, true);
          }
       }
       
-      // Get relevant actions set
-      actionSet = getActionSet(asset,
-      {
-         assetType: assetType,
-         isLink: isLink,
-         itemStatus: itemStatus,
-         itemOwner: itemOwner
-      });
-      
-      // Part of an active workflow?
-      for each (activeWorkflow in asset.activeWorkflows)
-      {
-         activeWorkflows.push(activeWorkflow.id);
-      }
-      
-      items.push(
-      {
-         asset: asset,
-         linkAsset: linkAsset,
-         type: assetType,
-         isLink: isLink,
-         status: itemStatus,
-         owner: itemOwner,
-         createdBy: createdBy,
-         modifiedBy: modifiedBy,
-         actionSet: actionSet,
-         tags: asset.tags,
-         activeWorkflows: activeWorkflows,
-         location: location,
-         isFavourite: (favourites[asset.nodeRef] === true)
-      });
+      items.push(item);
    }
+
+   var parentMeta = filterParams.variablePath ? null :
+   {
+      nodeRef: String(parsedArgs.parentNode.nodeRef),
+      type: parent.typeShort
+   };
 
    return (
    {
@@ -342,7 +297,7 @@ function main()
       },
       user: user,
       items: items,
-      parent: filterParams.variablePath ? null : parsedArgs.parentNode
+      parent: parentMeta
    });
 }
 

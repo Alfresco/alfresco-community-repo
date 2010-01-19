@@ -13,8 +13,13 @@ var Filters =
       {
          query: "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"",
          limitResults: null,
-         sortBy: "@{http://www.alfresco.org/model/content/1.0}name",
-         sortByAscending: true,
+         sort: [
+         {
+            column: "@{http://www.alfresco.org/model/content/1.0}name",
+            ascending: true
+         }],
+         language: "lucene",
+         templates: null,
          variablePath: false
       };
 
@@ -34,20 +39,20 @@ var Filters =
       }
 
       // Create query based on passed-in arguments
-      var filterId = String(filter),
-         filterData = String(args.filterData),
+      var filterData = String(args.filterData),
          filterQuery = "";
 
       // Common types and aspects to filter from the UI
-      filterQueryDefaults = " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
-      filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
-      filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
-      filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"";
-      filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
-      filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
-      filterQueryDefaults += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
+      filterQueryDefaults =
+         " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" +
+         " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"" +
+         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"" +
+         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"" +
+         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"" +
+         " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
+         " -@cm\\:lockType:READ_ONLY_LOCK";
 
-      switch (filterId)
+      switch (String(filter))
       {
          case "all":
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
@@ -96,8 +101,11 @@ var Filters =
             }
             filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}folder\"";
 
-            filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
-            filterParams.sortByAscending = false;
+            filterParams.sort = [
+            {
+               column: "@{http://www.alfresco.org/model/content/1.0}" + dateField,
+               ascending: false
+            }];
             filterParams.variablePath = true;
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
@@ -152,7 +160,10 @@ var Filters =
       }
 
       // Specialise by passed-in type
-      filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
+      if (filterParams.query !== "")
+      {
+         filterParams.query += " " + (Filters.TYPE_MAP[parsedArgs.type] || "");
+      }
 
       return filterParams;
    }

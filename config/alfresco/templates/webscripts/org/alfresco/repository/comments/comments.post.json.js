@@ -42,6 +42,7 @@ function main()
 
    var comment = addComment(node);
    model.item = getCommentData(comment);
+   model.node = node;
    
    // post an activitiy item, but only if we got a site
    if (json.has("site") && json.has("itemTitle") && json.has("page"))

@@ -32,6 +32,7 @@ function main()
    // update comment
    updateComment(node);   
    model.item = getCommentData(node);
+   model.node = node;
    
    // post an activity item, but only if we got a site
    if (json.has("site") && json.has("itemTitle") && json.has("page"))

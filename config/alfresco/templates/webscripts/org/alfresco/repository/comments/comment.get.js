@@ -11,6 +11,7 @@ function main()
    }
 
    model.item = getCommentData(node);
+   model.node = node;
 }
 
 main();

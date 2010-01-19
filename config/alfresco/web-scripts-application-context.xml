@@ -395,6 +395,11 @@
    <!-- Web-tier SSO authentication touch point -->
    <bean id="webscript.org.alfresco.repository.touch.get" class="org.alfresco.repo.web.scripts.bean.Touch" parent="webscript" />
    
+   <!-- Authentication information service -->
+   <bean id="webscript.org.alfresco.repository.authentication.get" class="org.alfresco.repo.web.scripts.bean.Authentication" parent="webscript">
+      <property name="authenticationService" ref="authenticationService"/>
+   </bean>
+   
    
    <!--                            -->
    <!-- Activity Feed Web Scripts  -->

@@ -1,0 +1,6 @@
+{
+	"data":
+	{
+		"creationAllowed": ${creationAllowed?string}
+	}
+}

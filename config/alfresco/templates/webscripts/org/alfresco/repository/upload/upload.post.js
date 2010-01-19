@@ -142,10 +142,9 @@ function main()
             // Ensure the original file is versionable - may have been uploaded via different route
             if (!workingCopy.hasAspect("cm:versionable"))
             {
-               // Ensure the file is versionable - but do not autoversion or create initial version yet
-               var props = new Array(2);
-               props["cm:autoVersion"] = false;
-               props["cm:initialVersion"] = false;
+               // Ensure the file is versionable
+               var props = new Array(1);
+	            props["cm:autoVersionOnUpdateProps"] = false;
                workingCopy.addAspect("cm:versionable", props);
             }
 
@@ -240,12 +239,6 @@ function main()
          newFile.properties.content.guessMimetype(filename);
          newFile.properties.content.encoding = "UTF-8";
          newFile.save();
-
-         // Ensure the file is versionable - but do not autoversion or create initial version
-         var props = new Array(2);
-         props["cm:autoVersion"] = false;
-         props["cm:initialVersion"] = false;
-         newFile.addAspect("cm:versionable", props);
 
          // Additional aspects?
          if (aspects.length > 0)

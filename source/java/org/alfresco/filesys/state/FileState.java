@@ -28,10 +28,12 @@ import org.alfresco.jlan.locking.FileLock;
 import org.alfresco.jlan.locking.FileLockList;
 import org.alfresco.jlan.locking.LockConflictException;
 import org.alfresco.jlan.locking.NotLockedException;
+import org.alfresco.jlan.server.filesys.ExistingOpLockException;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
+import org.alfresco.jlan.server.locking.OpLockDetails;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -84,6 +86,10 @@ public class FileState
 
     private FileLockList m_lockList;
     
+	// Oplock details
+
+	private OpLockDetails m_oplock;
+
     // Node for this file
     
     private NodeRef m_nodeRef;
@@ -704,6 +710,46 @@ public class FileState
         return writeOK;
     }
 
+	/**
+	 * Check if the file has an active oplock
+	 * 
+	 * @return boolean
+	 */
+	public final boolean hasOpLock() {
+		return m_oplock != null ? true : false;
+	}
+
+	/**
+	 * Return the oplock details
+	 * 
+	 * @return OpLockDetails
+	 */
+	public final OpLockDetails getOpLock() {
+		return m_oplock;
+	}
+
+	/**
+	 * Set the oplock for this file
+	 * 
+	 * @param oplock OpLockDetails
+	 * @exception ExistingOpLockException If there is an active oplock on this file
+	 */
+	public final synchronized void setOpLock(OpLockDetails oplock)
+		throws ExistingOpLockException {
+
+		if ( m_oplock == null)
+			m_oplock = oplock;
+		else
+			throw new ExistingOpLockException();
+	}
+
+	/**
+	 * Clear the oplock
+	 */
+	public final synchronized void clearOpLock() {
+		m_oplock = null;
+	}
+
     /**
      * Normalize the path to uppercase the directory names and keep the case of the file name.
      * 
@@ -756,6 +802,12 @@ public class FileState
             else
                 str.append(0);
         }
+  	  
+        if ( hasOpLock()) {
+        	str.append(",OpLock=");
+        	str.append(getOpLock());
+        }
+		
         str.append("]");
 
         return str.toString();

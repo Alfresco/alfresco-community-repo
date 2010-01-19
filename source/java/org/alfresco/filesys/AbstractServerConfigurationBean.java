@@ -92,7 +92,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   
   protected static final String m_sessDbgStr[] = { "NETBIOS", "STATE", "RXDATA", "TXDATA", "DUMPDATA", "NEGOTIATE", "TREE", "SEARCH", "INFO", "FILE",
           "FILEIO", "TRANSACT", "ECHO", "ERROR", "IPC", "LOCK", "PKTTYPE", "DCERPC", "STATECACHE", "TIMING", "NOTIFY",
-          "STREAMS", "SOCKET", "PKTPOOL", "PKTSTATS", "THREADPOOL", "BENCHMARK" };
+          "STREAMS", "SOCKET", "PKTPOOL", "PKTSTATS", "THREADPOOL", "BENCHMARK", "OPLOCK" };
 
   // FTP server debug type strings
 

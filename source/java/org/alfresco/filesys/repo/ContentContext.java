@@ -62,6 +62,9 @@ public class ContentContext extends AlfrescoContext
     
     private AccessControlListBean m_accessControlList;
         
+    // Enable/disable oplocks
+    
+    private boolean m_oplocksDisabled;
     
     // Node monitor
     
@@ -137,6 +140,15 @@ public class ContentContext extends AlfrescoContext
         setShareName(nodeRef.toString());
     }
 
+
+    /**
+     * Enable/disable oplock support
+     * 
+     * @param disableOplocks boolean
+     */
+    public void setDisableOplocks( boolean disableOplocks) {
+    	m_oplocksDisabled = disableOplocks;
+    }
     
     @Override
     public void initialize(AlfrescoDiskDriver filesysDriver)
@@ -215,6 +227,15 @@ public class ContentContext extends AlfrescoContext
         return m_disableNodeMonitor;
     }
 
+    /**
+     * Determine if oplocks support should be disabled
+     * 
+     * @return boolean
+     */
+    public boolean getDisableOplocks() {
+    	return m_oplocksDisabled;
+    }
+    
     /**
      * Gets the access control list.
      * 

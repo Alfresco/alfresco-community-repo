@@ -64,6 +64,8 @@ import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
 import org.alfresco.jlan.server.locking.FileLockingInterface;
 import org.alfresco.jlan.server.locking.LockManager;
+import org.alfresco.jlan.server.locking.OpLockInterface;
+import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.jlan.smb.WinNT;
 import org.alfresco.jlan.smb.server.SMBServer;
@@ -97,7 +99,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface
+public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface
 {
     // Logging
     
@@ -130,7 +132,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
 	//	Lock manager
 	
-	private static LockManager _lockManager = new FileStateLockManager();
+	private static FileStateLockManager _lockManager = new FileStateLockManager();
     
     /**
      * Class constructor
@@ -430,6 +432,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             context.setDisableNodeMonitor(true);
         }
         
+        // Check if oplocks are enabled, if so then enable oplocks in the lock manager
+        
+        if ( cfg.getChild("disableOplocks") != null) {
+        	context.setDisableOplocks( true);
+        }
+        
+        // Register the device context
+        
         registerContext(context);
         
         // Return the context for this shared filesystem
@@ -597,6 +607,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor( this, context);
             context.setNodeMonitor( nodeMonitor);
         }
+        
+        // Check if oplocks are enabled
+        
+        if ( context.getDisableOplocks() == false) {
+                
+            // Enable oplock support
+            	
+            _lockManager.setStateTable( context.getStateTable());
+        }
+        else
+        	logger.warn("Oplock support disabled for filesystem " + ctx.getDeviceName());
     }
 
     /**
@@ -3086,5 +3107,31 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	 */
 	public LockManager getLockManager(SrvSession sess, TreeConnection tree) {
 		return _lockManager;
+	}
+	
+	/**
+	 * Return the oplock manager implementation associated with this virtual filesystem
+	 * 
+	 * @param sess SrvSession
+	 * @param tree TreeConnection
+	 * @return OpLockManager
+	 */
+	public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree) {
+		return _lockManager;
+	}
+	
+	/**
+	 * Enable/disable oplock support
+	 * 
+	 * @param sess SrvSession
+	 * @param tree TreeConnection
+	 * @return boolean
+	 */
+	public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree) {
+		
+        // Check if oplocks are enabled
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        return ctx.getDisableOplocks() ? false : true;
 	}
 }

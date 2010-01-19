@@ -489,6 +489,7 @@ public class CreateWebContentWizard extends CreateContentWizard
    {
       // get the parent path of the location to save the content
       String fileName = this.getFileName();
+      String contentName = fileName;
       if (logger.isDebugEnabled())
          logger.debug("saving file content to " + fileName);
 
@@ -579,7 +580,7 @@ public class CreateWebContentWizard extends CreateContentWizard
          {
             try
             {
-               path = ret.getOutputPathForRendition(this.formInstanceData, cwd);
+               path = ret.getOutputPathForRendition(this.formInstanceData, cwd, contentName);
                
                if (logger.isDebugEnabled())
                   logger.debug("About to render path: " + path);

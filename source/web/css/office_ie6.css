@@ -1,7 +1,8 @@
 .header {
-   padding: 5px 0px 0px 4px;
-   margin: 0px 0px 0px -1px;
    height: 16px;
+   margin: 0px 0px 0px -1px;
+   padding: 5px 0px 0px 4px;
+   width: 260px;
 }
 
 .tabBar .help {
@@ -9,9 +10,9 @@
 }
 
 .toggle {
+   left: -3px;
    margin-top: 0px;
    position: relative;
-   left: -3px;
 }
 
 .containerBig, .containerBigAlt, .containerMedium, .containerSmall, .containerSearchTerms, .containerSearchResults, .containerTabMedium, #currentSpaceInfo, #myAlfrescoActions, #navigationActions, #documentActions {
@@ -24,4 +25,8 @@
 
 .tabBarInline, .tabHeader, .taggedFound {
    margin: 0px 1px;
+}
+
+.taskResources {
+   width: 268px;
 }

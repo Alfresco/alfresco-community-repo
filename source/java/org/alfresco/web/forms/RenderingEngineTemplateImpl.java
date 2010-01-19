@@ -214,10 +214,11 @@ public class RenderingEngineTemplateImpl
     *
     * @param formInstanceData the form instance data to use for the rendition path.
     * @param currentAVMPath the current path in which the form is being created.
+    * @param name the name which is used in a pattern
     *
     * @return the output path to use for renditions.
     */
-   public String getOutputPathForRendition(final FormInstanceData formInstanceData, final String currentAVMPath)
+   public String getOutputPathForRendition(final FormInstanceData formInstanceData, final String currentAVMPath, final String name)
    {
       final ServiceRegistry sr = this.getServiceRegistry();
       final AVMService avmService = sr.getAVMLockingAwareService();
@@ -234,8 +235,7 @@ public class RenderingEngineTemplateImpl
           : null);
       root.put("webapp", webappName);
 
-      final String formInstanceDataName = formInstanceData.getName();
-      root.put("name", formInstanceDataName.replaceAll("(.+)\\..*", "$1"));
+      root.put("name", name);
       root.put("extension", 
                sr.getMimetypeService().getExtension(this.getMimetypeForRendition()));
       Document formInstanceDataDocument = null;
@@ -268,7 +268,7 @@ public class RenderingEngineTemplateImpl
       {
          logger.error(te.getMessage(), te);
          throw new AlfrescoRuntimeException("Error processing output path pattern " + outputPathPattern + 
-                                            " for " + formInstanceDataName + 
+                                            " for " + name + 
                                             " in webapp " + webappName +
                                             ":\n" + te.getMessage(), 
                                             te);

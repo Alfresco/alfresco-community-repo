@@ -295,12 +295,12 @@ var OfficeNavigation =
    
    saveOK: function()
    {
-		// Shortcut for double-event firing issue
-		if (this.popupPanel === null)
-		{
-			return;
-		}
-		
+      // Shortcut for double-event firing issue
+      if (this.popupPanel === null)
+      {
+         return;
+      }
+
       var filename = $('saveFilename').value.trim(),
          currentPath = this.popupPanel.currentPath,
          cancelSave = false;

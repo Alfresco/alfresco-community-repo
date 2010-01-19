@@ -236,7 +236,7 @@ var OpenOffice = new Class(
       with (this)
       {
          var newUrl = params.folderPath + "callexternal?extcall=&action=" + methodName 
-            + "&path=" + path + "&ts=" + new Date().getTime() 
+            + "&path=" + encodeURIComponent(path) + "&ts=" + new Date().getTime() 
             + (params.ticket != "" ? "&ticket=" + params.ticket : "");
          logDebug('doExternalCall', 'url=' + newUrl);
          $("if_externalComponenetMethodCall").src = newUrl;
@@ -249,7 +249,7 @@ var OpenOffice = new Class(
       with (this)
       {
          var newUrl = params.folderPath + "callexternal?extcall=&action=" + methodName 
-            + "&path=" + path + "&filename=" + filename + "&ts=" + new Date().getTime() 
+            + "&path=" + encodeURIComponent(path) + "&filename=" + encodeURIComponent(filename) + "&ts=" + new Date().getTime() 
             + (params.ticket != "" ? "&ticket=" + params.ticket : "");
          logDebug('doExternalCallEx', 'url=' + newUrl);
          $("if_externalComponenetMethodCall").src = newUrl;

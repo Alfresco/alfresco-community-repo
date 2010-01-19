@@ -51,7 +51,7 @@ var OfficeMyAlfresco =
          // register 'click' event for each task
          task.addEvent('click', function(e)
          {
-            window.location.href = window.serviceContextPath + "/office/myTasks" + OfficeAddin.defaultQuery + "&t=" + task.id;
+            window.location.href = window.serviceContextPath + "/office/myTasks" + OfficeAddin.defaultQuery + "&t=" + encodeURIComponent(task.id);
          });
       });
 

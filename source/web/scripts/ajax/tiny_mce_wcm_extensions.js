@@ -57,7 +57,7 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
     }
   
     // handle URL issue with IE (WCM-1134)
-    if (tinyMCE.isMSIE)
+    if (navigator.appName == "Microsoft Internet Explorer" || tinyMCE.isMSIE)
     {
       var server = document.location.protocol + "//" + document.location.host;
       if (href.startsWith(server))

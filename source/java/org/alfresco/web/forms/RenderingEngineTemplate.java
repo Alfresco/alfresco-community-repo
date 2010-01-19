@@ -72,10 +72,11 @@ public interface RenderingEngineTemplate
     * @param formInstanceData the form instance data to use for 
     * processing the pattern.
     * @param currentAVMPath the current path where the form is being created.
+    * @param name the name which is used in a pattern
     * @return the output path for the rendition.
     */
    public String getOutputPathForRendition(final FormInstanceData formInstanceData,
-                                           final String currentAVMPath);
+                                           final String currentAVMPath, final String name);
 
    /**
     * Returns the mimetype to use when generating content for this

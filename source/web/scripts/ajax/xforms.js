@@ -967,9 +967,21 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     $each(this.widget.getElementsByTagName("img"), 
           function(img, index)
           {
-            if (img.getAttribute("src") && img.getAttribute("src").match("^/"))
+		  
+            var href = img.getAttribute("src");
+            //Fix for ETHREEOH-1211
+            if (navigator.appName == "Microsoft Internet Explorer" || tinyMCE.isMSIE)
             {
-              img.setAttribute("src", alfresco.constants.AVM_WEBAPP_URL + img.getAttribute("src"));
+              var server = document.location.protocol + "//" + document.location.host;
+              if (href.startsWith(server))
+              {
+                href = href.substring(server.length);
+              }
+            }
+
+            if (href && href.match("^/"))
+            {
+              img.setAttribute("src", alfresco.constants.AVM_WEBAPP_URL + href);
             }
           });
           
@@ -4755,7 +4767,6 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   height: -1,
   auto_resize: false,
   force_p_newlines: false,
-  forced_root_block:false,
   encoding: "UTF-8",
   entity_encoding: "raw",
   add_unload_trigger: false,

@@ -40,7 +40,7 @@ var OfficeMyTasks =
             }
          });
       }
-		
+      
       if ($('wrkDueDate'))
       {
          var dueDate = new DatePicker($('wrkDueDate'),
@@ -118,7 +118,10 @@ var OfficeMyTasks =
                // highlight the item title
                task.addClass('taskItemSelected');
 
-               OfficeAddin.showStatusText("Loading task...", "ajax_anim.gif", false);
+               if (!window.queryObject.st)
+               {
+                  OfficeAddin.showStatusText("Loading task...", "ajax_anim.gif", false);
+               }
 
                // ajax call to load task details               
                var actionURL = window.serviceContextPath + "/office/myTasksDetail" + OfficeAddin.defaultQuery + "&t=" + task.id.replace(/\./, "$");
@@ -128,7 +131,10 @@ var OfficeMyTasks =
                   headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
                   onComplete: function(textResponse, xmlResponse)
                   {
-                     OfficeAddin.hideStatusText();
+                     if (!window.queryObject.st)
+                     {
+                        OfficeAddin.hideStatusText();
+                     }
                      $("taskDetails").innerHTML = textResponse;
                   }
                }).request();
@@ -221,15 +227,15 @@ var OfficeMyTasks =
       }
       
       OfficeAddin.showStatusText("Starting workflow...", "ajax_anim.gif", false);
-      var actionURL = commandURL + "?a=workflow&n=" + Doc;
-      actionURL += "&wt=" + wrkType;
-      actionURL += "&at=" + wrkAssignTo;
+      var actionURL = commandURL + "?a=workflow&n=" + encodeURIComponent(Doc);
+      actionURL += "&wt=" + encodeURIComponent(wrkType);
+      actionURL += "&at=" + encodeURIComponent(wrkAssignTo);
       // Date supplied?
       if (wrkDueDate !== "")
       {
-         actionURL += "&dd=" + wrkDueDate;
+         actionURL += "&dd=" + encodeURIComponent(wrkDueDate);
       }
-      actionURL += "&desc=" + wrkDescription;
+      actionURL += "&desc=" + encodeURIComponent(wrkDescription);
       var myAjax = new Ajax(actionURL,
       {
          method: 'get',
@@ -253,7 +259,7 @@ var OfficeMyTasks =
    },
    
    /* AJAX call to perform server-side actions */
-   runAction: function(useTemplate, action, nodeId, confirmMsg)
+   runTaskAction: function(useTemplate, action, nodeId, confirmMsg)
    {
       // Re-select a selected task after reload
       var taskSel = $E('#taskList .taskItemSelected'),

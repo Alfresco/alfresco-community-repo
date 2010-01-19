@@ -29,13 +29,9 @@ var OfficeSearch =
       {
          strFound = "No items found";
       }
-      else if (shownResults < totalResults)
-      {
-         strFound = "Showing first " + shownResults + " of " + totalResults + " total items found";
-      }
       else
       {
-         strFound = "Showing all " + shownResults + " items found";
+         strFound = shownResults + " items found";
       }
       $('itemsFound').innerHTML = strFound;
    },

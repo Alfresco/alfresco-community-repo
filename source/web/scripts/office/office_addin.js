@@ -16,7 +16,7 @@ var OfficeAddin =
       window.serviceContextPath = OfficeAddin.getServiceContextPath();
 
       /* Update needed after page load? */      
-      if(this.queryObject.st)
+      if (this.queryObject.st)
       {
          var objResponse = Json.evaluate(this.queryObject.st),
             imgSuccess = (objResponse.statusCode ? "action_successful.gif" : "action_failed.gif"),
@@ -72,10 +72,10 @@ var OfficeAddin =
          });
          if (fadeOut)
          {
-            fx.onComplete = function()
+            fx.chain(function()
             {
                OfficeAddin.hideStatusText.delay(OfficeAddin.STATUS_FADE);
-            };
+            });
          }
          var fxBackground = (typeof colBackground == "undefined") ? "#ffffcc" : colBackground;
          fx.start(fxBackground, "#ffffff");
@@ -103,7 +103,7 @@ var OfficeAddin =
    },
    runAction: function(httpMethod, useTemplate, action, nodeId, confirmMsg, inParams, outParams)
    {
-      if ((confirmMsg !== null) && (confirmMsg !== ""))
+      if (confirmMsg && confirmMsg !== "")
       {
          if (!window.confirm(confirmMsg))
          {
@@ -258,34 +258,5 @@ var OfficeAddin =
       }
    }
 };
-
-function htmlWordWrap(elementId, lineWidth, sentence)
-{
-   if(!elementId || (elementId.length < 1) || !sentence || (sentence.length < 1) || (lineWidth <= 0))
-   {
-      return;
-   }
-
-   var result = "";
-   var i = 0;
-
-   for(; (sentence.length - i) >= lineWidth; i += lineWidth)
-   {
-      result += sentence.substr(i, lineWidth) + "<br />";
-   }
-   if((sentence.length - i) > 0)
-   {
-      result += sentence.substr(i, (sentence.length - i));
-   }
-   else
-   {
-      result = result.substr(0, (result.length - 6));
-   }
-   var nameElement = document.getElementById(elementId);
-   if(undefined != nameElement)
-   {
-      nameElement.innerHTML = result;
-   }
-}
 
 window.addEvent('domready', OfficeAddin.init);

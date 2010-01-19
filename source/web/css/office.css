@@ -70,6 +70,13 @@ input.button {
    overflow-x: hidden;
 }
 
+.ellipsis {
+   margin: 0; 
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
 .tabBar {
    float: left;
    width: 100%;

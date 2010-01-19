@@ -258,7 +258,7 @@ import org.xml.sax.SAXException;
          try
          {
             renditionLockedBefore = false;
-            path = ret.getOutputPathForRendition(this, originalParentAvmPath);
+            path = ret.getOutputPathForRendition(this, originalParentAvmPath, getName());
             
             if (logger.isDebugEnabled())
                logger.debug("regenerating rendition of " + this.getPath() + 

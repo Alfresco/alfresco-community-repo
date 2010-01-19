@@ -106,7 +106,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    private final static String DATE_ATTR = Repository.escapeQName(ContentModel.PROP_ARCHIVED_DATE);
    
    private final static String SEARCH_ALL  = "PARENT:\"%s\" AND ASPECT:\"%s\"";
-   private final static String SEARCH_NAME = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":*%s*";
+   private final static String SEARCH_NAME = "PARENT:\"%s\" AND ASPECT:\"%s\" AND (@" + NAME_ATTR + ":*%s* @" + NAME_ATTR + ":\"*%s*\")";
    private final static String SEARCH_TEXT = "PARENT:\"%s\" AND ASPECT:\"%s\" AND TEXT:%s";
    private final static String SEARCH_NAME_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":\"%s\"";
    private final static String SEARCH_TEXT_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND TEXT:\"%s\"";
@@ -628,7 +628,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
             }
             else
             {
-               query = String.format(SEARCH_NAME, property.getArchiveRootRef(), ContentModel.ASPECT_ARCHIVED, safeText);
+               query = String.format(SEARCH_NAME, property.getArchiveRootRef(), ContentModel.ASPECT_ARCHIVED, safeText, safeText);
             }
          }
          else

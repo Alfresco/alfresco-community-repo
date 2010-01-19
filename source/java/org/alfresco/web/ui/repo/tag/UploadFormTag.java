@@ -33,6 +33,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.BaseServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -77,7 +78,7 @@ public class UploadFormTag extends TagSupport
             out.write(req.getContextPath());
             out.write("/uploadFileServlet'>\n");
             out.write("<input type='hidden' name='return-page' value='");
-            out.write(req.getContextPath() + "/faces" + req.getServletPath());
+            out.write(req.getContextPath() + BaseServlet.FACES_SERVLET + req.getServletPath());
             out.write("'>\n");
          }
       }

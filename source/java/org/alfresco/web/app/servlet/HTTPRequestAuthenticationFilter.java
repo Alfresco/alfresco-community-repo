@@ -208,7 +208,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
             if (logger.isDebugEnabled())
                 logger.debug("Login page requested, chaining ...");
 
-            resp.sendRedirect(req.getContextPath() + "/faces/jsp/browse/browse.jsp");
+            resp.sendRedirect(req.getContextPath() + BaseServlet.FACES_SERVLET + FacesHelper.BROWSE_VIEW_ID);
             return;
         }
         else

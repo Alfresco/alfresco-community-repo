@@ -58,7 +58,7 @@
                styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" 
                altRowStyleClass="recordSetRowAlt" width="100%" pageSize="10"
                initialSortColumn="name" initialSortDescending="true"
-               rendered="#{not empty DialogManager.bean.resources}">
+               rendered="#{not empty DialogManager.bean.resources}" refreshOnBind="true">
       
       <%-- Name column --%>
       <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left">

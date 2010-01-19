@@ -65,8 +65,11 @@ public class DeleteSpaceDialog extends BaseDialogBean
    private static final String DELETE_CONTENTS = "contents";
    
    private String deleteMode = DELETE_ALL; 
+   private boolean executeRules = true;
+   private boolean archiveNodes = true;
    
    protected boolean hasMultipleParents = false;
+
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -99,81 +102,103 @@ public class DeleteSpaceDialog extends BaseDialogBean
          if (logger.isDebugEnabled())
             logger.debug("Trying to delete space: " + node.getId() + " using delete mode: " + this.deleteMode);
          
-         if (DELETE_ALL.equals(this.deleteMode))
+         try
          {
-            NodeRef nodeRef = node.getNodeRef();
-            if (this.getNodeService().exists(nodeRef))
+            if (!this.executeRules)
             {
-               // The node still exists
-               this.getNodeService().deleteNode(node.getNodeRef());
+               Repository.getServiceRegistry(context).getRuleService().disableRules();
             }
-         }
-         else
-         {
-            List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(node.getNodeRef(), 
-                  ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            List<NodeRef> deleteRefs = new ArrayList<NodeRef>(childRefs.size());
-            for (ChildAssociationRef ref : childRefs)
+            if (DELETE_ALL.equals(this.deleteMode))
             {
-               NodeRef nodeRef = ref.getChildRef();
-               
+               NodeRef nodeRef = node.getNodeRef();
+               // Check the node still exists
                if (this.getNodeService().exists(nodeRef))
                {
-                  if (DELETE_CONTENTS.equals(this.deleteMode))
+                  if (!this.archiveNodes)
                   {
-                     deleteRefs.add(nodeRef);
+                     this.getNodeService().addAspect(node.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
                   }
-                  else
+                  this.getNodeService().deleteNode(node.getNodeRef());
+               }
+            }
+            else
+            {
+               List<ChildAssociationRef> childRefs = this.getNodeService().getChildAssocs(node.getNodeRef(), 
+                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+               List<NodeRef> deleteRefs = new ArrayList<NodeRef>(childRefs.size());
+               for (ChildAssociationRef ref : childRefs)
+               {
+                  NodeRef nodeRef = ref.getChildRef();
+                  
+                  if (this.getNodeService().exists(nodeRef))
                   {
-                     // find it's type so we can see if it's a node we are interested in
-                     QName type = this.getNodeService().getType(nodeRef);
-                     
-                     // make sure the type is defined in the data dictionary
-                     TypeDefinition typeDef = this.getDictionaryService().getType(type);
-                     
-                     if (typeDef != null)
+                     if (DELETE_CONTENTS.equals(this.deleteMode))
                      {
-                        if (DELETE_FOLDERS.equals(this.deleteMode))
+                        deleteRefs.add(nodeRef);
+                     }
+                     else
+                     {
+                        // find it's type so we can see if it's a node we are interested in
+                        QName type = this.getNodeService().getType(nodeRef);
+                        
+                        // make sure the type is defined in the data dictionary
+                        TypeDefinition typeDef = this.getDictionaryService().getType(type);
+                        
+                        if (typeDef != null)
                         {
-                           // look for folder type
-                           if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
-                               this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                           if (DELETE_FOLDERS.equals(this.deleteMode))
                            {
-                              deleteRefs.add(nodeRef);
+                              // look for folder type
+                              if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER) == true && 
+                                  this.getDictionaryService().isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                              {
+                                 deleteRefs.add(nodeRef);
+                              }
                            }
-                        }
-                        else if (DELETE_FILES.equals(this.deleteMode))
-                        {
-                           // look for content file type
-                           if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT))
+                           else if (DELETE_FILES.equals(this.deleteMode))
                            {
-                              deleteRefs.add(nodeRef);
+                              // look for content file type
+                              if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT))
+                              {
+                                 deleteRefs.add(nodeRef);
+                              }
                            }
                         }
                      }
                   }
                }
+               
+               // delete the list of refs
+               TransactionService txService = Repository.getServiceRegistry(context).getTransactionService();
+               for (NodeRef nodeRef : deleteRefs)
+               {
+                  UserTransaction tx = null;
+         
+                  try
+                  {
+                     tx = txService.getNonPropagatingUserTransaction();
+                     tx.begin();
+                     
+                     if (!this.archiveNodes)
+                     {
+                        this.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
+                     }
+                     this.getNodeService().deleteNode(nodeRef);
+                     
+                     tx.commit();
+                  }
+                  catch (Throwable err)
+                  {
+                     try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
+                  }
+               }
             }
-            
-            // delete the list of refs
-            TransactionService txService = Repository.getServiceRegistry(context).getTransactionService();
-            for (NodeRef nodeRef : deleteRefs)
+         }
+         finally
+         {
+            if (!this.executeRules)
             {
-               UserTransaction tx = null;
-      
-               try
-               {
-                  tx = txService.getNonPropagatingUserTransaction();
-                  tx.begin();
-                  
-                  this.getNodeService().deleteNode(nodeRef);
-                  
-                  tx.commit();
-               }
-               catch (Throwable err)
-               {
-                  try { if (tx != null) {tx.rollback();} } catch (Exception ex) {}
-               }
+               Repository.getServiceRegistry(context).getRuleService().enableRules();
             }
          }
       }
@@ -272,5 +297,37 @@ public class DeleteSpaceDialog extends BaseDialogBean
    public boolean getHasMultipleParents()
    {
       return this.hasMultipleParents;
+   }
+
+   /**
+    * @return true to execute rules during delete
+    */
+   public boolean getExecuteRules()
+   {
+      return this.executeRules;
+   }
+   
+   /**
+    * @param executeRules execute rules during delete
+    */
+   public void setExecuteRules(boolean executeRules)
+   {
+      this.executeRules = executeRules;
+   }
+
+   /**
+    * @return true to archive nodes during delete
+    */
+   public boolean getArchiveNodes()
+   {
+      return this.archiveNodes;
+   }
+
+   /**
+    * @param archiveNodes archive nodes during delete
+    */
+   public void setArchiveNodes(boolean archiveNodes)
+   {
+      this.archiveNodes = archiveNodes;
    }
 }

@@ -31,6 +31,7 @@ import javax.portlet.RenderResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.User;
 import org.apache.myfaces.portlet.DefaultViewSelector;
 
@@ -47,7 +48,7 @@ public class AlfrescoDefaultViewSelector implements DefaultViewSelector
       User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
       if (user != null && user.getUserName().equals(AuthenticationUtil.getGuestUserName()))
       {
-         return "/jsp/browse/browse.jsp";
+         return FacesHelper.BROWSE_VIEW_ID;
       }
       else
       {

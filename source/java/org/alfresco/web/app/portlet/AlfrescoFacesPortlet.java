@@ -50,6 +50,7 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.AuthenticationStatus;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.LoginBean;
@@ -291,7 +292,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                }
                else
                {
-                  nonFacesRequest(request, response, "/jsp/browse/browse.jsp");
+                  nonFacesRequest(request, response, FacesHelper.BROWSE_VIEW_ID);
                }
             }
             else
@@ -423,7 +424,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       {
          ViewHandler viewHandler = context.getApplication().getViewHandler();
          // TODO: configure the portlet error return page
-         UIViewRoot view = viewHandler.createView(context, "/jsp/browse/browse.jsp");
+         UIViewRoot view = viewHandler.createView(context, FacesHelper.BROWSE_VIEW_ID);
          context.setViewRoot(view);
       }
 

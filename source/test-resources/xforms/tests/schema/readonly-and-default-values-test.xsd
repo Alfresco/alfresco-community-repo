@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:alf="http://www.alfresco.org"
+           elementFormDefault="qualified">
+  <xs:simpleType name="five_string_values">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="readonly-and-default-values">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="elements">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="fixed_string" type="xs:normalizedString" fixed="fixed string element value"/>
+              <xs:element name="default_string" type="xs:normalizedString" default="default string element value"/>
+              <xs:element name="fixed_integer" type="xs:integer" fixed="3"/>
+              <xs:element name="default_integer" type="xs:integer" default="3"/>
+              <xs:element name="fixed_date" type="xs:date" fixed="1978-08-08"/>
+              <xs:element name="default_date" type="xs:date" default="1978-08-08"/>
+              <xs:element name="fixed_time" type="xs:time" fixed="14:45:00"/>
+              <xs:element name="default_time" type="xs:time" default="14:45:00"/>
+              <xs:element name="fixed_radio" type="five_string_values" fixed="three">
+                <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:element>
+              <xs:element name="default_radio" type="five_string_values" default="three">
+                <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:element>
+              <xs:element name="fixed_combobox" type="five_string_values" fixed="three">
+                <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:element>
+              <xs:element name="default_combobox" type="five_string_values" default="three">
+                <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:element>
+              <xs:element name="fixed_textarea" type="xs:string" fixed="fixed string value"/>
+              <xs:element name="default_textarea" type="xs:string" default="default string value"/>
+              <xs:element name="fixed_checkbox" type="xs:boolean" fixed="true"/>
+              <xs:element name="default_checkbox" type="xs:boolean" default="true"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="attributes">
+          <xs:complexType>
+              <xs:attribute name="fixed_string" type="xs:normalizedString" fixed="fixed string attribute value"/>
+              <xs:attribute name="default_string" type="xs:normalizedString" default="default string attribute value"/>
+              <xs:attribute name="fixed_integer" type="xs:integer" fixed="3"/>
+              <xs:attribute name="default_integer" type="xs:integer" default="3"/>
+              <xs:attribute name="fixed_date" type="xs:date" fixed="1978-08-08"/>
+              <xs:attribute name="default_date" type="xs:date" default="1978-08-08"/>
+              <xs:attribute name="fixed_time" type="xs:time" fixed="14:45:00"/>
+              <xs:attribute name="default_time" type="xs:time" default="14:45:00"/>
+              <xs:attribute name="fixed_radio" type="five_string_values" fixed="three">
+                <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:attribute>
+              <xs:attribute name="default_radio" type="five_string_values" default="three">
+                <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:attribute>
+              <xs:attribute name="fixed_combobox" type="five_string_values" fixed="three">
+                <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:attribute>
+              <xs:attribute name="default_combobox" type="five_string_values" default="three">
+                <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+              </xs:attribute>
+              <xs:attribute name="fixed_textarea" type="xs:string" fixed="fixed attribute value"/>
+              <xs:attribute name="default_textarea" type="xs:string" default="default attribute value"/>
+              <xs:attribute name="fixed_checkbox" type="xs:boolean" fixed="true"/>
+              <xs:attribute name="default_checkbox" type="xs:boolean" default="true"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

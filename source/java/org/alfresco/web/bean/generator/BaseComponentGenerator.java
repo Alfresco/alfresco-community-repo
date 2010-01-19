@@ -45,6 +45,7 @@ import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -331,6 +332,12 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
          if (getControlType() == ControlType.FIELD)
          {
             multiValueComponent.setRendererType(RepoConstants.ALFRESCO_FACES_FIELD_RENDERER);
+            
+            // set flag to indicate the wrapped field is multilingual, if necessary
+            if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+            {
+                multiValueComponent.getAttributes().put("mltext", Boolean.TRUE);
+            }
          }
          else
          {

@@ -78,3 +78,13 @@
       <f:selectItem itemValue="contents" itemLabel="#{msg.delete_op_contents}" />
    </h:selectOneRadio>
 </h:panelGrid>
+
+<a:booleanEvaluator value="#{NavigationBean.currentUser.admin}">
+   <h:outputText value="#{msg.options}" styleClass="mainSubTitle" />
+   <h:panelGrid columns="2" cellpadding="1" cellspacing="1" border="0">
+      <h:outputText value="#{msg.delete_execute_rules}:" />
+      <h:selectBooleanCheckbox value="#{DialogManager.bean.executeRules}" />
+      <h:outputText value="#{msg.delete_archive_nodes}:" />
+      <h:selectBooleanCheckbox value="#{DialogManager.bean.archiveNodes}" />
+   </h:panelGrid>
+</a:booleanEvaluator>

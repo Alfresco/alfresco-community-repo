@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -96,8 +98,6 @@ public abstract class BaseServlet extends HttpServlet
    
    private static Log logger = LogFactory.getLog(BaseServlet.class);
    
-   // Tenant service
-   private static TenantService m_tenantService;
    
    /**
     * Return the ServiceRegistry helper instance
@@ -309,66 +309,69 @@ public abstract class BaseServlet extends HttpServlet
     * @param args    The elements of the path to lookup
     * @param decode  True to decode the arg from UTF-8 format, false for no decoding
     */
-   private static NodeRef resolveWebDAVPath(WebApplicationContext wc, String[] args, boolean decode)
+   private static NodeRef resolveWebDAVPath(final WebApplicationContext wc, final String[] args, final boolean decode)
    {
-      NodeRef nodeRef = null;
+      return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+      {
+         public NodeRef doWork() throws Exception
+         {
+            NodeRef nodeRef = null;
+            
+            List<String> paths = new ArrayList<String>(args.length - 1);
 
-      List<String> paths = new ArrayList<String>(args.length - 1);
-      
-      FileInfo file = null;
-      try
-      {
-         // create a list of path elements (decode the URL as we go)
-         for (int x = 1; x < args.length; x++)
-         {
-            paths.add(decode ? URLDecoder.decode(args[x]) : args[x]);
+            FileInfo file = null;
+            try
+            {
+               // create a list of path elements (decode the URL as we go)
+               for (int x = 1; x < args.length; x++)
+               {
+                  paths.add(decode ? URLDecoder.decode(args[x]) : args[x]);
+               }
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Attempting to resolve webdav path: " + paths);
+
+               // get the company home node to start the search from
+               nodeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+               
+               TenantService tenantService = (TenantService)wc.getBean("tenantService");         
+               if (tenantService != null && tenantService.isEnabled())
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("MT is enabled.");
+                  
+                  NodeService nodeService = (NodeService) wc.getBean("NodeService");
+                  SearchService searchService = (SearchService) wc.getBean("SearchService");
+                  NamespaceService namespaceService = (NamespaceService) wc.getBean("NamespaceService");
+                  
+                  // TODO: since these constants are used more widely than just the WebDAVServlet, 
+                  // they should be defined somewhere other than in that servlet
+                  String rootPath = wc.getServletContext().getInitParameter(org.alfresco.repo.webdav.WebDAVServlet.KEY_ROOT_PATH);
+                  
+                  // note: rootNodeRef is required (for storeRef part)
+                  nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, nodeRef);
+               }
+               
+               if (paths.size() != 0)
+               {
+                  FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
+                  file = ffs.resolveNamePath(nodeRef, paths);
+                  nodeRef = file.getNodeRef();
+               }
+               
+               if (logger.isDebugEnabled())
+                  logger.debug("Resolved webdav path to NodeRef: " + nodeRef);
+            }
+            catch (FileNotFoundException fne)
+            {
+               if (logger.isWarnEnabled())
+                  logger.warn("Failed to resolve webdav path", fne);
+               
+               nodeRef = null;
+            }
+            return nodeRef;
          }
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Attempting to resolve webdav path: " + paths);
-         
-         // get the company home node to start the search from
-         nodeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
-         
-         m_tenantService = (TenantService) wc.getBean("tenantService");         
-         if (m_tenantService !=null && m_tenantService.isEnabled())
-         {
-        	 if (logger.isDebugEnabled())
-        	 {
-        	     logger.debug("MT is enabled.");
-        	 }
-        	 
-             NodeService nodeService = (NodeService) wc.getBean("NodeService");
-             SearchService searchService = (SearchService) wc.getBean("SearchService");
-             NamespaceService namespaceService = (NamespaceService) wc.getBean("NamespaceService");
-             
-             // TODO: since these constants are used more widely than just the WebDAVServlet, 
-             // they should be defined somewhere other than in that servlet
-             String m_rootPath = wc.getServletContext().getInitParameter(org.alfresco.repo.webdav.WebDAVServlet.KEY_ROOT_PATH);
-             
-             // note: rootNodeRef is required (for storeRef part)
-             nodeRef = m_tenantService.getRootNode(nodeService, searchService, namespaceService, m_rootPath, nodeRef);
-         }
-         
-         if (paths.size() != 0)
-         {
-            FileFolderService ffs = (FileFolderService)wc.getBean("FileFolderService");
-            file = ffs.resolveNamePath(nodeRef, paths);
-            nodeRef = file.getNodeRef();
-         }
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Resolved webdav path to NodeRef: " + nodeRef);
-      }
-      catch (FileNotFoundException fne)
-      {
-         if (logger.isWarnEnabled())
-            logger.warn("Failed to resolve webdav path", fne);
-         
-         nodeRef = null;
-      }
-      
-      return nodeRef;
+      }, AuthenticationUtil.getSystemUserName());
    }
    
    /**

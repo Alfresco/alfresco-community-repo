@@ -25,6 +25,7 @@
 package org.alfresco.web.ui.repo.renderer;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
@@ -51,6 +52,7 @@ public class MultiValueFieldRenderer extends BaseMultiValueRenderer
       out.write("<tr><td>");
    }
 
+   @SuppressWarnings("unchecked")
    @Override
    protected void renderPostWrappedComponent(FacesContext context, ResponseWriter out, 
          UIMultiValueEditor editor) throws IOException
@@ -59,6 +61,19 @@ public class MultiValueFieldRenderer extends BaseMultiValueRenderer
       out.write(Application.getMessage(context, MSG_ADD_TO_LIST_BUTTON));
       out.write("' onclick=\"");
       out.write(generateFormSubmit(context, editor, Integer.toString(UIMultiValueEditor.ACTION_ADD)));
-      out.write("\"/></td></tr>");
+      out.write("\"/>");
+      
+      // if the wrapped component is an mltext field add the icon
+      if (editor.getAttributes().get("mltext") != null)
+      {
+          String tooltip = Application.getMessage(context, "marker_tooltip");
+          out.write("<img src='");
+          out.write(context.getExternalContext().getRequestContextPath());
+          out.write("/images/icons/multilingual_marker.gif' title='");
+          out.write(tooltip);
+          out.write("' style='margin-left:6px; vertical-align:-2px;'>");
+      }
+      
+      out.write("</td></tr>");
    }
 }

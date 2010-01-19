@@ -26,6 +26,7 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,9 @@ import org.springframework.extensions.config.ConfigService;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.logging.Log;
@@ -128,17 +132,44 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onLoginComplete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     @Override
-    protected boolean onLoginComplete(HttpServletRequest req, HttpServletResponse res)
+    protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
         throws IOException
     {
         // If the original URL requested was the login page then redirect to the browse view
-        if (req.getRequestURI().endsWith(getLoginPage()) == true)
+        if (userInit || req.getRequestURI().endsWith(getLoginPage()))
         {
-            if (logger.isDebugEnabled())
-                logger.debug("Login page requested, redirecting to browse page");
-
-            //  Redirect to the browse view
-            res.sendRedirect(req.getContextPath() + "/faces/jsp/browse/browse.jsp");
+            if (logger.isDebugEnabled() && req.getRequestURI().endsWith(getLoginPage()))
+                logger.debug("Login page requested - redirecting to initially configured page");
+            if (logger.isDebugEnabled() && userInit)
+                logger.debug("Session reinitialised - redirecting to initially configured page");
+            
+            FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
+            ConfigService configService = Application.getConfigService(fc);
+            ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
+            String location = configElement.getInitialLocation();
+            
+            String preference = (String)PreferencesService.getPreferences(fc).getValue("start-location");
+            if (preference != null)
+            {
+                location = preference;
+            }
+            
+            if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
+            {
+                // Clear previous location - Fixes the issue ADB-61
+                NavigationBean navigationBean = (NavigationBean)FacesHelper.getManagedBean(fc, "NavigationBean");
+                if (navigationBean != null)
+                {
+                    navigationBean.setLocation(null);
+                    navigationBean.setToolbarLocation(null);
+                }
+                res.sendRedirect(req.getContextPath() + BaseServlet.FACES_SERVLET + "/jsp/dashboards/container.jsp");
+            }
+            else
+            {
+                res.sendRedirect(req.getContextPath() + BaseServlet.FACES_SERVLET + FacesHelper.BROWSE_VIEW_ID);
+            }
+            
             return false;
         }
         else

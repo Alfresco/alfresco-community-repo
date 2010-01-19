@@ -48,6 +48,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class FacesHelper
 {
+   /** Root browse screen JSF view ID */
+   public static final String BROWSE_VIEW_ID = "/jsp/browse/browse.jsp";
+   
    private static Log logger = LogFactory.getLog(FacesHelper.class);
 
    /**
@@ -138,7 +141,7 @@ public final class FacesHelper
       // set a new viewRoot, otherwise context.getViewRoot returns null
       if (viewRoot == null)
       {
-         viewRoot = "/jsp/browse/browse.jsp";
+         viewRoot = FacesHelper.BROWSE_VIEW_ID;
       }
       
       UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, viewRoot);

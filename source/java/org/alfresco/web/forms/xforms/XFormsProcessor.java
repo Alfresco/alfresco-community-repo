@@ -232,20 +232,20 @@ public class XFormsProcessor implements FormProcessor
          SimpleDateFormat.getDateInstance(DateFormat.SHORT, 
                                           Application.getLanguage(fc));
       js.append("alfresco.xforms.constants.DATE_FORMAT = '").
-         append(sdf.toLocalizedPattern()).
+         append(sdf.toPattern()).
          append("';\n");
       sdf = (SimpleDateFormat)
          SimpleDateFormat.getTimeInstance(DateFormat.SHORT, 
                                           Application.getLanguage(fc));
       js.append("alfresco.xforms.constants.TIME_FORMAT = '").
-         append(sdf.toLocalizedPattern()).
+         append(sdf.toPattern()).
          append("';\n");
       sdf = (SimpleDateFormat)
          SimpleDateFormat.getDateTimeInstance(DateFormat.SHORT, 
                                               DateFormat.SHORT, 
                                               Application.getLanguage(fc));
       js.append("alfresco.xforms.constants.DATE_TIME_FORMAT = '").
-         append(sdf.toLocalizedPattern()).
+         append(sdf.toPattern()).
          append("';\n");
       for (String[] ns : JS_NAMESPACES)
       {

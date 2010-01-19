@@ -165,6 +165,9 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
             generateAllAssociationFields(nodeRef, form);
             generateTransientFields(nodeRef, form);
         }
+        
+        // process working copy nodes, just returns if it's not
+        processWorkingCopy(nodeRef, form);
     }
 
     /**

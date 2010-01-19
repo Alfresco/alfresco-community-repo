@@ -167,7 +167,7 @@ public interface SiteService
      * @param componentId               component id
      * @param containerType             container type to create (can be null)
      * @param containerProperties       container property values (can be null)
-     * @return
+     * @return noderef of container or null if a container can't be created.
      */
     NodeRef createContainer(String shortName, String componentId, QName containerType, Map<QName, Serializable> containerProperties);
     

@@ -403,6 +403,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 }
                 else if (SiteVisibility.MODERATED.equals(visibility) == true)
                 {
+                    // for moderated site EVERYONE has consumer access but site components do not.
                     permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
                 }
                 permissionService.setPermission(siteNodeRef,
@@ -504,6 +505,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * 
      * @param shortName     site short name
      * @param permission    permission name
+     * @param withGroupPrefix - should the name have the GROUP_ prefix?
      * @return String site permission group name
      */
     public String getSiteRoleGroup(String shortName, String permission, boolean withGroupPrefix)
@@ -889,7 +891,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     public void updateSite(SiteInfo siteInfo)
     {
-        NodeRef siteNodeRef = getSiteNodeRef(siteInfo.getShortName());
+        String shortName = siteInfo.getShortName();
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
             throw new SiteServiceException(MSG_CAN_NOT_UPDATE, new Object[]{siteInfo.getShortName()});            
@@ -908,6 +911,10 @@ public class SiteServiceImpl implements SiteService, SiteModel
         SiteVisibility updatedVisibility = siteInfo.getVisibility();
         if (currentVisibility.equals(updatedVisibility) == false)
         {
+            // visibility has changed   
+            logger.debug("site:" + shortName + " visibility has changed from: " + currentVisibility + "to: " + updatedVisibility);
+            
+            // visibility has changed.
             // Remove current visibility permissions
             if (SiteVisibility.PUBLIC.equals(currentVisibility) == true)
             {
@@ -916,8 +923,16 @@ public class SiteServiceImpl implements SiteService, SiteModel
             else if (SiteVisibility.MODERATED.equals(currentVisibility) == true)
             {
                 this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
-                //this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES);
-                // TODO update all child folders ?? ...
+                
+                /**
+                 * update the containers
+                 */
+                List<FileInfo> folders = fileFolderService.listFolders(siteNodeRef);
+                for(FileInfo folder : folders)
+                {
+                    NodeRef containerNodeRef = folder.getNodeRef();
+                    this.permissionService.setInheritParentPermissions(containerNodeRef, true);   
+                }
             }
             
             // Add new visibility permissions
@@ -928,8 +943,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
             else if (SiteVisibility.MODERATED.equals(updatedVisibility) == true)
             {
                 this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
-                //this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
-                // TODO update all child folders ?? ...
+                /**
+                 * update the containers
+                 */
+                List<FileInfo> folders = fileFolderService.listFolders(siteNodeRef);
+                for(FileInfo folder : folders)
+                {
+                    NodeRef containerNodeRef = folder.getNodeRef();
+                    setModeratedPermissions(shortName, containerNodeRef);
+                }
             }
             
             // Update the site node reference with the updated visibility value
@@ -1452,6 +1474,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
+        
+        // Update the isPublic flag
+        SiteVisibility siteVisibility = getSiteVisibility(siteNodeRef);
 
         // retrieve component folder within site
         NodeRef containerNodeRef = null;
@@ -1492,13 +1517,41 @@ public class SiteServiceImpl implements SiteService, SiteModel
             aspectProps.put(SiteModel.PROP_COMPONENT_ID, componentId);
             this.nodeService.addAspect(containerNodeRef, ASPECT_SITE_CONTAINER,
                     aspectProps);
-
+            
+            // Set permissions on the container
+            if(SiteVisibility.MODERATED.equals(siteVisibility))
+            {
+                setModeratedPermissions(shortName, containerNodeRef);
+            }
+            
             // Make the container a tag scope
             this.taggingService.addTagScope(containerNodeRef);
         }
 
         return containerNodeRef;
     }
+    
+    /**
+     * Moderated sites have separate ACLs on each component and don't inherit from the
+     * site which has consumer role for everyone.
+     */    
+    private void setModeratedPermissions(String shortName, NodeRef containerNodeRef)   
+    {
+
+        this.permissionService.setInheritParentPermissions(containerNodeRef, false);
+    
+        Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+        for (String permission : permissions)
+        {
+            String permissionGroup = getSiteRoleGroup(shortName, permission, true);
+            // Assign the group the relevant permission on the site
+            permissionService.setPermission(containerNodeRef, permissionGroup, permission, true);
+        }  
+        permissionService.setPermission(containerNodeRef,
+            PermissionService.ALL_AUTHORITIES,
+            PermissionService.READ_PERMISSIONS, true);
+    }
+
 
     /**
      * @see org.alfresco.service.cmr.site.SiteService#getContainer(java.lang.String)
@@ -1531,12 +1584,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.service.cmr.site.SiteService#hasContainer(java.lang.String)
      */
-    public boolean hasContainer(String shortName, String componentId)
+    public boolean hasContainer(final String shortName, final String componentId)
     {
         ParameterCheck.mandatoryString("componentId", componentId);
 
         // retrieve site
-        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
@@ -1545,15 +1598,33 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // retrieve component folder within site
         // NOTE: component id is used for folder name
         boolean hasContainer = false;
-        try
+        
+        NodeRef containerRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
-            findContainer(siteNodeRef, componentId);
+            public NodeRef doWork() throws Exception
+            {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                {
+                    public NodeRef execute() throws Exception
+                    {
+                        try 
+                        {
+                            return findContainer(siteNodeRef, componentId);
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                            return null;
+                        }
+                    }
+                }, true);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+            
+        if(containerRef != null)
+        {
             hasContainer = true;
-        } 
-        catch (FileNotFoundException e)
-        {
         }
-
+        
         return hasContainer;
     }
 

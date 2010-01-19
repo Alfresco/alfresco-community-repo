@@ -467,7 +467,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(siteInfo);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
     }
-    
+       
     public void testUpdateSite()
     {
         SiteInfo siteInfo = new SiteInfoImpl(TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", SiteVisibility.PRIVATE, null);
@@ -1031,7 +1031,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         siteInfo = this.siteService.getSite("testSiteVisibilityModeratedSite");
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testSiteVisibilityModeratedSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
         //  - are the permissions correct for non-members?
-        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, true);
+        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, false);
         
         // Create a private site
         siteInfo = createTestSiteWithContent("testSiteVisibilityPrivateSite", "testComp", SiteVisibility.PRIVATE);
@@ -1051,7 +1051,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         //  - check the updated sites visibility
         siteInfo = this.siteService.getSite("testSiteVisibilityChangeSite");
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testSiteVisibilityChangeSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
-        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, true);
+        testVisibilityPermissions("Testing visibility of moderated site", USER_TWO, siteInfo, true, false);
         
         // Switch from moderated -> private
         changeSite.setVisibility(SiteVisibility.PRIVATE);
@@ -1106,11 +1106,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             
             if (siteInList == true)
             {
-                // Can site content be read by the user?
-                NodeRef folder = this.siteService.getContainer(siteInfo.getShortName(), "testComp");
-                List<FileInfo> files = null;  
                 try
                 {
+                    // Can site content be read by the user?
+                    NodeRef folder = this.siteService.getContainer(siteInfo.getShortName(), "testComp");
+                    List<FileInfo> files = null;  
+                    
                     files = this.fileFolderService.listFiles(folder);
                     if (readSite == false)
                     {
@@ -1260,6 +1261,36 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
         	// Should go here
         }  
+    }
+
+    /**
+     * Create a private site.
+     *
+     * Attempt to access a private site by someone that is not a consumer of that site.
+     * 
+     */
+    public void testETHREEOH_1268()
+    {
+        // USER_ONE - SiteManager
+        // GROUP_TWO - Manager
+        
+        String siteName = "testALFCOM_XXXX";
+        
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+        
+        SiteInfo si = this.siteService.getSite(siteName);
+        
+        assertNotNull("site info is null", si);
+        
+        authenticationComponent.setCurrentUser(USER_TWO);
+        
+        si = this.siteService.getSite(siteName);
+        
+        assertNull("site info is not null", si);
+        
+        
+        
     }
 
     

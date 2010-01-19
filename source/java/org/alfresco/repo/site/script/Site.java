@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -372,16 +373,23 @@ public class Site implements Serializable
      * 
      * @param componentId
      * @return node representing the "container" folder (or null, if for some reason 
-     *         the container can not be created)
+     *         the container can not be created - probably due to permissions)
      */
     public ScriptNode getContainer(String componentId)
     {
     	ScriptNode container = null;
-		NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
-		if (containerNodeRef != null)
-		{
-		    container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
-		}
+    	try
+    	{
+    	    NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
+    	    if (containerNodeRef != null)
+    	    {
+    	        container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
+    	    }
+    	}
+        catch (AccessDeniedException ade)
+        {
+            return null;
+        }
     	return container;
     }
     
@@ -417,7 +425,6 @@ public class Site implements Serializable
      */
     public ScriptNode createContainer(final String componentId, final String folderType, final Object permissions)
     {
-        ScriptNode container = null;
         NodeRef containerNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception
@@ -460,9 +467,16 @@ public class Site implements Serializable
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
         
-        // Create the script node for the container
-        container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
-        return container;       
+        if (Site.this.serviceRegistry.getPermissionService().hasPermission(containerNodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED) 
+        {
+            return getContainer(componentId); 
+        }
+        else
+        {
+            // current user has no access.
+            return null;
+        }          
+    
     }
     
     /**

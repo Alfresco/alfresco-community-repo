@@ -128,8 +128,15 @@ public class MultilingualDocumentAspect implements
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        // First unhook it
-        multilingualContentService.unmakeTranslation(nodeRef);
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+        {
+            // We just let it get deleted
+        }
+        else
+        {
+            // First unhook it
+            multilingualContentService.unmakeTranslation(nodeRef);
+        }
     }
 
     /**

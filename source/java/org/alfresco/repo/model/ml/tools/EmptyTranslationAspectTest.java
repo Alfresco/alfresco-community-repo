@@ -93,6 +93,7 @@ public class EmptyTranslationAspectTest extends AbstractMultilingualTestCases {
         
         empty = multilingualContentService.addEmptyTranslation(pivot, "empty_" + System.currentTimeMillis(), Locale.CHINESE);
         
+        nodeService.getParentAssocs(empty);
         nodeService.deleteNode(empty);
         
         // Ensure that the empty translation is removed from the workspace

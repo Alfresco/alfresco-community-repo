@@ -11,13 +11,14 @@ function getTreenode(siteId, path)
    try
    {
       var items = new Array(),
-         hasSubfolders,
+         hasSubfolders = true,
          ignoredTypes =
          {
             "{http://www.alfresco.org/model/forum/1.0}forum": true,
             "{http://www.alfresco.org/model/forum/1.0}topic": true,
             "{http://www.alfresco.org/model/content/1.0}systemfolder": true
-         };
+         },
+         evalChildFolders = args["children"] !== "false";
    
       // Use helper function to get the arguments
       var parsedArgs = ParseArgs.getParsedArgs();
@@ -27,11 +28,14 @@ function getTreenode(siteId, path)
       }
 
       // Look for folders in the parentNode
-      for each(item in parsedArgs.parentNode.children)
+      for each (item in parsedArgs.parentNode.children)
       {
          if (item.isSubType("cm:folder") && !(item.type in ignoredTypes))
          {
-            hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
+            if (evalChildFolders)
+            {
+               hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
+            }
             
             items.push(
             {

@@ -243,7 +243,7 @@ public class PropertyValueDAOTest extends TestCase
                 return null;
             }
         };
-        txnHelper.doInTransaction(emptyStringCallback, true);
+        txnHelper.doInTransaction(emptyStringCallback, false);
     }
     
     public void testPropertyDoubleValue() throws Exception
@@ -736,7 +736,7 @@ public class PropertyValueDAOTest extends TestCase
                 }
                 return null;
             }
-        }, true);
+        }, false);
         // Create a well-known context ID
         final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
         {
@@ -744,7 +744,7 @@ public class PropertyValueDAOTest extends TestCase
             {
                 return propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
             }
-        }, true);
+        }, false);
         // Check that duplicates are disallowed
         try
         {
@@ -755,7 +755,7 @@ public class PropertyValueDAOTest extends TestCase
                     propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
                     return null;
                 }
-            }, true);
+            }, false);
             fail("Failed to throw exception creating duplicate property unique context");
         }
         catch (PropertyUniqueConstraintViolation e)
@@ -777,7 +777,7 @@ public class PropertyValueDAOTest extends TestCase
                     propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
                     return null;
                 }
-            }, true);
+            }, false);
             fail("Failed to throw exception creating duplicate property unique context");
         }
         catch (PropertyUniqueConstraintViolation e)
@@ -794,6 +794,6 @@ public class PropertyValueDAOTest extends TestCase
                 
                 return null;
             }
-        }, true);
+        }, false);
     }
 }

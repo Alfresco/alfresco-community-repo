@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 
 
 /**
@@ -297,20 +298,16 @@ class AVMCrawler implements Runnable
         }
         catch (Exception e)
         {
-            if (e instanceof AVMNotFoundException)
+            if ((e instanceof AVMNotFoundException) ||
+                (e instanceof AVMException) ||
+                (e instanceof ContentIOException) ||
+                (e instanceof ConcurrencyFailureException))
             {
-                logger.info(e.getMessage());
+                logger.warn(e.getMessage());
                 return;
             }
+            
             e.printStackTrace(System.err);
-            if (e instanceof AVMException)
-            {
-                return;
-            }
-            if (e instanceof ContentIOException)
-            {
-                return;
-            }
             throw new AVMException("Failure", e);
         }
     }

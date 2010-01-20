@@ -36,6 +36,9 @@ import org.springframework.extensions.surf.util.Pair;
  */
 public class PropertyStringValueEntity
 {
+    public static final String EMPTY_STRING = "";
+    public static final String EMPTY_STRING_REPLACEMENT = ".empty";
+    
     private Long id;
     private String stringValue;
     private String stringEndLower;
@@ -82,7 +85,14 @@ public class PropertyStringValueEntity
     
     public Pair<Long, String> getEntityPair()
     {
-        return new Pair<Long, String>(id, stringValue);
+        if (stringValue != null && stringValue.equals(PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT))
+        {
+            return new Pair<Long, String>(id, PropertyStringValueEntity.EMPTY_STRING);
+        }
+        else
+        {
+            return new Pair<Long, String>(id, stringValue);
+        }
     }
     
     /**
@@ -93,6 +103,11 @@ public class PropertyStringValueEntity
         if (value == null)
         {
             throw new IllegalArgumentException("Null strings cannot be persisted");
+        }
+        if (value != null && value.equals(PropertyStringValueEntity.EMPTY_STRING))
+        {
+            // Oracle: We can't insert empty strings into the column.
+            value = PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT;
         }
         stringValue = value;
         // Calculate the crc value from the original value

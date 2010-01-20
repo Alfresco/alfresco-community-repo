@@ -40,6 +40,15 @@
                         <RecordValue key="value.2" dataExtractor="simpleValue"/>
                         <GenerateValue key="value.3" dataGenerator="systemTime"/>
                     </AuditPath>
+                    <AuditPath key="4.3">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="4.4">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                    <AuditPath key="4.5">
+                        <RecordValue key="value.1" dataExtractor="simpleValue"/>
+                    </AuditPath>
                 </AuditPath>
                 <AuditPath key="3.2">
                     <AuditPath key="4.1">

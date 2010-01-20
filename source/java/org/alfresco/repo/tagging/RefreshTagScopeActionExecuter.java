@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 /**
  * Refresh tag scope action executer
  * 
- * NOTE:  This action is used to facilitate the async refresh of a tag scope.  It is not intended for genereral useage.
+ * NOTE:  This action is used to facilitate the async refresh of a tag scope.  It is not intended for general usage.
  * 
  * @author Roy Wetherall
  */

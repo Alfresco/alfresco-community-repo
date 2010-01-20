@@ -100,7 +100,7 @@ INSERT INTO t_qnames (qname)
 
 -- Extract the namespace and localnames from the QNames
 UPDATE t_qnames SET namespace = 'FILLER-'||SUBSTR(qname, 2, STRPOS(qname, '}')-2);
-UPDATE t_qnames SET localname = SUBSTRING(qname FROM '[^}]*$');
+UPDATE t_qnames SET localname = SUBSTRING(qname FROM position('}' in qname)+1);
 
 -- Move the Namespaces to their new home
 INSERT INTO alf_namespace (id, uri, version)
@@ -176,7 +176,7 @@ UPDATE t_qnames_dyn SET namespace = 'FILLER-'||SUBSTR(qname, 2, STRPOS(qname, '}
 
 -- Extract the Localname
 -- Query OK, 415312 rows affected (16.22 sec)
-UPDATE t_qnames_dyn SET local_name = SUBSTRING(qname FROM '[^}]*$');
+UPDATE t_qnames_dyn SET local_name = SUBSTRING(qname FROM position('}' in qname)+1);
 
 -- Move the namespaces to the their new home
 -- Query OK, 4 rows affected (34.59 sec)

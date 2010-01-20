@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -126,5 +126,11 @@ class LookupComponent
     public void setNode(AVMNode node)
     {
         fNode = node;
+    }
+    
+    // for debug
+    public String toString()
+    {
+        return (fNode != null ? fNode.toString(null) : "");
     }
 }

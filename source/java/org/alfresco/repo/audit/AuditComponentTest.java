@@ -194,11 +194,13 @@ public class AuditComponentTest extends TestCase
             public Void execute() throws Throwable
             {
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
-                values.put("/2.1/3.1/4.1", new Long(41));
-                values.put("/2.1/3.1/4.2", "42");
-                values.put("/2.1/3.1/4.2", new Date());
+                values.put("/3.1/4.1", new Long(41));
+                values.put("/3.1/4.2", "42");
+                values.put("/3.1/4.3", new Date());
+                values.put("/3.1/4.4", "");
+                values.put("/3.1/4.5", null);
                 
-                auditComponent.recordAuditValues("/test/1.1", values);
+                auditComponent.recordAuditValues("/test/one.one/two.one", values);
                 
                 return null;
             }

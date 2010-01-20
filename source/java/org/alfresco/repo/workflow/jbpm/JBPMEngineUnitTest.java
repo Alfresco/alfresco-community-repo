@@ -82,20 +82,21 @@ public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
     private JBPMEngine engine = new JBPMEngine();
 
     private WorkflowDefinition workflowDef;
-
+    
     public void testDeployWorkflow() throws Exception
     {
         ClassPathResource processDef = new ClassPathResource("jbpmresources/test_processdefinition.xml");
         List<WorkflowDefinition> workflowDefs = engine.getDefinitions();
         assertFalse(engine.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         assertNotNull(workflowDefs);
-        assertTrue(workflowDefs.size() == 0);
+        
+        int workflowDefCnt = workflowDefs.size();
 
         deployTestDefinition();
         assertTrue(engine.isDefinitionDeployed(processDef.getInputStream(), MimetypeMap.MIMETYPE_XML));
         workflowDefs = engine.getDefinitions();
         assertNotNull(workflowDefs);
-        assertTrue(workflowDefs.size() == 1);
+        assertEquals(workflowDefCnt+1, workflowDefs.size());
 
         assertNotNull(workflowDef);
         assertEquals(TEST_JBPM_ENGINE + "$test", workflowDef.name);
@@ -390,8 +391,13 @@ public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
     {
         NamespaceServiceMemoryImpl namespace = new NamespaceServiceMemoryImpl();
         namespace.registerNamespace(NamespaceService.DEFAULT_PREFIX, NamespaceService.DEFAULT_URI);
+        
         namespace.registerNamespace("wf", "http://www.alfresco.org/model/bpm/1.0");
         namespace.registerNamespace("cm", "http://www.alfresco.org/model/content/1.0");
+        namespace.registerNamespace("wcmwf", "http://www.alfresco.org/model/wcmworkflow/1.0");
+        namespace.registerNamespace("imwf", "http://www.alfresco.org/model/workflow/invite/moderated/1.0");
+        namespace.registerNamespace("inwf", "http://www.alfresco.org/model/workflow/invite/nominated/1.0");
+        
         return namespace;
     }
 
@@ -435,7 +441,7 @@ public class JBPMEngineUnitTest extends AbstractTransactionalSpringContextTests
     @Override
     protected String[] getConfigLocations()
     {
-        String[] locations = new String[] { "classpath:jbpm-test/test-database-context.xml",
+        String[] locations = new String[] {
                     "classpath:jbpm-test/test-workflow-context.xml", };
         return locations;
     }

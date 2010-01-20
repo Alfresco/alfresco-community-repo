@@ -38,14 +38,14 @@
         
     </insert>
 
-    <insert id="insert_PropertySerializableValue" parameterClass="PropertySerializableValue" >
+    <insert id="insert_PropertySerializableValue" parameterMap="parameter_IdPropertySerializableValue" >
         
         <selectKey resultClass="long" keyProperty="id">
             select nextVal('alf_prop_serializable_value_seq')
         </selectKey>
         
         insert into alf_prop_serializable_value (id, serializable_value) 
-        values (#id#, #serializableValue#)
+        values (?, ?)
         
     </insert>
 
@@ -60,15 +60,11 @@
         
     </insert>
 
-    <insert id="insert_PropertyRoot" parameterClass="PropertyRoot" >
-        
-        <selectKey resultClass="long" keyProperty="id">
+    <insert id="insert_PropertyRoot" parameterMap="parameter_IdPropertyRoot" >
+        <selectKey resultClass="long" keyProperty="id" type="pre">
             select nextVal('alf_prop_root_seq')
         </selectKey>
-        
-        insert into alf_prop_root (id, version) 
-        values (#id#, #version#)
-        
+        <include refid="insert_PropertyValue_Sequence"/>
     </insert>
 
     <insert id="insert_PropertyUniqueContext" parameterClass="PropertyUniqueContext" >

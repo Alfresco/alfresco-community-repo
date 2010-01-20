@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -318,6 +319,11 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     continue;
                 }
             }
+            // Trim strings
+            if (arg instanceof String)
+            {
+                arg = SchemaBootstrap.trimStringForTextFields((String)arg);
+            }
             // It is named and recordable
             namedArgs.put(params[i], arg);
         }
@@ -380,6 +386,11 @@ public class AuditMethodInterceptor implements MethodInterceptor
         }
         if (ret != null)
         {
+            if (ret instanceof String)
+            {
+                // Make sure the string fits
+                ret = SchemaBootstrap.trimStringForTextFields((String) ret);
+            }
             if (ret instanceof Serializable)
             {
                 auditData.put(AUDIT_SNIPPET_RESULT, (Serializable) ret);
@@ -404,7 +415,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
             StringBuilder sb = new StringBuilder(1024);
             StackTraceUtil.buildStackTrace(
                     thrown.getMessage(), thrown.getStackTrace(), sb, Integer.MAX_VALUE);
-            auditData.put(AUDIT_SNIPPET_ERROR, sb.toString());
+            auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
             
             // An exception will generally roll the current transaction back
             RetryingTransactionCallback<Map<String, Serializable>> auditCallback =

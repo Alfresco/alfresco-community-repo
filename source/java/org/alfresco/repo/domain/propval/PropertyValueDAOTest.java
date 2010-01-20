@@ -222,7 +222,13 @@ public class PropertyValueDAOTest extends TestCase
         assertNotNull(stringUpperEntityPair.getFirst());
         assertEquals(stringValueUpper, stringUpperEntityPair.getSecond());
         assertNotSame("String IDs were not different", stringEntityPair.getFirst(), stringUpperEntityPair.getFirst());
-        
+    }
+    
+    /**
+     * Try to catch Oracle out
+     */
+    public void testPropertyStringValue_EmptyAndNull() throws Exception
+    {
         // Check empty string
         RetryingTransactionCallback<Void> emptyStringCallback = new RetryingTransactionCallback<Void>()
         {
@@ -705,7 +711,9 @@ public class PropertyValueDAOTest extends TestCase
     {
         final String aaa = GUID.generate();
         final String bbb = GUID.generate();
-        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
+        
+        // Check null-null-null context
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
@@ -726,37 +734,66 @@ public class PropertyValueDAOTest extends TestCase
                 {
                     // Expected
                 }
-                Long id = propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
-                try
+                return null;
+            }
+        }, true);
+        // Create a well-known context ID
+        final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                return propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+            }
+        }, true);
+        // Check that duplicates are disallowed
+        try
+        {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
                 {
                     propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
-                    fail("Failed to throw exception creating duplicate property unique context");
+                    return null;
                 }
-                catch (PropertyUniqueConstraintViolation e)
+            }, true);
+            fail("Failed to throw exception creating duplicate property unique context");
+        }
+        catch (PropertyUniqueConstraintViolation e)
+        {
+            // Expected
+        }
+        // Check that updates work
+        try
+        {
+            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
                 {
-                    // Expected
-                }
-                // Now update it
-                propertyValueDAO.updatePropertyUniqueContext(id, "A", "AA", bbb);
-                // Should be able to create the previous one ...
-                propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
-                // ... and fail to create the second one
-                try
-                {
+                    // Now update it
+                    propertyValueDAO.updatePropertyUniqueContext(id, "A", "AA", bbb);
+                    // Should be able to create the previous one ...
+                    propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                    // ... and fail to create the second one
                     propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
-                    fail("Failed to throw exception creating duplicate property unique context");
+                    return null;
                 }
-                catch (PropertyUniqueConstraintViolation e)
-                {
-                    // Expected
-                }
+            }, true);
+            fail("Failed to throw exception creating duplicate property unique context");
+        }
+        catch (PropertyUniqueConstraintViolation e)
+        {
+            // Expected
+        }
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
                 // Delete
                 propertyValueDAO.deletePropertyUniqueContext(id);
                 propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
                 
                 return null;
             }
-        };
-        txnHelper.doInTransaction(testCallback, false);
+        }, true);
     }
 }

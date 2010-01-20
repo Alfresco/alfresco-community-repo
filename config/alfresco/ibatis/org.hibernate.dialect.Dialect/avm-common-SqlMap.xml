@@ -201,6 +201,21 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
+    <parameterMap id="parameter_IdStorePropertyPatternMap" class="AVMStoreProperty">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="actualType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="isMultiValued" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <parameter property="doubleValue" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+        <parameter property="stringValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+        <parameter property="avmStoreId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
     
     <!--                -->
     <!-- SQL Snippets   -->
@@ -254,6 +269,11 @@
     <insert id="insert_AVMVersionLayeredNodeEntry">
         insert into avm_version_layered_node_entry (version_root_id, md5sum, path)
         values (#versionRootId#, #md5sum#, #path#)
+    </insert>
+
+    <insert id="insert_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
+        insert into avm_node_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, node_id, qname_id)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     </insert>
 
     <!--                      -->

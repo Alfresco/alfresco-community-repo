@@ -47,6 +47,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 
 public class ImporterComponentTest extends BaseSpringTest
@@ -124,9 +125,9 @@ public class ImporterComponentTest extends BaseSpringTest
         String modifiedDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIED));
         String modifier = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIER));
         // Check that the cm:auditable properties are correct
-        assertEquals("cm:created not preserved during import", "2009-05-01T00:00:00.000+01:00", createdDate);
+        assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-01T00:00:00.000+01:00")), createdDate);
         assertEquals("cm:creator not preserved during import", "Import Creator", creator);
-        assertEquals("cm:modified not preserved during import", "2009-05-02T00:00:00.000+01:00", modifiedDate);
+        assertEquals("cm:modified not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-02T00:00:00.000+01:00")), modifiedDate);
         assertEquals("cm:modifier not preserved during import", "Import Modifier", modifier);
         
         nodeRef = childAssocs.get(1).getChildRef();
@@ -136,7 +137,7 @@ public class ImporterComponentTest extends BaseSpringTest
         modifiedDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIED));
         modifier = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIER));
         // Check that the cm:auditable properties are correct
-        assertEquals("cm:created not preserved during import", "2009-05-01T00:00:00.000+01:00", createdDate);
+        assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-01T00:00:00.000+01:00")), createdDate);
         assertEquals("cm:creator not preserved during import", "Import Creator", creator);
         assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getSystemUserName(), modifier);
     }

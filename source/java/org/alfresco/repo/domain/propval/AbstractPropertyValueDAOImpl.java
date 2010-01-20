@@ -40,6 +40,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
@@ -467,6 +468,14 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         if (value == null)
         {
             throw new IllegalArgumentException("Persisted string values cannot be null");
+        }
+        int maxStringLen = SchemaBootstrap.getMaxStringLength();
+        if (value.length() > maxStringLen)
+        {
+            throw new IllegalArgumentException(
+                    "Persisted string values for 'alf_prop_string_value' cannot be longer than "
+                    + maxStringLen + " characters.  Increase the string column sizes and set property " +
+                    "'system.maximumStringLength' accordingly.");
         }
         Pair<Long, String> entityPair = propertyStringValueCache.getOrCreateByValue(value);
         return entityPair;
@@ -1149,7 +1158,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
         catch (Throwable e)
         {
-            throw new PropertyUniqueConstraintViolation(value1, value2, value3);
+            throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
         }
     }
 

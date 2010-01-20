@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -76,12 +76,12 @@ public class JSONtoFmModelTest extends TestCase
         
         String test3_expected_out =
         "doc:class java.util.HashMap\n" +
-        "\tghi:123:class java.lang.Integer\n" +
-        "\tmno:true:class java.lang.Boolean\n" +
-        "\tqrs:Sat Nov 05 13:15:30 GMT 1994:class java.util.Date\n" +
-        "\tdef:world:class java.lang.String\n" +
         "\tabc:hello:class java.lang.String\n" +
-        "\tjkl:123.456:class java.lang.Double\n";
+        "\tdef:world:class java.lang.String\n" +
+        "\tghi:123:class java.lang.Integer\n" +
+        "\tjkl:123.456:class java.lang.Double\n" +
+        "\tmno:true:class java.lang.Boolean\n" +
+        "\tqrs:Sat Nov 05 13:15:30 GMT 1994:class java.util.Date\n";
         
         String test4_in =
         "{" +
@@ -109,29 +109,29 @@ public class JSONtoFmModelTest extends TestCase
         
         String test4_expected_out =
         "glossary:class java.util.HashMap\n" +
-        "\ttitle:example glossary:class java.lang.String\n" +
         "\tGlossDiv:class java.util.HashMap\n" +
-        "\t\ttitle:S:class java.lang.String\n" +
         "\t\tGlossList:class java.util.HashMap\n" +
         "\t\t\tGlossEntry:class java.util.HashMap\n" +
-        "\t\t\t\tGlossTerm:Standard Generalized Markup Language:class java.lang.String\n" +
-        "\t\t\t\tSortAs:SGML:class java.lang.String\n" +
         "\t\t\t\tAbbrev:ISO 8879:1986:class java.lang.String\n" +
+        "\t\t\t\tAcronym:SGML:class java.lang.String\n" +
         "\t\t\t\tGlossDef:class java.util.HashMap\n" +
-        "\t\t\t\t\tpara:A meta-markup language, used to create markup languages such as DocBook.:class java.lang.String\n" +
         "\t\t\t\t\t[\n" +
         "\t\t\t\t\tGML:class java.lang.String\n" +
         "\t\t\t\t\tXML:class java.lang.String\n" +
         "\t\t\t\t\tANO1:class java.lang.String\n" +
         "\t\t\t\t\tANO2:class java.lang.String\n" +
         "\t\t\t\t\t]\n" +
-        "\t\t\t\tAcronym:SGML:class java.lang.String\n" +
+        "\t\t\t\t\tpara:A meta-markup language, used to create markup languages such as DocBook.:class java.lang.String\n" +
         "\t\t\t\tGlossSee:markup:class java.lang.String\n" +
-        "\t\t\t\tID:SGML:class java.lang.String\n";
+        "\t\t\t\tGlossTerm:Standard Generalized Markup Language:class java.lang.String\n" +
+        "\t\t\t\tID:SGML:class java.lang.String\n" +
+        "\t\t\t\tSortAs:SGML:class java.lang.String\n" +
+        "\t\ttitle:S:class java.lang.String\n" +
+        "\ttitle:example glossary:class java.lang.String\n";
         
         try
         {
-            Configuration cfg = new Configuration();       
+            Configuration cfg = new Configuration();
             cfg.setObjectWrapper(ObjectWrapper.DEFAULT_WRAPPER);
             
             String userDir = System.getProperty("user.dir");
@@ -148,7 +148,7 @@ public class JSONtoFmModelTest extends TestCase
             //System.out.println(JSONtoFmModel.toString(root));
             assertEquals(test1_expected_out, JSONtoFmModel.toString(root));
             
-            Template temp = cfg.getTemplate("test1.ftl");          
+            Template temp = cfg.getTemplate("test1.ftl");
             Writer out = new OutputStreamWriter(System.out);
             temp.process(root, out);
             out.flush();  
@@ -162,14 +162,14 @@ public class JSONtoFmModelTest extends TestCase
             root = JSONtoFmModel.convertJSONObjectToMap(test2_in);
             //System.out.println(JSONtoFmModel.toString(root));
             assertEquals(test2_expected_out, JSONtoFmModel.toString(root));
-
-            temp = cfg.getTemplate("test2.ftl");          
+            
+            temp = cfg.getTemplate("test2.ftl");
             out = new OutputStreamWriter(System.out);
             temp.process(root, out);
             out.flush();  
             
             System.out.println("\n\n\n");
-
+            
             // Test 3
             System.out.println("TEST 3");
             //System.out.println(test3_in);
@@ -178,10 +178,10 @@ public class JSONtoFmModelTest extends TestCase
             //System.out.println(JSONtoFmModel.toString(root));
             assertEquals(test3_expected_out, JSONtoFmModel.toString(root));
             
-            temp = cfg.getTemplate("test3.ftl");          
+            temp = cfg.getTemplate("test3.ftl");
             out = new OutputStreamWriter(System.out);
             temp.process(root, out);
-            out.flush();  
+            out.flush();
             
             // Test 4
             System.out.println("TEST 4");
@@ -191,10 +191,10 @@ public class JSONtoFmModelTest extends TestCase
             //System.out.println(JSONtoFmModel.toString(root));
             assertEquals(test4_expected_out, JSONtoFmModel.toString(root));
             
-            temp = cfg.getTemplate("test4.ftl");          
+            temp = cfg.getTemplate("test4.ftl");
             out = new OutputStreamWriter(System.out);
             temp.process(root, out);
-            out.flush();  
+            out.flush();
         }
         catch (Exception e)
         {

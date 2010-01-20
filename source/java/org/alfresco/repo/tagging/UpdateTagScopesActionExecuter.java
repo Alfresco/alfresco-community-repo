@@ -49,7 +49,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 /**
  * Update tag scopes action executer.
  * 
- * NOTE:  This action is used to facilitate the async update of tag scopes.  It is not intended for genereral useage.
+ * NOTE:  This action is used to facilitate the async update of tag scopes.  It is not intended for general usage.
  * 
  * @author Roy Wetherall
  */

@@ -69,6 +69,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.remote.RepoRemote;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -3985,6 +3986,84 @@ public class AVMServiceTest extends AVMServiceTestBase
             throw e;
         }
     }
+    
+    public void testLayeredFile4() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainB:/", "a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            // note: unlike WCM, edit staging directly (ie. don't bother with mainA--layer for now)
+            fService.createFile("mainA:/a", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainA:/a/foo"));
+            out.println("I am mainA:/a/foo");
+            out.close();
+            
+            fService.createSnapshot("mainA", null, null);
+            
+            // note: WCM does not expose layered file (between web project staging sandboxes)
+            fService.createLayeredFile("mainA:/a/foo", "mainB:/a", "foo");
+            
+            
+            AVMNodeDescriptor foo = fService.lookup(-1, "mainB--layer:/a/foo");
+            assertEquals(1, foo.getVersionID());
+            assertTrue(foo.isLayeredFile());
+            
+            ContentData cData = fService.getContentDataForRead(foo);
+            assertNotNull(cData);
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB--layer:/a/foo")));
+            String line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            
+            foo = fService.lookup(-1, "mainB:/a/foo");
+            assertEquals(1, foo.getVersionID());
+            assertTrue(foo.isLayeredFile());
+            
+            cData = fService.getContentDataForRead(foo);
+            assertNotNull(cData);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainB:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+            
+            
+            foo = fService.lookup(-1, "mainA:/a/foo");
+            assertEquals(1, foo.getVersionID());
+            assertTrue(foo.isPlainFile());
+            
+            cData = fService.getContentDataForRead(foo);
+            assertNotNull(cData);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "mainA:/a/foo")));
+            line = reader.readLine();
+            reader.close();
+            assertEquals("I am mainA:/a/foo", line);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
 
     /**
      * Test rename.
@@ -5084,6 +5163,152 @@ public class AVMServiceTest extends AVMServiceTestBase
             throw e;
         }
     }
+    
+    public void testVersionedRead2() throws Exception
+    {
+        try
+        {
+            assertNull(fService.lookup(-1, "main:/foo"));
+            assertNull(fService.lookup(-1, "main:/afoo"));
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/afoo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            PrintStream out = new PrintStream(fService.createFile("main:/", "foo"));
+            out.print("version1");
+            out.close();
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/foo")));
+            assertEquals("version1", reader.readLine());
+            reader.close();
+            
+            fService.createLayeredFile("main:/foo", "main:/", "afoo");
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, "main:/afoo")));
+            assertEquals("version1", reader.readLine());
+            reader.close();
+            
+            fService.createSnapshot("main", null, null);
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(1, "main:/foo")));
+            assertEquals("version1", reader.readLine());
+            reader.close();
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(1, "main:/afoo")));
+            assertEquals("version1", reader.readLine());
+            reader.close();
+            
+            assertEquals(8, fService.lookup(-1, "main:/foo").getLength());
+            
+            out = new PrintStream(fService.getFileOutputStream("main:/foo"));
+            out.print("version2");
+            out.close();
+            
+            fService.createSnapshot("main", null, null);
+            
+            fService.createSnapshot("main", null, null);
+            
+            fService.removeNode("main:/foo");
+            
+            fService.createSnapshot("main", null, null);
+            
+            // check versions of the plain file (main:/foo)
+            
+            try
+            {
+                fService.getFileInputStream(0, "main:/foo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(1, "main:/foo")));
+            assertEquals("version1", reader.readLine());
+            reader.close();
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(2, "main:/foo")));
+            assertEquals("version2", reader.readLine());
+            reader.close();
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(3, "main:/foo")));
+            assertEquals("version2", reader.readLine());
+            reader.close();
+            
+            try
+            {
+                fService.getFileInputStream(4, "main:/foo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/foo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            // check versions of the layered file (main:/afoo)
+            
+            try
+            {
+                fService.getFileInputStream(0, "main:/afoo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(1, "main:/afoo")));
+            assertEquals("version1", reader.readLine());
+            reader.close();
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(2, "main:/afoo")));
+            assertEquals("version2", reader.readLine());
+            reader.close();
+            reader = new BufferedReader(new InputStreamReader(fService.getFileInputStream(3, "main:/afoo")));
+            assertEquals("version2", reader.readLine());
+            reader.close();
+            
+            try
+            {
+                fService.getFileInputStream(4, "main:/afoo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                fService.getFileInputStream(-1, "main:/afoo");
+                fail();
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
 
     /**
      * Test rename of an overlayed directory contained in an overlayed directory.
@@ -6011,6 +6236,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createStore("third");
             fService.setStoreProperty("third", QName.createQName("", ".dns.someUPPERcase"), new PropertyValue(null, "someUPPERcase-space"));
             matches = fService.queryStoresPropertyKeys(QName.createQName("", ".dns.someuppercase%"));
+            assertNotNull(matches.get("third"));
             assertEquals(1, matches.get("third").size());
             assertEquals("someUPPERcase-space", matches.get("third").get(QName.createQName(null, ".dns.someUPPERcase")).getStringValue());
         }

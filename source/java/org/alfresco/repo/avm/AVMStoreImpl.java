@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -224,9 +225,14 @@ public class AVMStoreImpl implements AVMStore
                 AVMDAOs.Instance().fVersionRootDAO.update(lastVersion);
             }
             snapShotMap.put(getName(), lastVersion.getVersionID());
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("createSnapshot: no snapshot required: "+me.getName()+(tag != null ? "("+tag+")" : "")+" [lastVersion = "+lastVersion.getVersionID()+"]");
+            }
+            
             return snapShotMap;
         }
-        
         if (logger.isTraceEnabled())
         {
             logger.trace("createSnapshot: snapshot: "+me.getName()+" ["+me.getId()+"] - lastVersion="+lastVersion.getVersionID()+", layeredEntries="+layeredEntries.size());
@@ -260,20 +266,9 @@ public class AVMStoreImpl implements AVMStore
             else if (lookup.getCurrentNode().getType() == AVMNodeType.LAYERED_FILE)
             {
                 String parentName[] = AVMUtil.splitBase(entry.getPath());
-                parentName[0] = parentName[0].substring(parentName[0].indexOf(':') + 1);
+                AVMNode child = lookup.getCurrentNode();
+                DirectoryNode parent = lookup.getCurrentNodeDirectory();
                 
-                lookup = me.lookupDirectory(-1, parentName[0], true);
-                
-                DirectoryNode parent = (DirectoryNode)lookup.getCurrentNode();
-                Pair<AVMNode, Boolean> temp = parent.lookupChild(lookup, parentName[1], false);
-                
-                AVMNode child = temp.getFirst();
-                if (child == null)
-                {
-                    throw new AVMException("Unexpected: missing child: "+entry.getPath());
-                }
-                
-                lookup.add(child, parentName[1], temp.getSecond(), false);
                 AVMNode newChild = ((LayeredFileNode)child).copyLiterally(lookup);
                 newChild.setAncestor(child);
                 parent.putChild(parentName[1], newChild);
@@ -307,6 +302,12 @@ public class AVMStoreImpl implements AVMStore
             parent.putChild(parentName[1], newChild);
             */
         }
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("createSnapshot: force copy: "+me.getName()+(tag != null ? "("+tag+")" : "")+" [lastVersion="+lastVersion.getVersionID()+", layeredEntriesCnt="+layeredEntries.size()+"] in " + (System.currentTimeMillis() - start) + " msecs");
+        }
+        
         // Clear out the new nodes.
         List<Long> allLayeredNodeIDs = AVMDAOs.Instance().fAVMNodeDAO.getNewLayeredInStoreIDs(me);
 
@@ -366,9 +367,10 @@ public class AVMStoreImpl implements AVMStore
         
         AVMDAOs.Instance().fAVMStoreDAO.update(me);
         
+        AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
+        
         int vlneCnt = 0;
         
-        AVMDAOs.Instance().fVersionRootDAO.save(versionRoot);
         for (Long nodeID : layeredNodeIDs)
         {
             AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(nodeID);
@@ -383,14 +385,9 @@ public class AVMStoreImpl implements AVMStore
             vlneCnt = vlneCnt+paths.size();
         }
         
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("createSnapshot: snapshot: "+me.getName()+" ["+me.getId()+"] - created new version root ["+versionRoot.getId()+"] - layeredNodeIDs="+layeredNodeIDs.size()+", versionLayeredNodeEntries="+vlneCnt);
-        }
-        
         if (logger.isDebugEnabled())
         {
-            logger.debug("createSnapshot: snapshot: "+me.getName()+" ["+me.getId()+"] in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Raw snapshot: "+me.getName()+(tag != null ? "("+tag+")" : "")+" [versionRootId="+versionRoot.getId()+", layeredNodeIDsCnt="+layeredNodeIDs.size()+", versionLayeredNodeEntriesCnt="+vlneCnt+"] in " + (System.currentTimeMillis() - start) + " msecs");
         }
         
         return snapShotMap;
@@ -703,8 +700,15 @@ public class AVMStoreImpl implements AVMStore
      */
     public ContentReader getContentReader(int version, String path)
     {
-        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, getName() + ":" + path);
-        return RawServices.Instance().getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
+        try
+        {
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(version, getName() + ":" + path);
+            return RawServices.Instance().getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT);
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            throw new AVMNotFoundException("Path " + path + " not found.");
+        }
     }
 
     /**
@@ -714,10 +718,17 @@ public class AVMStoreImpl implements AVMStore
      */
     public ContentWriter createContentWriter(String path)
     {
-        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, getName() + ":" + path);
-        ContentWriter writer =
-            RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        return writer;
+        try
+        {
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, getName() + ":" + path);
+            ContentWriter writer =
+                RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            return writer;
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            throw new AVMNotFoundException("Path " + path + " not found.");
+        }
     }
 
     /**
@@ -1776,6 +1787,34 @@ public class AVMStoreImpl implements AVMStore
         Lookup lPath = lookupDirectory(-1, parentPath, true);
         if (lPath == null)
         {
+            String pathParts[] = AVMUtil.splitBase(parentPath);
+            Lookup lPath2 = lookup(-1, pathParts[0], true, false);
+            if (lPath2 != null)
+            {
+                DirectoryNode parent = (DirectoryNode)lPath2.getCurrentNode();
+                Pair<AVMNode, Boolean> temp = parent.lookupChild(lPath2, pathParts[1], false);
+                if ((temp != null) && (temp.getFirst() != null))
+                {
+                    DirectoryNode dir = (DirectoryNode)temp.getFirst();
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Found: "+dir);
+                    }
+                    
+                    boolean directlyContained = false;
+                    
+                    if (!fAVMRepository.can(null, dir, PermissionService.ADD_CHILDREN, directlyContained))
+                    {
+                        throw new AccessDeniedException("Not allowed to add children: " + parentPath);
+                    }
+                    
+                    AVMNodeDescriptor desc = fAVMRepository.forceCopy(AVMUtil.buildAVMPath(this.getName(), parentPath));
+                    fAVMRepository.link(desc, name, toLink);
+                    return;
+                }
+            }
+            
             throw new AVMNotFoundException("Path " + parentPath + " not found.");
         }
         DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
@@ -1932,5 +1971,12 @@ public class AVMStoreImpl implements AVMStore
         file.setContentData(contentData);
         
         AVMDAOs.Instance().fAVMNodeDAO.update(file);
+    }
+    
+    // for debug
+    @Override
+    public String toString()
+    {
+        return getName();
     }
 }

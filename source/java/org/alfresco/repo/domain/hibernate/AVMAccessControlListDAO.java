@@ -32,8 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
@@ -60,6 +62,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -308,7 +311,9 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         {
             inherited = aclDaoComponent.getInheritedAccessControlList(after);
         }
-        Map<Long, Set<Long>> indirections = buildIndirections();
+        
+        AVMNodeDescriptor descriptor = getDesc(startingPoint);
+        Map<Long, Set<Long>> indirections = buildIndirections(descriptor);
         updateChangedAclsImpl(startingPoint, changes, SetMode.ALL, inherited, after, indirections);
     }
 
@@ -368,9 +373,46 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             throw new InvalidNodeRefException(nodeRef);
         }
     }
+    
+    private AVMNodeDescriptor getDesc(NodeRef node)
+    {
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(node);
+        int version = avmVersionPath.getFirst();
+        if (version >= 0)
+        {
+            throw new InvalidNodeRefException("Read Only Node.", node);
+        }
+        String path = avmVersionPath.getSecond();
+        try
+        {
+            AVMNodeDescriptor descriptor = fAVMService.lookup(version, path);
+            return descriptor;
+
+        }
+        catch (AVMException e)
+        {
+            throw new InvalidNodeRefException(node);
+        }
+    }
+    
+    private Map<Long, Set<Long>> buildIndirections(AVMNodeDescriptor desc)
+    {
+        if ((desc != null) && (desc.getVersionID() == 1))
+        {
+            String[] pathParts = AVMUtil.splitPath(desc.getPath());
+            if ((pathParts[1].equals(AVMUtil.AVM_PATH_SEPARATOR+JNDIConstants.DIR_DEFAULT_WWW)) && (WCMUtil.isStagingStore(pathParts[0])))
+            {
+                // WCM optimisation - skip when creating web project
+                return null;
+            }
+        }
+        return buildIndirections();
+    }
 
     private Map<Long, Set<Long>> buildIndirections()
     {
+        long start = System.currentTimeMillis();
+        
         Map<Long, Set<Long>> answer = new HashMap<Long, Set<Long>>();
 
         List<Indirection> indirections = aclDaoComponent.getAvmIndirections();
@@ -389,7 +431,11 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                 referees.add(indirection.getFrom());
             }
         }
-
+        
+        if (s_logger.isDebugEnabled())
+        {
+            s_logger.debug("buildIndirections: ("+indirections.size()+", "+answer.size()+") in "+(System.currentTimeMillis()-start)+" msecs");
+        }
         return answer;
     }
 
@@ -405,7 +451,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         try
         {
             AVMNodeDescriptor descriptor = fAVMService.lookup(version, path);
-            if (descriptor == null)
+            if ((descriptor == null) || (indirections == null))
             {
                 return;
             }
@@ -613,9 +659,9 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         String path = avmVersionPath.getSecond();
         try
         {
-            Map<Long, Set<Long>> indirections = buildIndirections();
             List<AclChange> changes = new ArrayList<AclChange>();
             AVMNodeDescriptor descriptor = fAVMService.lookup(version, path);
+            Map<Long, Set<Long>> indirections = buildIndirections(descriptor);
             setFixedAcls(descriptor, inheritFrom, null, changes, SetMode.ALL, false, indirections);
             return changes;
 

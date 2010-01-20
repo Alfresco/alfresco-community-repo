@@ -44,9 +44,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AVMNodeImpl implements AVMNode
 {
-    private static Log    fgLogger = LogFactory.getLog(AVMNodeImpl.class);
+    private static Log logger = LogFactory.getLog(AVMNodeImpl.class);
     
-    protected static final boolean DEBUG = fgLogger.isDebugEnabled();
+    protected static final boolean DEBUG = logger.isDebugEnabled();
     
     /**
      * The Object ID.
@@ -578,5 +578,11 @@ public abstract class AVMNodeImpl implements AVMNode
     {
         fAspects = null;
         AVMDAOs.Instance().fAVMNodeDAO.deleteAspect(this.getId(), aspectQName);
+    }
+    
+    // debug
+    public String toString()
+    {
+        return toString(null);
     }
 }

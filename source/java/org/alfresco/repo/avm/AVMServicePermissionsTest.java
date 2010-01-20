@@ -3934,10 +3934,9 @@ public class AVMServicePermissionsTest extends TestCase
     
     
     private static final String FILE_NAME = "fileForExport";
-    private static final String STORE_NAME = "TestStore1";
     private static final String ROOT = "ROOT";
 
-    private void createStaggingWithSnapshots(String storeName)
+    private void createStagingWithSnapshots(String storeName)
     {
         if (avmService.getStore(storeName) != null)
         {
@@ -3964,27 +3963,40 @@ public class AVMServicePermissionsTest extends TestCase
     
     private void removeStore(String storeName)
     {
-        avmService.purgeStore(storeName);
+        if (avmService.getStore(storeName) != null)
+        {
+            avmService.purgeStore(storeName);
+        }
         assertNull(avmService.getStore(storeName));
     }
-
-    public void testSetInheritParentPermissions()
+    
+    public void testSetInheritParentPermissions() throws Exception
     {
-        createStaggingWithSnapshots(STORE_NAME);
-
-        AVMNodeDescriptor nodeDescriptor = avmService.lookup(-1, STORE_NAME + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT + "/"
-                + FILE_NAME);
-        assertNotNull(nodeDescriptor);
-        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDescriptor.getPath());
-        assertNotNull(nodeRef);
-
-        permissionService.setInheritParentPermissions(nodeRef, false);
-        assertFalse(permissionService.getInheritParentPermissions(nodeRef));
-        permissionService.setInheritParentPermissions(nodeRef, true);
-        assertTrue(permissionService.getInheritParentPermissions(nodeRef));
-        
-        removeStore(STORE_NAME);
+        runAs(AuthenticationUtil.getAdminUserName());
+        String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        try
+        {
+            createStagingWithSnapshots(storeName);
+            
+            AVMNodeDescriptor nodeDescriptor = avmService.lookup(-1, storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + "/" + JNDIConstants.DIR_DEFAULT_APPBASE + "/" + ROOT + "/"
+                    + FILE_NAME);
+            assertNotNull(nodeDescriptor);
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDescriptor.getPath());
+            assertNotNull(nodeRef);
+            
+            permissionService.setInheritParentPermissions(nodeRef, false);
+            assertFalse(permissionService.getInheritParentPermissions(nodeRef));
+            permissionService.setInheritParentPermissions(nodeRef, true);
+            assertTrue(permissionService.getInheritParentPermissions(nodeRef));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+        finally
+        {
+            removeStore(storeName);
+        }
     }
-    
-    
 }

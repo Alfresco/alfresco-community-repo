@@ -169,8 +169,9 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-       if (this.nodeService.exists(nodeRef) == true &&
-           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
+       if (this.nodeService.exists(nodeRef) == true &&          
+           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true &&
+           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
        {
            ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(nodeRef);
            if (assocRef != null)

@@ -124,7 +124,7 @@ public class WorkflowServiceImplTest extends BaseSpringTest
     public void testAssociateWorkflowPackage()
     {
         // create workflow package
-        NodeRef rootRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
+        NodeRef rootRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
         NodeRef nodeRef = workflowService.createPackage(null);
         assertNotNull(nodeRef);
         assertTrue(nodeService.hasAspect(nodeRef, WorkflowModel.ASPECT_WORKFLOW_PACKAGE));

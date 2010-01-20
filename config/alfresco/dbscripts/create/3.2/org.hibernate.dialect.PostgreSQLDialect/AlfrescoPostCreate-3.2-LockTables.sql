@@ -16,7 +16,7 @@ CREATE TABLE alf_lock_resource
    CONSTRAINT fk_alf_lockr_ns FOREIGN KEY (qname_ns_id) REFERENCES alf_namespace (id),
    PRIMARY KEY (id)   
 );
-CREATE INDEX idx_alf_lockr_key ON alf_lock_resource (qname_ns_id, qname_localname);
+CREATE UNIQUE INDEX idx_alf_lockr_key ON alf_lock_resource (qname_ns_id, qname_localname);
 
 CREATE SEQUENCE alf_lock_resource_seq START WITH 1 INCREMENT BY 1;
 
@@ -33,7 +33,7 @@ CREATE TABLE alf_lock
    CONSTRAINT fk_alf_lock_excl FOREIGN KEY (excl_resource_id) REFERENCES alf_lock_resource (id),
    PRIMARY KEY (id)
 );
-CREATE INDEX idx_alf_lock_key ON alf_lock (shared_resource_id, excl_resource_id);
+CREATE UNIQUE INDEX idx_alf_lock_key ON alf_lock (shared_resource_id, excl_resource_id);
 
 CREATE SEQUENCE alf_lock_seq START WITH 1 INCREMENT BY 1;
 --

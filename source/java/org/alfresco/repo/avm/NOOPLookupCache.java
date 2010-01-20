@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -94,7 +95,7 @@ public class NOOPLookupCache implements LookupCache
         {
             if (!AVMRepository.GetInstance().can(null, dir, PermissionService.READ_CHILDREN, result.getDirectlyContained()))
             {
-                throw new AccessDeniedException("Not allowed to read children: " + path.get(i));
+                throw new AccessDeniedException("Not allowed to read children: " + path.get(i) + " ("+store.getName()+")");
             }
             Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(i), includeDeleted);
             if (child == null)
@@ -115,7 +116,7 @@ public class NOOPLookupCache implements LookupCache
         // Now look up the last element.
         if (!AVMRepository.GetInstance().can(null, dir, PermissionService.READ_CHILDREN, result.getDirectlyContained()))
         {
-            throw new AccessDeniedException("Not allowed to read children: " + path.get(path.size() - 1));
+            throw new AccessDeniedException("Not allowed to read children: " + path.get(path.size() - 1) + " ("+store.getName()+")");
         }
         Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(path.size() - 1),
                                         includeDeleted);

@@ -150,11 +150,11 @@ public class FeedCleaner
                         
                         if ((feedUserId == null) || (feedUserId.length() == 0))
                         {
-                            deletedCount = feedDAO.deleteUserFeedEntries(feedUserId, format, oldestFeedEntry);
+                            deletedCount = feedDAO.deleteSiteFeedEntries(siteId, format, oldestFeedEntry);
                         }
                         else
                         {
-                            deletedCount = feedDAO.deleteSiteFeedEntries(siteId, format, oldestFeedEntry);
+                            deletedCount = feedDAO.deleteUserFeedEntries(feedUserId, format, oldestFeedEntry);
                         }
                         
                         

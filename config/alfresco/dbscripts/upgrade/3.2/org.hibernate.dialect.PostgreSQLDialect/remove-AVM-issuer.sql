@@ -13,6 +13,25 @@
 
 SELECT SETVAL('hibernate_sequence', GREATEST((MAX(id)+1), NEXTVAL('hibernate_sequence'))) FROM avm_nodes;
 
+insert into avm_nodes
+select 
+(select max(id)+1 from avm_nodes),
+class_type, vers, version_id, guid, creator, owner, lastModifier, createDate, modDate, accessDate, is_root, store_new_id, acl_id, deletedType, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length
+from avm_nodes where id = 0;
+
+update avm_aspects set node_id = (select max(id) from avm_nodes) where node_id = 0;
+update avm_child_entries set parent_id = (select max(id) from avm_nodes) where parent_id = 0;
+update avm_child_entries set child_id = (select max(id) from avm_nodes) where child_id = 0;
+update avm_history_links set ancestor = (select max(id) from avm_nodes) where ancestor = 0;
+update avm_history_links set descendent = (select max(id) from avm_nodes) where descendent = 0;
+update avm_merge_links set mfrom = (select max(id) from avm_nodes) where mfrom = 0;
+update avm_merge_links set mto = (select max(id) from avm_nodes) where mto = 0;
+update avm_node_properties set node_id = (select max(id) from avm_nodes) where node_id = 0;
+update avm_stores set current_root_id = (select max(id) from avm_nodes) where current_root_id = 0;
+update avm_version_roots set root_id = (select max(id) from avm_nodes) where root_id = 0;
+
+delete from avm_nodes where id = 0;
+
 -- drop issuer table
 
 DROP TABLE avm_issuer_ids;

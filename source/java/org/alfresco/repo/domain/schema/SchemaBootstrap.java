@@ -162,6 +162,27 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
+     * Truncates or returns a string that will fit into the string columns in the schema.  Text fields can
+     * either cope with arbitrarily long text fields or have the default limit, {@link #DEFAULT_MAX_STRING_LENGTH}.
+     * 
+     * @param value             the string to check
+     * @return                  Returns a string that is short enough for {@link SchemaBootstrap#getMaxStringLength()}
+     * 
+     * @since 3.2
+     */
+    public static final String trimStringForTextFields(String value)
+    {
+        if (value != null && value.length() > maxStringLength)
+        {
+            return value.substring(0, maxStringLength);
+        }
+        else
+        {
+            return value;
+        }
+    }
+    
+    /**
      * Sets the previously auto-detected Hibernate dialect.
      * 
      * @param dialect
@@ -327,9 +348,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Optionally override the system's default maximum string length.  Some databases have
      * limitations on how long the <b>string_value</b> columns can be while other do not.
-     * When a <tt>String<tt> value exceeds the maximum size it is persisted in the
-     * <b>serializable_value</b> column instead.  Some databases have limitation on the size
-     * of the serializable columns as well, but usually support much more.
+     * Some parts of the persistence have alternatives when the string values exceed this
+     * length while others do not.  Either way, it is possible to adjust the text column sizes
+     * and adjust this value manually to override the default associated with the database
+     * being used.
      * <p>
      * The system - as of V2.1.2 - will attempt to adjust the maximum string length size
      * automatically and therefore this method is not normally required.  But it is possible

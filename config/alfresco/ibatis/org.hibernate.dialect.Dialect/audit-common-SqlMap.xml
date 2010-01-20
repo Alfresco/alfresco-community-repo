@@ -179,7 +179,7 @@
             join alf_prop_link pl on (pl.root_prop_id = entry.audit_values_id)
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         <dynamic prepend="where">
             <isNotNull prepend="and" property="auditAppNameId">

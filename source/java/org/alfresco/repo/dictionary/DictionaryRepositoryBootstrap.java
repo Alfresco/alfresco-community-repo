@@ -351,16 +351,19 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             folderNodeRef = resolveQNameFolderPath(rootNodeRef, pathElements);
         }
         
-        Set<QName> types = new HashSet<QName>(1);
-        types.add(nodeType);
-        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(folderNodeRef, types);
-        
-        if (childAssocRefs.size() > 0)
+        if (folderNodeRef != null)
         {
-            nodeRefs = new ArrayList<NodeRef>(childAssocRefs.size());
-            for (ChildAssociationRef childAssocRef : childAssocRefs)
+            Set<QName> types = new HashSet<QName>(1);
+            types.add(nodeType);
+            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(folderNodeRef, types);
+            
+            if (childAssocRefs.size() > 0)
             {
-                nodeRefs.add(childAssocRef.getChildRef());
+                nodeRefs = new ArrayList<NodeRef>(childAssocRefs.size());
+                for (ChildAssociationRef childAssocRef : childAssocRefs)
+                {
+                    nodeRefs.add(childAssocRef.getChildRef());
+                }
             }
         }
         
@@ -482,18 +485,43 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         }
     }
     
-    protected NodeRef resolveQNameFolderPath(NodeRef rootNodeRef, String[] pathQNames)
+    protected NodeRef resolveQNameFolderPath(NodeRef rootNodeRef, String[] pathPrefixQNameStrings)
     {
-        if (pathQNames.length == 0)
+        if (pathPrefixQNameStrings.length == 0)
         {
             throw new IllegalArgumentException("Path array is empty");
         }
         // walk the folder tree
         NodeRef parentNodeRef = rootNodeRef;
-        for (int i = 0; i < pathQNames.length; i++)
+        for (int i = 0; i < pathPrefixQNameStrings.length; i++)
         {
-            String pathQName = pathQNames[i];
-            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(parentNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(pathQName, namespaceService));
+            String pathPrefixQNameString = pathPrefixQNameStrings[i];
+            
+            QName pathQName = null;
+            if (tenantAdminService.isEnabled())
+            {
+                String[] parts = QName.splitPrefixedQName(pathPrefixQNameString);
+                if ((parts.length == 2) && (parts[0].equals(NamespaceService.APP_MODEL_PREFIX)))
+                {
+                    String pathUriQNameString = new StringBuilder(64).
+                        append(QName.NAMESPACE_BEGIN).
+                        append(NamespaceService.APP_MODEL_1_0_URI).
+                        append(QName.NAMESPACE_END).
+                        append(parts[1]).toString();
+                    
+                    pathQName = QName.createQName(pathUriQNameString);
+                }
+                else
+                {
+                    pathQName = QName.createQName(pathPrefixQNameString, namespaceService);
+                }
+            }
+            else
+            {
+                pathQName = QName.createQName(pathPrefixQNameString, namespaceService);
+            }
+            
+            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(parentNodeRef, RegexQNamePattern.MATCH_ALL, pathQName);
             if (childAssocRefs.size() != 1)
             {
                 return null;

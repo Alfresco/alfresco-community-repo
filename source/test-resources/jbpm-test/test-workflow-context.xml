@@ -3,6 +3,8 @@
 
 <beans>
 
+    <import resource="../alfresco/application-context.xml"/>
+    
    <!--                       -->
    <!-- Alfresco BPM Registry -->
    <!--                       -->
@@ -20,7 +22,7 @@
 
    <bean id="test_jbpm_configuration"
       class="org.alfresco.repo.workflow.jbpm.AlfrescoJbpmConfigurationFactoryBean">
-      <property name="sessionFactory" ref="testSessionFactory" />
+      <property name="sessionFactory" ref="sessionFactory" />
       <property name="configuration"
          value="classpath:jbpm-test/jbpm.cfg.xml" />
    </bean>

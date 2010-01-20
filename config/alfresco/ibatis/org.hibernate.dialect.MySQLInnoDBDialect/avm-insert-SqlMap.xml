@@ -34,9 +34,4 @@
         </selectKey>
     </insert>
     
-    <insert id="insert_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
-        insert into avm_node_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, node_id, qname_id)
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    </insert>
-    
 </sqlMap>

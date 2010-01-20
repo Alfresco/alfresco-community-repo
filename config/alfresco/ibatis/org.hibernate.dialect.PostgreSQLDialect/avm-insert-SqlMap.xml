@@ -17,14 +17,14 @@
         
     </insert>
     
-    <insert id="insert_AVMStoreProperty" parameterClass="AVMStoreProperty">
+    <insert id="insert_AVMStoreProperty" parameterMap="parameter_IdStorePropertyPatternMap">
     
-    	<selectKey resultClass="long" keyProperty="id">
+        <selectKey resultClass="long" keyProperty="id">
             select nextVal('hibernate_sequence')
         </selectKey>
         
         insert into avm_store_properties (id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, avm_store_id, qname_id)
-        values (#id#, #actualType#, #persistedType#, #isMultiValued#, #booleanValue#, #longValue#, #floatValue#, #doubleValue#, #stringValue#, #serializableValue#, #avmStoreId#, #qnameId#)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         
     </insert>
     
@@ -49,10 +49,5 @@
         values (#id#, #storeId#, #rootNodeId#, #version#, #creator#, #createdDate#, #tag#, #description#)
         
     </insert>
-    
-	<insert id="insert_AVMNodeProperty" parameterClass="AVMNodeProperty">
-        insert into avm_node_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, node_id, qname_id)
-        values (#actualType#, #persistedType#, #isMultiValued#, #booleanValue#, #longValue#, #floatValue#, #doubleValue#, #stringValue#, #serializableValue#, #nodeId#, #qnameId#)
-    </insert>	
     
 </sqlMap>

@@ -61,11 +61,19 @@
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </resultMap>
-    <resultMap id="result_PropertyValue" class="PropertyValue">
+    <resultMap id="result_PropertyValue_LocalOnly" class="PropertyValue">
         <result property="id" column="prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="actualTypeId" column="prop_actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="persistedType" column="prop_persisted_type" jdbcType="TINYINT" javaType="java.lang.Short"/>
         <result property="longValue" column="prop_long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_DoubleOnly" class="PropertyValue" extends="result_PropertyValue_LocalOnly">
+        <result property="doubleValue" column="prop_double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_StringOnly" class="PropertyValue" extends="result_PropertyValue_LocalOnly">
+        <result property="stringValue" column="prop_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_All" class="PropertyValue" extends="result_PropertyValue_LocalOnly">
         <result property="doubleValue" column="prop_double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
         <result property="stringValue" column="prop_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="serializableValue" column="prop_serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
@@ -114,7 +122,15 @@
     <parameterMap id="parameter_PropertySerializableValue" class="PropertySerializableValue">
         <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
     </parameterMap>
+    <parameterMap id="parameter_IdPropertySerializableValue" class="PropertySerializableValue">
+        <parameter property="id" jdbcType="java.lang.Long"/>
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
     <parameterMap id="parameter_PropertyRoot" class="PropertyRoot">
+        <parameter property="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+    </parameterMap>
+    <parameterMap id="parameter_IdPropertyRoot" class="PropertyRoot">
+        <parameter property="id" jdbcType="java.lang.Long"/>
         <parameter property="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
     </parameterMap>
 
@@ -150,6 +166,10 @@
     <sql id="insert_PropertyRoot_AutoIncrement">
         insert into alf_prop_root (version) 
         values (?)
+    </sql>
+    <sql id="insert_PropertyValue_Sequence">
+        insert into alf_prop_root (id, version) 
+        values (?, ?)
     </sql>
     
     <sql id="insert_PropertyUniqueContext_AutoIncrement">
@@ -274,15 +294,12 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_value -->
-    <select id="select_PropertyValueByLocalValue" parameterClass="PropertyValue" resultMap="result_PropertyValue">
+    <select id="select_PropertyValueByLocalValue" parameterClass="PropertyValue" resultMap="result_PropertyValue_LocalOnly">
         select
             pv.id as prop_id,
             pv.actual_type_id           as prop_actual_type_id,
             pv.persisted_type           as prop_persisted_type,
-            pv.long_value               as prop_long_value,
-            null                        as prop_double_value,
-            null                        as prop_string_value,
-            null                        as prop_serializable_value
+            pv.long_value               as prop_long_value
         from
             alf_prop_value pv
         where
@@ -291,15 +308,13 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_double_value -->
-    <select id="select_PropertyValueByDoubleValue" parameterClass="PropertyValue" resultMap="result_PropertyValue">
+    <select id="select_PropertyValueByDoubleValue" parameterClass="PropertyValue" resultMap="result_PropertyValue_DoubleOnly">
         select
             pv.id as prop_id,
             pv.actual_type_id           as prop_actual_type_id,
             pv.persisted_type           as prop_persisted_type,
             pv.long_value               as prop_long_value,
-            dv.double_value             as prop_double_value,
-            null                        as prop_string_value,
-            null                        as prop_serializable_value
+            dv.double_value             as prop_double_value
         from
             alf_prop_value pv
             join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = #persistedType#)
@@ -309,15 +324,13 @@
     </select>
 
     <!-- Get the property value by value in alf_prop_string_value -->
-    <select id="select_PropertyValueByStringValue" parameterClass="PropertyStringQuery" resultMap="result_PropertyValue">
+    <select id="select_PropertyValueByStringValue" parameterClass="PropertyStringQuery" resultMap="result_PropertyValue_StringOnly">
         select
             pv.id                       as prop_id,
             pv.actual_type_id           as prop_actual_type_id,
             pv.persisted_type           as prop_persisted_type,
             pv.long_value               as prop_long_value,
-            null                        as prop_double_value,
-            sv.string_value             as prop_string_value,
-            null                        as prop_serializable_value
+            sv.string_value             as prop_string_value
         from
             alf_prop_value pv
             join alf_prop_string_value sv on (sv.id = pv.long_value and pv.persisted_type = #persistedType#)
@@ -328,7 +341,7 @@
     </select>
 
     <!-- Get the property value by ID -->
-    <select id="select_PropertyValueById" parameterClass="PropertyValue" resultMap="result_PropertyValue">
+    <select id="select_PropertyValueById" parameterClass="PropertyValue" resultMap="result_PropertyValue_All">
         select
             pv.id                       as prop_id,
             pv.actual_type_id           as prop_actual_type_id,
@@ -340,7 +353,7 @@
         from
             alf_prop_value pv
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         where
             pv.id = #id#
@@ -364,7 +377,7 @@
             alf_prop_link pl
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         where
             pl.root_prop_id = #id#
@@ -389,7 +402,7 @@
             alf_prop_link pl
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 || pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         <dynamic prepend="where pl.root_prop_id in ">
             <iterate property="rootPropIds" open="(" close=")" conjunction=", ">

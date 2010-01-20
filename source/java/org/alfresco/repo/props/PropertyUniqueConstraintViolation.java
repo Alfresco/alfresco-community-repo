@@ -50,6 +50,14 @@ public class PropertyUniqueConstraintViolation extends AlfrescoRuntimeException
         this.value3 = value3;
     }
 
+    public PropertyUniqueConstraintViolation(Serializable value1, Serializable value2, Serializable value3, Throwable cause)
+    {
+        super("Non-unique values for unique constraint: " + value1 + "-" + value2 + "-" + value3, cause);
+        this.value1 = value1;
+        this.value2 = value2;
+        this.value3 = value3;
+    }
+
     public Serializable getValue1()
     {
         return value1;

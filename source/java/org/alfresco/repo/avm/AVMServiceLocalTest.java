@@ -878,6 +878,9 @@ public class AVMServiceLocalTest extends TestCase
             // Flatten.
             fSyncService.flatten("main:/layer", "main:/a");
             recursiveList("main");
+            // Compare again.
+            diffs = fSyncService.compare(-1, "main:/layer", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
         }
         catch (Exception e)
         {
@@ -1156,7 +1159,7 @@ public class AVMServiceLocalTest extends TestCase
             recursiveContents("main:/");
             fService.createFile("layer:/a/b/z", "fudge").close();
             fService.rename("layer:/a/b", "z", "layer:/a/b", "y");
-            recursiveContents("layer:/");           
+            recursiveContents("layer:/");
             diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
             assertEquals(2, diffs.size());
             assertEquals("[layer:/a/b/y[-1] > main:/a/b/y[-1], layer:/a/b/z[-1] > main:/a/b/z[-1]]", diffs.toString());
@@ -1898,10 +1901,6 @@ public class AVMServiceLocalTest extends TestCase
             
             fService.createStore("mainB--layer");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             List<VersionDescriptor> snapshots = fService.getStoreVersions("mainA");
             assertEquals(1, snapshots.size());
             assertEquals(0, snapshots.get(0).getVersionID());
@@ -1925,18 +1924,10 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created file: mainA:/a/b/foo");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
             fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
             
             logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             fService.createFile("mainB--layer:/a/b", "bar");
             
@@ -1945,10 +1936,6 @@ public class AVMServiceLocalTest extends TestCase
             out.close();
             
             logger.debug("created file: mainB--layer:/a/b/bar");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
             assertEquals(1, diffs.size());
@@ -1966,10 +1953,6 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("updated: created file: mainB:/a/b/bar");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             snapshots = fService.getStoreVersions("mainB");
             assertEquals(3, snapshots.size());
             assertEquals(2, snapshots.get(snapshots.size()-1).getVersionID());
@@ -1983,17 +1966,9 @@ public class AVMServiceLocalTest extends TestCase
             
             logger.debug("created file: mainA:/a/b/baz");
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             fService.createSnapshot("mainB", "two", "two");
             
             logger.debug("snapshot: mainB");
-            
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
             
             snapshots = fService.getStoreVersions("mainB");
             assertEquals(4, snapshots.size());
@@ -2004,10 +1979,6 @@ public class AVMServiceLocalTest extends TestCase
             assertEquals(1, diffs.size());
             assertEquals("[mainB:/a/b/baz[2] < mainB:/a/b/baz[3]]", diffs.toString());
             
-            recursiveList("mainA");
-            recursiveList("mainB");
-            recursiveList("mainB--layer");
-            
             logger.debug("list mainB [2]");
             
             recursiveList("mainB", 2);
@@ -2015,6 +1986,10 @@ public class AVMServiceLocalTest extends TestCase
             logger.debug("list mainB [3]");
             
             recursiveList("mainB", 3);
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
         }
         catch (Exception e)
         {
@@ -2026,6 +2001,222 @@ public class AVMServiceLocalTest extends TestCase
             fService.purgeStore("mainA");
             fService.purgeStore("mainB");
             fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolder3() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            logger.debug("created stores: mainA, mainB and mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created directories: mainA:/a/b and mainB:/a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered directory: mainB--layer:/a -> mainB:/a");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            fService.createDirectory("mainB--layer:/a/b", "c");
+            
+            logger.debug("created directory: mainB--layer:/a/b/c");
+            
+            fService.createFile("mainB--layer:/a/b/c", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/c/foo"));
+            out.println("I am mainB--layer:/a/b/c/foo");
+            out.close();
+            
+            logger.debug("created file: mainB--layer:/a/b/c/foo");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/c[-1] > mainB:/a/b/c[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            logger.debug("updated: mainB--layer:/a/b/c (including 'foo') to mainB:/a/b/c");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "mainB:/a", -1, "mainA:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB:/a/b/c[-1] > mainA:/a/b/c[-1]]", diffs.toString());
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("flattened: mainB--layer:/a to mainB:/a");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "mainB:/a", -1, "mainA:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB:/a/b/c[-1] > mainA:/a/b/c[-1]]", diffs.toString());
+            
+            // ETHREEOH-3643
+            out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/c/foo"));
+            out.println("I am mainB--layer:/a/b/c/foo V2");
+            out.close();
+            
+            logger.debug("updated file: mainB--layer:/a/b/c/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/c/foo[-1] > mainB:/a/b/c/foo[-1]]", diffs.toString());
+            
+            logger.debug("updated: mainB:/a/b/c/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/c/foo[-1] > mainB:/a/b/c/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "two", "two");
+            
+            logger.debug("updated: mainB--layer:/a/b/c/foo to mainB:/a/b/c/foo");
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("flattened: mainB--layer:/a to mainB:/a");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+        }
+    }
+    
+    public void testLayeredFolder4() throws Exception
+    {
+        try
+        {
+            fService.createStore("mainA");
+            fService.createStore("mainB");
+            fService.createStore("mainB--layer");
+            
+            logger.debug("created stores: mainA, mainB and mainB--layer");
+            
+            fService.createDirectory("mainA:/", "a");
+            fService.createDirectory("mainA:/a", "b");
+            fService.createDirectory("mainA:/a/b", "c");
+            fService.createDirectory("mainB:/", "a");
+            
+            logger.debug("created directories: mainA:/a/b/c and mainB:/a");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--layer:/", "a");
+            
+            logger.debug("created layered directory: mainB--layer:/a -> mainB:/a");
+            
+            // create equivalent of WCM layered folder between web project staging sandboxes (mainB:/a/b pointing to mainA:/a/b)
+            fService.createLayeredDirectory("mainA:/a/b", "mainB:/a", "b");
+            
+            logger.debug("created layered directory: mainB:/a/b -> mainA:/a/b");
+            
+            fService.createDirectory("mainB--layer:/a/b/c", "d");
+            
+            logger.debug("created directory: mainB--layer:/a/b/c/d");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[mainB--layer:/a/b/c/d[-1] > mainB:/a/b/c/d[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            logger.debug("updated: mainB--layer:/a/b/c/d to mainB:/a/b/c/d");
+            
+            fSyncService.flatten("mainB--layer:/a", "mainB:/a");
+            
+            logger.debug("flattened: mainB--layer:/a to mainB:/a");
+            
+            fService.createFile("mainB--layer:/a/b/c/d", "foo");
+            
+            PrintStream out = new PrintStream(fService.getFileOutputStream("mainB--layer:/a/b/c/d/foo"));
+            out.println("I am mainB--layer:/a/b/c/d/foo");
+            out.close();
+            
+            logger.debug("created file: mainB--layer:/a/b/c/foo");
+            
+            fService.createStore("mainB--workflow1");
+            
+            logger.debug("created store: mainB--workflow1");
+            
+            fService.createLayeredDirectory("mainB:/a", "mainB--workflow1:/", "a");
+            
+            logger.debug("created layered dir: mainB--workflow1:/a -> mainB:/a");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = new ArrayList<AVMDifference>(1);
+            diffs.add(new AVMDifference(-1, "mainB--layer:/a/b/c/d/foo", -1, "mainB--workflow1:/a/b/c/d/foo", AVMDifference.NEWER));
+            
+            assertNotNull(fService.lookup(-1, "mainB--workflow1:/a/b/c/d"));
+            
+            // ETHREEOH-3763
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            logger.debug("updated: added file: mainB--workflow1:/a/b/c/d/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--layer:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--layer:/a/b/c/d/foo[-1] > mainB:/a/b/c/d/foo[-1]]", diffs.toString());
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
+            assertEquals("[mainB--workflow1:/a/b/c/d/foo[-1] > mainB:/a/b/c/d/foo[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, true, true, "two", "two");
+            fSyncService.flatten("mainB--workflow1:/a", "mainB:/a");
+            
+            logger.debug("updated & flattened: added file: mainB:/a/b/c/d/foo");
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "mainB--workflow1:/a", -1, "mainB--layer:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fService.purgeStore("mainB--workflow1");
+            
+            recursiveList("mainA");
+            recursiveList("mainB");
+            recursiveList("mainB--layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            fService.purgeStore("mainA");
+            fService.purgeStore("mainB");
+            fService.purgeStore("mainB--layer");
+            if (fService.getStore("mainB--workflow1") != null) { fService.purgeStore("mainB--workflow1"); }
         }
     }
     

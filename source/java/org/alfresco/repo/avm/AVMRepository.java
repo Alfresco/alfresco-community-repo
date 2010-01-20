@@ -3160,7 +3160,12 @@ public class AVMRepository
             PlainFileNode file = (PlainFileNode) node;
             return file.getContentData();
         }
-        throw new AVMWrongTypeException("Not a Plain File: " + desc);
+        else if (node.getType() == AVMNodeType.LAYERED_FILE)
+        {
+            LayeredFileNode file = (LayeredFileNode) node;
+            return file.getContentData(null);
+        }
+        throw new AVMWrongTypeException("Not a file: " + desc);
     }
 
     public Set<QName> getAspects(AVMNodeDescriptor desc)

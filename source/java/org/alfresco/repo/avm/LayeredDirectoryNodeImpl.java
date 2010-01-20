@@ -734,11 +734,12 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
             AVMNodeDescriptor desc = entry.getChild().getDescriptor(mine.getPath(), name, mine.getIndirection(), mine.getIndirectionVersion());
             return desc;
         }
-        // If we are opaque don't check underneath.
+        // Don't check our underlying directory if we are opaque.
         if (getOpacity())
         {
             return null;
         }
+        // Not here so check our indirection.
         Lookup lookup = AVMRepository.GetInstance().lookupDirectory(mine.getIndirectionVersion(), mine.getIndirection());
         if (lookup != null)
         {
@@ -833,9 +834,9 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
      */
     public String toString(Lookup lPath)
     {
-        return "[LD:" + getId() + ":" + getUnderlying(lPath) + "]";
+        return "[LD:" + getId() + (lPath != null ? ":" + getUnderlying(lPath) : "") + "]";
     }
-
+    
     /**
      * Set the primary indirection. No COW. Cascade resetting of acls also does not COW
      *

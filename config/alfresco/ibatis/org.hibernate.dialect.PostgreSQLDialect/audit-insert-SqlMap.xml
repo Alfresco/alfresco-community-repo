@@ -31,7 +31,7 @@
     <insert id="insert_AuditEntry" parameterClass="AuditEntry" >
         
         <selectKey resultClass="long" keyProperty="id">
-            select nextVal('alf_audit_entry')
+            select nextVal('alf_audit_entry_seq')
         </selectKey>
         
         insert into alf_audit_entry (id, audit_app_id, audit_user_id, audit_time, audit_values_id) 

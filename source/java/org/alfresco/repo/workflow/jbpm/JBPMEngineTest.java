@@ -101,7 +101,7 @@ public class JBPMEngineTest extends BaseSpringTest
 
         // get valid node ref
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
-        testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "spacesStore"));
+        testNodeRef = nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
         nodeService.setProperty(testNodeRef, ContentModel.PROP_CREATED, new Date());
     }
 

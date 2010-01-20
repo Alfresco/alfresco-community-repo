@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
@@ -50,15 +50,17 @@ public class FeedCleanerTest extends TestCase
     
     private ActivityFeedDAO feedDAO;
     private FeedCleaner cleaner;
-    private ActivityService activityService;
     private SiteService siteService;
+    protected RetryingTransactionHelper transactionHelper;
     
     @Override
     public void setUp() throws Exception
     {
-        activityService = (ActivityService) ctx.getBean("activityService");
         siteService = (SiteService) ctx.getBean("SiteService");
         feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
+        transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
+        
+        tearDown();
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         for (int i = 1; i <= 7; i++)
@@ -75,12 +77,17 @@ public class FeedCleanerTest extends TestCase
     
     public void tearDown() throws Exception
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
         // clean out any remaining feed entries (allows test to be re-runnable)
         feedDAO.deleteFeedEntries(new Date(System.currentTimeMillis()+(120*1000L)));
         
         for (int i = 1; i <= 7; i++)
         {
-            siteService.deleteSite("testSite"+i);
+            if (siteService.getSite("testSite"+i) != null)
+            {
+                siteService.deleteSite("testSite"+i);
+            }
         }
         
         AuthenticationUtil.clearCurrentSecurityContext();
@@ -147,15 +154,15 @@ public class FeedCleanerTest extends TestCase
         
         feedDAO.insertFeedEntry(feedEntry);
         
-        assertEquals(2, activityService.getSiteFeedEntries("testSite1", "json").size());
-        assertEquals(2, activityService.getUserFeedEntries("testUserB", "json", null).size());
+        assertEquals(2, feedDAO.selectSiteFeedEntries("testSite1", "json").size());
+        assertEquals(2, feedDAO.selectUserFeedEntries("testUserB", "json", null, false, false).size());
         
         // fire the cleaner
         cleaner.setMaxAgeMins(10);
         cleaner.execute();
         
-        assertEquals(1, activityService.getSiteFeedEntries("testSite1", "json").size());
-        assertEquals(1, activityService.getUserFeedEntries("testUserB", "json", null).size());
+        assertEquals(1, feedDAO.selectSiteFeedEntries("testSite1", "json").size());
+        assertEquals(1, feedDAO.selectUserFeedEntries("testUserB", "json", null, false, false).size());
     }
     
     public void testMaxSize() throws Exception
@@ -196,15 +203,15 @@ public class FeedCleanerTest extends TestCase
             feedDAO.insertFeedEntry(feedEntry);
         }
         
-        assertEquals(10, activityService.getSiteFeedEntries("testSite4", "json").size());
-        assertEquals(10, activityService.getUserFeedEntries("testUserD", "json", null).size());
+        assertEquals(10, feedDAO.selectSiteFeedEntries("testSite4", "json").size());
+        assertEquals(10, feedDAO.selectUserFeedEntries("testUserD", "json", null, false, false).size());
         
         // fire the cleaner
         cleaner.setMaxFeedSize(2);
         cleaner.execute();
         
-        assertEquals(2, activityService.getSiteFeedEntries("testSite4", "json").size());
-        assertEquals(2, activityService.getUserFeedEntries("testUserD", "json", null).size());
+        assertEquals(2, feedDAO.selectSiteFeedEntries("testSite4", "json").size());
+        assertEquals(2, feedDAO.selectUserFeedEntries("testUserD", "json", null, false, false).size());
         
         Date sameTime = new Date();
         
@@ -242,16 +249,17 @@ public class FeedCleanerTest extends TestCase
             feedDAO.insertFeedEntry(feedEntry);
         }
         
-        assertEquals(10, activityService.getSiteFeedEntries("testSite6", "json").size());
-        assertEquals(10, activityService.getUserFeedEntries("testUserF", "json", null).size());
+        assertEquals(10, feedDAO.selectSiteFeedEntries("testSite6", "json").size());
+        assertEquals(10, feedDAO.selectUserFeedEntries("testUserF", "json", null, false, false).size());
         
         // fire the cleaner
         cleaner.setMaxFeedSize(2);
         cleaner.execute();
         
         // note: no effect, since entries at max feed size have same time (eg. to nearest minute)
-        assertEquals(10, activityService.getSiteFeedEntries("testSite6", "json").size());
-        assertEquals(10, activityService.getUserFeedEntries("testUserF", "json", null).size());
+        
+        assertEquals(10, feedDAO.selectSiteFeedEntries("testSite6", "json").size());
+        assertEquals(10, feedDAO.selectUserFeedEntries("testUserF", "json", null, false, false).size());
     }
     
     public void testConcurrentAccessAndRemoval() throws Exception
@@ -316,7 +324,7 @@ public class FeedCleanerTest extends TestCase
                     // insert some entries
                     for (int i = 0; i < insertCount; i++)
                     {
-                        ActivityFeedEntity feedEntry = new ActivityFeedEntity();
+                        final ActivityFeedEntity feedEntry = new ActivityFeedEntity();
                         
                         feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
                         feedEntry.setActivitySummaryFormat("json");
@@ -326,7 +334,14 @@ public class FeedCleanerTest extends TestCase
                         feedEntry.setFeedUserId("");
                         feedEntry.setFeedDate(new Date());
                         
-                        feedDAO.insertFeedEntry(feedEntry);
+                        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                        {
+                            public Object execute() throws Throwable
+                            {
+                                feedDAO.insertFeedEntry(feedEntry);
+                                return null;
+                            }
+                        });
                     }
                     
                     System.out.println("["+i+"] Inserted "+insertCount+" entries");
@@ -336,8 +351,15 @@ public class FeedCleanerTest extends TestCase
                 {
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                     
-                    // query some entries
-                    int selectCount = activityService.getSiteFeedEntries("testSite4", "json").size();
+                    int selectCount = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
+                    {
+                        public Integer execute() throws Throwable
+                        {
+                            // query some entries
+                            int selectCount = feedDAO.selectSiteFeedEntries("testSite4", "json").size();
+                            return selectCount;
+                        }
+                    });
                     
                     System.out.println("["+i+"] Selected "+selectCount+" entries");
                 }
@@ -346,8 +368,15 @@ public class FeedCleanerTest extends TestCase
                 {
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                     
-                    // clean some entries
-                    int deleteCount = cleaner.execute();
+                    int deleteCount = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
+                    {
+                        public Integer execute() throws Throwable
+                        {
+                            // clean some entries
+                            int deleteCount = cleaner.execute();
+                            return deleteCount;
+                        }
+                    });
                     
                     System.out.println("["+i+"] Deleted "+deleteCount+" entries");
                 }

@@ -255,7 +255,14 @@ public class PropertyValueEntity
         case DOUBLE:
             return converter.convert(actualType, Double.valueOf(doubleValue));
         case STRING:
-            return converter.convert(actualType, stringValue);
+            if (stringValue != null && stringValue.equals(PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT))
+            {
+                return converter.convert(actualType, PropertyStringValueEntity.EMPTY_STRING);
+            }
+            else
+            {
+                return converter.convert(actualType, stringValue);
+            }
         case SERIALIZABLE:
             return converter.convert(actualType, serializableValue);
         case CONSTRUCTABLE:
@@ -298,6 +305,11 @@ public class PropertyValueEntity
                     break;
                 case STRING:
                     stringValue = converter.convert(String.class, value);
+                    if (stringValue.equals(PropertyStringValueEntity.EMPTY_STRING))
+                    {
+                        // Oracle: We can't insert empty strings into the column.
+                        stringValue = PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT;
+                    }
                     break;
                 case CONSTRUCTABLE:
                     // A special case.  There is no conversion, so just Store the name of the class.
@@ -397,6 +409,13 @@ public class PropertyValueEntity
 
     public void setStringValue(String stringValue)
     {
+        if (stringValue == null)
+        {
+            // Oracle!  It pulls nulls out in place of empty strings.
+            //  Since we don't put nulls into the DB (the column doesn't allow it)
+            //  we can be sure that this is an Oracle empty string
+            stringValue = "";
+        }
         this.stringValue = stringValue;
     }
 

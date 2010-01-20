@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.springframework.extensions.surf.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This holds all the information necessary to perform operations
@@ -39,7 +41,9 @@ import org.springframework.extensions.surf.util.Pair;
 class Lookup implements Serializable
 {
     private static final long serialVersionUID = -2844833688622561L;
-
+    
+    private static Log logger = LogFactory.getLog(Lookup.class);
+    
     /**
      * Is this lookup valid?
      */
@@ -232,6 +236,11 @@ class Lookup implements Serializable
 //                System.err.println("Bloody Murder!");
 //            }
             fDirectlyContained = directlyContained;
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("add: fDirectlyContained = "+directlyContained);
+            }
         }
         if (!write)
         {
@@ -265,12 +274,22 @@ class Lookup implements Serializable
         if (!node.getIsNew())
         {
             fNeedsCopying = true;
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("add-cow: "+this+" ("+fPosition+") (not new)");
+            }
         }
         else
         {
             if (fPosition >= 0 && !fDirectlyContained)
             {
                 fNeedsCopying = true;
+                
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("add: COW: "+this+" ("+fPosition+") (new, not directly contained)");
+                }
             }
         }
         // Record various things if this is layered.
@@ -548,6 +567,19 @@ class Lookup implements Serializable
     @Override
     public String toString()
     {
-        return getRepresentedPath();
+        StringBuilder builder = new StringBuilder();
+        
+        builder.append(getRepresentedPath());
+        builder.append(" [");
+        
+        for (int i = 0; i < fComponents.size(); i++)
+        {
+            builder.append(AVMUtil.AVM_PATH_SEPARATOR_CHAR);
+            builder.append(fComponents.get(i).toString());
+        }
+        
+        builder.append("]");
+        
+        return builder.toString();
     }
 }

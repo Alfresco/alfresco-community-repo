@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
@@ -157,14 +159,14 @@ public final class JSONtoFmModel
         return model;
     }
    
-    // for debugging
+    // for debugging only
     public static String toString(Map<String, Object> map)
     {
         return JSONtoFmModel.toStringBuffer(map, 0).toString();
     }
     
     @SuppressWarnings("unchecked")
-    private static StringBuffer toStringBuffer(Map<String, Object> map, int indent)
+    private static StringBuffer toStringBuffer(Map<String, Object> unsortedMap, int indent)
     {      
         StringBuffer tabs = new StringBuffer();
         for (int i = 0; i < indent; i++)
@@ -173,6 +175,9 @@ public final class JSONtoFmModel
         }
         
         StringBuffer sb = new StringBuffer();
+        
+        SortedMap<String, Object> map = new TreeMap<String, Object>();
+        map.putAll(unsortedMap);
         
         for (Map.Entry<String, Object> entry : map.entrySet())
         {

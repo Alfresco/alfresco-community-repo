@@ -58,7 +58,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMSyncServiceImpl implements AVMSyncService
 {
-    private static Log    fgLogger = LogFactory.getLog(AVMSyncServiceImpl.class);
+    private static Log logger = LogFactory.getLog(AVMSyncServiceImpl.class);
 
     /**
      * The AVMService.
@@ -115,9 +115,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                        int dstVersion, String dstPath,
                                        NameMatcher excluder)
     {
-        if (fgLogger.isDebugEnabled())
+        long start = System.currentTimeMillis();
+        
+        if (logger.isDebugEnabled())
         {
-            fgLogger.debug(srcPath + " : " + dstPath);
+            logger.debug(srcPath + " : " + dstPath);
         }
         if (srcPath == null || dstPath == null)
         {
@@ -142,6 +144,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
             // Invoke the recursive implementation.
             compare(srcVersion, srcDesc, dstVersion, dstDesc, result, excluder, true);
         }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Raw compare: ["+srcVersion+","+srcPath+"]["+dstVersion+","+dstPath+"]["+result.size()+"] in "+(System.currentTimeMillis()-start)+" msecs");
+        }
+        
         return result;
     }
 
@@ -403,6 +411,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description)
     {
         long start = System.currentTimeMillis();
+        
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         Set<String> destStores = new HashSet<String>();
         for (AVMDifference diff : diffList)
@@ -416,9 +425,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 throw new AVMSyncException("Malformed AVMDifference.");
             }
-            if (fgLogger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-                fgLogger.debug("update: " + diff);
+                logger.debug("update: " + diff);
             }
             // Snapshot the source if needed.
             int version = diff.getSourceVersion();
@@ -460,13 +469,15 @@ public class AVMSyncServiceImpl implements AVMSyncService
             dispatchUpdate(diffCode, dstParts[0], dstParts[1], excluder, srcDesc, dstDesc, 
                            ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder);
         }
+        
         for (String storeName : destStores)
         {
             fAVMService.createSnapshot(storeName, tag, description);
         }
-        if (fgLogger.isDebugEnabled())
+        
+        if (logger.isDebugEnabled())
         {
-            fgLogger.debug("Raw Update: " + (System.currentTimeMillis() - start));
+            logger.debug("Raw update: [" + diffList.size() + "] in " + (System.currentTimeMillis() - start) + " msecs");
         }
     }
     
@@ -558,9 +569,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
             catch (AVMNotFoundException nfe)
             {
                 // ignore
-                if (fgLogger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
-                    fgLogger.debug("linkIn: Does not exist: "+parentPath+"/"+name);
+                    logger.debug("linkIn: Does not exist: "+parentPath+"/"+name);
                 }
             }
             return;
@@ -1126,6 +1137,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     public void flatten(String layerPath, String underlyingPath)
     {
+        long start = System.currentTimeMillis();
+        
         if (layerPath == null || underlyingPath == null)
         {
             throw new AVMBadArgumentException("Illegal null path.");
@@ -1140,11 +1153,13 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             throw new AVMNotFoundException("Not found: " + underlyingPath);
         }
-        if (fgLogger.isDebugEnabled())
-        {
-            fgLogger.debug("flatten: " + layerNode + " " + underlyingNode);
-        }
+        
         flatten(layerNode, underlyingNode);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Raw flatten: " + layerNode + " " + underlyingNode + " in " + (System.currentTimeMillis() - start) + " msecs");
+        }
     }
 
     /**
@@ -1154,9 +1169,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private boolean flatten(AVMNodeDescriptor layer, AVMNodeDescriptor underlying)
     {
-        if (fgLogger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
-            fgLogger.debug("flatten: " + layer + " " + underlying);
+            logger.debug("flatten: " + layer + " " + underlying);
         }
         if (!layer.isLayeredDirectory())
         {
@@ -1172,6 +1187,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return false;
         }
+        
         Map<String, AVMNodeDescriptor> layerListing =
             fAVMService.getDirectoryListingDirect(-1, layer.getPath(), true);
         // If the layer is empty (directly, that is) we're done.
@@ -1179,26 +1195,29 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             return true;
         }
-        List<AVMDifference> diffs = compare(-1, layer.getPath(), -1, underlying.getPath(), null);
-        if (diffs.size() == 0)
-        {
-            for (String name : layerListing.keySet())
-            {
-                fAVMRepository.flatten(layer.getPath(), name);
-            }
-            return true;
-        }
+        
         // Grab the listing
         Map<String, AVMNodeDescriptor> underListing =
             fAVMService.getDirectoryListing(underlying, true);
+        
         boolean flattened = true;
         for (String name : layerListing.keySet())
         {
             AVMNodeDescriptor topNode = layerListing.get(name);
             AVMNodeDescriptor bottomNode = underListing.get(name);
-//            fgLogger.error("Trying to flatten out: " + name);
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Trying to flatten out: " + name);
+            }
+            
             if (bottomNode == null)
             {
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Can't flatten (no bottomNode): " + name);
+                }
+                
                 flattened = false;
                 continue;
             }
@@ -1206,15 +1225,38 @@ public class AVMSyncServiceImpl implements AVMSyncService
             if (topNode.getId() == bottomNode.getId())
             {
                 fAVMRepository.flatten(layer.getPath(), name);
-//                fgLogger.error("Identity flattened: " + name);
+                
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Identity flattened: " + name);
+                }
             }
             else
             {
+                if (bottomNode.isLayeredDirectory())
+                {
+                    AVMNodeDescriptor lookup = fAVMService.lookup(bottomNode.getIndirectionVersion(), bottomNode.getIndirection());
+                    if (lookup == null)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Can't flatten (no bottomNode indirection): " + name);
+                        }
+                        
+                        flattened = false;
+                        continue;
+                    }
+                }
+                
                 // Otherwise recursively flatten the children.
                 if (flatten(topNode, bottomNode))
                 {
                     fAVMRepository.flatten(layer.getPath(), name);
-//                    fgLogger.error("Recursively flattened: " + name);
+                    
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Recursively flattened: " + name);
+                    }
                 }
                 else
                 {
@@ -1224,7 +1266,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
         }
         return flattened;
     }
-
+    
     /**
      * Takes a layer, deletes it and recreates it pointing at the same underlying
      * node. Any changes in the layer are lost (except to history if the layer has been
@@ -1236,6 +1278,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     public void resetLayer(String layerPath)
     {
+        long start = System.currentTimeMillis();
+        
         AVMNodeDescriptor desc = fAVMService.lookup(-1, layerPath);
         if (desc == null)
         {
@@ -1246,6 +1290,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
         for (String name : layerListing.keySet())
         {
             fAVMRepository.flatten(layerPath, name);
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Raw resetLayer: " + layerPath + " in " + (System.currentTimeMillis() - start) + " msecs");
         }
     }
 

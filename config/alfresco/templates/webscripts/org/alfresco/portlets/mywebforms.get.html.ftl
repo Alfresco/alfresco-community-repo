@@ -50,7 +50,7 @@
                         <img src="${url.context}/images/icons/webform_large.gif" width=32 height=32 border=0>
                         <a class="webformLink" href="${url.context}/c/ui/createwebcontent?sandbox=${sandbox}&webproject=${wp.id}&form=${form.properties["wca:formname"]}&container=plain" target="new">${form.properties.title?html}</a>
                         <#if (form.properties.description?exists) && (form.properties.description?length!=0)>
-                        <span style="vertical-align:50%">(${form.properties.description})</span>
+                        <span style="vertical-align:50%">(${form.properties.description?html})</span>
                         </#if>
                      </div>
                   </#list>

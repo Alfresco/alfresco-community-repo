@@ -24,7 +24,15 @@ function main()
    filterParams = Filters.getFilterParams("all", parsedArgs);
    
    // Sort the list before trimming to page chunks 
-   assets = search.luceneSearch(filterParams.query, filterParams.sortBy, filterParams.sortByAscending, filterParams.limitResults ? filterParams.limitResults : 0);
+   assets = search.query(
+   {
+      query: filterParams.query,
+      page:
+      {
+         maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+      },
+      sort: filterParams.sort
+   });
    
    return (
    {

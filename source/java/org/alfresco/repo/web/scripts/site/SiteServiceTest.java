@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -93,6 +94,11 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
+        
+        // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors during unit testing 
+        // (or sending out email by accident from tests)
+        MailActionExecuter mail = (MailActionExecuter)getServer().getApplicationContext().getBean("mail");
+        mail.setTestMode(true);
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         

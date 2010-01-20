@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -136,6 +137,11 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
+        
+        // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors during unit testing 
+        // (or sending out email by accident from tests)
+        MailActionExecuter mail = (MailActionExecuter) getServer().getApplicationContext().getBean("mail");
+        mail.setTestMode(true);
 
         // redeploy invite process definition in case it has been modified
         WorkflowDefinition inviteWfDefinition = this.workflowService.getDefinitionByName(

@@ -20,7 +20,7 @@ var Filters =
          }],
          language: "lucene",
          templates: null,
-         variablePath: false
+         variablePath: true
       };
 
       optional = optional || {};
@@ -106,7 +106,6 @@ var Filters =
                column: "@{http://www.alfresco.org/model/content/1.0}" + dateField,
                ascending: false
             }];
-            filterParams.variablePath = true;
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
 
@@ -114,8 +113,6 @@ var Filters =
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
             filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
             filterQuery += " +@cm\\:workingCopyOwner:" + person.properties.userName;
-
-            filterParams.variablePath = true;
             filterParams.query = filterQuery;
             break;
 
@@ -123,8 +120,6 @@ var Filters =
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
             filterQuery += " +ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
             filterQuery += " -@cm\\:workingCopyOwner:" + person.properties.userName;
-
-            filterParams.variablePath = true;
             filterParams.query = filterQuery;
             break;
 
@@ -140,20 +135,20 @@ var Filters =
                foundOne = true;
                filterQuery += "ID:\"" + favourite + "\"";
             }
-            filterParams.variablePath = true;
             filterParams.query = filterQuery.length > 0 ? "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +(" + filterQuery + ")" : "+ID:\"\"";
             break;
 
          case "node":
+            filterParams.variablePath = false;
             filterParams.query = "+ID:\"" + parsedArgs.rootNode.nodeRef + "\"";
             break;
 
          case "tag":
-            filterParams.variablePath = true;
             filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
             break;
 
          default:
+            filterParams.variablePath = false;
             filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;

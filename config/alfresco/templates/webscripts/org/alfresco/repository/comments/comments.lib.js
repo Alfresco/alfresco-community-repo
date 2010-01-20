@@ -48,14 +48,8 @@ function getOrCreateCommentsFolder(node)
 {
    var commentsFolder = getCommentsFolder(node);
    if (commentsFolder == null)
-   {
-      // add the aspect, which will create the forum as well as the comments topic  
-      node.addAspect("fm:discussable");
-      var forumFolder = node.childAssocs["fm:discussion"][0];
-      if (forumFolder !== null)
-      {
-         commentsFolder = forumFolder.createNode(COMMENTS_TOPIC_NAME, "fm:topic", "cm:contains");
-      }
+   {    
+      commentsFolder = commentService.createCommentsFolder(node); 
    }
    return commentsFolder;
 }

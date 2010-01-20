@@ -597,4 +597,13 @@
       <property name="imapServerEnabled"><value>${imap.server.enabled}</value></property>
     </bean>
     
+    <!--  Comment API supporting bean -->
+    <bean id="commentServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.web.scripts.comment.ScriptCommentService">
+        <property name="extensionName">
+            <value>commentService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+    
+    
 </beans>

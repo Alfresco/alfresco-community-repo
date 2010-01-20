@@ -41,149 +41,180 @@ import java.util.Map;
  * 
  * @see org.alfresco.service.cmr.invitation.NominatedInvitation
  */
-
 /*package scope */ class NominatedInvitationImpl extends InvitationImpl implements NominatedInvitation, Serializable 
 {
-
-	private static final long serialVersionUID = -8800842866845149466L;
-	private String inviteeFirstName;
-	private String inviteeLastName;
+    private static final long serialVersionUID = -8800842866845149466L;
+    private String inviteeFirstName;
+    private String inviteeLastName;
     private String inviteeEmail;
     private String inviterUserName;
+    private String resourceDescription;
+    private String resourceTitle;
     private String roleName; 
     private String serverPath;
     private String acceptUrl; 
     private String rejectUrl;
-	private Date sentInviteDate;
-	private String ticket;
-	
-	/**
-	  * Who is this invitation for
-	  */
+    private Date sentInviteDate;
+    private String ticket;
+    
+    /**
+     * Who is this invitation for
+     */
     private String inviteeUserName;
-	
-	/**
-	 * create a new nominated invitation
-	 */
-	public NominatedInvitationImpl()
-	{
-		super();
-	}
-	
-	public NominatedInvitationImpl(Map<QName, Serializable> workflowProps)
-	{
-		super();
-		 setInviteeUserName((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME));
-	     inviteeFirstName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME);
-	     inviteeLastName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME);
-	     inviteeEmail = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL);
-	     inviterUserName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME);
-//	     inviteePassword =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD);
-	     setResourceName( (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME));
-	     
-	     if(workflowProps.containsKey(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE))
-	     {
-	     	 setResourceType(ResourceType.valueOf((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE)));
-	     }
-	     roleName =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE);
-	     serverPath =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH);
-	     acceptUrl =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL);
-	     rejectUrl =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL);
-	     ticket =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
-	     
-	     
-	}
-	
-	public void setInviteeFirstName(String inviteeFirstName) {
-		this.inviteeFirstName = inviteeFirstName;
-	}
-	public String getInviteeFirstName() {
-		return inviteeFirstName;
-	}
+    
+    /**
+     * create a new nominated invitation
+     */
+    public NominatedInvitationImpl()
+    {
+        super();
+    }
+    
+    public NominatedInvitationImpl(Map<QName, Serializable> workflowProps)
+    {
+        super();
+        setInviteeUserName((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME));
+        inviteeFirstName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME);
+        inviteeLastName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME);
+        inviteeEmail = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL);
+        inviterUserName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME);
+        resourceTitle = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TITLE);
+        resourceDescription = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_DESCRIPTION);
+        setResourceName( (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME));
+        
+        if (workflowProps.containsKey(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE))
+        {
+            setResourceType(ResourceType.valueOf((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE)));
+        }
+        roleName =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE);
+        serverPath =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH);
+        acceptUrl =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL);
+        rejectUrl =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL);
+        ticket =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
+    }
+    
+    public void setInviteeFirstName(String inviteeFirstName)
+    {
+        this.inviteeFirstName = inviteeFirstName;
+    }
+    
+    public String getInviteeFirstName()
+    {
+        return inviteeFirstName;
+    }
 
-	public void setInviteeLastName(String inviteeLastName) {
-		this.inviteeLastName = inviteeLastName;
-	}
+    public void setInviteeLastName(String inviteeLastName)
+    {
+        this.inviteeLastName = inviteeLastName;
+    }
 
-	public String getInviteeLastName() {
-		return inviteeLastName;
-	}
+    public String getInviteeLastName()
+    {
+        return inviteeLastName;
+    }
 
-	public void setInviteeEmail(String inviteeEmail) {
-		this.inviteeEmail = inviteeEmail;
-	}
+    public void setInviteeEmail(String inviteeEmail)
+    {
+        this.inviteeEmail = inviteeEmail;
+    }
 
-	public String getInviteeEmail() {
-		return inviteeEmail;
-	}
+    public String getInviteeEmail()
+    {
+        return inviteeEmail;
+    }
+    
+    public String getResourceDescription()
+    {
+        return resourceDescription;
+    }
 
-	public void setServerPath(String serverPath) {
-		this.serverPath = serverPath;
-	}
+    public String getResourceTitle()
+    {
+        return resourceTitle;
+    }
 
-	public String getServerPath() {
-		return serverPath;
-	}
+    public void setServerPath(String serverPath)
+    {
+        this.serverPath = serverPath;
+    }
 
-	public void setAcceptUrl(String acceptUrl) {
-		this.acceptUrl = acceptUrl;
-	}
+    public String getServerPath()
+    {
+        return serverPath;
+    }
 
-	public String getAcceptUrl() {
-		return acceptUrl;
-	}
+    public void setAcceptUrl(String acceptUrl)
+    {
+        this.acceptUrl = acceptUrl;
+    }
 
-	public void setRejectUrl(String rejectUrl) {
-		this.rejectUrl = rejectUrl;
-	}
+    public String getAcceptUrl()
+    {
+        return acceptUrl;
+    }
 
-	public String getRejectUrl() {
-		return rejectUrl;
-	}
+    public void setRejectUrl(String rejectUrl)
+    {
+        this.rejectUrl = rejectUrl;
+    }
 
-	public void setSentInviteDate(Date sentInviteDate) {
-		this.sentInviteDate = sentInviteDate;
-	}
+    public String getRejectUrl()
+    {
+        return rejectUrl;
+    }
 
-	public Date getSentInviteDate() {
-		return sentInviteDate;
-	}
+    public void setSentInviteDate(Date sentInviteDate)
+    {
+        this.sentInviteDate = sentInviteDate;
+    }
 
-	public void setTicket(String ticket) {
-		this.ticket = ticket;
-	}
+    public Date getSentInviteDate()
+    {
+        return sentInviteDate;
+    }
 
-	public String getTicket() {
-		return ticket;
-	}
-	
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
-	}
+    public void setTicket(String ticket)
+    {
+        this.ticket = ticket;
+    }
 
-	public String getRoleName() {
-		return roleName;
-	}
+    public String getTicket()
+    {
+        return ticket;
+    }
+    
+    public void setRoleName(String roleName)
+    {
+        this.roleName = roleName;
+    }
 
-	public InvitationType getInvitationType() {
-		return InvitationType.NOMINATED;
+    public String getRoleName()
+    {
+        return roleName;
+    }
 
-	}
-	
-	public void setInviteeUserName(String inviteeUserName) {
-		this.inviteeUserName = inviteeUserName;
-	}
+    public InvitationType getInvitationType()
+    {
+        return InvitationType.NOMINATED;
+    }
+    
+    public void setInviteeUserName(String inviteeUserName)
+    {
+        this.inviteeUserName = inviteeUserName;
+    }
 
-	public String getInviteeUserName() {
-		return inviteeUserName;
-	}
+    public String getInviteeUserName()
+    {
+        return inviteeUserName;
+    }
 
-	public String getInviterUserName() {
-		return inviterUserName;
-	}
-	
-	public void setInviterUserName(String inviterUserName) {
-		this.inviterUserName= inviterUserName;
-	}
-	
+    public String getInviterUserName()
+    {
+        return inviterUserName;
+    }
+    
+    public void setInviterUserName(String inviterUserName)
+    {
+        this.inviterUserName= inviterUserName;
+    }
 }

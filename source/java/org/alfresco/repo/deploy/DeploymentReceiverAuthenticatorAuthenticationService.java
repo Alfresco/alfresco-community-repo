@@ -24,11 +24,11 @@ public class DeploymentReceiverAuthenticatorAuthenticationService implements Dep
 	 * @param password
 	 * @return true, yes - go ahead.
 	 */
-	public boolean logon(String user, String password)
+	public boolean logon(String user, char[] password)
 	{
 		try 
 		{
-			authenticationService.authenticate(user, password.toCharArray());
+			authenticationService.authenticate(user, password);
 			return true;
 		}
 		catch (AuthenticationException e)

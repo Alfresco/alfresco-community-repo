@@ -67,6 +67,8 @@ public interface WorkflowModelNominatedInvitation
     public static final QName WF_PROP_INVITEE_LASTNAME = QName.createQName(NAMESPACE_URI, "inviteeLastName");
     public static final QName WF_PROP_RESOURCE_TYPE = QName.createQName(NAMESPACE_URI, "resourceType");
     public static final QName WF_PROP_RESOURCE_NAME = QName.createQName(NAMESPACE_URI, "resourceName");
+    public static final QName WF_PROP_RESOURCE_TITLE = QName.createQName(NAMESPACE_URI, "resourceTitle");
+    public static final QName WF_PROP_RESOURCE_DESCRIPTION = QName.createQName(NAMESPACE_URI, "resourceDescription");   
     public static final QName WF_PROP_INVITEE_ROLE = QName.createQName(NAMESPACE_URI, "inviteeRole");
     public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NAMESPACE_URI, "inviteeGenPassword");
     
@@ -74,6 +76,8 @@ public interface WorkflowModelNominatedInvitation
     public static final String wfVarInviteeUserName = "inwf_inviteeUserName";
     public static final String wfVarInviterUserName = "inwf_inviterUserName";
     public static final String wfVarResourceName = "inwf_resourceName";
+    public static final String wfVarResourceTitle = "inwf_resourceTitle";
+    public static final String wfVarResourceDescription = "inwf_resourceDescription";
     public static final String wfVarResourceType = "inwf_resourceType";
     public static final String wfVarWorkflowInstanceId = "workflowinstanceid";
     public static final String wfVarRole =  "inwf_inviteeRole";

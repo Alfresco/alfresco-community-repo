@@ -4062,14 +4062,8 @@ public class HibernateNodeDaoServiceImpl
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
-        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
-        
-        // Shortcut the query if the QNames don't exist
-        if (sizeCurrentPropQNamePair == null || personTypeQNamePair == null)
-        {
-            return;
-        }
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT);
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON);
         
         HibernateCallback callback = new HibernateCallback()
         {
@@ -4115,15 +4109,9 @@ public class HibernateNodeDaoServiceImpl
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Pair<Long, QName> usernamePropQNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
-        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
-        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
-        
-        // Shortcut the query if the QNames don't exist
-        if (usernamePropQNamePair == null || sizeCurrentPropQNamePair == null || personTypeQNamePair == null)
-        {
-            return;
-        }
+        final Pair<Long, QName> usernamePropQNamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME);
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT);
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON);
         
         HibernateCallback callback = new HibernateCallback()
         {

@@ -74,6 +74,12 @@
             <property name="inwf:resourceName">
                <type>d:text</type>
             </property>
+            <property name="inwf:resourceTitle">
+               <type>d:text</type>
+            </property>
+            <property name="inwf:resourceDescription">
+               <type>d:text</type>
+            </property>
             <property name="inwf:inviteeRole">
                <type>d:text</type>
             </property>

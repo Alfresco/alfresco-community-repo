@@ -49,6 +49,10 @@ public interface NominatedInvitation extends Invitation
 
 	public String getResourceName();
 
+    public String getResourceTitle();
+
+    public String getResourceDescription();
+
 	public String getServerPath();
 
 	public String getAcceptUrl();
@@ -62,5 +66,4 @@ public interface NominatedInvitation extends Invitation
 	public String getTicket();
 	
 	public String getRoleName();
-
 }

@@ -1082,7 +1082,7 @@ public class DeploymentServiceImpl implements DeploymentService
                
                 try 
                 {	
-                	DeploymentToken token = service.begin(target, storeName, version, userName, password);
+                	DeploymentToken token = service.begin(target, storeName, version, userName, password.toCharArray());
                 	ticket = token.getTicket();
                 	deployDirectoryPushFSR(service, ticket, version, srcPath, "/", matcher, eventQueue, sendQueue, errors, lock);
                 }

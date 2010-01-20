@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -1320,46 +1321,35 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 		// Get invitee person NodeRef to add as assignee
 		NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
 
-		// create workflow properties
-		Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(
-				16);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME,
-				inviterUserName);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME,
-				inviteeUserName);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL,
-				inviteeEmail);
-		workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME,
-				inviteeFirstName);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME,
-				inviteeLastName);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD,
-				inviteePassword);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME,
-				siteShortName);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
-				resourceType.toString());
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE,
-				inviteeSiteRole);
-		workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH,
-				serverPath);
-		workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL,
-				acceptUrl);
-		workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL,
-				rejectUrl);
-		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET,
-				inviteTicket);
+        SiteInfo siteInfo = this.siteService.getSite(siteShortName);
+        String siteDescription = siteInfo.getDescription();
+        if (siteDescription == null)
+        {
+            siteDescription = "";
+        }
+        else if (siteDescription.length() > 255)
+        {
+            siteDescription = siteDescription.substring(0, 255);
+        }
+
+        // create workflow properties
+        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME, inviterUserName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL, inviteeEmail);
+        workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME, inviteeFirstName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME, inviteeLastName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD, inviteePassword);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, siteShortName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TITLE, siteInfo.getTitle());
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_DESCRIPTION, siteDescription);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE, inviteeSiteRole);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH, serverPath);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL, acceptUrl);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL, rejectUrl);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET, inviteTicket);
 
 		// start the workflow
 		WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition

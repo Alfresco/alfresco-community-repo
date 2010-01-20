@@ -72,7 +72,7 @@ public class DeploymentReceiverServiceClient implements
     /* (non-Javadoc)
      * @see org.alfresco.deployment.DeploymentReceiverService#begin(java.lang.String, java.lang.String, java.lang.String)
      */
-    public DeploymentToken begin(String target, String storeName, int version, String user, String password)
+    public DeploymentToken begin(String target, String storeName, int version, String user, char[] password)
     {
         return fTransport.begin(target, storeName, version, user, password);
     }
@@ -138,7 +138,7 @@ public class DeploymentReceiverServiceClient implements
     /* (non-Javadoc)
      * @see org.alfresco.deployment.DeploymentReceiverService#shutDown(java.lang.String, java.lang.String)
      */
-    public void shutDown(String user, String password)
+    public void shutDown(String user, char[] password)
     {
         fTransport.shutDown(user, password);
     }

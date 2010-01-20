@@ -404,7 +404,6 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         model = convertToRhinoModel(model);
         
         Context cx = Context.enter();
-        cx.setOptimizationLevel(1);
         try
         {
             // Create a thread-specific scope from one of the shared scopes.
@@ -542,7 +541,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         try
         {
             cx.setWrapFactory(wrapFactory);
-            this.secureScope = cx.initStandardObjects();
+            this.secureScope = cx.initStandardObjects(null, true);
 
             // remove security issue related objects - this ensures the script may not access
             // unsecure java.* libraries or import any other classes for direct access - only
@@ -555,7 +554,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         {
             Context.exit();
         }
-
+        
         // Initialise the non-secure scope
         cx = Context.enter();
         try
@@ -564,7 +563,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
 
             // allow access to all libraries and objects, including the importer
             // @see http://www.mozilla.org/rhino/ScriptingJava.html
-            this.nonSecureScope = new ImporterTopLevel(cx);
+            this.nonSecureScope = new ImporterTopLevel(cx, true);
         }
         finally
         {

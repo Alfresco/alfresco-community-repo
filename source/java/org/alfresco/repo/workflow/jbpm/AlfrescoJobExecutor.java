@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -43,23 +44,32 @@ import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
 public class AlfrescoJobExecutor extends JobExecutor
 {
     private static final long serialVersionUID = -4576396495395482111L;
-
+    
     private static Log log = LogFactory.getLog(JobExecutor.class);
     private TransactionService transactionService;
+    
     private JbpmConfiguration jbpmConfiguration;
-
+    
+    private JobLockService jobLockService;
+    private boolean jobExecutorLockEnabled = true;
+    
+    public void setJobExecutorLockEnabled(boolean jobExecutorLockEnabled)
+    {
+        this.jobExecutorLockEnabled = jobExecutorLockEnabled;
+    }
     
     /**
-     * Constructor
+     * Is Alfresco Job Executor Lock Enabled
+     * 
+     * @return true if only one executor thread allowed (including across cluster)
+     * 
+     * @since 3.2
      */
-    public AlfrescoJobExecutor()
+    public boolean getJobExecutorLockEnabled()
     {
-        BeanFactoryLocator factoryLocator = new JbpmFactoryLocator();
-        BeanFactoryReference factory = factoryLocator.useBeanFactory(null);
-        transactionService = (TransactionService)factory.getFactory().getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
-        jbpmConfiguration = (JbpmConfiguration)factory.getFactory().getBean("jbpm_configuration");
+        return this.jobExecutorLockEnabled;
     }
-
+    
     /**
      * Gets Transaction Service
      * 
@@ -69,7 +79,34 @@ public class AlfrescoJobExecutor extends JobExecutor
     {
         return transactionService;
     }
-
+    
+    /**
+     * Gets Job Lock Service
+     * 
+     * @return  job lock service
+     * 
+     * @since 3.2
+     */
+    public JobLockService getJobLockService()
+    {
+        return jobLockService;
+    }
+    
+    /**
+     * Constructor
+     */
+    public AlfrescoJobExecutor()
+    {
+        BeanFactoryLocator factoryLocator = new JbpmFactoryLocator();
+        BeanFactoryReference factory = factoryLocator.useBeanFactory(null);
+        
+        transactionService = (TransactionService)factory.getFactory().getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        jobLockService = (JobLockService)factory.getFactory().getBean(ServiceRegistry.JOB_LOCK_SERVICE.getLocalName());
+        
+        jbpmConfiguration = (JbpmConfiguration)factory.getFactory().getBean("jbpm_configuration");
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.jbpm.job.executor.JobExecutor#startThread()
      */

@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.template.DateCompareMethod;
@@ -56,6 +57,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.validator.EmailValidator;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -80,7 +82,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_TEXT = "text";
     public static final String PARAM_FROM = "from";
     public static final String PARAM_TEMPLATE = "template";
-    
+       
     /**
      * From address
      */
@@ -137,6 +139,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * Default alfresco installation url
      */
     private String repoRemoteUrl = null;
+    
+    /**
+     * Test mode prevents email messages from being sent.
+     * It is used when unit testing when we don't actually want to send out email messages.
+     * 
+     * MER 20/11/2009 This is a quick and dirty fix. It should be replaced by being 
+     * "mocked out" or some other better way of running the unit tests. 
+     */
+    private boolean testMode = false;
     
     /**
      * @param javaMailSender    the java mail sender
@@ -236,7 +247,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     }
     
     /**
-     * Execute the rule action
+     * Send an email message
+     * 
+     * @throws AlfrescoRuntimeExeption
      */
     @Override
     protected void executeImpl(
@@ -375,15 +388,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
             }
         };
-        
+                
         try
         {
-            // Send the message
-            javaMailSender.send(mailPreparer);
+            // Send the message unless we are in "testMode"
+            if(!testMode)
+            {
+                javaMailSender.send(mailPreparer);
+            }
         }
-        catch (Throwable e)
+        catch (MailException e)
         {
-            // don't stop the action but let admins know email is not getting sent
             String to = (String)ruleAction.getParameterValue(PARAM_TO);
             if (to == null)
             {
@@ -395,6 +410,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             }
             
             logger.error("Failed to send email to " + to, e);
+            
+            throw new AlfrescoRuntimeException("Failed to send email to:" + to, e);   
         }
     }
     
@@ -459,6 +476,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TEXT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEMPLATE, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE)));
+    }
+
+    public void setTestMode(boolean testMode)
+    {
+        this.testMode = testMode;
+    }
+
+    public boolean isTestMode()
+    {
+        return testMode;
     }
 
     public static class URLHelper

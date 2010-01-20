@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -78,10 +79,16 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
-        this.invitationService = (InvitationService)this.applicationContext.getBean("InvitationService");
-        this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
-        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
+        
+        this.invitationService = (InvitationService) this.applicationContext.getBean("InvitationService");
+        this.siteService = (SiteService) this.applicationContext.getBean("SiteService");
+        this.personService = (PersonService) this.applicationContext.getBean("PersonService");
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        
+        // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors during unit testing 
+        // (or sending out email by accident from tests)
+        MailActionExecuter mail = (MailActionExecuter)this.applicationContext.getBean("mail");
+        mail.setTestMode(true);
         
         createPerson(USER_MANAGER, USER_MANAGER + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
         createPerson(USER_ONE, USER_ONE_EMAIL,USER_ONE_FIRSTNAME, USER_ONE_LASTNAME);

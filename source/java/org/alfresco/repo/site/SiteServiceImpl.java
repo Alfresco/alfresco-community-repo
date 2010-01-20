@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -60,6 +61,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -1145,24 +1148,41 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         boolean addUser = false;
         
-        NodeRef personRef = this.personService.getPerson(username);
-        Map<QName, Serializable> props = this.nodeService.getProperties(personRef);
-        String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
-        String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
-        final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
-        final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
-        for (int i=0; i<nameFilters.length; i++)
+        String query = "+TYPE:\"cm:person\" +@cm\\:userName:\"" + username + "\"";
+        SearchParameters searchParameters = new SearchParameters();
+        searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
+        searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        searchParameters.setQuery(query);        
+        ResultSet resultSet = this.searchService.query(searchParameters);
+        try
         {
-            if (lowFirstName.indexOf(nameFilters[i]) != -1)
+            if (resultSet.length() != 0)
             {
-                addUser = true;
-                break;
+                ResultSetRow row = resultSet.getRow(0);
+                Map<String, Serializable> values = row.getValues();
+                String firstName = (String)values.get(ContentModel.PROP_FIRSTNAME.toString());
+                String lastName = (String)values.get(ContentModel.PROP_LASTNAME.toString());
+                
+                final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
+                final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
+                for (int i=0; i<nameFilters.length; i++)
+                {
+                    if (lowFirstName.indexOf(nameFilters[i]) != -1)
+                    {
+                        addUser = true;
+                        break;
+                    }
+                    else if (lowLastName.indexOf(nameFilters[i]) != -1)
+                    {
+                        addUser = true;
+                        break;
+                    }
+                }
             }
-            else if (lowLastName.indexOf(nameFilters[i]) != -1)
-            {
-                addUser = true;
-                break;
-            }
+        }
+        finally
+        {
+            resultSet.close();
         }
         
         return addUser;

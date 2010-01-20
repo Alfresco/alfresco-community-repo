@@ -57,6 +57,7 @@ import org.apache.commons.logging.LogFactory;
 public class AlfrescoNavigationHandler extends NavigationHandler
 {
    public final static String OUTCOME_SEPARATOR = ":";
+   public final static String OUTCOME_BROWSE = "browse";
    public final static String DIALOG_PREFIX = "dialog" + OUTCOME_SEPARATOR;
    public final static String WIZARD_PREFIX = "wizard" + OUTCOME_SEPARATOR;
    public final static String CLOSE_DIALOG_OUTCOME = DIALOG_PREFIX + "close";
@@ -762,28 +763,35 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             // an overidden outcome as we could be going anywhere in the app.
             // grab the current top item first though in case we need to open
             // another dialog or wizard
-            String previousViewId = getViewIdFromStackObject(context, getViewStack(context).peek());
-            getViewStack(context).clear();
-            
-            if (logger.isDebugEnabled())
-               logger.debug("Closing " + closingItem + " with an overridden outcome of '" + overriddenOutcome + "'");
-            
-            // if the override is calling another dialog or wizard come back through
-            // the navigation handler from the beginning
-            if (isDialog(overriddenOutcome) || isWizard(overriddenOutcome))
+            if (OUTCOME_BROWSE.equals(overriddenOutcome) == false)
             {
-               // set the view id to the page at the top of the stack so when
-               // the new dialog or wizard closes it goes back to the correct page
-               context.getViewRoot().setViewId(previousViewId);
+               String previousViewId = getViewIdFromStackObject(context, getViewStack(context).peek());
+               getViewStack(context).clear();
                
                if (logger.isDebugEnabled())
-               {
-                  logger.debug("view stack: " + getViewStack(context));
-                  logger.debug("Opening '" + overriddenOutcome + "' after " + closingItem + 
-                               " close using view id: " + previousViewId);
-               }
+                  logger.debug("Closing " + closingItem + " with an overridden outcome of '" + overriddenOutcome + "'");
                
-               this.handleNavigation(context, fromAction, overriddenOutcome);
+               // if the override is calling another dialog or wizard come back through
+               // the navigation handler from the beginning
+               if (isDialog(overriddenOutcome) || isWizard(overriddenOutcome))
+               {
+                  // set the view id to the page at the top of the stack so when
+                  // the new dialog or wizard closes it goes back to the correct page
+                  context.getViewRoot().setViewId(previousViewId);
+
+                  if (logger.isDebugEnabled())
+                  {
+                     logger.debug("view stack: " + getViewStack(context));
+                     logger.debug("Opening '" + overriddenOutcome + "' after " + closingItem + 
+                                  " close using view id: " + previousViewId);
+                  }
+                  
+                  this.handleNavigation(context, fromAction, overriddenOutcome);
+               }
+               else
+               {
+                  navigate(context, fromAction, overriddenOutcome);
+               }
             }
             else
             {
@@ -800,7 +808,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             logger.debug("Attempting to close a " + closingItem + " with an empty view stack, returning 'browse' outcome");
          }
          
-         navigate(context, fromAction, "browse");
+         navigate(context, fromAction, OUTCOME_BROWSE);
       }
    }
    

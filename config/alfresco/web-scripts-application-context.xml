@@ -351,7 +351,7 @@
    </bean>
 
    <!--  Abstract Content Streaming Web Script -->
-   <bean id="webscript.org.alfresco.repository.content.stream" class="org.alfresco.repo.web.scripts.content.StreamContent" parent="webscript">
+   <bean id="webscript.org.alfresco.repository.content.stream" class="org.alfresco.repo.web.scripts.content.StreamContent" parent="webscript" scope="prototype">
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />
       <property name="contentService" ref="ContentService" />

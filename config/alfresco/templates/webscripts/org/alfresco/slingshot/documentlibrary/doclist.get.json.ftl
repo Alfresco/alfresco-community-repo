@@ -41,19 +41,19 @@
       <#assign version = "1.0">
       <#if d.hasAspect("cm:versionable") && d.versionHistory?size != 0><#assign version = d.versionHistory[0].versionLabel></#if>
       <#if item.createdBy??>
-         <#assign createdBy = (item.createdBy.properties.firstName + " " + item.createdBy.properties.lastName)?trim>
+         <#assign createdBy = (item.createdBy.properties.firstName!"" + " " + item.createdBy.properties.lastName!"")?trim>
          <#assign createdByUser = item.createdBy.properties.userName>
       <#else>
          <#assign createdBy="" createdByUser="">
       </#if>
       <#if item.modifiedBy??>
-         <#assign modifiedBy = (item.modifiedBy.properties.firstName + " " + item.modifiedBy.properties.lastName)?trim>
+         <#assign modifiedBy = (item.modifiedBy.properties.firstName!"" + " " + item.modifiedBy.properties.lastName!"")?trim>
          <#assign modifiedByUser = item.modifiedBy.properties.userName>
       <#else>
          <#assign modifiedBy="" modifiedByUser="">
       </#if>
       <#if item.lockedBy??>
-         <#assign lockedBy = (item.lockedBy.properties.firstName + " " + item.lockedBy.properties.lastName)?trim>
+         <#assign lockedBy = (item.lockedBy.properties.firstName!"" + " " + item.lockedBy.properties.lastName!"")?trim>
          <#assign lockedByUser = item.lockedBy.properties.userName>
       <#else>
          <#assign lockedBy="" lockedByUser="">

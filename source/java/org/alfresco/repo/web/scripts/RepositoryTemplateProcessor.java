@@ -64,7 +64,7 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     protected String defaultEncoding;
     protected Configuration templateConfig;
     protected FreeMarkerProcessor freeMarkerProcessor;
-    private int updateDelay = 0;
+    private int updateDelay = 1;
     private int cacheSize = 512;
 
 

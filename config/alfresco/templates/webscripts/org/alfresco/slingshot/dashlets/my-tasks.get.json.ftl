@@ -108,16 +108,15 @@
       "type": "${task.type}",
       "completeness": "${task.properties["bpm:percentComplete"]}",
       <#if task.properties["inwf:resourceName"]?exists>
-      <#assign theSite = site.getSiteInfo(task.properties["inwf:resourceName"])>
       <#assign theInviter = people.getPerson(task.properties["inwf:inviterUserName"])>
       "invitation":
       {
          "type": "nominated",
          "site":
          {
-            "id": "${theSite.shortName}",
-            "title": "${theSite.title!""}",
-            "description": "${theSite.description!""}"
+            "id": "${task.properties["inwf:resourceName"]!""}",
+            "title": "${jsonUtils.encodeJSONString(task.properties["inwf:resourceTitle"]!"")}",
+            "description": "${jsonUtils.encodeJSONString(task.properties["inwf:resourceDescription"]!"")}"
          },
          "inviter":
          {

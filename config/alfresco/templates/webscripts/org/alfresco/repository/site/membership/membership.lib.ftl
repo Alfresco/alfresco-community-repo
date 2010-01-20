@@ -10,11 +10,11 @@
 	{
 		"authorityType" : "${authority.authorityType}",
 		"shortName" : "${authority.shortName}",
-		"fullName" : "${authority.fullName}",
+		"fullName" : "${authority.fullName!""}",
 		"displayName" : "${authority.displayName}",
 		"url" : "${url.serviceContext + "/api/groups/" + authority.shortName }"
 	},
-	"url" : "${url.serviceContext + "/api/sites/" + site.shortName + "/memberships/" + authority.fullName}"
+	"url" : "${url.serviceContext + "/api/sites/" + site.shortName + "/memberships/" + authority.fullName!""}"
 
 <#else>
 <#-- this is a person authority type -->
@@ -23,8 +23,8 @@
 		"authorityType" : "USER",
 		"fullName" : "${authority.properties.userName}",
 		"userName" : "${authority.properties.userName}",
-		"firstName" : "${authority.properties.firstName}",
-		"lastName" : "${authority.properties.lastName}",
+		"firstName" : "${authority.properties.firstName!""}",
+		"lastName" : "${authority.properties.lastName!""}",
 		<#if authority.assocs["cm:avatar"]??>
 		"avatar" : "${"api/node/" + authority.assocs["cm:avatar"][0].nodeRef?string?replace('://','/') + "/content/thumbnails/avatar"}",
 		</#if>

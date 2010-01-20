@@ -94,31 +94,31 @@ public class UIDeployWebsite extends UIInput
    public void decode(FacesContext context)
    {
       super.decode(context);
-  
+
       List<String> selectedNodes = new LinkedList<String>();
       Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
-   
+
       // Non grouped checkboxes have the name of the clientId
       addValues(selectedNodes, valuesMap, this.getClientId(context));
-           
+
       // If we have been grouping the checkboxes then the name will have been generated as follows
       // name = this.getClientId(context) + ":group1:child";  
       Set<String> keys = valuesMap.keySet();
-      for( String key : keys) 
+      for (String key : keys) 
       {
-    	 // Check whether the key matches the pattern for a child checkbox
-    	 if(key.matches(this.getClientId(context) + ParentChildCheckboxHelper.helperChildPattern)) 
-    	 { 
-    		 // Key does matches the pattern for a child
-    		 addValues(selectedNodes, valuesMap, key);
-    	 }
+         // Check whether the key matches the pattern for a child checkbox
+         if (key.matches(this.getClientId(context) + ParentChildCheckboxHelper.helperChildPattern)) 
+         { 
+            // Key does matches the pattern for a child
+            addValues(selectedNodes, valuesMap, key);
+         }
       }
-      
+
       // Need to convert between between Object[] and String[] otherwise we get a class cast exception in the 
       // bowels of JSF.
       String[] retVal = new String[selectedNodes.size()];
       java.lang.System.arraycopy(selectedNodes.toArray(), 0 , retVal, 0, selectedNodes.size());
-      
+
       // These are the selected nodeIds of the servers which have been selected
       setSubmittedValue(retVal);
    }
@@ -247,60 +247,58 @@ public class UIDeployWebsite extends UIInput
                List<NodeRef> allocatedServers = DeploymentUtil.findAllocatedTestServers(getStore());
                if (!allocatedServers.isEmpty())
                {
-            	  // there is at least one allocated server
-            	  for(NodeRef allocatedServer : allocatedServers)
-            	  {
-            		  renderAllocatedTestServer(context, out, nodeService, allocatedServer);
-            	  }
+                  // there is at least one allocated server
+                  for(NodeRef allocatedServer : allocatedServers)
+                  {
+                     renderAllocatedTestServer(context, out, nodeService, allocatedServer);
+                  }
                }
                else
                {
             	  // a test server(s) needs to be selected - display the list of test servers
                   List<NodeRef> refs = DeploymentUtil.findTestServers(webProject, true);
-                  
+
                   // Resolve the unsorted list of NodeRef to a sorted list of DeploymentServerConfig.
                   List<DeploymentServerConfig> servers = toSortedDeploymentServerConfig(nodeService, refs);
-                  
+
                   if (servers.size() > 0)
                   {
                      ParentChildCheckboxHelper helper = new ParentChildCheckboxHelper(this.getClientId(context));
-                     //boolean first = true;
-                     //String currentDisplayGroup = "";
                      boolean selected = false;
-                     
+
                      for (DeploymentServerConfig server: servers)
                      {                    	 
-                    	    // Get the display group
-                         String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
-                         
-                         helper.setCurrentDisplayGroup(displayGroup);
-                         if(helper.newGroup) 
-                         {       		
+                        // Get the display group
+                        String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
+
+                        helper.setCurrentDisplayGroup(displayGroup);
+                        if(helper.newGroup) 
+                        {       		
                            out.write("<p class='mainSubTitle'>");
                            out.write("<input type='checkbox' id='");
                            out.write(helper.groupParentId);
                            out.write("' value='");
-                           out.write(displayGroup);
+                           out.write(Utils.encode(displayGroup));
                            out.write("'");
                            out.write(" ");
                            out.write("onClick=\"select_all(\'");
-                      	   out.write(helper.groupChildName);
-                   	       out.write("\', this.checked);\" "); 
+                           out.write(helper.groupChildName);
+                           out.write("\', this.checked);\" "); 
                            out.write(" /> ");
-                           out.write(displayGroup);
+                           out.write(Utils.encode(displayGroup));
                            out.write("</p>");
-                     	 }
+                        }
 
-                         if(helper.groupParentId.length() > 0) 
-                         {
-                       	  // render the test server with a child checkbox
-                             renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
-                         }
-                         else
-                         {
-                       	  // render the test server without a parent checkbox
-                       	  renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
-                         }                    	 
+                        if (helper.groupParentId.length() > 0) 
+                        {
+                           // render the test server with a child checkbox
+                           renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
+                        }
+                        else
+                        {
+                           // render the test server without a parent checkbox
+                           renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
+                        }
                      }
                   }
                   else
@@ -322,54 +320,54 @@ public class UIDeployWebsite extends UIInput
             else
             {
                // Display live servers not test servers
-            	
+
                // TODO: get a list of the servers that have been successfully deployed to 
-               
+
                List<NodeRef> refs = DeploymentUtil.findLiveServers(webProject);
-               
+
                // Resolve the unsorted list of NodeRef to a sorted list of DeploymentServerConfig.
                List<DeploymentServerConfig> servers = toSortedDeploymentServerConfig(nodeService, refs);
-               
+
                ParentChildCheckboxHelper helper = new ParentChildCheckboxHelper(this.getClientId(context));
-               
+
                // Now display the servers         
                for (DeploymentServerConfig server : servers)
                {
                   // TODO: determine if the server has already been successfully deployed to
                   boolean selected = true;
-                 
+
                   // Get the display group
                   String displayGroup = (String)server.getProperties().get(DeploymentServerConfig.PROP_GROUP);
-                  
-                  helper.setCurrentDisplayGroup(displayGroup);
-                  if(helper.newGroup) 
-                  {       		
-                    out.write("<p class='mainSubTitle'>");
-                    out.write("<input type='checkbox' id='");
-                    out.write(helper.groupParentId);
-                    out.write("' value='");
-                    out.write(displayGroup);
-                    out.write("'");
-                    out.write(" checked='checked' ");
-                    
-               	    out.write("onClick=\"select_all(\'");
-               	    out.write(helper.groupChildName);
-            	    out.write("\', this.checked);\" "); 
-                    out.write(" /> ");
-                    
-                    out.write(displayGroup);
-                    out.write("</p>");
-              	  }
 
-                  if(helper.groupParentId.length() > 0) 
+                  helper.setCurrentDisplayGroup(displayGroup);
+                  if (helper.newGroup) 
+                  {       		
+                     out.write("<p class='mainSubTitle'>");
+                     out.write("<input type='checkbox' id='");
+                     out.write(helper.groupParentId);
+                     out.write("' value='");
+                     out.write(Utils.encode(displayGroup));
+                     out.write("'");
+                     out.write(" checked='checked' ");
+
+                     out.write("onClick=\"select_all(\'");
+                     out.write(helper.groupChildName);
+                     out.write("\', this.checked);\" "); 
+                     out.write(" /> ");
+
+                     out.write(Utils.encode(displayGroup));
+                     out.write("</p>");
+                  }
+
+                  if (helper.groupParentId.length() > 0) 
                   {
-                	  // render the live server with a child checkbox
-                      renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
+                     // render the live server with a child checkbox
+                     renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, helper.groupChildName, helper.groupParentId);
                   }
                   else
                   {
-                	  // render the live server without a parent checkbox
-                	  renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
+                     // render the live server without a parent checkbox
+                     renderCheckableServer(context, out, nodeService, server.getServerRef(), selected, this.getClientId(context));
                   }
                }
             }
@@ -585,27 +583,27 @@ public class UIDeployWebsite extends UIInput
             NodeRef server, boolean selected, String checkBoxName, String parentId) throws IOException
    {
       String contextPath = context.getExternalContext().getRequestContextPath();
-            
+
       renderPanelStart(out, contextPath);
-      
+
       out.write("<div class='deployPanelControl'>");
       out.write("<input type='checkbox' ");
-      if(checkBoxName != null && checkBoxName.length() > 0) 
+      if (checkBoxName != null && checkBoxName.length() > 0) 
       {
-      	 out.write("name='");
-      	 out.write(checkBoxName);
+         out.write("name='");
+         out.write(checkBoxName);
          out.write("' "); 
-      
+
          // If there is a parent checkbox
          // generate java script of the form
          // onClick="select_one('xxx', 'area');"
-         if(parentId != null && parentId.length() > 0 ) 
+         if (parentId != null && parentId.length() > 0 ) 
          {
-        	 out.write("onClick=\"select_one(\'");
-        	 out.write(parentId);
-        	 out.write("\', \'");
-        	 out.write(checkBoxName);
-        	 out.write("');\" "); 
+            out.write("onClick=\"select_one(\'");
+            out.write(parentId);
+            out.write("\', \'");
+            out.write(checkBoxName);
+            out.write("');\" "); 
          }
       }      
       out.write("value='");
@@ -616,18 +614,9 @@ public class UIDeployWebsite extends UIInput
          out.write(" checked='checked'");
       }
       out.write(" /></div>");
-      
+
       renderPanelMiddle(out, contextPath, nodeService, server, true);
-      
-//      if (selected == false)
-//      {
-//         out.write("<div class='deployPanelServerStatus'><img src='");
-//         out.write(contextPath);
-//         out.write("/images/icons/info_icon.gif' style='vertical-align: -5px;' />&nbsp;");
-//         out.write(Application.getMessage(context, "deploy_server_not_selected"));
-//         out.write("</div>");
-//      }
-      
+
       renderPanelEnd(out, contextPath);
    }
    
@@ -758,7 +747,7 @@ public class UIDeployWebsite extends UIInput
     * @return a sorted list of DeploymentServerConfig objects.
     */
    @SuppressWarnings("unchecked")
-private List<DeploymentServerConfig> toSortedDeploymentServerConfig(NodeService nodeService, List<NodeRef> refs) { 
+   private List<DeploymentServerConfig> toSortedDeploymentServerConfig(NodeService nodeService, List<NodeRef> refs) { 
 	   // Resolve the list of NodeRef to a list of DeploymentServerConfig.
 	   List<DeploymentServerConfig> servers = new ArrayList<DeploymentServerConfig>();
 	   for (NodeRef ref : refs) 
@@ -778,47 +767,46 @@ private List<DeploymentServerConfig> toSortedDeploymentServerConfig(NodeService 
 
    private class ParentChildCheckboxHelper 
    {
-	   private String clientId;
-       String currentDisplayGroup = "";
-       String groupChildName = "";
-       String groupParentId = "";
-       String groupName = "";
-       int groupNumber = 1;
-       boolean newGroup = false;
-       
-       public ParentChildCheckboxHelper(String clientId)
-       {
-    	   this.clientId = clientId;
-       }
-   
-	   public void setCurrentDisplayGroup(String currentDisplayGroup) 
-	   {
-		    this.newGroup = !this.currentDisplayGroup.equalsIgnoreCase(currentDisplayGroup);
-		    this.currentDisplayGroup = currentDisplayGroup;
-		    if(this.newGroup)
-		    {
-		    	changeGroup(currentDisplayGroup);
-		    }
-	   }
-	   public String getCurrentDisplayGroup() 
-	   {
-			return currentDisplayGroup;
-	   }
-	   
-	   private void changeGroup(String newGroupName) 
-	   {
+      private String clientId;
+      String currentDisplayGroup = "";
+      String groupChildName = "";
+      String groupParentId = "";
+      String groupName = "";
+      int groupNumber = 1;
+      boolean newGroup = false;
 
-   	    	// Examples of HTML naming scheme 
-   	    	//  jsp17:group1:parent, jsp17:group1:child
-     	    //  jsp17:group2:parent, jsp17:group2:child
-   	    	groupName = clientId + ":group" + Integer.toString(groupNumber++);  
-   	    	groupChildName = groupName + ":child";
-   	    	groupParentId = groupName + ":parent";
-	   }
-	   
-	   /**
-	    * Regex pattern for child checkbox names - matches implementation within changeGroup method of this class
-	    */
-	   static final String helperChildPattern = ":group[\\d]+:child";
+      public ParentChildCheckboxHelper(String clientId)
+      {
+         this.clientId = clientId;
+      }
+
+      public void setCurrentDisplayGroup(String currentDisplayGroup) 
+      {
+         this.newGroup = !this.currentDisplayGroup.equalsIgnoreCase(currentDisplayGroup);
+         this.currentDisplayGroup = currentDisplayGroup;
+         if (this.newGroup)
+         {
+            changeGroup(currentDisplayGroup);
+         }
+      }
+      public String getCurrentDisplayGroup() 
+      {
+         return currentDisplayGroup;
+      }
+
+      private void changeGroup(String newGroupName) 
+      {
+         // Examples of HTML naming scheme 
+         //  jsp17:group1:parent, jsp17:group1:child
+         //  jsp17:group2:parent, jsp17:group2:child
+         groupName = clientId + ":group" + Integer.toString(groupNumber++);  
+         groupChildName = groupName + ":child";
+         groupParentId = groupName + ":parent";
+      }
+
+      /**
+       * Regex pattern for child checkbox names - matches implementation within changeGroup method of this class
+       */
+      static final String helperChildPattern = ":group[\\d]+:child";
    }
 }

@@ -698,21 +698,16 @@ public class CreateUserWizard extends BaseWizardBean
 
             // check for existance of home space with same name - return immediately
             // if it exists or throw an exception an give user chance to enter another name
-            // TODO: this might be better replaced with an XPath query!
-            List<ChildAssociationRef> children = this.getNodeService().getChildAssocs(parentRef);
-            for (ChildAssociationRef ref : children)
+            NodeRef childRef = this.getNodeService().getChildByName(parentRef, ContentModel.ASSOC_CONTAINS, spaceName);
+            if (childRef != null)
             {
-                String childNodeName = (String) this.getNodeService().getProperty(ref.getChildRef(), ContentModel.PROP_NAME);
-                if (spaceName.equals(childNodeName))
+                if (error)
                 {
-                    if (error)
-                    {
-                        throw new AlfrescoRuntimeException("A Home Space with the same name already exists.");
-                    }
-                    else
-                    {
-                        return ref.getChildRef();
-                    }
+                    throw new AlfrescoRuntimeException("A Home Space with the same name already exists.");
+                }
+                else
+                {
+                    return childRef;
                 }
             }
 

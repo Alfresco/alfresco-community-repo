@@ -39,6 +39,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.fileupload.FileItem;
@@ -220,24 +221,61 @@ public class UploadFileServlet extends BaseServlet
          {
             // finally redirect
             if (logger.isDebugEnabled())
-            {
                logger.debug("redirecting to: " + returnPage);
-            }
             
             response.sendRedirect(returnPage);
          }
+         
+         if (logger.isDebugEnabled())
+            logger.debug("upload complete");
       }
       catch (Throwable error)
       {
-         Application.handleServletError(getServletContext(), (HttpServletRequest)request,
-                                        (HttpServletResponse)response, error, logger, returnPage);
-      }
-
-      if (logger.isDebugEnabled())
-      {
-         logger.debug("upload complete");
+         handleUploadException(request, response, error, returnPage);
       }
    }
+
+   private void handleUploadException(HttpServletRequest request, HttpServletResponse response, Throwable error, String returnPage)
+   {
+      try
+      {
+         HttpSession session = request.getSession(true);
+         ErrorBean errorBean = (ErrorBean) session.getAttribute(ErrorBean.ERROR_BEAN_NAME);
+         if (errorBean == null)
+         {
+            errorBean = new ErrorBean();
+            session.setAttribute(ErrorBean.ERROR_BEAN_NAME, errorBean);
+         }
+         errorBean.setLastError(error);
+         errorBean.setReturnPage(returnPage);
+      }
+      catch (Throwable e)
+      {
+         logger.error("Error while handling upload Exception", e);
+      }
+      try
+      {
+         String errorPage = Application.getErrorPage(getServletContext());
+            
+         if (logger.isDebugEnabled())
+         {
+                logger.debug("An error has occurred. Sending back response for redirecting to error page: " + errorPage);
+         }
+          
+         response.setContentType(MimetypeMap.MIMETYPE_HTML);
+         response.setCharacterEncoding("utf-8");
+         final PrintWriter out = response.getWriter();
+         out.println("<html><body><script type=\"text/javascript\">");
+         out.println("window.parent.location.replace(\" " + request.getContextPath() + errorPage + "\")");
+         out.println("</script></body></html> ");
+         out.close();
+      }
+      catch (Exception e)
+      {
+          logger.error("Error while handling upload Exception", e);
+      }
+  }
+
    
    private boolean allowZeroByteFiles()
    {

@@ -104,7 +104,6 @@
       </property-sheet>
    </config>
 
-   <!-- Configuring in the cm:storeSelector aspect -->
    <config evaluator="aspect-name" condition="cm:storeSelector">
       <property-sheet>
          <show-property name="cm:storeName" />

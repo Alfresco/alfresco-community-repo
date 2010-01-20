@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -47,6 +47,8 @@ public class RepositoryLocation
     
     /** Search Language */
     private String queryLanguage = "xpath"; // default
+    
+    public static final String LANGUAGE_PATH = "path"; // lookup directly using node (prefix qname) path
     
     
     /**
@@ -110,7 +112,7 @@ public class RepositoryLocation
      */
     public void setQueryLanguage(String queryLanguage)
     {
-        if (queryLanguage.equals(SearchService.LANGUAGE_LUCENE) || queryLanguage.equals(SearchService.LANGUAGE_XPATH))   
+        if (queryLanguage.equals(SearchService.LANGUAGE_LUCENE) || queryLanguage.equals(SearchService.LANGUAGE_XPATH) || queryLanguage.equals(LANGUAGE_PATH))
         {
             this.queryLanguage = queryLanguage;
         }
@@ -180,7 +182,30 @@ public class RepositoryLocation
         {
             result = this.path + result;
         }
-
+        
         return result;
+    }
+    
+    public String[] getPathElements()
+    {
+        if ((this.path != null) && (! this.path.equals("")))
+        {
+            String pathToSplit = this.path;
+            
+            while (pathToSplit.startsWith("/"))
+            {
+                pathToSplit = pathToSplit.substring(1);
+            }
+            while (pathToSplit.endsWith("/"))
+            {
+                pathToSplit = pathToSplit.substring(0, pathToSplit.length() - 1);
+            }
+            String[] pathElements = pathToSplit.split("/");
+            return pathElements;
+        }
+        else
+        {
+            return new String[0];
+        }
     }
 }

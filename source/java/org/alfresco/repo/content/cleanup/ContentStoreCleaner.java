@@ -269,6 +269,13 @@ public class ContentStoreCleaner
     public void execute()
     {
         checkProperties();
+        
+        // Bypass if the system is in read-only mode
+        if (transactionService.isReadOnly())
+        {
+            logger.debug("Content store cleanup bypassed; the system is read-only.");
+            return;
+        }
 
         try
         {

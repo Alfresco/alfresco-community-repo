@@ -65,6 +65,14 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   
+    <parameterMap id="parameter_ContentUrl" class="ContentUrl">
+        <parameter property="contentUrl" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="contentUrlShort" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="contentUrlCrc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="size" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="orphanTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+
     <parameterMap id="parameter_ContentData" class="ContentData">
         <parameter property="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="contentUrlId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -89,7 +97,7 @@
     
     <sql id="insert_ContentUrl_AutoIncrement">
         insert into alf_content_url (content_url, content_url_short, content_url_crc, content_size, orphan_time) 
-        values (#contentUrl#, #contentUrlShort#, #contentUrlCrc#, #size#, #orphanTime#)
+        values (?, ?, ?, ?, ?)
     </sql>
     
     <sql id="insert_ContentData_AutoIncrement">

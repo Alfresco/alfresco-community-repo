@@ -50,4 +50,9 @@
         
     </insert>
     
+	<insert id="insert_AVMNodeProperty" parameterClass="AVMNodeProperty">
+        insert into avm_node_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, node_id, qname_id)
+        values (#actualType#, #persistedType#, #isMultiValued#, #booleanValue#, #longValue#, #floatValue#, #doubleValue#, #stringValue#, #serializableValue#, #nodeId#, #qnameId#)
+    </insert>	
+    
 </sqlMap>

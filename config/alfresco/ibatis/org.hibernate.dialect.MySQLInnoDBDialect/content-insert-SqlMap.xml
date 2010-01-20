@@ -20,7 +20,7 @@
         </selectKey>
     </insert>
 
-    <insert id="insert_ContentUrl" parameterClass="ContentUrl" >
+    <insert id="insert_ContentUrl" parameterMap="parameter_ContentUrl" >
         <include refid="alfresco.content.insert_ContentUrl_AutoIncrement"/>
         <selectKey resultClass="long" keyProperty="id" type="post">
             KEY_COLUMN:GENERATED_KEY

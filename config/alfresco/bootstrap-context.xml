@@ -167,26 +167,25 @@
     <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
 
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
-      <property name="contentService" ref="ContentService"/>      
-      <property name="searchService" ref="SearchService"/>
+      <property name="contentService" ref="ContentService"/>
       <property name="transactionService" ref="transactionService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="messageService" ref="messageService"/>
       <property name="tenantAdminService" ref="tenantAdminService"/>
-         
+      
       <property name="repositoryModelsLocations">
          <list>
             <ref bean="customModelsRepositoryLocation" />
-         </list>        
+         </list>
       </property>
-         
+      
       <property name="repositoryMessagesLocations">
          <list>
             <ref bean="customMessagesRepositoryLocation" />
-         </list>        
+         </list>
       </property>
-           
+      
    </bean>
 
     <!-- Bootstrap Data: Concrete instances for the basic Alfresco bootstrap -->

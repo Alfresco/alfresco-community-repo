@@ -387,12 +387,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * deleted node.  This transactional list is used to detect and prevent that from 
      * happening.
      *  
-     * @param nodeRef the deleted node to track
+     * @param nodeRef   the deleted node to track
+     * @return          <tt>true</tt> if the node was not already tracked
      */
-    private void trackDeletedNodeRef(NodeRef deletedNodeRef)
+    private boolean trackDeletedNodeRef(NodeRef deletedNodeRef)
     {
         Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
-        deletedNodes.add(deletedNodeRef);
+        return deletedNodes.add(deletedNodeRef);
     }
     
     /**
@@ -2413,7 +2414,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             NodeRef childNodeRef = oldChildNodePair.getSecond();
             if (nodeDaoService.getNodeRefStatus(childNodeRef).isDeleted())
             {
-               //Node has been already deleted.
+                // Node has already been deleted.
                 continue;
             } 
             

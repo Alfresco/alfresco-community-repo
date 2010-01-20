@@ -26,25 +26,27 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageDeployer;
 import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
@@ -70,9 +72,6 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
 
     /** Dictionary DAO */
     private DictionaryDAO dictionaryDAO = null;
-    
-    /** Search service */
-    private SearchService searchService;
     
     /** The content service */
     private ContentService contentService;
@@ -100,16 +99,6 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
-    }
-    
-    /**
-     * Set the search search service
-     * 
-     * @param searchService     the search service
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
     }
     
     /** 
@@ -224,11 +213,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     public void onDictionaryInit()
     {
         if (this.repositoryModelsLocations != null)
-        {            
+        {
             Map<String, M2Model> modelMap = new HashMap<String, M2Model>();
-    
+            
             // Register the models found in the repository
-    
+            
             for (RepositoryLocation repositoryLocation : this.repositoryModelsLocations)
             {
                 StoreRef storeRef = repositoryLocation.getStoreRef();
@@ -238,37 +227,36 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                     logger.warn("StoreRef '"+ storeRef+"' does not exist");
                     continue; // skip this location
                 }
-    
-                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
+                
+                List<NodeRef> nodeRefs = null;
+                
+                if (repositoryLocation.getQueryLanguage().equals(RepositoryLocation.LANGUAGE_PATH))
                 {
-                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+                    nodeRefs = getNodes(storeRef, repositoryLocation, ContentModel.TYPE_DICTIONARY_MODEL);
                     
-                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode,
-                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_DICTIONARY_MODEL.getPrefixedQName(namespaceService)),
-                                                                       null,
-                                                                       namespaceService,
-                                                                       false);
-                    
-                    for (NodeRef dictionaryModel : nodeRefs)
+                    if (nodeRefs.size() > 0)
                     {
-                        // Ignore if the node is a working copy or archived, or if its inactive
-                        if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
+                        for (NodeRef dictionaryModel : nodeRefs)
                         {
-                            Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
-                            
-                            if ((isActive != null) && (isActive.booleanValue() == true))
+                            // Ignore if the node is a working copy or archived, or if its inactive
+                            if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
                             {
-                                M2Model model = createM2Model(dictionaryModel);
-                                if (model != null)
+                                Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
+                                
+                                if ((isActive != null) && (isActive.booleanValue() == true))
                                 {
-                                    if (logger.isTraceEnabled())
+                                    M2Model model = createM2Model(dictionaryModel);
+                                    if (model != null)
                                     {
-                                        logger.trace("onDictionaryInit: "+model.getName()+" ("+dictionaryModel+")");
-                                    }
-                                    
-                                    for (M2Namespace namespace : model.getNamespaces())
-                                    {
-                                        modelMap.put(namespace.getUri(), model);
+                                        if (logger.isTraceEnabled())
+                                        {
+                                            logger.trace("onDictionaryInit: "+model.getName()+" ("+dictionaryModel+")");
+                                        }
+                                        
+                                        for (M2Namespace namespace : model.getNamespaces())
+                                        {
+                                            modelMap.put(namespace.getUri(), model);
+                                        }
                                     }
                                 }
                             }
@@ -277,10 +265,10 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 }
                 else
                 {
-                	logger.error("Unsupported query language for models location: " + repositoryLocation.getQueryLanguage());
+                    logger.error("Unsupported query language for models location: " + repositoryLocation.getQueryLanguage());
                 }
             }
-    
+            
             // Load the models ensuring that they are loaded in the correct order
             List<String> loadedModels = new ArrayList<String>();
             for (Map.Entry<String, M2Model> entry : modelMap.entrySet())
@@ -312,7 +300,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         {
             // Register the messages found in the repository
             for (RepositoryLocation repositoryLocation : this.repositoryMessagesLocations)
-            {                
+            {
                 StoreRef storeRef = repositoryLocation.getStoreRef();
                 
                 if (! nodeService.exists(storeRef))
@@ -321,37 +309,62 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                     continue; // skip this location
                 }
                 
-                if (repositoryLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
+                if (repositoryLocation.getQueryLanguage().equals(RepositoryLocation.LANGUAGE_PATH))
                 {
-                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+                    List<NodeRef> nodeRefs = getNodes(storeRef, repositoryLocation, ContentModel.TYPE_CONTENT);
                     
-                    List<NodeRef> nodeRefs = searchService.selectNodes(rootNode,
-                                                                       repositoryLocation.getXPathQueryStatement(ContentModel.TYPE_CONTENT.getPrefixedQName(namespaceService)),
-                                                                       null,
-                                                                       namespaceService,
-                                                                       false);
-                    
-                    List<String> resourceBundleBaseNames = new ArrayList<String>();
-                    
-                    for (NodeRef messageResource : nodeRefs)
+                    if (nodeRefs.size() > 0)
                     {
-                        String resourceName = (String) nodeService.getProperty(
-                                messageResource, ContentModel.PROP_NAME);
+                        List<String> resourceBundleBaseNames = new ArrayList<String>();
                         
-                        String bundleBaseName = messageService.getBaseBundleName(resourceName);
-                        
-                        if (!resourceBundleBaseNames.contains(bundleBaseName))
+                        for (NodeRef messageResource : nodeRefs)
                         {
-                            resourceBundleBaseNames.add(bundleBaseName);
+                            String resourceName = (String) nodeService.getProperty(messageResource, ContentModel.PROP_NAME);
+                            
+                            String bundleBaseName = messageService.getBaseBundleName(resourceName);
+                            
+                            if (!resourceBundleBaseNames.contains(bundleBaseName))
+                            {
+                                resourceBundleBaseNames.add(bundleBaseName);
+                            }
                         }
                     }
                 }
                 else
                 {
-                	logger.error("Unsupported query language for messages location: " + repositoryLocation.getQueryLanguage());
+                    logger.error("Unsupported query language for messages location: " + repositoryLocation.getQueryLanguage());
                 }
             }
         }
+    }
+    
+    protected List<NodeRef> getNodes(StoreRef storeRef, RepositoryLocation repositoryLocation, QName nodeType)
+    {
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
+        
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        String[] pathElements = repositoryLocation.getPathElements();
+        
+        NodeRef folderNodeRef = rootNodeRef;
+        if (pathElements.length > 0)
+        {
+            folderNodeRef = resolveQNameFolderPath(rootNodeRef, pathElements);
+        }
+        
+        Set<QName> types = new HashSet<QName>(1);
+        types.add(nodeType);
+        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(folderNodeRef, types);
+        
+        if (childAssocRefs.size() > 0)
+        {
+            nodeRefs = new ArrayList<NodeRef>(childAssocRefs.size());
+            for (ChildAssociationRef childAssocRef : childAssocRefs)
+            {
+                nodeRefs.add(childAssocRef.getChildRef());
+            }
+        }
+        
+        return nodeRefs;
     }
     
     /**
@@ -467,5 +480,26 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             // register repository message (I18N) service
             tenantAdminService.unregister(messageService);
         }
+    }
+    
+    protected NodeRef resolveQNameFolderPath(NodeRef rootNodeRef, String[] pathQNames)
+    {
+        if (pathQNames.length == 0)
+        {
+            throw new IllegalArgumentException("Path array is empty");
+        }
+        // walk the folder tree
+        NodeRef parentNodeRef = rootNodeRef;
+        for (int i = 0; i < pathQNames.length; i++)
+        {
+            String pathQName = pathQNames[i];
+            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(parentNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(pathQName, namespaceService));
+            if (childAssocRefs.size() != 1)
+            {
+                return null;
+            }
+            parentNodeRef = childAssocRefs.get(0).getChildRef();
+        }
+        return parentNodeRef;
     }
 }

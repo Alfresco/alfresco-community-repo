@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -106,14 +106,24 @@ public abstract class AbstractLuceneBase
         indexInfo = IndexInfo.getIndexInfo(baseDir, config);
         try
         {
-            if (deltaId != null)
+            if (this.deltaId != null)
             {
-                indexInfo.setStatus(deltaId, TransactionStatus.ACTIVE, null, null);
+                if (! getStatus().equals(TransactionStatus.ACTIVE))
+                {
+                    setStatus(TransactionStatus.ACTIVE);
+                }
+                else
+                {
+                    if (s_logger.isDebugEnabled())
+                    {
+                        s_logger.debug("Delta already set as active " + deltaId);
+                    }
+                }
             }
         }
         catch (IOException e)
         {
-            throw new IndexerException("Filed to set delta as active");
+            throw new IndexerException("Failed to set delta as active");
         }
     }
 

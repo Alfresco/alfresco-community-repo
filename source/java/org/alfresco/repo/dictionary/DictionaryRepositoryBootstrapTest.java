@@ -1,3 +1,27 @@
+/*
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
 package org.alfresco.repo.dictionary;
 
 import java.text.MessageFormat;
@@ -13,7 +37,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -59,13 +82,10 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
 
     /** The bootstrap service */
     private DictionaryRepositoryBootstrap bootstrap;
-
-    /** The search service */
-    private SearchService searchService;
-
+    
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
-
+    
     /** The transaction service */
     private TransactionService transactionService;
     
@@ -77,7 +97,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
     
     /** The message service */
     private MessageService messageService;
-
+    
     /**
      * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
      */
@@ -90,7 +110,6 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         this.behaviourFilter = (BehaviourFilter)this.applicationContext.getBean("policyBehaviourFilter");
         this.behaviourFilter.disableBehaviour(ContentModel.TYPE_DICTIONARY_MODEL);
         
-        this.searchService = (SearchService)this.applicationContext.getBean("searchService");
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
@@ -99,19 +118,18 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         
         this.bootstrap = new DictionaryRepositoryBootstrap();
         this.bootstrap.setContentService(this.contentService);
-        this.bootstrap.setSearchService(this.searchService);
         this.bootstrap.setDictionaryDAO(this.dictionaryDAO);
         this.bootstrap.setTransactionService(this.transactionService);
         this.bootstrap.setTenantAdminService(this.tenantAdminService); 
         this.bootstrap.setNodeService(this.nodeService);
         this.bootstrap.setNamespaceService(this.namespaceService);
         this.bootstrap.setMessageService(this.messageService);
-
+        
         RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(this.storeRef.getProtocol());
         location.setStoreId(this.storeRef.getIdentifier());
-        location.setQueryLanguage(SearchService.LANGUAGE_XPATH);
-        // NOTE: we are not setting the path for now .. in doing so we are searching the whole dictionary
+        location.setQueryLanguage(RepositoryLocation.LANGUAGE_PATH);
+        // NOTE: we are not setting the path for now .. in doing so we are searching the root node only
         
         List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
         locations.add(location);
@@ -208,7 +226,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
                 ContentModel.TYPE_DICTIONARY_MODEL).getChildRef();
         ContentWriter contentWriter1 = this.contentService.getWriter(model, ContentModel.PROP_CONTENT, true);
         contentWriter1.setEncoding("UTF-8");
-        contentWriter1.setMimetype(MimetypeMap.MIMETYPE_XML);        
+        contentWriter1.setMimetype(MimetypeMap.MIMETYPE_XML);
         String modelOne = getModelString(
                     uri,
                     prefix,

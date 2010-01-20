@@ -145,13 +145,11 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
         this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
         
-        SearchService searchService = (SearchService)this.applicationContext.getBean("searchService");
         TenantAdminService tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
         MessageService messageService = (MessageService)this.applicationContext.getBean("messageService");
         
         DictionaryRepositoryBootstrap bootstrap = new DictionaryRepositoryBootstrap();
         bootstrap.setContentService(this.contentService);
-        bootstrap.setSearchService(searchService);
         bootstrap.setDictionaryDAO(this.dictionaryDAO);
         bootstrap.setTransactionService(this.transactionService);
         bootstrap.setTenantAdminService(tenantAdminService); 
@@ -162,8 +160,8 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(this.storeRef.getProtocol());
         location.setStoreId(this.storeRef.getIdentifier());
-        location.setQueryLanguage(SearchService.LANGUAGE_XPATH);
-        // NOTE: we are not setting the path for now .. in doing so we are searching the whole store
+        location.setQueryLanguage(RepositoryLocation.LANGUAGE_PATH);
+        // NOTE: we are not setting the path for now .. in doing so we are searching the root node only
         
         List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
         locations.add(location);
@@ -178,7 +176,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
      * Test the creation of dictionary model nodes
      */
     public void testCreateAndUpdateDictionaryModelNodeContent()
-    {        
+    {
         try
         {
             // Check that the model has not yet been loaded into the dictionary
@@ -192,17 +190,17 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         
         // Check that the namespace is not yet in the namespace service
         String uri = this.namespaceService.getNamespaceURI("test1");
-        assertNull(uri);        
+        assertNull(uri);
         
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
         final NodeRef modelNode = this.nodeService.createNode(
-                this.rootNodeRef, 
-                ContentModel.ASSOC_CHILDREN, 
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
                 QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
-                properties).getChildRef();        
+                properties).getChildRef(); 
         assertNotNull(modelNode);
         
         // Add the model content to the model node
@@ -271,7 +269,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
-            {                        
+            {
                 DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
                 return null;
             }
@@ -295,11 +293,11 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         final NodeRef modelNode = this.nodeService.createNode(
-                this.rootNodeRef, 
-                ContentModel.ASSOC_CHILDREN, 
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
                 QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
-                properties).getChildRef();        
+                properties).getChildRef();
         assertNotNull(modelNode);
         
         // Add the model content to the model node

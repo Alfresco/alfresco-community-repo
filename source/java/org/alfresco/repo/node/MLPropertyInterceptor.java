@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
@@ -452,7 +451,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
      */
     private boolean isCollectionOfMLText(Serializable outboundValue)
     {
-        if(outboundValue instanceof Collection)
+        if(outboundValue instanceof Collection<?>)
         {
             for(Object o : (Collection<?>)outboundValue)
             {

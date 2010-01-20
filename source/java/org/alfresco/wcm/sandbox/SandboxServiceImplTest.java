@@ -997,7 +997,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     }
     
     // submit changed assets in user sandbox to staging sandbox
-    public void testSubmitChangedAssets1() throws IOException, InterruptedException
+    public void xtestSubmitChangedAssets1() throws IOException, InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         

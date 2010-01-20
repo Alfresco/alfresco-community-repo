@@ -201,39 +201,6 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_AVMStore" class="AVMStore">
-    	<parameter property="nextVersion" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="name" jdbcType="VARCHAR" javaType="java.lang.String"/>        
-        <parameter property="rootNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="aclId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="vers" jdbcType="BIGINT" javaType="java.lang.Long"/>    	    	
-        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </parameterMap>
-            
-    <parameterMap id="parameter_AVMNode" class="AVMNode">
-    	<parameter property="storeNewId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="aclId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="layerId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="classType" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    	<parameter property="deletedType" jdbcType="INTEGER" javaType="java.lang.Integer"/>
-    	<parameter property="owner" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    	<parameter property="modifiedDate" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="accessDate" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="isRoot" jdbcType="BIT" javaType="java.lang.Boolean"/>
-    	<parameter property="modifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    	<parameter property="indirection" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <parameter property="indirectionVersion" jdbcType="INTEGER" javaType="java.lang.Integer"/>
-        <parameter property="primaryIndirection" jdbcType="BIT" javaType="java.lang.Boolean"/>
-        <parameter property="opacity" jdbcType="BIT" javaType="java.lang.Boolean"/>
-        <parameter property="contentUrl" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <parameter property="mimetype" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <parameter property="encoding" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    	<parameter property="length" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="guid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    	<parameter property="vers" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    	<parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </parameterMap>
     
     <!--                -->
     <!-- SQL Snippets   -->
@@ -288,12 +255,7 @@
         insert into avm_version_layered_node_entry (version_root_id, md5sum, path)
         values (#versionRootId#, #md5sum#, #path#)
     </insert>
-    
-    <insert id="insert_AVMNodeProperty" parameterMap="parameter_NodePropertyPatternMap">
-        insert into avm_node_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, node_id, qname_id)
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    </insert>
-    
+
     <!--                      -->
     <!-- AVM Store Statements -->
     <!--                      -->
@@ -337,17 +299,20 @@
     </select>
     
     <!-- Optimistic update of the store -->
-    <update id="update_AVMStore" parameterMap="parameter_AVMStore">
+    <update id="update_AVMStore" parameterClass="AVMStore">
         update
             avm_stores
         set
-            next_version_id = ?,
-            name = ?,
-            current_root_id = ?,
-            acl_id = ?,
-            vers = ?
+            next_version_id = #nextVersion#,
+            name = #name#,
+            current_root_id = #rootNodeId#,
+            acl_id = #aclId#,
+            vers = #vers#
         where
-            id = ?        
+            id = #id#
+        <isGreaterThan property="vers" compareValue="1">
+            and vers = (#vers#-1)
+        </isGreaterThan>
     </update>
     
     <!-- Delete AVMStore -->
@@ -391,7 +356,7 @@
             join alf_namespace ns on (ns.id = qn.ns_id)
         where
             ns.uri like ? and
-            upper(qn.local_name) like upper(?)
+            qn.local_name like ?
     </select>
     
     <select id="select_AVMStorePropertiesByStoreAndKeyPattern" parameterMap="parameter_IdAndKeyPattern" resultMap="result_AVMStoreProperty">
@@ -404,7 +369,7 @@
         where
             asp.avm_store_id = ? and
             ns.uri like ? and
-            upper(qn.local_name) like upper(?)
+            qn.local_name like ?
     </select>
     
     <!-- Optimistic update of the store property -->
@@ -533,33 +498,36 @@
     </update>
     
     <!-- Optimistic update of the node -->
-    <update id="update_AVMNode" parameterMap="parameter_AVMNode">
+    <update id="update_AVMNode" parameterClass="AVMNode">
         update
             avm_nodes
         set
-            store_new_id = ?,
-            acl_id = ?,
-            layer_id = ?,
-            version_id = ?,
-            class_type = ?,
-            deletedType = ?,
-            owner = ?,
-            modDate = ?,
-            accessDate = ?,
-            is_root = ?,
-            lastModifier = ?,
-            indirection = ?,
-            indirection_version = ?,
-            primary_indirection = ?,
-            opacity = ?,
-            content_url = ?,
-            mime_type = ?,
-            encoding = ?,
-            length = ?,
-            guid = ?,
-            vers = ?
+            store_new_id = #storeNewId#,
+            acl_id = #aclId#,
+            layer_id = #layerId#,
+            version_id = #version#,
+            class_type = #classType#,
+            deletedType = #deletedType#,
+            owner = #owner#,
+            modDate = #modifiedDate#,
+            accessDate = #accessDate#,
+            is_root = #isRoot#,
+            lastModifier = #modifier#,
+            indirection = #indirection#,
+            indirection_version = #indirectionVersion#,
+            primary_indirection = #primaryIndirection#,
+            opacity = #opacity#,
+            content_url = #contentUrl#,
+            mime_type = #mimetype#,
+            encoding = #encoding#,
+            length = #length#,
+            guid = #guid#,
+            vers = #vers#
         where
-            id = ?
+            id = #id#
+        <isGreaterThan property="vers" compareValue="1">
+            and vers = (#vers#-1)
+        </isGreaterThan>
     </update>
     
     <update id="update_AVMNode_modTimeAndGuid" parameterClass="AVMNode">

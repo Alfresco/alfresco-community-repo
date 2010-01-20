@@ -4826,6 +4826,7 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   height: -1,
   auto_resize: false,
   force_p_newlines: false,
+  forced_root_block: false,
   encoding: "UTF-8",
   entity_encoding: "raw",
   add_unload_trigger: false,

@@ -30,7 +30,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -87,7 +90,7 @@ public class DownloadContentServlet extends BaseDownloadContentServlet
    /**
     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
-   protected void doGet(HttpServletRequest req, HttpServletResponse res)
+   protected void doGet(final HttpServletRequest req, final HttpServletResponse res)
       throws ServletException, IOException
    {
       if (logger.isDebugEnabled())
@@ -103,7 +106,17 @@ public class DownloadContentServlet extends BaseDownloadContentServlet
          return;
       }
       
-      processDownloadRequest(req, res, true);
+      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
+      TransactionService transactionService = serviceRegistry.getTransactionService();
+      RetryingTransactionCallback<Void> processCallback = new RetryingTransactionCallback<Void>()
+      {
+         public Void execute() throws Throwable
+         {
+             processDownloadRequest(req, res, true);
+             return null;
+         }
+      };
+      transactionService.getRetryingTransactionHelper().doInTransaction(processCallback, true);
    }
    
    /**

@@ -61,10 +61,11 @@ alfresco.xforms.constants.COLLAPSED_IMAGE.src =
  * a parent widget, and state variables.
  */
 alfresco.xforms.Widget = new Class({
-  initialize: function(xform, xformsNode, domNode) 
+  initialize: function(xform, xformsNode, parentWidget, domNode) 
   {
     this.xform = xform;
     this.xformsNode = xformsNode;
+    this.parentWidget = parentWidget;    
     this.id = this.xformsNode.getAttribute("id");
     this._modified = false;
     this._valid = true;
@@ -539,9 +540,9 @@ alfresco.xforms.Widget = new Class({
 
 /** The file picker widget which handles xforms widget xf:upload. */
 alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode, params)
+  initialize: function(xform, xformsNode, parentWidget, params)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this._selectableTypes = "selectable_types" in params ? params["selectable_types"].split(",") : null;
     this._filterMimetypes = "filter_mimetypes" in params ? params["filter_mimetypes"].split(",") : [];
     this._folderRestriction = "folder_restriction" in params ? params["folder_restriction"] : null;
@@ -629,9 +630,9 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
 
 /** The textfield widget which handle xforms widget xf:input with any string or numerical type */
 alfresco.xforms.TextField = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, new Element("input", { type: "text" }));
+    this.parent(xform, xformsNode, parentWidget, new Element("input", { type: "text" }));
     this._maxLength = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":maxLength")
                        ? Number(this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":maxLength"))
                        : -1);
@@ -721,9 +722,9 @@ alfresco.xforms.TextField = alfresco.xforms.Widget.extend({
 
 /** The number range widget which handle xforms widget xf:range with any numerical type */
 alfresco.xforms.NumericalRange = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     dojo.require("dojo.widget.Slider");
     this._fractionDigits = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":fractionDigits")
                           ? Number(this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":fractionDigits"))
@@ -815,9 +816,9 @@ alfresco.xforms.NumericalRange = alfresco.xforms.Widget.extend({
 
 /** The text area widget handles xforms widget xf:textarea with appearance minimal */
 alfresco.xforms.PlainTextEditor = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode, new Element("textarea"));
+    this.parent(xform, xformsNode, parentWidget, new Element("textarea"));
   },
 
   /////////////////////////////////////////////////////////////////
@@ -872,9 +873,9 @@ alfresco.xforms.PlainTextEditor = alfresco.xforms.Widget.extend({
 
 /** The textfield widget which handle xforms widget xf:textarea. with appearance full or compact */
 alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode, params) 
+  initialize: function(xform, xformsNode, parentWidget, params) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this._focused = false;
     this._params = params;
     this._oldValue = null;
@@ -1195,9 +1196,9 @@ alfresco.xforms.RichTextEditor.determineNecessaryTinyMCEPlugins = function(confi
 
 /** Base class for all select widgets. */
 alfresco.xforms.AbstractSelectWidget = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode, domNode) 
+  initialize: function(xform, xformsNode, parentWidget, domNode) 
   {
-    this.parent(xform, xformsNode, domNode);
+    this.parent(xform, xformsNode, parentWidget, domNode);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1269,9 +1270,9 @@ alfresco.xforms.AbstractSelectWidget = alfresco.xforms.Widget.extend({
  * checkboxes depending on the number of inputs.
  */
 alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1356,9 +1357,9 @@ alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
  * checkboxes depending on the number of inputs.
  */
 alfresco.xforms.ListSelect = alfresco.xforms.AbstractSelectWidget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, new Element("select"));
+    this.parent(xform, xformsNode, parentWidget, new Element("select"));
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1448,9 +1449,9 @@ alfresco.xforms.ListSelect = alfresco.xforms.AbstractSelectWidget.extend({
  * radios depending on the number of inputs.
  */
 alfresco.xforms.RadioSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1559,9 +1560,9 @@ alfresco.xforms.RadioSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
  * radios depending on the number of inputs.
  */
 alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, new Element("select"));
+    this.parent(xform, xformsNode, parentWidget, new Element("select"));
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1650,10 +1651,10 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
  * Handles xforms widget xf:select1 with a type of boolean.
  */
 alfresco.xforms.Checkbox = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
     this.parent(xform, 
-                xformsNode, 
+                xformsNode, parentWidget,
                 new Element("input", { type: "checkbox" }));
   },
 
@@ -1712,9 +1713,9 @@ alfresco.xforms.Checkbox = alfresco.xforms.Widget.extend({
 
 /** The date picker widget which handles xforms widget xf:input with type xf:date */
 alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this._minInclusive = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":minInclusive")
                           ? this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":minInclusive")
                           : null);
@@ -1891,16 +1892,32 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
 
 /** The date picker widget which handles xforms widget xf:input with type xf:date */
 alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     dojo.require("dojo.date.format");
     this._noValueSet = (alfresco.resources["eg"] + " " + 
                         dojo.date.format(new Date(), 
                                          {timePattern: alfresco.xforms.constants.TIME_FORMAT, 
                                              selector: "timeOnly"}));
-    this._xformsFormat = "HH:mm:ss.S";
+    this._xformsFormat = new Array("HH:mm:ss.S", "HH:mm:ss");
   },
+  
+  _parseTime: function(timeValue)
+  {
+    var resDate = null;
+    for (i = 0; i < this._xformsFormat.length; i++)
+    {
+      resDate = dojo.date.parse(timeValue, {timePattern: this._xformsFormat[i],
+                                            selector: "timeOnly"});
+      if (resDate != null)
+      {
+         return resDate;
+      }
+    }
+    return resDate;
+  },
+
   /** */
   _createPicker: function()
   {
@@ -1908,9 +1925,7 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
     var timePickerDiv = document.createElement("div");
     this.domNode.appendChild(timePickerDiv);
     var jsDate = (this.getValue()
-                  ? dojo.date.parse(this.getValue(),
-                                    {timePattern: this._xformsFormat, 
-                                     selector: "timeOnly"})
+                  ? this._parseTime(this.getValue())
                   : new Date());
     this.widget.picker = dojo.widget.createWidget("TimePicker", 
                                                   { 
@@ -1959,7 +1974,7 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
     this.widget = new Element("input", { "id": this.id + "-widget", "type": "text" });
     if (initial_value)
     {
-      var jsDate = dojo.date.parse(initial_value, {timePattern: this._xformsFormat, selector: "timeOnly"});
+      var jsDate = this._parseTime(initial_value);
       this.widget.setAttribute("value",
                                dojo.date.format(jsDate,
                                                 {timePattern: alfresco.xforms.constants.TIME_FORMAT,
@@ -2000,7 +2015,7 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
     else
     {
       this.parent(value, forceCommit);
-      var jsDate = dojo.date.parse(value, {timePattern: this._xformsFormat, selector: "timeOnly"});
+      var jsDate = this._parseTime(value);
       this.widget.value = dojo.date.format(jsDate,
                                            {timePattern: alfresco.xforms.constants.TIME_FORMAT,
                                             selector: "timeOnly"});
@@ -2021,7 +2036,7 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
       var jsDate = dojo.date.parse(this.widget.value,
                                    {timePattern: alfresco.xforms.constants.TIME_FORMAT,
                                     selector: "timeOnly"});
-      return dojo.date.format(jsDate, {timePattern: this._xformsFormat, selector: "timeOnly"});
+      return dojo.date.format(jsDate, {timePattern: this._xformsFormat[0], selector: "timeOnly"});
     }
   },
 
@@ -2041,7 +2056,7 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
 
   _timePicker_valueChangedHandler: function(date)
   {
-    var xfDate = dojo.date.format(date, {timePattern: this._xformsFormat, selector: "timeOnly"});
+    var xfDate = dojo.date.format(date, {timePattern: this._xformsFormat[0], selector: "timeOnly"});
     this.setValue(xfDate);
     this._commitValueChange();
   },
@@ -2061,9 +2076,9 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
 
 /** The date time picker widget which handles xforms widget xf:input with type xf:datetime */
 alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   { 
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     dojo.require("dojo.date.format");
     this._noValueSet = (alfresco.resources["eg"] + " " + 
                         dojo.date.format(new Date(), 
@@ -2266,9 +2281,9 @@ alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
 
 /** The year picker handles xforms widget xf:input with a gYear type */
 alfresco.xforms.YearPicker = alfresco.xforms.TextField.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
   },
 
 
@@ -2306,9 +2321,9 @@ alfresco.xforms.YearPicker = alfresco.xforms.TextField.extend({
 
 /** The day picker widget which handles xforms widget xf:input with type xf:gDay */
 alfresco.xforms.DayPicker = alfresco.xforms.ComboboxSelect1.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -2333,9 +2348,9 @@ alfresco.xforms.DayPicker = alfresco.xforms.ComboboxSelect1.extend({
 
 /** The month picker widget which handles xforms widget xf:input with type xf:gMonth */
 alfresco.xforms.MonthPicker = alfresco.xforms.ComboboxSelect1.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     dojo.require("dojo.date.format");
   },
 
@@ -2363,9 +2378,9 @@ alfresco.xforms.MonthPicker = alfresco.xforms.ComboboxSelect1.extend({
 
 /** The month day picker widget which handles xforms widget xf:input with type xf:gMonthDay */
 alfresco.xforms.MonthDayPicker = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this.monthPicker = new alfresco.xforms.MonthPicker(xform, xformsNode);
     this.monthPicker._compositeParent = this;
                
@@ -2403,9 +2418,9 @@ alfresco.xforms.MonthDayPicker = alfresco.xforms.Widget.extend({
 
 /** The year month picker widget which handles xforms widget xf:input with type xf:gYearMonth */
 alfresco.xforms.YearMonthPicker = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this.yearPicker = new alfresco.xforms.YearPicker(xform, xformsNode);
     this.yearPicker._compositeParent = this;
                
@@ -2453,9 +2468,9 @@ alfresco.xforms.YearMonthPicker = alfresco.xforms.Widget.extend({
  * that are not the root group.
  */
 alfresco.xforms.AbstractGroup = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode, domNode) 
+  initialize: function(xform, xformsNode, parentWidget, domNode) 
   {
-    this.parent(xform, xformsNode, domNode);
+    this.parent(xform, xformsNode, parentWidget, domNode);
     this._children = [];
     this.domNode.removeClass("xformsItem");
   },
@@ -2668,9 +2683,9 @@ alfresco.xforms.AbstractGroup._requiredImage.src = alfresco.constants.WEBAPP_CON
  * that are not the root group.
  */
 alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -2961,9 +2976,9 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
  * that are not the root group.
  */
 alfresco.xforms.HGroup = alfresco.xforms.AbstractGroup.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, new Element("table"));
+    this.parent(xform, xformsNode, parentWidget, new Element("table"));
   },
 
   /////////////////////////////////////////////////////////////////
@@ -3041,9 +3056,9 @@ alfresco.xforms.HGroup = alfresco.xforms.AbstractGroup.extend({
 });
 
 alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);    
     if (this.getInitialValue())
     {
       var initialValueTrigger = this._getCaseToggleTriggerByTypeValue(this.getInitialValue());
@@ -3054,10 +3069,19 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
   /////////////////////////////////////////////////////////////////
   // methods & properties
   /////////////////////////////////////////////////////////////////
+  
+  /** triggers that belong to the current switch */
+  triggers: null,
+  
+  /////////////////////////////////////////////////////////////////
+  // 
+  /////////////////////////////////////////////////////////////////
+  
   _getCaseToggleTriggers: function()
   {
     var bw = this.xform.getBinding(this.xformsNode).widgets;
     var result = [];
+    var cases = [];
     for (var i in bw)
     {
       if (! (bw[i] instanceof alfresco.xforms.Trigger))
@@ -3066,9 +3090,17 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
       }
       
       var action = bw[i].getActions()["toggle"];
-      if (action)
+      var currentCase = cases[action.properties["case"]]
+      if (action && (!currentCase || eval(bw[i].id.replace('C', '')) > eval(currentCase.id.replace('C', ''))))
       {
-        result.push(bw[i]);
+        cases[action.properties["case"]] = bw[i];
+      }
+    }
+    for (var j in cases)
+    {
+	    if (cases[j] instanceof alfresco.xforms.Trigger)
+	    {
+	    	result.push(cases[j]);
       }
     }
     return result;
@@ -3076,7 +3108,7 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
 
   _getCaseToggleTriggerByCaseId: function(caseId)
   {
-    var bw = this.xform.getBinding(this.xformsNode).widgets;
+    var bw = this.triggers;
     for (var i in bw)
     {
       if (! (bw[i] instanceof alfresco.xforms.Trigger))
@@ -3145,6 +3177,7 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
   {
     this.parent(attach_point);
     var cases = this._getCaseToggleTriggers();
+    this.triggers = cases;
     var caseToggleSelect = new Element("select",
                                        {
                                          "id": this.id + "-toggle-select",
@@ -3175,7 +3208,7 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
   {
     alfresco.log(this.id + ".handleSwitchToggled(" + selectedCaseId + 
                ", " + deselectedCaseId + ")");
-    this.selectedCaseId = selectedCaseId;
+    this._selectedCaseId = selectedCaseId;
     for (var i = 0; i < this._children.length; i++)
     {
       if (this._children[i].id == selectedCaseId)
@@ -3196,17 +3229,26 @@ alfresco.xforms.SwitchGroup = alfresco.xforms.VGroup.extend({
 
   _caseToggleSelect_changeHandler: function(event)
   {
+    if (event.stopPropagation)
+    {
     event.stopPropagation();
     var t = this._getCaseToggleTriggerByCaseId(event.target.value);
     t.fire();
+  }
+    else if (window.event)
+    {
+    	window.event.cancelBubble = true;
+    	var t = this._getCaseToggleTriggerByCaseId(window.event.srcElement.value);
+    	t.fire();
+    }  
   }
 });
 
 /** */
 alfresco.xforms.CaseGroup = alfresco.xforms.VGroup.extend({
-  initialize: function(xform, xformsNode)
+  initialize: function(xform, xformsNode, parentWidget)
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
   }
 });
 
@@ -3215,9 +3257,9 @@ alfresco.xforms.CaseGroup = alfresco.xforms.VGroup.extend({
  * to present a title rather than a group header.
  */
 alfresco.xforms.ViewRoot = alfresco.xforms.VGroup.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this.focusedRepeat = null;
   },
 
@@ -3282,9 +3324,9 @@ alfresco.xforms.RepeatIndexData = function(repeat, index)
  * Handles xforms widget xf:repeat.
  */
 alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     this._repeatControls = [];
     this._selectedIndex = -1;
   },
@@ -3610,7 +3652,6 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     {
       this._groupHeaderNode.removeClass("xformsRepeatFocusedHeader");
     }
-
     for (var i = 0; i < this._children.length; i++)
     {
       var domContainerClasses = this._children[i].domContainer.getProperty("class").split(" ");
@@ -3628,8 +3669,12 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
       }
       this._children[i].domContainer.setProperty("class", domContainerClasses.join(" "));
 
-      this._repeatControls[i].style.backgroundColor = 
-        this._children[i].domContainer.getStyle("background-color");
+      this._repeatControls[i].style.backgroundColor = this._children[i].domContainer.getStyle("background-color");
+      
+      if (window.navigator.appName == "Microsoft Internet Explorer")
+      {      	
+      	this._children[i]._updateDisplay(true);
+      }
     }
   },
 
@@ -3764,7 +3809,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
   {
     alfresco.log(this.id + ".handleItemInserted(" + clonedPrototype.nodeName +
                ", " + position + ")");
-    var w = this.xform.createWidget(clonedPrototype);
+    var w = this.xform.createWidget(clonedPrototype, this);
     this._insertChildAt(w, position);
     this.xform.loadWidgets(w.xformsNode, w);
   },
@@ -3785,9 +3830,9 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
  * Handles xforms widget xf:trigger.
  */
 alfresco.xforms.Trigger = alfresco.xforms.Widget.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, new Element("input", { type: "submit" }));
+    this.parent(xform, xformsNode, parentWidget, new Element("input", { type: "submit" }));
   },
 
   /////////////////////////////////////////////////////////////////
@@ -3860,9 +3905,9 @@ alfresco.xforms.Trigger = alfresco.xforms.Widget.extend({
  * Handles xforms widget xf:submit.
  */
 alfresco.xforms.Submit = alfresco.xforms.Trigger.extend({
-  initialize: function(xform, xformsNode) 
+  initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode);
+    this.parent(xform, xformsNode, parentWidget);
     var submit_buttons = (this.id == "submit" 
                           ? _xforms_getSubmitButtons()
                           : (this.id == "save-draft"
@@ -4103,7 +4148,7 @@ alfresco.xforms.XForm = new Class({
   },
 
   /** Creates the widget for the provided xforms node. */
-  createWidget: function(xformsNode)
+  createWidget: function(xformsNode, parentWidget)
   {
     var appearance = (xformsNode.getAttribute("appearance") ||
                       xformsNode.getAttribute(alfresco.xforms.constants.XFORMS_PREFIX + ":appearance"));
@@ -4144,7 +4189,7 @@ alfresco.xforms.XForm = new Class({
                       " schemaType " + schemaType +
                       " appearance " + appearance);
     }
-    var result = new cstr(this, xformsNode, $merge({}, x.params));
+    var result = new cstr(this, xformsNode, parentWidget, $merge({}, x.params));
     if (result instanceof alfresco.xforms.Widget)
     {
       return result;
@@ -4166,6 +4211,18 @@ alfresco.xforms.XForm = new Class({
     {
       if (xformsNode.childNodes[i].nodeType != document.ELEMENT_NODE)
       {
+      	// fix for ETWOTWO-490, hide elements after rendering  (Mozila/Firefox)    
+	    if ((i == (xformsNode.childNodes.length - 1)) &&
+	        (parentWidget instanceof alfresco.xforms.SwitchGroup))
+	      {  
+	         for (var x = 0; x < parentWidget._children.length; x++)
+	         {
+	            if (parentWidget.triggers[x].getActions()["toggle"].properties["case"] != parentWidget._selectedCaseId)	            
+	            {
+	               parentWidget._children[x].domContainer.style.display = "none";
+	            }
+	         }
+	      }
         continue;
       }
       alfresco.log("loading " + xformsNode.childNodes[i].nodeName + 
@@ -4178,21 +4235,7 @@ alfresco.xforms.XForm = new Class({
         continue;
       }
       
-      // fix for ETWOTWO-490, hide elements after rendering
-      if (xformsNode.childNodes[i].nodeName == "chiba:data" &&
-          parentWidget instanceof alfresco.xforms.SwitchGroup)
-      {
-         var selectedCase = parentWidget._selectedCaseId;
-         for (var x = 0; x < parentWidget._children.length; x++)
-         {
-            if (parentWidget._children[x].id != selectedCase)
-            {
-               parentWidget._children[x].domContainer.style.display = "none";
-            }
-         }
-      }
-      
-      var w = this.createWidget(xformsNode.childNodes[i]);
+      var w = this.createWidget(xformsNode.childNodes[i], parentWidget);
       if (w != null)
       {
         alfresco.log("created " + w.id + " for " + xformsNode.childNodes[i].nodeName);
@@ -4202,6 +4245,19 @@ alfresco.xforms.XForm = new Class({
           this.loadWidgets(xformsNode.childNodes[i], w);
         }
       }
+      
+      // fix for ETWOTWO-490, hide elements after rendering   (Internet Explorer)   
+      if ((i == (xformsNode.childNodes.length - 1)) &&
+          (parentWidget instanceof alfresco.xforms.SwitchGroup))
+      {
+         for (var x = 0; x < parentWidget._children.length; x++)
+         {         	
+            if (parentWidget.triggers[x].getActions()["toggle"].properties["case"] != parentWidget._selectedCaseId)	            
+            {
+               parentWidget._children[x].domContainer.style.display = "none";
+            }
+         }
+      } 
     }
   },
 

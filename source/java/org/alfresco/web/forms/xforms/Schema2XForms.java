@@ -39,6 +39,7 @@ import java.util.ResourceBundle;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.alfresco.service.namespace.NamespaceService;
 import org.springframework.extensions.surf.util.Pair;
@@ -114,6 +115,8 @@ public class Schema2XForms implements Serializable
    /////////////////////////////////////////////////////////////////////////////
 
    private final static Log LOGGER = LogFactory.getLog(Schema2XForms.class);
+
+   private static final Pattern repeatableNamePattern = Pattern.compile("\\[.+\\]");
 
    private final static int LONG_LIST_SIZE = 5;
 
@@ -1000,7 +1003,8 @@ public class Schema2XForms implements Serializable
             //copy it
             if (control == null)
             {
-               LOGGER.warn("Corresponding control not found");
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("Corresponding control not found");
             }
             else
             {
@@ -1554,7 +1558,16 @@ public class Schema2XForms implements Serializable
          for (int i = 0; i < binds.getLength(); i++)
          {
             final Element subBind = (Element) binds.item(i);
-            final String name = subBind.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset");
+            String name = subBind.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset");
+
+            // ETHREEOH-3308 fix
+            name = repeatableNamePattern.matcher(name).replaceAll("");
+            
+            if (!subBind.getParentNode().getAttributes().getNamedItem("id").getNodeValue().equals(
+                    bindElement2.getAttribute("id")))
+            {
+                continue;
+            }
 
             if (LOGGER.isDebugEnabled())
             {
@@ -1744,7 +1757,9 @@ public class Schema2XForms implements Serializable
                //copy it
                if (control == null)
                {
-                  LOGGER.warn("Corresponding control not found");
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("Corresponding control not found");
+                  
                   this.addElementToGroup(xformsDocument,
                                          modelSection,
                                          defaultInstanceElement,

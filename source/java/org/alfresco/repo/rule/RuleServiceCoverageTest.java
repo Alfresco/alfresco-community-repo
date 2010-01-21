@@ -295,11 +295,12 @@ public class RuleServiceCoverageTest extends TestCase
                 100, 
                 new AsyncTest()
                 {
-                    public boolean executeTest() 
+                    public String executeTest() 
                     {
-                        return RuleServiceCoverageTest.this.nodeService.hasAspect(
+                    	boolean result = RuleServiceCoverageTest.this.nodeService.hasAspect(
                                 newNodeRef, 
                                 ContentModel.ASPECT_VERSIONABLE);
+                        return result ? "" : "Expected aspect Versionable";
                     };
                 });
     }

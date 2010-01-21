@@ -183,5 +183,18 @@
         </property>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
+    
+    <!-- This action filter bean prevents multiple equivalent create-thumbnail actions from executing
+         simultaneously in the Asynchronous Action Execution Service -->
+    <bean id="createThumbnailActionFilter" class="org.alfresco.repo.action.CreateThumbnailActionFilter" parent="baseActionFilter">
+       <property name="name">
+           <value>preventMultipleCreateThumbnailActions</value>
+       </property>
+       <!-- The action-definition-name against which this bean will be registered. -->
+       <property name="actionDefinitionName">
+           <value>create-thumbnail</value>
+       </property>
+   </bean>
+    
 
 </beans>

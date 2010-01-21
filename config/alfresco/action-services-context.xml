@@ -34,6 +34,17 @@
         </property>        
     </bean>
     
+    <!-- this bean supports the registration of 'action filter' beans. These beans should extend the
+        baseActionFilter bean below, which provides automatic registration with the
+        default AsynchronousActionService. These filter beans are used to detect equivalent pending
+        actions and to drop unnecessary repeat actions.
+        See bean createThumbnailActionFilter for an example. -->
+    <bean name="baseActionFilter" abstract="true" init-method="init" class="org.alfresco.repo.action.AbstractAsynchronousActionFilter">
+       <property name="asynchronousActionExecutionQueue">
+           <ref bean="defaultAsynchronousActionExecutionQueue"/>
+       </property>
+    </bean>
+    
     <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
       <property name="threadPoolExecutor">
          <ref bean="defaultAsyncThreadPool"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,8 @@
 package org.alfresco.repo.action;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
@@ -42,6 +45,7 @@ import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -49,6 +53,7 @@ import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
+import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,6 +61,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 
 /**
@@ -69,11 +75,27 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     
     private NodeRef nodeRef;
     private NodeRef folder;
+    private RetryingTransactionHelper transactionHelper;
+    
+    @Override
+    protected String[] getConfigLocations()
+    {
+        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
+
+        List<String> locations = Arrays.asList(existingConfigLocations);
+		List<String> mutableLocationsList = new ArrayList<String>(locations);
+    	mutableLocationsList.add("classpath:org/alfresco/repo/action/test-action-services-context.xml");
+    	
+    	String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
+		return (String[]) result;
+    }
     
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+
+        this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
 
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
@@ -761,6 +783,85 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      *  Test asynchronous actions
      */
     
+
+    /**
+     * This test checks that a series of "equivalent" actions submitted for asynchronous execution
+     * will be correctly filtered so that no 2 equivalent actions are executed at the same time.
+     */
+    public void testAsyncLongRunningActionsFilter()
+    {
+    	setComplete();
+    	endTransaction();
+
+    	final SleepActionExecuter sleepAction = (SleepActionExecuter)applicationContext.getBean("sleep-action");
+		assertNotNull(sleepAction);
+		
+		final int actionSubmissonCount = 4; // Rather arbitrary count.
+		for (int i = 0; i < actionSubmissonCount; i ++)
+		{
+	        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+	                {
+	                    public Void execute() throws Throwable
+	                    {
+	                    	Action action = actionService.createAction(SleepActionExecuter.NAME);
+	                    	action.setExecuteAsynchronously(true);
+	                    	
+	                    	actionService.executeAction(action, nodeRef);
+
+	                        return null;
+	                    }          
+	                });        
+
+		}
+
+        // Wait long enough for previous action(s) to have executed and then submit another
+        try
+        {
+	  		Thread.sleep(sleepAction.getSleepMs() * actionSubmissonCount + 1000); // Enough time for all actions and an extra second for luck.
+  		}
+        catch (InterruptedException ignored)
+		{
+			// intentionally empty
+		}
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                    	Action action = actionService.createAction(SleepActionExecuter.NAME);
+                    	action.setExecuteAsynchronously(true);
+                    	
+                    	actionService.executeAction(action, nodeRef);
+
+                        return null;
+                    }          
+                });        
+        try
+        {
+	  		Thread.sleep(sleepAction.getSleepMs() + 2000); // Enough time for latest action and an extra 2 seconds for luck.
+  		}
+        catch (InterruptedException ignored)
+		{
+			// intentionally empty
+		}
+
+        
+        int sleepTime = 0; // Do not sleep during execution as the Action itself sleeps.
+		int maxTries = 1;
+		postAsyncActionTest(
+                this.transactionService,
+                sleepTime, 
+                maxTries, 
+                new AsyncTest()
+                {
+                    public String executeTest()
+                    {
+                    	final int expectedResult = 2;
+                    	int actualResult = sleepAction.getTimesExecuted();
+                    	return actualResult == expectedResult ? null : "Expected timesExecuted " + expectedResult + " was " + actualResult;
+                    };
+                });
+    }
+
     /**
      * Test asynchronous execute action
      */
@@ -786,10 +887,10 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 10, 
                 new AsyncTest()
                 {
-                    public boolean executeTest() 
+                    public String executeTest() 
                     {
-                        return (
-                            finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+                    	boolean result = finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_CLASSIFIABLE);
+                    	return result ? null : "Expected aspect Classifiable";
                     };
                 });
     }    
@@ -828,11 +929,11 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 10, 
                 new AsyncTest()
                 {
-                    public boolean executeTest() 
+                    public String executeTest() 
                     {
-                        return (
-                            finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE) &&
-                            finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_LOCKABLE));
+                    	boolean result = finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE) &&
+                        finalNodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_LOCKABLE);
+                    	return result ? null : "Expected aspects Versionable & Lockable";
                     };
                 });
     }
@@ -872,8 +973,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         try
         {
             int tries = 0;
-            boolean done = false;
-            while (done == false && tries < maxTries)
+            String errorMsg = null;
+            while (errorMsg == null && tries < maxTries)
             {
                 try
                 {
@@ -883,16 +984,16 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                     // Sleep for a bit
                     Thread.sleep(sleepTime);
                     
-                    done = (transactionService.getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<Boolean>()
+                    errorMsg = (transactionService.getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<String>()
                                 {
-                                    public Boolean execute()
+                                    public String execute()
                                     {    
                                         // See if the action has been performed
-                                        boolean done = test.executeTest();
+                                        String done = test.executeTest();
                                         return done;
                                     }                    
-                                })).booleanValue();
+                                }));
                 } 
                 catch (InterruptedException e)
                 {
@@ -901,9 +1002,9 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 }
             }
             
-            if (done == false)
+            if (errorMsg != null)
             {
-                throw new RuntimeException("Asynchronous action was not executed.");
+                throw new RuntimeException("Asynchronous action was not executed. " + errorMsg);
             }
         }
         catch (Throwable exception)
@@ -918,7 +1019,11 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      */
     public interface AsyncTest
     {
-        boolean executeTest();        
+    	/**
+    	 * 
+    	 * @return <code>null</code> if the test succeeded, else an error message for use in JUnit report.
+    	 */
+        String executeTest();        
     }
         
     /** ===================================================================================
@@ -1009,10 +1114,10 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 10, 
                 new AsyncTest()
                 {
-                    public boolean executeTest() 
+                    public String executeTest() 
                     {
-                        return (
-                            ActionServiceImplTest.this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+                    	boolean result = ActionServiceImplTest.this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE);
+                    	return result == true ? null : "Expected aspect Classifiable";
                     };
                 });
         
@@ -1039,5 +1144,69 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                     
                 });
         
+    }
+    
+    /**
+     * This class is only used during JUnit testing.
+     * 
+     * @author Neil Mc Erlean
+     */
+    public static class SleepActionFilter extends AbstractAsynchronousActionFilter
+    {
+    	public int compare(OngoingAsyncAction sae1, OngoingAsyncAction sae2)
+    	{
+    		// Sleep actions are always equivalent.
+    		return 0;
+    	}
+    }
+    
+    /**
+     * This class is only intended for use in JUnit tests.
+     * 
+     * @author Neil McErlean.
+     */
+    public static class SleepActionExecuter extends ActionExecuterAbstractBase
+    {
+    	public static final String NAME = "sleep-action";
+    	private int sleepMs;
+    	
+    	private int timesExecuted = 0;
+    	private void incrementTimesExecutedCount() {timesExecuted++;}
+    	public int getTimesExecuted() {return timesExecuted;}
+    	
+    	public int getSleepMs()
+    	{
+    		return sleepMs;
+    	}
+    	
+    	public void setSleepMs(int sleepMs)
+    	{
+    		this.sleepMs = sleepMs;
+    	}
+    	
+    	/**
+    	 * Add parameter definitions
+    	 */
+    	@Override
+    	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    	{
+    		// Intentionally empty
+    	}
+
+    	@Override
+    	protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+    		try
+    		{
+    			Thread.sleep(sleepMs);
+    		}
+    		catch (InterruptedException ignored)
+    		{
+    			// Intentionally empty
+    		}
+    		finally
+    		{
+    			incrementTimesExecutedCount();
+    		}
+    	}
     }
 }

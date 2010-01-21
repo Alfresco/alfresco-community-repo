@@ -171,7 +171,7 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
             // Make sure that this transformation gets set back i.t.o. time taken.
             // This will ensure that transformers that compete for the same transformation
             // will be prejudiced against transformers that tend to fail
-            recordTime(10000);   // 10 seconds, i.e. rubbish
+            recordTime(60 * 1000);   // 1 minute, i.e. rubbish
             
             throw new ContentIOException("Content conversion failed: \n" +
                     "   reader: " + reader + "\n" +

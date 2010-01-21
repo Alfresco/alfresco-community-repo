@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.AspectMissingException;
@@ -297,4 +298,12 @@ public interface VersionService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "version"})
     public void deleteVersion(NodeRef nodeRef, Version version);
+    
+    /**
+     * Register a version label policy
+     * 
+     * @param typeQName the QName of the type to register
+     * @param policy the policy to register for the specified type
+     */
+    public void registerVersionLabelPolicy(QName typeQName, CalculateVersionLabelPolicy policy);
 }

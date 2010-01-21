@@ -893,7 +893,7 @@
     <!--  Version Service   -->
     <!--                               -->
 
-
+ 
     <bean id="versionService" class="org.alfresco.repo.version.Version2ServiceImpl" init-method="initialise">
         <property name="nodeService">
             <ref bean="NodeService" />
@@ -935,6 +935,41 @@
             <ref bean="dictionaryService" />
         </property>
     </bean>
+
+    <bean id="serialVersionLabelPolicy" class="org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy" >
+    </bean>
+    
+    <bean id="registerContentWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register"> 
+       <property name="versionService">
+            <ref bean="versionService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="typeQName">
+            <value>cm:content</value>
+        </property>
+        <property name="policy">
+             <ref bean="serialVersionLabelPolicy" />
+        </property>
+    </bean>
+    
+    <bean id="registerMLContainerWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register"> 
+       <property name="versionService">
+            <ref bean="versionService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="typeQName">
+            <value>cm:mlContainer</value>
+        </property>
+        <property name="policy">
+             <ref bean="serialVersionLabelPolicy" />
+        </property>
+    </bean>
+    
+    <!--  -->
     
     <bean id="versionMigrator" class="org.alfresco.repo.version.VersionMigrator" init-method="init">
         <property name="dbNodeService">

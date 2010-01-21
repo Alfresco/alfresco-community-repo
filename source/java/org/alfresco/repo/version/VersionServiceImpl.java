@@ -38,6 +38,7 @@ import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyScope;
+import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.common.AbstractVersionServiceImpl;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
@@ -142,24 +143,27 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     }
 
     /**
+     * Register version label policy for the specified type
+     * 
+     * @param typeQName
+     * @param policy 
+     */
+    public void registerVersionLabelPolicy(QName typeQName, CalculateVersionLabelPolicy policy)
+    {
+        // Register the serial version label behaviour
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "calculateVersionLabel"),
+                typeQName,
+                new JavaBehaviour(policy, "calculateVersionLabel"));
+    }
+    
+    /**
      * Initialise method
      */
     @Override
     public void initialise()
     {
-        super.initialise();
-
-        // Register the serial version label behaviour
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "calculateVersionLabel"),
-                ContentModel.TYPE_CMOBJECT,
-                new JavaBehaviour(new SerialVersionLabelPolicy(), "calculateVersionLabel"));
-
-        // Register the serial version label behaviour for the mlContainer too
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "calculateVersionLabel"),
-                  ContentModel.TYPE_MULTILINGUAL_CONTAINER,
-                new JavaBehaviour(new SerialVersionLabelPolicy(), "calculateVersionLabel"));
+        super.initialise();     
     }
     
     // TODO - temp

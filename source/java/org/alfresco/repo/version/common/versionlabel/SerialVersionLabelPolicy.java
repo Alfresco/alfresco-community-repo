@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
@@ -38,7 +39,7 @@ import org.alfresco.util.VersionNumber;
  * 
  * @author Roy Wetherall
  */
-public class SerialVersionLabelPolicy 
+public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
 {
     // TODO need to add support for branches into this labeling policy
     

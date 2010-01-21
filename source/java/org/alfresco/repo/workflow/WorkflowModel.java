@@ -37,6 +37,10 @@ public interface WorkflowModel
     //
     // Base Business Process Management Definitions
     //
+
+    // package folder constants
+    static final QName TYPE_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package");
+    static final QName ASSOC_PACKAGE_CONTAINS= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageContains");
     
     // task constants
     static final QName TYPE_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "task");

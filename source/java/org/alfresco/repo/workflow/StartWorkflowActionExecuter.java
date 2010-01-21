@@ -126,7 +126,7 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
         NodeRef workflowPackage = (NodeRef)ruleAction.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService));
         workflowPackage = workflowService.createPackage(workflowPackage);
         ChildAssociationRef childAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
-        nodeService.addChild(workflowPackage, actionedUponNodeRef, ContentModel.ASSOC_CONTAINS, childAssoc.getQName());
+        nodeService.addChild(workflowPackage, actionedUponNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, childAssoc.getQName());
         
         // build map of workflow start task parameters
         Map<String, Serializable> paramValues = ruleAction.getParameterValues();

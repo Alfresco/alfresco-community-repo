@@ -28,7 +28,7 @@ import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPol
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * Utility class to register a version label policy version service.

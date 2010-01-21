@@ -207,7 +207,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       {
         NodeRef addedNodeRef = new NodeRef(addedItem);
         this.getUnprotectedNodeService().addChild(workflowPackage, addedNodeRef, 
-              ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+              WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
               QName.createValidLocalName((String)this.getNodeService().getProperty(
                     addedNodeRef, ContentModel.PROP_NAME))));
       }

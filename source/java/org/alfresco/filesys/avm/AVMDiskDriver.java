@@ -2434,7 +2434,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
 	                                webProjName = props.get( SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
 
-	                                // Get the user name from teh store name
+	                                // Get the user name from the store name
 
 	                                userName = storeName.substring( webProjName.length() + 2);
 	                            }
@@ -2873,6 +2873,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     		if ( pseudoFolder != null)
     		{
     			// Check if the pseudo folder is a web project folder or sandbox within a web project
+
+    			String curUserName = m_authComponent.getCurrentUserName();
     			
     			if ( pseudoFolder instanceof WebProjectStorePseudoFile)
     			{
@@ -2880,22 +2882,37 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     				
     				WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) pseudoFolder;
     				
-    				int role = webFolder.getUserRole( cInfo.getUserName());
+    				int role = webFolder.getUserRole( curUserName);
     				
     				if ( role == WebProjectStorePseudoFile.RoleNone)
     				{
+    					// DEBUG
+    					
+    					if ( logger.isDebugEnabled())
+    						logger.debug("User " + curUserName + " has no access to web project, " + webFolder.getFileName());
+    					
 	    				// User does not have access to this web project
 	    				
-	    				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName());
+	    				throw new AccessDeniedException("User " + curUserName + " has no access to web project, " + webFolder.getFileName());
     				}
     				else if ( avmCtx.allowAdminStagingWrites() && cInfo.isAdministrator())
     				{
+    					// DEBUG
+    					
+    					if ( logger.isDebugEnabled())
+    						logger.debug("User " + curUserName + " granted write access to web project, " + webFolder.getFileName());
+    					
     					// Allow admin write access
     					
     					avmPath.setReadOnlyAccess( false);
     				}
     				else
     				{
+    					// DEBUG
+    					
+    					if ( logger.isDebugEnabled())
+    						logger.debug("User " + curUserName + " granted read-only access to web project, " + webFolder.getFileName());
+    					
     					// Only allow read-only access to the staging area
     					
     					avmPath.setReadOnlyAccess( true);
@@ -2914,20 +2931,20 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     					
     					WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) rootState.getPseudoFileList().findFile( storeFolder.getWebProject(), false);
     					
-    					int role = webFolder.getUserRole( cInfo.getUserName());
+    					int role = webFolder.getUserRole( curUserName);
     					
         				if ( role == WebProjectStorePseudoFile.RoleNone)
         				{
 	        				// User does not have access to this web project
 	        				
-	        				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName() + "/" + storeFolder.getFileName());
+	        				throw new AccessDeniedException("User " + curUserName + " has no access to web project, " + webFolder.getFileName() + "/" + storeFolder.getFileName());
         				}
         				else if ( role == WebProjectStorePseudoFile.RolePublisher &&
-        						  storeFolder.getUserName().equalsIgnoreCase( cInfo.getUserName()) == false)
+        						  storeFolder.getUserName().equalsIgnoreCase( curUserName) == false)
         				{
 	        				// User does not have access to this web project
 	        				
-	        				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName() + "/" + storeFolder.getFileName());
+	        				throw new AccessDeniedException("User " + curUserName + " has no access to web project, " + webFolder.getFileName() + "/" + storeFolder.getFileName());
         				}
     				}
     			}
@@ -2971,12 +2988,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     	// Check for the admin user, no need to filter the list
 
     	PseudoFileList fullList   = fstate.getPseudoFileList();
-    	if ( cInfo.getUserName().equalsIgnoreCase( m_authComponent.getSystemUserName()))
+    	if ( cInfo.isAdministrator())
     		return fullList;
     	
     	// Create a filtered list of store pseudo folders that the user has access to
     	
     	PseudoFileList filterList = new PseudoFileList();
+    	String userName = m_authComponent.getCurrentUserName();
     	
     	for ( int i = 0; i < fullList.numberOfFiles(); i++)
     	{
@@ -2992,7 +3010,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 				
 				WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) pseudoFolder;
 				
-				if ( avmCtx.showStagingStores() && webFolder.getUserRole( cInfo.getUserName()) != WebProjectStorePseudoFile.RoleNone)
+				if ( avmCtx.showStagingStores() && webFolder.getUserRole( userName) != WebProjectStorePseudoFile.RoleNone)
 				{
 					// User has access to this store
 					
@@ -3015,7 +3033,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 						WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) fullList.findFile( storeFolder.getWebProject(), false);
 						
 						if ( webFolder != null) {
-							int role = webFolder.getUserRole( cInfo.getUserName());
+							int role = webFolder.getUserRole( userName);
 							
 							if ( role == WebProjectStorePseudoFile.RoleContentManager && avmCtx.showStoreType( storeFolder.isStoreType()))
 		    				{
@@ -3027,7 +3045,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 							{
 								// Allow access if the user owns the current folder
 								
-								if ( storeFolder.getUserName().equalsIgnoreCase( cInfo.getUserName()))
+								if ( storeFolder.getUserName().equalsIgnoreCase( userName))
 									filterList.addFile( storeFolder);
 							}
 						}

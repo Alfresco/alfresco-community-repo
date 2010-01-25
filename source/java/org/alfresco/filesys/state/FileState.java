@@ -56,6 +56,7 @@ public class FileState
     public final static long NoTimeout      = -1L;
     public final static long DefTimeout     = 2 * 60000L;   // 2 minutes
     public final static long RenameTimeout  = 1 * 60000L;   // 1 minute
+    public final static long DeleteTimeout	= 15000L;		// 15 seconds
     
     // File status
 

@@ -38,6 +38,16 @@ public abstract class NodeRefNetworkFile extends AlfrescoNetworkFile {
 	
 	protected NodeRef m_nodeRef;
 	
+	// Process id of the owner
+	
+	protected int m_pid;
+	
+	// Reference count of file opens
+	//
+	// The same file stream may be re-used if the same process/client opens it multiple times
+	
+	private int m_openCount = 1;
+	
     /**
      * Create a network file object with the specified file/directory name.
      * 
@@ -79,5 +89,50 @@ public abstract class NodeRefNetworkFile extends AlfrescoNetworkFile {
 	public void setNodeRef( NodeRef nodeRef)
 	{
 		m_nodeRef = nodeRef;
+	}
+	
+	/**
+	 * Return the process id of the owner
+	 * 
+	 * @return int
+	 */
+	public final int getProcessId() {
+		return m_pid;
+	}
+	
+	/**
+	 * Set the owner process id
+	 * 
+	 * @param pid int
+	 */
+	public final void setProcessId(int pid) {
+		m_pid = pid;
+	}
+	
+	/**
+	 * Increment the file open count
+	 * 
+	 * @return int
+	 */
+	public synchronized final int incrementOpenCount() {
+		return ++m_openCount;
+	}
+	
+	/**
+	 * Decrement the file open count
+	 * 
+	 * @return int
+	 */
+	public synchronized final int decrementOpenCount() {
+		return --m_openCount;
+	}
+	
+	/**
+	 * Return the open file count
+	 * 
+	 * @return int
+	 */
+	public final int getOpenCount() {
+		return m_openCount;
 	}
 }

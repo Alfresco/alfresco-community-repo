@@ -845,7 +845,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         boolean loggedOn = false;
         
-        if ( useRawNTLMSSP() || isNTLMSSP == true || sess.hasSetupObject( client.getProcessId()) || setupObj != null)
+        if ( respBlob != null || sess.hasSetupObject( client.getProcessId()) || setupObj != null)
         {
             //  NTLMSSP has two stages, if there is a stored setup object then indicate more processing
             //  required

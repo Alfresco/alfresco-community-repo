@@ -1,6 +1,10 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalResults": ${treenode.items?size?c},
+   "parent":
+   {
+      "nodeRef": "${treenode.parentNodeRef}"
+   },
    "items":
    [
    <#list treenode.items as item>

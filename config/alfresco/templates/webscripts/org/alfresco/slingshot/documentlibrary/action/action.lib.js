@@ -6,8 +6,10 @@
  * and a JSON body addresses the assets involved in the action.
  * (note: HTTP DELETE methods must use URI)
  *
- * @param uri {string} site/{siteId}/{containerId}/{filepath} : full path to file or folder name involved in the action
- * @param uri {string} node/{store_type}/{store_id}/{id}/{filepath} : full path to file or folder name involved in the action
+ * @param uri {string} site/{siteId}/{containerId}
+ * @param uri {string} site/{siteId}/{containerId}/{filepath}
+ * @param uri {string} node/{store_type}/{store_id}/{id}
+ * @param uri {string} node/{store_type}/{store_id}/{id}/{filepath}
  */
 
 /**
@@ -35,13 +37,7 @@ function main()
    }
 
    // Resolve path if available
-   var path = url.templateArgs.path;
-   // Path might be null for the root folder
-   if (!path)
-   {
-      path = "";
-   }
-   // Remove any leading or trailing "/" from the path
+   var path = url.templateArgs.path || "";
    // Fix-up parent path to have no leading or trailing slashes
    if (path.length > 0)
    {
@@ -57,6 +53,14 @@ function main()
       path = aPaths.join("/");
    }
    params.path = path;
+   params.destNode = getAssetNode(params.rootNode, path);
+
+   // Must have destNode by this point
+   if (typeof params.destNode == "string")
+   {
+      status.setCode(status.STATUS_NOT_FOUND, "Not found: " + url.extension);
+      return;
+   }
 
    // Multiple input files in the JSON body?
    files = getMultipleInputValues("nodeRefs");
@@ -98,9 +102,9 @@ function main()
           * We therefore need to scan the results for a failed operation and mark the entire
           * set of operations as failed.
           */
-         var overallSuccess = true;
-         var successCount = 0;
-         var failureCount = 0;
+         var overallSuccess = true,
+            successCount = 0,
+            failureCount = 0;
          for (var i = 0, j = results.length; i < j; i++)
          {
             overallSuccess = overallSuccess && results[i].success;
@@ -123,13 +127,13 @@ function main()
  */
 function getSiteInputParams()
 {
-   var params = {};
-   var error = null;
-   var template = url.template;
+   var params = {},
+      error = null,
+      template = url.template;
    
    try
    {
-      var siteId, containerId, sideNode, rootNode;
+      var siteId, containerId, siteNode, rootNode;
 
       // Try to get the parameters from the URI
       siteId = url.templateArgs.site;
@@ -186,7 +190,6 @@ function getSiteInputParams()
          // Populate the return object
          params =
          {
-            usingNodeRef: false,
             siteId: siteId,
             containerId: containerId,
             siteNode: siteNode,
@@ -245,7 +248,6 @@ function getNodeRefInputParams()
       // Populate the return object
       params =
       {
-         usingNodeRef: true,
          nodeRef: nodeRef,
          rootNode: rootNode
       }
@@ -306,14 +308,18 @@ function getMultipleInputValues(param)
  */
 function getAssetNode(p_rootNode, p_assetPath)
 {
-   var assetNode = p_rootNode;
-   var error = null;
+   var assetNode = p_rootNode,
+      error = null;
 
    try
    {
       if (p_assetPath && (p_assetPath.length > 0))
       {
          assetNode = assetNode.childByNamePath(p_assetPath);
+      }
+      else
+      {
+         assetNode = p_rootNode;
       }
       
       if (assetNode === null)

@@ -20,14 +20,7 @@ function runAction(p_params)
 
    try
    {
-      var assetNode = p_params.node || getAssetNode(p_params.rootNode, p_params.path);
-
-      // Must have assetNode by this point
-      if (typeof assetNode == "string")
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.path);
-         return;
-      }
+      var assetNode = p_params.destNode;
 
       // Ensure the file is versionable
       if (!assetNode.hasAspect("cm:versionable"))
@@ -51,8 +44,8 @@ function runAction(p_params)
          return;
       }
 
-      var resultId = assetNode.name;
-      var resultNodeRef = workingCopy.nodeRef.toString();
+      var resultId = assetNode.name,
+         resultNodeRef = workingCopy.nodeRef.toString();
 
       // Construct the result object
       results = [

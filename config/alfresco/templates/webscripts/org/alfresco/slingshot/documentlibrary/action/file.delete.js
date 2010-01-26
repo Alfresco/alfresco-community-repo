@@ -19,17 +19,9 @@ function runAction(p_params)
    
    try
    {
-      var assetNode = p_params.node || getAssetNode(p_params.rootNode, p_params.path);
-
-      // Must have assetNode by this point
-      if (typeof assetNode == "string")
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Not found.");
-         return;
-      }
-      
-      var resultId = assetNode.name;
-      var resultNodeRef = assetNode.nodeRef.toString();
+      var assetNode = p_params.destNode,
+         resultId = assetNode.name,
+         resultNodeRef = assetNode.nodeRef.toString();
 
       // Delete the asset
       if (!assetNode.remove())

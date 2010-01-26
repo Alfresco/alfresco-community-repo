@@ -19,25 +19,16 @@ function runAction(p_params)
 
    try
    {
-      var assetNode = p_params.node || getAssetNode(p_params.rootNode, p_params.path);
-
-      // Must have assetNode by this point
-      if (typeof assetNode == "string")
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.path);
-         return;
-      }
-
-      // Checkin the asset
-      var originalDoc = assetNode.checkin();
+      var assetNode = p_params.destNode,
+         originalDoc = assetNode.checkin();
       if (originalDoc === null)
       {
          status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not checkin: " + p_params.path);
          return;
       }
 
-      var resultId = assetNode.name;
-      var resultNodeRef = originalDoc.nodeRef.toString();
+      var resultId = assetNode.name,
+         resultNodeRef = originalDoc.nodeRef.toString();
 
       // Construct the result object
       results = [

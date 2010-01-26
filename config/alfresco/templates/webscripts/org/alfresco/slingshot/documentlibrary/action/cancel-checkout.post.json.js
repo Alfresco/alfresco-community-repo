@@ -19,25 +19,16 @@ function runAction(p_params)
 
    try
    {
-      var assetNode = getAssetNode(p_params.rootNode, p_params.path);
-
-      // Must have assetNode by this point
-      if (typeof assetNode == "string")
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.path);
-         return;
-      }
-
       // Checkin the asset
-      var originalDoc = assetNode.cancelCheckout();
+      var originalDoc = p_params.destNode.cancelCheckout();
       if (originalDoc === null)
       {
-         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not cancel checkout: " + p_params.path);
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not cancel checkout: " + url.extension);
          return;
       }
 
-      var resultId = originalDoc.name;
-      var resultNodeRef = originalDoc.nodeRef.toString();
+      var resultId = originalDoc.name,
+         resultNodeRef = originalDoc.nodeRef.toString();
 
       // Construct the result object
       results = [

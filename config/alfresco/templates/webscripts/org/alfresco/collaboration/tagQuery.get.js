@@ -11,7 +11,7 @@ function tagQuery()
    var node = null;
    if ((nodeRef !== null) && (nodeRef !== ""))
    {
-      node = search.findNode(nodeRef);
+      node = resolveVirtualNodeRef(nodeRef) || search.findNode(nodeRef);
    }
    if (node === null)
    {
@@ -117,6 +117,31 @@ function tagQuery()
 function sortByCountDesc(a, b)
 {
    return (b.count - a.count);
+}
+
+/**
+ * Resolve "virtual" nodeRefs into nodes
+ *
+ * @method resolveVirtualNodeRef
+ * @param virtualNodeRef {string} nodeRef
+ * @return {ScriptNode|null} Node corresponding to supplied virtual nodeRef. Returns null if supplied nodeRef isn't a "virtual" type
+ */
+function resolveVirtualNodeRef(nodeRef)
+{
+   var node = null;
+   if (nodeRef == "alfresco://company/home")
+   {
+      node = companyhome;
+   }
+   else if (nodeRef == "alfresco://user/home")
+   {
+      node = userhome;
+   }
+   else if (nodeRef == "alfresco://sites/home")
+   {
+      node = companyhome.childrenByXPath("st:sites")[0];
+   }
+   return node;
 }
 
 model.tagQuery = tagQuery();

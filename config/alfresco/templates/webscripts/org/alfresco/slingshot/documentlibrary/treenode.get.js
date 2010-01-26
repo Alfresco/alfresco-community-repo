@@ -49,6 +49,7 @@ function getTreeNode()
    
       return (
       {
+         "parentNodeRef": parsedArgs.parentNode.nodeRef.toString(),
          "items": items
       });
    }

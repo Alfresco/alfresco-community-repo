@@ -1,13 +1,49 @@
+var PeopleCache = {};
+
+/**
+ * Gets / caches a person object
+ * @method getPerson
+ * @param username {string} User name
+ */
+function getPerson(username)
+{
+   if (typeof PeopleCache[username] == "undefined")
+   {
+      var person = people.getPerson(username);
+      if (person == null && username == "System")
+      {
+         person =
+         {
+            properties:
+            {
+               userName: "System",
+               firstName: "System",
+               lastName: "User"
+            }
+         }
+      }
+      PeopleCache[username] =
+      {
+         userName: person.properties.userName,
+         firstName: person.properties.firstName,
+         lastName: person.properties.lastName,
+         displayName: (person.properties.firstName + " " + person.properties.lastName).replace(/^\s+|\s+$/g, "")
+      };
+   }
+   return PeopleCache[username];
+}
+
 function main()
 {
-   var json = "";
-   var versions = [];
+   var json = "",
+      versions = [];
 
    // allow for content to be loaded from id
    if (args["nodeRef"] != null)
    {
-      var nodeRef = args["nodeRef"];
-      node = search.findNode(nodeRef);
+      var nodeRef = args["nodeRef"],
+         node = search.findNode(nodeRef),
+         versionHistory, version, p;
 
       if (node != null)
       {
@@ -16,8 +52,8 @@ function main()
          {
             for (i = 0; i < versionHistory.length; i++)
             {
-               var version = versionHistory[i];
-               var p = people.getPerson(version.creator);
+               version = versionHistory[i];
+               p = getPerson(version.creator);
                versions[versions.length] =
                {
                   nodeRef: version.node.nodeRef.toString(),
@@ -27,16 +63,16 @@ function main()
                   createdDate: version.createdDate,
                   creator:
                   {
-                     userName: p.properties.userName,
-                     firstName: p.properties.firstName,
-                     lastName: p.properties.lastName
+                     userName: p.userName,
+                     firstName: p.firstName,
+                     lastName: p.lastName
                   }
                };
             }
          }
          else
          {
-            var p = people.getPerson(node.properties.creator);
+            p = getPerson(node.properties.creator);
             versions[0] =
             {
                nodeRef: node.nodeRef.toString(),
@@ -46,9 +82,9 @@ function main()
                createdDate: node.properties.created,
                creator:
                {
-                  userName: p.properties.userName,
-                  firstName: p.properties.firstName,
-                  lastName: p.properties.lastName
+                  userName: p.userName,
+                  firstName: p.firstName,
+                  lastName: p.lastName
                }
             };
          }

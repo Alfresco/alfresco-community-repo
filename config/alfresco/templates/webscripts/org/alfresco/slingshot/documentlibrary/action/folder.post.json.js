@@ -28,30 +28,21 @@ function runAction(p_params)
          status.setCode(status.STATUS_BAD_REQUEST, "Folder name is a mandatory parameter.");
          return;
       }
-      var folderName = json.get("name");
-      
-      var parentPath = p_params.path;
-      var folderPath = parentPath + "/" + folderName;
+
+      var folderName = json.get("name"),
+         destNode = p_params.destNode;
 
       // Check folder doesn't already exist
-      var existsNode = getAssetNode(p_params.rootNode, folderPath);
+      var existsNode = getAssetNode(destNode, folderName);
       if (typeof existsNode == "object")
       {
-         status.setCode(status.STATUS_BAD_REQUEST, "Folder '" + folderPath + "' already exists.");
+         status.setCode(status.STATUS_BAD_REQUEST, "Folder '" + folderName + "' already exists.");
          return;
       }
 
-      // Check parent exists
-      var parentNode = getAssetNode(p_params.rootNode, parentPath);
-      if (typeof parentNode == "string")
-      {
-         status.setCode(status.STATUS_NOT_FOUND, "Parent folder '" + parentPath + "' not found.");
-         return;
-      }
-      
       // Title and description
-      var folderTitle = "";
-      var folderDescription = "";
+      var folderTitle = "",
+         folderDescription = "";
       if (!json.isNull("title"))
       {
          folderTitle = json.get("title");
@@ -62,7 +53,7 @@ function runAction(p_params)
       }
 
       // Create the folder and apply metadata
-      var folderNode = parentNode.createFolder(folderName);
+      var folderNode = destNode.createFolder(folderName);
       // Always add title & description, default icon
       folderNode.properties["cm:title"] = folderTitle;
       folderNode.properties["cm:description"] = folderDescription;
@@ -74,9 +65,8 @@ function runAction(p_params)
       // Construct the result object
       results = [
       {
-         id: folderPath,
+         id: folderName,
          name: folderName,
-         parentPath: parentPath,
          nodeRef: folderNode.nodeRef.toString(),
          action: "createFolder",
          success: true
@@ -84,8 +74,8 @@ function runAction(p_params)
    }
    catch(e)
    {
-		status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
-		return;
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+      return;
    }
    
    return results;

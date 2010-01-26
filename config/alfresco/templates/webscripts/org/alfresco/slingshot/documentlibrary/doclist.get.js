@@ -194,7 +194,8 @@ function main()
    
    assets = assets.slice(startIndex, pagePos * pageSize);
 
-   var thumbnail, assetEvaluator, defaultLocation, location, qnamePaths, displayPaths, site, item;
+   var thumbnail, assetEvaluator, defaultLocation, location, qnamePaths, displayPaths, site, item,
+      libraryRoot = parsedArgs.libraryRoot;
 
    // Location if we're in a site
    defaultLocation =
@@ -236,7 +237,19 @@ function main()
          qnamePaths = locationAsset.qnamePath.split("/");
          displayPaths = locationAsset.displayPath.split("/");
 
-         if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
+         if (libraryRoot !== null)
+         {
+            // Generate the path from the supplied library root
+            location =
+            {
+               site: null,
+               siteTitle: null,
+               container: null,
+               path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/"),
+               file: locationAsset.name
+            };
+         }
+         else if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
          {
             // This asset belongs to a site
             location =

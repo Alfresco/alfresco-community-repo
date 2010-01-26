@@ -32,19 +32,13 @@ function jsonToArray(p_name)
 function runAction(p_params)
 {
    var result,
-      assetNode = p_params.rootNode;
-
-   if (typeof assetNode == "string")
-   {
-      status.setCode(status.STATUS_NOT_FOUND, "Not found: " + p_params.nodeRef);
-      return;
-   }
+      assetNode = p_params.destNode;
 
    try
    {
       result =
       {
-         nodeRef: p_params.nodeRef,
+         nodeRef: assetNode.nodeRef,
          action: "manageAspects",
          success: false
       }

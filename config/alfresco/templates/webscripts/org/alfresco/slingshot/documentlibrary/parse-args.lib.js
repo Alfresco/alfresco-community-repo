@@ -9,8 +9,8 @@ var ParseArgs =
     */
    getMultipleInputValues: function ParseArgs_getMultipleInputValues(param)
    {
-      var values = [];
-      var error = null;
+      var values = [],
+         error = null;
 
       try
       {
@@ -38,6 +38,31 @@ var ParseArgs =
    },
 
    /**
+    * Resolve "virtual" nodeRefs into nodes
+    *
+    * @method resolveVirtualNodeRef
+    * @param virtualNodeRef {string} nodeRef
+    * @return {ScriptNode|null} Node corresponding to supplied virtual nodeRef. Returns null if supplied nodeRef isn't a "virtual" type
+    */
+   resolveVirtualNodeRef: function ParseArgs_resolveVirtualNodeRef(nodeRef)
+   {
+      var node = null;
+      if (nodeRef == "alfresco://company/home")
+      {
+         node = companyhome;
+      }
+      else if (nodeRef == "alfresco://user/home")
+      {
+         node = userhome;
+      }
+      else if (nodeRef == "alfresco://sites/home")
+      {
+         node = companyhome.childrenByXPath("st:sites")[0];
+      }
+      return node;
+   },
+
+   /**
     * Get and parse arguments
     *
     * @method getParsedArgs
@@ -47,8 +72,10 @@ var ParseArgs =
    {
       var rootNode = null,
          parentNode = null,
+         libraryRoot = null,
          nodeRef = null,
          path = "",
+         root = null,
          siteId, siteNode, containerId, type;
 
       if (url.templateArgs.store_type !== null)
@@ -59,25 +86,12 @@ var ParseArgs =
          var storeType = url.templateArgs.store_type,
             storeId = url.templateArgs.store_id,
             id = url.templateArgs.id,
-            type = url.templateArgs.type;
+            type = url.templateArgs.type || "node";
 
          nodeRef = storeType + "://" + storeId + "/" + id;
-
-         if (nodeRef == "alfresco://company/home")
+         rootNode = ParseArgs.resolveVirtualNodeRef(nodeRef);
+         if (rootNode == null)
          {
-            rootNode = companyhome;
-         }
-         else if (nodeRef == "alfresco://user/home")
-         {
-            rootNode = userhome;
-         }
-         else if (nodeRef == "alfresco://sites/home")
-         {
-            rootNode = companyhome.childrenByXPath("st:sites")[0];
-         }
-         else
-         {
-            type = "node"
             rootNode = search.findNode(nodeRef);
             if (rootNode === null)
             {
@@ -85,8 +99,9 @@ var ParseArgs =
                return null;
             }
             
-            parentNode = rootNode.parent;
          }
+         parentNode = rootNode.parent;
+         libraryRoot = args.libraryRoot;
       }
       else
       {
@@ -157,6 +172,12 @@ var ParseArgs =
          container: null,
          path: "/" + path
       };
+      
+      // Is this library rooted from a non-site nodeRef?
+      if (libraryRoot !== null)
+      {
+         libraryRoot = ParseArgs.resolveVirtualNodeRef(libraryRoot) || search.findNode(libraryRoot);
+      }
 
       var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/"),
          displayPaths = parentNode.displayPath.split("/");
@@ -166,7 +187,12 @@ var ParseArgs =
          displayPaths = displayPaths.concat([parentNode.name]);
       }
 
-      if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
+      if (libraryRoot !== null)
+      {
+         // Generate the path from the supplied library root
+         location.path = "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/");
+      }
+      else if (qnamePaths.length > 4 && qnamePaths[2] == "st:sites")
       {
          siteId = displayPaths[3];
          siteNode = siteService.getSite(siteId);
@@ -193,6 +219,7 @@ var ParseArgs =
       {
          rootNode: rootNode,
          parentNode: parentNode,
+         libraryRoot: libraryRoot,
          path: path,
          location: location,
          nodeRef: nodeRef,

@@ -5,8 +5,10 @@ function main()
       var filename = null,
          content = null,
          mimetype = null,
-         siteId = null,
-         containerId = null,
+         siteId = null, site = null,
+         containerId = null, container = null,
+         destination = null,
+         destNode = null,
          thumbnailNames = null,
          i;
 
@@ -37,33 +39,40 @@ function main()
                break;
 
             case "siteid":
-               siteId = field.value;
+               siteId = field.value.length() > 0 ? field.value : null;
                break;
 
             case "containerid":
-               containerId = field.value;
+               containerId = field.value.length() > 0 ? field.value : null;
+               break;
+
+            case "destination":
+               destination = field.value.length() > 0 ? field.value : null;
                break;
 
             case "uploaddirectory":
-               uploadDirectory = field.value;
-               // Remove any leading "/" from the uploadDirectory
-               if (uploadDirectory.substr(0, 1) == "/")
+               uploadDirectory = field.value.length() > 0 ? field.value : null;
+               if (uploadDirectory !== null)
                {
-                  uploadDirectory = uploadDirectory.substr(1);
-               }
-               // Ensure uploadDirectory ends with "/" if not the root folder
-               if ((uploadDirectory.length > 0) && (uploadDirectory.substring(uploadDirectory.length - 1) != "/"))
-               {
-                  uploadDirectory = uploadDirectory + "/";
+                  // Remove any leading "/" from the uploadDirectory
+                  if (uploadDirectory.substr(0, 1) == "/")
+                  {
+                     uploadDirectory = uploadDirectory.substr(1);
+                  }
+                  // Ensure uploadDirectory ends with "/" if not the root folder
+                  if ((uploadDirectory.length > 0) && (uploadDirectory.substring(uploadDirectory.length - 1) != "/"))
+                  {
+                     uploadDirectory = uploadDirectory + "/";
+                  }
                }
                break;
 
             case "updatenoderef":
-               updateNodeRef = field.value;
+               updateNodeRef = field.value.length() > 0 ? field.value : null;
                break;
 
             case "filename":
-               title = field.value;
+               title = field.value.length() > 0 ? field.value : null;
                break;
 
             case "description":
@@ -92,8 +101,8 @@ function main()
          }
       }
 
-      // Ensure mandatory file attributes have been located
-      if (siteId === null || containerId === null || filename === null || content === null)
+      // Ensure mandatory file attributes have been located. Need either destination, or site + container or updateNodeRef
+      if ((filename === null || content === null) || (destination === null && (siteId === null || containerId === null) && updateNodeRef === null))
       {
          status.code = 400;
          status.message = "Required parameters are missing";
@@ -101,34 +110,74 @@ function main()
          return;
       }
 
-      var site = siteService.getSite(siteId);
-      if (site === null)
+      /**
+       * Site or Non-site?
+       */
+      if (siteId !== null)
       {
-         status.code = 404;
-         status.message = "Site (" + siteId + ") not found.";
-         status.redirect = true;
-         return;
+         /**
+          * Site mode.
+          * Need valid site and container. Try to create container if it doesn't exist.
+          */
+         site = siteService.getSite(siteId);
+         if (site === null)
+         {
+            status.code = 404;
+            status.message = "Site (" + siteId + ") not found.";
+            status.redirect = true;
+            return;
+         }
+
+         container = site.getContainer(containerId);
+         if (container === null)
+         {
+            container = site.createContainer(containerId);
+         }
+
+         if (container === null)
+         {
+            status.code = 404;
+            status.message = "Component container (" + containerId + ") not found.";
+            status.redirect = true;
+            return;
+         }
+         
+         destNode = container;
+      }
+      else if (destination !== null)
+      {
+         /**
+          * Non-Site mode.
+          * Need valid destination nodeRef.
+          */
+         destNode = search.findNode(destination);
+         if (destNode === null)
+         {
+            status.code = 404;
+            status.message = "Destination (" + destination + ") not found.";
+            status.redirect = true;
+            return;
+         }
       }
 
-      // Upload mode, since uploadDirectory was used
-      var container = site.getContainer(containerId);
-      if (container === null)
+      /**
+       * Update existing or Upload new?
+       */
+      if (updateNodeRef !== null)
       {
-         container = site.createContainer(containerId);
-      }
-
-      if (container === null)
-      {
-         status.code = 404;
-         status.message = "Component container (" + containerId + ") not found.";
-         status.redirect = true;
-      }
-
-      if (updateNodeRef !== null && updateNodeRef != "" && (uploadDirectory === null || uploadDirectory == ""))
-      {
-         // Update existing file mode
-         var workingCopy = search.findNode(updateNodeRef);
-         if (workingCopy.isLocked)
+         /**
+          * Update existing file specified in updateNodeRef
+          */
+         var updateNode = search.findNode(updateNodeRef);
+         if (updateNode === null)
+         {
+            status.code = 404;
+            status.message = "Node specified by updateNodeRef (" + updateNodeRef + ") not found.";
+            status.redirect = true;
+            return;
+         }
+         
+         if (updateNode.isLocked)
          {
             // We cannot update a locked document
             status.code = 404;
@@ -137,63 +186,63 @@ function main()
             return;
          }
 
-         if (!workingCopy.hasAspect("cm:workingcopy"))
+         if (!updateNode.hasAspect("cm:workingcopy"))
          {
             // Ensure the original file is versionable - may have been uploaded via different route
-            if (!workingCopy.hasAspect("cm:versionable"))
+            if (!updateNode.hasAspect("cm:versionable"))
             {
                // Ensure the file is versionable
                var props = new Array(1);
-	            props["cm:autoVersionOnUpdateProps"] = false;
-               workingCopy.addAspect("cm:versionable", props);
+               props["cm:autoVersionOnUpdateProps"] = false;
+               updateNode.addAspect("cm:versionable", props);
             }
 
-            if (workingCopy.versionHistory == null)
+            if (updateNode.versionHistory == null)
             {
                // Create the first version manually so we have 1.0 before checkout
-               workingCopy.createVersion("", true);
+               updateNode.createVersion("", true);
             }
 
             // It's not a working copy, do a check out to get the actual working copy
-            workingCopy = workingCopy.checkout();
+            updateNode = updateNode.checkout();
          }
 
          // Update the working copy content
-         workingCopy.properties.content.write(content);
+         updateNode.properties.content.write(content);
          // Reset working copy mimetype and encoding
-         workingCopy.properties.content.guessMimetype(filename);
-         workingCopy.properties.content.encoding = "UTF-8";
+         updateNode.properties.content.guessMimetype(filename);
+         updateNode.properties.content.encoding = "UTF-8";
          // check it in again, with supplied version history note
-         workingCopy = workingCopy.checkin(description, majorVersion);
+         updateNode = updateNode.checkin(description, majorVersion);
 
-         model.document = workingCopy;
+         model.document = updateNode;
       }
-      else if (uploadDirectory !== null && (updateNodeRef === null || updateNodeRef == ""))
+      else
       {
-         // Upload file mode
-         var destNode = container;
-         if (uploadDirectory != "")
+         /**
+          * Upload new file to destNode (calculated earlier) + optional subdirectory
+          */
+         if (uploadDirectory !== null && uploadDirectory.length > 0)
          {
-            destNode = container.childByNamePath(uploadDirectory);
-         }
-         if (destNode === null)
-         {
-            status.code = 404;
-            status.message = "Cannot upload file since uploadDirectory '" + uploadDirectory + "' does not exist.";
-            status.redirect = true;
-            return;
+            destNode = destNode.childByNamePath(uploadDirectory);
+            if (destNode === null)
+            {
+               status.code = 404;
+               status.message = "Cannot upload file since upload directory '" + uploadDirectory + "' does not exist.";
+               status.redirect = true;
+               return;
+            }
          }
 
-         var existingFile = container.childByNamePath(uploadDirectory + filename);
+         /**
+          * Exitsing file handling.
+          */
+         var existingFile = destNode.childByNamePath(filename);
          if (existingFile !== null)
          {
             // File already exists, decide what to do
             if (existingFile.hasAspect("cm:versionable") && overwrite)
             {
-               // Upload component was configured to overwrite files if name clashes
-               existingFile.properties.content.write(content);
-               model.document = existingFile;
-
                // Upload component was configured to overwrite files if name clashes
                existingFile.properties.content.write(content);
 
@@ -203,6 +252,7 @@ function main()
                existingFile.save();
 
                model.document = existingFile;
+               // We're finished - bail out here
                return;
             }
             else
@@ -211,15 +261,16 @@ function main()
                var counter = 1,
                   tmpFilename,
                   dotIndex;
+
                while (existingFile !== null)
                {
                   dotIndex = filename.lastIndexOf(".");
-                  if(dotIndex == 0)
+                  if (dotIndex == 0)
                   {
                      // File didn't have a proper 'name' instead it had just a suffix and started with a ".", create "1.txt"
                      tmpFilename = counter + filename;
                   }
-                  else if(dotIndex > 0)
+                  else if (dotIndex > 0)
                   {
                      // Filename contained ".", create "filename-1.txt"
                      tmpFilename = filename.substring(0, dotIndex) + "-" + counter + filename.substring(dotIndex);
@@ -229,14 +280,16 @@ function main()
                      // Filename didn't contain a dot at all, create "filename-1"
                      tmpFilename = filename + "-" + counter;
                   }
-                  existingFile = container.childByNamePath(uploadDirectory + tmpFilename);
+                  existingFile = destNode.childByNamePath(tmpFilename);
                   counter++;
                }
                filename = tmpFilename;
             }
          }
 
-         // save the new file (original or renamed file) as long as an overwrite hasn't been performed
+         /**
+          * Create a new file.
+          */
          var newFile = destNode.createFile(filename);
          if (contentType !== null)
          {
@@ -247,24 +300,17 @@ function main()
          // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
          newFile.properties.content.guessMimetype(filename);
          newFile.properties.content.encoding = "UTF-8";
-         newFile.save();
-
-         // Additional aspects?
-         if (aspects.length > 0)
-         {
-            for (i = 0; i < aspects.length; i++)
-            {
-               newFile.addAspect(aspects[i]);
-            }
-         }
+         newFile.save();         
 
          // Create thumbnail?
          if (thumbnailNames != null)
          {
-            var thumbnails = thumbnailNames.split(",");
+            var thumbnails = thumbnailNames.split(","),
+               thumbnailName = "";
+
             for (i = 0; i < thumbnails.length; i++)
             {
-               var thumbnailName = thumbnails[i];
+               thumbnailName = thumbnails[i];
                if (thumbnailName != "" && thumbnailService.isThumbnailNameRegistered(thumbnailName))
                {
                   newFile.createThumbnail(thumbnailName, true);
@@ -272,9 +318,8 @@ function main()
             }
          }
 
-         // Extract metadata - via repo action for now
-         // This should use the MetadataExtracter API to fetch properties, allowing
-         // for possible failures.
+         // Extract metadata - via repository action for now.
+         // This should use the MetadataExtracter API to fetch properties, allowing for possible failures.
          var emAction = actions.create("extract-metadata");
          if (emAction != null)
          {
@@ -289,26 +334,27 @@ function main()
             newFile.properties.title = title;
             newFile.save();
          }
+         
+         // Additional aspects?
+         if (aspects.length > 0)
+         {
+            for (i = 0; i < aspects.length; i++)
+            {
+               newFile.addAspect(aspects[i]);
+            }
+         }
 
          model.document = newFile;
-      }
-      else
-      {
-         status.code = 404;
-         status.message = "Illegal arguments: updateNodeRef OR uploadDirectory must be provided (not both)";
-         status.redirect = true;
-         return;
       }
    }
    catch (e)
    {
-      var x = e;
       status.code = 500;
       status.message = "Unexpected error occured during upload of new content.";
-      if(x.message && x.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
+      if (e.message && e.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {
          status.code = 413;
-         status.message = x.message;
+         status.message = e.message;
       }
       status.redirect = true;
       return;

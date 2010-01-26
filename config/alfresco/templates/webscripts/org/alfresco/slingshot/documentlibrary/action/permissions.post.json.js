@@ -20,11 +20,11 @@ const VALID_OPERATIONS =
  */
 function runAction(p_params)
 {
-   var results = [];
-   var i, j, file, fileNode, nodeRef;
+   var results = [],
+      files = p_params.files,
+      i, j, file, fileNode, nodeRef;
 
    // Must have array of files
-   var files = p_params.files;
    if (!files || (files.length == 0))
    {
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");

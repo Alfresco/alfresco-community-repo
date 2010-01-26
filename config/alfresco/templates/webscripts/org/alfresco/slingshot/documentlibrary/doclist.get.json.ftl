@@ -84,6 +84,7 @@
          "size": "${d.size?c}",
          "version": "${version}",
          "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
+         "webdavUrl": "${d.webdavUrl}",
          "actionSet": "${item.actionSet}",
          "tags": <#noescape>[${tags}]</#noescape>,
          "categories": [<#list d.properties.categories![] as c>["${c.name}", "${c.displayPath?replace("/categories/General","")}"]<#if c_has_next>,</#if></#list>],

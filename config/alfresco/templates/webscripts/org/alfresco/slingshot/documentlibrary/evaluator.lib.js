@@ -144,6 +144,12 @@ var Evaluator =
                   permissions["view-working-copy"] = true;
                }
             }
+            
+            // Inline editable aspect?
+            if (asset.hasAspect("app:inlineeditable"))
+            {
+               permissions["inline-edit"] = true;
+            }
             break;
       }
       

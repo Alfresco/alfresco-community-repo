@@ -14,9 +14,9 @@
  */
 function runAction(p_params)
 {
-   var results = [];
-   var files = p_params.files;
-   var file, result, nodeRef;
+   var results = [],
+      files = p_params.files,
+      file, result, nodeRef;
 
    // Must have array of files
    if (!files || files.length == 0)

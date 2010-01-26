@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
@@ -85,6 +87,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     public static final String TRANSIENT_ENCODING = "encoding";
 
     /** Protected constants */
+    protected static final String DEFAULT_CONTENT_MIMETYPE = "text/plain";
+    
     protected static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
 
     protected static final String MSG_MIMETYPE_DESC = "form_service.mimetype.description";
@@ -105,6 +109,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected DictionaryService dictionaryService;
 
     protected NamespaceService namespaceService;
+    
+    protected ContentService contentService;
 
     /**
      * A regular expression which can be used to match property names. These
@@ -166,6 +172,16 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Sets the content service
+     * 
+     * @param contentService The ContentService instance
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     /**
@@ -586,26 +602,27 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 if (TRANSIENT_MIMETYPE.equals(fieldName) || TRANSIENT_ENCODING.equals(fieldName)
                             || TRANSIENT_SIZE.equals(fieldName))
                 {
-                    // if the node type is content or sublcass thereof generate
-                    // appropriate field
-                    if (nodeRef != null && this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+                    // if the node type is content or sublcass thereof generate appropriate field
+                    if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
                     {
-                        ContentData content = (ContentData) this.nodeService.getProperty(nodeRef,
-                                    ContentModel.PROP_CONTENT);
-                        if (content != null)
+                        ContentData content = null;
+                        
+                        if (nodeRef != null)
                         {
-                            if (TRANSIENT_MIMETYPE.equals(fieldName))
-                            {
-                                generateMimetypePropertyField(content, form);
-                            }
-                            else if (TRANSIENT_ENCODING.equals(fieldName))
-                            {
-                                generateEncodingPropertyField(content, form);
-                            }
-                            else if (TRANSIENT_SIZE.equals(fieldName))
-                            {
-                                generateSizePropertyField(content, form);
-                            }
+                            content = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                        }
+                        
+                        if (TRANSIENT_MIMETYPE.equals(fieldName))
+                        {
+                            generateMimetypePropertyField(content, form);
+                        }
+                        else if (TRANSIENT_ENCODING.equals(fieldName))
+                        {
+                            generateEncodingPropertyField(content, form);
+                        }
+                        else if (TRANSIENT_SIZE.equals(fieldName))
+                        {
+                            generateSizePropertyField(content, form);
                         }
                     }
                 }
@@ -875,7 +892,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
 
                 if (fieldName.startsWith(PROP_DATA_PREFIX))
                 {
-                    processPropertyPersist(nodeRef, propDefs, fieldData, propsToPersist);
+                    processPropertyPersist(nodeRef, propDefs, fieldData, propsToPersist, data);
                 }
                 else if (fieldName.startsWith(ASSOC_DATA_PREFIX))
                 {
@@ -912,9 +929,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * @param propDefs Map of PropertyDefinition's for the node being persisted
      * @param fieldData Data to persist for the property
      * @param propsToPersist Map of properties to be persisted
+     * @param data The FormData to persist
      */
     protected void processPropertyPersist(NodeRef nodeRef, Map<QName, PropertyDefinition> propDefs,
-                FieldData fieldData, Map<QName, Serializable> propsToPersist)
+                FieldData fieldData, Map<QName, Serializable> propsToPersist, FormData data)
     {
         if (getLogger().isDebugEnabled())
             getLogger().debug("Processing field " + fieldData + " for property persistence");
@@ -945,6 +963,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 if (fullQName.equals(ContentModel.PROP_NAME))
                 {
                     processNamePropertyPersist(nodeRef, fieldData);
+                }
+                else if (propDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                {
+                    processContentPropertyPersist(nodeRef, fieldData, propsToPersist, data);
                 }
                 else
                 {
@@ -1263,6 +1285,84 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             contentData = ContentData.setEncoding(contentData, (String) fieldData.getValue());
             propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
         }
+    }
+    
+    /**
+     * Persists the given field data as the content
+     * 
+     * @param nodeRef The NodeRef to update the content for
+     * @param fieldData The data representing the new content
+     * @param propsToPersist Map of properties to be persisted
+     * @param data The form data being persisted
+     */
+    protected void processContentPropertyPersist(NodeRef nodeRef, FieldData fieldData,
+                Map<QName, Serializable> propsToPersist, FormData data)
+    {
+        ContentWriter writer = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        
+        if (writer != null)
+        {
+            // determine whether there is any content for the node yet i.e. it's a create
+            boolean defaultMimetypeRequired = (this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT) == null);
+            
+            // write the content
+            writer.putContent((String)fieldData.getValue());
+            
+            // if there was no content set a sensible default mimetype if necessary
+            if (defaultMimetypeRequired)
+            {
+                // if the transient mimetype property has already set the mimetype don't do anything
+                ContentData contentData = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
+                if (contentData != null)
+                {
+                    String mimetype = contentData.getMimetype();
+                    if (mimetype == null)
+                    {
+                        contentData = ContentData.setMimetype(contentData, determineDefaultMimetype(data));
+                    }
+                }
+                else
+                {
+                    // content data has not been persisted yet so get it from the node
+                    contentData = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                    if (contentData != null)
+                    {
+                        contentData = ContentData.setMimetype(contentData, determineDefaultMimetype(data));
+                    }
+                }
+                
+                // add the potentially changed content data object back to property map for persistence
+                propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
+            }
+        }
+    }
+    
+    /**
+     * Looks through the form data for the 'mimetype' transient field
+     * and returns it's value if found, otherwise the default 'text/plain'
+     * is returned
+     * 
+     * @param data Form data being persisted
+     * @return The default mimetype
+     */
+    protected String determineDefaultMimetype(FormData data)
+    {
+        String mimetype = DEFAULT_CONTENT_MIMETYPE;
+        
+        if (data != null)
+        {
+            FieldData mimetypeField = data.getFieldData(PROP + DATA_KEY_SEPARATOR + TRANSIENT_MIMETYPE);
+            if (mimetypeField != null)
+            {
+                String mimetypeFieldValue = (String)mimetypeField.getValue();
+                if (mimetypeFieldValue != null && mimetypeFieldValue.length() > 0)
+                {
+                    mimetype = mimetypeFieldValue;
+                }
+            }
+        }
+        
+        return mimetype;
     }
 }
 

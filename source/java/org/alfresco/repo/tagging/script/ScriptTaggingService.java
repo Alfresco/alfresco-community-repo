@@ -27,7 +27,9 @@ package org.alfresco.repo.tagging.script;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 
@@ -78,4 +80,39 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
         return (String[])result.toArray(new String[result.size()]);
     }
 
+    /**
+     * Get a tag by name if available in a store
+     * 
+     * @param store     store reference
+     * @param tag       tag name
+     * @return ScriptNode   tag node, or null if not found
+     */
+    public ScriptNode getTag(String store, String tag)
+    {
+        StoreRef storeRef = new StoreRef(store);
+        NodeRef result = this.serviceRegistry.getTaggingService().getTagNodeRef(storeRef, tag);
+        if (result != null)
+        {
+            return new ScriptNode(result, this.serviceRegistry);
+        }
+        return null;
+    }
+
+    /**
+     * Create a tag in a given store
+     * 
+     * @param store     store reference
+     * @param tag       tag name
+     * @return ScriptNode   newly created tag node, or null if unable to create
+     */
+    public ScriptNode createTag(String store, String tag)
+    {
+        StoreRef storeRef = new StoreRef(store);
+        NodeRef result = this.serviceRegistry.getTaggingService().createTag(storeRef, tag);
+        if (result != null)
+        {
+            return new ScriptNode(result, this.serviceRegistry);
+        }
+        return null;
+    }
 }

@@ -205,15 +205,16 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#createTag(java.lang.String)
      */
-    public void createTag(StoreRef storeRef, String tag)
+    public NodeRef createTag(StoreRef storeRef, String tag)
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
         
         if (isTag(storeRef, tag) == false)
         {
-            this.categoryService.createRootCategory(storeRef, ContentModel.ASPECT_TAGGABLE, tag);
-        }            
+            return this.categoryService.createRootCategory(storeRef, ContentModel.ASPECT_TAGGABLE, tag);
+        }
+        return null;
     }  
 
     /**
@@ -326,7 +327,7 @@ public class TaggingServiceImpl implements TaggingService,
      * @param tag           tag
      * @return NodeRef      tag node reference or null not exist
      */
-    private NodeRef getTagNodeRef(StoreRef storeRef, String tag)
+    public NodeRef getTagNodeRef(StoreRef storeRef, String tag)
     {
         NodeRef tagNodeRef = null;
         String query = "+PATH:\"cm:taggable/cm:" + ISO9075.encode(tag) + "\"";

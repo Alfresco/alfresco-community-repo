@@ -67,7 +67,7 @@ public interface TaggingService
      * @param storeRef  store reference
      * @param tag       tag name
      */
-    void createTag(StoreRef storeRef, String tag);
+    NodeRef createTag(StoreRef storeRef, String tag);
     
     /**
      * Delete an existing tag
@@ -84,7 +84,18 @@ public interface TaggingService
      * @param tag       tag name
      */
     void addTag(NodeRef nodeRef, String tag);
-    
+
+    /**
+     * Gets the node reference for a given tag.
+     * <p>
+     * Returns null if tag is not present.
+     * 
+     * @param storeRef      store reference
+     * @param tag           tag
+     * @return NodeRef      tag node reference or null not exist
+     */
+    NodeRef getTagNodeRef(StoreRef storeRef, String tag);
+
     /**
      * Adds a list of tags to a node.
      * <p>

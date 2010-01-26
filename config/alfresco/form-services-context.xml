@@ -76,6 +76,7 @@
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="namespaceService" ref="NamespaceService" />
+        <property name="contentService" ref="ContentService" />
         <property name="matchPattern">
             <value>node</value>
         </property>
@@ -89,6 +90,7 @@
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="namespaceService" ref="NamespaceService" />
+        <property name="contentService" ref="ContentService" />
         <property name="matchPattern">
             <value>type</value>
         </property>

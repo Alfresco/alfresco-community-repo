@@ -41,6 +41,7 @@ import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -952,6 +953,51 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
         newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, ContentModel.TYPE_CONTENT.toString()), data);
         assertNotNull("Expected new node to be created using itemId " + ContentModel.TYPE_CONTENT.toString(), newNode);
+    }
+    
+    public void testContentCreateForm() throws Exception
+    {
+        // create FormData object containing the values to update
+        FormData data = new FormData();
+        
+        // supply the name
+        String name = "created-" + this.documentName;
+        data.addFieldData("prop_cm_name", name);
+        
+        // supply the title property
+        String title = "This is the title property";
+        data.addFieldData("prop_cm_title", title);
+        
+        // specify the mimetype property
+        String mimetype = "text/html";
+        data.addFieldData("prop_mimetype", mimetype);
+        
+        // supply the content property
+        String content = "This is the content.";
+        data.addFieldData("prop_cm_content", content);
+        
+        // supply the destination
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        
+        // persist the data
+        NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
+        
+        // retrieve the data directly from the node service to ensure its there
+        Map<QName, Serializable> props = this.nodeService.getProperties(newNode);
+        String newName = (String)props.get(ContentModel.PROP_NAME);
+        String newTitle = (String)props.get(ContentModel.PROP_TITLE);
+        assertEquals(name, newName);
+        assertEquals(title, newTitle);
+        
+        ContentData contentData = (ContentData) this.nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+        assertNotNull(contentData);
+        String newMimetype = contentData.getMimetype();
+        assertEquals(mimetype, newMimetype);
+        
+        ContentReader reader = this.contentService.getReader(newNode, ContentModel.PROP_CONTENT);
+        assertNotNull(reader);
+        String newContent = reader.getContentString();
+        assertEquals(content, newContent);
     }
     
     public void testNoForm() throws Exception

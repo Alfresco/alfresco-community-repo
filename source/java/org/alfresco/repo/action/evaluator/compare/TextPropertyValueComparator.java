@@ -73,7 +73,7 @@ public class TextPropertyValueComparator implements PropertyValueComparator
             {
                 // Remove the star and set the operation to startsWith
                 operation = ComparePropertyValueOperation.BEGINS;
-                compareText = compareText.substring(0, (compareText.length()-2));
+                compareText = compareText.substring(0, (compareText.length()-1));
             }
             else
             {

@@ -40,13 +40,13 @@ public interface WorkflowModelNominatedInvitation
 
     // workflow definition name
     public static final String WORKFLOW_DEFINITION_NAME = "jbpm$inwf:invitation-nominated";
-    
+
     // tasks
     public static final QName WF_INVITE_TASK_INVITE_TO_SITE = QName.createQName(NAMESPACE_URI, "inviteToSiteTask");
     public static final QName WF_INVITE_TASK_INVITE_PENDING = QName.createQName(NAMESPACE_URI, "invitePendingTask");
     public static final QName WF_TASK_ACCEPT_INVITE = QName.createQName(NAMESPACE_URI, "acceptInviteTask");
     public static final QName WF_TASK_REJECT_INVITE = QName.createQName(NAMESPACE_URI, "rejectInviteTask");
-    
+
     // transition names
     public static final String WF_TRANSITION_SEND_INVITE = "sendInvite";
     public static final String WF_TRANSITION_ACCEPT = "accept";
@@ -54,7 +54,7 @@ public interface WorkflowModelNominatedInvitation
     public static final String WF_TRANSITION_CANCEL = "cancel";
     public static final String WF_TRANSITION_ACCEPT_INVITE_END = "end";
     public static final String WF_TRANSITION_REJECT_INVITE_END = "end";
-    
+
     // workflow properties
     public static final QName WF_PROP_SERVER_PATH = QName.createQName(NAMESPACE_URI, "serverPath");
     public static final QName WF_PROP_ACCEPT_URL = QName.createQName(NAMESPACE_URI, "acceptUrl");
@@ -71,7 +71,7 @@ public interface WorkflowModelNominatedInvitation
     public static final QName WF_PROP_RESOURCE_DESCRIPTION = QName.createQName(NAMESPACE_URI, "resourceDescription");   
     public static final QName WF_PROP_INVITEE_ROLE = QName.createQName(NAMESPACE_URI, "inviteeRole");
     public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NAMESPACE_URI, "inviteeGenPassword");
-    
+
     // workflow execution context variable names
     public static final String wfVarInviteeUserName = "inwf_inviteeUserName";
     public static final String wfVarInviterUserName = "inwf_inviterUserName";
@@ -80,6 +80,11 @@ public interface WorkflowModelNominatedInvitation
     public static final String wfVarResourceDescription = "inwf_resourceDescription";
     public static final String wfVarResourceType = "inwf_resourceType";
     public static final String wfVarWorkflowInstanceId = "workflowinstanceid";
-    public static final String wfVarRole =  "inwf_inviteeRole";
-    
+    public static final String wfVarRole = "inwf_inviteeRole";
+    public static final String wfVarInviteTicket = "inwf_inviteTicket";
+    public static final String wfVarServerPath = "inwf_serverPath";
+    public static final String wfVarAcceptUrl = "inwf_acceptUrl";
+    public static final String wfVarRejectUrl = "inwf_rejectUrl";
+    public static final String wfVarInviteeGenPassword = "inwf_inviteeGenPassword";
+
 }

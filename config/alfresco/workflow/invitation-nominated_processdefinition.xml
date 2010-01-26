@@ -3,7 +3,7 @@
 <!--  Nominated invitation -->
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" 
-	name="inwf:invitation-nominated">
+   name="inwf:invitation-nominated">
 
    <swimlane name="initiator"/>
    
@@ -12,46 +12,7 @@
       <task name="inwf:inviteToSiteTask" swimlane="initiator" />
 
       <transition name="sendInvite" to="invitePending">
-         <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-            <script>
-               var workflowId = workflowinstanceid;
-               var inviterPerson = people.getPerson(inwf_inviterUserName);
-               var inviteePerson = people.getPerson(inwf_inviteeUserName);
-               var site = siteService.getSite(inwf_resourceName);
-               var siteName = site.shortName;
-               if (site.title.length() > 0)
-               {
-                  siteName = site.title;
-               }
-               var params = "?inviteId=" + workflowId +
-                            "&amp;inviteeUserName=" + inwf_inviteeUserName +
-                            "&amp;siteShortName=" + inwf_resourceName +
-                            "&amp;inviteTicket=" + inwf_inviteTicket;
-               var acceptLink = inwf_serverPath + inwf_acceptUrl + params;
-               var rejectLink = inwf_serverPath + inwf_rejectUrl + params;
-               var mail = actions.create("mail");
-               mail.parameters.from = inviterPerson.properties["cm:email"];
-               mail.parameters.to = inviteePerson.properties["cm:email"];
-               mail.parameters.subject = "Invitation to join '" + siteName + "' site";
-
-               var results = search.luceneSearch(" PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.ftl\"");
-               var template = results[0];
-               
-               var args = [];
-               args["inviteePersonRef"] = inviteePerson.nodeRef.toString();
-               args["inviterPersonRef"] = inviterPerson.nodeRef.toString();
-               args["siteName"] = siteName;
-               args["inviteeSiteRole"] = inwf_inviteeRole;
-               args["inviteeUserName"] = inwf_inviteeUserName;
-               args["inviteeGenPassword"] = inwf_inviteeGenPassword;
-               args["acceptLink"] = acceptLink;
-               args["rejectLink"] = rejectLink;
-               var mail_text = inviteePerson.processTemplate(template, args);
-                             
-               mail.parameters.text = mail_text;
-               mail.execute(bpm_package);
-            </script>
-         </action>
+         <action class="org.alfresco.repo.invitation.site.SendInviteAction" />
       </transition>
    </start-state>
 

@@ -2,6 +2,7 @@
   <shortname>Document Actions (Office Add-In)</shortname>
   <description>Used by the Office Add-In to perform actions on managed documents</description>
   <url>/office/docActions</url>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

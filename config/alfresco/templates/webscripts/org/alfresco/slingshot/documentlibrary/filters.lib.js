@@ -7,6 +7,17 @@ var Filters =
       "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
    },
 
+   /* Encode a path with ISO9075 encoding */
+   iso9075EncodePath: function Filter_iso9075EncodePath(path)
+   {
+      var parts = path.split("/");
+      for (var i = 1, ii = parts.length; i < ii; i++)
+      {
+         parts[i] = "cm:" + search.ISO9075Encode(parts[i]);
+      }
+      return parts.join("/");
+   },
+
    getFilterParams: function Filter_getFilterParams(filter, parsedArgs, optional)
    {
       var filterParams =
@@ -43,7 +54,7 @@ var Filters =
          filterQuery = "";
 
       // Common types and aspects to filter from the UI
-      filterQueryDefaults =
+      var filterQueryDefaults =
          " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" +
          " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"" +
          " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forums\"" +
@@ -123,7 +134,7 @@ var Filters =
             filterParams.query = filterQuery;
             break;
 
-         case "favouriteDocuments":
+         case "favourites":
             var foundOne = false;
 
             for (var favourite in favourites)
@@ -145,6 +156,10 @@ var Filters =
 
          case "tag":
             filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
+            break;
+
+         case "category":
+            filterParams.query = "+PATH:\"/cm:generalclassifiable" + Filters.iso9075EncodePath(filterData) + "/member\"";
             break;
 
          default:

@@ -93,7 +93,7 @@ var Evaluator =
             if (asset.hasAspect("cm:workingcopy"))
             {
                lockedBy = getPerson(asset.properties["cm:workingCopyOwner"]);
-               lockOwnerUser = lockedBy.properties.userName;
+               lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
                   status["editing"] = true;
@@ -101,7 +101,7 @@ var Evaluator =
                }
                else
                {
-                  status["locked " + getPersonName(lockOwnerUser) + "|" + lockedBy.properties.userName] = true;
+                  status["locked " + lockedBy.displayName + "|" + lockedBy.userName] = true;
                   actionSet = "locked";
                }
                var wcNode = asset.properties["source"];
@@ -117,7 +117,7 @@ var Evaluator =
             else if (asset.isLocked)
             {
                lockedBy = getPerson(asset.properties["cm:lockOwner"]);
-               lockOwnerUser = lockedBy.properties.userName;
+               lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
                   status["lock-owner"] = true;
@@ -125,7 +125,7 @@ var Evaluator =
                }
                else
                {
-                  status["locked " + getPersonName(lockOwnerUser) + "|" + lockedBy.properties.userName] = true;
+                  status["locked " + lockedBy.displayName + "|" + lockedBy.userName] = true;
                   actionSet = "locked";
                }
                var srcNodes = search.query(

@@ -3,7 +3,8 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
 
 const THUMBNAIL_NAME = "doclib",
-   PREF_FAVOURITES = "org.alfresco.share.documents.favourites";
+   PREF_DOCUMENT_FAVOURITES = "org.alfresco.share.documents.favourites";
+   PREF_FOLDER_FAVOURITES = "org.alfresco.share.folders.favourites";
 
 var PeopleCache = {},
    SiteCache = {};
@@ -17,25 +18,28 @@ function getPerson(username)
 {
    if (typeof PeopleCache[username] == "undefined")
    {
-      PeopleCache[username] = people.getPerson(username);
+      var person = people.getPerson(username);
+      if (person == null && username == "System")
+      {
+         person =
+         {
+            properties:
+            {
+               userName: "System",
+               firstName: "System",
+               lastName: "User"
+            }
+         }
+      }
+      PeopleCache[username] =
+      {
+         userName: person.properties.userName,
+         firstName: person.properties.firstName,
+         lastName: person.properties.lastName,
+         displayName: (person.properties.firstName + " " + person.properties.lastName).replace(/^\s+|\s+$/g, "")
+      };
    }
    return PeopleCache[username];
-}
-
-/**
- * Gets a person's full name
- * @method getPersonName
- * @param username {string} User name
- */
-function getPersonName(username)
-{
-   var user = getPerson(username);
-   if (user)
-   {
-      // Return trimmed full name
-      return (user.properties.firstName + " " + user.properties.lastName).replace(/^\s+|\s+$/g, "");
-   }
-   return username;
 }
 
 /**
@@ -79,22 +83,37 @@ function main()
    }
 
    // Get the user's favourite docs from our slightly eccentric Preferences Service
-   var prefs = preferenceService.getPreferences(person.properties.userName, PREF_FAVOURITES),
-      favourites = {};
+   var prefs = preferenceService.getPreferences(person.properties.userName, PREF_DOCUMENT_FAVOURITES),
+      favourites = {},
+      strFavs, f, ff;
    try
    {
       /**
        * Fasten seatbelts...
        * An "eval" could be used here, but the Rhino debugger will complain if throws an exception, which gets old very quickly.
-       * e.g. var strFavs = eval('try{(prefs.' + PREF_FAVOURITES + ')}catch(e){}');
+       * e.g. var strFavs = eval('try{(prefs.' + PREF_DOCUMENT_FAVOURITES + ')}catch(e){}');
        */
       if (prefs && prefs.org && prefs.org.alfresco && prefs.org.alfresco.share && prefs.org.alfresco.share.documents)
       {
-         var strFavs = prefs.org.alfresco.share.documents.favourites;
+         strFavs = prefs.org.alfresco.share.documents.favourites;
          if (typeof strFavs == "string")
          {
             arrFavs = strFavs.split(",");
-            for (var f = 0, ff = arrFavs.length; f < ff; f++)
+            for (f = 0, ff = arrFavs.length; f < ff; f++)
+            {
+               favourites[arrFavs[f]] = true;
+            }
+         }
+      }
+      // Same thing but for folders
+      prefs = preferenceService.getPreferences(person.properties.userName, PREF_FOLDER_FAVOURITES);
+      if (prefs && prefs.org && prefs.org.alfresco && prefs.org.alfresco.share && prefs.org.alfresco.share.folders)
+      {
+         strFavs = prefs.org.alfresco.share.folders.favourites;
+         if (typeof strFavs == "string")
+         {
+            arrFavs = strFavs.split(",");
+            for (f = 0, ff = arrFavs.length; f < ff; f++)
             {
                favourites[arrFavs[f]] = true;
             }
@@ -241,7 +260,7 @@ function main()
                site: null,
                siteTitle: null,
                container: null,
-               path: null,
+               path: "/" + displayPaths.slice(2, displayPaths.length).join("/"),
                file: locationAsset.name
             };
          }

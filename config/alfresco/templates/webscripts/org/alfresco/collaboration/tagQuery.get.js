@@ -1,26 +1,38 @@
-model.tagQuery = tagQuery(args["n"], args["m"]);
-
-function tagQuery(nodeRef, maxResults)
+function tagQuery()
 {
-   var tags = new Array();
-   var countMin = Number.MAX_VALUE,
+   var nodeRef = args.n,
+      maxResults = args.m,
+      sortOrder = args.s,
+      tags = [],
+      countMin = Number.MAX_VALUE,
       countMax = 0;
    
    /* nodeRef input */
    var node = null;
-   if ((nodeRef != null) && (nodeRef != ""))
+   if ((nodeRef !== null) && (nodeRef !== ""))
    {
       node = search.findNode(nodeRef);
    }
-   if (node == null)
+   if (node === null)
    {
       node = companyhome;
    }
 
    /* maxResults input */
-   if ((maxResults == null) || (maxResults == ""))
+   if ((maxResults === null) || (maxResults === ""))
    {
       maxResults = -1;
+   }
+
+   /* sortOrder input */
+   var validSortOrders =
+   {
+      "name": true,
+      "count": true
+   };
+   if (!(sortOrder in validSortOrders))
+   {
+      sortOrder = "name";
    }
    
    /* Query for tagged node(s) */
@@ -33,20 +45,21 @@ function tagQuery(nodeRef, maxResults)
    
    var taggedNodes = search.luceneSearch(query);
 
-   if (taggedNodes.length == 0)
+   if (taggedNodes.length === 0)
    {
       countMin = 0;
    }
    else
    {   
       /* Build a hashtable of tags and tag count */
-      var tagHash = {};
-      var count;
+      var tagHash = {},
+         count, taggedNode, tag, key;
+      
       for each (taggedNode in taggedNodes)
       {
-         for each(tag in taggedNode.properties["cm:taggable"])
+         for each (tag in taggedNode.properties["cm:taggable"])
          {
-            if (tag != null)
+            if (tag !== null)
             {
                count = tagHash[tag.name];
                tagHash[tag.name] = count ? count+1 : 1;
@@ -79,14 +92,17 @@ function tagQuery(nodeRef, maxResults)
       }
    
       /* Calculate the min and max tag count values */
-      for each(tag in tags)
+      for each (tag in tags)
       {
          countMin = Math.min(countMin, tag.count);
          countMax = Math.max(countMax, tag.count);
       }
    
-      /* Sort the results by tag name (ascending) */
-      tags.sort();
+      if (sortOrder == "name")
+      {
+         /* Sort the results by tag name (ascending) */
+         tags.sort();
+      }
    }
    
    var results =
@@ -102,3 +118,5 @@ function sortByCountDesc(a, b)
 {
    return (b.count - a.count);
 }
+
+model.tagQuery = tagQuery();

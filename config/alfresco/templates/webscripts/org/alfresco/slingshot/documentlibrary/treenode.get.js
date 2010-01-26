@@ -3,10 +3,10 @@
 /**
  * Document List Component: treenode
  */
-model.treenode = getTreenode();
+model.treenode = getTreeNode();
 
 /* Create collection of folders in the given space */
-function getTreenode(siteId, path)
+function getTreeNode()
 {
    try
    {

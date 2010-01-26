@@ -41,20 +41,20 @@
       <#assign version = "1.0">
       <#if d.hasAspect("cm:versionable") && d.versionHistory?size != 0><#assign version = d.versionHistory[0].versionLabel></#if>
       <#if item.createdBy??>
-         <#assign createdBy = ((item.createdBy.properties.firstName!"") + " " + (item.createdBy.properties.lastName!""))?trim>
-         <#assign createdByUser = item.createdBy.properties.userName>
+         <#assign createdBy = item.createdBy.displayName>
+         <#assign createdByUser = item.createdBy.userName>
       <#else>
          <#assign createdBy="" createdByUser="">
       </#if>
       <#if item.modifiedBy??>
-         <#assign modifiedBy = ((item.modifiedBy.properties.firstName!"") + " " + (item.modifiedBy.properties.lastName!""))?trim>
-         <#assign modifiedByUser = item.modifiedBy.properties.userName>
+         <#assign modifiedBy = item.modifiedBy.displayName>
+         <#assign modifiedByUser = item.modifiedBy.userName>
       <#else>
          <#assign modifiedBy="" modifiedByUser="">
       </#if>
       <#if item.lockedBy??>
-         <#assign lockedBy = ((item.lockedBy.properties.firstName!"") + " " + (item.lockedBy.properties.lastName!""))?trim>
-         <#assign lockedByUser = item.lockedBy.properties.userName>
+         <#assign lockedBy = item.lockedBy.displayName>
+         <#assign lockedByUser = item.lockedBy.userName>
       <#else>
          <#assign lockedBy="" lockedByUser="">
       </#if>
@@ -86,6 +86,7 @@
          "contentUrl": "api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}",
          "actionSet": "${item.actionSet}",
          "tags": <#noescape>[${tags}]</#noescape>,
+         "categories": [<#list d.properties.categories![] as c>["${c.name}", "${c.displayPath?replace("/categories/General","")}"]<#if c_has_next>,</#if></#list>],
          "activeWorkflows": "<#list item.activeWorkflows as aw>${aw}<#if aw_has_next>,</#if></#list>",
          "isFavourite": ${item.isFavourite?string},
          "location":

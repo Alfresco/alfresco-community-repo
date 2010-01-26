@@ -59,7 +59,7 @@ var ParseArgs =
          var storeType = url.templateArgs.store_type,
             storeId = url.templateArgs.store_id,
             id = url.templateArgs.id,
-            type = "node";
+            type = url.templateArgs.type;
 
          nodeRef = storeType + "://" + storeId + "/" + id;
 
@@ -77,6 +77,7 @@ var ParseArgs =
          }
          else
          {
+            type = "node"
             rootNode = search.findNode(nodeRef);
             if (rootNode === null)
             {
@@ -182,6 +183,10 @@ var ParseArgs =
                path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
             };
          }
+      }
+      else
+      {
+         location.path = "/" + displayPaths.slice(2, displayPaths.length).join("/");
       }
 
       var objRet =

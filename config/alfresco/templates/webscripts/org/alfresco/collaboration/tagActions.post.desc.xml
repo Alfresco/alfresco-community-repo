@@ -2,7 +2,7 @@
   <shortname>Tagging Actions</shortname>
   <description>Add and remove tags to nodes</description>
   <url>/collaboration/tagActions</url>
-  <format default="html"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

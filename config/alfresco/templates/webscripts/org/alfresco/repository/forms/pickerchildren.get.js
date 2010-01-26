@@ -73,9 +73,10 @@ function main()
          var searchResults = search.luceneSearch(query, "@{http://www.alfresco.org/model/content/1.0}name", true);
 
          // Ensure folders and folderlinks appear at the top of the list
-         var containerResults = new Array();
-         var contentResults = new Array();
-         for each(var result in searchResults)
+         var containerResults = new Array(),
+            contentResults = new Array();
+
+         for each (var result in searchResults)
          {
             if (result.isContainer || result.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
             {
@@ -104,8 +105,9 @@ function main()
       }
       else if (url.templateArgs.type == "category")
       {
-         var catAspect = (args["aspect"] != null) ? args["aspect"] : "cm:generalclassifiable";
-         var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
+         var catAspect = (args["aspect"] != null) ? args["aspect"] : "cm:generalclassifiable",
+            nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
+
          // TODO: Better way of finding this
          var rootCategories = classification.getRootCategories(catAspect);
          if (rootCategories != null && rootCategories.length > 0)
@@ -122,8 +124,10 @@ function main()
                categoryResults = parent.children;
             }
             
+            categoryResults.sort(sortByName);
+            
             // make each result an object and indicate it is selectable in the UI
-            for each(var result in categoryResults)
+            for each (var result in categoryResults)
             {
                results.push(
                { 
@@ -164,6 +168,12 @@ function isItemSelectable(node, selectableType)
    }
    
    return selectable;
+}
+
+/* Sort the results by case-insensitive name */
+function sortByName(a, b)
+{
+   return (b.properties.name.toLowerCase() > a.properties.name.toLowerCase() ? -1 : 1);
 }
 
 main();

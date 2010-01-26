@@ -1299,6 +1299,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 Map<QName, Serializable> propsToPersist, FormData data)
     {
         ContentWriter writer = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        ContentData contentData = null;
         
         if (writer != null)
         {
@@ -1312,7 +1313,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             if (defaultMimetypeRequired)
             {
                 // if the transient mimetype property has already set the mimetype don't do anything
-                ContentData contentData = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
+                contentData = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
                 if (contentData != null)
                 {
                     String mimetype = contentData.getMimetype();
@@ -1331,8 +1332,16 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     }
                 }
                 
-                // add the potentially changed content data object back to property map for persistence
-                propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
+            }
+            else
+            {
+                contentData = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            }
+
+	        // add the potentially changed content data object back to property map for persistence
+            if (contentData != null)
+            {
+            	propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
             }
         }
     }

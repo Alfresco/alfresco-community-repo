@@ -1280,7 +1280,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       UISelectList selectList = (UISelectList)event.getComponent().findComponent(COMPONENT_FORMLIST);
       int index = selectList.getRowIndex();
-      if (index != -1)
+      if (index != -1 && index < this.formsList.size())
       {
          Form form = (Form)this.formsList.get(index).getValue();
          FormWrapper wrapper = new FormWrapper(form);
@@ -1437,9 +1437,12 @@ public class CreateWebsiteWizard extends BaseWizardBean
    {
       UISelectList selectList = (UISelectList)event.getComponent().findComponent(COMPONENT_WORKFLOWLIST);
       int index = selectList.getRowIndex();
-      if (index != -1)
+      
+      List<UIListItem> workflowsList = this.getWorkflowList();
+      
+      if (index != -1 && index < workflowsList.size())
       {
-         WorkflowDefinition workflow = (WorkflowDefinition)this.getWorkflowList().get(index).getValue();
+         WorkflowDefinition workflow = (WorkflowDefinition)workflowsList.get(index).getValue();
          this.workflows.add(new WorkflowWrapper(
                workflow.getName(), workflow.getTitle(), workflow.getDescription(), MATCH_DEFAULT));
       }

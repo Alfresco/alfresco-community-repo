@@ -27,10 +27,16 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
-<h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
-             width="100%" rowClasses="wizardSectionHeading">
+<f:verbatim>
+<table cellpadding="2" width="100%" style="padding-top: 4px; padding-bottom: 4px;">
+<tr class="wizardSectionHeading">
+<td>
+</f:verbatim>
    <h:outputText value="&nbsp;#{msg.properties}" escape="false" />
-</h:panelGrid>
+<f:verbatim></td>
+</tr>
+</table>
+</f:verbatim>
 
 <r:propertySheetGrid id="content-props" value="#{DialogManager.bean.editableNode}" 
                      var="editContentProps" columns="1" externalConfig="true" />

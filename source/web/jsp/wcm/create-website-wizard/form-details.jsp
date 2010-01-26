@@ -24,6 +24,7 @@
 --%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
@@ -54,7 +55,7 @@
 </script>
 </f:verbatim>
 
-<h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%">
+<h:panelGrid columns="1" cellpadding="2" cellspacing="2" width="100%">
    <%-- Form properties --%>
    <h:panelGroup>
       <f:verbatim>
@@ -134,8 +135,6 @@
                <h:outputText value="#{msg.output_path_pattern}:"/>
                <f:verbatim>
                </nobr>
-            </td>
-            <td>
                </f:verbatim>
                <h:inputText id="filepattern" value="#{DialogManager.bean.outputPathPattern}" size="70" maxlength="1024" onchange="javascript:checkDisabledState();" onkeyup="javascript:checkDisabledState();" />
                <h:graphicImage value="/images/icons/Help_icon.gif" style="vertical-align:-20%;padding-left:8px;cursor:help" onclick="javascript:toggleOutputPathPatternHelp()" />

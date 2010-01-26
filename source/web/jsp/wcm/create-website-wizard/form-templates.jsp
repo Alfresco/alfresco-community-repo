@@ -24,6 +24,7 @@
 --%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
@@ -92,7 +93,7 @@
 </script>
 </f:verbatim>
 
-<h:panelGrid id="grid-1" columns="1" cellpadding="2" cellpadding="2" width="100%">
+<h:panelGrid id="grid-1" columns="1" cellpadding="2" cellspacing="2" width="100%">
    <%-- Template selection list --%>
    <h:outputText id="msg-select" styleClass="mainSubText" value="#{msg.website_select_templates}:" />
    <h:panelGroup id="grp-0">

@@ -296,13 +296,25 @@
    
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
     
-    <!--  Start third party transformer Subsystem, 
-          stated here so the index recovery can use open office transformation  -->
+    <!--  Start third party transformer Subsystem. -->
     <bean id="thirdparty" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>true</value>
         </property>
     </bean>
+
+    <bean id="OOoDirect" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
+
+
+    <!-- Bootstrap any enterprise contexts -->
+    <!-- This is placed at this point because we need the enterprise OOoJodConverter subsystem started
+         before reindexing begins. -->
+    <import resource="classpath*:alfresco/enterprise/bootstrap/*-context.xml" />
+
 
     <!-- Perform index recovery before applying any patches -->
     <!-- rebuild the index if required - before we check that it is there -->

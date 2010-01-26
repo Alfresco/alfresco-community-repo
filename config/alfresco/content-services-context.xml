@@ -179,10 +179,10 @@
       </property>
    </bean>
    
-   <!-- Import the OpenOffice extractor worker from the third party subsystem -->
+   <!-- Import the OpenOffice extractor worker from the OOoDirect subsystem -->
    <bean id="extracter.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
-         <ref bean="thirdparty" />
+         <ref bean="OOoDirect" />
       </property>
       <property name="sourceBeanName">
          <value>extracter.worker.OpenOffice</value>
@@ -388,10 +388,10 @@
       </property>
    </bean>
 
-   <!-- Import the OpenOffice transformer worker from the third party subsystem -->
+   <!-- Import the OpenOffice transformer worker from the OOoDirect subsystem -->
    <bean id="transformer.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
-         <ref bean="thirdparty" />
+         <ref bean="OOoDirect" />
       </property>
       <property name="sourceBeanName">
          <value>transformer.worker.OpenOffice</value>

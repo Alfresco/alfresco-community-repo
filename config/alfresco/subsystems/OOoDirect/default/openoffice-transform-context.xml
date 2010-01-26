@@ -11,6 +11,9 @@
       <property name="failOnError">
          <value>false</value>
       </property>
+      <property name="enabled">
+         <value>${ooo.enabled}</value>
+      </property>
    </bean>
 
    <!--  We have to convert the user directory to an Open Office compatible URI -->

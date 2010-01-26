@@ -17,7 +17,10 @@ var OfficeTags =
    
    getTagCloud: function()
    {
-      OfficeAddin.showStatusText("Loading tag cloud...", "ajax_anim.gif", false);
+      if (!window.queryObject.st)
+      {
+         OfficeAddin.showStatusText("Loading tag cloud...", "ajax_anim.gif", false);
+      }
 
       // ajax call to get repository tag data
       var actionURL = window.serviceContextPath + "/collaboration/tagQuery";
@@ -27,7 +30,10 @@ var OfficeTags =
          headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
          onComplete: function(tagQuery)
          {
-            OfficeAddin.hideStatusText();
+            if (!window.queryObject.st)
+            {
+               OfficeAddin.hideStatusText();
+            }
             OfficeTags.populateTagCloud(tagQuery);
          }
       }).send();

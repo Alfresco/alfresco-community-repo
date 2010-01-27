@@ -71,11 +71,17 @@ public class WebDAV
     
     public static final int WEBDAV_SC_MULTI_STATUS = 207;
     public static final int WEBDAV_SC_LOCKED = 423;
+    public static final int WEBDAV_SC_FAILED_DEPENDENCY = 424;
+
+    // WebDAV HTTP response code descriptions
+
+    public static final String WEBDAV_SC_FAILED_DEPENDENCY_DESC = "Failed Dependency";
 
     // HTTP response code descriptions
     
     public static final String SC_OK_DESC = "OK";
     public static final String SC_NOT_FOUND_DESC = "Not Found";
+    public static final String SC_FORBIDDEN_DESC = "Forbidden";
 
     // HTTP methods
     
@@ -169,6 +175,9 @@ public class WebDAV
     public static final String XML_SUPPORTED_LOCK = "supportedlock";
     public static final String XML_TIMEOUT = "timeout";
     public static final String XML_WRITE = "write";
+    public static final String XML_SET = "set";
+    public static final String XML_REMOVE = "remove";
+    public static final String XML_ERROR = "error";
 
     // Namespaced versions of payload elements
     
@@ -202,6 +211,8 @@ public class WebDAV
     public static final String XML_NS_SUPPORTED_LOCK = DAV_NS_PREFIX + "supportedlock";
     public static final String XML_NS_TIMEOUT = DAV_NS_PREFIX + "timeout";
     public static final String XML_NS_WRITE = DAV_NS_PREFIX + "write";
+    public static final String XML_NS_ERROR = DAV_NS_PREFIX + "error";
+    public static final String XML_NS_CANNOT_MODIFY_PROTECTED_PROPERTY = DAV_NS_PREFIX + "cannot-modify-protected-property";
     
     public static final String XML_CONTENT_TYPE = "text/xml; charset=UTF-8";
     

@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.webdav;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * Class to represent a WebDAV property
  * 
@@ -136,6 +138,31 @@ public class WebDAVProperty
       m_strValue = strValue;
    }
    
+   /**
+    * Creates QName of the property
+    * 
+    * @return QName
+    */
+   public QName createQName()
+   {
+       return QName.createQName(m_strNamespaceUri, m_strName);
+   }
+
+   /**
+    * Returns true if property is protected according to the WebDav specification
+    * 
+    * @return boolean
+    */
+   public boolean isProtected()
+   {
+       return WebDAV.XML_GET_CONTENT_LENGTH.equals(m_strName) ||
+               WebDAV.XML_GET_ETAG.equals(m_strName) ||
+               WebDAV.XML_GET_LAST_MODIFIED.equals(m_strName) ||
+               WebDAV.XML_LOCK_DISCOVERY.equals(m_strName) ||
+               WebDAV.XML_RESOURCE_TYPE.equals(m_strName) ||
+               WebDAV.XML_SUPPORTED_LOCK.equals(m_strName);
+   }
+
    /**
     * Return the property as a string
     * 

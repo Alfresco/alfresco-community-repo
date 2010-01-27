@@ -304,6 +304,7 @@ public class WebDAVServlet extends HttpServlet
         m_davMethods = new Hashtable<String,Class>();
         
         m_davMethods.put(WebDAV.METHOD_PROPFIND, PropFindMethod.class);
+        m_davMethods.put(WebDAV.METHOD_PROPPATCH, PropPatchMethod.class);
         m_davMethods.put(WebDAV.METHOD_COPY, CopyMethod.class);
         m_davMethods.put(WebDAV.METHOD_DELETE, DeleteMethod.class);
         m_davMethods.put(WebDAV.METHOD_GET, GetMethod.class);

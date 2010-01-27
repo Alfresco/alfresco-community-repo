@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +40,10 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.dom4j.DocumentHelper;
 import org.dom4j.io.XMLWriter;
+import org.xml.sax.Attributes;
 
 /**
  * Implements the WebDAV LOCK method
@@ -46,6 +52,8 @@ import org.dom4j.io.XMLWriter;
  */
 public class LockMethod extends WebDAVMethod
 {
+    public static final String EMPTY_NS = "";
+	
     private String m_strLockToken = null;
     private int m_timeoutDuration = WebDAV.DEPTH_INFINITY;
 
@@ -232,6 +240,9 @@ public class LockMethod extends WebDAVMethod
             createLock(lockNodeInfo.getNodeRef(), userName);
         }
 
+        m_response.setHeader(WebDAV.HEADER_LOCK_TOKEN, "<" + WebDAV.makeLockToken(lockNodeInfo.getNodeRef(), userName) + ">");
+        m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, WebDAV.XML_CONTENT_TYPE);
+
         // We either created a new lock or refreshed an existing lock, send back the lock details
         generateResponse(lockNodeInfo.getNodeRef(), userName);
     }
@@ -302,16 +313,125 @@ public class LockMethod extends WebDAVMethod
         xml.startDocument();
 
         String nsdec = generateNamespaceDeclarations(null);
-        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS + nsdec, WebDAV.XML_NS_MULTI_STATUS + nsdec,
+        xml.startElement(EMPTY_NS, WebDAV.XML_PROP + nsdec, WebDAV.XML_PROP + nsdec,
                 getDAVHelper().getNullAttributes());
 
         // Output the lock details
         generateLockDiscoveryXML(xml, lockNode);
 
         // Close off the XML
-        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS, WebDAV.XML_NS_MULTI_STATUS);
+        xml.endElement(EMPTY_NS, WebDAV.XML_PROP, WebDAV.XML_PROP);
 
         // Send the XML back to the client
         xml.flush();
     }
+    
+    
+    /**
+     * Generates the lock discovery XML response
+     * 
+     * @param xml XMLWriter
+     * @param lockNode NodeRef
+     */
+    protected void generateLockDiscoveryXML(XMLWriter xml, NodeRef lockNode) throws Exception
+    {
+        Attributes nullAttr= getDAVHelper().getNullAttributes();
+        
+        if (lockNode != null)
+        {
+            
+            // Get the lock details
+
+            NodeService nodeService = getNodeService();
+            
+            String owner = (String) nodeService.getProperty(lockNode, ContentModel.PROP_LOCK_OWNER);
+            Date expiryDate = (Date) nodeService.getProperty(lockNode, ContentModel.PROP_EXPIRY_DATE);
+            
+            // Output the XML response
+            
+            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_DISCOVERY, WebDAV.XML_LOCK_DISCOVERY, nullAttr);  
+            xml.startElement(EMPTY_NS, WebDAV.XML_ACTIVE_LOCK, WebDAV.XML_ACTIVE_LOCK, nullAttr);
+             
+            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_LOCK_TYPE, nullAttr);
+            xml.write(DocumentHelper.createElement(WebDAV.XML_WRITE));
+            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_TYPE, WebDAV.XML_LOCK_TYPE);
+             
+            // NOTE: We only do exclusive lock tokens at the moment
+           
+            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_LOCK_SCOPE, nullAttr);
+            xml.write(DocumentHelper.createElement(WebDAV.XML_EXCLUSIVE));
+            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_SCOPE, WebDAV.XML_LOCK_SCOPE);
+             
+            // NOTE: We only support one level of lock at the moment
+           
+            xml.startElement(EMPTY_NS, WebDAV.XML_DEPTH, WebDAV.XML_DEPTH, nullAttr);
+            xml.write(WebDAV.ZERO);
+            xml.endElement(EMPTY_NS, WebDAV.XML_DEPTH, WebDAV.XML_DEPTH);
+             
+            xml.startElement(EMPTY_NS, WebDAV.XML_OWNER, WebDAV.XML_OWNER, nullAttr);
+            xml.write(owner);
+            xml.endElement(EMPTY_NS, WebDAV.XML_OWNER, WebDAV.XML_OWNER);
+             
+            xml.startElement(EMPTY_NS, WebDAV.XML_TIMEOUT, WebDAV.XML_TIMEOUT, nullAttr);
+
+            // Output the expiry time
+            
+            String strTimeout = WebDAV.INFINITE;
+            if (expiryDate != null)
+            {
+                  long timeoutRemaining = (expiryDate.getTime() - System.currentTimeMillis())/1000L;
+              
+                  strTimeout = WebDAV.SECOND + timeoutRemaining;
+            }
+            xml.write(strTimeout);
+           
+            xml.endElement(EMPTY_NS, WebDAV.XML_TIMEOUT, WebDAV.XML_TIMEOUT);
+             
+            xml.startElement(EMPTY_NS, WebDAV.XML_LOCK_TOKEN, WebDAV.XML_LOCK_TOKEN, nullAttr);
+            xml.startElement(EMPTY_NS, WebDAV.XML_HREF, WebDAV.XML_HREF, nullAttr);
+           
+            xml.write(WebDAV.makeLockToken(lockNode, owner));
+            
+            xml.endElement(EMPTY_NS, WebDAV.XML_HREF, WebDAV.XML_HREF);
+            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_TOKEN, WebDAV.XML_LOCK_TOKEN);
+           
+            xml.endElement(EMPTY_NS, WebDAV.XML_ACTIVE_LOCK, WebDAV.XML_ACTIVE_LOCK);
+            xml.endElement(EMPTY_NS, WebDAV.XML_LOCK_DISCOVERY, WebDAV.XML_LOCK_DISCOVERY);
+        }
+    }
+
+    /**
+     * Generates a list of namespace declarations for the response
+     */
+    protected String generateNamespaceDeclarations(HashMap<String,String> nameSpaces)
+    {
+        StringBuilder ns = new StringBuilder();
+
+        ns.append(" ");
+        ns.append(WebDAV.XML_NS);
+        ns.append("=\"");
+        ns.append(WebDAV.DEFAULT_NAMESPACE_URI);
+        ns.append("\"");
+
+        // Add additional namespaces
+        
+        if ( nameSpaces != null)
+        {
+            Iterator<String> namespaceList = nameSpaces.keySet().iterator();
+    
+            while (namespaceList.hasNext())
+            {
+                String strNamespaceUri = namespaceList.next();
+                String strNamespaceName = nameSpaces.get(strNamespaceUri);
+                
+                ns.append(" ").append(WebDAV.XML_NS).append(":").append(strNamespaceName).append("=\"");
+                ns.append(strNamespaceUri).append("\" ");
+            }
+        }
+        
+        return ns.toString();
+    }
+
+    
+
 }

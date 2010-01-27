@@ -348,7 +348,7 @@ public class PropFindMethod extends WebDAVMethod
     /**
      * Creates a WebDAVProperty from the given XML node
      */
-    private WebDAVProperty createProperty(Node node)
+    protected WebDAVProperty createProperty(Node node)
     {
         WebDAVProperty property = null;
 

@@ -3732,6 +3732,9 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     event.stopPropagation();
     if (this.isRemoveRepeatItemEnabled())
     {
+      // set tinymce current instance to null
+      alfresco.xforms.RichTextEditor.currentInstance = null;
+
       var index = this._repeatControls.indexOf(event.target.parentNode);
       var repeatItem = this.getChildAt(index);
       this.setFocusedChild(repeatItem);

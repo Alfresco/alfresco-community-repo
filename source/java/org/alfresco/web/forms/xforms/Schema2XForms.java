@@ -1861,10 +1861,12 @@ public class Schema2XForms implements Serializable
                       path,
                       occurs,
                       resourceBundle);
-      
+					  
+      Object poppedElement = this.parentStack.pop();
+	  
       if (LOGGER.isDebugEnabled())
       {
-         LOGGER.debug("[addElementToGroup] popped element " + this.parentStack.pop() + " from parent stack");
+         LOGGER.debug("[addElementToGroup] popped element " + poppedElement + " from parent stack");
          LOGGER.debug("[addElementToGroup] adding " + (occurs.maximum == 1
                                 ? 1
                                 : occurs.minimum + 1) +

@@ -95,6 +95,10 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         FileInfo destParentInfo = null;
         try
         {
+            if (destPath.endsWith(WebDAVHelper.PathSeperator))
+            {
+                destPath = destPath.substring(0, destPath.length() - 1);
+            }
             destParentInfo = getDAVHelper().getParentNodeForPath(rootNodeRef, destPath, servletPath);
         }
         catch (FileNotFoundException e)
@@ -103,7 +107,7 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
             {
                 logger.debug("Destination parent folder doesn't exist: " + destPath);
             }
-            throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+            throw new WebDAVServerException(HttpServletResponse.SC_CONFLICT);
         }
         
         // check for the existence of the destination node
@@ -123,6 +127,8 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
             // delete the destination node if it is not the same as the source node
             if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()))
             {
+                checkNode(destInfo);
+
                 // attempting to move or copy onto another node
                 fileFolderService.delete(destInfo.getNodeRef());
             }
@@ -138,7 +144,9 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
 
         NodeRef sourceNodeRef = sourceInfo.getNodeRef();
         NodeRef destParentNodeRef = destParentInfo.getNodeRef();
+        
         String name = getDAVHelper().splitPath(destPath)[1];
+
         moveOrCopy(fileFolderService, sourceNodeRef, destParentNodeRef, name);
 
         // Set the response status

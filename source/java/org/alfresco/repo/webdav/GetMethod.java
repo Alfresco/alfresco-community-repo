@@ -293,7 +293,7 @@ public class GetMethod extends WebDAVMethod
      * @param strETagHeader The header to parse
      * @return A list of ETags
      */
-    private ArrayList parseETags(String strETagHeader)
+    private ArrayList<String> parseETags(String strETagHeader)
     {
         ArrayList<String> list = new ArrayList<String>();
 

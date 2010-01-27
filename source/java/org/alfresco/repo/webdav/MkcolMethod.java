@@ -31,7 +31,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.w3c.dom.Document;
 
 /**
  * Implements the WebDAV MKCOL method
@@ -66,16 +65,14 @@ public class MkcolMethod extends WebDAVMethod
     {
         // There should not be a body with the MKCOL request
 
-        Document body = getRequestBodyAsDocument();
-
-        if (body != null)
+        if (m_request.getContentLength() > 0)
         {
             throw new WebDAVServerException(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
         }
     }
 
     /**
-     * Exceute the request
+     * Execute the request
      * 
      * @exception WebDAVServerException
      */
@@ -120,7 +117,7 @@ public class MkcolMethod extends WebDAVMethod
             catch (FileNotFoundException e)
             {
                 // parent path is missing
-                throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+                throw new WebDAVServerException(HttpServletResponse.SC_CONFLICT);
             }
         }
         else

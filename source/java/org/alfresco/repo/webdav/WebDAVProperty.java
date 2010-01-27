@@ -138,6 +138,7 @@ public class WebDAVProperty
       m_strValue = strValue;
    }
    
+   
    /**
     * Creates QName of the property
     * 
@@ -147,7 +148,7 @@ public class WebDAVProperty
    {
        return QName.createQName(m_strNamespaceUri, m_strName);
    }
-
+   
    /**
     * Returns true if property is protected according to the WebDav specification
     * 
@@ -162,7 +163,8 @@ public class WebDAVProperty
                WebDAV.XML_RESOURCE_TYPE.equals(m_strName) ||
                WebDAV.XML_SUPPORTED_LOCK.equals(m_strName);
    }
-
+   
+   
    /**
     * Return the property as a string
     * 

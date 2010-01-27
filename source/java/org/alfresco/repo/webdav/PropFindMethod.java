@@ -37,8 +37,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.AuthenticationFilter;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -68,8 +66,7 @@ public class PropFindMethod extends WebDAVMethod
 	protected static final int GET_NAMED_PROPS = 1;
 	protected static final int FIND_PROPS = 2;
 
-    // Find depth and request type
-    private int m_depth = WebDAV.DEPTH_INFINITY;
+    // Find request type
     protected int m_mode = GET_ALL_PROPS;
 
     // Requested properties
@@ -84,16 +81,6 @@ public class PropFindMethod extends WebDAVMethod
     public PropFindMethod()
     {
         m_namespaces = new HashMap<String, String>();
-    }
-
-    /**
-     * Return the property find depth
-     * 
-     * @return int
-     */
-    public final int getDepth()
-    {
-        return m_depth;
     }
 
     /**
@@ -115,22 +102,8 @@ public class PropFindMethod extends WebDAVMethod
     {
         // Store the Depth header as this is used by several WebDAV methods
 
-        String strDepth = m_request.getHeader(WebDAV.HEADER_DEPTH);
-        if (strDepth != null && strDepth.length() > 0)
-        {
-            if (strDepth.equals(WebDAV.ZERO))
-            {
-                m_depth = WebDAV.DEPTH_0;
-            }
-            else if (strDepth.equals(WebDAV.ONE))
-            {
-                m_depth = WebDAV.DEPTH_1;
-            }
-            else
-            {
-                m_depth = WebDAV.DEPTH_INFINITY;
-            }
-        }
+        parseDepthHeader();
+        
     }
 
     /**
@@ -195,7 +168,7 @@ public class PropFindMethod extends WebDAVMethod
     }
 
     /**
-     * Exceute the main WebDAV request processing
+     * Execute the main WebDAV request processing
      * 
      * @exception WebDAVServerException
      */
@@ -355,7 +328,7 @@ public class PropFindMethod extends WebDAVMethod
         String strName = node.getLocalName();
         String strNamespaceUri = node.getNamespaceURI();
 
-        if (strNamespaceUri.equals(WebDAV.DEFAULT_NAMESPACE_URI))
+        if (WebDAV.DEFAULT_NAMESPACE_URI.equals(strNamespaceUri))
         {
             property = new WebDAVProperty(strName);
         }
@@ -373,6 +346,10 @@ public class PropFindMethod extends WebDAVMethod
      */
     private String getNamespaceName(String strNamespaceUri)
     {
+        if (strNamespaceUri == null)
+        {
+            return null;
+        }
         String strNamespaceName = m_namespaces.get(strNamespaceUri);
         if (strNamespaceName == null)
         {
@@ -465,7 +442,7 @@ public class PropFindMethod extends WebDAVMethod
 
             Object davValue = null;
 
-            if (propNamespaceUri.equals(WebDAV.DEFAULT_NAMESPACE_URI))
+            if (WebDAV.DEFAULT_NAMESPACE_URI.equals(propNamespaceUri))
             {
                 // Check if the client is requesting lock information
                 if (propName.equals(WebDAV.XML_LOCK_DISCOVERY)) // && metaData.isLocked())
@@ -624,7 +601,28 @@ public class PropFindMethod extends WebDAVMethod
 
                 // TODO: Custom properties lookup
 //                String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
+
+                String value = (String) getNodeService().getProperty(nodeRef, property.createQName());
+                if (value == null)
+                {
                 propertiesNotFound.add(property);
+            }
+                else
+                {
+                    if (property.hasNamespaceName())
+                    {
+                        xml.startElement(property.getNamespaceName(), property.getName(), property.getNamespaceName() + WebDAV.NAMESPACE_SEPARATOR + property.getName(), nullAttr);
+                        xml.write(value);
+                        xml.endElement(property.getNamespaceName(), property.getName(), property.getNamespaceName() + WebDAV.NAMESPACE_SEPARATOR + property.getName());
+                    }
+                    else
+                    {
+                        xml.startElement("", property.getName(), property.getName(), nullAttr);
+                        xml.write(value);
+                        xml.endElement("", property.getName(), property.getName());
+                    }
+                }
+
             }
         }
 
@@ -894,15 +892,13 @@ public class PropFindMethod extends WebDAVMethod
      */
     protected void generateLockDiscoveryResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
     {
-        // Get the lock status for the node
+        // Output the lock status response
 
-        LockService lockService = getLockService();
-        LockStatus lockSts = lockService.getLockStatus(node);
-
-        // Output the lock status reponse
-
-        if (lockSts != LockStatus.NO_LOCK)
-            generateLockDiscoveryXML(xml, node);
+        LockInfo lockInfo = getNodeLockInfo(node);
+        if (lockInfo.isLocked())
+        {
+            generateLockDiscoveryXML(xml, node, lockInfo);
+        }
     }
 
     /**

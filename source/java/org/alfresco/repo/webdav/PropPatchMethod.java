@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
@@ -68,6 +67,8 @@ public class PropPatchMethod extends PropFindMethod
             // The path is not valid - send a 404 error back to the client
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
+
+        checkNode(pathNodeInfo);
 
         // Set the response content type
         m_response.setContentType(WebDAV.XML_CONTENT_TYPE);
@@ -353,14 +354,29 @@ public class PropPatchMethod extends PropFindMethod
     }
 
     
+    /**
+     * Stores information about PROPPATCH action(set or remove) an according property.
+     * 
+     * @author Ivan Rybnikov
+     */
     private class PropertyAction
     {
         protected static final int SET = 0;
         protected static final int REMOVE = 1;
         
+        // Property on which action should be performed
         private WebDAVProperty property;
+        
+        // Action
         private int action;
         
+        
+        /**
+         * Constructor
+         * 
+         * @param action
+         * @param property
+         */
         public PropertyAction(int action, WebDAVProperty property)
         {
             this.action = action;

@@ -76,9 +76,9 @@ public class PutMethod extends WebDAVMethod
             m_expectHeaderPresent = true;
         }
 
-        // Get the lock token, if any
+        // Parse Lock tokens and ETags, if any
 
-        m_strLockToken = parseIfHeader();
+        parseIfHeader();
     }
 
     /**
@@ -112,6 +112,9 @@ public class PutMethod extends WebDAVMethod
             {
                 throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
             }
+
+            checkNode(contentNodeInfo);
+
         }
         catch (FileNotFoundException e)
         {

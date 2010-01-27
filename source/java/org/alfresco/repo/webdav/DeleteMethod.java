@@ -99,6 +99,9 @@ public class DeleteMethod extends WebDAVMethod
             }
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
+
+        checkNode(fileInfo);
+
         // delete it
         fileFolderService.delete(fileInfo.getNodeRef());
     }

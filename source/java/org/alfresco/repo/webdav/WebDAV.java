@@ -60,7 +60,7 @@ public class WebDAV
     public static final String DAV_NS   = "D";
     public static final String DAV_NS_PREFIX = DAV_NS + ":";
     
-    // PROPFIND depth
+    // PROPFIND, LOCK depth
     
     public static final int DEPTH_0 = 0;
     public static final int DEPTH_1 = 1;
@@ -82,6 +82,7 @@ public class WebDAV
     public static final String SC_OK_DESC = "OK";
     public static final String SC_NOT_FOUND_DESC = "Not Found";
     public static final String SC_FORBIDDEN_DESC = "Forbidden";
+
 
     // HTTP methods
     
@@ -124,6 +125,10 @@ public class WebDAV
     
     public static final String HEADER_IF_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     
+    // If header keyword
+    
+    public static final String HEADER_KEY_NOT = "Not";
+
     // General string constants
     
     public static final String ASTERISK = "*";
@@ -213,6 +218,7 @@ public class WebDAV
     public static final String XML_NS_WRITE = DAV_NS_PREFIX + "write";
     public static final String XML_NS_ERROR = DAV_NS_PREFIX + "error";
     public static final String XML_NS_CANNOT_MODIFY_PROTECTED_PROPERTY = DAV_NS_PREFIX + "cannot-modify-protected-property";
+    
     
     public static final String XML_CONTENT_TYPE = "text/xml; charset=UTF-8";
     
@@ -590,6 +596,30 @@ public class WebDAV
         return tokens;
     }
     
+    /**
+     * Returns string representation of the depth
+     * 
+     * @param depth
+     * @return String
+     */
+    public static final String getDepthName(int depth)
+    {
+        switch (depth)
+        {
+        case DEPTH_0:
+            return ZERO;
+
+        case DEPTH_1:
+            return ONE;
+
+        case DEPTH_INFINITY:
+            return INFINITY;
+            
+        default:
+            throw new IllegalArgumentException("Unknown depth:" + depth);
+        }
+    }
+
     /**
      * Static initializer
      */

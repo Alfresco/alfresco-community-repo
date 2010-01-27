@@ -24,7 +24,13 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -47,6 +53,27 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
             NodeRef destParentNodeRef,
             String name) throws Exception
     {
+        NodeRef rootNodeRef = getRootNodeRef();
+
+        String path = getPath();
+        List<String> pathElements = getDAVHelper().splitAllPaths(path);
+        FileInfo fileInfo = null;
+        try
+        {
+            // get the node to move
+            fileInfo = fileFolderService.resolveNamePath(rootNodeRef, pathElements);
+        }
+        catch (FileNotFoundException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Node not found: " + getPath());
+            }
+            throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        checkNode(fileInfo);
+
         fileFolderService.move(sourceNodeRef, destParentNodeRef, name);
     }
 }

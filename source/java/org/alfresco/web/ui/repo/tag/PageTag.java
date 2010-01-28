@@ -87,8 +87,8 @@ public class PageTag extends TagSupport
  * Please ensure you understand the terms of the license before changing the contents of this file.
  */
    
-   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/assets/images/logos/community-edition-3.2r.png";
-   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/assets/images/logos/community-edition-3.2r.png";
+   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/assets/images/logos/community-edition-3.3.png";
+   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/assets/images/logos/community-edition-3.3.png";
    private final static String ALF_URL   = "http://www.alfresco.com";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +
@@ -100,7 +100,7 @@ public class PageTag extends TagSupport
         "<a class='footer' href='http://www.alfresco.com'>Alfresco</a> or its " +
         "<a class='footer' href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
         "<a class='footer' href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
-        "Alfresco Software Inc. &copy; 2005-2009 All rights reserved.";
+        "Alfresco Software Inc. &copy; 2005-2010 All rights reserved.";
    
    private final static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;

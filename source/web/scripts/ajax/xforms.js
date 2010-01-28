@@ -933,7 +933,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     tinyMCE.execCommand("mceAddControl", false, this.widget.id)
     var editorDocument = tinyMCE.get(this.widget.id).getDoc();
     editorDocument.widget = this;
-    tinymce.dom.Event.add(editorDocument,window.ie ? "beforedeactivate" : "blur", 
+    tinymce.dom.Event.add(editorDocument,window.ie ? "mouseout" : "blur", 
                      this._tinyMCE_blurHandler);
     tinymce.dom.Event.add(editorDocument, "focus", this._tinyMCE_focusHandler);
     this._created = true;
@@ -1052,7 +1052,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
 
   _tinyMCE_blurHandler: function(event)
   {
-    if (event.type == "beforedeactivate")
+    if (event.type == "mouseout")
     {
       event.target = event.srcElement.ownerDocument;
     }

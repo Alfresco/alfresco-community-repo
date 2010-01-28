@@ -213,7 +213,8 @@ public class XFormsProcessor implements FormProcessor
       js.append("alfresco.constants.AVM_WEBAPP_URL = '");
       if (avmWebApp != null)
       {
-         String storeName = avmBrowseBean.getSandbox();
+         //Use preview store because when user upload image it appears in preview, not in main store.
+         String storeName = AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox());
          if (storeName != null)
          {
             js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +

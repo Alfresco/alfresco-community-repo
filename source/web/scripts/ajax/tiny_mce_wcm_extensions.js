@@ -41,7 +41,8 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
   {
     if (href.startsWith(alfresco.constants.AVM_WEBAPP_URL))
     {
-      result = href.substring(alfresco.constants.AVM_WEBAPP_URL.length);
+      //do nothin. AVM_WEBAPP_URL will be removed during saving image in _tinyMCE_blurHandler
+      result = href;
     }
     else if (href.startsWith("/"))
     {

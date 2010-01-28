@@ -155,10 +155,20 @@ var Filters =
             break;
 
          case "tag":
+            // Remove any trailing "/" character
+            if (filterData.charAt(filterData.length - 1) == "/")
+            {
+               filterData = filterData.slice(0, -1);
+            }
             filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
             break;
 
          case "category":
+            // Remove any trailing "/" character
+            if (filterData.charAt(filterData.length - 1) == "/")
+            {
+               filterData = filterData.slice(0, -1);
+            }
             filterParams.query = "+PATH:\"/cm:generalclassifiable" + Filters.iso9075EncodePath(filterData) + "/member\"";
             break;
 

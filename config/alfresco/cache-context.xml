@@ -323,11 +323,11 @@
    
    <bean name="nodeRulesSharedCache" class="org.alfresco.repo.cache.NullCache"/>
    
-   <!-- The transactional cache for Parent Associations -->
+   <!-- The transactional cache for Node Rules (shared cache must be null - ie. do not share across txns) -->
    
    <bean name="nodeRulesCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">
-         <ref bean="parentAssocsSharedCache" />
+         <ref bean="nodeRulesSharedCache" />
       </property>
       <property name="cacheManager" >
          <ref bean="transactionalEHCacheManager" />

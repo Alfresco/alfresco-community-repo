@@ -39,6 +39,8 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -95,6 +97,10 @@ public class TaggingServiceImpl implements TaggingService,
     
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
+    
+    /** Policy behaviour */
+    private JavaBehaviour updateTagBehaviour;
+    private JavaBehaviour createTagBehaviour;
     
     /**
      * Set the cateogry service
@@ -162,6 +168,18 @@ public class TaggingServiceImpl implements TaggingService,
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.ASPECT_TAGGABLE, 
                 new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+        
+        // Update tag behaviour
+        createTagBehaviour = new JavaBehaviour(this, "createTags", NotificationFrequency.FIRST_EVENT);
+        this.policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME, 
+                ContentModel.ASPECT_TAGGABLE, 
+                createTagBehaviour);
+        updateTagBehaviour = new JavaBehaviour(this, "updateTags", NotificationFrequency.EVERY_EVENT);
+        this.policyComponent.bindClassBehaviour(
+                OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.TYPE_CONTENT, 
+                updateTagBehaviour);
     }
     
     /**
@@ -189,6 +207,70 @@ public class TaggingServiceImpl implements TaggingService,
                }
            }
        }
+    }
+    
+    public void createTags(ChildAssociationRef childAssocRef)
+    {
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        Map<QName, Serializable> before = new HashMap<QName, Serializable>(0);
+        Map<QName, Serializable> after = nodeService.getProperties(nodeRef);
+        
+        updateTags(nodeRef, before, after);
+    }
+    
+    /**
+     * Update tag policy behaviour
+     */
+    @SuppressWarnings("unchecked")
+    public void updateTags(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        List<NodeRef> beforeNodeRefs = (List<NodeRef>)before.get(ContentModel.PROP_TAGS);
+        List<NodeRef> afterNodeRefs = (List<NodeRef>)after.get(ContentModel.PROP_TAGS);
+        
+        if (beforeNodeRefs == null && afterNodeRefs != null)
+        {
+            // Queue all the after's for addition to the tag scopes
+            for (NodeRef afterNodeRef : afterNodeRefs)
+            {
+                String tagName = getTagName(afterNodeRef);
+                queueTagUpdate(nodeRef, tagName, true);
+            }
+        }
+        else if (afterNodeRefs == null && beforeNodeRefs != null)
+        {
+            // Queue all the before's for removal to the tag scope
+            for (NodeRef beforeNodeRef : beforeNodeRefs)
+            {
+                String tagName = getTagName(beforeNodeRef);
+                queueTagUpdate(nodeRef, tagName, false);
+            }
+        }
+        else if (afterNodeRefs != null && beforeNodeRefs != null)
+        {
+            for (NodeRef beforeNodeRef : beforeNodeRefs)
+            {
+                if (afterNodeRefs.contains(beforeNodeRef) == true)
+                {
+                    // remove the node ref from the after list
+                    afterNodeRefs.remove(beforeNodeRef);
+                }
+                else
+                {
+                    String tagName = getTagName(beforeNodeRef);
+                    queueTagUpdate(nodeRef, tagName, false);
+                }
+            }
+            for (NodeRef afterNodeRef : afterNodeRefs)
+            {
+                String tagName = getTagName(afterNodeRef);
+                queueTagUpdate(nodeRef, tagName, true);
+            }
+        }
+    }
+    
+    private String getTagName(NodeRef nodeRef)
+    {
+        return (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
     
     /**
@@ -271,40 +353,50 @@ public class TaggingServiceImpl implements TaggingService,
     @SuppressWarnings("unchecked")
     public void addTag(final NodeRef nodeRef, final String tagName)
     {        
-        // Lower the case of the tag
-        String tag = tagName.toLowerCase();
-        
-        // Get the tag node reference
-        NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
-        if (newTagNodeRef == null)
+        updateTagBehaviour.disable();
+        createTagBehaviour.disable();
+        try
         {
-            // Create the new tag
-            newTagNodeRef = categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
-        }        
-        
-        List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(5);
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
-        {
-            // Add the aspect
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
-        }
-        else
-        {
-            // Get the current tags
-            List<NodeRef> currentTagNodes = (List<NodeRef>)nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
-            if (currentTagNodes != null)
+            // Lower the case of the tag
+            String tag = tagName.toLowerCase();
+            
+            // Get the tag node reference
+            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
+            if (newTagNodeRef == null)
             {
-                tagNodeRefs = currentTagNodes;
+                // Create the new tag
+                newTagNodeRef = categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
+            }        
+            
+            List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(5);
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
+            {
+                // Add the aspect
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
+            }
+            else
+            {
+                // Get the current tags
+                List<NodeRef> currentTagNodes = (List<NodeRef>)nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+                if (currentTagNodes != null)
+                {
+                    tagNodeRefs = currentTagNodes;
+                }
+            }
+            
+            // Add the new tag (assuming it's not already been added
+            if (tagNodeRefs.contains(newTagNodeRef) == false)
+            {
+                tagNodeRefs.add(newTagNodeRef);
+                nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
+                queueTagUpdate(nodeRef, tag, true);
             }
         }
-        
-        // Add the new tag (assuming it's not already been added
-        if (tagNodeRefs.contains(newTagNodeRef) == false)
+        finally
         {
-            tagNodeRefs.add(newTagNodeRef);
-            nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
-            queueTagUpdate(nodeRef, tag, true);
-        }                       
+            updateTagBehaviour.enable();
+            createTagBehaviour.enable();
+        }
     }
     
     /**
@@ -347,27 +439,37 @@ public class TaggingServiceImpl implements TaggingService,
     @SuppressWarnings("unchecked")
     public void removeTag(NodeRef nodeRef, String tag)
     {
-        // Lower the case of the tag
-        tag = tag.toLowerCase();
-        
-        // Check for the taggable aspect
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
-        {        
-            // Get the tag node reference
-            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
-            if (newTagNodeRef != null)
-            {
-                // Get the current tags
-                List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
-                if (currentTagNodes != null &&
-                    currentTagNodes.size() != 0 &&
-                    currentTagNodes.contains(newTagNodeRef) == true)
+        updateTagBehaviour.disable();
+        createTagBehaviour.disable();
+        try
+        {
+            // Lower the case of the tag
+            tag = tag.toLowerCase();
+            
+            // Check for the taggable aspect
+            if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
+            {        
+                // Get the tag node reference
+                NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
+                if (newTagNodeRef != null)
                 {
-                    currentTagNodes.remove(newTagNodeRef);
-                    this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)currentTagNodes);
-                    queueTagUpdate(nodeRef, tag, false);
+                    // Get the current tags
+                    List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+                    if (currentTagNodes != null &&
+                        currentTagNodes.size() != 0 &&
+                        currentTagNodes.contains(newTagNodeRef) == true)
+                    {
+                        currentTagNodes.remove(newTagNodeRef);
+                        this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)currentTagNodes);
+                        queueTagUpdate(nodeRef, tag, false);
+                    }
                 }
             }
+        }
+        finally
+        {
+            updateTagBehaviour.enable();
+            createTagBehaviour.enable();
         }
     }  
     
@@ -412,56 +514,66 @@ public class TaggingServiceImpl implements TaggingService,
      * @see org.alfresco.service.cmr.tagging.TaggingService#setTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
      */
     public void setTags(NodeRef nodeRef, List<String> tags)
-    {       
-        List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(tags.size());
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
+    {  
+        updateTagBehaviour.disable();
+        createTagBehaviour.disable();
+        try
         {
-            // Add the aspect
-            this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
-        }
-        
-        // Get the current list of tags
-        List<String> oldTags = getTags(nodeRef);
-        
-        for (String tag : tags)
-        {   
-            // Lower the case of the tag
-            tag = tag.toLowerCase();
-            
-            // Get the tag node reference
-            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
-            if (newTagNodeRef == null)
+            List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(tags.size());
+            if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
             {
-                // Create the new tag
-                newTagNodeRef = this.categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
-            } 
+                // Add the aspect
+                this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_TAGGABLE, null);
+            }
             
-            if (tagNodeRefs.contains(newTagNodeRef) == false)
-            {            
-                // Add to the list
-                tagNodeRefs.add(newTagNodeRef);
+            // Get the current list of tags
+            List<String> oldTags = getTags(nodeRef);
+            
+            for (String tag : tags)
+            {   
+                // Lower the case of the tag
+                tag = tag.toLowerCase();
                 
-                // Trigger scope update
-                if (oldTags.contains(tag) == false)
+                // Get the tag node reference
+                NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag);
+                if (newTagNodeRef == null)
                 {
-                    queueTagUpdate(nodeRef, tag, true);
-                }
-                else
-                {
-                    // Remove the tag from the old list
-                    oldTags.remove(tag);
+                    // Create the new tag
+                    newTagNodeRef = this.categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
+                } 
+                
+                if (tagNodeRefs.contains(newTagNodeRef) == false)
+                {            
+                    // Add to the list
+                    tagNodeRefs.add(newTagNodeRef);
+                    
+                    // Trigger scope update
+                    if (oldTags.contains(tag) == false)
+                    {
+                        queueTagUpdate(nodeRef, tag, true);
+                    }
+                    else
+                    {
+                        // Remove the tag from the old list
+                        oldTags.remove(tag);
+                    }
                 }
             }
+            
+            // Remove the old tags from the tag scope
+            for (String oldTag : oldTags)
+            {
+                queueTagUpdate(nodeRef, oldTag, false);
+            }
+            
+            // Update category property
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);
         }
-        
-        // Remove the old tags from the tag scope
-        for (String oldTag : oldTags)
+        finally
         {
-            queueTagUpdate(nodeRef, oldTag, false);
+            updateTagBehaviour.enable();
+            createTagBehaviour.enable();
         }
-        
-        // Update category property
-        this.nodeService.setProperty(nodeRef, ContentModel.PROP_TAGS, (Serializable)tagNodeRefs);       
     }
     
     /**
@@ -722,6 +834,7 @@ public class TaggingServiceImpl implements TaggingService,
      * @param updates
      * @param async         indicates whether the action is execute asynchronously
      */
+    @SuppressWarnings("unchecked")
     private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates, boolean async)
     {
         // The map must be serializable
@@ -820,7 +933,6 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see org.alfresco.repo.transaction.TransactionListener#flush()
      */
-    @SuppressWarnings("deprecation")
     public void flush()
     {
     }   

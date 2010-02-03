@@ -382,8 +382,8 @@ public class StreamContent extends AbstractWebScript
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");
         }
         
-        // Stream the cotent
-        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modifiedSince), attachFileName);
+        // Stream the content
+        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modified.getTime()), attachFileName);
     }
 
     /**
@@ -549,6 +549,7 @@ public class StreamContent extends AbstractWebScript
         Cache cache = new Cache();
         cache.setNeverCache(false);
         cache.setMustRevalidate(true);
+        cache.setMaxAge(0L);
         cache.setLastModified(modified);
         cache.setETag(eTag);
         res.setCache(cache);

@@ -41,7 +41,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import javax.naming.CompositeName;
 import javax.naming.InvalidNameException;
+import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -684,13 +686,14 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             {
                                 // Attempt to parse the member attribute as a DN. If this fails we have a fallback
                                 // in the catch block
-                                LdapName distinguishedName = new LdapName(attribute.toLowerCase());
+                                LdapName distinguishedNameForComparison = new LdapName(attribute.toLowerCase());
                                 Attribute nameAttribute;
 
                                 // If the user and group search bases are different we may be able to recognize user
                                 // and group DNs without a secondary lookup
                                 if (disjoint)
                                 {
+                                    LdapName distinguishedName = new LdapName(attribute);
                                     Attributes nameAttributes = distinguishedName.getRdn(distinguishedName.size() - 1)
                                             .toAttributes();
 
@@ -714,12 +717,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 }
 
                                 // If we can't determine the name and type from the DN alone, try a directory lookup
-                                if (distinguishedName.startsWith(userDistinguishedNamePrefix)
-                                        || distinguishedName.startsWith(groupDistinguishedNamePrefix))
+                                if (distinguishedNameForComparison.startsWith(userDistinguishedNamePrefix)
+                                        || distinguishedNameForComparison.startsWith(groupDistinguishedNamePrefix))
                                 {
                                     try
                                     {
-                                        Attributes childAttributes = this.ctx.getAttributes(attribute, new String[]
+                                        Attributes childAttributes = this.ctx.getAttributes(jndiName(attribute), new String[]
                                         {
                                             "objectclass", LDAPUserRegistry.this.groupIdAttributeName,
                                             LDAPUserRegistry.this.userIdAttributeName
@@ -805,7 +808,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     // fetch the next batch
                     if (nextStart > 0 && !PATTERN_RANGE_END.matcher(memAttribute.getID().toLowerCase()).find())
                     {
-                        Attributes childAttributes = this.ctx.getAttributes(result.getNameInNamespace(), new String[]
+                        Attributes childAttributes = this.ctx.getAttributes(jndiName(result.getNameInNamespace()), new String[]
                         {
                             LDAPUserRegistry.this.memberAttributeName + ";range=" + nextStart + '-'
                                     + (nextStart + LDAPUserRegistry.this.attributeBatchSize - 1)
@@ -836,6 +839,23 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
+     * Converts a given DN into one suitable for use through JNDI. In particular, escapes special characters such as '/'
+     * which have special meaning to JNDI.
+     * 
+     * @param dn
+     *            the dn
+     * @return the name
+     * @throws InvalidNameException
+     *             the invalid name exception
+     */
+    private static Name jndiName(String dn) throws InvalidNameException
+    {
+        Name n = new CompositeName();
+        n.add(dn);
+        return n;
+    }
+
+    /**
      * Invokes the given callback on each entry returned by the given query.
      * 
      * @param callback
@@ -862,7 +882,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 NamingEnumeration<SearchResult> searchResults;
                 searchResults = ctx.search(searchBase, query, searchControls);
 
-                while (searchResults.hasMoreElements())
+                while (searchResults.hasMore())
                 {
                     SearchResult result = searchResults.next();
                     callback.process(result);
@@ -919,9 +939,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             NamingEnumeration<SearchResult> searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
                     + "(" + this.userIdAttributeName + "=" + userId + "))", userSearchCtls);
 
-            if (searchResults.hasMoreElements())
+            if (searchResults.hasMore())
             {
-                return searchResults.next().getNameInNamespace();
+                return jndiName(searchResults.next().getNameInNamespace()).toString();
             }
             throw new AuthenticationException("Failed to resolve user: " + userId);
         }
@@ -1200,7 +1220,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 do
                 {
                     readyForNextPage = this.searchResults == null;
-                    while (!readyForNextPage && this.searchResults.hasMoreElements())
+                    while (!readyForNextPage && this.searchResults.hasMore())
                     {
                         SearchResult result = this.searchResults.next();
                         Attributes attributes = result.getAttributes();

@@ -56,11 +56,16 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractMetadataExtracterTest extends TestCase
 {
+    static {
+       ApplicationContextHelper.setUseLazyLoading(false);
+    }
     protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
     protected static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
     protected static final String QUICK_CREATOR = "Nevin Nollop";
+    protected static final String QUICK_CREATOR_EMAIL = "nevin.nollop@alfresco.com";
+    protected static final String QUICK_PREVIOUS_AUTHOR = "Derek Hulley";
 
     protected MimetypeMap mimetypeMap;
     protected DictionaryService dictionaryService;
@@ -97,12 +102,16 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         try
         {
             Map<QName, Serializable> properties = extractFromMimetype(mimetype);
-            // check
+            // check common metadata
             testCommonMetadata(mimetype, properties);
+            // check file-type specific metadata
+            testFileSpecificMetadata(mimetype, properties);
         }
         catch (FileNotFoundException e)
         {
             // The test file is not there.  We won't fail it.
+           System.err.println("No test file found for mime type " + mimetype + 
+                 ", skipping extraction test - " + e.getMessage());
         }
     }
 
@@ -127,17 +136,46 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         return properties;
     }
 
+    /**
+     * Tests that we can get the common metadata correctly
+     *  from the file.
+     * You only need to override this if your test data file
+     *  doesn't have the usual Nevin Nollop/quick brown fox 
+     *  data in it.
+     */
     protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
-        assertEquals(
+       // One of Creator or Author
+       if(!skipAuthorCheck()) {
+          if(properties.containsKey(ContentModel.PROP_CREATOR)) {
+             assertEquals(
+                   "Property " + ContentModel.PROP_CREATOR + " not found for mimetype " + mimetype,
+                   QUICK_CREATOR,
+                   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATOR)));
+          } else if(properties.containsKey(ContentModel.PROP_AUTHOR)) {
+             assertEquals(
+                   "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
+                   QUICK_CREATOR,
+                   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
+          } else {
+             fail("Expected on Property out of " + ContentModel.PROP_CREATOR + " and " + 
+                   ContentModel.PROP_AUTHOR + " but found neither of them.");
+          }
+       }
+       
+       // Title and description
+       assertEquals(
                 "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
                 QUICK_TITLE,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
-        assertEquals(
+       assertEquals(
                 "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
                 QUICK_DESCRIPTION,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
     }
+    protected abstract void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties);
+    protected boolean skipAuthorCheck() { return false; }
+    
     
     public void testZeroLengthFile() throws Exception
     {
@@ -162,5 +200,16 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
             extractor.extract(reader, properties);
             assertEquals("There should not be any new properties", 0, properties.size());
         }
+    }
+    
+    
+    protected void assertContains(String message, String needle, String haystack) {
+       if(haystack.indexOf(needle) > -1) {
+          return;
+       }
+       fail(message);
+    }
+    protected void assertContains(String needle, String haystack) {
+       assertContains("'" + needle + "' wasn't found in '" + haystack + "'", needle, haystack);
     }
 }

@@ -57,6 +57,10 @@ import org.farng.mp3.lyrics3.Lyrics3v2Field;
  *   <b>lyrics:</b>                 --      {music}lyrics
  * </pre>
  * 
+ * TIKA Note - title and author go in metadata, but much of the
+ *  rest is only in the text. Some of the ID3v2 parts 
+ *  (composer, lyrics) are not yet implemented.
+ * 
  * @author Roy Wetherall
  */
 public class MP3MetadataExtracter extends AbstractMappingMetadataExtracter
@@ -91,7 +95,8 @@ public class MP3MetadataExtracter extends AbstractMappingMetadataExtracter
             reader.getContent(tempFile);
             
             // Create the MP3 object from the file
-            MP3File mp3File = new MP3File(tempFile);
+            // Open it read only as we won't make any changes
+            MP3File mp3File = new MP3File(tempFile, false);
             
             ID3v1 id3v1 = mp3File.getID3v1Tag();
             if (id3v1 != null)
@@ -142,6 +147,24 @@ public class MP3MetadataExtracter extends AbstractMappingMetadataExtracter
             }
             
         }
+        catch(Exception e)
+        {
+           if (logger.isDebugEnabled())
+           {
+               logger.debug(
+                       "MP3 Metadata extraction failed: \n" +
+                       "   Content:   " + reader,
+                       e);
+           }
+           else
+           {
+               logger.warn(
+                       "MP3 Metadata extraction failed (turn on DEBUG for full error): \n" +
+                       "   Content:   " + reader + "\n" +
+                       "   Failure:   " + e.getMessage());
+           }
+
+        }
         finally
         {
             tempFile.delete();
@@ -167,16 +190,22 @@ public class MP3MetadataExtracter extends AbstractMappingMetadataExtracter
     private String getDescription(Map<String, Serializable> props)
     {
         StringBuilder result = new StringBuilder();
-        if (props.get(KEY_SONG_TITLE) != null && props.get(KEY_ARTIST) != null && props.get(KEY_ALBUM_TITLE) != null)
+        if (props.get(KEY_SONG_TITLE) != null)
         {
-            result
-                .append(props.get(KEY_SONG_TITLE))
+            result.append(props.get(KEY_SONG_TITLE));
+            if (props.get(KEY_ALBUM_TITLE) != null)
+            {
+               result
                 .append(" - ")
-                .append(props.get(KEY_ALBUM_TITLE))
+                .append(props.get(KEY_ALBUM_TITLE));
+            }
+            if (props.get(KEY_ARTIST) != null)
+            {
+               result
                 .append(" (")
                 .append(props.get(KEY_ARTIST))
                 .append(")");
-                
+            }
         }
         
         return result.toString();

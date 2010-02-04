@@ -62,6 +62,9 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
  *   <b>wordCount:</b>
  * </pre>
  * 
+ * TIKA Note - everything we currently have should be present
+ *  in the metadata.
+ * 
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */

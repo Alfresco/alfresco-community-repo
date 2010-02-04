@@ -60,6 +60,10 @@ import com.catcode.odf.OpenDocumentMetadata;
  *   <b>All user properties</b>
  * </pre>
  * 
+ * TIKA Note - not all of the metadata is currently
+ *  extracted. Will probably need to add some more
+ *  support to TIKA.
+ * 
  * @author Antti Jokipii
  * @author Derek Hulley
  */

@@ -24,7 +24,11 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Jesper Steen Møller
@@ -63,4 +67,7 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         testExtractFromMimetype(MimetypeMap.MIMETYPE_HTML);
     }
+
+    /** Extractor only does the usual basic three properties */
+    public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {}
 }

@@ -22,8 +22,17 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.repo.content.metadata;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.alfresco.service.namespace.QName;
+
 
 /**
+ * Note - this test can sometimes fail if run on its own, as there
+ *  can be a race condition with the OO process. Try running it as 
+ *  part of a suite if so, that normally seems to fix it!  
+ * 
  * @author Jesper Steen Møller
  */
 public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
@@ -77,4 +86,18 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
             testExtractFromMimetype(mimetype);
         }
     }
+
+    /**
+     * Only run the check if we have a connection
+     *  to an OpenOffice instance
+     */
+    protected void testCommonMetadata(String mimetype,
+         Map<QName, Serializable> properties) {
+       if(extracter.isConnected()) {
+           super.testCommonMetadata(mimetype, properties);
+       }
+   }
+
+   /** Extractor only does the usual basic three properties */
+    public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {}
 }

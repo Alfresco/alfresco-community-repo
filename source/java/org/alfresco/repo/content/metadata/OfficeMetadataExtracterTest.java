@@ -1,5 +1,16 @@
 package org.alfresco.repo.content.metadata;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.QName;
+
 
 /**
  * @see OfficeMetadataExtracter
@@ -9,6 +20,11 @@ package org.alfresco.repo.content.metadata;
 public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private OfficeMetadataExtracter extracter;
+    
+    private static final QName WORD_COUNT_TEST_PROPERTY = 
+             QName.createQName("WordCountTest");
+    private static final QName LAST_AUTHOR_TEST_PROPERTY = 
+             QName.createQName("LastAuthorTest");
 
     @Override
     public void setUp() throws Exception
@@ -17,6 +33,22 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
         extracter = new OfficeMetadataExtracter();
         extracter.setDictionaryService(dictionaryService);
         extracter.register();
+        
+        // Attach a couple of extra mappings
+        // These will be tested later
+        HashMap<String, Set<QName>> newMap = new HashMap<String, Set<QName>>(
+              extracter.getMapping()
+        );
+        
+        Set<QName> wcSet = new HashSet<QName>();
+        wcSet.add(WORD_COUNT_TEST_PROPERTY);
+        newMap.put( OfficeMetadataExtracter.KEY_WORD_COUNT, wcSet );
+        
+        Set<QName> laSet = new HashSet<QName>();
+        laSet.add(LAST_AUTHOR_TEST_PROPERTY);
+        newMap.put( OfficeMetadataExtracter.KEY_LAST_AUTHOR, laSet );
+        
+        extracter.setMapping(newMap);
     }
 
     /**
@@ -45,5 +77,79 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
         {
             testExtractFromMimetype(mimetype);
         }
+    }
+    
+    /** 
+     * We support all sorts of extra metadata. Check it all behaves.
+     */
+    public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {
+       // Test the ones with a core alfresco mapping
+       if(mimetype.equals(MimetypeMap.MIMETYPE_WORD)) {
+          assertEquals(
+                "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
+                "2005-05-26T13:57:00.000+01:00",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
+          assertEquals(
+                "Property " + ContentModel.PROP_MODIFIED + " not found for mimetype " + mimetype,
+                "2005-09-20T18:25:00.000+01:00",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_MODIFIED)));
+       } else if(mimetype.equals(MimetypeMap.MIMETYPE_EXCEL)) {
+          assertEquals(
+                "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
+                "1996-10-15T00:33:28.000+01:00",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
+          assertEquals(
+                "Property " + ContentModel.PROP_MODIFIED + " not found for mimetype " + mimetype,
+                "2005-09-20T19:22:32.000+01:00",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_MODIFIED)));
+       } else if(mimetype.equals(MimetypeMap.MIMETYPE_PPT)) {
+          assertEquals(
+                "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
+                "1601-01-01T00:00:00.000Z", // Seriously, that's what the file says!
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
+          assertEquals(
+                "Property " + ContentModel.PROP_MODIFIED + " not found for mimetype " + mimetype,
+                "2005-09-20T19:23:41.000+01:00",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_MODIFIED)));
+       }
+       
+       // Now check the non-standard ones we added in at test time
+       assertTrue( 
+             "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
+             properties.containsKey(WORD_COUNT_TEST_PROPERTY)
+       );
+       assertTrue( 
+             "Test Property " + LAST_AUTHOR_TEST_PROPERTY + " not found for mimetype " + mimetype,
+             properties.containsKey(LAST_AUTHOR_TEST_PROPERTY)
+       );
+       
+       if(mimetype.equals(MimetypeMap.MIMETYPE_WORD)) {
+          assertEquals(
+                "Test Property " + WORD_COUNT_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
+                "9",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(WORD_COUNT_TEST_PROPERTY)));
+          assertEquals(
+                "Test Property " + LAST_AUTHOR_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
+                AbstractMetadataExtracterTest.QUICK_PREVIOUS_AUTHOR,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(LAST_AUTHOR_TEST_PROPERTY)));
+       } else if(mimetype.equals(MimetypeMap.MIMETYPE_EXCEL)) {
+          assertEquals(
+                "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
+                "0",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(WORD_COUNT_TEST_PROPERTY)));
+          assertEquals(
+                "Test Property " + LAST_AUTHOR_TEST_PROPERTY + " not found for mimetype " + mimetype,
+                AbstractMetadataExtracterTest.QUICK_PREVIOUS_AUTHOR,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(LAST_AUTHOR_TEST_PROPERTY)));
+       } else if(mimetype.equals(MimetypeMap.MIMETYPE_PPT)) {
+          assertEquals(
+                "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
+                "9",
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(WORD_COUNT_TEST_PROPERTY)));
+          assertEquals(
+                "Test Property " + LAST_AUTHOR_TEST_PROPERTY + " not found for mimetype " + mimetype,
+                AbstractMetadataExtracterTest.QUICK_PREVIOUS_AUTHOR,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(LAST_AUTHOR_TEST_PROPERTY)));
+       }
     }
 }

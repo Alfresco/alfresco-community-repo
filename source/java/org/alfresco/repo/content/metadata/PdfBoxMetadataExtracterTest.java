@@ -1,6 +1,14 @@
 package org.alfresco.repo.content.metadata;
 
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.QName;
+import org.apache.pdfbox.util.DateConverter;
 
 /**
  * @see org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter
@@ -40,5 +48,30 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
     public void testPdfExtraction() throws Exception
     {
         testExtractFromMimetype(MimetypeMap.MIMETYPE_PDF);
+    }
+
+    /**
+     * We can also return a created date
+     */
+    protected void testFileSpecificMetadata(String mimetype,
+         Map<QName, Serializable> properties) {
+       assertEquals(
+             "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
+             "2005-05-26T20:52:58.000+01:00",
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
+    }
+    
+    /**
+     * Test that will show when the workaround is in place.
+     */
+    public void testDateConversion() throws Exception {
+       Calendar c = DateConverter.toCalendar("D:20050526205258+01'00'");
+       assertEquals(2005, c.get(Calendar.YEAR));
+       assertEquals(05-1, c.get(Calendar.MONTH));
+       assertEquals(26, c.get(Calendar.DAY_OF_MONTH));
+       assertEquals(20, c.get(Calendar.HOUR_OF_DAY));
+       assertEquals(52, c.get(Calendar.MINUTE));
+       assertEquals(58, c.get(Calendar.SECOND));
+       //assertEquals(0, c.get(Calendar.MILLISECOND));
     }
 }

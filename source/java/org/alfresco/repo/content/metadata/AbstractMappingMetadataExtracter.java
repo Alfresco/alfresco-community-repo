@@ -787,6 +787,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                                 propertyTypeDef,
                                 (Collection) propertyValue);
                     }
+                    else if (propertyValue instanceof Object[])
+                    {
+                       convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
+                             propertyTypeDef,
+                             (Object[]) propertyValue);
+                    }
                     else
                     {
                         convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(

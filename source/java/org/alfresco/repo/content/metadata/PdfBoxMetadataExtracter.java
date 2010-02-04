@@ -50,6 +50,9 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
  *   <b>created:</b>                --      cm:created
  * </pre>
  * 
+ * TIKA Note - all the fields (plus a few others) are present
+ *  in the tika metadata.
+ * 
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
@@ -95,6 +98,10 @@ public class PdfBoxMetadataExtracter extends AbstractMappingMetadataExtracter
                     Calendar created = docInfo.getCreationDate();
                     if (created != null)
                     {
+                        // Work around https://issues.apache.org/jira/browse/PDFBOX-598
+                        created.set(Calendar.MILLISECOND, 0);
+                       
+                        // Save
                         putRawValue(KEY_CREATED, created.getTime(), rawProperties);
                     }
                 }

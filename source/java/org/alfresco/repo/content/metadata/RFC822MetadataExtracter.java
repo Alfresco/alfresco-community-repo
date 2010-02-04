@@ -45,17 +45,21 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Metadata extractor for the PDF documents.
+ * Metadata extractor for RFC822 mime emails.
  * <pre>
- *   <b>messageFrom:</b>              --      imap:messageFrom
+ *   <b>messageFrom:</b>              --      imap:messageFrom, cm:originator
  *   <b>messageTo:</b>                --      imap:messageTo
  *   <b>messageCc:</b>                --      imap:messageCc
- *   <b>messageSubject:</b>           --      imap:messageSubject, cm:title, cm:description
- *   <b>messageSent:</b>              --      imap:dateSent
+ *   <b>messageSubject:</b>           --      imap:messageSubject, cm:title, cm:description, cm:subjectline
+ *   <b>messageSent:</b>              --      imap:dateSent, cm:sentdate
  *   <b>All <code>{@link Header#getName() header names}:</b>
  *      <b>Thread-Index:</b>          --      imap:threadIndex
  *      <b>Message-ID:</b>            --      imap:messageId
  *      <b>date:</b>                  --      imap:dateReceived
+ * 
+ * TIKA Note - to and cc are missing, and date stuff isn't
+ *  great. Thread index is missing, and arbitrary headers
+ *  don't seem to be supported
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -63,11 +67,11 @@ import org.alfresco.service.namespace.QName;
 public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
 {
 
-    private static final String KEY_MESSAGE_FROM = "messageFrom";
-    private static final String KEY_MESSAGE_TO = "messageTo";
-    private static final String KEY_MESSAGE_CC = "messageCc";
-    private static final String KEY_MESSAGE_SUBJECT = "messageSubject";
-    private static final String KEY_MESSAGE_SENT = "messageSent";
+    protected static final String KEY_MESSAGE_FROM = "messageFrom";
+    protected static final String KEY_MESSAGE_TO = "messageTo";
+    protected static final String KEY_MESSAGE_CC = "messageCc";
+    protected static final String KEY_MESSAGE_SUBJECT = "messageSubject";
+    protected static final String KEY_MESSAGE_SENT = "messageSent";
 
     public static String[] SUPPORTED_MIMETYPES = new String[] { MimetypeMap.MIMETYPE_RFC822 };
 

@@ -39,6 +39,9 @@ import org.springframework.extensions.surf.util.PropertyCheck;
  *   <b>description:</b>            --      cm:description
  * </pre>
  * 
+ * TIKA Note - this probably won't be ported to TIKA. There's currently
+ *  no support for these old formats in tika.
+ * 
  * @author Jesper Steen Møller
  */
 public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracter implements OpenOfficeMetadataWorker

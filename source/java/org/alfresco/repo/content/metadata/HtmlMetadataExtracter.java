@@ -49,6 +49,10 @@ import org.alfresco.service.cmr.repository.ContentReader;
  *   <b>description:</b>            --      cm:description
  * </pre>
  * 
+ * TIKA note - all metadata will be present, but will need to
+ *  search for the varient names ourselves as tika puts them
+ *  in as-is.
+ * 
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */

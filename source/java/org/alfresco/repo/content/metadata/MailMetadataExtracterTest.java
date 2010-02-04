@@ -25,6 +25,7 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -71,15 +72,58 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
         testExtractFromMimetype(MimetypeMap.MIMETYPE_OUTLOOK_MSG);
     }
     
+    /**
+     * We have different things to normal, so
+     *  do our own common tests.
+     */
     protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
         assertEquals(
                 "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
-                "KEVIN.ROAST@BEN",
+                "Kevin Roast",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
         assertEquals(
                 "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
                 "Test the content transformer",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
     }
+
+   /**
+    * Test the outlook specific bits
+    */
+   protected void testFileSpecificMetadata(String mimetype,
+         Map<QName, Serializable> properties) {
+      // Sent Date
+      assertEquals(
+            "Property " + ContentModel.PROP_SENTDATE + " not found for mimetype " + mimetype,
+            "2007-06-14T09:42:55.000+01:00",
+            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_SENTDATE)));
+      
+      // Addressee
+      assertEquals(
+            "Property " + ContentModel.PROP_ADDRESSEE + " not found for mimetype " + mimetype,
+            "Kevin Roast",
+            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ADDRESSEE)));
+      
+      // Addressees
+      Collection<String> addressees = (Collection<String>)properties.get(ContentModel.PROP_ADDRESSEES);  
+      assertTrue(
+            "Property " + ContentModel.PROP_ADDRESSEES + " not found for mimetype " + mimetype,
+            addressees != null
+      );
+      assertEquals(
+            "Property " + ContentModel.PROP_ADDRESSEES + " wrong size for mimetype " + mimetype,
+            1,
+            addressees.size());
+      assertEquals(
+            "Property " + ContentModel.PROP_ADDRESSEES + " wrong content for mimetype " + mimetype,
+            "kevin.roast@alfresco.org",
+            DefaultTypeConverter.INSTANCE.convert(String.class, addressees.iterator().next()));
+      
+      // Subject Line  
+      assertEquals(
+            "Property " + ContentModel.PROP_SUBJECT + " not found for mimetype " + mimetype,
+            "Test the content transformer",
+            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_SUBJECT)));
+   }
 }

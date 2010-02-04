@@ -39,6 +39,7 @@ public class ApplicationContextHelper
 {
     private static ClassPathXmlApplicationContext instance;
     private static String[] usedConfiguration;
+    private static boolean useLazyLoading = false;
     
     /** location of required configuration files */
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml" };
@@ -79,8 +80,13 @@ public class ApplicationContextHelper
         }
         // The config has changed so close the current context (if any)
         closeApplicationContext();
-        
-        instance = new ClassPathXmlApplicationContext(configLocations);            
+       
+        if(useLazyLoading) {
+           instance = new LazyClassPathXmlApplicationContext(configLocations);
+        } else {
+           instance = new ClassPathXmlApplicationContext(configLocations);
+        }
+                    
         usedConfiguration = configLocations;
         
         return instance;
@@ -100,6 +106,25 @@ public class ApplicationContextHelper
         instance.close();
         instance = null;
         usedConfiguration = null;
+    }
+    
+    /**
+     * Should the Spring beans be initilised in a lazy manner, or
+     *  all in one go?
+     * Normally lazy loading/intialising shouldn't be used when
+     *  running with the full context, but it may be appropriate
+     *  to reduce startup times when using a small, cut down context.
+     */
+    public static void setUseLazyLoading(boolean lazyLoading) {
+       useLazyLoading = lazyLoading;
+    }
+    /**
+     * Will the Spring beans be initilised in a lazy manner, or
+     *  all in one go? The default it to load everything in one
+     *  go, as spring normally does.
+     */
+    public static boolean isUsingLazyLoading() {
+       return useLazyLoading;
     }
     
     public static void main(String ... args)

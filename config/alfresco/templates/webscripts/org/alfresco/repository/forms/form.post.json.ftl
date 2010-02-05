@@ -1,3 +1,4 @@
 {
-    "message" : "${message}"
+    <#if redirect??>"redirect": "${redirect}",</#if>
+    "message": "${message}"
 }

@@ -6,26 +6,33 @@ function main()
 
     if (logger.isLoggingEnabled())
     {
-        logger.log("itemKind = " + itemKind);
-        logger.log("itemId = " + itemId);
+        logger.log("multipart form submission for item:");
+        logger.log("\tkind = " + itemKind);
+        logger.log("\tid = " + itemId);
     }
 
+    // potential redirect URL
+    var redirect = null;
+    
     try
     {
         // persist the submitted data using the most appropriate data set
         if (typeof formdata !== "undefined")
         {
-            // Note: This formdata is org/alfresco/web/scripts/servlet/FormData.java
-            if (logger.isLoggingEnabled())
-            {
-                logger.log("Saving form with formdata, " + formdata.fields.length + " fields.");
-            }
-
             // N.B. This repoFormData is a different FormData class to that used above.
             var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
             for (var i = 0; i < formdata.fields.length; i++)
             {
-                repoFormData.addFieldData(formdata.fields[i].name, formdata.fields[i].value);
+                if (formdata.fields[i].name == "alf_redirect")
+                {
+                   // store redirect url
+                   redirect = formdata.fields[i].value;
+                }
+                else
+                {
+                   // add field to form data
+                   repoFormData.addFieldData(formdata.fields[i].name, formdata.fields[i].value);
+                }
             }
 
             formService.saveForm(itemKind, itemId, repoFormData);
@@ -67,6 +74,17 @@ function main()
         return;
     }
 
+    // if a redirect URL was provided send a redirect response
+    if (redirect !== null)
+    {
+       if (logger.isLoggingEnabled())
+          logger.log("Returning 301 status code to redirect to: " + redirect);
+       
+       status.redirect = true;
+       status.code = 301;
+       status.location = redirect;
+    }
+    
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 

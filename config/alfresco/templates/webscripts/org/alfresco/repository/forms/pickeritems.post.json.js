@@ -1,3 +1,5 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/repository/forms/pickerresults.lib.js">
+
 function main()
 {
    var count = 0,
@@ -24,6 +26,16 @@ function main()
          result = search.findNode(item);
          if (result != null)
          {
+            // create a separate object if the node represents a user or group
+            if (result.isSubType("cm:person"))
+            {
+               result = createPersonResult(result);
+            }
+            else if (result.isSubType("cm:authorityContainer"))
+            {
+               result = createGroupResult(result);
+            }
+            
             results.push(
             {
                item: result

@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Alfresco Web Editor Demo</shortname>
+  <description>Demo page for the Alfresco Web Editor</description>
+  <url>/awe-demo-page/node/{store_type}/{store_id}/{id}</url>
+  <!-- <url>/api/path/{store_type}/{store_id}/{path}</url> -->
+  <authentication>guest</authentication>
+</webscript>

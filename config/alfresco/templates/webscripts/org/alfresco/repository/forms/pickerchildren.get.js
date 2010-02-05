@@ -1,7 +1,11 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/repository/forms/pickerresults.lib.js">
+
 function main()
 {
    var argsFilterType = args['filterType'],
-      argsSelectableType = args['selectableType']
+      argsSelectableType = args['selectableType'],
+      argsSearchTerm = args['searchTerm'],
+      argsMaxResults = args['size'],
       parent = null,
       rootNode = companyhome,
       results = [],
@@ -13,6 +17,8 @@ function main()
       logger.log("children type = " + url.templateArgs.type);
       logger.log("argsSelectableType = " + argsSelectableType);
       logger.log("argsFilterType = " + argsFilterType);
+      logger.log("argsSearchTerm = " + argsSearchTerm);
+      logger.log("argsMaxResults = " + argsMaxResults);
    }
          
    try
@@ -137,6 +143,31 @@ function main()
             }
          }
       }
+      else if (url.templateArgs.type == "authority")
+      {
+         // default to max of 100 results
+         var maxResults = 100;
+         if (argsMaxResults != null)
+         {
+            // force the argsMaxResults var to be treated as a number
+            maxResults = argsMaxResults + 0;
+         }
+         
+         if (argsSelectableType == "cm:person")
+         {
+            findUsers(argsSearchTerm, maxResults, results);
+         }
+         else if (argsSelectableType == "cm:authorityContainer")
+         {
+            findGroups(argsSearchTerm, maxResults, results);
+         }
+         else
+         {
+            // combine groups and users
+            findGroups(argsSearchTerm, maxResults, results);
+            findUsers(argsSearchTerm, maxResults, results);
+         }
+      }
       
       if (logger.isLoggingEnabled())
          logger.log("Found " + results.length + " results");
@@ -174,6 +205,102 @@ function isItemSelectable(node, selectableType)
 function sortByName(a, b)
 {
    return (b.properties.name.toLowerCase() > a.properties.name.toLowerCase() ? -1 : 1);
+}
+
+function findUsers(searchTerm, maxResults, results)
+{
+   // construct query string
+   var query = '+TYPE:"cm:person"';
+   
+   if (searchTerm != null && searchTerm.length > 0)
+   {
+      searchTerm = searchTerm.replace("\"", "");
+         
+      query += ' AND (@cm\\:firstName:"*' + searchTerm + '*" @cm\\:lastName:"*' + searchTerm + 
+         '*" @cm\\:userName:' + searchTerm + '* )';
+   }
+   
+   if (logger.isLoggingEnabled())
+      logger.log("user query = " + query);
+   
+   // do the query
+   var searchResults = search.query(
+   {
+      query: query,
+      page:
+      {
+         maxItems: maxResults
+      },
+      sort:
+      [
+      {
+         column: "cm:lastName",
+         ascending: true
+      },
+      {
+         column: "cm:firstName",
+         ascending: true
+      }
+      ]
+   });
+   
+   // create person objet for each result
+   for each(var node in searchResults)
+   {
+      // add to results
+      results.push(
+      {
+         item: createPersonResult(node),
+         selectable: true 
+      });
+   }
+}
+
+function findGroups(searchTerm, maxResults, results)
+{
+   var searchTermPattern = "*";
+   
+   if (searchTerm != null && searchTerm.length > 0)
+   {
+      searchTermPattern = searchTermPattern + searchTerm;
+   }
+   
+   if (logger.isLoggingEnabled())
+      logger.log("Finding groups matching pattern: " + searchTermPattern);
+   
+   var searchResults = groups.searchGroupsInZone(searchTermPattern, "APP.DEFAULT");
+   for each(var node in searchResults)
+   {
+      // find the actual node that represents the group
+      var query = '+TYPE:"cm:authorityContainer" AND @cm\\:authorityName:' + node.fullName;
+      
+      if (logger.isLoggingEnabled())
+         logger.log("group query = " + query);
+      
+      var searchResults = search.query(
+      {
+         query: query
+      });
+
+      if (searchResults.length > 0)
+      {
+         // add to results
+         results.push(
+         {
+            item: createGroupResult(searchResults[0]),
+            selectable: true 
+         });
+      }
+   }
+   
+   // sort the groups by name alphabetically
+   if (results.length > 0)
+   {
+      results.sort(function(a, b)
+      {
+         return (a.item.properties.name < b.item.properties.name) ? -1 : (a.item.properties.name > b.item.properties.name) ? 1 : 0;
+      });
+   }
 }
 
 main();

@@ -6,8 +6,9 @@ function main()
 
     if (logger.isLoggingEnabled())
     {
-        logger.log("itemKind = " + itemKind);
-        logger.log("itemId = " + itemId);
+        logger.log("json form submission for item:");
+        logger.log("\tkind = " + itemKind);
+        logger.log("\tid = " + itemId);
     }
    
     if (typeof json !== "undefined")
@@ -32,7 +33,22 @@ function main()
     for ( ; jsonKeys.hasNext(); )
     {
 	     var nextKey = jsonKeys.next();
-	     repoFormData.addFieldData(nextKey, json.get(nextKey));
+	     
+	     if (nextKey == "alf_redirect")
+        {
+           // store redirect url in model
+           model.redirect = json.get(nextKey);
+           
+           if (logger.isLoggingEnabled())
+           {
+               logger.log("found redirect: " + model.redirect);
+           }
+        }
+	     else
+	     {
+	        // add field to form data
+	        repoFormData.addFieldData(nextKey, json.get(nextKey));
+	     }
     }
 
     try

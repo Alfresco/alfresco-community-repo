@@ -19,8 +19,9 @@ function main()
        
     if (logger.isLoggingEnabled())
     {
-        logger.log("itemKind = " + itemKind);
-        logger.log("itemId = " + itemId);
+        logger.log("Generating form for item:");
+        logger.log("\tkind = " + itemKind);
+        logger.log("\tid = " + itemId);
     }
     
     // extract optional data from request body (if present)

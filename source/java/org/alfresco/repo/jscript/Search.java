@@ -520,11 +520,28 @@ public class Search extends BaseScopableProcessorExtension
                 {
                     if (page.get("maxItems") != null)
                     {
-                        maxResults = ((Number)page.get("maxItems")).intValue();
+                        Object maxItems = page.get("maxItems");
+                        if (maxItems instanceof Number)
+                        {
+                            maxResults = ((Number)maxItems).intValue();
+                        }
+                        else if (maxItems instanceof String)
+                        {
+                            // try and convert to int (which it what it should be!)
+                            maxResults = Integer.parseInt((String)maxItems);
+                        }
                     }
                     if (page.get("skipCount") != null)
                     {
-                        skipResults = ((Number)page.get("skipCount")).intValue();
+                        Object skipCount = page.get("skipCount");
+                        if (skipCount instanceof Number)
+                        {
+                            skipResults = ((Number)page.get("skipCount")).intValue();
+                        }
+                        else if (skipCount instanceof String)
+                        {
+                            skipResults = Integer.parseInt((String)skipCount);
+                        }
                     }
                 }
                 

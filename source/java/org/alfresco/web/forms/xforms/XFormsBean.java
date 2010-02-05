@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -179,6 +180,8 @@ public class XFormsBean implements Serializable
    private AVMBrowseBean avmBrowseBean;
    private NavigationBean navigator;
    
+   private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+   
    public static String BEAN_NAME = "XFormsBean";
    
    /**
@@ -240,7 +243,16 @@ public class XFormsBean implements Serializable
             final XMLEvent xmle = (XMLEvent)e;
             if (XFormsBean.LOGGER.isDebugEnabled())
                XFormsBean.LOGGER.debug("received event " + xmle.getType() + ": " + xmle);
-            XFormsBean.this.xformsSession.eventLog.add(xmle);
+            
+            try
+            {
+                lock.writeLock().lock();
+                XFormsBean.this.xformsSession.eventLog.add(xmle);
+            }
+            finally
+            {
+                lock.writeLock().unlock();
+            }
          }
       };
 
@@ -631,71 +643,90 @@ public class XFormsBean implements Serializable
       final Document result = XMLUtil.newDocument();
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
-      for (XMLEvent xfe : this.xformsSession.eventLog)
+      
+      try
       {
-         final String type = xfe.getType();
-         if (LOGGER.isDebugEnabled())
-         {
-            LOGGER.debug("adding event " + type + " to the event log");
-         }
+          lock.readLock().lock();
+      
+          for (XMLEvent xfe : this.xformsSession.eventLog)
+          {
+             final String type = xfe.getType();
+             if (LOGGER.isDebugEnabled())
+             {
+                LOGGER.debug("adding event " + type + " to the event log");
+             }
 
-         final Element target = (Element)xfe.getTarget();
+             final Element target = (Element)xfe.getTarget();
 
-         final Element eventElement = result.createElement(type);
-         eventsElement.appendChild(eventElement);
-         eventElement.setAttribute("targetId", target.getAttributeNS(null, "id"));
-         eventElement.setAttribute("targetName", target.getLocalName());
+             final Element eventElement = result.createElement(type);
+             eventsElement.appendChild(eventElement);
+             eventElement.setAttribute("targetId", target.getAttributeNS(null, "id"));
+             eventElement.setAttribute("targetName", target.getLocalName());
 
-         final Collection properties = xfe.getPropertyNames();
-         if (properties != null)
-         {
-            for (Object name : properties)
-            {
-               final Object value = xfe.getContextInfo((String)name);
-               if (LOGGER.isDebugEnabled())
-               {
-                  LOGGER.debug("adding property {" + name + 
-                               ":" + value + "} to event " + type);
-               }
+             final Collection properties = xfe.getPropertyNames();
+             if (properties != null)
+             {
+                for (Object name : properties)
+                {
+                   final Object value = xfe.getContextInfo((String)name);
+                   if (LOGGER.isDebugEnabled())
+                   {
+                      LOGGER.debug("adding property {" + name + 
+                                   ":" + value + "} to event " + type);
+                   }
 
-               final Element propertyElement = result.createElement("property");
-               eventElement.appendChild(propertyElement);
-               propertyElement.setAttribute("name", name.toString());
-               propertyElement.setAttribute("value", 
-                                            value != null ? value.toString() : null);
-            }
-         }
+                   final Element propertyElement = result.createElement("property");
+                   eventElement.appendChild(propertyElement);
+                   propertyElement.setAttribute("name", name.toString());
+                   propertyElement.setAttribute("value", 
+                                                value != null ? value.toString() : null);
+                }
+             }
 
-         if (LOGGER.isDebugEnabled() && XFormsEventNames.SUBMIT_ERROR.equals(type))
-         {
-            // debug for figuring out which elements aren't valid for submit
-            LOGGER.debug("performing full revalidate");
-            try
-            {
-               final Model model = this.xformsSession.chibaBean.getContainer().getDefaultModel();
-               final Instance instance = model.getDefaultInstance();
-               model.getValidator().validate(instance, "/", new DefaultValidatorMode());
-               final Iterator<ModelItem> it = instance.iterateModelItems("/");
-               while (it.hasNext())
-               {
-                  final ModelItem modelItem = it.next();
-                  if (!modelItem.isValid())
-                  {
-                     LOGGER.debug("model node " + modelItem.getNode() + " is invalid");
-                  }
-                  if (modelItem.isRequired() && modelItem.getValue().length() == 0)
-                  {
-                     LOGGER.debug("model node " + modelItem.getNode() + " is empty and required");
-                  }
-               }
-            }
-            catch (final XFormsException xfe2)
-            {
-               LOGGER.debug("error performing revaliation", xfe2);
-            }
-         }
+             if (LOGGER.isDebugEnabled() && XFormsEventNames.SUBMIT_ERROR.equals(type))
+             {
+				// debug for figuring out which elements aren't valid for submit
+				LOGGER.debug("performing full revalidate");
+				try
+				{
+				   final Model model = this.xformsSession.chibaBean.getContainer().getDefaultModel();
+				   final Instance instance = model.getDefaultInstance();
+				   model.getValidator().validate(instance, "/", new DefaultValidatorMode());
+				   final Iterator<ModelItem> it = instance.iterateModelItems("/");
+				   while (it.hasNext())
+				   {
+					  final ModelItem modelItem = it.next();
+					  if (!modelItem.isValid())
+					  {
+						 LOGGER.debug("model node " + modelItem.getNode() + " is invalid");
+					  }
+					  if (modelItem.isRequired() && modelItem.getValue().length() == 0)
+					  {
+						 LOGGER.debug("model node " + modelItem.getNode() + " is empty and required");
+					  }
+				   }
+				}
+				catch (final XFormsException xfe2)
+				{
+				   LOGGER.debug("error performing revaliation", xfe2);
+				}
+			 }
+		  }
       }
-      this.xformsSession.eventLog.clear();
+      finally
+      {
+          lock.readLock().unlock();
+      }
+      
+      try
+      {
+          lock.writeLock().lock();
+          this.xformsSession.eventLog.clear();
+      }
+      finally
+      {
+          lock.writeLock().unlock();
+      }
 
       if (LOGGER.isDebugEnabled())
       {

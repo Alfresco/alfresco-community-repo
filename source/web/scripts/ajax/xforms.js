@@ -1578,9 +1578,9 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
     this.widget = this.domNode;
     for (var i = 0; i < values.length; i++)
     {
-      if (initial_value && !values[i].valid)
+	  if (!values[i].valid)
       {
-        // skip the invalid value if we have a default value
+        // always skip the invalid values for combos
         continue;
       }
       var option = new Element("option");

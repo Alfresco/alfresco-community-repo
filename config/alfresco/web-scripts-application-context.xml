@@ -596,7 +596,7 @@
     <bean id="webscript.org.alfresco.repository.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript">
       <property name="imapServerEnabled"><value>${imap.server.enabled}</value></property>
     </bean>
-    
+
     <!--  Comment API supporting bean -->
     <bean id="commentServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.web.scripts.comment.ScriptCommentService">
         <property name="extensionName">
@@ -605,5 +605,51 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
     
+
+    <!--                                   -->
+    <!--      Rule Service REST API        -->
+    <!--                                   -->
     
+    <!-- abstract rule web script -->
+	<bean id="abstractRuleWebScript" class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript" parent="webscript" abstract="true">
+		<property name="nodeService" ref="NodeService"/>
+    	<property name="ruleService" ref="RuleService"/>      
+		<property name="actionService" ref="ActionService"/>
+		<property name="dictionaryService" ref="DictionaryService"/>
+		<property name="namespaceService" ref="NamespaceService" />
+    </bean>
+   
+    <!-- Basic web scripts -->
+    <bean id="webscript.org.alfresco.repository.rule.ruletypes.get" class="org.alfresco.repo.web.scripts.rule.RuleTypesGet" parent="abstractRuleWebScript">    	      
+	</bean>
+   
+	<bean id="webscript.org.alfresco.repository.rule.actiondefinitions.get" class="org.alfresco.repo.web.scripts.rule.ActionDefinitionsGet" parent="abstractRuleWebScript">		      
+	</bean>
+    
+	<bean id="webscript.org.alfresco.repository.rule.actionconditiondefinitions.get" class="org.alfresco.repo.web.scripts.rule.ActionConditionDefinitionsGet" parent="abstractRuleWebScript">		      
+    </bean>
+   
+	<!-- delete rule web script -->
+	<bean id="webscript.org.alfresco.repository.rule.rule.delete" class="org.alfresco.repo.web.scripts.rule.RuleDelete" parent="abstractRuleWebScript">		      
+	</bean>
+    
+    <!-- get rule details web script -->
+    <bean id="webscript.org.alfresco.repository.rule.rule.get" class="org.alfresco.repo.web.scripts.rule.RuleGet" parent="abstractRuleWebScript">		      
+	</bean>
+	
+	<!-- create rule web script -->
+	<bean id="webscript.org.alfresco.repository.rule.rule.post" class="org.alfresco.repo.web.scripts.rule.RulePost" parent="abstractRuleWebScript">		      
+	</bean>
+	
+	<!-- update rule web script -->
+	<bean id="webscript.org.alfresco.repository.rule.rule.put" class="org.alfresco.repo.web.scripts.rule.RulePut" parent="abstractRuleWebScript">		      
+	</bean>
+   
+	<!-- get all rules for node web script -->
+	<bean id="webscript.org.alfresco.repository.rule.rules.get" class="org.alfresco.repo.web.scripts.rule.RulesGet" parent="abstractRuleWebScript">		      
+	</bean>
+    
+	<!-- get ruleset for node web script -->
+	<bean id="webscript.org.alfresco.repository.rule.ruleset.get" class="org.alfresco.repo.web.scripts.rule.RulesetGet" parent="abstractRuleWebScript">		      
+	</bean>
 </beans>

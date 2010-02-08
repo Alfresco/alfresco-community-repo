@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -74,9 +73,24 @@ public interface ActionServiceTransport
     /**
      * Get all the action condition definitions
      * 
-     * @return  the list of aciton condition definitions
+     * @return  the list of action condition definitions
      */
     List<ActionConditionDefinition> getActionConditionDefinitions(String ticket);
+    
+    /**
+     * Get a named parameter constraint
+     * 
+     * @param name  the name of the parameter constraint
+     * @return      this parameter condition
+     */
+    ParameterConstraint getParameterConstraint(String ticket, String name);
+    
+    /**
+     * Get all the parameter constraints
+     * 
+     * @return  the list of all parameter constraints
+     */
+    List<ParameterConstraint> getParameterConstraints(String ticket);
     
     /**
      * Create a new action

@@ -38,7 +38,11 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.dictionary.M2Type;
+import org.alfresco.service.cmr.action.ActionConditionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.ParameterConstraint;
+import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -75,6 +79,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     private DictionaryDAO dictionaryDAO;
     private NodeService nodeService;
     private ContentService contentService;
+    private ActionService actionService;
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
@@ -93,6 +98,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     /**
      * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
@@ -101,6 +107,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService)this.applicationContext.getBean("contentService");
+        actionService = (ActionService)applicationContext.getBean("actionService");
         
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(
@@ -131,6 +138,20 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
                 props).getChildRef();
         
         this.evaluator = (ComparePropertyValueEvaluator)this.applicationContext.getBean(ComparePropertyValueEvaluator.NAME);
+    }
+    
+    public void testCheckParamDefintionWithConstraint()
+    {
+        ActionConditionDefinition def = evaluator.getActionConditionDefintion();        
+        assertEquals(ComparePropertyValueEvaluator.NAME, def.getName());
+        ParameterDefinition paramDef = def.getParameterDefintion(ComparePropertyValueEvaluator.PARAM_OPERATION);
+        assertNotNull(paramDef);
+        assertEquals(ComparePropertyValueEvaluator.PARAM_OPERATION, paramDef.getName());
+        String constraintName = paramDef.getParameterConstraintName();
+        assertNotNull(constraintName);
+        ParameterConstraint paramConstraint = actionService.getParameterConstraint(constraintName);
+        assertNotNull(paramConstraint);
+        assertEquals("compare-operations", paramConstraint.getName());
     }
     
     /**

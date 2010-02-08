@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceTransport;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 
@@ -212,6 +213,24 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     {
         fAuthenticationService.validate(ticket, null);
         return fActionService.getActionDefinitions(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ActionServiceTransport#getParameterConstraint(java.lang.String, java.lang.String)
+     */
+    public ParameterConstraint getParameterConstraint(String ticket, String name)
+    {
+        fAuthenticationService.validate(ticket, null);
+        return fActionService.getParameterConstraint(name);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ActionServiceTransport#getParameterConstraints(java.lang.String)
+     */
+    public List<ParameterConstraint> getParameterConstraints(String ticket)
+    {
+        fAuthenticationService.validate(ticket, null);
+        return fActionService.getParameterConstraints();
     }
 
     /* (non-Javadoc)

@@ -85,6 +85,23 @@ public interface ActionService
     List<ActionConditionDefinition> getActionConditionDefinitions();
     
     /**
+     * Get a named parameter constraint
+     * 
+     * @param name  the name of the parameter constraint
+     * @return      this parameter condition
+     */
+    @Auditable(parameters = {"name"})
+    ParameterConstraint getParameterConstraint(String name);
+    
+    /**
+     * Get all the parameter constraints
+     * 
+     * @return  the list of all parameter constraints
+     */
+    @Auditable(parameters = {})
+    List<ParameterConstraint> getParameterConstraints();
+    
+    /**
      * Create a new action
      * 
      * @param name    the action definition name

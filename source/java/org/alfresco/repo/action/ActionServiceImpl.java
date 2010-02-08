@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.action.ParameterizedItem;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -63,12 +64,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * Action service implementation
@@ -130,6 +131,11 @@ public class ActionServiceImpl implements
      * All the action definitions currently registered
      */
     private Map<String, ActionDefinition> actionDefinitions = new HashMap<String, ActionDefinition>(); 
+    
+    /**
+     * All the parameter constraints
+     */
+    private Map<String, ParameterConstraint> parameterConstraints = new HashMap<String, ParameterConstraint>();
     
     /**
      * Set the application context
@@ -199,18 +205,7 @@ public class ActionServiceImpl implements
             Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues)
     {
         this.asynchronousActionExecutionQueues = asynchronousActionExecutionQueues;
-    }
-    
-//    /**
-//     * Get the asynchronous action execution queue
-//     * 
-//     * @return    the asynchronous action execution queue
-//     */
-//    public AsynchronousActionExecutionQueue getAsynchronousActionExecutionQueue()
-//    {
-//        return asynchronousActionExecutionQueue;
-//    }
-//    
+    }  
     
     public void init()
     {
@@ -323,7 +318,23 @@ public class ActionServiceImpl implements
     {
         return new ArrayList<ActionConditionDefinition>(this.conditionDefinitions.values());
     }
-
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#getParameterConstraint(java.lang.String)
+     */
+    public ParameterConstraint getParameterConstraint(String name)
+    {
+        return this.parameterConstraints.get(name);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#getParameterConstraints()
+     */
+    public List<ParameterConstraint> getParameterConstraints()
+    {
+        return new ArrayList<ParameterConstraint>(this.parameterConstraints.values());
+    }
+    
     /**
      * @see org.alfresco.service.cmr.action.ActionService#createActionCondition(java.lang.String)
      */
@@ -735,6 +746,14 @@ public class ActionServiceImpl implements
     {
         ActionDefinition action = actionExecuter.getActionDefinition();
         this.actionDefinitions.put(action.getName(), action);
+    }
+    
+    /**
+     * @see org.alfresco.repo.action.RuntimeActionService#registerParameterConstraint(org.alfresco.service.cmr.action.ParameterConstraint)
+     */
+    public void registerParameterConstraint(ParameterConstraint parameterConstraint)
+    {
+        this.parameterConstraints.put(parameterConstraint.getName(), parameterConstraint);
     }
     
     /**
@@ -1654,7 +1673,6 @@ public class ActionServiceImpl implements
      * Ensures that <b>d:noderef</b> properties are repointed if the target was also copied as part of the
      * hierarchy.
      */
-    @SuppressWarnings("unchecked")
     public void onCopyComplete(
             QName classRef,
             NodeRef sourceNodeRef,

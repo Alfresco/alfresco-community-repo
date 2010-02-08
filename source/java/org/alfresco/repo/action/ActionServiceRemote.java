@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceTransport;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -192,6 +193,22 @@ public class ActionServiceRemote implements ActionService
         return fTransport.getActionDefinitions(fHolder.getTicket(), nodeRef);
     }
 
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#getParameterConstraint(java.lang.String)
+     */
+    public ParameterConstraint getParameterConstraint(String name)
+    {
+        return fTransport.getParameterConstraint(fHolder.getTicket(), name);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#getParameterConstraints()
+     */
+    public List<ParameterConstraint> getParameterConstraints()
+    {
+        return fTransport.getParameterConstraints(fHolder.getTicket());
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.action.ActionService#getActions(org.alfresco.service.cmr.repository.NodeRef)
      */

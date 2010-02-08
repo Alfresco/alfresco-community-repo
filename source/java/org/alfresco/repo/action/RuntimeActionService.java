@@ -29,25 +29,22 @@ import java.util.Set;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Runtime action service.  This interface contains methods useful for integration with the action 
+ * service at a lower level.
+ * 
  * @author Roy Wetherall
  */
 public interface RuntimeActionService
 {
 	/**
-	 * 
+	 * Post commit method
 	 */
 	void postCommit();
-	
-    /**
-     * Get the asynchronous action queue.
-     * 
-     * @return  the asynchronous action queue
-     */
-	//AsynchronousActionExecutionQueue getAsynchronousActionExecutionQueue();
 	
     /**
      * Register an action condition evaluator
@@ -62,9 +59,31 @@ public interface RuntimeActionService
      * @param actionExecuter    action executer
      */
 	void registerActionExecuter(ActionExecuter actionExecuter);
-	        
+	
+	/**
+	 * Register parameter constraint
+	 *     
+	 * @param parameterConstraint  parameter constraint
+	 */
+    void registerParameterConstraint(ParameterConstraint parameterConstraint);
+	
+	/**
+	 * Create a new action based on an action node reference
+	 * 
+	 * @param actionNodeRef    action node reference
+	 * @return Action          action object
+	 */
     Action createAction(NodeRef actionNodeRef);
     
+    /**
+     * Create a action node reference
+     * 
+     * @param action            action object
+     * @param parentNodeRef     parent node reference
+     * @param assocTypeName     association type name
+     * @param assocName         association name
+     * @return NodeRef          created node reference
+     */
     NodeRef createActionNodeRef(Action action, NodeRef parentNodeRef, QName assocTypeName, QName assocName);
 	
 	/**
@@ -95,11 +114,4 @@ public interface RuntimeActionService
      * @param actionedUponNodeRef   the actioned upon node reference
      */
 	public void directActionExecution(Action action, NodeRef actionedUponNodeRef);
-	
-//    /**
-//     * Gets a list of the actions that are pending post transaction
-//     * 
-//     * @return  list of pending actions
-//     */
-//	public List<PendingAction> getPostTransactionPendingActions();
 }

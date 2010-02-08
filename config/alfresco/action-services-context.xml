@@ -141,6 +141,16 @@
         </property>
    </bean>
 
+   <!--  Action parameter constraints -->
+   
+   <bean id="action-constraint" abstract="true" init-method="init">
+      <property name="actionService" ref="actionService"/>
+   </bean>
+   
+   <bean id="compare-operations" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
+      <property name="enumClassName" value="org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation" />
+   </bean>
+
     <!-- Action Conditions -->
 
     <bean id="action-condition-evaluator" abstract="true" init-method="init">

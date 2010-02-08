@@ -150,7 +150,7 @@ public class StreamContent extends AbstractWebScript
                 if (logger.isDebugEnabled())
                     logger.debug("Executing script " + executeScript.getContent().getPathDescription());
                 
-                Map<String, Object> scriptModel = createScriptParameters(req, res, model);
+                Map<String, Object> scriptModel = createScriptParameters(req, res, executeScript, model);
                 // add return model allowing script to add items to template model
                 Map<String, Object> returnModel = new HashMap<String, Object>(8, 1.0f);
                 scriptModel.put("model", returnModel);

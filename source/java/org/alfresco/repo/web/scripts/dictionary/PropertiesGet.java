@@ -24,35 +24,34 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Webscript to get the Classdefinitions for a classname eg. =>cm_author
+ * 
+ * Webscript to get the Propertydefinitions for a given classname eg. =>cm_person
+ * 
  * @author Saravanan Sellathurai
  */
 
-public class GetClassDetails extends DeclarativeWebScript
+public class PropertiesGet extends DeclarativeWebScript
 {
-	
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;
 	
-	private static final String MODEL_PROP_KEY_CLASS_DETAILS = "classdefs";
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
-	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
-	private static final String DICTIONARY_CLASS_NAME = "className";
+	private static final String MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS = "individualproperty";
+	private static final String DICTIONARY_CLASS_NAME = "classname";
+	private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
+    private static final String REQ_URL_TEMPL_VAR_NAME = "n";
     
 	/**
      * Set the dictionaryService property.
@@ -67,45 +66,67 @@ public class GetClassDetails extends DeclarativeWebScript
     /**
      * Set the dictionaryhelper class
      * 
-     * @param dictionaryHelper The dictionary helper instance to set
+     * @param dictionaryService The dictionary service instance to set
      */
     public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
     {
         this.dictionaryhelper = dictionaryhelper; 
     }
     
+      
     /**
      * @Override  method from DeclarativeWebScript 
      */
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        
-        Map<String, Object> model = new HashMap<String, Object>(3);
+        String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
+    	String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
+       
+        Map<String, Object> model = new HashMap<String, Object>();
         QName classQname = null;
-        Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
-        Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
-        Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
-        
-        //validate the classname and throw appropriate error message
+        QName propertyQname = null;
+       
+        //validate the className
         if(this.dictionaryhelper.isValidClassname(className) == true)
         {
         	classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
-        	classdef.put(classQname, this.dictionaryservice.getClass(classQname));
-        	propdef.put(classQname, this.dictionaryservice.getClass(classQname).getProperties().values());
-    		assocdef.put(classQname, this.dictionaryservice.getClass(classQname).getAssociations().values());
         }
         else
         {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
         }
         
-        model.put(MODEL_PROP_KEY_CLASS_DETAILS, classdef.values());
-        model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
-        model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
+        // validate  for the presence of both name and namespaceprefix 
+        if((name == null && namespacePrefix != null) || 
+           (name != null && namespacePrefix == null))
+        {
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing either name or namespacePrefix parameter in the URL - both combination of name and namespacePrefix is needed");
+        }
+        
+        // if both namespacePrefix and name parameters are given then, the combination namespacePrefix_name is used as the index to create the propertyqname
+        if(name != null && namespacePrefix != null)
+        {
+        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
+        	{
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " - parameter in the URL");
+        	}
+        	
+        	// validate the class combination namespacePrefix_name
+        	propertyQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespacePrefix + "_" + name));
+        	if(this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname) != null)
+        	{
+        		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname));
+        		model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().values());
+        	}
+        }
+        else
+        {
+        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().values());
+        }
         
         return model;
          
     }
-    
+   
 }

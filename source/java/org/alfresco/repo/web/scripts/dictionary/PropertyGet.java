@@ -41,7 +41,7 @@ import java.util.Map;
  * @author Saravanan Sellathurai
  */
 
-public class GetPropertyDef extends DeclarativeWebScript
+public class PropertyGet extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;

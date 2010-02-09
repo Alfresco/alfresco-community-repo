@@ -41,7 +41,7 @@ import java.util.Map;
  * @author Saravanan Sellathurai
  */
 
-public class GetAssociationDefs extends DeclarativeWebScript
+public class AssociationsGet extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;

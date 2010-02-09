@@ -45,7 +45,7 @@ import java.util.List;
  * @author Saravanan Sellathurai
  */
 
-public class GetClassDetail extends DeclarativeWebScript
+public class ClassesGet extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;

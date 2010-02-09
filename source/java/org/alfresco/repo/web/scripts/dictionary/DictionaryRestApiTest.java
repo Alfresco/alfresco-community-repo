@@ -34,11 +34,11 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 /**
- * Unit Test for Dictionaryervice REST API
+ * Unit test for Dictionary REST API
  * @author Saravanan Sellathurai
  */
 
-public class DictionaryServiceTest extends BaseWebScriptTest
+public class DictionaryRestApiTest extends BaseWebScriptTest
 {
 	private static final String URL_SITES = "/api/classes";
 	

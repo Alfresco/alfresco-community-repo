@@ -35,24 +35,20 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 
- * Webscript to get the Propertydefinitions for a given classname eg. =>cm_person
- * 
+/*
+ * Webscript to get the Associationdefinition for a given classname and association-name
  * @author Saravanan Sellathurai
  */
 
-public class GetPropertyDefs extends DeclarativeWebScript
+public class AssociationGet extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;
 	
-	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
-	private static final String MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS = "individualproperty";
+	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
-	private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
-    private static final String REQ_URL_TEMPL_VAR_NAME = "n";
-    
+	private static final String DICTIONARY_ASSOCIATION_NAME = "assocname";
+	
 	/**
      * Set the dictionaryService property.
      * 
@@ -73,60 +69,38 @@ public class GetPropertyDefs extends DeclarativeWebScript
         this.dictionaryhelper = dictionaryhelper; 
     }
     
-      
     /**
      * @Override  method from DeclarativeWebScript 
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
-    	String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
-       
-        Map<String, Object> model = new HashMap<String, Object>();
+        String associationName = req.getServiceMatch().getTemplateVars().get(DICTIONARY_ASSOCIATION_NAME);
+        Map<String, Object> model = new HashMap<String, Object>(1);
         QName classQname = null;
-        QName propertyQname = null;
+        QName associationQname = null;
+        
+        //validate the classname
+        if(this.dictionaryhelper.isValidClassname(className) == false)
+        {
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
+        }
        
-        //validate the className
-        if(this.dictionaryhelper.isValidClassname(className) == true)
+        classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        
+        if(associationName == null)
         {
-        	classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
-        }
-        else
-        {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing parameter association name in the URL");
         }
         
-        // validate  for the presence of both name and namespaceprefix 
-        if((name == null && namespacePrefix != null) || 
-           (name != null && namespacePrefix == null))
-        {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing either name or namespacePrefix parameter in the URL - both combination of name and namespacePrefix is needed");
-        }
+        associationQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(associationName));
         
-        // if both namespacePrefix and name parameters are given then, the combination namespacePrefix_name is used as the index to create the propertyqname
-        if(name != null && namespacePrefix != null)
-        {
-        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
-        	{
-        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " - parameter in the URL");
-        	}
-        	
-        	// validate the class combination namespacePrefix_name
-        	propertyQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespacePrefix + "_" + name));
-        	if(this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname) != null)
-        	{
-        		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname));
-        		model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().values());
-        	}
-        }
-        else
-        {
-        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().values());
-        }
-        
-        return model;
-         
+		if(this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname) != null)
+		{
+			model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname));
+		}
+		
+		return model;
     }
-   
+    
 }

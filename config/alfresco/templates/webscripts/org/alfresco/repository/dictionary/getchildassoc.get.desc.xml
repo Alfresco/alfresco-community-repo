@@ -1,8 +1,0 @@
-<webscript>
-   <shortname>Get Child Association Definitions</shortname>
-   <description>Get the collection of child association definitions</description>
-   <url>/api/classes/{classname}/childassociation/{assocname}</url>
-   <format default="json">argument</format>
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

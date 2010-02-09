@@ -39,12 +39,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
  * Webscript to get the Sub-Classdefinitions using classfilter , namespacePrefix and name
+ * 
  * @author Saravanan Sellathurai
  */
 
-public class GetSubClassesDef extends DeclarativeWebScript
+public class SubClassesGet extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;

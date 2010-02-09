@@ -540,51 +540,22 @@
    <!--  Switch on debugger by setting log4j.logger.org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger to DEBUG -->
    <bean id="rhinoScriptDebugger" class="org.alfresco.repo.web.scripts.AlfrescoRhinoScriptDebugger" init-method="start"/>
    
-     <!--                             -->
-   	 <!-- DICTIONARY Service REST API -->
-     <!--                             -->
+   <!--                             -->
+   <!-- DICTIONARY Service REST API -->
+   <!--                             -->
      
-    <!-- GET CLASS DETAILS  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getclassdetails.get" class="org.alfresco.repo.web.scripts.dictionary.GetClassDetails" parent="webscript">
+   <bean id="webscript.dictionary" abstract="true" parent="webscript">
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
-    
-     <!-- GET CLASS DETAIL  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getclassdetail.get" class="org.alfresco.repo.web.scripts.dictionary.GetClassDetail" parent="webscript">
-      <property name="dictionaryService" ref="DictionaryService"/>
-      <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
+   </bean>  
      
-    <!-- GET SUBCLASSES DEFINITION's  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getsubclassesdef.get" class="org.alfresco.repo.web.scripts.dictionary.GetSubClassesDef" parent="webscript">
-      <property name="dictionaryService" ref="DictionaryService"/>
-     <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
-    
-    <!-- GET PROPERTY DEFINITION  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getproperty.get" class="org.alfresco.repo.web.scripts.dictionary.GetPropertyDef" parent="webscript">
-      <property name="dictionaryService" ref="DictionaryService"/>
-     <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
-    
-    <!-- GET PROPERTY DEFINITION's  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getproperties.get" class="org.alfresco.repo.web.scripts.dictionary.GetPropertyDefs" parent="webscript">
-      <property name="dictionaryService" ref="DictionaryService"/>
-      <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
-    
-    <!-- GET ASSOCIATION DEFINITION  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getassociationdef.get" class="org.alfresco.repo.web.scripts.dictionary.GetAssociationDef" parent="webscript">
-      <property name="dictionaryService" ref="DictionaryService"/>
-     <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
-    
-    <!-- GET ASSOCIATION DEFINITION's  -->
-    <bean id="webscript.org.alfresco.repository.dictionary.getassociationdefs.get" class="org.alfresco.repo.web.scripts.dictionary.GetAssociationDefs" parent="webscript">
-      <property name="dictionaryService" ref="DictionaryService"/>
-     <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
-    </bean>
+   <bean id="webscript.org.alfresco.repository.dictionary.classes.get" class="org.alfresco.repo.web.scripts.dictionary.ClassesGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.class.get" class="org.alfresco.repo.web.scripts.dictionary.ClassGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.subclasses.get" class="org.alfresco.repo.web.scripts.dictionary.SubClassesGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.property.get" class="org.alfresco.repo.web.scripts.dictionary.PropertyGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.properties.get" class="org.alfresco.repo.web.scripts.dictionary.PropertiesGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.association.get" class="org.alfresco.repo.web.scripts.dictionary.AssociationGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.associations.get" class="org.alfresco.repo.web.scripts.dictionary.AssociationsGet" parent="webscript.dictionary"/>
        
     <!-- Dictionary Service Web Script Helper Class -->
     <bean id="dictionaryWebScriptHelper" class="org.alfresco.repo.web.scripts.dictionary.DictionaryHelper" init-method="init">

@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.AuditableProperties;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -143,7 +143,7 @@ public class HibernateSessionHelperTest extends TestCase
         // persist so that it is present in the hibernate cache
         getSession().save(store);
         
-        assertEquals(2, getSession().getStatistics().getEntityCount());
+        assertEquals(1, getSession().getStatistics().getEntityCount());
         
         Server server = (Server) getSession().get(ServerImpl.class, new Long(1));
         if (server == null)
@@ -158,9 +158,9 @@ public class HibernateSessionHelperTest extends TestCase
         transaction.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         getSession().save(transaction);
         
-        assertEquals(4, getSession().getStatistics().getEntityCount());
-        
         HibernateSessionHelper helper = (HibernateSessionHelper)ctx.getBean("hibernateSessionHelper");
+        
+        assertEquals(3, getSession().getStatistics().getEntityCount());
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -168,35 +168,35 @@ public class HibernateSessionHelperTest extends TestCase
         
         Node n1 = createNode(transaction, store, "1", baseQNameId);
                
-        assertEquals(5, getSession().getStatistics().getEntityCount());
+        assertEquals(4, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(2, helper.getMarks().size());
         
         Node n2 = createNode(transaction, store, "2", baseQNameId);
         
-        assertEquals(6, getSession().getStatistics().getEntityCount());
+        assertEquals(5, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(3, helper.getMarks().size());
         
         Node n3 = createNode(transaction, store, "3", baseQNameId);
         
-        assertEquals(7, getSession().getStatistics().getEntityCount());
+        assertEquals(6, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(4, helper.getMarks().size());
         
         Node n4 = createNode(transaction, store, "4", baseQNameId);
         
-        assertEquals(8, getSession().getStatistics().getEntityCount());
+        assertEquals(7, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(5, helper.getMarks().size());
         
         Node n5 = createNode(transaction, store, "5", baseQNameId);
         
-        assertEquals(9, getSession().getStatistics().getEntityCount());
+        assertEquals(8, getSession().getStatistics().getEntityCount());
         
         helper.reset();
         assertEquals(8, getSession().getStatistics().getEntityCount());
@@ -371,7 +371,7 @@ public class HibernateSessionHelperTest extends TestCase
         // persist so that it is present in the hibernate cache
         getSession().save(store);
         
-        assertEquals(2, getSession().getStatistics().getEntityCount());
+        assertEquals(1, getSession().getStatistics().getEntityCount());
         
         Server server = (Server) getSession().get(ServerImpl.class, new Long(1));
         if (server == null)
@@ -386,7 +386,7 @@ public class HibernateSessionHelperTest extends TestCase
         transaction.setChangeTxnId(AlfrescoTransactionSupport.getTransactionId());
         getSession().save(transaction);
         
-        assertEquals(4, getSession().getStatistics().getEntityCount());
+        assertEquals(3, getSession().getStatistics().getEntityCount());
         
         HibernateSessionHelper helper = (HibernateSessionHelper)ctx.getBean("hibernateSessionHelper");
         assertNull(helper.getCurrentMark());
@@ -398,7 +398,7 @@ public class HibernateSessionHelperTest extends TestCase
         
         Node n1 = createNode(transaction, store, "1", baseQNameId);
                
-        assertEquals(5, getSession().getStatistics().getEntityCount());
+        assertEquals(4, getSession().getStatistics().getEntityCount());
         helper.mark("Two");
         assertEquals("Two", helper.getCurrentMark());
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -406,7 +406,7 @@ public class HibernateSessionHelperTest extends TestCase
         
         Node n2 = createNode(transaction, store, "2", baseQNameId);
         
-        assertEquals(6, getSession().getStatistics().getEntityCount());
+        assertEquals(5, getSession().getStatistics().getEntityCount());
         helper.mark("Three");
         assertEquals("Three", helper.getCurrentMark());
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -414,7 +414,7 @@ public class HibernateSessionHelperTest extends TestCase
         
         Node n3 = createNode(transaction, store, "3", baseQNameId);
         
-        assertEquals(7, getSession().getStatistics().getEntityCount());
+        assertEquals(6, getSession().getStatistics().getEntityCount());
         helper.mark("Four");
         assertEquals("Four", helper.getCurrentMark());
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
@@ -422,7 +422,7 @@ public class HibernateSessionHelperTest extends TestCase
         
         Node n4 = createNode(transaction, store, "4", baseQNameId);
         
-        assertEquals(8, getSession().getStatistics().getEntityCount());
+        assertEquals(7, getSession().getStatistics().getEntityCount());
         helper.mark("Five");
         assertEquals("Five", helper.getCurrentMark());
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());

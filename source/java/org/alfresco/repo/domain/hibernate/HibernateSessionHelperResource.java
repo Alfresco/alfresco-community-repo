@@ -213,11 +213,6 @@ public class HibernateSessionHelperResource implements HibernateSessionHelperRes
             {
                 if (!check.contains(key))
                 {
-                    if(key.getEntityName().equals(QNameEntityImpl.class.getName()))
-                    {
-                        //System.out.println("Skipping: " + key.getEntityName());
-                        continue;
-                    }
                     Object val = session.get(key.getEntityName(), key.getIdentifier());
                     if (val != null)
                     {

@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;

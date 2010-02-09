@@ -11,6 +11,8 @@
     <typeHandler javaType="java.io.Serializable" jdbcType="BLOB" callback="org.alfresco.ibatis.SerializableTypeHandlerCallback"/>
     
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/appliedpatch-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/qname-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/qname-insert-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/locks-common-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/locks-insert-SqlMap.xml"/>
     <sqlMap resource="alfresco/ibatis/#resource.dialect#/content-common-SqlMap.xml"/>

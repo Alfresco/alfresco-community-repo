@@ -27,6 +27,7 @@ package org.alfresco.repo.domain;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 

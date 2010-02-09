@@ -57,7 +57,6 @@
                 <!--  -->
 
                 <value>org/alfresco/repo/domain/hibernate/Locale.hbm.xml</value>
-                <value>org/alfresco/repo/domain/hibernate/QName.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
@@ -167,8 +166,6 @@
         <property name="hibernateProperties" ref="hibernateConfigProperties" />
         <property name="entityCacheStrategies" >
             <props>
-                <prop key="org.alfresco.repo.domain.hibernate.NamespaceEntityImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.QNameEntityImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ChildAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeAssocImpl">${cache.strategy}</prop>
@@ -208,19 +205,6 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
-
-    <!-- Hibernate-specific implementations of persistence components -->
-   <bean id="qnameDAO" class="org.alfresco.repo.domain.hibernate.HibernateQNameDAOImpl">
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-      <property name="qnameEntityCache">
-         <ref bean="qnameEntityCache"/>
-      </property>
-      <property name="namespaceEntityCache">
-         <ref bean="namespaceEntityCache"/>
-      </property>
-   </bean>
 
    <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl">
       <property name="sessionFactory">

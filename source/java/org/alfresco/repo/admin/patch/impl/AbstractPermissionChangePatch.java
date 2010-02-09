@@ -26,8 +26,8 @@ package org.alfresco.repo.admin.patch.impl;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.DbPermission;
-import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.hibernate.DbPermissionImpl;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
 import org.hibernate.Session;

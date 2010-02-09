@@ -1982,9 +1982,6 @@
         <property name="nodeDaoService">
             <ref bean="nodeDaoService" />
         </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO" />
-        </property>
         <property name="ruleService">
             <ref bean="ruleService" />
         </property>

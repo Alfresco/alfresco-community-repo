@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;

@@ -23,6 +23,12 @@
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
    </bean>
    
+   <bean id="qnameDAO" class="org.alfresco.repo.domain.qname.ibatis.QNameDAOImpl">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="namespaceCache" ref="immutableEntityCache"/>
+      <property name="qnameCache" ref="immutableEntityCache"/>
+   </bean>
+   
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
       <property name="sqlMapClientTemplate" ref="locksSqlMapClientTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>

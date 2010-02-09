@@ -25,9 +25,8 @@
 
 package org.alfresco.repo.admin.patch.impl;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
@@ -37,6 +36,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch usr:user and cm:person objects so that the user name properties are in the 

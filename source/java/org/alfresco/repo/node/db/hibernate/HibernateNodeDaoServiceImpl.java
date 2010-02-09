@@ -59,7 +59,7 @@ import org.alfresco.repo.domain.NodeAssoc;
 import org.alfresco.repo.domain.NodePropertyValue;
 import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.Transaction;

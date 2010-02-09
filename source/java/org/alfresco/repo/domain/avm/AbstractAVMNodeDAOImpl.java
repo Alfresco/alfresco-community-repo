@@ -36,11 +36,11 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.namespace.QName;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Abstract implementation for AVMNode DAO.

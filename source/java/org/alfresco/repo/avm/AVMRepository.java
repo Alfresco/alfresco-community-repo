@@ -39,8 +39,8 @@ import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -63,9 +63,9 @@ import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileNameValidator;
-import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * This or AVMStore are the implementors of the operations specified by AVMService.

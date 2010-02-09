@@ -35,13 +35,6 @@
         eternal="true"
         overflowToDisk="false"
         />
-    <!-- approx 0.1 MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.QNameEntityImpl" 
-        maxElementsInMemory="500"
-        eternal="true"
-        overflowToDisk="false"
-        />
     <!-- approx 15MB memory required -->
     <cache 
         name="org.alfresco.repo.domain.hibernate.NodeImpl.aspects" 

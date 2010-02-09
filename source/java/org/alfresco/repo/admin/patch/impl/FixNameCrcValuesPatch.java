@@ -35,15 +35,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.CRC32;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.Worker;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -57,6 +56,7 @@ import org.hibernate.type.LongType;
 import org.hibernate.type.StringType;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 

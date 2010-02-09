@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.domain;
+package org.alfresco.repo.domain.qname;
 
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +35,7 @@ import org.springframework.extensions.surf.util.Pair;
  * Data abstraction layer for QName and Namespace entities.
  * 
  * @author Derek Hulley
- * @since 2.1
+ * @since 3.3
  */
 public interface QNameDAO
 {
@@ -61,12 +61,6 @@ public interface QNameDAO
      * @return              the existing namespace pair (id, uri) or a new one
      */
     Pair<Long, String> getOrCreateNamespace(String namespaceUri);
-    
-    /**
-     * @param namespaceUri  the namespace URI to create
-     * @return              the new namespace pair (id, uri)
-     */
-    Pair<Long, String> newNamespace(String namespaceUri);
     
     /**
      * Modifies an existing namespace URI.  If the new URI already exists, then no
@@ -102,14 +96,39 @@ public interface QNameDAO
     Pair<Long, QName> getOrCreateQName(QName qname);
     
     /**
-     * @param qname         the QName to create
-     * @return              the new QName pair (id, qname)
+     * Modify an existing QName.  The ID of the new QName will be the same as the old one
+     * i.e. the old QName will cease to exist and will become the new QName.  This allows
+     * QName modification without affecting tables that reference the old QName.
+     * 
+     * @param qnameOld      the old QName, which must exist
+     * @param qnameNew      the new QName, which must not exist
+     * @return              the QName pair (id, qname) with the ID unchanged from old to new
      */
-    Pair<Long, QName> newQName(QName qname);
+    Pair<Long, QName> updateQName(QName qnameOld, QName qnameNew);
     
+    /**
+     * Bulk-convert QName IDs into QNames
+     * 
+     * @param ids           the IDs
+     * @return              the QNames for the IDs given, in the same order
+     */
     Set<QName> convertIdsToQNames(Set<Long> ids);
     
+    /**
+     * Convenience method to convert map keys from QName IDs to QNames
+     * 
+     * @param idMap         a map of objects keyed by QName ID
+     * @return              a map of the same objects keyed by the equivalent QNames
+     */
     Map<QName, ? extends Object> convertIdMapToQNameMap(Map<Long, ? extends Object> idMap);
     
+    /**
+     * Bulk-convert QNames into QName IDs.  This is primarily used for generating
+     * SQL <tt>IN</tt> clause lists for other DAO queries.
+     * 
+     * @param qnames        the QNames to convert
+     * @param create        <tt>true</tt> to create any missing QName entities
+     * @return              returns the QName IDs (order not guaranteed)
+     */
     Set<Long> convertQNamesToIds(Set<QName> qnames, boolean create);
 }

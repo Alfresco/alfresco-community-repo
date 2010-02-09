@@ -30,11 +30,11 @@ import junit.framework.TestSuite;
 import org.alfresco.repo.domain.audit.AuditDAOTest;
 import org.alfresco.repo.domain.contentdata.ContentDataDAOTest;
 import org.alfresco.repo.domain.encoding.EncodingDAOTest;
-import org.alfresco.repo.domain.hibernate.HibernateSessionHelperTest;
 import org.alfresco.repo.domain.locks.LockDAOTest;
 import org.alfresco.repo.domain.mimetype.MimetypeDAOTest;
 import org.alfresco.repo.domain.patch.AppliedPatchDAOTest;
 import org.alfresco.repo.domain.propval.PropertyValueDAOTest;
+import org.alfresco.repo.domain.qname.QNameDAOTest;
 
 /**
  * Suite for domain-related tests.
@@ -49,7 +49,6 @@ public class DomainTestSuite extends TestSuite
         
         suite.addTestSuite(ContentDataDAOTest.class);
         suite.addTestSuite(EncodingDAOTest.class);
-        suite.addTestSuite(HibernateSessionHelperTest.class);
         suite.addTestSuite(LockDAOTest.class);
         suite.addTestSuite(MimetypeDAOTest.class);
         suite.addTestSuite(LocaleDAOTest.class);

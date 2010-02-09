@@ -43,7 +43,7 @@ import org.alfresco.repo.domain.DbAccessControlListChangeSet;
 import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
 import org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl;
 import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;

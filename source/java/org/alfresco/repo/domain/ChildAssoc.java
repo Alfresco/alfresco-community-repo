@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.domain;
 
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 

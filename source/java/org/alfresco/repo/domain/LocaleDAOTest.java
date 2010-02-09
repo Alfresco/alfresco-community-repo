@@ -52,7 +52,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class LocaleDAOTest extends TestCase
 {
-    private static Log logger = LogFactory.getLog(QNameDAOTest.class);
+    private static Log logger = LogFactory.getLog(LocaleDAOTest.class);
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     

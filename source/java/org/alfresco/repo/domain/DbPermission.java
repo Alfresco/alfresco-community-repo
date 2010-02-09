@@ -26,6 +26,7 @@ package org.alfresco.repo.domain;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.namespace.QName;
 
 /**

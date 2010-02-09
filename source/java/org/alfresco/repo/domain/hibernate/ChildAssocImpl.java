@@ -33,7 +33,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;

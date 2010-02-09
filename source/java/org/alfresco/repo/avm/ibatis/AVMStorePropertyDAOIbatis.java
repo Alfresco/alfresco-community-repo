@@ -34,7 +34,7 @@ import org.alfresco.repo.avm.AVMStoreProperty;
 import org.alfresco.repo.avm.AVMStorePropertyDAO;
 import org.alfresco.repo.avm.AVMStorePropertyImpl;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.avm.AVMStorePropertyEntity;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.Pair;

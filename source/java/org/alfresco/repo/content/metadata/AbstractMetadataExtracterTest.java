@@ -58,6 +58,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
 {
     static {
        ApplicationContextHelper.setUseLazyLoading(false);
+       ApplicationContextHelper.setNoAutoStart(true);
     }
     protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     

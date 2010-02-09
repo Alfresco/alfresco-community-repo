@@ -40,6 +40,7 @@ public class ApplicationContextHelper
     private static ClassPathXmlApplicationContext instance;
     private static String[] usedConfiguration;
     private static boolean useLazyLoading = false;
+    private static boolean noAutoStart = false;
     
     /** location of required configuration files */
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml" };
@@ -83,6 +84,8 @@ public class ApplicationContextHelper
        
         if(useLazyLoading) {
            instance = new LazyClassPathXmlApplicationContext(configLocations);
+        } else if(noAutoStart) {
+           instance = new NoAutoStartClassPathXmlApplicationContext(configLocations);
         } else {
            instance = new ClassPathXmlApplicationContext(configLocations);
         }
@@ -116,6 +119,9 @@ public class ApplicationContextHelper
      *  to reduce startup times when using a small, cut down context.
      */
     public static void setUseLazyLoading(boolean lazyLoading) {
+       if(lazyLoading && noAutoStart) {
+          throw new IllegalStateException("You must choose between LazyLoading and NoAutoStart");
+       }
        useLazyLoading = lazyLoading;
     }
     /**
@@ -125,6 +131,30 @@ public class ApplicationContextHelper
      */
     public static boolean isUsingLazyLoading() {
        return useLazyLoading;
+    }
+    
+    /**
+     * Should the autoStart=true property on subsystems
+     *  be honoured, or should this property be ignored
+     *  and the auto start prevented?
+     * Normally we will use the spring configuration to
+     *  decide what to start, but when running tests,
+     *  you can use this to prevent the auto start.
+     */
+    public static void setNoAutoStart(boolean noAutoStart) {
+       if(useLazyLoading && noAutoStart) {
+          throw new IllegalStateException("You must choose between LazyLoading and NoAutoStart");
+       }
+       ApplicationContextHelper.noAutoStart = noAutoStart;
+    }
+    /**
+     * Will subsystems with the autoStart=true property set
+     *  on them be allowed to auto start? The default is to
+     *  honour the spring configuration and allow them to,
+     *  but they can be prevented if required.
+     */
+    public static boolean isNoAutoStart() {
+       return noAutoStart;
     }
     
     public static void main(String ... args)

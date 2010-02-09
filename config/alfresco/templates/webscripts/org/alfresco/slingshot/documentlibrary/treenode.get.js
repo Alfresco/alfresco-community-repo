@@ -49,7 +49,7 @@ function getTreeNode()
    
       return (
       {
-         "parentNodeRef": parsedArgs.parentNode.nodeRef.toString(),
+         "parentNode": parsedArgs.parentNode,
          "items": items
       });
    }

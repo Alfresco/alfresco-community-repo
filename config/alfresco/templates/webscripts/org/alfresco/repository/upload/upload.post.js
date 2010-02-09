@@ -23,6 +23,12 @@ function main()
       var updateNodeRef = null,
          majorVersion = false,
          description = "";
+      
+      // Prevents Flash-sourced "null" values being set for those parmeters where they are invalid
+      var fnFieldValue = function(p_field)
+      {
+         return field.value.length() > 0 && field.value !== "null" ? field.value : null;
+      };
 
       // Parse file attributes
       for each (field in formdata.fields)
@@ -39,19 +45,19 @@ function main()
                break;
 
             case "siteid":
-               siteId = field.value.length() > 0 ? field.value : null;
+               siteId = fnFieldValue(field);
                break;
 
             case "containerid":
-               containerId = field.value.length() > 0 ? field.value : null;
+               containerId = fnFieldValue(field);
                break;
 
             case "destination":
-               destination = field.value.length() > 0 ? field.value : null;
+               destination = fnFieldValue(field);
                break;
 
             case "uploaddirectory":
-               uploadDirectory = field.value.length() > 0 ? field.value : null;
+               uploadDirectory = fnFieldValue(field);
                if (uploadDirectory !== null)
                {
                   // Remove any leading "/" from the uploadDirectory
@@ -68,11 +74,11 @@ function main()
                break;
 
             case "updatenoderef":
-               updateNodeRef = field.value.length() > 0 ? field.value : null;
+               updateNodeRef = fnFieldValue(field);
                break;
 
             case "filename":
-               title = field.value.length() > 0 ? field.value : null;
+               title = fnFieldValue(field);
                break;
 
             case "description":

@@ -3,7 +3,13 @@
    "totalResults": ${treenode.items?size?c},
    "parent":
    {
-      "nodeRef": "${treenode.parentNodeRef}"
+      "nodeRef": "${treenode.parentNode.nodeRef}",
+      "userAccess":
+      {
+         "create": ${treenode.parentNode.hasPermission("CreateChildren")?string},
+         "edit": ${treenode.parentNode.hasPermission("Write")?string},
+         "delete": ${treenode.parentNode.hasPermission("Delete")?string}
+      }
    },
    "items":
    [

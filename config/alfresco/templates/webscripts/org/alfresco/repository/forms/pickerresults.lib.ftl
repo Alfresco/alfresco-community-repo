@@ -1,4 +1,5 @@
 <#macro renderParent node indent="   ">
+   <#escape x as jsonUtils.encodeJSONString(x)>
    ${indent}"parent":
    ${indent}{
    <#if (node != rootNode) && node.parent??>
@@ -12,6 +13,7 @@
       ${indent}"displayPath": "${node.displayPath!""}",
       ${indent}"nodeRef": "${node.nodeRef}"
    ${indent}},
+   </#escape>
 </#macro>
 
 <#macro pickerResultsJSON results>

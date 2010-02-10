@@ -78,6 +78,15 @@ public interface TaggingService
     void deleteTag(StoreRef storeRef, String tag);
     
     /**
+     * Indicates whether a node has the specified tag or not.
+     * 
+     * @param nodeRef   node reference
+     * @param tag       tag name
+     * @return boolean  true if the node has the tag, false otherwise
+     */
+    boolean hasTag(NodeRef nodeRef, String tag);
+    
+    /**
      * Add a tag to a node.  Creating the tag if it does not already exist.
      * 
      * @param nodeRef   node reference

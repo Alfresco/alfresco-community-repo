@@ -263,6 +263,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         List<String> tags = this.taggingService.getTags(this.document);
         assertNotNull(tags);
         assertTrue(tags.isEmpty());
+        assertFalse(taggingService.hasTag(document, TAG_1));
         
         assertTrue(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_1));
         this.taggingService.addTag(this.document, TAG_1);
@@ -271,6 +272,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(tags);
         assertEquals(1, tags.size());
         assertTrue(tags.contains(TAG_1));
+        assertTrue(taggingService.hasTag(document, TAG_1));
         
         assertFalse(this.taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_2));
         this.taggingService.addTag(this.document, TAG_2);
@@ -280,14 +282,18 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(tags);
         assertEquals(2, tags.size());
         assertTrue(tags.contains(TAG_1));
-        assertTrue(tags.contains(TAG_2));        
+        assertTrue(tags.contains(TAG_2));    
+        assertTrue(taggingService.hasTag(document, TAG_1));
+        assertTrue(taggingService.hasTag(document, TAG_2));
         
         this.taggingService.removeTag(this.document, TAG_1);
         tags = this.taggingService.getTags(this.document);
         assertNotNull(tags);
         assertEquals(1, tags.size());
         assertFalse(tags.contains(TAG_1));
-        assertTrue(tags.contains(TAG_2));      
+        assertFalse(taggingService.hasTag(document, TAG_1));
+        assertTrue(tags.contains(TAG_2));
+        assertTrue(taggingService.hasTag(document, TAG_2));
         
         List<String> setTags = new ArrayList<String>(2);
         setTags.add(TAG_3);

@@ -212,6 +212,12 @@
         </property>
     </bean>
     
+    <bean id="has-tag" class="org.alfresco.repo.action.evaluator.HasTagEvaluator" parent="action-condition-evaluator">
+        <property name="nodeService" ref="nodeService" />
+        <property name="taggingService" ref="taggingService" />
+    </bean>
+    
+    
     <bean id="has-version-history" class="org.alfresco.repo.action.evaluator.HasVersionHistoryEvaluator" parent="action-condition-evaluator">
       <property name="publicCondition">
          <value>false</value>

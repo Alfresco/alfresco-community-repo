@@ -348,6 +348,15 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#hasTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    public boolean hasTag(NodeRef nodeRef, String tag)
+    {
+        List<String> tags = getTags(nodeRef);
+        return (tags.contains(tag.toLowerCase()));        
+    }
+    
+    /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#addTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @SuppressWarnings("unchecked")

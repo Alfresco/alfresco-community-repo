@@ -49,6 +49,7 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
     
     private final static String ID = GUID.generate();
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {

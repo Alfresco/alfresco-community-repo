@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Defines some beans, two of which reference file B, and has an import -->
+<beans>
+   <bean id="FromARefNoneNum1" class="java.lang.String">
+      <constructor-arg type="String"><value>123456</value></constructor-arg>
+   </bean>
+   <bean id="FromARefNoneNum2" class="java.lang.String">
+      <constructor-arg type="String"><value>The Quick Brown Dog</value></constructor-arg>
+   </bean>
+
+   <bean id="FromARefNoneNum3" class="java.util.Date">
+      <property name="time">
+         <value>123456789</value>
+      </property>
+   </bean>
+
+   <import resource="classpath:test/alfresco/fake-context/nested.xml" />
+
+   <bean id="FromARefANum1" class="java.util.Date">
+      <property name="time" ref="FromARefNoneNum1" />
+   </bean>
+   <bean id="FromARefBNum1" class="java.util.Date">
+      <property name="time">
+         <ref bean="FromBRefNoneNum1" />
+      </property>
+   </bean>
+
+   <alias alias="FromB2AsAlias" name="FromBRefNoneNum2" />
+   <bean id="FromARefBNum2" class="java.util.Date">
+      <property name="time">
+         <ref bean="FromB2AsAlias" />
+      </property>
+   </bean>
+</beans>

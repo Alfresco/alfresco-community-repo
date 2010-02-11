@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Override a bean from A already overriden, and one from B -->
+<beans>
+   <bean id="FromARefNoneNum1" class="java.lang.String">
+      <constructor-arg type="String"><value>122336</value></constructor-arg>
+   </bean>
+   <bean id="FromBRefNoneNum3" class="java.lang.String">
+      <constructor-arg type="String"><value>Run Run Run!</value></constructor-arg>
+   </bean>
+</beans>

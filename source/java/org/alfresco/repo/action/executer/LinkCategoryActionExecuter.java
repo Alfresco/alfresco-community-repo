@@ -92,7 +92,7 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
 	@Override
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
-        paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_VALUE, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_CATEGORY_VALUE)));
 	}
 	
@@ -107,9 +107,15 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
 		{
 			// Get the rule parameter values
 			QName categoryAspect = (QName)ruleAction.getParameterValue(PARAM_CATEGORY_ASPECT);
+			if (categoryAspect == null)
+			{
+			    // Use the default general classifiable aspect
+			    //cm:generalclassifiable
+			    categoryAspect = ContentModel.ASPECT_GEN_CLASSIFIABLE;
+			}					
 			NodeRef categoryValue = (NodeRef)ruleAction.getParameterValue(PARAM_CATEGORY_VALUE);
 			
-            // Check that the apect is classifiable and is currently applied to the node
+            // Check that the aspect is classifiable and is currently applied to the node
             if (this.dictionaryService.isSubClass(categoryAspect, ContentModel.ASPECT_CLASSIFIABLE) == true)
             {
                 // Get the category property qname

@@ -24,50 +24,25 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /*
  * Webscript to get the Associationdefinition for a given classname and association-name
  * @author Saravanan Sellathurai
  */
 
-public class AssociationGet extends DeclarativeWebScript
+public class AssociationGet extends DictionaryWebServiceBase
 {
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
-	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
+    private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
 	private static final String DICTIONARY_ASSOCIATION_NAME = "assocname";
-	
-	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
     
     /**
      * @Override  method from DeclarativeWebScript 
@@ -81,19 +56,19 @@ public class AssociationGet extends DeclarativeWebScript
         QName associationQname = null;
         
         //validate the classname
-        if(this.dictionaryhelper.isValidClassname(className) == false)
+        if(isValidClassname(className) == false)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
         }
        
-        classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        classQname = QName.createQName(getFullNamespaceURI(className));
         
         if(associationName == null)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing parameter association name in the URL");
         }
         
-        associationQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(associationName));
+        associationQname = QName.createQName(getFullNamespaceURI(associationName));
         
 		if(this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname) != null)
 		{

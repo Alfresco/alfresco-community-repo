@@ -24,55 +24,29 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Webscript to get the Classdefinitions for a classname eg. =>cm_author
  * @author Saravanan Sellathurai
  */
 
-public class ClassGet extends DeclarativeWebScript
-{
-	
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
+public class ClassGet extends DictionaryWebServiceBase
+{	
 	private static final String MODEL_PROP_KEY_CLASS_DETAILS = "classdefs";
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
 	private static final String DICTIONARY_CLASS_NAME = "className";
-    
-	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryHelper The dictionary helper instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
     
     /**
      * @Override  method from DeclarativeWebScript 
@@ -88,9 +62,9 @@ public class ClassGet extends DeclarativeWebScript
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         
         //validate the classname and throw appropriate error message
-        if(this.dictionaryhelper.isValidClassname(className) == true)
+        if(isValidClassname(className) == true)
         {
-        	classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        	classQname = QName.createQName(getFullNamespaceURI(className));
         	classdef.put(classQname, this.dictionaryservice.getClass(classQname));
         	propdef.put(classQname, this.dictionaryservice.getClass(classQname).getProperties().values());
     		assocdef.put(classQname, this.dictionaryservice.getClass(classQname).getAssociations().values());

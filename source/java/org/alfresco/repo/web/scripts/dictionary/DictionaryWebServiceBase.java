@@ -24,29 +24,35 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.InvalidQNameException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+
 /*
- * Helper class for Dictionary Service webscripts
+ * Base class for Dictionary web scripts
+ * 
  * @author Saravanan Sellathurai
  */
-
-public class DictionaryHelper 
+public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
 {
 	private static final String NAME_DELIMITER = "_";
-    private NamespaceService namespaceservice;
+    
     private Map<String, String> prefixesAndUrlsMap;
     private Map<String, String> urlsAndPrefixesMap;
-    private Collection<String> prefixes;
-    private DictionaryService dictionaryservice;
+    
+    /** Namespace service */
+    protected NamespaceService namespaceService;
+    
+    /** Dictionary service */
+    protected DictionaryService dictionaryservice;
     
     private static final String CLASS_FILTER_OPTION_TYPE1 = "all";
     private static final String CLASS_FILTER_OPTION_TYPE2 = "aspect";
@@ -63,7 +69,7 @@ public class DictionaryHelper
      */
     public void setNamespaceService(NamespaceService namespaceservice)
     {
-    	this.namespaceservice = namespaceservice;
+    	this.namespaceService = namespaceservice;
     }
     
     /**
@@ -81,16 +87,40 @@ public class DictionaryHelper
      */
     public void init()
     {
-    	this.prefixes = this.namespaceservice.getPrefixes();
+    	Collection<String> prefixes = this.namespaceService.getPrefixes();
         this.prefixesAndUrlsMap = new HashMap<String, String>(prefixes.size());
         this.urlsAndPrefixesMap = new HashMap<String, String>(prefixes.size());
         for (String prefix : prefixes)
         {
-        	String url = this.namespaceservice.getNamespaceURI(prefix);
+        	String url = this.namespaceService.getNamespaceURI(prefix);
         	this.prefixesAndUrlsMap.put(prefix, url);
             this.urlsAndPrefixesMap.put(url, prefix);           
         }
 	 }
+    
+    protected QName createClassQName(String className)
+    {
+        QName result = null;
+        int index = className.indexOf(NAME_DELIMITER);
+        if (index > 0)
+        {
+            String prefix = className.substring(0, index);
+            String shortName = className.substring(index+1);
+            String url = namespaceService.getNamespaceURI(prefix);
+            if (url != null && url.length() != 0 && 
+                shortName != null && shortName.length() != 0)
+            {
+                QName classQName = QName.createQName(url, shortName);
+                if (dictionaryservice.getClass(classQName) != null)
+                {
+                    result = classQName;
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     
     /**
      * 
@@ -126,23 +156,6 @@ public class DictionaryHelper
     
     /**
      * 
-     * @param className     the class name as cm_person
-     * @return String       the full name in the following format {namespaceuri}shorname
-     */
-    public String getNamespaceURIfromPrefix(String prefix)
-    {
-       	if(this.isValidPrefix(prefix) == true)
-   		{
-       		return this.prefixesAndUrlsMap.get(prefix);
-   		}
-       	else
-		{
-       		return null;
-		}
-    }
-    
-    /**
-     * 
      * @param classname - checks whether the classname is valid , gets the classname as input e.g cm_person
      * @return true - if the class is valid , false - if the class is invalid
      */
@@ -152,8 +165,8 @@ public class DictionaryHelper
     	try
     	{
     		qname = QName.createQName(this.getFullNamespaceURI(classname));
-    		if ((this.isValidPrefix(this.getPrefix(classname)) == true) && 
-    	    		this.dictionaryservice.getClass(qname) != null) 
+    		if (//(isValidPrefix(getPrefix(classname)) == true) && 
+    		     dictionaryservice.getClass(qname) != null) 
 	    	{
 	    		return true;
 	    	}
@@ -170,17 +183,19 @@ public class DictionaryHelper
      * @param prefix - checks whether the prefix is a valid one 
      * @return true if the prefix is valid or false
      */
-    public boolean isValidPrefix(String prefix)
-    {
-    	if(this.prefixes.contains(prefix) == true) 
-    	{
-    		return true;
-    	}
-    	else
-    	{
-    		return false;
-    	}
-    }
+//    public boolean isValidPrefix(String prefix)
+//    {
+//        this.namespaceservice.
+//        
+//    	if(this.prefixes.contains(prefix) == true) 
+//    	{
+//    		return true;
+//    	}
+//    	else
+//    	{
+//    		return false;
+//    	}
+//    }
     
     /**
      * 

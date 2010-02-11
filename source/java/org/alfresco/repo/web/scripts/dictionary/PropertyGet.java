@@ -24,16 +24,14 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Webscript to get the Propertydefinition for a given classname and propname
@@ -41,34 +39,11 @@ import java.util.Map;
  * @author Saravanan Sellathurai
  */
 
-public class PropertyGet extends DeclarativeWebScript
+public class PropertyGet extends DictionaryWebServiceBase
 {
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
-	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
+    private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
-	private static final String DICTIONARY_PROPERTY_NAME = "propname";
-    
-	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
+	private static final String DICTIONARY_PROPERTY_NAME = "propname";    
     
     /**
      * @Override  method from DeclarativeWebScript 
@@ -82,12 +57,12 @@ public class PropertyGet extends DeclarativeWebScript
         QName propertyQname = null;
         
         //validate the classname
-        if(this.dictionaryhelper.isValidClassname(className) == false)
+        if(isValidClassname(className) == false)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
         }
        
-        classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        classQname = QName.createQName(getFullNamespaceURI(className));
         
         //validate the presence of property name
         if(propertyName == null)
@@ -95,7 +70,7 @@ public class PropertyGet extends DeclarativeWebScript
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing parameter propertyname in the URL");
         }
         
-        propertyQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(propertyName));
+        propertyQname = QName.createQName(getFullNamespaceURI(propertyName));
         
 		if(this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname) != null)
 		{

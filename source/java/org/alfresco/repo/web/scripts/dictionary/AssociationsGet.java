@@ -24,54 +24,29 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Webscript to get the Associationdefinitions for a given classname 
  * @author Saravanan Sellathurai
  */
 
-public class AssociationsGet extends DeclarativeWebScript
+public class AssociationsGet extends DictionaryWebServiceBase
 {
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
 	private static final String MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS = "individualproperty";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
 	private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
     private static final String REQ_URL_TEMPL_VAR_NAME = "n";
     private static final String REQ_URL_TEMPL_VAR_ASSOCIATION_FILTER = "af";
-	
-	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
     
     /**
      * @Override  method from DeclarativeWebScript 
@@ -94,15 +69,15 @@ public class AssociationsGet extends DeclarativeWebScript
         }
         
         //validate association filter
-        if(this.dictionaryhelper.isValidAssociationFilter(associationFilter) == false)
+        if(isValidAssociationFilter(associationFilter) == false)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the associationFilter - " + associationFilter + " - parameter in the URL");
         }
         
         //validate classname
-        if(this.dictionaryhelper.isValidClassname(className) == true)
+        if(isValidClassname(className) == true)
         {
-        	classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        	classQname = QName.createQName(getFullNamespaceURI(className));
         }
         else
         {
@@ -139,14 +114,9 @@ public class AssociationsGet extends DeclarativeWebScript
 
         // if both namespaceprefix and name parameters are given then, the combination namespaceprefix_name is used as the index to create the qname
         if(name != null && namespacePrefix != null)
-        {
-        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
-        	{
-        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespacePrefix + " - parameter in the URL");
-        	}
-        	
+        {        	
         	// validate the class combination namespaceprefix_name
-        	associationQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespacePrefix + "_" + name));
+        	associationQname = QName.createQName(getFullNamespaceURI(namespacePrefix + "_" + name));
         	
         	if(this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname)== null)
         	{

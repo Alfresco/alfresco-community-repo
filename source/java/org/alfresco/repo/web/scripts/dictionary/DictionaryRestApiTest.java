@@ -210,27 +210,18 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		Response response = sendRequest(req, 200);
 		assertEquals(200,response.getStatus());
-		JSONObject resultSet = new JSONObject(response.getContentAsString());
-		validatePropertyDef(resultSet);
 		
-		// both name and namespaceprefix parameters are needed
-		arguments.clear();
-		arguments.put("nsp", "cm");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
+		//JSONObject resultSet = new JSONObject(response.getContentAsString());
+		//validatePropertyDef(resultSet);
 		
-		// both name and namespaceprefix parameters are needed 
-		arguments.clear();
-		arguments.put("n", "created");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
+		JSONArray result = new JSONArray(response.getContentAsString());
+        assertEquals(200,response.getStatus());
+        assertEquals(5, result.length());
 		
 		//validate with no parameter => returns an array of property definitions
 		arguments.clear();
 		response = sendRequest(req, 200);
-		JSONArray result = new JSONArray(response.getContentAsString());
+		result = new JSONArray(response.getContentAsString());
 		assertEquals(200,response.getStatus());
 		assertEquals(result.length()>0, true);
 		for(int i=0; i<result.length(); i++)
@@ -240,46 +231,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 				validatePropertyDef(result.getJSONObject(i));
 			}
 		}
-		
-		//wrong data
-		arguments.clear();
-		response = sendRequest(new GetRequest("/api/classes/cm_welcome/properties"), 404);
-		assertEquals(404,response.getStatus());
-		
-		//ask for a property which is not present in cm_auditable => results a null object
-		arguments.clear();
-		arguments.put("n", "dublincore");
-		arguments.put("nsp", "cm");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		resultSet = new JSONObject(response.getContentAsString());
-		assertEquals(0,resultSet.length());
-		assertEquals(200,response.getStatus());
-		
-		
-		// with invalid namespace parameter
-		arguments.clear();
-		arguments.put("nsp", "sara");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		// with invalid name parameter => results a null json object
-		arguments.clear();
-		arguments.put("nsp", "cm");
-		arguments.put("n", "create");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		resultSet = new JSONObject(response.getContentAsString());
-		assertEquals(0,resultSet.length());
-		
-		arguments.clear();
-		arguments.put("nsp", "wcm");
-		arguments.put("n", "created");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		resultSet = new JSONObject(response.getContentAsString());
-		assertEquals(0,resultSet.length());
 		
 	}
 	
@@ -604,14 +555,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		response = sendRequest(req, 404);
 		assertEquals(404,response.getStatus());
 		
-		//check for all data under cm without option=>name
-		arguments.clear();
-		arguments.put("cf", "all");
-		arguments.put("nsp", "cmbb");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
 		//check for all dictionary data  without option=>name and option=>namespaceprefix
 		arguments.clear();
 		arguments.put("cf", "a�&llsara");
@@ -629,13 +572,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		//check for all types dictionary data  without option=>name and option=>namespaceprefix
 		arguments.clear();
 		arguments.put("cf", "typesa");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		//check with an invalid namespaceprefix
-		arguments.clear();
-		arguments.put("nsp", "cmsd");
 		req.setArgs(arguments);
 		response = sendRequest(req, 404);
 		assertEquals(404,response.getStatus());
@@ -725,15 +661,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		arguments.put("n", "cmobject");
 		req.setArgs(arguments);
 		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		//wrong data
-		// invalid namespaceprefix
-		arguments.clear();
-		arguments.put("r", "true");
-		arguments.put("nsp", "wcms");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404); // need to have an option to filter by name as well
 		assertEquals(404,response.getStatus());
 		
 		// invalid name and namespaceprefix

@@ -24,19 +24,18 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Webscript to get the Sub-Classdefinitions using classfilter , namespacePrefix and name
@@ -44,12 +43,9 @@ import java.util.Map;
  * @author Saravanan Sellathurai
  */
 
-public class SubClassesGet extends DeclarativeWebScript
+public class SubClassesGet extends DictionaryWebServiceBase
 {
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
-	private static final String MODEL_PROP_KEY_CLASS_DEFS = "classdefs";
+    private static final String MODEL_PROP_KEY_CLASS_DEFS = "classdefs";
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
 	
@@ -58,27 +54,7 @@ public class SubClassesGet extends DeclarativeWebScript
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
     private static final String REQ_URL_TEMPL_VAR_NAME = "n";
     private static final String DICTIONARY_CLASS_NAME = "classname";
-    
-	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
-    
+    	
     /**
      * @Override  method from DeclarativeWebScript 
      */
@@ -87,7 +63,7 @@ public class SubClassesGet extends DeclarativeWebScript
     	String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
     	String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
         String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        String recursiveValue = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_IMMEDIATE_SUB_TYPE_CHILDREN));
+        String recursiveValue = getValidInput(req.getParameter(REQ_URL_TEMPL_IMMEDIATE_SUB_TYPE_CHILDREN));
         
         boolean recursive = true;
         
@@ -121,10 +97,10 @@ public class SubClassesGet extends DeclarativeWebScript
         }
         	
         //validate the className
-        if(this.dictionaryhelper.isValidClassname(className) == true)
+        if(isValidClassname(className) == true)
         {
-        	classQName = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
-        	if(this.dictionaryhelper.isValidTypeorAspect(className) == true) 
+        	classQName = QName.createQName(getFullNamespaceURI(className));
+        	if(isValidTypeorAspect(className) == true) 
         	{
         		isAspect = true;
         	}
@@ -144,19 +120,10 @@ public class SubClassesGet extends DeclarativeWebScript
 			qname = this.dictionaryservice.getSubTypes(classQName, recursive);
 		}
         
-        //validate the namespaceprefix parameter
-        if(namespacePrefix != null)
-        {
-        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
-        	{
-        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " - parameter in the URL");
-        	}
-        }
-        
         //validate the name parameter
         if(name != null)
         {
-        	if(this.dictionaryhelper.isValidModelName(name) == false)
+        	if(isValidModelName(name) == false)
         	{
         		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the name parameter - " + name + " in the URL");
         	}
@@ -165,12 +132,12 @@ public class SubClassesGet extends DeclarativeWebScript
         //validate the name parameter
         if (namespacePrefix == null && name != null)
         {
-        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(this.dictionaryhelper.getPrefixFromModelName(name));
+        	namespaceUri = namespaceService.getNamespaceURI(getPrefixFromModelName(name));
         }
         
         if (namespacePrefix != null && name == null)
         {
-        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespacePrefix);
+        	namespaceUri = namespaceService.getNamespaceURI(namespacePrefix);
         }
         
         if(namespacePrefix == null && name == null)
@@ -181,11 +148,11 @@ public class SubClassesGet extends DeclarativeWebScript
         
         if (namespacePrefix != null && name != null)
         {
-        	if(this.dictionaryhelper.isValidClassname(namespacePrefix + "_" + name) == false)
+        	if(isValidClassname(namespacePrefix + "_" + name) == false)
         	{
         		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " and name - "+ name  + " - parameter in the URL");
         	}
-        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespacePrefix);
+        	namespaceUri = namespaceService.getNamespaceURI(namespacePrefix);
         }
         
         for(QName qnameObj: qname)

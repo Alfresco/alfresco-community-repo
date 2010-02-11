@@ -24,16 +24,17 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 
@@ -42,89 +43,53 @@ import java.util.Map;
  * @author Saravanan Sellathurai
  */
 
-public class PropertiesGet extends DeclarativeWebScript
+public class PropertiesGet extends DictionaryWebServiceBase
 {
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
-	private static final String MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS = "individualproperty";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
 	private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
-    private static final String REQ_URL_TEMPL_VAR_NAME = "n";
     
 	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
-    
-      
-    /**
      * @Override  method from DeclarativeWebScript 
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
-    	String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
-       
+        if (className == null || className.length() == 0)
+        {
+            // Error
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
+            
+        }
+        QName classQName = createClassQName(className);
+        if (classQName == null)
+        {
+            // Error 
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
+        }
+        
+        String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
+        
+        String namespaceURI = null;
+        if (namespacePrefix != null)
+        {
+            namespaceURI = this.namespaceService.getNamespaceURI(namespacePrefix);
+        }
+        
+        Map<QName, PropertyDefinition> propMap = dictionaryservice.getClass(classQName).getProperties();
+        List<PropertyDefinition> props = new ArrayList<PropertyDefinition>(propMap.size());
+        for (Map.Entry<QName, PropertyDefinition> entry : propMap.entrySet())
+        {
+            if ((namespaceURI != null && 
+                 namespaceURI.equals(entry.getKey().getNamespaceURI()) == true) ||
+                namespaceURI == null)
+            {
+                props.add(entry.getValue());   
+            }
+        }
+        
         Map<String, Object> model = new HashMap<String, Object>();
-        QName classQname = null;
-        QName propertyQname = null;
-       
-        //validate the className
-        if(this.dictionaryhelper.isValidClassname(className) == true)
-        {
-        	classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
-        }
-        else
-        {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
-        }
-        
-        // validate  for the presence of both name and namespaceprefix 
-        if((name == null && namespacePrefix != null) || 
-           (name != null && namespacePrefix == null))
-        {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing either name or namespacePrefix parameter in the URL - both combination of name and namespacePrefix is needed");
-        }
-        
-        // if both namespacePrefix and name parameters are given then, the combination namespacePrefix_name is used as the index to create the propertyqname
-        if(name != null && namespacePrefix != null)
-        {
-        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
-        	{
-        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " - parameter in the URL");
-        	}
-        	
-        	// validate the class combination namespacePrefix_name
-        	propertyQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespacePrefix + "_" + name));
-        	if(this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname) != null)
-        	{
-        		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname));
-        		model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().values());
-        	}
-        }
-        else
-        {
-        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().values());
-        }
-        
+        model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, props);
         return model;
          
     }

@@ -24,32 +24,28 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Webscript to get the Classdefinitions using classfilter , namespaceprefix and name
  * @author Saravanan Sellathurai
  */
 
-public class ClassesGet extends DeclarativeWebScript
+public class ClassesGet extends DictionaryWebServiceBase
 {
-	private DictionaryService dictionaryservice;
-	private DictionaryHelper dictionaryhelper;
-	
 	private static final String MODEL_PROP_KEY_CLASS_DEFS = "classdefs";
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
@@ -61,35 +57,15 @@ public class ClassesGet extends DeclarativeWebScript
     private static final String REQ_URL_TEMPL_VAR_CLASS_FILTER = "cf";
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
     private static final String REQ_URL_TEMPL_VAR_NAME = "n";
-    
-	/**
-     * Set the dictionaryService property.
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryservice = dictionaryService; 
-    }
-    
-    /**
-     * Set the dictionaryhelper class
-     * 
-     * @param dictionaryService The dictionary service instance to set
-     */
-    public void setDictionaryHelper(DictionaryHelper dictionaryhelper)
-    {
-        this.dictionaryhelper = dictionaryhelper; 
-    }
-    
+
     /**
      * @Override  method from DeclarativeWebScript 
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-    	String classFilter = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER));
-        String namespacePrefix = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX));
-        String name = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAME));
+    	String classFilter = getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER));
+        String namespacePrefix = getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX));
+        String name = getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAME));
         String className = null;
         
         Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
@@ -108,7 +84,7 @@ public class ClassesGet extends DeclarativeWebScript
         }
         
         //validate classfilter
-        if(this.dictionaryhelper.isValidClassFilter(classFilter) == false)
+        if(isValidClassFilter(classFilter) == false)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classFilter + " provided in the URL");
         }
@@ -121,21 +97,16 @@ public class ClassesGet extends DeclarativeWebScript
         
         //validate the namespaceprefix and name parameters => if namespaceprefix is given, then name has to be validated along with it
         if(namespacePrefix != null)
-        {
-        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
-	        {
-	        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespacePrefix + " parameter in the URL");
-	        }
-        	
+        {        	
         	//validate name parameter if present along with the namespaceprefix
         	if(name != null)
         	{
         		className = namespacePrefix + "_" + name;
-        		if(this.dictionaryhelper.isValidClassname(className) == false)
+        		if(isValidClassname(className) == false)
         		{
         			throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the name - " + name + "parameter in the URL");
         		}
-        		classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        		classQname = QName.createQName(getFullNamespaceURI(className));
         		classdef.put(classQname, this.dictionaryservice.getClass(classQname));
         		propdef.put(classQname, this.dictionaryservice.getClass(classQname).getProperties().values());
         		assocdef.put(classQname, this.dictionaryservice.getClass(classQname).getAssociations().values());
@@ -143,13 +114,13 @@ public class ClassesGet extends DeclarativeWebScript
         	else
         	{	
         		//if name is not given then the model is extracted from the namespaceprefix, there can be more than one model associated with one namespaceprefix
-        		String namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespacePrefix);
+        		String namespaceUri = namespaceService.getNamespaceURI(namespacePrefix);
         		for(QName qnameObj:this.dictionaryservice.getAllModels())
 		        {
 		             if(qnameObj.getNamespaceURI().equals(namespaceUri))
 		             {
 		                 name = qnameObj.getLocalName();
-		                 myModel = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespacePrefix + "_" + name));
+		                 myModel = QName.createQName(getFullNamespaceURI(namespacePrefix + "_" + name));
 		                 
 		                 // check the classfilter to pull out either all or type or aspects
 		                 if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 

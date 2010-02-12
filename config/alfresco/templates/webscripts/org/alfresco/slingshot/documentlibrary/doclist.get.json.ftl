@@ -116,7 +116,15 @@
             </#list>
             }
          },
-         "custom": <#noescape>${item.custom}</#noescape>
+         "custom": <#noescape>${item.custom}</#noescape>,
+         "actionLabels":
+         {
+      <#if item.actionLabels??>
+         <#list item.actionLabels?keys as actionLabel>
+            "${actionLabel?string}": "${item.actionLabels[actionLabel]}"<#if actionLabel_has_next>,</#if>
+         </#list>
+      </#if>
+         }
       }<#if item_has_next>,</#if>
    </#list>
    ]

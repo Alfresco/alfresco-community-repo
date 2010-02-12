@@ -26,6 +26,28 @@ var Evaluator =
    },
    
    /**
+    * Document and Folder common evaluators
+    */
+   documentAndFolder: function Evaluator_documentAndFolder(asset, permissions, status, actionLabels)
+   {
+      /* Simple Workflow */
+      if (asset.hasAspect("app:simpleworkflow"))
+      {
+         status["simple-workflow"] = true;
+         if (asset.properties["app:approveStep"] != null)
+         {
+            permissions["simple-approve"] = true;
+            actionLabels["onActionSimpleApprove"] = asset.properties["app:approveStep"];
+         }
+         if (asset.properties["app:rejectStep"] != null)
+         {
+            permissions["simple-reject"] = true;
+            actionLabels["onActionSimpleReject"] = asset.properties["app:rejectStep"];
+         }
+      }
+   },
+   
+   /**
     * Asset Evaluator - main entrypoint
     */
    run: function Evaluator_run(asset)
@@ -36,6 +58,7 @@ var Evaluator =
          permissions = {},
          status = {},
          custom = {},
+         actionLabels = {},
          activeWorkflows = [],
          createdBy = getPerson(asset.properties["cm:creator"]),
          modifiedBy = getPerson(asset.properties["cm:modifier"]),
@@ -81,6 +104,9 @@ var Evaluator =
           */
          case "folder":
             actionSet = "folder";
+
+            /* Document Folder common evaluator */
+            Evaluator.documentAndFolder(asset, permissions, status, actionLabels);
             break;
 
          /**
@@ -88,6 +114,9 @@ var Evaluator =
           */
          case "document":
             actionSet = "document";
+
+            /* Document Folder common evaluator */
+            Evaluator.documentAndFolder(asset, permissions, status, actionLabels);
             
             // Working Copy?
             if (asset.hasAspect("cm:workingcopy"))
@@ -174,6 +203,7 @@ var Evaluator =
          tags: asset.tags,
          activeWorkflows: activeWorkflows,
          custom: jsonUtils.toJSONString(custom),
+         actionLabels: actionLabels
       });
    }
 };

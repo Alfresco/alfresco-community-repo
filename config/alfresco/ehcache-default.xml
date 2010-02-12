@@ -256,6 +256,12 @@
         overflowToDisk="false"
         />
     <cache 
+        name="org.alfresco.cache.contentDataCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
         name="org.alfresco.cache.immutableEntityCache"
         maxElementsInMemory="50000"
         eternal="true"

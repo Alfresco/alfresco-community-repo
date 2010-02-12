@@ -587,7 +587,14 @@ public class DefaultTypeConverter
         {
             public String convert(Date source)
             {
-                return ISO8601DateFormat.format(source);
+                try
+                {
+                    return ISO8601DateFormat.format(source);
+                }
+                catch (PlatformRuntimeException e)
+                {
+                    throw new TypeConversionException("Failed to convert date " + source + " to string", e);
+                }
             }
         });
         
@@ -770,7 +777,14 @@ public class DefaultTypeConverter
         {
             public String convert(Calendar source)
             {
-                return ISO8601DateFormat.format(source.getTime());
+                try
+                {
+                    return ISO8601DateFormat.format(source.getTime());
+                }
+                catch (PlatformRuntimeException e)
+                {
+                    throw new TypeConversionException("Failed to convert date " + source + " to string", e);
+                }
             }
         });
         

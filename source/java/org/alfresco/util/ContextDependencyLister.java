@@ -300,14 +300,12 @@ public class ContextDependencyLister
       private String pathToSlash;
       private String uriToSlash;
       
-      @Override
       public void aliasRegistered(AliasDefinition alias) {
          if(! aliases.containsKey(alias.getAlias())) {
             aliases.put(alias.getAlias(), alias.getBeanName());
          }
       }
 
-      @Override
       public void componentRegistered(
             ComponentDefinition paramComponentDefinition) {
          String name = paramComponentDefinition.getName();
@@ -381,10 +379,8 @@ public class ContextDependencyLister
          }
       }
 
-      @Override
       public void defaultsRegistered(DefaultsDefinition paramDefaultsDefinition) {}
 
-      @Override
       public void importProcessed(ImportDefinition paramImportDefinition) {
          String context = paramImportDefinition.getImportedResource();
 

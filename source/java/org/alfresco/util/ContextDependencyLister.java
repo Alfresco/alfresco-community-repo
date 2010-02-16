@@ -114,7 +114,8 @@ public class ContextDependencyLister
          
          for(String depBean : instance.btl.beanAllDependencies.get(parentBean)) {
             // Handle bean aliases
-            if(instance.btl.aliases.containsKey(depBean)) {
+            // Note that aliases can be nested!
+            while(instance.btl.aliases.containsKey(depBean)) {
                depBean = instance.btl.aliases.get(depBean);
             }
             
@@ -352,12 +353,29 @@ public class ContextDependencyLister
                }
             }
             
+            // Check for a parent - we'll depend on that too!
+            if(bd.getParentName() != null) {
+               addRefIfNeeded(bd.getParentName(), refs);
+            }
+            
+            // Record the dependencies if we found any
             if(! refs.isEmpty()) {
                beanAllDependencies.put(name, refs);
             }
          }
       }
       
+      private void addRefIfNeeded(String beanName, List<String> refs) {
+         if(beanName == null) return;
+         
+         if(beanName.length() > 0) {
+            if(beanName.charAt(0) == '&') {
+               // Crazy factory bean stuff
+               beanName = beanName.substring(1);
+            }
+            refs.add(beanName);
+         }
+      }
       private void addRefIfNeeded(Object v, List<String> refs) {
          if(v == null) return;
          
@@ -365,13 +383,9 @@ public class ContextDependencyLister
             RuntimeBeanReference r = (RuntimeBeanReference)v;
             String name = r.getBeanName();
             
-            if(name.length() > 0) {
-               if(name.charAt(0) == '&') {
-                  // Crazy factory bean stuff
-                  name = name.substring(1);
-               }
-               refs.add(name);
-            } else {
+            addRefIfNeeded(name, refs);
+            
+            if(name == null || name.length() == 0) {
                System.err.println("Warning - empty reference " + r);
             }
 //       } else {

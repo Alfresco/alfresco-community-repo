@@ -169,6 +169,12 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
      */
     private class NamespaceCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, String, String>
     {
+        @Override
+        public String getValueKey(String value)
+        {
+            return value;
+        }
+
         public Pair<Long, String> findByKey(Long id)
         {
             NamespaceEntity entity = findNamespaceEntityById(id);
@@ -294,6 +300,12 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
      */
     private class QNameCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, QName, QName>
     {
+        @Override
+        public QName getValueKey(QName value)
+        {
+            return value;
+        }
+
         public Pair<Long, QName> findByKey(Long id)
         {
             QNameEntity entity = findQNameEntityById(id);

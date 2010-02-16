@@ -183,9 +183,10 @@
          </bean>
       </property>
 
-      <!--
-      <property name="sessionDebugFlags"> <value>Negotiate,Socket</value> </property>
-      -->
+      <property name="sessionDebugFlags">
+		  <value>${cifs.sessionDebug}</value>
+	  </property>
+
    </bean>
 
    <bean id="ftpServerConfig" class="org.alfresco.filesys.config.FTPConfigBean">
@@ -209,10 +210,17 @@
 
       <!-- FTP server debug settings -->
       <!-- Enable 'log4j.logger.org.alfresco.fileserver=debug' in log4j.properties file -->
-      <!--
-         <property name="debugFlags"> <value>File,Search,Error,Directory,Info,DataPort</value> </property>
-      -->
+      <property name="debugFlags">
+		  <value>${ftp.sessionDebug}</value>
+	  </property>
 
+	  <!-- Data ports range -->
+	  <property name="dataPortFrom">
+		  <value>${ftp.dataPortFrom}</value>
+	  </property>
+	  <property name="dataPortTo">
+		  <value>${ftp.dataPortTo}</value>
+	  </property>
    </bean>
 
    <!--The configurable RPC user mappings - actually a post-processed composite property! -->
@@ -239,14 +247,50 @@
          <value>${nfs.enabled}</value>
       </property>
 
+	  <property name="nfsServerPort">
+		  <value>${nfs.nfsServerPort}</value>
+	  </property>
+	   
+	  <property name="mountServerPort">
+		  <value>${nfs.mountServerPort}</value>
+	  </property>
+	   
+	  <!-- Setting a portMapper port of -1 stops the NFS and mount server registering with a portmapper -->
+	  <property name="portMapperPort">
+		  <value>${nfs.portMapperPort}</value>  
+	  </property>
+	   
+	  <!-- Enable/disable the builtin portMapper service --> 
+	  <property name="portMapperEnabled">
+		  <value>${nfs.portMapperEnabled}</value>
+      </property>
+	   
       <!-- Map NFS user/group ids to Alfresco users -->
       <property name="rpcAuthenticator">
          <bean class="org.alfresco.filesys.auth.nfs.AlfrescoRpcAuthenticator">
             <property name="userMappings">
                <ref bean="nfs.user.mappings" />
             </property>
+			 
+			<property name="transactionService">
+				<ref bean="transactionService"/>
+			</property>
+			 
+			<property name="authenticationComponent">
+				<ref bean="authenticationComponent"/>
+			</property>
          </bean>
       </property>
+	   
+      <!-- NFS server debug settings -->
+      <!-- Enable 'log4j.logger.org.alfresco.fileserver=debug' in log4j.properties file -->
+	  <property name="debugFlags">
+		  <value>${nfs.sessionDebug}</value>
+	  </property>
+	   
+	  <property name="mountServerDebug">
+		  <value>${nfs.mountServerDebug}</value>
+	  </property>		  
    </bean>
 
    <bean id="filesystemContexts" class="org.springframework.beans.factory.config.ListFactoryBean">

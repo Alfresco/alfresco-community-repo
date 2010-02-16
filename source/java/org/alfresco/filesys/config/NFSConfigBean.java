@@ -199,7 +199,7 @@ public class NFSConfigBean
      * 
      * @return the nFS server port
      */
-    public Integer getNFSServerPort()
+    public Integer getNfsServerPort()
     {
         return NFSServerPort;
     }
@@ -210,7 +210,7 @@ public class NFSConfigBean
      * @param serverPort
      *            the new nFS server port
      */
-    public void setNFSServerPort(Integer serverPort)
+    public void setNfsServerPort(Integer serverPort)
     {
         NFSServerPort = serverPort;
     }

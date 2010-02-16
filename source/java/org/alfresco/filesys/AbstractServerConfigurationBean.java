@@ -96,8 +96,8 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
 
   // FTP server debug type strings
 
-  protected static final String m_ftpDebugStr[] = { "STATE", "SEARCH", "INFO", "FILE", "FILEIO", "ERROR", "PKTTYPE",
-          "TIMING", "DATAPORT", "DIRECTORY" };
+  protected static final String m_ftpDebugStr[] = { "STATE", "RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE", "FILEIO", "ERROR", "PKTTYPE",
+      "TIMING", "DATAPORT", "DIRECTORY" };
 
   // Default FTP server port
   

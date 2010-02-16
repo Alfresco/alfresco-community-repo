@@ -65,6 +65,11 @@ public class FTPConfigBean
     /** Is IP v6 enabled? */
     private boolean ipv6Enabled;
 
+    // Data port range
+    
+    private int dataPortFrom;
+    private int dataPortTo;
+    
     /**
      * Checks if is server enabled.
      * 
@@ -273,5 +278,41 @@ public class FTPConfigBean
     public void setIpv6Enabled(boolean ipv6Enabled)
     {
         this.ipv6Enabled = ipv6Enabled;
+    }
+    
+    /**
+     * Return the data port range from port
+     * 
+     * @return int
+     */
+    public int getDataPortFrom() {
+    	return dataPortFrom;
+    }
+    
+    /**
+     * Set the data port range from port
+     * 
+     * @param fromPort int
+     */
+    public void setDataPortFrom(int fromPort) {
+    	dataPortFrom = fromPort;
+    }
+    
+    /**
+     * Return the data port to range port
+     * 
+     * @return int
+     */
+    public int getDataPortTo() {
+    	return dataPortTo;
+    }
+    
+    /**
+     * Set the data port range to port
+     * 
+     * @param toPort int
+     */
+    public void setDataPortTo(int toPort) {
+    	dataPortTo = toPort;
     }
 }

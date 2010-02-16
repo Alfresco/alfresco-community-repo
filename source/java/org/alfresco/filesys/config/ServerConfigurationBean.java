@@ -1304,6 +1304,38 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             else
                 throw new AlfrescoRuntimeException("FTP authenticator not specified");
 
+            // Check if a data port range has been specified
+            
+            if ( ftpConfigBean.getDataPortFrom() != 0 && ftpConfigBean.getDataPortTo() != 0) {
+            	
+            	// Range check the data port values
+            	
+            	int rangeFrom = ftpConfigBean.getDataPortFrom();
+            	int rangeTo   = ftpConfigBean.getDataPortTo();
+            	
+            	if ( rangeFrom != 0 && rangeTo != 0) {
+            		
+            		// Validate the FTP data port range
+            	
+	    			if ( rangeFrom < 1024 || rangeFrom > 65535)
+	    				throw new InvalidConfigurationException("Invalid FTP data port range from value, " + rangeFrom);
+	
+	    			if ( rangeTo < 1024 || rangeTo > 65535)
+	    				throw new InvalidConfigurationException("Invalid FTP data port range to value, " + rangeTo);
+	
+	    			if ( rangeFrom >= rangeTo)
+	    				throw new InvalidConfigurationException("Invalid FTP data port range, " + rangeFrom + "-" + rangeTo);
+	
+	    			// Set the FTP data port range
+	
+	    			ftpConfig.setFTPDataPortLow(rangeFrom);
+	    			ftpConfig.setFTPDataPortHigh(rangeTo);
+	    			
+	    			// Log the data port range
+	    			
+	    			logger.info("FTP server data ports restricted to range " + rangeFrom + ":" + rangeTo);
+            	}
+            }
         }
         catch (InvalidConfigurationException ex)
         {
@@ -1386,8 +1418,13 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             if (portMapperPort != null)
             {
                 nfsConfig.setPortMapperPort(portMapperPort);
-                if (nfsConfig.getPortMapperPort() <= 0 || nfsConfig.getPortMapperPort() >= 65535)
-                    throw new AlfrescoRuntimeException("Port mapper server port out of valid range");
+                if ( nfsConfig.getPortMapperPort() == -1) {
+                	logger.info("NFS portmapper registration disabled");
+                }
+                else {
+                	if (nfsConfig.getPortMapperPort() <= 0 || nfsConfig.getPortMapperPort() >= 65535)
+                		throw new AlfrescoRuntimeException("Port mapper server port out of valid range");
+                }
             }
 
             // Check for a mount server port
@@ -1396,17 +1433,17 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             if (mountServerPort != null)
             {
                 nfsConfig.setMountServerPort(mountServerPort);
-                if (nfsConfig.getMountServerPort() <= 0 || nfsConfig.getMountServerPort() >= 65535)
+                if (nfsConfig.getMountServerPort() < 0 || nfsConfig.getMountServerPort() >= 65535)
                     throw new AlfrescoRuntimeException("Mount server port out of valid range");
             }
 
             // Check for an NFS server port
 
-            Integer nfsServerPort = nfsConfigBean.getNFSServerPort();
+            Integer nfsServerPort = nfsConfigBean.getNfsServerPort();
             if (nfsServerPort != null)
             {
                 nfsConfig.setNFSServerPort(nfsServerPort);
-                if (nfsConfig.getNFSServerPort() <= 0 || nfsConfig.getNFSServerPort() >= 65535)
+                if (nfsConfig.getNFSServerPort() < 0 || nfsConfig.getNFSServerPort() >= 65535)
                     throw new AlfrescoRuntimeException("NFS server port out of valid range");
             }
 

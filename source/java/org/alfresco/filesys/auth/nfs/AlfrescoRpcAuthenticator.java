@@ -63,7 +63,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
 
     private static final Log logger = LogFactory.getLog("org.alfresco.nfs.protocol.auth");
 
-    // Authentication types aupported by this implementation
+    // Authentication types supported by this implementation
 
     private int[] _authTypes = { AuthType.Unix };
 
@@ -136,18 +136,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
 
             sessKey = new Long((((long) rpc.getClientAddress().hashCode()) << 32) + (gid << 16) + uid);
         }
-        else if ( authType == AuthType.Null)
-        {
-            // Set the session key for the null authentication
-            
-            sessKey = new Integer(rpc.getClientAddress().hashCode());
-
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-                logger.debug( "RpcAuth: Type=Null client=" + rpc.getClientAddress());
-        }
-
+        
         // Check if the session key is valid, if not then the authentication
         // type is unsupported
 
@@ -516,7 +505,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
     }
     
     /**
-     * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+     * Create a transaction, this will be a writable transaction unless the system is in read-only mode.
      * 
      * return UserTransaction
      */

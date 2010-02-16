@@ -1508,7 +1508,80 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
         }
         else
           throw new AlfrescoRuntimeException("FTP authenticator not specified");
-      
+        
+		// Check if a data port range has been specified
+
+		elem = config.getConfigElement("dataPorts");
+		if ( elem != null) {
+
+			// Split the value string into from and to range strings
+
+			StringTokenizer tok = new StringTokenizer( elem.getValue(), ":");
+			if ( tok.countTokens() != 2)
+				throw new InvalidConfigurationException( "Invalid FTP data port range, specify as 'n:n'");
+
+			String rangeFromStr = tok.nextToken();
+			String rangeToStr   = tok.nextToken();
+			
+			// Validate the from/to data port range values
+			
+			int rangeFrom = -1;
+			int rangeTo = -1;
+
+			if ( rangeFromStr != null && rangeFromStr.length() > 0) {
+
+				// Validate the range string
+
+				try {
+					rangeFrom = Integer.parseInt(rangeFromStr);
+				}
+				catch (NumberFormatException ex) {
+					throw new InvalidConfigurationException("Invalid FTP range from value, " + rangeFromStr);
+				}
+			}
+
+			// Check for the to port range value
+
+			if ( rangeToStr != null && rangeToStr.length() > 0) {
+
+				// Validate the range string
+
+				try {
+					rangeTo = Integer.parseInt(rangeToStr);
+				}
+				catch (NumberFormatException ex) {
+					throw new InvalidConfigurationException("Invalid FTP range to value, " + rangeToStr);
+				}
+			}
+
+			// Validate the data port range values
+
+			if ( rangeFrom != 0 && rangeTo != 0) {
+
+				// Validate the FTp data port range
+				
+				if ( rangeFrom == -1 || rangeTo == -1)
+					throw new InvalidConfigurationException("FTP data port range from/to must be specified");
+	
+				if ( rangeFrom < 1024 || rangeFrom > 65535)
+					throw new InvalidConfigurationException("Invalid FTP data port range from value, " + rangeFrom);
+	
+				if ( rangeTo < 1024 || rangeTo > 65535)
+					throw new InvalidConfigurationException("Invalid FTP data port range to value, " + rangeTo);
+	
+				if ( rangeFrom >= rangeTo)
+					throw new InvalidConfigurationException("Invalid FTP data port range, " + rangeFrom + "-" + rangeTo);
+	
+				// Set the FTP data port range
+	
+				ftpConfig.setFTPDataPortLow(rangeFrom);
+				ftpConfig.setFTPDataPortHigh(rangeTo);
+				
+				// Log the data port range
+				
+				logger.info("FTP server data ports restricted to range " + rangeFrom + ":" + rangeTo);
+			}
+		}
       }
       catch (InvalidConfigurationException ex)
       {

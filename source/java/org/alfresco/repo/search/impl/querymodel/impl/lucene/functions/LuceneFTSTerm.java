@@ -77,7 +77,7 @@ public class LuceneFTSTerm extends FTSTerm implements LuceneQueryBuilderComponen
         }
         else
         {
-            query = lqp.getFieldQuery("TEXT", term, mode, LuceneFunction.FIELD);
+            query = lqp.getFieldQuery(lqp.getField(), term, mode, LuceneFunction.FIELD);
             
         }
         return query;

@@ -1199,6 +1199,14 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
                 0);
 
+        
+        ftsQueryWithCount(searcher, "(brown *(6) dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
+        ftsQueryWithCount(searcher, "\"//.\"", 0);
+        ftsQueryWithCount(searcher, "PATH", "\"//.\"", 15);
+        ftsQueryWithCount(searcher, "cm:content:brown", 1);
+        ftsQueryWithCount(searcher, "ANDY:brown", 1);
+        ftsQueryWithCount(searcher, "ANDY", "brown", 1);
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
@@ -1210,6 +1218,21 @@ public class ADMLuceneTest extends TestCase
         sp.addQueryTemplate("ANDY", "%cm:content");
         sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
         sp.excludeDataInTheCurrentTransaction(true);
+        ResultSet results = searcher.query(sp);
+        assertEquals(count, results.length());
+        results.close();
+    }
+    
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String defaultFieldName, String query, int count)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery(query);
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.setDefaultFieldName(defaultFieldName);
         ResultSet results = searcher.query(sp);
         assertEquals(count, results.length());
         results.close();

@@ -76,7 +76,7 @@ public class LuceneFTSWildTerm extends FTSWildTerm implements LuceneQueryBuilder
         }
         else
         {
-            query = lqp.getWildcardQuery("TEXT", term);
+            query = lqp.getWildcardQuery(lqp.getField(), term);
             
         }
         return query;

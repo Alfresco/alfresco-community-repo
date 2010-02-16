@@ -78,7 +78,7 @@ public class LuceneFTSFuzzyTerm extends FTSFuzzyTerm implements LuceneQueryBuild
         }
         else
         {
-            query = lqp.getFuzzyQuery("TEXT", term, minSimilarity);
+            query = lqp.getFuzzyQuery(lqp.getField(), term, minSimilarity);
             
         }
         return query;

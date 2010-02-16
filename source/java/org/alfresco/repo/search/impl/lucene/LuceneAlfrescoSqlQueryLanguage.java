@@ -69,6 +69,7 @@ public class LuceneAlfrescoSqlQueryLanguage implements LuceneQueryLanguageSPI
         options.setSkipCount(searchParameters.getSkipCount());
         options.setMaxPermissionChecks(searchParameters.getMaxPermissionChecks());
         options.setMaxPermissionCheckTimeMillis(searchParameters.getMaxPermissionCheckTimeMillis());
+        options.setDefaultFieldName(searchParameters.getDefaultFieldName());
         if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
         {
             options.setMaxItems(searchParameters.getLimit());

@@ -416,7 +416,7 @@ FTSWORD:
 "×"   FAIL
 "Ø"   OK
 "÷"   FAIL
-"ə"   FAIL
+"ə"   OK
 
 
 DECIMAL_INTEGER_LITERAL:

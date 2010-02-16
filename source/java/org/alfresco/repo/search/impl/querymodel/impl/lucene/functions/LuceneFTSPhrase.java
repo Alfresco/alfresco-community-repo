@@ -83,7 +83,7 @@ public class LuceneFTSPhrase extends FTSPhrase implements LuceneQueryBuilderComp
         }
         else
         {
-            query = lqp.getFieldQuery("TEXT", term, AnalysisMode.TOKENISE, slop, LuceneFunction.FIELD);
+            query = lqp.getFieldQuery(lqp.getField(), term, AnalysisMode.TOKENISE, slop, LuceneFunction.FIELD);
             
         }
         return query;

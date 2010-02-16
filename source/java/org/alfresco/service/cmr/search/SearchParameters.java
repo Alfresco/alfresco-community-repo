@@ -157,6 +157,8 @@ public class SearchParameters
     // By default uses the central config
     private long maxPermissionCheckTimeMillis = -1;
 
+    private String defaultFieldName = "TEXT";
+
     /**
      * Default constructor
      */
@@ -766,6 +768,22 @@ public class SearchParameters
             return sortType;
         }
 
+    }
+
+    /**
+     * @return the default field name
+     */
+    public String getDefaultFieldName()
+    {
+        return defaultFieldName;
+    }
+    
+    /**
+     * @param defaultFieldName - the default field name to use
+     */
+    public void setDefaultFieldName(String defaultFieldName)
+    {
+       this.defaultFieldName = defaultFieldName;
     }
 
 }

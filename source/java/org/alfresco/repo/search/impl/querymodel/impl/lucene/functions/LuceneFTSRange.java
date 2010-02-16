@@ -83,7 +83,7 @@ public class LuceneFTSRange extends FTSRange implements LuceneQueryBuilderCompon
         }
         else
         {
-            query = lqp.getRangeQuery("TEXT", from, to, fromInc, toInc, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
+            query = lqp.getRangeQuery(lqp.getField(), from, to, fromInc, toInc, AnalysisMode.DEFAULT, LuceneFunction.FIELD);
         }
         return query;
     }

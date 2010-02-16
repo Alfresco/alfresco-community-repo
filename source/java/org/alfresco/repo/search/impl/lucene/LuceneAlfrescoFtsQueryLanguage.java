@@ -64,6 +64,7 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
         options.setSkipCount(searchParameters.getSkipCount());
         options.setMaxPermissionChecks(searchParameters.getMaxPermissionChecks());
         options.setMaxPermissionCheckTimeMillis(searchParameters.getMaxPermissionCheckTimeMillis());
+        options.setDefaultFieldName(searchParameters.getDefaultFieldName());
         if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
         {
             options.setMaxItems(searchParameters.getLimit());
@@ -77,7 +78,7 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
         options.setStores(searchParameters.getStores());
 
         Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, options.getDefaultFTSConnective(), options.getDefaultFTSFieldConnective(),
-                searchParameters.getQueryTemplates());
+                searchParameters.getQueryTemplates(), options.getDefaultFieldName());
         org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));
 
         QueryEngineResults results = queryEngine.executeQuery(query, options, context);

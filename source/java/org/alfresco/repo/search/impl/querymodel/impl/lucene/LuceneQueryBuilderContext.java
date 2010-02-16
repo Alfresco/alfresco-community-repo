@@ -57,7 +57,7 @@ public class LuceneQueryBuilderContext
     {
         LuceneAnalyser analyzer = new LuceneAnalyser(dictionaryService, searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters
                 .getMlAnalaysisMode());
-        lqp = new LuceneQueryParser("TEXT", analyzer);
+        lqp = new LuceneQueryParser(searchParameters.getDefaultFieldName(), analyzer);
         lqp.setDefaultOperator(LuceneQueryParser.OR_OPERATOR);
         lqp.setDictionaryService(dictionaryService);
         lqp.setNamespacePrefixResolver(namespacePrefixResolver);

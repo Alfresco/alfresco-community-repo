@@ -400,7 +400,7 @@ public class CMISQueryParser
                 defaultFieldConnective = options.getDefaultFTSFieldConnective();
             }
             return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, defaultConnective,
-                    defaultFieldConnective, null);
+                    defaultFieldConnective, null, options.getDefaultFieldName());
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);

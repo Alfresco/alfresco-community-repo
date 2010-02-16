@@ -87,7 +87,7 @@ public class LuceneFTSProximity extends FTSProximity implements LuceneQueryBuild
         }
         else
         {
-            query = lqp.getSpanQuery("TEXT", first, last, slop, true);
+            query = lqp.getSpanQuery(lqp.getField(), first, last, slop, true);
             
         }
         return query;

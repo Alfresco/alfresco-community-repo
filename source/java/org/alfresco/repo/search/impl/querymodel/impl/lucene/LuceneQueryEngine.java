@@ -146,6 +146,7 @@ public class LuceneQueryEngine implements QueryEngine
         searchParameters.setSkipCount(options.getSkipCount());
         searchParameters.setMaxPermissionChecks(options.getMaxPermissionChecks());
         searchParameters.setMaxPermissionCheckTimeMillis(options.getMaxPermissionCheckTimeMillis());
+        searchParameters.setDefaultFieldName(options.getDefaultFieldName());
         if (options.getMaxItems() >= 0)
         {
             searchParameters.setLimitBy(LimitBy.FINAL_SIZE);

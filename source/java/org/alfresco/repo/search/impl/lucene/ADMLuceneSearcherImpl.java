@@ -108,11 +108,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 {
     static Log s_logger = LogFactory.getLog(ADMLuceneSearcherImpl.class);
 
-    /**
-     * Default field name
-     */
-    private static final String DEFAULT_FIELD = "TEXT";
-
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private NodeService nodeService;
@@ -295,7 +290,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 }
 
                 ClosingIndexSearcher searcher = getSearcher(indexer);
-                Query query = LuceneQueryParser.parse(parameterisedQueryString, DEFAULT_FIELD, new LuceneAnalyser(getDictionaryService(),
+                Query query = LuceneQueryParser.parse(parameterisedQueryString, searchParameters.getDefaultFieldName(), new LuceneAnalyser(getDictionaryService(),
                         searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
                         namespacePrefixResolver, getDictionaryService(), tenantService, defaultOperator, searchParameters, getLuceneConfig(), searcher.getIndexReader());
                 if (s_logger.isDebugEnabled())

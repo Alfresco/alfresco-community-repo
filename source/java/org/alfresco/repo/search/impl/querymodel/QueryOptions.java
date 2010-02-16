@@ -73,6 +73,8 @@ public class QueryOptions
     // By default uses the central config
     private long maxPermissionCheckTimeMillis = -1;
 
+    private String defaultFieldName = "TEXT";
+
     /**
      * Create a CMISQueryOptions instance with the default options other than the query and store ref. The query will be
      * run using the locale returned by I18NUtil.getLocale()
@@ -368,4 +370,19 @@ public class QueryOptions
         this.maxPermissionChecks = maxPermissionChecks;
     }
 
+    /**
+     * @return the default field name
+     */
+    public String getDefaultFieldName()
+    {
+        return defaultFieldName;
+    }
+    
+    /**
+     * @param defaultFieldName - the default field name to use
+     */
+    public void setDefaultFieldName(String defaultFieldName)
+    {
+       this.defaultFieldName = defaultFieldName;
+    }
 }

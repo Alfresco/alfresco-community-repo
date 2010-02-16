@@ -77,7 +77,7 @@ public class LuceneFTSPrefixTerm extends FTSPrefixTerm implements LuceneQueryBui
         }
         else
         {
-            query = lqp.getPrefixQuery("TEXT", term);
+            query = lqp.getPrefixQuery(lqp.getField(), term);
             
         }
         return query;

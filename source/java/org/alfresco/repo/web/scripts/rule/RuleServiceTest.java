@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,10 +62,18 @@ public class RuleServiceTest extends BaseWebScriptTest
     private static final String URL_RULETYPES = "/api/ruletypes";
     private static final String URL_ACTIONDEFINITIONS = "/api/actiondefinitions";
     private static final String URL_ACTIONCONDITIONDEFINITIONS = "/api/actionconditiondefinitions";
+    
+    private static final String URL_ACTIONCONSTRAINTS = "/api/actionConstraints";
+    private static final String URL_ACTIONCONSTRAINT = "/api/actionConstraints/{0}";
+    
+    private static final String URL_QUEUE_ACTION = "/api/actionQueue?async={0}";
+    
     private static final String URL_RULES = "/api/node/{0}/{1}/{2}/ruleset/rules";
     private static final String URL_RULESET = "/api/node/{0}/{1}/{2}/ruleset";
     private static final String URL_RULE = "/api/node/{0}/{1}/{2}/ruleset/rules/{3}";
+    
     private static final String TEST_FOLDER = "test_folder-" + System.currentTimeMillis();
+    
     private static final String COMPANY_HOME_PATH = "/app:company_home";
     
     private NodeService nodeService;
@@ -75,6 +84,7 @@ public class RuleServiceTest extends BaseWebScriptTest
     private RuleService ruleService;
     
     private NodeRef testNodeRef;
+    private NodeRef companyHome;
     
     @Override
     protected void setUp() throws Exception
@@ -92,6 +102,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         createTestFolder();
         
         assertNotNull(testNodeRef);
+        assertNotNull(companyHome);
     }
     
     private void createTestFolder()
@@ -113,6 +124,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         else
         {
             companyHomeNodeRef = nodeRefs.get(0);
+            companyHome = companyHomeNodeRef;
         }
         FileInfo fileInfo = fileFolderService.create(companyHomeNodeRef, TEST_FOLDER, ContentModel.TYPE_FOLDER);
         
@@ -134,6 +146,16 @@ public class RuleServiceTest extends BaseWebScriptTest
     private String formateRuleUrl(NodeRef nodeRef, String ruleId)
     {
         return MessageFormat.format(URL_RULE, nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId(), ruleId);
+    }
+    
+    private String formateActionConstraintUrl(String name)
+    {
+        return MessageFormat.format(URL_ACTIONCONSTRAINT, name);
+    }
+    
+    private String formateQueueActionUrl(boolean async)
+    {
+        return MessageFormat.format(URL_QUEUE_ACTION, async);
     }
     
     @Override
@@ -352,6 +374,128 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
     
+    public void testGetActionConstraints() throws Exception
+    {
+        Response response = sendRequest(new GetRequest(URL_ACTIONCONSTRAINTS), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        assertNotNull(result);
+        
+        assertTrue(result.has("data"));
+        
+        JSONArray data = result.getJSONArray("data");    
+        
+        for (int i = 0; i < data.length(); i++)
+        {
+            JSONObject actionConstraint = data.getJSONObject(i);
+            
+            assertTrue(actionConstraint.has("name"));
+            assertTrue(actionConstraint.has("values"));
+            
+            JSONArray values = actionConstraint.getJSONArray("values");
+            
+            for (int j = 0; j < values.length(); j++)
+            {
+                JSONObject value = values.getJSONObject(j);
+                
+                assertTrue(value.has("value"));
+                assertTrue(value.has("displayLabel"));
+            }
+        }
+    }
+    
+    public void testGetActionConstraint() throws Exception
+    {
+        Response response = sendRequest(new GetRequest(formateActionConstraintUrl("compare-operations")), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        assertNotNull(result);
+        
+        assertTrue(result.has("data"));      
+        
+        JSONObject data = result.getJSONObject("data");
+        
+        assertTrue(data.has("name"));
+        assertTrue(data.has("values"));
+        
+        JSONArray values = data.getJSONArray("values");
+        
+        for (int i = 0; i < values.length(); i++)
+        {
+            JSONObject value = values.getJSONObject(i);
+            
+            assertTrue(value.has("value"));
+            assertTrue(value.has("displayLabel"));
+        }
+    }
+    
+    public void testQueueAction() throws Exception
+    {
+        String url = formateQueueActionUrl(false);
+            
+        JSONObject copyAction = buildCopyAction(companyHome);
+        
+        copyAction.put("actionedUponNode", testNodeRef);
+        
+        // execute before response (should be successful)
+        Response successResponse = sendRequest(new PostRequest(url, copyAction.toString(), "application/json"), 200);
+        
+        JSONObject successResult = new JSONObject(successResponse.getContentAsString());
+        
+        assertNotNull(successResult);
+        
+        assertTrue(successResult.has("data"));
+        
+        JSONObject successData = successResult.getJSONObject("data");
+        
+        assertTrue(successData.has("status"));
+        assertEquals("success", successData.getString("status"));
+        assertTrue(successData.has("actionedUponNode"));
+        assertFalse(successData.has("exception"));
+        assertTrue(successData.has("action"));
+        
+        // execute before response (should fail)
+        Response failResponse = sendRequest(new PostRequest(url, copyAction.toString(), "application/json"), 200);
+        
+        JSONObject failResult = new JSONObject(failResponse.getContentAsString());
+        
+        assertNotNull(failResult);
+        
+        assertTrue(failResult.has("data"));
+        
+        JSONObject failData = failResult.getJSONObject("data");
+        
+        assertTrue(failData.has("status"));
+        assertEquals("fail", failData.getString("status"));
+        assertTrue(failData.has("actionedUponNode"));
+        assertTrue(failData.has("exception"));
+        JSONObject exception = failData.getJSONObject("exception");
+        assertTrue(exception.has("message"));
+        assertTrue(exception.has("stackTrace"));
+        assertTrue(failData.has("action"));
+        
+        // execute after response (should fail but error should not present in response)
+        String asyncUrl = formateQueueActionUrl(true);
+        Response response = sendRequest(new PostRequest(asyncUrl, copyAction.toString(), "application/json"), 200);
+        
+        // wait while action executed
+        Thread.sleep(1000);
+        
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        assertNotNull(result);
+        
+        assertTrue(result.has("data"));
+        
+        JSONObject data = result.getJSONObject("data");
+        
+        assertTrue(data.has("status"));
+        assertEquals("queued", data.getString("status"));
+        assertTrue(data.has("actionedUponNode"));
+        assertFalse(data.has("exception"));
+        assertTrue(data.has("action"));
+    }
+    
     public void testCreateRule() throws Exception
     {
         JSONObject result = createRule();       
@@ -451,6 +595,28 @@ public class RuleServiceTest extends BaseWebScriptTest
         
         // no more rules present 
         assertEquals(0, ruleService.getRules(testNodeRef).size());
+    }
+    
+    private JSONObject buildCopyAction(NodeRef destination) throws JSONException    
+    {
+        JSONObject result = new JSONObject();
+        
+        // add actionDefinitionName
+        result.put("actionDefinitionName", "copy");
+        
+        // build parameterValues
+        JSONObject parameterValues = new JSONObject();
+        parameterValues.put("destination-folder", destination);
+        parameterValues.put("assoc-name", QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy"));
+        parameterValues.put("assoc-type", ContentModel.ASSOC_CONTAINS);
+        
+        // add parameterValues
+        result.put("parameterValues", parameterValues);
+        
+        // add executeAsync
+        result.put("executeAsync", false);
+        
+        return result;
     }
     
     private JSONObject buildTestRule() throws JSONException

@@ -24,7 +24,10 @@
  */
 package org.alfresco.repo.web.scripts.rule;
 
+import java.io.Serializable;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,18 +35,31 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.action.ActionConditionImpl;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
@@ -209,5 +225,219 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         }
         
         return result;
+    }
+    
+    protected Rule parseJsonRule(JSONObject jsonRule) throws JSONException
+    {
+        Rule result = new Rule();
+        
+        if (jsonRule.has("title") == false || jsonRule.getString("title").length() == 0)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Title missing when creating rule");
+        }
+        
+        result.setTitle(jsonRule.getString("title"));
+        
+        result.setDescription(jsonRule.has("description") ? jsonRule.getString("description") : "");
+        
+        if (jsonRule.has("ruleType") == false || jsonRule.getJSONArray("ruleType").length() == 0)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+            "Rule type missing when creating rule");
+        }
+        
+        JSONArray types = jsonRule.getJSONArray("ruleType");
+        List<String> ruleTypes = new ArrayList<String>();
+        
+        for (int i = 0; i < types.length(); i++)
+        {
+            ruleTypes.add(types.getString(i));                
+        }
+        
+        result.setRuleTypes(ruleTypes);
+        
+        result.applyToChildren(jsonRule.has("applyToChildren") ? jsonRule.getBoolean("applyToChildren") : false);
+        
+        result.setExecuteAsynchronously(jsonRule.has("executeAsynchronously") ? jsonRule.getBoolean("executeAsynchronously") : false);
+        
+        result.setRuleDisabled(jsonRule.has("disabled") ? jsonRule.getBoolean("disabled") : false);
+        
+        JSONObject jsonAction = jsonRule.getJSONObject("action");
+        
+        // parse action object
+        Action ruleAction = parseJsonAction(jsonAction);
+        
+        result.setAction(ruleAction);
+        
+        return result;        
+    }
+    
+    protected ActionImpl parseJsonAction(JSONObject jsonAction) throws JSONException    
+    {
+        ActionImpl result = null;
+        
+        String actionId = jsonAction.has("id") ? jsonAction.getString("id") : GUID.generate();
+        
+        if (jsonAction.getString("actionDefinitionName").equalsIgnoreCase("composite-action"))
+        {
+            result = new CompositeActionImpl(null, actionId);
+        }
+        else
+        {
+            result = new ActionImpl(null, actionId, jsonAction.getString("actionDefinitionName"));
+        }
+        
+        // Post Action Queue parameter
+        if (jsonAction.has("actionedUponNode"))
+        {
+            NodeRef actionedUponNode = new NodeRef(jsonAction.getString("actionedUponNode"));
+            result.setNodeRef(actionedUponNode);
+        }
+        
+        if (jsonAction.has("description"))
+        {
+            result.setDescription(jsonAction.getString("description"));
+        }
+        
+        if (jsonAction.has("title"))
+        {
+            result.setTitle(jsonAction.getString("title"));
+        }
+        
+        if (jsonAction.has("parameterValues"))
+        {
+            JSONObject jsonParameterValues = jsonAction.getJSONObject("parameterValues");            
+            result.setParameterValues(parseJsonParameterValues(jsonParameterValues));
+        }
+        
+        if (jsonAction.has("executeAsync"))
+        {
+            result.setExecuteAsynchronously(jsonAction.getBoolean("executeAsync"));
+        }
+        
+        if (jsonAction.has("runAsUser"))
+        {
+            result.setRunAsUser(jsonAction.getString("runAsUser"));
+        }
+        
+        if (jsonAction.has("actions"))
+        {
+            JSONArray jsonActions = jsonAction.getJSONArray("actions");
+            
+            for (int i = 0; i < jsonActions.length(); i++)
+            {
+                JSONObject innerJsonAction = jsonActions.getJSONObject(i);
+                
+                Action innerAction = parseJsonAction(innerJsonAction);
+                
+                // we assume that only composite-action contains actions json array, so should be no cast exception
+                ((CompositeActionImpl)result).addAction(innerAction);
+            }
+        }
+        
+        if (jsonAction.has("conditions"))
+        {
+            JSONArray jsonConditions = jsonAction.getJSONArray("conditions");
+            
+            for (int i = 0; i < jsonConditions.length(); i++)
+            {
+                JSONObject jsonCondition = jsonConditions.getJSONObject(i);   
+                
+                // parse action conditions
+                ActionCondition actionCondition = parseJsonActionCondition(jsonCondition);
+                
+                result.getActionConditions().add(actionCondition);
+            }                                
+        }
+        
+        if (jsonAction.has("compensatingAction"))
+        {
+            Action compensatingAction = parseJsonAction(jsonAction.getJSONObject("compensatingAction"));
+            result.setCompensatingAction(compensatingAction);
+        }
+        
+        return result;
+    }
+    
+    protected ActionConditionImpl parseJsonActionCondition(JSONObject jsonActionCondition) throws JSONException
+    {
+        String id = jsonActionCondition.has("id") ? jsonActionCondition.getString("id"): GUID.generate();            
+        
+        ActionConditionImpl result = new ActionConditionImpl(id, jsonActionCondition.getString("conditionDefinitionName"));
+        
+        if (jsonActionCondition.has("invertCondition"))
+        {
+            result.setInvertCondition(jsonActionCondition.getBoolean("invertCondition"));
+        }
+        
+        if (jsonActionCondition.has("parameterValues"))
+        {
+            JSONObject jsonParameterValues = jsonActionCondition.getJSONObject("parameterValues");            
+            
+            result.setParameterValues(parseJsonParameterValues(jsonParameterValues));
+        }
+        
+        return result;
+    }
+    
+    protected Map<String, Serializable> parseJsonParameterValues(JSONObject jsonParameterValues) throws JSONException
+    {
+        Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();
+        
+        // get parameters names
+        JSONArray names = jsonParameterValues.names();
+        
+        for (int i = 0; i < names.length(); i++)
+        {            
+            String propertyName = names.getString(i);
+            Object propertyValue = jsonParameterValues.get(propertyName);
+            
+            // get parameter repository type
+            QName typeQName = getPropertyType(propertyName);   
+            
+            if (typeQName == null)
+            {
+                if (propertyValue.toString().equals("true") || propertyValue.toString().equals("false"))
+                {
+                    typeQName = DataTypeDefinition.BOOLEAN;
+                }
+                else
+                {
+                    typeQName = DataTypeDefinition.TEXT;
+                }
+            }
+            
+            Serializable value = null;
+            
+            if (typeQName.equals(DataTypeDefinition.ANY))
+            {
+                try
+                {
+                    value = dateFormate.parse(propertyValue.toString());                    
+                }
+                catch (ParseException e)
+                {
+                    try
+                    {
+                        value = Long.valueOf(propertyValue.toString());
+                    }
+                    catch (NumberFormatException e1)
+                    {
+                        // do nothing
+                    }
+                }
+            }
+            
+            if (value == null)
+            {
+                // convert to correct repository type
+                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
+            }
+            
+            parameterValues.put(propertyName, value);
+        }
+        
+        return parameterValues;
     }
 }

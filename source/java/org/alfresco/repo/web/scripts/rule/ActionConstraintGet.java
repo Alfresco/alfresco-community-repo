@@ -24,17 +24,14 @@
  */
 package org.alfresco.repo.web.scripts.rule;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.rule.Rule;
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -44,48 +41,31 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author unknown
  *
  */
-public class RulePost extends AbstractRuleWebScript
-{    
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RulePost.class);
+public class ActionConstraintGet extends AbstractRuleWebScript
+{
 
+    @SuppressWarnings("unused")
+    private static Log logger = LogFactory.getLog(ActionConstraintGet.class);
+    
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {     
+    {
         Map<String, Object> model = new HashMap<String, Object>();
         
         // get request parameters
-        NodeRef nodeRef = parseRequestForNodeRef(req);
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String name = templateVars.get("name");
         
-        Rule rule = null;
-        JSONObject json = null;
+        // get specified parameter constraint
+        ParameterConstraint parameterConstraint = actionService.getParameterConstraint(name);
         
-        try
+        if (parameterConstraint == null)
         {
-            // read request json
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            // parse request json
-            rule = parseJsonRule(json);
-            
-            // create rule
-            ruleService.saveRule(nodeRef, rule);
-            
-            model.put("rule", rule);  
-            model.put("storeType", nodeRef.getStoreRef().getProtocol());
-            model.put("storeId", nodeRef.getStoreRef().getIdentifier());
-            model.put("id", nodeRef.getId());
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find parameter constraint with name: " + 
+                    name);
         }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
+        
+        model.put("actionConstraint", parameterConstraint);
         
         return model;
     }

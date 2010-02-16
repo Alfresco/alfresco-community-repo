@@ -103,3 +103,24 @@
 		<#if (parameterValue_has_next)>,</#if>				
 	</#list>	
 </#macro>
+
+<#-- renders a action constraint object -->
+<#macro actionConstraintJSON actionConstraint>
+<#escape x as jsonUtils.encodeJSONString(x)>
+	{
+		"name" : "${actionConstraint.name}",		
+		<#if actionConstraint.allowableValues?? && actionConstraint.allowableValues?size &gt; 0>
+		"values" : 
+		[
+			<#list actionConstraint.allowableValues?keys as allowableValue>	
+			<#assign val = actionConstraint.allowableValues[allowableValue]>				
+			{
+				"value" : "${allowableValue}",
+				"displayLabel" : "${val}"
+			}<#if allowableValue_has_next>,</#if>				
+			</#list>
+		]
+		</#if>
+	}
+</#escape>
+</#macro>

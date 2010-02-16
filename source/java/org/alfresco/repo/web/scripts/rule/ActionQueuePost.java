@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.rule.Rule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -44,20 +44,25 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author unknown
  *
  */
-public class RulePost extends AbstractRuleWebScript
-{    
+public class ActionQueuePost extends AbstractRuleWebScript
+{
     @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RulePost.class);
-
+    private static Log logger = LogFactory.getLog(ActionQueuePost.class);
+    
+    public static final String STATUS = "actionExecStatus";
+    public static final String STATUS_SUCCESS = "success";
+    public static final String STATUS_FAIL = "fail";
+    public static final String STATUS_QUEUED = "queued";
+    
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {     
+    {
         Map<String, Object> model = new HashMap<String, Object>();
         
         // get request parameters
-        NodeRef nodeRef = parseRequestForNodeRef(req);
+        boolean async = Boolean.parseBoolean(req.getParameter("async"));
         
-        Rule rule = null;
+        ActionImpl action = null;
         JSONObject json = null;
         
         try
@@ -66,15 +71,34 @@ public class RulePost extends AbstractRuleWebScript
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
             
             // parse request json
-            rule = parseJsonRule(json);
+            action = parseJsonAction(json);
+            NodeRef actionedUponNode = action.getNodeRef();
             
-            // create rule
-            ruleService.saveRule(nodeRef, rule);
+            // clear nodeRef for action
+            action.setNodeRef(null);
+            json.remove("actionedUponNode");
             
-            model.put("rule", rule);  
-            model.put("storeType", nodeRef.getStoreRef().getProtocol());
-            model.put("storeId", nodeRef.getStoreRef().getIdentifier());
-            model.put("id", nodeRef.getId());
+            if (async)
+            {
+                model.put(STATUS, STATUS_QUEUED);
+            }
+            else
+            {
+                model.put(STATUS, STATUS_SUCCESS);
+            }
+            
+            try
+            {
+                actionService.executeAction(action, actionedUponNode, true, async);
+            }
+            catch(Throwable e)
+            {
+                model.put(STATUS, STATUS_FAIL);
+                model.put("exception", e);
+            }
+            
+            model.put("actionedUponNode", actionedUponNode.toString());
+            model.put("action", json);            
         }
         catch (IOException iox)
         {
@@ -88,5 +112,5 @@ public class RulePost extends AbstractRuleWebScript
         }
         
         return model;
-    }
+    }    
 }

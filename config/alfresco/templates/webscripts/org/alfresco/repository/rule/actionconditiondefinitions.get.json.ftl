@@ -15,6 +15,9 @@
 	             "name" : "${jsonUtils.encodeJSONString(parameterDefinition.name)}",
 	         	 "displayLabel" : <#if parameterDefinition.displayLabel??>"${jsonUtils.encodeJSONString(parameterDefinition.displayLabel)}"<#else>null</#if>,
 	        	 "type" : "${shortQName(parameterDefinition.type)}",
+	        	 <#if parameterDefinition.parameterConstraintName??>
+	        	 "constraint" : "${jsonUtils.encodeJSONString(parameterDefinition.parameterConstraintName)}",
+	        	 </#if>
 	        	 "isMultiValued" : ${parameterDefinition.multiValued?string},
 	        	 "isMandatory" : ${parameterDefinition.mandatory?string}
 	          }<#if (parameterDefinition_has_next)>,</#if>

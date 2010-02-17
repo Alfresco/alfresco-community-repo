@@ -237,4 +237,34 @@ public interface RuleService
      */
     @Auditable(key = Auditable.Key.RETURN, parameters = {"action"})
     public NodeRef getOwningNodeRef(Action action);
+    
+    /**
+     * Indicates whether the passed rule node reference is linked to another
+     * rule node.
+     * 
+     * @param  nodeRef   rule node reference
+     * @return boolean   true if linked, false otherwise
+     */
+    @Auditable(key = Auditable.Key.RETURN, parameters = {"nodeRef"})
+    public boolean isLinkedToRuleNode(NodeRef nodeRef);
+    
+    /**
+     * Get the node reference to the rule node which the rule node links to.  Returns null
+     * if rules are not linked.
+     * 
+     * @param nodeRef   node reference of a rule node
+     * @return NodeRef  reference to the 
+     */
+    @Auditable(key = Auditable.Key.RETURN, parameters = {"nodeRef"})
+    public NodeRef getLinkedToRuleNode(NodeRef nodeRef);
+    
+    /**
+     * Get a list of the all the rule nodes that link to the passed rule node.  
+     * Returns an empty list if none link.
+     * 
+     * @param nodeRef           node reference of a rule node
+     * @return List<NodeRef>    list of rule nodes that link to this passed rule node, empty if none
+     */
+    @Auditable(key = Auditable.Key.RETURN, parameters = {"nodeRef"})
+    public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef);
 }

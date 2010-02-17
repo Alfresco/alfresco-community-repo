@@ -27,6 +27,7 @@ package org.alfresco.repo.rule;
 import java.util.Set;
 
 import org.alfresco.repo.rule.RuleServiceImpl.ExecutedRuleData;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -45,4 +46,6 @@ public interface RuntimeRuleService
 	void executePendingRules();	
 	
 	void registerRuleType(RuleType ruleType);
+	
+	ChildAssociationRef getSavedRuleFolderAssoc(NodeRef nodeRef);
 }

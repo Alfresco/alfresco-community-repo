@@ -304,6 +304,17 @@ public class RuleServiceImpl
     {
         nodeRulesCache.clear();
     }
+    
+    protected NodeRef getSavedRuleFolderRef(NodeRef nodeRef)
+    {
+        NodeRef result = null;
+        ChildAssociationRef assoc = getSavedRuleFolderAssoc(nodeRef);
+        if (assoc != null)
+        {
+            result = assoc.getChildRef();
+        }
+        return result;
+    }
 
     /**
      * Gets the saved rule folder reference
@@ -311,9 +322,9 @@ public class RuleServiceImpl
      * @param nodeRef    the node reference
      * @return            the node reference
      */
-    private NodeRef getSavedRuleFolderRef(NodeRef nodeRef)
+    public ChildAssociationRef getSavedRuleFolderAssoc(NodeRef nodeRef)
     {
-        NodeRef result = null;
+        ChildAssociationRef result = null;
         
         List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(
                 nodeRef,
@@ -325,7 +336,7 @@ public class RuleServiceImpl
         }
         else if (assocs.size() == 1)
         {
-            result = assocs.get(0).getChildRef();
+            result = assocs.get(0);
         }
         
         return result;
@@ -714,6 +725,8 @@ public class RuleServiceImpl
      */
     public void saveRule(NodeRef nodeRef, Rule rule)
     {
+        checkForLinkedRules(nodeRef);
+        
         if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
         {        
             disableRules();
@@ -818,6 +831,8 @@ public class RuleServiceImpl
      */
     public void removeRule(NodeRef nodeRef, Rule rule)
     {
+        checkForLinkedRules(nodeRef);
+        
         if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
         {
             if (this.nodeService.exists(nodeRef) == true &&
@@ -847,10 +862,25 @@ public class RuleServiceImpl
     }    
     
     /**
+     * Checks if rules are linked and throws an exception if they are.
+     * 
+     * @param nodeRef   node reference of rule node
+     */
+    private void checkForLinkedRules(NodeRef nodeRef)
+    {
+        if (isLinkedToRuleNode(nodeRef)== true)
+        {
+            throw new RuleServiceException("Can not edit rules as they are linked to another rule set.");
+        }
+    }
+    
+    /**
      * @see org.alfresco.repo.rule.RuleService#removeAllRules(NodeRef)
      */
     public void removeAllRules(NodeRef nodeRef)
     {
+        checkForLinkedRules(nodeRef);
+        
         if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
         {
             if (this.nodeService.exists(nodeRef) == true && 
@@ -1324,4 +1354,59 @@ public class RuleServiceImpl
         }
         return result;
     }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#isLinkedToRuleNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isLinkedToRuleNode(NodeRef nodeRef)
+    {
+        return (getLinkedToRuleNode(nodeRef) != null);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#getLinkedToRuleNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public NodeRef getLinkedToRuleNode(NodeRef nodeRef)
+    {
+        NodeRef result = null;
+        
+        // Check whether the node reference has the rule aspect
+        if (nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+        {
+            ChildAssociationRef assoc = getSavedRuleFolderAssoc(nodeRef);
+            if (assoc.isPrimary() == false)
+            {
+                result = nodeService.getPrimaryParent(assoc.getChildRef()).getParentRef();
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#getLinkedFromRuleNodes(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef)
+    {
+        List<NodeRef> result = new ArrayList<NodeRef>();
+        
+        if (nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+        {
+            ChildAssociationRef assoc = getSavedRuleFolderAssoc(nodeRef);
+            if (assoc.isPrimary() == true)
+            {
+                List<ChildAssociationRef> linkedAssocs = nodeService.getParentAssocs(assoc.getChildRef());
+                for (ChildAssociationRef linkAssoc : linkedAssocs)
+                {
+                    if (linkAssoc.isPrimary() == false)
+                    {
+                        result.add(linkAssoc.getParentRef());
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+    
 }

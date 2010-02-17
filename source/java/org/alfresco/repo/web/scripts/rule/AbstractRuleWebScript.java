@@ -387,55 +387,58 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         
         // get parameters names
         JSONArray names = jsonParameterValues.names();
-        
-        for (int i = 0; i < names.length(); i++)
-        {            
-            String propertyName = names.getString(i);
-            Object propertyValue = jsonParameterValues.get(propertyName);
-            
-            // get parameter repository type
-            QName typeQName = getPropertyType(propertyName);   
-            
-            if (typeQName == null)
+
+        if (names != null)
+        {
+            for (int i = 0; i < names.length(); i++)
             {
-                if (propertyValue.toString().equals("true") || propertyValue.toString().equals("false"))
-                {
-                    typeQName = DataTypeDefinition.BOOLEAN;
-                }
-                else
-                {
-                    typeQName = DataTypeDefinition.TEXT;
-                }
-            }
+                String propertyName = names.getString(i);
+                Object propertyValue = jsonParameterValues.get(propertyName);
             
-            Serializable value = null;
+                // get parameter repository type
+                QName typeQName = getPropertyType(propertyName);
             
-            if (typeQName.equals(DataTypeDefinition.ANY))
-            {
-                try
+                if (typeQName == null)
                 {
-                    value = dateFormate.parse(propertyValue.toString());                    
+                    if (propertyValue.toString().equals("true") || propertyValue.toString().equals("false"))
+                    {
+                        typeQName = DataTypeDefinition.BOOLEAN;
+                    }
+                    else
+                    {
+                        typeQName = DataTypeDefinition.TEXT;
+                    }
                 }
-                catch (ParseException e)
+            
+                Serializable value = null;
+            
+                if (typeQName.equals(DataTypeDefinition.ANY))
                 {
                     try
                     {
-                        value = Long.valueOf(propertyValue.toString());
+                        value = dateFormate.parse(propertyValue.toString());
                     }
-                    catch (NumberFormatException e1)
+                    catch (ParseException e)
                     {
-                        // do nothing
+                        try
+                        {
+                            value = Long.valueOf(propertyValue.toString());
+                        }
+                        catch (NumberFormatException e1)
+                        {
+                            // do nothing
+                        }
                     }
                 }
-            }
             
-            if (value == null)
-            {
-                // convert to correct repository type
-                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
-            }
+                if (value == null)
+                {
+                    // convert to correct repository type
+                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
+                }
             
-            parameterValues.put(propertyName, value);
+                parameterValues.put(propertyName, value);
+            }
         }
         
         return parameterValues;

@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.springframework.extensions.webscripts.servlet.FormData.FormField;
 
 /**
  * Represents the data going to or coming from a Form.
@@ -41,9 +41,6 @@ import org.apache.commons.lang.NotImplementedException;
  */
 public class FormData implements Iterable<FormData.FieldData>
 {
-    // TODO: Once we fully support file based FieldData add other methods
-    //       in here to retrieve just file fields, just data fields etc.
-    
     protected Map<String, FieldData> data;
     
     /**
@@ -90,6 +87,17 @@ public class FormData implements Iterable<FormData.FieldData>
     public void addFieldData(String fieldName, Object fieldValue)
     {
         this.addFieldData(fieldName, fieldValue, false);
+    }
+    
+    /**
+     * Adds the given webscript FormField object to the form.
+     * 
+     * @param field A WebScript FormField object
+     */
+    public void addFieldData(FormField field)
+    {
+        FieldData fieldData = new FieldData(field);
+        this.data.put(fieldData.getName(), fieldData);
     }
     
     /**
@@ -210,6 +218,7 @@ public class FormData implements Iterable<FormData.FieldData>
         protected String name;
         protected Object value;
         protected boolean isFile = false;
+        protected InputStream is;
         
         /**
          * Default Constructor 
@@ -223,6 +232,23 @@ public class FormData implements Iterable<FormData.FieldData>
             this.name = name;
             this.value = value;
             this.isFile = isFile;
+        }
+        
+        /**
+         * Constructs a FieldData object from a WebScript FormField object
+         * 
+         * @param field The WebScript FormData object to create the field from
+         */
+        public FieldData(FormField field)
+        {
+            this.name = field.getName();
+            this.value = field.getValue();
+            this.isFile = field.getIsFile();
+           
+            if (isFile)
+            {
+                is = field.getInputStream();
+            }
         }
 
         /**
@@ -264,9 +290,7 @@ public class FormData implements Iterable<FormData.FieldData>
          */
         public InputStream getInputStream()
         {
-            // TODO: implement this
-            
-            throw new NotImplementedException();
+            return this.is;
         }
         
         /*

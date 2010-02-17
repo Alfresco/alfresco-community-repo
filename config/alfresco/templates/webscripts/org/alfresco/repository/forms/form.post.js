@@ -30,8 +30,15 @@ function main()
                 }
                 else
                 {
-                   // add field to form data
-                   repoFormData.addFieldData(formdata.fields[i].name, formdata.fields[i].value);
+                   if (formdata.fields[i].isFile)
+                   {
+                      repoFormData.addFieldData(formdata.fields[i]);
+                   }
+                   else
+                   {
+                      // add field to form data
+                      repoFormData.addFieldData(formdata.fields[i].name, formdata.fields[i].value);
+                   }
                 }
             }
 

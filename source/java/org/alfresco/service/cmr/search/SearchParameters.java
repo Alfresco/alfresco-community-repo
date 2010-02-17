@@ -786,4 +786,17 @@ public class SearchParameters
        this.defaultFieldName = defaultFieldName;
     }
 
+    @Override
+    public String toString()
+    {
+        return "SearchParameters [allAttributes="
+                + allAttributes + ", bulkFetch=" + bulkFetch + ", bulkFetchSize=" + bulkFetchSize + ", defaultFTSFieldOperator=" + defaultFTSFieldOperator
+                + ", defaultFTSOperator=" + defaultFTSOperator + ", defaultFieldName=" + defaultFieldName + ", excludeDataInTheCurrentTransaction="
+                + excludeDataInTheCurrentTransaction + ", language=" + language + ", limit=" + limit + ", limitBy=" + limitBy + ", locales=" + locales + ", maxItems=" + maxItems
+                + ", maxPermissionCheckTimeMillis=" + maxPermissionCheckTimeMillis + ", maxPermissionChecks=" + maxPermissionChecks + ", mlAnalaysisMode=" + mlAnalaysisMode
+                + ", namespace=" + namespace + ", permissionEvaluation=" + permissionEvaluation + ", query=" + query + ", queryParameterDefinitions=" + queryParameterDefinitions
+                + ", queryTemplates=" + queryTemplates + ", skipCount=" + skipCount + ", sortDefinitions=" + sortDefinitions + ", stores=" + stores + ", textAttributes="
+                + textAttributes + "]";
+    }
+
 }

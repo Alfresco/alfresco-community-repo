@@ -122,6 +122,33 @@ public class TypeConverter
 
     /**
      * General conversion method to convert collection contents to the specified
+     * type. Wrapper around the Collection version for arrays.
+     * 
+     * @param propertyType - the target property type
+     * @param value - the value to be converted
+     * @return - the converted value as the correct type
+     * @throws DictionaryException if the property type's registered java class is invalid
+     * @throws TypeConversionException if the conversion cannot be performed
+     */
+    @SuppressWarnings("unchecked")
+    public final Collection convert(DataTypeDefinition propertyType, Object[] values)
+    {
+       if(values == null) {
+          return convert(propertyType, (Collection)null);
+       } else {
+          // Turn the array into a Collection, then convert as that
+          ArrayList c = new ArrayList();
+          c.ensureCapacity(values.length);
+          for(Object v : values) {
+             c.add(v);
+          }
+          // Convert
+          return convert(propertyType, c);
+       }
+    }
+    
+    /**
+     * General conversion method to convert collection contents to the specified
      * type.
      * 
      * @param propertyType - the target property type

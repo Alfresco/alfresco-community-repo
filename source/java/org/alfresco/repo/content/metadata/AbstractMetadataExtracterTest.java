@@ -103,6 +103,8 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         try
         {
             Map<QName, Serializable> properties = extractFromMimetype(mimetype);
+            // check we got something
+            assertFalse("extractFromMimetype should return at least some properties, none found", properties.isEmpty());
             // check common metadata
             testCommonMetadata(mimetype, properties);
             // check file-type specific metadata

@@ -24,12 +24,14 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
@@ -69,6 +71,11 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     public void testOutlookMsgExtraction() throws Exception
     {
+        // Check we can find the file
+        File sourceFile = AbstractContentTransformerTest.loadQuickTestFile("msg");
+        assertNotNull("quick.msg files should be available from Tests", sourceFile);
+        
+        // Now test
         testExtractFromMimetype(MimetypeMap.MIMETYPE_OUTLOOK_MSG);
     }
     
@@ -78,10 +85,16 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
      */
     protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
+        // Two equivalent ones
         assertEquals(
                 "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
                 "Kevin Roast",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
+        assertEquals(
+              "Property " + ContentModel.PROP_ORIGINATOR + " not found for mimetype " + mimetype,
+              "Kevin Roast",
+              DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ORIGINATOR)));
+        // One other common bit
         assertEquals(
                 "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
                 "Test the content transformer",

@@ -31,11 +31,14 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Bean implementation for the "Release Test Server" dialog
@@ -71,10 +74,14 @@ public class ReleaseTestServerDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
+       
+      WebApplicationContext wac = FacesContextUtils.getRequiredWebApplicationContext(context);
+      NodeService unprotectedNodeService = (NodeService)wac.getBean("nodeService");
+       
       List<NodeRef> testServers = DeploymentUtil.findAllocatedTestServers(this.store);
       for(NodeRef testServer : testServers)
       {
-         getNodeService().setProperty(testServer, 
+         unprotectedNodeService.setProperty(testServer, 
                   WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);
          
          if (logger.isDebugEnabled())

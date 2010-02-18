@@ -25,17 +25,13 @@
 
 package org.alfresco.repo.deploy;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.avm.AVMServiceTestBase;
-import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -49,10 +45,7 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Deleter;
 import org.alfresco.util.NameMatcher;
-import java.util.Map;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * End to end test of deployment to an alfresco system receiver (ASR).
@@ -99,6 +92,16 @@ public class ASRDeploymentTest extends AVMServiceTestBase
              *  set up our test tree
              */
             fService.createDirectory("main:/", "a");
+            
+            String rootText = "Angel is an American television series, a spin-off of the television series Buffy the Vampire Slayer. The series was created by Buffy's creator, Joss Whedon, in collaboration with David Greenwalt, and first aired on October 5, 1999. Like Buffy, it was produced by Whedon's production company, Mutant Enemy.";
+            fService.createFile("main:/", "rootFile").close();
+            ContentWriter writer = fService.getContentWriter("main:/rootFile");
+            
+            // Force a conversion
+            writer.setEncoding("UTF-16");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);         
+            writer.putContent(rootText);
+            
             fService.createDirectory("main:/a", "b");
             fService.createDirectory("main:/a/b", "c");
             fService.createDirectory("main:/", "d");
@@ -107,7 +110,7 @@ public class ASRDeploymentTest extends AVMServiceTestBase
             
             fService.createFile("main:/a/b/c", "foo").close();
             String fooText="I am main:/a/b/c/foo";
-            ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo");
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo");
@@ -146,8 +149,9 @@ public class ASRDeploymentTest extends AVMServiceTestBase
         	// validate the deployment report
         	assertTrue("first deployment no start", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, destRef)));
         	assertTrue("first deployment no finish", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, destRef)));
-        	assertTrue("first deployment wrong size", firstDeployment.size() == 11);
+        	assertTrue("first deployment wrong size", firstDeployment.size() == 12);
         	assertTrue("Update missing: /a", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a")));
+        	assertTrue("Update missing: /rootFile", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/rootFile")));
         	assertTrue("Update missing: /a/b", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/a/b")));
         	assertTrue("Update missing: /a/b/c", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef  + "/a/b/c")));
         	assertTrue("Update missing: /d/e", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.CREATED, null, destRef + "/d/e")));
@@ -158,12 +162,12 @@ public class ASRDeploymentTest extends AVMServiceTestBase
         	
         	// Check that files exist in the destination AVM Store	
         	{
-  //      		fService.getNodeProperties(-1, destRef + "/a");
-  //      		
-  //      		Map<QName, PropertyValue> props = fService.getNodeProperties(-1, destRef + "/a/b/buffy");
-  //      	    ContentReader reader = fService.getContentReader(-1, destRef + "/a/b/buffy");
-  //      	    assertNotNull("content reader is null", reader);
-  //       		assertTrue("UTF-16 buffy text is not correct", reader.getContentString().equals(buffyText));
+        		fService.getNodeProperties(-1, destRef + "/a");
+        		
+        		Map<QName, PropertyValue> props = fService.getNodeProperties(-1, destRef + "/a/b/buffy");
+        	    ContentReader reader = fService.getContentReader(-1, destRef + "/a/b/buffy");
+        	    assertNotNull("content reader is null", reader);
+         		assertTrue("UTF-16 buffy text is not correct", reader.getContentString().equals(buffyText));
         	}
           
             /**
@@ -199,12 +203,11 @@ public class ASRDeploymentTest extends AVMServiceTestBase
         	assertTrue("Bar not deleted", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, destRef + "/a/b/c/bar")));
         	
         	// Check that files exist in the destination AVM Store	
-        	{
-        		
-    //    	    fService.getNodeProperties(-1, destRef + "/a/b/buffy");
-    //    	    ContentReader reader = fService.getContentReader(-1, destRef + "/a/b/buffy");
-    //    	    assertNotNull("content reader is null", reader);
-    //     		assertTrue("UTF-16 buffy text is not correct", reader.getContentString().equals(buffyText));
+        	{    		
+        	    fService.getNodeProperties(-1, destRef + "/a/b/buffy");
+        	    ContentReader reader = fService.getContentReader(-1, destRef + "/a/b/buffy");
+        	    assertNotNull("content reader is null", reader);
+         		assertTrue("UTF-16 buffy text is not correct", reader.getContentString().equals(buffyText));
         	}
             
             /**

@@ -533,22 +533,26 @@ public class DeploymentServiceImpl implements DeploymentService
             OutputStream out = remote.createFile(dstParent.getPath(), src.getName());
             try
             {
-            	InputStream in = fAVMService.getFileInputStream(src);
-            	copyStream(in, out);
-            	copyMetadata(version, src, remote.lookup(-1, dstParent.getPath() + '/' + src.getName()), remote);
+                InputStream in = fAVMService.getFileInputStream(src);
+                copyStream(in, out);
             }
             finally
             {
-            	try
-            	{
-            		out.close();
-            	}
-                catch (IOException e)
+                if(out != null)
                 {
+                    // whatever happens close stream
+                    try
+                    {
+                        out.close();
+                    }
+                    catch (IOException e)
+                    {
                         throw new AVMException("I/O Exception", e);
+                    }
                 }
-            	out = null;
             }
+
+            copyMetadata(version, src, remote.lookup(-1, dstParent.getPath() + '/' + src.getName()), remote);
             return;
         }
         
@@ -597,9 +601,29 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 return;
             }
-            InputStream in = fAVMService.getFileInputStream(src);
+
             OutputStream out = remote.getFileOutputStream(dst.getPath());
-            copyStream(in, out);
+            try
+            {
+                InputStream in = fAVMService.getFileInputStream(src);
+                copyStream(in, out);
+            }
+            finally
+            {
+                if(out != null)
+                {
+                    // whatever happens close stream
+                    try
+                    {
+                        out.close();
+                    }
+                    catch (IOException e)
+                    {
+                        throw new AVMException("I/O Exception", e);
+                    }
+                }
+            }
+
             copyMetadata(version, src, dst, remote);
             return;
         }
@@ -617,9 +641,28 @@ public class DeploymentServiceImpl implements DeploymentService
         // Destination is a directory and the source is a file.
         // Delete the destination directory and copy the file over.
         remote.removeNode(dstParent.getPath(), dst.getName());
-        InputStream in = fAVMService.getFileInputStream(src);
+
         OutputStream out = remote.createFile(dstParent.getPath(), src.getName());
-        copyStream(in, out);
+        try 
+        {
+            InputStream in = fAVMService.getFileInputStream(src);
+            copyStream(in, out);
+        }
+        finally
+        {
+            if(out != null)
+            {
+                // whatever happens close stream
+                try
+                {
+                    out.close();
+                }
+                catch (IOException e)
+                {
+                    throw new AVMException("I/O Exception", e);
+                }
+            }
+        }
         copyMetadata(version, src, remote.lookup(-1, dstParent.getPath() + '/' + dst.getName()), remote);
     }
 
@@ -664,9 +707,27 @@ public class DeploymentServiceImpl implements DeploymentService
                                             newParent.getPath() + '/' + child.getName());
                     processEvent(event, callbacks);
                     
-                    InputStream in = fAVMService.getFileInputStream(child);
                     OutputStream out = remote.createFile(newParent.getPath(), child.getName());
-                    copyStream(in, out);
+                    try
+                    {
+                        InputStream in = fAVMService.getFileInputStream(child);
+                        copyStream(in, out);
+                    }
+                    finally
+                    {
+                        if(out != null)
+                        {
+                            // whatever happens close stream
+                            try
+                            {
+                                out.close();
+                            }
+                            catch (IOException e)
+                            {
+                                throw new AVMException("I/O Exception", e);
+                            }
+                        }
+                    }
                     copyMetadata(version, child, remote.lookup(-1, newParent.getPath() + '/' + child.getName()), remote);
                 }
                 else
@@ -686,6 +747,11 @@ public class DeploymentServiceImpl implements DeploymentService
 
     /**
      * Utility for copying from one stream to another.
+     * 
+     * in is closed.
+     * 
+     * out is not closed.
+     * 
      * @param in The input stream.
      * @param out The output stream.
      */
@@ -700,6 +766,8 @@ public class DeploymentServiceImpl implements DeploymentService
                 out.write(buff, 0, read);
             }
             in.close();
+            //out.flush();
+            //out.close();
         }
         catch (IOException e)
         {
@@ -976,14 +1044,14 @@ public class DeploymentServiceImpl implements DeploymentService
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
 	public void deployDifferenceFS(int version, 
-			String srcPath,
+			final String srcPath,
 			String adapterName, 
 			String hostName, 
 			int port, 
 			String userName, 
 			String password, 
 			String target,
-			NameMatcher matcher, 
+			final NameMatcher matcher, 
 			boolean createDst, 
 			boolean dontDelete,
 			boolean dontDo, 
@@ -995,7 +1063,7 @@ public class DeploymentServiceImpl implements DeploymentService
     	 */
 		String lockStr = hostName + "." + target;
 		QName lockQName = QName.createQName("{org.alfresco.deployment.lock}" + lockStr);
-		Lock lock = new Lock(lockQName);
+		final Lock lock = new Lock(lockQName);
 		lock.makeLock();
 		
 
@@ -1019,7 +1087,7 @@ public class DeploymentServiceImpl implements DeploymentService
         try
         {       
             // Kick off the event queue that will process deployment call-backs 
-            LinkedBlockingQueue<DeploymentEvent> eventQueue = new LinkedBlockingQueue<DeploymentEvent>();
+            final LinkedBlockingQueue<DeploymentEvent> eventQueue = new LinkedBlockingQueue<DeploymentEvent>();
             EventQueueWorker eventQueueWorker = new EventQueueWorker(currentEffectiveUser, eventQueue, callbacks);
 		    eventQueueWorker.setName(eventQueueWorker.getClass().getName());
 			eventQueueWorker.setPriority(Thread.currentThread().getPriority());
@@ -1064,8 +1132,8 @@ public class DeploymentServiceImpl implements DeploymentService
             
                 // Go parallel to reduce the problems of high network latency           
 
-                LinkedBlockingQueue<DeploymentWork> sendQueue = new LinkedBlockingQueue<DeploymentWork>();
-                List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
+                final LinkedBlockingQueue<DeploymentWork> sendQueue = new LinkedBlockingQueue<DeploymentWork>();
+                final List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
 
                 SendQueueWorker[] workers = new SendQueueWorker[numberOfSendingThreads];
                 for(int i = 0; i < numberOfSendingThreads; i++)
@@ -1084,7 +1152,23 @@ public class DeploymentServiceImpl implements DeploymentService
                 {	
                 	DeploymentToken token = service.begin(target, storeName, version, userName, password.toCharArray());
                 	ticket = token.getTicket();
-                	deployDirectoryPushFSR(service, ticket, version, srcPath, "/", matcher, eventQueue, sendQueue, errors, lock);
+                	
+                	// run this in its own txn
+                	final DeploymentReceiverService fservice = service; 
+                	final String fTicket = ticket;
+                	final int fVersion = version;
+                    RetryingTransactionCallback<Integer> pushFSR = new RetryingTransactionCallback<Integer>()
+                    {
+                        public Integer execute() throws Throwable
+                        {
+                            deployDirectoryPushFSR(fservice, fTicket, fVersion, srcPath, "/", matcher, eventQueue, sendQueue, errors, lock);
+                            return 0;
+                        }
+                    };
+                    
+                    RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
+                    trn.doInTransaction(pushFSR, false, true); 
+    
                 }
                 catch (Exception e)
                 {

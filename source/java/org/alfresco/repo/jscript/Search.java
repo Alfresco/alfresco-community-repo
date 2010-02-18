@@ -46,12 +46,14 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ISO9075;
-import org.springframework.extensions.surf.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import com.werken.saxpath.XPathReader;
 
@@ -70,6 +72,8 @@ import com.werken.saxpath.XPathReader;
  */
 public class Search extends BaseScopableProcessorExtension
 {
+    private static Log logger = LogFactory.getLog(Search.class);
+    
     /** Service registry */
     protected ServiceRegistry services;
 
@@ -437,7 +441,9 @@ public class Search extends BaseScopableProcessorExtension
      *    templates: [],          optional, Array of query language template objects (see below) - if supported by the language 
      *    sort: [],               optional, Array of sort column objects (see below) - if supported by the language
      *    page: object,           optional, paging information object (see below) - if supported by the language
-     *    namespace: string       optional, the default namespace for properties
+     *    namespace: string,      optional, the default namespace for properties
+     *    defaultField: string,   optional, the default field for query elements when not explicit in the query
+     *    onerror: string         optional, result on error - one of: exception, no-results - defaults to 'exception'
      * }
      * 
      * sort
@@ -491,6 +497,8 @@ public class Search extends BaseScopableProcessorExtension
                 List<Map<Serializable, Serializable>> sort = (List<Map<Serializable, Serializable>>)def.get("sort");
                 Map<Serializable, Serializable> page = (Map<Serializable, Serializable>)def.get("page");
                 String namespace = (String)def.get("namespace");
+                String onerror = (String)def.get("onerror");
+                String defaultField = (String)def.get("defaultField");
                 
                 // extract supplied values
                 
@@ -572,6 +580,10 @@ public class Search extends BaseScopableProcessorExtension
                 sp.addStore(store != null ? new StoreRef(store) : this.storeRef);
                 sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
                 sp.setQuery(query);
+                if (defaultField != null)
+                {
+                    sp.setDefaultFieldName(defaultField);
+                }
                 if (namespace != null)
                 {
                     sp.setNamespace(namespace);
@@ -600,14 +612,32 @@ public class Search extends BaseScopableProcessorExtension
                     }
                 }
                 
+                // error handling opions
+                boolean exceptionOnError = true;
+                if (onerror != null)
+                {
+                    if (onerror.equals("exception"))
+                    {
+                        // default value, do nothing
+                    }
+                    else if (onerror.equals("no-results"))
+                    {
+                        exceptionOnError = false;
+                    }
+                    else
+                    {
+                        throw new AlfrescoRuntimeException("Failed to search: Unknown value supplied for 'onerror': " + onerror);
+                    }
+                }
+                
                 // execute search based on search definition
-                results = query(sp);
+                results = query(sp, exceptionOnError);
             }
         }
         
         if (results == null)
         {
-            results = new ScriptNode[0];
+            results = new Object[0];
         }
         
         return Context.getCurrentContext().newArray(getScope(), results);
@@ -693,7 +723,7 @@ public class Search extends BaseScopableProcessorExtension
             }
         }
         
-        return query(sp);
+        return query(sp, true);
     }
     
     /**
@@ -702,11 +732,12 @@ public class Search extends BaseScopableProcessorExtension
      * Removes any duplicates that may be present (ID search can cause duplicates -
      * it is better to remove them here)
      * 
-     * @param sp            SearchParameters describing the search to execute.
+     * @param sp                SearchParameters describing the search to execute.
+     * @param exceptionOnError  True to throw a runtime exception on error, false to return empty resultset
      * 
      * @return Array of Node objects
      */
-    protected Object[] query(SearchParameters sp)
+    protected Object[] query(SearchParameters sp, boolean exceptionOnError)
     {   
         Collection<ScriptNode> set = null;
         
@@ -728,7 +759,14 @@ public class Search extends BaseScopableProcessorExtension
         }
         catch (Throwable err)
         {
-            throw new AlfrescoRuntimeException("Failed to execute search: " + sp.getQuery(), err);
+            if (exceptionOnError)
+            {
+                throw new AlfrescoRuntimeException("Failed to execute search: " + sp.getQuery(), err);
+            }
+            else if (logger.isDebugEnabled())
+            {
+                logger.debug("Failed to execute search: " + sp.getQuery(), err);
+            }
         }
         finally
         {

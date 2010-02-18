@@ -25,9 +25,12 @@
 
 package org.alfresco.repo.action.constraint;
 
+import java.util.Map;
+
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Base implementation of a parameter constraint
@@ -42,6 +45,9 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
 
     /** Runtime action service */
     protected RuntimeActionService actionService;
+    
+    /** Map of allowable values */
+    protected Map<String, String> allowableValues;
     
     /**
      * Init method
@@ -76,4 +82,60 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
     {
         this.name = name;
     }    
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
+     */
+    public Map<String, String> getAllowableValues()
+    {
+        if (this.allowableValues == null)
+        {            
+            this.allowableValues = getAllowableValuesImpl();
+        }
+        
+        return this.allowableValues;
+    }
+    
+    /**
+     * Gets the list of allowable values, calculating them every time it is called.
+     * 
+     * @return Map<String, String> map of allowable values
+     */
+    protected abstract Map<String, String> getAllowableValuesImpl();
+    
+    /**
+     * Get the I18N display label for a particular key
+     * 
+     * @param key 
+     * @return String I18N value
+     */
+    protected String getI18NLabel(String key)
+    {
+        String result = key.toString();
+        StringBuffer longKey = new StringBuffer(name).
+                                    append(".").
+                                    append(key.toString().toLowerCase());
+        String i18n = I18NUtil.getMessage(longKey.toString());
+        if (i18n != null)
+        {
+            result = i18n;
+        }
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ParameterConstraint#getValueDisplayLabel(java.io.Serializable)
+     */
+    public String getValueDisplayLabel(String value)
+    {
+        return getAllowableValues().get(value);        
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.action.ParameterConstraint#isValidValue(java.io.Serializable)
+     */
+    public boolean isValidValue(String value)
+    {
+        return getAllowableValues().containsKey(value);
+    }
 }

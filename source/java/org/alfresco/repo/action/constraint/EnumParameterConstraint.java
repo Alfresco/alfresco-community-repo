@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Enumerated type parameter constraint
@@ -44,9 +43,6 @@ public class EnumParameterConstraint extends BaseParameterConstraint
     /** Enum clss */
     private Class<?> enumClass;
     
-    /** Map of allowable values */
-    private Map<String, String> allowableValues;
-    
     /**
      * Set the enum class name
      * 
@@ -60,27 +56,24 @@ public class EnumParameterConstraint extends BaseParameterConstraint
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
-    public Map<String, String> getAllowableValues()
-    {
-        if (this.allowableValues == null)
-        {            
-            // Get the enum class
-            Class<?> enumClass = getEnumClass();
-                                               
-            Object[] enumValues = enumClass.getEnumConstants();
-            this.allowableValues = new HashMap<String, String>(enumValues.length);
-            
-            for (Object enumValue : enumValues)
-            {
-                // Look up the I18N value
-                String displayLabel = getI18NLabel(enumClass.getName(), enumValue);
-                
-                // Add to the map of allowed values
-                this.allowableValues.put(enumValue.toString(), displayLabel);                    
-            } 
-        }
+    protected Map<String, String> getAllowableValuesImpl()
+    {                  
+        // Get the enum class
+        Class<?> enumClass = getEnumClass();
+                                           
+        Object[] enumValues = enumClass.getEnumConstants();
+        Map<String, String> allowableValues = new HashMap<String, String>(enumValues.length);
         
-        return this.allowableValues;
+        for (Object enumValue : enumValues)
+        {
+            // Look up the I18N value
+            String displayLabel = getI18NLabel(enumValue.toString());
+            
+            // Add to the map of allowed values
+            allowableValues.put(enumValue.toString(), displayLabel);                    
+        } 
+        
+        return allowableValues;
     }    
     
     /**
@@ -115,42 +108,5 @@ public class EnumParameterConstraint extends BaseParameterConstraint
             }
         }
         return this.enumClass;
-    }
-    
-    /**
-     * Get the I18N display label for a particular enum value
-     * 
-     * @param enumClassName
-     * @param enumValue
-     * @return
-     */
-    private String getI18NLabel(String enumClassName, Object enumValue)
-    {
-        String result = enumValue.toString();
-        StringBuffer key = new StringBuffer(name).
-                                    append(".").
-                                    append(enumValue.toString().toLowerCase());
-        String i18n = I18NUtil.getMessage(key.toString());
-        if (i18n != null)
-        {
-            result = i18n;
-        }
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#getValueDisplayLabel(java.io.Serializable)
-     */
-    public String getValueDisplayLabel(String value)
-    {
-        return getAllowableValues().get(value);        
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#isValidValue(java.io.Serializable)
-     */
-    public boolean isValidValue(String value)
-    {
-        return getAllowableValues().containsKey(value);
     }
 }

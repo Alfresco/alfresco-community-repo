@@ -86,7 +86,7 @@ public class HasAspectEvaluator extends ActionConditionEvaluatorAbstractBase
 	@Override
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
-        paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT), false, "ac-aspects"));
 	}
 
 }

@@ -39,7 +39,7 @@ import org.alfresco.util.BaseSpringTest;
  */
 public class ActionParameterConstraintTest extends BaseSpringTest
 {
-    private static final String COMPARE_OP = "compare-operations";
+    private static final String COMPARE_OP = "ac-compare-operations";
     
     private ActionService actionService;
     
@@ -79,6 +79,31 @@ public class ActionParameterConstraintTest extends BaseSpringTest
         assertEquals("Ends With", constraint.getValueDisplayLabel(ComparePropertyValueOperation.ENDS.toString()));
         
         Map<String, String> values = constraint.getAllowableValues();
+        for (Map.Entry<String, String> entry : values.entrySet())
+        {
+            System.out.println(entry.getKey() + " - " + entry.getValue());
+        }
+    }
+    
+    public void testConstraints()
+    {
+        testConstraint("ac-aspects");
+        testConstraint("ac-types");
+        testConstraint("ac-properties");
+        testConstraint("ac-mimetypes");
+        testConstraint("ac-email-templates");
+        testConstraint("ac-scripts");
+    }
+    
+    private void testConstraint(String name)
+    {
+        ParameterConstraint constraint = actionService.getParameterConstraint(name);        
+        assertNotNull(constraint);
+        assertEquals(name, constraint.getName());
+        
+        Map<String, String> values = constraint.getAllowableValues();
+        assertTrue(values.size()>0);
+        System.out.println("== " + name + " ==\n");
         for (Map.Entry<String, String> entry : values.entrySet())
         {
             System.out.println(entry.getKey() + " - " + entry.getValue());

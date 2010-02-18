@@ -147,10 +147,40 @@
       <property name="actionService" ref="actionService"/>
    </bean>
    
-   <bean id="compare-operations" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
+   <bean id="ac-compare-operations" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
       <property name="enumClassName" value="org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation" />
    </bean>
-
+   
+   <bean id="ac-mimetypes" class="org.alfresco.repo.action.constraint.MimetypeParameterConstraint" parent="action-constraint">      
+    	<property name="mimetypeMap" ref="mimetypeService"/>
+   </bean>
+   
+   <bean id="ac-types" class="org.alfresco.repo.action.constraint.TypeParameterConstraint" parent="action-constraint">      
+    	<property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+   
+   <bean id="ac-aspects" class="org.alfresco.repo.action.constraint.AspectParameterConstraint" parent="action-constraint">      
+    	<property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+   
+   <bean id="ac-properties" class="org.alfresco.repo.action.constraint.PropertyParameterConstraint" parent="action-constraint">      
+    	<property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+   
+   <bean id="ac-email-templates" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
+    	<property name="dictionaryService" ref="dictionaryService"/>
+    	<property name="searchService" ref="searchService"/>
+    	<property name="nodeService" ref="nodeService"/>
+    	<property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates"/>
+   </bean>
+   
+   <bean id="ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
+    	<property name="dictionaryService" ref="dictionaryService"/>
+    	<property name="searchService" ref="searchService"/>
+    	<property name="nodeService" ref="nodeService"/>
+    	<property name="searchPath" value="/app:company_home/app:dictionary/app:scripts"/>
+   </bean>	
+   
     <!-- Action Conditions -->
 
     <bean id="action-condition-evaluator" abstract="true" init-method="init">

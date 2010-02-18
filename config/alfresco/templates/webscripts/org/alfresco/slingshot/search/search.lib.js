@@ -10,6 +10,8 @@
  */
 const DEFAULT_MAX_RESULTS = 100;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
+const QUERY_TEMPLATES = [
+   {field: "keywords", template: "%(cm:name cm:title cm:description lnk:title lnk:description TEXT)"}];
 
 /**
  * Returns site data as returned to the user.
@@ -123,12 +125,13 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    //          be returned instead
    
    // check whether we already processed this document
-   if (checkProcessed(siteId + containerId, "" + node.nodeRef.toString()))
+   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
       return null;
    }
-   addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
-    
+   addToProcessed(cat, refkey);
+   
    // check whether this is a valid folder or a file
    var item = null;
    if (node.isContainer || node.isDocument)
@@ -194,12 +197,13 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    }
    
    // check whether we already added this blog post
-   if (checkProcessed(siteId + containerId, "" + child.nodeRef.toString()))
+   var cat = siteId + containerId, refkey = "" + child.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
       return null;
    }
-   addToProcessed(siteId + containerId, "" + child.nodeRef.toString());
-       
+   addToProcessed(cat, refkey);
+   
    // child is our blog post
    item =
    {
@@ -237,11 +241,12 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    }
    
    // make sure we haven't already added the post
-   if (checkProcessed(siteId + containerId, "" + topicNode.nodeRef.toString()))
+   var cat = siteId + containerId, refkey = "" + topicNode.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
       return null;
    }
-   addToProcessed(siteId + containerId, "" + topicNode.nodeRef.toString());
+   addToProcessed(cat, refkey);
    
    // find the first post, which contains the post title
    // PENDING: error prone
@@ -280,11 +285,12 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
    }
    
    // make sure we haven't already added the post
-   if (checkProcessed(siteId + containerId, "" + node.nodeRef.toString()))
+   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
       return null;
    }
-   addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
+   addToProcessed(cat, refkey);
    
    var item =
    {
@@ -318,11 +324,12 @@ function getWikiItem(siteId, containerId, restOfPath, node)
    }
    
    // make sure we haven't already added the page
-   if (checkProcessed(siteId + containerId, "" + node.nodeRef.toString()))
+   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
       return null;
    }
-   addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
+   addToProcessed(cat, refkey);
    
    var item =
    {
@@ -356,11 +363,12 @@ function getLinkItem(siteId, containerId, restOfPath, node)
    }
    
    // make sure we haven't already added this link
-   if (checkProcessed(siteId + containerId, "" + node.nodeRef.toString()))
+   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
+   if (checkProcessed(cat, refkey))
    {
       return null;
    }
-   addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
+   addToProcessed(cat, refkey);
    
    var item =
    {
@@ -494,86 +502,59 @@ function processResults(nodes, maxResults)
 }
 
 /**
- * Return Search results with the given search terms
- * Terms are split on whitespace characters.
+ * Return Search results with the given search terms.
  * 
- * AND, OR and NOT are supported - as their Lucene equivalent.
+ * "or" is the default operator, AND and NOT are also supported - as is any other valid fts-alfresco
+ * elements such as "quoted terms" and (bracket terms) and also propname:propvalue syntax.
  */
-function getSearchResults(term, maxResults, siteId, containerId)
+function getSearchResults(term, tag, maxResults, siteId, containerId)
 {
-   var path = SITES_SPACE_QNAME_PATH;
-   if (siteId !== null && siteId.length > 0)
-   {
-      path += "cm:" + search.ISO9075Encode(siteId) + "/";
-   }
-   else
-   {
-      path += "*/";
-   }
-   if (containerId !== null && containerId.length > 0)
-   {
-      path += "cm:" + search.ISO9075Encode(containerId) + "/";
-   }
-   else
-   {
-      path += "*/";
-   }
-	
-   var luceneQuery = "";
-   if (term !== null && term.length !== 0)
-   {
-      // TODO: Perform smarter term processing. For now we simply split on whitespace
-      //       which ignores quoted phrases that may be present.
-      var terms = term.split(/\s/),
-         i, j, t;
-      
-      for (i = 0, j = terms.length; i < j; i++)
-      {
-         t = terms[i];
-         // remove quotes - TODO: add support for quoted terms later
-         t = t.replace(/\"/g, "");
-         if (t.length !== 0)
-         {
-            switch (t.toLowerCase())
-            {
-               case "and":
-                  if (i < j - 1 && terms[i + 1].length !== 0)
-                  {
-                     luceneQuery += "AND ";
-                  }
-                  break;
-               
-               case "or":
-                  break;
-               
-               case "not":
-                  if (i < j - 1 && terms[i + 1].length !== 0)
-                  {
-                     luceneQuery += "NOT ";
-                  }
-                  break;
-               
-               default:
-                  luceneQuery += "(TEXT:\"" + t + "\"" +          // full text
-                                 " @cm\\:name:\"" + t + "\"" +    // name property
-                                 " @cm\\:title:\"" + t + "\"" +   // title property
-                                 " @lnk\\:title:\"" + t + "\"" +  // link title
-                                 " @lnk\\:description:\"" + t + "\"" +  // link description
-                                 " PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(t) + "/member\"" + // tags
-                                 ") ";
-            }
-         }
-      }
-   }
-   
    var nodes;
    
-   // if we processed the search terms, then suffix the PATH query
-   if (luceneQuery.length !== 0)
+   var ftsQuery = "";
+   if (term !== null && term.length !== 0)
    {
-      luceneQuery = "+PATH:\"" + path + "/*\" +(" + luceneQuery + ")";
-      luceneQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
-      nodes = search.luceneSearch(luceneQuery, null, true, maxResults);
+      ftsQuery = "(" + term + ") PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\"";
+   }
+   else if (tag !== null && tag.length !== 0)
+   {
+      ftsQuery = "PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\"";
+   }
+   
+   if (ftsQuery.length !== 0)
+   {
+      // we processed the search terms, so suffix the PATH query
+      var path = SITES_SPACE_QNAME_PATH;
+      if (siteId !== null && siteId.length > 0)
+      {
+         path += "cm:" + search.ISO9075Encode(siteId) + "/";
+      }
+      else
+      {
+         path += "*/";
+      }
+      if (containerId !== null && containerId.length > 0)
+      {
+         path += "cm:" + search.ISO9075Encode(containerId) + "/";
+      }
+      else
+      {
+         path += "*/";
+      }
+   	
+      ftsQuery  = "PATH:\"" + path + "/*\" AND (" + ftsQuery + ") ";
+      ftsQuery += "AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+      
+      // perform fts-alfresco language query
+      var queryDef = {
+         query: ftsQuery,
+         language: "fts-alfresco",
+         page: {maxItems: maxResults},
+         templates: QUERY_TEMPLATES,
+         defaultField: "keywords",
+         onerror: "no-results"
+      };
+      nodes = search.query(queryDef);
    }
    else
    {

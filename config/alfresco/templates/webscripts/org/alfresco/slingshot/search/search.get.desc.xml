@@ -1,7 +1,7 @@
 <webscript>
    <shortname>search</shortname>
    <description>Site Search Component Data Webscript</description>
-   <url>/slingshot/search?term={term}&amp;site={site?}&amp;container={container?}</url>
+   <url>/slingshot/search?term={term?}&amp;tag={tag?}&amp;site={site?}&amp;container={container?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

@@ -25,13 +25,14 @@
 package org.alfresco.repo.node.integrity;
 
 import java.util.List;
+import java.io.Serializable;
 
 /**
  * Represents an integrity violation
  * 
  * @author Derek Hulley
  */
-public class IntegrityRecord
+public class IntegrityRecord implements Serializable
 {
     private String msg;
     private List<StackTraceElement[]> traces;

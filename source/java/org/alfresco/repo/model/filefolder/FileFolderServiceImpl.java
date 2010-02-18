@@ -965,7 +965,7 @@ public class FileFolderServiceImpl implements FileFolderService
      * @param parentNodeRef
      * @param pathElements
      * @param folderTypeQName
-     * @return
+     * @return FileInfo for the bottom node in pathElements.
      */
     public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)
     {

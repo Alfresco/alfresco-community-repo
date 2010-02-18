@@ -165,4 +165,9 @@ public interface WCMAppModel
     // Aspect to track content that expires
     static final QName ASPECT_EXPIRES = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "expires");
     static final QName PROP_EXPIRATIONDATE = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "expirationDate");
+
+    // Aspect to track dm deployed content
+    static final QName ASPECT_DEPLOYED = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "deployed");
+    static final QName PROP_GUID = QName.createQName(NamespaceService.WCMAPP_MODEL_1_0_URI, "guid");
+
 }

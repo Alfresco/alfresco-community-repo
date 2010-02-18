@@ -652,6 +652,18 @@
             </property>
          </properties>
       </aspect>
+      
+      <aspect name="wca:deployed">
+         <title>Has this content been deployed from wcm</title>
+         <properties>
+            <property name="wca:guid">
+               <title>WCM unique version</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
    </aspects>
 
 </model>

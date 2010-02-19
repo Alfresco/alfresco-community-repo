@@ -24,9 +24,15 @@
  */
 package org.alfresco.util;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -34,6 +40,7 @@ import java.util.Set;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.parsing.AliasDefinition;
@@ -41,8 +48,11 @@ import org.springframework.beans.factory.parsing.ComponentDefinition;
 import org.springframework.beans.factory.parsing.DefaultsDefinition;
 import org.springframework.beans.factory.parsing.ImportDefinition;
 import org.springframework.beans.factory.parsing.ReaderEventListener;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.sun.star.io.IOException;
 
 /**
  * Helper class to list the dependencies between different 
@@ -60,38 +70,57 @@ public class ContextDependencyLister
 //      "classpath:test/alfresco/fake-context/application-context.xml" 
    };
    private String[] configLocations;
-   private boolean beanLevel = false;
    
-   public ContextDependencyLister(String[] configLocations, boolean beanLevel) {
+   public ContextDependencyLister(String[] configLocations) {
       this.configLocations = configLocations;
-      this.beanLevel = beanLevel;
    }
    public ContextDependencyLister() {
-      this(DEFAULT_CONFIG_LOCATIONS, false);
+      this(DEFAULT_CONFIG_LOCATIONS);
    }
    
    public static void main(String[] args) throws Exception {
       ContextDependencyLister lister;
-      if(args.length > 0) {
-         lister = new ContextDependencyLister(args, true);
+      
+      boolean beanLevel = false;
+      boolean graphViz = false;
+      if(args.length > 0 && "-graphviz".equals(args[0])) {
+         graphViz = true;
+         lister = new ContextDependencyLister();
+      } else if(args.length > 0) {
+         beanLevel = true;
+         lister = new ContextDependencyLister(args);
       } else {
          lister = new ContextDependencyLister();
       }
-      
-      lister.printDependencies();
+
+      if(graphViz) {
+         lister.graphVizDependencies("/tmp/context.dot");
+      } else {
+         lister.printDependencies(beanLevel);
+      }
    }
    
-   public void printDependencies() {
-      BeanTrackingApplicationContext instance = 
-         new BeanTrackingApplicationContext(configLocations);
+   private BeanTrackingApplicationContext instance;
+   private Hashtable<String, List<String>> contextBeans;
+   private Hashtable<String, List<String>> beanDependencies;
+   private Hashtable<String, List<String>> beanDependedOnBy;
+   private Hashtable<String, Set<String>> contextDependsOn;
+   private Hashtable<String, Set<String>> contextDependedOnBy;
+   
+   private void calculateDependencies() {
+      long startTime = System.currentTimeMillis();
+      instance = new BeanTrackingApplicationContext(configLocations);
+      long endTime = System.currentTimeMillis();
+      NumberFormat df = NumberFormat.getNumberInstance();
       
       System.out.println();
       System.out.println("Loading complete");
+      System.out.println("  Took " + df.format( (endTime-startTime) / 1000 ) + " seconds");
       System.out.println();
       
       // We have a list of where all the beans come from
       // Invert that so we have a list of all the beans for a given context
-      Hashtable<String, List<String>> contextBeans = new Hashtable<String, List<String>>();
+      contextBeans = new Hashtable<String, List<String>>();
       for(String bean : instance.btl.beanSource.keySet()) {
          String context = instance.btl.beanSource.get(bean);
          if(! contextBeans.containsKey(context)) {
@@ -103,8 +132,8 @@ public class ContextDependencyLister
       // Filter the list of which beans depend on which beans to only
       //  hold the external dependencies
       // At the same time, generate the inverted list too
-      Hashtable<String, List<String>> beanDependencies = new Hashtable<String, List<String>>();
-      Hashtable<String, List<String>> beanDependedOnBy = new Hashtable<String, List<String>>();
+      beanDependencies = new Hashtable<String, List<String>>();
+      beanDependedOnBy = new Hashtable<String, List<String>>();
       for(String parentBean : instance.btl.beanAllDependencies.keySet()) {
          String parentContext = instance.btl.beanSource.get(parentBean);
          if(parentContext == null) {
@@ -147,8 +176,8 @@ public class ContextDependencyLister
       
       // Now move up to the context level
       // Does this by looking up bean<->bean dependencies and resolving to contexts
-      Hashtable<String, Set<String>> contextDependsOn = new Hashtable<String, Set<String>>();
-      Hashtable<String, Set<String>> contextDependedOnBy = new Hashtable<String, Set<String>>();
+      contextDependsOn = new Hashtable<String, Set<String>>();
+      contextDependedOnBy = new Hashtable<String, Set<String>>();
       for(String parentBean : beanDependencies.keySet()) {
          String parentContext = instance.btl.beanSource.get(parentBean);
          
@@ -175,10 +204,16 @@ public class ContextDependencyLister
             contextDependedOnBy.get(depContext).add(parentContext);
          }
       }
-      
+   }
+
+   /**
+    * Prints out the dependencies in text format
+    */
+   public void printDependencies(boolean beanLevel) {
+      calculateDependencies();
       
       // Print out the details for each context
-      for(String context : instance.btl.contextFiles) {
+      for(String context : instance.btl.usedContextFiles) {
          System.out.println(context);
          
          // Print which contexts this depends on
@@ -260,6 +295,153 @@ public class ContextDependencyLister
       }
    }
    
+   /**
+    * Renders the dependencies as GraphViz DotXML
+    */
+   public void graphVizDependencies(String outFile) throws IOException, FileNotFoundException {
+      calculateDependencies();
+      
+      // We need to know one bean from each context that we'll output
+      // This is because we can't do context<->context links, we have
+      //  to do bean<->bean
+      HashMap<String, String> linkBean = new HashMap<String, String>();
+      for(String context : instance.btl.usedContextFiles) {
+         if(contextBeans.containsKey(context)) {
+            for(String ourBean : contextBeans.get(context)) {
+               if(beanDependencies.containsKey(ourBean) || beanDependedOnBy.containsKey(ourBean)) {
+                  if(! linkBean.containsKey(context)) {
+                     linkBean.put(context, ourBean);
+                  }
+               }
+            }
+         }
+      }
+      
+      // Off we go
+      PrintWriter out = new PrintWriter(new OutputStreamWriter(
+            new FileOutputStream(outFile)));
+      
+      out.println("digraph cluster {");
+      out.println(" nodesep = \"0.2\";");
+      out.println(" ranksep = \"0.3\";");
+      out.println(" compound = \"true\";");
+      out.println(" rankdir = \"LR\";");
+      
+      StringBuffer beanLinks = new StringBuffer();
+      StringBuffer contextLinks = new StringBuffer();
+      
+      for(String context : instance.btl.usedContextFiles) {
+         String contextId = makeGraphVizContextId(context);
+         String contextLabel = makeGraphVizLabel(context);
+         out.println(" subgraph "+contextId+" {");
+         out.println("  label = \"" + contextLabel + "\";");
+         out.println("  style = filled;"); 
+         out.println("  color = \"azure3\";"); 
+         out.println("  fontcolor = \"coral3\";"); 
+         out.println("  fontname = \"Arial\";"); 
+         out.println("  fontsize = \"15\";"); 
+         //out.println("<cluster id=\""+contextId+"\" label=\""+context+"\" style=\"filled\" " +
+         //		"fillcolor=\"#EEEEFF\" fontcolor=\"#900000\" fontname=\"Arial\" fontsize=\"15\">");
+         
+         // Only ever print our depends on
+         // Depended on by gets done on another pass
+
+         // Other context files
+         if(contextDependsOn.containsKey(context)) {
+            String ourBean1Id = makeGraphVizNodeId(
+                  linkBean.get(context)
+            );
+            
+            for(String ctx : contextDependsOn.get(context)) {
+               // We have to draw bean->bean links for this, as
+               // graphviz won't do cluster->cluster links
+               String theirBean1Id = makeGraphVizNodeId(
+                     linkBean.get(ctx)
+               );
+               String theirId = makeGraphVizContextId(ctx);
+               
+               contextLinks.append(" " + ourBean1Id + " -> " + theirBean1Id + 
+                     " [color=\"coral3\", ltail=" + contextId + ", lhead=" + theirId + "];");
+               contextLinks.append('\n');
+            }
+         }
+         
+         // Beans
+         if(contextBeans.containsKey(context)) {
+            // Grab the list
+            ArrayList<String> displayBeans = new ArrayList<String>();
+            for(String ourBean : contextBeans.get(context)) {
+               if(beanDependencies.containsKey(ourBean) || beanDependedOnBy.containsKey(ourBean)) {
+                  displayBeans.add(ourBean);
+               }
+            }
+            
+            if(! displayBeans.isEmpty()) {
+               for(String ourBean : displayBeans) {
+                  String nodeId = makeGraphVizNodeId(ourBean);
+                  
+                  out.println("    " + nodeId + " [label=\"" + ourBean + "\",fontsize=9];");
+                  
+                  // Only outbound links
+                  if(beanDependencies.containsKey(ourBean)) {
+                     for(String depBean : beanDependencies.get(ourBean)) {
+                        String otherId = makeGraphVizNodeId(depBean);
+                        beanLinks.append(" " + nodeId + " -> " + otherId + " [color=\"deepskyblue2\"];");
+                        beanLinks.append('\n');
+                     }
+                  }
+               }
+            }
+         }
+         
+         out.println(" }");
+         
+         out.println();
+      }
+      
+      out.print(contextLinks.toString());
+      out.println();
+      out.print(beanLinks.toString());
+      
+      out.println("}");
+      out.close();
+   }
+   private String makeGraphVizContextId(String thing) {
+      return "cluster" + makeGraphVizId(thing);
+   }
+   private String makeGraphVizNodeId(String thing) {
+      return "n" + makeGraphVizId(thing);
+   }
+   private String makeGraphVizId(String thing) {
+      return Integer.toHexString(thing.hashCode());
+   }
+   /**
+    * Need to break over lines or the boxes end up being
+    *  much too big to look nice
+    */
+   private String makeGraphVizLabel(String thing) {
+      if(thing.length() < 45) {
+         return thing;
+      }
+      int minSplit = 20;
+      int splitAt = thing.indexOf('/');
+      if(splitAt > -1 && splitAt < minSplit) {
+         int newSplit = thing.substring(minSplit).indexOf('/');
+         if(newSplit > -1) {
+            splitAt = minSplit + newSplit;
+         } else {
+            splitAt = -1;
+         }
+      }
+      if(splitAt == -1 || splitAt > 45) {
+         splitAt = 44;
+      }
+      splitAt++;
+      String partA = thing.substring(0, splitAt);
+      String partB = makeGraphVizLabel( thing.substring(splitAt) );
+      return partA + "\\n" + partB;
+   }
+   
    
    public static class BeanTrackingApplicationContext extends ClassPathXmlApplicationContext {
       private BeanTrackingListener btl;
@@ -286,8 +468,10 @@ public class ContextDependencyLister
    
    
    public static class BeanTrackingListener implements ReaderEventListener {
-      // So we can track them in order
-      private ArrayList<String> contextFiles = new ArrayList<String>();
+      // Track the files in order of starting and finishing importing
+      private ArrayList<String> usedContextFiles = new ArrayList<String>(); // Use order
+      private ArrayList<String> importedContextFiles = new ArrayList<String>(); // Finish order
+      
       // Which beans come from where
       // In the case of overriden beans, track the last place
       private Hashtable<String, String> beanSource = new Hashtable<String, String>();
@@ -312,56 +496,65 @@ public class ContextDependencyLister
          String name = paramComponentDefinition.getName();
          
          for(BeanDefinition bd : paramComponentDefinition.getBeanDefinitions()) {
-            // Where does it come from?
-            String resource = bd.getResourceDescription();
-            int openSB = resource.indexOf('['); 
-            int closeSB = resource.indexOf(']');
-            if(openSB > -1 && closeSB > -1 && openSB < closeSB) {
-               String source = resource.substring(openSB+1, closeSB);
-               
-               if(pathToSlash != null) {
-                  if(source.startsWith(pathToSlash)) {
-                     source = source.replace(pathToSlash, "");
-                  }
-                  if(source.startsWith(uriToSlash)) {
-                     source = source.replace(uriToSlash, "");
-                  }
-               }
-               
-               beanSource.put(name, source);
-            } else {
-               System.err.println("Unknown resource location:\n\t" + resource);
-            }
+            processBeanDefinition(name, bd);
+         }
+      }
+      
+      private void processBeanDefinition(String beanName, BeanDefinition bd) {
+         // Where does it come from?
+         String resource = bd.getResourceDescription();
+         int openSB = resource.indexOf('['); 
+         int closeSB = resource.indexOf(']');
+         if(openSB > -1 && closeSB > -1 && openSB < closeSB) {
+            String source = resource.substring(openSB+1, closeSB);
             
-            // What (if anything) does it reference?
-            List<String> refs = new ArrayList<String>();
-            
-            if(! bd.getConstructorArgumentValues().isEmpty()) {
-               for(ValueHolder vh : bd.getConstructorArgumentValues().getGenericArgumentValues()) {
-                  Object v = vh.getValue();
-                  addRefIfNeeded(v, refs);
+            if(pathToSlash != null) {
+               if(source.startsWith(pathToSlash)) {
+                  source = source.replace(pathToSlash, "");
                }
-               for(ValueHolder vh : bd.getConstructorArgumentValues().getIndexedArgumentValues().values()) {
-                  Object v = vh.getValue();
-                  addRefIfNeeded(v, refs);
-               }
-            }
-            if(! bd.getPropertyValues().isEmpty()) {
-               for(PropertyValue pv : bd.getPropertyValues().getPropertyValueList()) {
-                  Object v = pv.getValue();
-                  addRefIfNeeded(v, refs);
+               if(source.startsWith(uriToSlash)) {
+                  source = source.replace(uriToSlash, "");
                }
             }
             
-            // Check for a parent - we'll depend on that too!
-            if(bd.getParentName() != null) {
-               addRefIfNeeded(bd.getParentName(), refs);
-            }
+            beanSource.put(beanName, source);
             
-            // Record the dependencies if we found any
-            if(! refs.isEmpty()) {
-               beanAllDependencies.put(name, refs);
+            // Record this context file if not already seen
+            if(! usedContextFiles.contains(source)) {
+               usedContextFiles.add(source);
             }
+         } else {
+            System.err.println("Unknown resource location:\n\t" + resource);
+         }
+         
+         // What (if anything) does it reference?
+         List<String> refs = new ArrayList<String>();
+         
+         if(! bd.getConstructorArgumentValues().isEmpty()) {
+            for(ValueHolder vh : bd.getConstructorArgumentValues().getGenericArgumentValues()) {
+               Object v = vh.getValue();
+               addRefIfNeeded(v, refs);
+            }
+            for(ValueHolder vh : bd.getConstructorArgumentValues().getIndexedArgumentValues().values()) {
+               Object v = vh.getValue();
+               addRefIfNeeded(v, refs);
+            }
+         }
+         if(! bd.getPropertyValues().isEmpty()) {
+            for(PropertyValue pv : bd.getPropertyValues().getPropertyValueList()) {
+               Object v = pv.getValue();
+               addRefIfNeeded(v, refs);
+            }
+         }
+         
+         // Check for a parent - we'll depend on that too!
+         if(bd.getParentName() != null) {
+            addRefIfNeeded(bd.getParentName(), refs);
+         }
+         
+         // Record the dependencies if we found any
+         if(! refs.isEmpty()) {
+            beanAllDependencies.put(beanName, refs);
          }
       }
       
@@ -388,6 +581,15 @@ public class ContextDependencyLister
             if(name == null || name.length() == 0) {
                System.err.println("Warning - empty reference " + r);
             }
+         } else if(v instanceof BeanDefinitionHolder) {
+            // Nested bean definition
+            BeanDefinitionHolder bdh = (BeanDefinitionHolder)v;
+            processBeanDefinition(bdh.getBeanName(), bdh.getBeanDefinition());
+         } else if(v instanceof ManagedList<?>) {
+            ManagedList<?> ml = (ManagedList<?>)v;
+            for(Object le : ml) {
+               addRefIfNeeded(le, refs);
+            }
 //       } else {
 //          System.err.println(v.getClass());
          }
@@ -411,7 +613,11 @@ public class ContextDependencyLister
             context = context.substring(11);
          }
          
-         contextFiles.add( context );
+         // Store
+         if(! usedContextFiles.contains(context)) {
+            usedContextFiles.add( context );
+         }
+         importedContextFiles.add( context );
       }
    }
 }

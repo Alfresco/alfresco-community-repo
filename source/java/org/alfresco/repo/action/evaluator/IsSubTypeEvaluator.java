@@ -104,7 +104,7 @@ public class IsSubTypeEvaluator extends ActionConditionEvaluatorAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_TYPE, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_TYPE)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_TYPE, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_TYPE), false, "ac-types"));
     }
 
 }

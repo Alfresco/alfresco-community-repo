@@ -151,7 +151,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         assertNotNull(constraintName);
         ParameterConstraint paramConstraint = actionService.getParameterConstraint(constraintName);
         assertNotNull(paramConstraint);
-        assertEquals("compare-operations", paramConstraint.getName());
+        assertEquals("ac-compare-operations", paramConstraint.getName());
     }
     
     /**

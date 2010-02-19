@@ -27,6 +27,7 @@ package org.alfresco.repo.action.evaluator;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.evaluator.compare.ContentPropertyName;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -96,6 +97,9 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
 	@Override
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
-        super.addParameterDefinitions(paramList);
+        paramList.add(new ParameterDefinitionImpl(PARAM_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_PROPERTY)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));
+        paramList.add(new ParameterDefinitionImpl(PARAM_OPERATION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_OPERATION), false, "ac-compare-operations"));	    
 	}
 }

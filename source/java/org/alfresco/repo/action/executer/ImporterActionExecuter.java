@@ -303,7 +303,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, 
               true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
         paramList.add(new ParameterDefinitionImpl(PARAM_ENCODING, DataTypeDefinition.TEXT, 
-              true, getParamDisplayLabel(PARAM_ENCODING)));
+              false, getParamDisplayLabel(PARAM_ENCODING)));
 	}
 	
 	/**

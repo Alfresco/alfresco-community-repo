@@ -68,7 +68,7 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     private final static String ID = GUID.generate();
     
     /**
-     * Called at the begining of all tests
+     * Called at the beginning of all tests
      */
     @Override
     protected void onSetUpInTransaction() throws Exception

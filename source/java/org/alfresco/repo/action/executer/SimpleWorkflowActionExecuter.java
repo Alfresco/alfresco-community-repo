@@ -63,9 +63,9 @@ public class SimpleWorkflowActionExecuter extends ActionExecuterAbstractBase
 	@Override
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_APPROVE_STEP, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_APPROVE_STEP)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_APPROVE_FOLDER, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_APPROVE_FOLDER)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_APPROVE_MOVE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_APPROVE_MOVE)));
+		paramList.add(new ParameterDefinitionImpl(PARAM_APPROVE_STEP, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_APPROVE_STEP)));
+		paramList.add(new ParameterDefinitionImpl(PARAM_APPROVE_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_APPROVE_FOLDER)));
+		paramList.add(new ParameterDefinitionImpl(PARAM_APPROVE_MOVE, DataTypeDefinition.BOOLEAN, true, getParamDisplayLabel(PARAM_APPROVE_MOVE)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_REJECT_STEP, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_REJECT_STEP)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_REJECT_FOLDER, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_REJECT_FOLDER)));
 		paramList.add(new ParameterDefinitionImpl(PARAM_REJECT_MOVE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_REJECT_MOVE)));		

@@ -120,6 +120,21 @@
       </property>
    </bean>
    
+    <!-- Characterset decoder -->
+    <bean id="charset.finder" class="org.alfresco.repo.content.encoding.ContentCharsetFinder">
+      <property name="defaultCharset">
+         <value>UTF-8</value>
+      </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService"/>
+      </property>
+      <property name="charactersetFinders">
+         <list>
+            <bean class="org.alfresco.encoding.GuessEncodingCharsetFinder" />
+         </list>
+      </property>
+    </bean>
+
     <bean id="mimetypeConfigService" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
         <constructor-arg>
             <bean class="org.springframework.extensions.config.source.UrlConfigSource">

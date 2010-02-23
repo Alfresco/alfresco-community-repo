@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -52,14 +52,14 @@ public class VersionUtil
      * Reserved property names
      */
     public static final String[] RESERVED_PROPERTY_NAMES = new String[]{
-        VersionModel.PROP_FROZEN_NODE_ID,               // deprecated
-        VersionModel.PROP_FROZEN_NODE_STORE_ID,         // deprecated
-        VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL,   // deprecated
-        VersionModel.PROP_FROZEN_NODE_TYPE,             // deprecated
-        VersionModel.PROP_FROZEN_ASPECTS,               // deprecated
+        VersionModel.PROP_FROZEN_NODE_ID,               // deprecated (since 3.1)
+        VersionModel.PROP_FROZEN_NODE_STORE_ID,         // deprecated (since 3.1)
+        VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL,   // deprecated (since 3.1)
+        VersionModel.PROP_FROZEN_NODE_TYPE,             // deprecated (since 3.1)
+        VersionModel.PROP_FROZEN_ASPECTS,               // deprecated (since 3.1)
         VersionBaseModel.PROP_CREATED_DATE,
         VersionBaseModel.PROP_VERSION_LABEL,
-        VersionBaseModel.PROP_VERSION_NUMBER,
+        VersionBaseModel.PROP_VERSION_NUMBER,           // deprecated (since 3.3)
         VersionBaseModel.PROP_VERSION_DESCRIPTION,
         Version2Model.PROP_FROZEN_NODE_DBID,
         Version2Model.PROP_FROZEN_CREATED,

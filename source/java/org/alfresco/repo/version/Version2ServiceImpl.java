@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,9 +55,9 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Version2 Service - implements version2Store (a lighter implementation of the lightWeightVersionStore)
@@ -123,15 +123,14 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         long startTime = System.currentTimeMillis();
         
-        // Get the next version number
-        int versionNumber = this.versionCounterService.nextVersionNumber(getVersionStoreReference());
-
+        int versionNumber = 0; // deprecated (unused)
+        
         // Create the version
         Version version = createVersion(nodeRef, versionProperties, versionNumber);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("created version (" + versionNumber + " - " + VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()) + ") in " + (System.currentTimeMillis()-startTime) + " ms");
+            logger.debug("created version (" + VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()) + ") in " + (System.currentTimeMillis()-startTime) + " ms");
         }
         
         return version;
@@ -159,9 +158,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         Collection<Version> result = new ArrayList<Version>(nodeRefs.size());
 
-        // Get the next version number
-        int versionNumber = this.versionCounterService.nextVersionNumber(getVersionStoreReference());
-
+        int versionNumber = 0; // deprecated (unused)
+        
         // Version each node in the list
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -170,7 +168,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("created version list (" + versionNumber + " - " + getVersionStoreReference() + ") in "+ (System.currentTimeMillis()-startTime) +" ms (with " + nodeRefs.size() + " nodes)");
+            logger.debug("created version list (" + getVersionStoreReference() + ") in "+ (System.currentTimeMillis()-startTime) +" ms (with " + nodeRefs.size() + " nodes)");
         }
         
         return result;
@@ -294,7 +292,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 
         if (logger.isTraceEnabled())
         {
-            logger.trace("created version (" + versionNumber + " - " + getVersionStoreReference() + ") " + newVersionRef + " " + (System.currentTimeMillis()-startTime) +" ms");
+            logger.trace("created version (" + getVersionStoreReference() + ") " + newVersionRef + " " + (System.currentTimeMillis()-startTime) +" ms");
         }
         
         // Return the data object representing the newly created version
@@ -387,15 +385,15 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     {
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(10);
 
-        // Set the version number
-        result.put(Version2Model.PROP_QNAME_VERSION_NUMBER, versionNumber);
+        // deprecated (unused)
+        //result.put(Version2Model.PROP_QNAME_VERSION_NUMBER, versionNumber);
         
         // Set the version label
         result.put(Version2Model.PROP_QNAME_VERSION_LABEL, versionLabel);
         
         // Set the version description (can be null)
         result.put(Version2Model.PROP_QNAME_VERSION_DESCRIPTION, versionDescription);
-     
+        
         // Set the versionable node store id
         result.put(Version2Model.PROP_QNAME_FROZEN_NODE_REF, nodeRef);
         
@@ -604,9 +602,9 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
         
         VersionHistory versionHistory = null;
-
-    	List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
-
+        
+        List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
+        
         List<Version> versions = new ArrayList<Version>(versionsAssoc.size());
         
         for (ChildAssociationRef versionAssoc : versionsAssoc)
@@ -619,7 +617,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
         
         Collections.sort(versions, versionComparatorAsc);
-
+        
         // Build the version history object
         boolean isRoot = true;
         Version preceeding = null;
@@ -639,7 +637,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         return versionHistory;
     }
-
+    
     /**
      * Constructs the a version object to contain the version information from the version node ref.
      *
@@ -658,7 +656,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             return null;
         }
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-
+        
         // Get the standard node details and get the meta data
         Map<QName, Serializable> nodeProperties = this.dbNodeService.getProperties(versionRef);
         
@@ -692,7 +690,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                }
                else if (key.equals(Version2Model.PROP_QNAME_VERSION_NUMBER))
                {
-                   versionProperties.put(VersionBaseModel.PROP_VERSION_NUMBER, (Integer)value);
+                   // deprecated (unused)
+                   //versionProperties.put(VersionBaseModel.PROP_VERSION_NUMBER, (Integer)value);
                }
                else
                {
@@ -1034,45 +1033,18 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     private Version getHeadVersion(NodeRef nodeRef)
     {
-        Version version = null;
-        StoreRef storeRef = nodeRef.getStoreRef();
-
         NodeRef versionHistoryNodeRef = getVersionHistoryNodeRef(nodeRef);
+        
+        Version headVersion = null;
         if (versionHistoryNodeRef != null)
         {
-        	List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryNodeRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
-        	
-        	ChildAssociationRef headVersionAssoc = null;
-        	int headVersionNumber = -1;
-        	for (ChildAssociationRef versionAssoc : versionsAssoc)
+            VersionHistory versionHistory = buildVersionHistory(versionHistoryNodeRef, nodeRef);
+            if (versionHistory != null)
             {
-        	    String localName = versionAssoc.getQName().getLocalName();
-                if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
-                {
-                    int versionNumber = Integer.parseInt(localName.substring((Version2Model.CHILD_VERSIONS+"-").length()));
-                    if (versionNumber > headVersionNumber)
-                    {
-                        headVersionNumber = versionNumber;
-                        headVersionAssoc = versionAssoc;
-                    }
-                }
+                headVersion = versionHistory.getHeadVersion();
             }
-        	
-        	if (headVersionAssoc != null)
-        	{
-        	    NodeRef versionNodeRef = headVersionAssoc.getChildRef();
-                NodeRef versionedNodeRef = (NodeRef)this.dbNodeService.getProperty(
-                            versionNodeRef,
-                            QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.PROP_FROZEN_NODE_REF));             
-                StoreRef versionStoreRef = versionedNodeRef.getStoreRef();
-                if (storeRef.equals(versionStoreRef) == true)
-                {
-                    version = getVersion(versionNodeRef);
-                }
-        	}
         }
-
-        return version;
+        return headVersion;
     }
 
     /* (non-Javadoc)

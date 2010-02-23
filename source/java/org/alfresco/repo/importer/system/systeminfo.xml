@@ -23,12 +23,6 @@
       </structure>
 
       <structure name="version-store">
-         <collection field="versionCounters" factory="org.alfresco.repo.dictionary.M2Model.createList">
-            <structure name="counter" type="org.alfresco.repo.importer.system.VersionCounterInfo" usage="optional">
-               <value name="store-ref" field="storeRef"/>
-               <value name="count" field="count"/>
-            </structure>
-         </collection>
       </structure>
       
    </mapping>

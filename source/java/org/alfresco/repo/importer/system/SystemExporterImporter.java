@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,9 +30,7 @@ import java.util.List;
 
 import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
-import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 
 
 /**
@@ -45,8 +43,6 @@ public class SystemExporterImporter
     // dependencies
     private NodeService nodeService;
     private AppliedPatchDAO appliedPatchDAO;
-    private VersionCounterService versionCounterService;
-    
     
     public void setNodeService(NodeService nodeService)
     {
@@ -58,12 +54,6 @@ public class SystemExporterImporter
         this.appliedPatchDAO = appliedPatchDAO;
     }
     
-    public void setVersionCounterService(VersionCounterService versionCounterService)
-    {
-        this.versionCounterService = versionCounterService;
-    }
-    
-
     /**
      * Export Repository System Information
      * 
@@ -90,17 +80,6 @@ public class SystemExporterImporter
             patchInfo.targetSchema = patch.getTargetSchema();
             patchInfo.wasExecuted = patch.getWasExecuted();
             systemInfo.patches.add(patchInfo);
-        }
-
-        // capture version counters
-        List<StoreRef> storeRefs = nodeService.getStores();
-        for (StoreRef storeRef : storeRefs)
-        {
-            VersionCounterInfo versionCounterInfo = new VersionCounterInfo();
-            int versionCount = versionCounterService.currentVersionNumber(storeRef);
-            versionCounterInfo.storeRef = storeRef.toString();
-            versionCounterInfo.count = versionCount;
-            systemInfo.versionCounters.add(versionCounterInfo);
         }
         
         systemInfo.toXML(exportStream);
@@ -133,13 +112,5 @@ public class SystemExporterImporter
             patch.setWasExecuted(patchInfo.wasExecuted);
             appliedPatchDAO.createAppliedPatch(patch);
         }
-
-        // apply version counters
-        for (VersionCounterInfo versionCounterInfo : systemInfo.versionCounters)
-        {
-            StoreRef storeRef = new StoreRef(versionCounterInfo.storeRef);
-            versionCounterService.setVersionNumber(storeRef, versionCounterInfo.count);
-        }
     }
-    
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -45,7 +45,6 @@ import org.jibx.runtime.JiBXException;
 public class SystemInfo
 {
     public List<PatchInfo> patches = new ArrayList<PatchInfo>();
-    public List<VersionCounterInfo> versionCounters = new ArrayList<VersionCounterInfo>();
 
     /**
      * Create System Info from XML representation
@@ -87,7 +86,4 @@ public class SystemInfo
             throw new DictionaryException("Failed to create System Info", e);
         }
     }
-    
 }
-
-

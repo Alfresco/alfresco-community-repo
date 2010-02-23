@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,11 +39,18 @@ import java.util.Collection;
 public interface VersionHistory extends Serializable
 {
     /**
-     * Gets the root (or initial) version of the version history.
+     * Gets the root (initial / least recent) version of the version history.
      * 
      * @return  the root version
      */
     public Version getRootVersion();
+    
+    /**
+     * Gets the head (current / most recent) version of the version history.
+     * 
+     * @return  the root version
+     */
+    public Version getHeadVersion();
     
     /**
      * Gets a collection containing all the versions within the

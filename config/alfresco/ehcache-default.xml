@@ -70,14 +70,6 @@
         eternal="true"
         overflowToDisk="false"
         />
-    <!-- version counters -->
-    <!-- approx 0.4MB memory required -->
-    <cache 
-        name="org.alfresco.repo.domain.hibernate.VersionCountImpl" 
-        maxElementsInMemory="100" 
-        eternal="true"
-        overflowToDisk="false"
-        />
     <!-- Permission related caches -->
     <!-- approx 1MB memory required -->    
     <cache 

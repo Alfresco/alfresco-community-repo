@@ -123,6 +123,7 @@
              <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
              <ref bean="patch.db-V3.2-Upgrade-JBPM" />
+             <ref bean="patch.db-V3.3-Remove-VersionCount" />
           </list>
        </property>
     </bean>

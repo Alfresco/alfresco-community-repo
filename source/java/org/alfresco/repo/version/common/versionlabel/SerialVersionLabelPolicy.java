@@ -52,9 +52,25 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
      * @return                   the version label
      */
     public String calculateVersionLabel(
-			QName classRef,
+            QName classRef,
             Version preceedingVersion, 
-            int versionNumber, 
+            Map<String, Serializable> versionProperties)
+    {
+        return calculateVersionLabel(classRef, preceedingVersion, 0, versionProperties);
+    }
+    
+    /**
+     * Get the version label value base on the data provided.
+     * 
+     * @param preceedingVersion  the preceeding version, null if none
+     * @param versionNumber      the new version number 
+     * @param versionProperties  the version property values
+     * @return                   the version label
+     */
+    public String calculateVersionLabel(
+            QName classRef,
+            Version preceedingVersion,
+            int versionNumber,
             Map<String, Serializable> versionProperties)
     {
         SerialVersionLabel serialVersionNumber = null;

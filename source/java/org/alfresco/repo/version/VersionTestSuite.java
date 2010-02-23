@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,7 +29,6 @@ import junit.framework.TestSuite;
 
 import org.alfresco.repo.version.common.VersionHistoryImplTest;
 import org.alfresco.repo.version.common.VersionImplTest;
-import org.alfresco.repo.version.common.counter.VersionCounterServiceTest;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicyTest;
 
 /**
@@ -50,7 +49,6 @@ public class VersionTestSuite extends TestSuite
         suite.addTestSuite(VersionImplTest.class);
         suite.addTestSuite(VersionHistoryImplTest.class);
         suite.addTestSuite(SerialVersionLabelPolicyTest.class);
-        suite.addTestSuite(VersionCounterServiceTest.class);
         suite.addTestSuite(VersionServiceImplTest.class);
         suite.addTestSuite(NodeServiceImplTest.class);
         suite.addTestSuite(ContentServiceImplTest.class);

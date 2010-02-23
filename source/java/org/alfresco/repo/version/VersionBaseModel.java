@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -46,6 +46,10 @@ public interface VersionBaseModel
     public static final String PROP_CREATED_DATE = ContentModel.PROP_CREATED.getLocalName();
     public static final String PROP_CREATOR = ContentModel.PROP_CREATOR.getLocalName();
     public static final String PROP_VERSION_TYPE = "versionType";
+    
+    /**
+     * @deprecated since 3.3
+     */
     public static final String PROP_VERSION_NUMBER = "versionNumber";
 
     /** The version store root aspect localname*/

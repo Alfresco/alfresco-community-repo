@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -53,7 +53,7 @@ public class VersionHistoryImpl implements VersionHistory
     /*
      * Error message(s)
      */
-    private static final String ERR_MSG = "The root version must be specified when creating a version history object.";    
+    private static final String ERR_MSG = "The root version must be specified when creating a version history object.";
     
     /*
      * Field is left here to aid in detection of old serialized versions
@@ -101,17 +101,30 @@ public class VersionHistoryImpl implements VersionHistory
         this.versionsByLabel = new HashMap<String, Version>();
         
         this.rootVersion = rootVersion;
-        addVersion(rootVersion, null);        
+        addVersion(rootVersion, null);
     }    
     
     /**
-     * Gets the root (or initial) version of the version history.
+     * Gets the root (initial / least recent) version of the version history.
      * 
      * @return  the root version
      */
     public Version getRootVersion()
     {
         return this.rootVersion;
+    }
+    
+    /**
+     * Gets the head (current / most recent) version of the version history.
+     * 
+     * @return  the head version
+     */
+    public Version getHeadVersion()
+    {
+        Collection<Version> versions = versionsByLabel.values();
+        List<Version> sortedVersions = new ArrayList<Version>(versions);
+        Collections.sort(sortedVersions, versionComparatorDesc);
+        return sortedVersions.get(0);
     }
     
     /**
@@ -126,7 +139,7 @@ public class VersionHistoryImpl implements VersionHistory
     {
         Collection<Version> versions = versionsByLabel.values();
         List<Version> sortedVersions = new ArrayList<Version>(versions);
-    	Collections.sort(sortedVersions, versionComparatorDesc);
+        Collections.sort(sortedVersions, versionComparatorDesc);
         return sortedVersions;
     }
     

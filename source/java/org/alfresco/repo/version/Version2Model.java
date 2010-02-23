@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -64,7 +64,12 @@ public interface Version2Model extends VersionBaseModel
     public static final String PROP_VERSION_DESCRIPTION = "versionDescription"; // maps from description
     
     public static final QName PROP_QNAME_VERSION_LABEL = QName.createQName(NAMESPACE_URI, PROP_VERSION_LABEL);
+    
+    /**
+     * @deprecated
+     */
     public static final QName PROP_QNAME_VERSION_NUMBER = QName.createQName(NAMESPACE_URI, PROP_VERSION_NUMBER);
+    
     public static final QName PROP_QNAME_VERSION_DESCRIPTION = QName.createQName(NAMESPACE_URI, PROP_VERSION_DESCRIPTION);
 
     //  frozen sys:referenceable properties (x4)

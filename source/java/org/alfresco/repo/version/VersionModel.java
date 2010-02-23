@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +30,8 @@ import org.alfresco.service.namespace.QName;
  * Version1 Model Constants used by lightWeightVersionStore implementation
  *
  * @author Roy Wetherall
+ * 
+ * NOTE: deprecated since 3.1 (migrate and useVersion2 Model)
  */
 public interface VersionModel extends VersionBaseModel
 {
@@ -66,21 +68,59 @@ public interface VersionModel extends VersionBaseModel
     /**
      * Version type properties and associations
      */
+    
+    /**
+     * @deprecated since 3.1
+     */
     public static final String PROP_FROZEN_NODE_ID = "frozenNodeId";
+    /**
+     * @deprecated since 3.1
+     */
     public static final String PROP_FROZEN_NODE_STORE_PROTOCOL = "frozenNodeStoreProtocol";
+    /**
+     * @deprecated since 3.1
+     */
     public static final String PROP_FROZEN_NODE_STORE_ID = "frozenNodeStoreId";
+    /**
+     * @deprecated since 3.1
+     */
     public static final String PROP_FROZEN_NODE_TYPE = "frozenNodeType";
+    /**
+     * @deprecated since 3.1
+     */
     public static final String PROP_FROZEN_ASPECTS = "frozenAspects";
     
     public static final QName PROP_QNAME_VERSION_LABEL = QName.createQName(NAMESPACE_URI, PROP_VERSION_LABEL);
+    
+    /**
+     * @deprecated since 3.3
+     */
     public static final QName PROP_QNAME_VERSION_NUMBER = QName.createQName(NAMESPACE_URI, PROP_VERSION_NUMBER);
+    /**
+     * @deprecated since 3.1
+     */
     public static final QName PROP_QNAME_FROZEN_NODE_ID = QName.createQName(NAMESPACE_URI, PROP_FROZEN_NODE_ID);
+    /**
+     * @deprecated since 3.1
+     */
     public static final QName PROP_QNAME_FROZEN_NODE_TYPE = QName.createQName(NAMESPACE_URI, PROP_FROZEN_NODE_TYPE);
+    /**
+     * @deprecated since 3.1
+     */
     public static final QName PROP_QNAME_FROZEN_NODE_STORE_PROTOCOL = QName.createQName(NAMESPACE_URI, PROP_FROZEN_NODE_STORE_PROTOCOL);
+    /**
+     * @deprecated since 3.1
+     */
     public static final QName PROP_QNAME_FROZEN_NODE_STORE_ID = QName.createQName(NAMESPACE_URI, PROP_FROZEN_NODE_STORE_ID);
+    /**
+     * @deprecated since 3.1
+     */
     public static final QName PROP_QNAME_FROZEN_ASPECTS = QName.createQName(NAMESPACE_URI, PROP_FROZEN_ASPECTS);
+    /**
+     * @deprecated since 3.1
+     */
     public static final QName ASSOC_SUCCESSOR = QName.createQName(NAMESPACE_URI, "successor");
-
+    
     /**
      * Version Meta Data Value type
      */

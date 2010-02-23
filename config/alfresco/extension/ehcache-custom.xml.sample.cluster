@@ -167,23 +167,6 @@
     </cache>
 
     <cache
-        name="org.alfresco.repo.domain.hibernate.VersionCountImpl"
-        maxElementsInMemory="100"
-        eternal="true"
-        timeToIdleSeconds="0"
-        timeToLiveSeconds="0"
-        overflowToDisk="false">
-
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
-    </cache>
-
-    <cache
         name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl"
         maxElementsInMemory="1000"
         eternal="true"

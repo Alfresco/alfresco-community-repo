@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -149,10 +149,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         NodeRef versionableNode = createNewVersionableNode();
         
         // Snap shot data
-        int expectedVersionNumber = peekNextVersionNumber();
-		String expectedVersionLabel = peekNextVersionLabel(versionableNode, expectedVersionNumber, versionProperties);
-		
-		// Snap-shot the node created date-time
+        String expectedVersionLabel = peekNextVersionLabel(versionableNode, versionProperties);
+        
+        // Snap-shot the node created date-time
         long beforeVersionTime = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         // Version the node and its children
@@ -162,7 +161,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 true);
         
         // Check the returned versions are correct
-        CheckVersionCollection(expectedVersionNumber, expectedVersionLabel, beforeVersionTime, versions);
+        CheckVersionCollection(expectedVersionLabel, beforeVersionTime, versions);
         
         // TODO check the version history is correct
     }	
@@ -175,10 +174,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         NodeRef versionableNode = createNewVersionableNode();
         
         // Snap shot data
-        int expectedVersionNumber = peekNextVersionNumber(); 
-		String expectedVersionLabel = peekNextVersionLabel(versionableNode, expectedVersionNumber, versionProperties);  
-		
-		// Snap-shot the node created date-time
+        String expectedVersionLabel = peekNextVersionLabel(versionableNode, versionProperties);  
+        
+        // Snap-shot the node created date-time
         long beforeVersionTime = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         // Version the list of nodes created
@@ -187,19 +185,18 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 this.versionProperties);
         
         // Check the returned versions are correct
-        CheckVersionCollection(expectedVersionNumber, expectedVersionLabel, beforeVersionTime, versions);     
-
+        CheckVersionCollection(expectedVersionLabel, beforeVersionTime, versions);
+        
         // TODO check the version histories
     }
     
     /**
      * Helper method to check the validity of the list of newly created versions.
      * 
-     * @param expectedVersionNumber  the expected version number that all the versions should have
      * @param beforeVersionTime      the time before the versions where created
      * @param versions               the collection of version objects
      */
-    private void CheckVersionCollection(int expectedVersionNumber, String expectedVersionLabel, long beforeVersionTime, Collection<Version> versions)
+    private void CheckVersionCollection(String expectedVersionLabel, long beforeVersionTime, Collection<Version> versions)
     {
         for (Version version : versions)
         {
@@ -225,7 +222,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             assertNotNull("The versionable node ref that relates to the frozen node id can not be found.", originalNodeRef);
             
             // Check the new version
-            checkNewVersion(beforeVersionTime, expectedVersionNumber, expectedVersionLabel, version, originalNodeRef);
+            checkNewVersion(beforeVersionTime, expectedVersionLabel, version, originalNodeRef);
         }
     }
     
@@ -697,7 +694,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 // Check that the initial version has not been created
                 VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
-                assertEquals(1, versionHistory.getAllVersions().size());                
+                assertEquals(1, versionHistory.getAllVersions().size());
                 
                 // Add some content 
                 ContentWriter contentWriter = contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);

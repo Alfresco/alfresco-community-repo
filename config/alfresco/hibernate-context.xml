@@ -59,7 +59,6 @@
                 <value>org/alfresco/repo/domain/hibernate/Locale.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
-                <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
                 <value>org/alfresco/repo/attributes/hibernate/Attributes.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/UsageDelta.hbm.xml</value>
@@ -172,7 +171,6 @@
                 <prop key="org.alfresco.repo.domain.hibernate.StoreImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.TransactionImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ServerImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.VersionCountImpl">${cache.strategy}</prop>
 
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl">${cache.strategy}</prop>
@@ -205,12 +203,6 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
-
-   <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl">
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-   </bean>
 
    <bean id="permissionsDaoComponent" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
       <property name="proxyInterface">

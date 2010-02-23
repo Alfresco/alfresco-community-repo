@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,7 +43,6 @@ import org.alfresco.repo.version.common.AbstractVersionServiceImpl;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
-import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -63,14 +62,16 @@ import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Version1 Service - implements lightWeightVersionStore
  *
  * @author Roy Wetheral
+ * 
+ * NOTE: deprecated since 3.1 (migrate and use Version2 Service)
  */
 public class VersionServiceImpl extends AbstractVersionServiceImpl implements VersionService, VersionModel
 {
@@ -85,11 +86,6 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     protected static final String MSGID_ERR_ONE_PRECEEDING = "version_service.err_one_preceeding";
     protected static final String MSGID_ERR_RESTORE_NO_VERSION = "version_service.err_restore_no_version";
     protected static final String MSGID_ERR_REVERT_MISMATCH = "version_service.err_revert_mismatch";
-
-    /**
-     * The version counter service
-     */
-    protected VersionCounterService versionCounterService;
 
     /**
      * The db node service, used as the version store implementation
@@ -123,15 +119,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     {
         this.searcher = searcher;
     }
-
-    /**
-     * @param versionCounterService  the version counter service
-     */
-    public void setVersionCounterService(VersionCounterService versionCounterService)
-    {
-        this.versionCounterService = versionCounterService;
-    }
-
+    
     /**
      * Set the policy behaviour filter
      *
@@ -195,15 +183,14 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     {
         long startTime = System.currentTimeMillis();
         
-        // Get the next version number
-        int versionNumber = this.versionCounterService.nextVersionNumber(getVersionStoreReference());
-
+        int versionNumber = 0; // deprecated (unused)
+        
         // Create the version
         Version version = createVersion(nodeRef, versionProperties, versionNumber);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("created version (" + versionNumber + " - " + VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()) + ") in " + (System.currentTimeMillis()-startTime) + " ms");
+            logger.debug("created version (" + VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()) + ") in " + (System.currentTimeMillis()-startTime) + " ms");
         }
         
         return version;
@@ -222,9 +209,8 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     {
         long startTime = System.currentTimeMillis();
         
-        // Get the next version number
-        int versionNumber = this.versionCounterService.nextVersionNumber(getVersionStoreReference());
-
+        int versionNumber = 0; // deprecated (unused)
+        
         // Create the versions
         Collection<Version> versions = createVersion(nodeRef, versionProperties, versionChildren, versionNumber);
         
@@ -232,7 +218,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         {
             Version[] versionsArray = versions.toArray(new Version[0]);
             Version version = versionsArray[versionsArray.length -1]; // last item is the new parent version
-            logger.debug("created version (" + versionNumber + " - " + VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()) + ") in "+ (System.currentTimeMillis()-startTime) +" ms "+(versionChildren ? "(with " + (versions.size() - 1) + " children)" : ""));
+            logger.debug("created version (" + VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()) + ") in "+ (System.currentTimeMillis()-startTime) +" ms "+(versionChildren ? "(with " + (versions.size() - 1) + " children)" : ""));
         }
         
         return versions;
@@ -297,10 +283,9 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         long startTime = System.currentTimeMillis();
         
         Collection<Version> result = new ArrayList<Version>(nodeRefs.size());
-
-        // Get the next version number
-        int versionNumber = this.versionCounterService.nextVersionNumber(getVersionStoreReference());
-
+        
+        int versionNumber = 0; // deprecated (unused)
+        
         // Version each node in the list
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -309,7 +294,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("created version list (" + versionNumber + " - " + getVersionStoreReference() + ") in "+ (System.currentTimeMillis()-startTime) +" ms (with " + nodeRefs.size() + " nodes)");
+            logger.debug("created version list (" + getVersionStoreReference() + ") in "+ (System.currentTimeMillis()-startTime) +" ms (with " + nodeRefs.size() + " nodes)");
         }
         
         return result;
@@ -433,7 +418,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
 
         if (logger.isTraceEnabled())
         {
-            logger.trace("created Version (" + versionNumber + " - " + getVersionStoreReference() + ") " + nodeRef + " in " + (System.currentTimeMillis()-startTime) +" ms");
+            logger.trace("created Version (" + getVersionStoreReference() + ") " + nodeRef + " in " + (System.currentTimeMillis()-startTime) +" ms");
         }
         
         // Return the data object representing the newly created version
@@ -514,8 +499,8 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     {
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(10);
 
-        // Set the version number for the new version
-        result.put(VersionModel.PROP_QNAME_VERSION_NUMBER, Integer.toString(versionNumber));
+        // deprecated (unused)
+        //result.put(VersionModel.PROP_QNAME_VERSION_NUMBER, Integer.toString(versionNumber));
 
         // Set the versionable node id
         result.put(VersionModel.PROP_QNAME_FROZEN_NODE_ID, nodeRef.getId());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -201,7 +201,7 @@ public class VersionMigrator
         // ALFCOM-2658
         nodeProperties.put(ContentModel.PROP_NODE_UUID, frozenStateNodeRef.getId());
         
-        int versionNumber = (Integer)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), VersionModel.PROP_QNAME_VERSION_NUMBER);
+        int versionNumber = 0;
         
         // get oldVersion auditable properties (of the version node itself, rather than the live versioned node)
         Date versionCreated = (Date)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_CREATED);

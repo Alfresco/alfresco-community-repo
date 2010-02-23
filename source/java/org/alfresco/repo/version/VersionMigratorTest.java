@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,13 +35,11 @@ import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.version.common.counter.VersionCounterService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
@@ -65,7 +63,6 @@ public class VersionMigratorTest extends BaseVersionStoreTest
     protected PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
     protected CheckOutCheckInService cociService;
-    protected VersionCounterService versionCounterService;
     protected IntegrityChecker integrityChecker;
     
     public VersionMigratorTest()
@@ -84,14 +81,11 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         this.versionNodeService = (NodeService)applicationContext.getBean("versionNodeService"); // note: auto-switches between V1 and V2
         
         this.cociService = (CheckOutCheckInService)applicationContext.getBean("CheckoutCheckinService");
-        this.versionCounterService = (VersionCounterService)applicationContext.getBean("versionCounterService");
-        
         this.integrityChecker = (IntegrityChecker)applicationContext.getBean("integrityChecker");
         
         // Version1Service is used to create the version nodes in Version1Store (workspace://lightWeightVersionStore) 
         version1Service.setDbNodeService(dbNodeService);
         version1Service.setNodeService(dbNodeService);
-        version1Service.setVersionCounterService(versionCounterDaoService);
         version1Service.setPolicyComponent(policyComponent);
         version1Service.setDictionaryService(dictionaryService);
         version1Service.initialiseWithoutBind(); // TODO - temp - if use intialise, get: "More than one CalculateVersionLabelPolicy behaviour has been registered for the type {http://www.alfresco.org/model/content/1.0}content"
@@ -114,9 +108,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         logger.info("testMigrateOneVersion: versionedNodeRef = " + versionableNode);
         
-        // Get the next version number
-        int nextVersion = peekNextVersionNumber(); 
-        String nextVersionLabel = peekNextVersionLabel(versionableNode, nextVersion, versionProperties);
+        // Get the next version label
+        String nextVersionLabel = peekNextVersionLabel(versionableNode, versionProperties);
         
         // Snap-shot the node created date-time
         Date beforeVersionDate = (Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED);
@@ -158,7 +151,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         // check new version - switch to new version service to do the check 
         super.setVersionService(version2Service);
-        checkNewVersion(beforeVersionTime, nextVersion, nextVersionLabel, newVersion, versionableNode);
+        checkNewVersion(beforeVersionTime, nextVersionLabel, newVersion, versionableNode);
         
         // get and compare new version details - - versionNodeService will retrieve these from the new version store
         
@@ -212,9 +205,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         NodeRef versionableNode = createNewVersionableNode();
         
-        // Get the next version number, next version label and snapshot the date-time
-        int nextVersion1 = peekNextVersionNumber(); 
-        String nextVersionLabel1 = peekNextVersionLabel(versionableNode, nextVersion1, versionProperties);
+        // Get the next version label and snapshot the date-time
+        String nextVersionLabel1 = peekNextVersionLabel(versionableNode, versionProperties);
         
         // Snap-shot the node created date-time
         long beforeVersionTime1 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
@@ -222,9 +214,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         Version version1 = createVersion(versionableNode);
         logger.info(version1);
         
-        // Get the next version number, next version label and snapshot the date-time
-        int nextVersion2 = peekNextVersionNumber(); 
-        String nextVersionLabel2 = peekNextVersionLabel(versionableNode, nextVersion2, versionProperties);
+        // Get the next version label and snapshot the date-time
+        String nextVersionLabel2 = peekNextVersionLabel(versionableNode, versionProperties);
         
         // Snap-shot the node created date-time
         long beforeVersionTime2 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
@@ -232,9 +223,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         Version version2 = createVersion(versionableNode);
         logger.info(version2);
         
-        // Get the next version number, next version label and snapshot the date-time
-        int nextVersion3 = peekNextVersionNumber(); 
-        String nextVersionLabel3 = peekNextVersionLabel(versionableNode, nextVersion3, versionProperties);
+        // Get the next version label and snapshot the date-time
+        String nextVersionLabel3 = peekNextVersionLabel(versionableNode, versionProperties);
         
         // Snap-shot the node created date-time
         long beforeVersionTime3 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
@@ -263,9 +253,9 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         Version[] newVersions = vh2.getAllVersions().toArray(new Version[]{});
         
-        checkVersion(beforeVersionTime1, nextVersion1, nextVersionLabel1, newVersions[2], versionableNode);
-        checkVersion(beforeVersionTime2, nextVersion2, nextVersionLabel2, newVersions[1], versionableNode);
-        checkNewVersion(beforeVersionTime3, nextVersion3, nextVersionLabel3, newVersions[0], versionableNode);
+        checkVersion(beforeVersionTime1, nextVersionLabel1, newVersions[2], versionableNode);
+        checkVersion(beforeVersionTime2, nextVersionLabel2, newVersions[1], versionableNode);
+        checkNewVersion(beforeVersionTime3, nextVersionLabel3, newVersions[0], versionableNode);
         
         // ALFCOM-2658
         assertEquals(version1.getFrozenStateNodeRef().getId(), newVersions[2].getFrozenStateNodeRef().getId());
@@ -460,9 +450,6 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         version2Service.useDeprecatedV1 = true;
         
-        // note: for testing only - not recommended !!!
-        versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionModel.STORE_ID), 100);
-        
         // Add the version aspect to the created node
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
         
@@ -503,7 +490,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         //versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID), nextVersionNumber);
         
         // to force the error: https://issues.alfresco.com/jira/browse/ETHREEOH-1540
-        versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID), 0);
+        //versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID), 0);
         
         NodeRef newVHNodeRef = versionMigrator.migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
         versionMigrator.v1DeleteVersionHistory(oldVHNodeRef);

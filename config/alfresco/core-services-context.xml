@@ -886,9 +886,6 @@
         <property name="dbNodeService">
             <ref bean="mtAwareNodeService" />
         </property>
-        <property name="versionCounterService">
-            <ref bean="versionCounterService" />
-        </property>
         <property name="searcher">
             <ref bean="versionSearchService" />
         </property>
@@ -974,23 +971,6 @@
         </property>
         <property name="transactionService">
             <ref bean="transactionService"/>
-        </property>
-    </bean>
-
-    <bean id="versionCounterService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.version.common.counter.VersionCounterService</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <ref bean="versionCounterDaoComponent" />
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}, PROPAGATION_REQUIRES_NEW</prop>
-            </props>
         </property>
     </bean>
 

@@ -175,12 +175,9 @@
     <bean id="systemExporterImporter" class="org.alfresco.repo.importer.system.SystemExporterImporter">
       <property name="nodeService">
          <ref bean="nodeService" />
-      </property>      
+      </property>
       <property name="appliedPatchDAO">
          <ref bean="appliedPatchDAO" />
-      </property>
-      <property name="versionCounterService">
-         <ref bean="versionCounterService" />
       </property>
     </bean>
     

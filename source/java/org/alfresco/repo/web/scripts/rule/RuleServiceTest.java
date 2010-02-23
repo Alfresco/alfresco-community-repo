@@ -53,7 +53,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 /**
  * Unit test to test rules Web Script API
  * 
- * @author unknown
+ * @author Roy Wetherall
  *
  */
 public class RuleServiceTest extends BaseWebScriptTest
@@ -374,7 +374,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
     
-    public void off_testGetActionConstraints() throws Exception
+    public void testGetActionConstraints() throws Exception
     {
         Response response = sendRequest(new GetRequest(URL_ACTIONCONSTRAINTS), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
@@ -404,9 +404,9 @@ public class RuleServiceTest extends BaseWebScriptTest
         }
     }
     
-    public void off_testGetActionConstraint() throws Exception
+    public void testGetActionConstraint() throws Exception
     {
-        Response response = sendRequest(new GetRequest(formateActionConstraintUrl("compare-operations")), 200);
+        Response response = sendRequest(new GetRequest(formateActionConstraintUrl("ac-compare-operations")), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
         assertNotNull(result);

@@ -15,6 +15,7 @@
     <import resource="classpath:alfresco/node-services-context.xml" />
     <import resource="classpath:alfresco/scheduler-core-context.xml" />
     <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
+    <import resource="classpath:alfresco/network-authentication-context.xml" />
     <import resource="classpath:alfresco/network-protocol-context.xml" />
     <import resource="classpath:alfresco/emailserver/email-service-context.xml" />
     <import resource="classpath:alfresco/content-services-context.xml" />

@@ -41,54 +41,7 @@
          <ref bean="avmDiskDriver"/>
       </property>
    </bean>
-   
-    <!-- CIFS authentication -->
-    <bean id="cifsAuthenticatorBase" abstract="true">
-        <property name="config">
-            <ref bean="fileServerConfiguration" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService" />
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
-        <property name="personService">
-            <ref bean="personService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="authorityService">
-            <ref bean="authorityService" />
-        </property>
-        <property name="diskInterface">
-            <ref bean="contentDiskDriver" />
-        </property>
-    </bean>
 
-    <!-- FTP authentication -->
-    <bean id="ftpAuthenticatorBase" abstract="true" init-method="initialize">
-        <property name="config">
-            <ref bean="fileServerConfiguration" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService" />
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="authorityService">
-            <ref bean="authorityService" />
-        </property>
-    </bean>
-   
    <!-- Filesystem Interface -->
    <bean id="contentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver" >
       <constructor-arg>

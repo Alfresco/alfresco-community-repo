@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+    <!-- CIFS authentication -->
+    <bean id="cifsAuthenticatorBase" abstract="true">
+        <property name="config">
+            <ref bean="fileServerConfiguration" />
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService" />
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="diskInterface">
+            <ref bean="contentDiskDriver" />
+        </property>
+    </bean>
+
+    <!-- FTP authentication -->
+    <bean id="ftpAuthenticatorBase" abstract="true" init-method="initialize">
+        <property name="config">
+            <ref bean="fileServerConfiguration" />
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService" />
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+    </bean>
+</beans>

@@ -429,6 +429,7 @@
         <property name="authorityService">
             <ref bean="authorityService"></ref>
         </property>
+        <!-- The service registry is needed as TemplateNodes are used -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"></ref>
         </property>
@@ -521,6 +522,7 @@
     </bean>
     
     <bean id="script" class="org.alfresco.repo.action.executer.ScriptActionExecuter" parent="action-executer">
+        <!-- The service registry is needed as ScriptAction needs it -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>

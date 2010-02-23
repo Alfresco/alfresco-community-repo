@@ -32,10 +32,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Wrapper;
 
@@ -54,12 +57,15 @@ public final class ScriptAction implements Serializable, Scopeable
     /** Converter with knowledge of action parameter values */
     private ActionValueConverter converter;
 
-    private ServiceRegistry services;
-    
     /** Action state */
     private Action action;
 
     private ActionDefinition actionDef;
+    
+    private ServiceRegistry services;
+    private ActionService actionService;
+    private NamespaceService namespaceService;
+    private TransactionService transactionService;
 
     private ScriptableParameterMap<String, Serializable> parameters = null;
 
@@ -72,6 +78,10 @@ public final class ScriptAction implements Serializable, Scopeable
     public ScriptAction(ServiceRegistry services, Action action, ActionDefinition actionDef)
     {
         this.services = services;
+        this.actionService = services.getActionService();
+        this.namespaceService = services.getNamespaceService();
+        this.transactionService = services.getTransactionService();
+        
         this.action = action;
         this.actionDef = actionDef;
         this.converter = new ActionValueConverter();
@@ -141,7 +151,7 @@ public final class ScriptAction implements Serializable, Scopeable
                 actionParams.put(name, value);
             }
         }
-        services.getActionService().executeAction(action, node.getNodeRef());
+        actionService.executeAction(action, node.getNodeRef());
         
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
@@ -180,11 +190,11 @@ public final class ScriptAction implements Serializable, Scopeable
         {
             public Object execute() throws Throwable
             {
-                services.getActionService().executeAction(action, node.getNodeRef());
+                actionService.executeAction(action, node.getNodeRef());
                 return null;
             }
         };
-        services.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+        transactionService.getRetryingTransactionHelper().doInTransaction(
                 executionActionCallback,
                 readOnly,
                 newTxn);
@@ -218,7 +228,7 @@ public final class ScriptAction implements Serializable, Scopeable
                 actionParams.put(name, value);
             }
         }
-        services.getActionService().executeAction(action, nodeRef);
+        actionService.executeAction(action, nodeRef);
 
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
@@ -254,11 +264,11 @@ public final class ScriptAction implements Serializable, Scopeable
         {
             public Object execute() throws Throwable
             {
-                services.getActionService().executeAction(action, nodeRef);
+                actionService.executeAction(action, nodeRef);
                 return null;
             }
         };
-        services.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+        transactionService.getRetryingTransactionHelper().doInTransaction(
                 executionActionCallback,
                 readOnly,
                 newTxn);
@@ -289,7 +299,7 @@ public final class ScriptAction implements Serializable, Scopeable
             ParameterDefinition paramDef = actionDef.getParameterDefintion(paramName);
             if (paramDef != null && paramDef.getType().equals(DataTypeDefinition.QNAME))
             {
-                return ((QName) value).toPrefixString(services.getNamespaceService());
+                return ((QName) value).toPrefixString(namespaceService);
             }
             else
             {
@@ -331,7 +341,7 @@ public final class ScriptAction implements Serializable, Scopeable
                         }
                         else
                         {
-                            return QName.createQName(stringQName, services.getNamespaceService());
+                            return QName.createQName(stringQName, namespaceService);
                         }
                     }
                     else

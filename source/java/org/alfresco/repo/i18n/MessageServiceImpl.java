@@ -27,9 +27,10 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -56,8 +57,11 @@ public class MessageServiceImpl implements MessageService
     private Lock writeLock = lock.writeLock();
 
     // dependencies
-    private ServiceRegistry serviceRegistry;
     private TenantService tenantService;
+    private SearchService searchService;
+    private ContentService contentService;
+    private NamespaceService namespaceService;
+    private NodeService nodeService;        
     
     /**
      * List of registered bundles
@@ -77,15 +81,28 @@ public class MessageServiceImpl implements MessageService
     
     private List<MessageDeployer> messageDeployers = new ArrayList<MessageDeployer>();
 
-
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    public void setNamespaceService(NamespaceService namespaceService)
     {
-        this.serviceRegistry = serviceRegistry;
+        this.namespaceService = namespaceService;
     }
     
+    public void setSearchService(SearchService searchService) {
+        this.searchService = searchService;
+    }
+
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService; 
     }
      
     public void setResourceBundleBaseNamesCache(SimpleCache<String, Set<String>> resourceBundleBaseNamesCache)
@@ -537,19 +554,16 @@ public class MessageServiceImpl implements MessageService
         // TODO - need to replace basic strategy with a more complete
         // search & instantiation strategy similar to ResourceBundle.getBundle()
         // Consider search query with basename* and then apply strategy ...
-  
-        SearchService searchService = serviceRegistry.getSearchService();
-        NamespaceService resolver = serviceRegistry.getNamespaceService();
-            
-        NodeRef rootNode = serviceRegistry.getNodeService().getRootNode(storeRef);        
+        
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
         
         // first attempt - with locale        
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX, null, resolver, false);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, path+"_"+locale+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
         
         if ((nodeRefs == null) || (nodeRefs.size() == 0))
         {
             // second attempt - basename 
-            nodeRefs = searchService.selectNodes(rootNode, path+PROPERTIES_FILE_SUFFIX, null, resolver, false);
+            nodeRefs = searchService.selectNodes(rootNode, path+PROPERTIES_FILE_SUFFIX, null, namespaceService, false);
            
             if ((nodeRefs == null) || (nodeRefs.size() == 0))
             {
@@ -566,7 +580,7 @@ public class MessageServiceImpl implements MessageService
         {
             NodeRef messageResourceNodeRef = nodeRefs.get(0);
     
-            ContentReader cr = serviceRegistry.getContentService().getReader(messageResourceNodeRef, ContentModel.PROP_CONTENT);
+            ContentReader cr = contentService.getReader(messageResourceNodeRef, ContentModel.PROP_CONTENT);
             resBundle = new MessagePropertyResourceBundle(new InputStreamReader(cr.getContentInputStream(), cr.getEncoding()));
         }
         

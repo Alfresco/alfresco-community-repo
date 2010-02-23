@@ -28,15 +28,20 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISQueryException;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Lower;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,6 +54,10 @@ import org.apache.lucene.search.Query;
  */
 public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
 {
+    public static CMISScope[] STRICT_SCOPES = new CMISScope[] { CMISScope.DOCUMENT, CMISScope.FOLDER };
+
+    public static CMISScope[] ALFRESCO_SCOPES = new CMISScope[] { CMISScope.DOCUMENT, CMISScope.FOLDER, CMISScope.POLICY };
+    
     private Map<String, NodeRef> nodeRefs;
 
     private Map<String, Float> scores;
@@ -56,6 +65,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     private NodeService nodeService;
 
     private CMISDictionaryService cmisDictionaryService;
+    
+    private CMISScope[] validScopes;
 
     private Float score;
 
@@ -93,6 +104,15 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
+    }
+    
+    /**
+     * @param validScopes
+     *          the valid scopes to set 
+     */
+    public void setValidScopes(CMISScope[] validScopes)
+    {
+        this.validScopes = validScopes;
     }
 
     /*
@@ -268,7 +288,7 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     public String getLuceneSortField(LuceneQueryParser lqp, String propertyName)
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
-        return propertyDef.getPropertyLuceneBuilder().getLuceneSortField();
+        return propertyDef.getPropertyLuceneBuilder().getLuceneSortField(lqp);
     }
 
     
@@ -339,6 +359,45 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
                 throw new QueryModelException("Unsupported function: " + functionName);
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#checkFieldApplies(org.alfresco.service.namespace.QName, java.lang.String)
+     */
+    public void checkFieldApplies(Selector selector, String propertyName)
+    {
+        CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(propertyName);
+        if (propDef == null)
+        {
+            throw new CMISQueryException("Unknown column/property " + propertyName);
+        }
+        
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(selector.getType(), validScopes);
+        if (typeDef == null)
+        {
+            throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
+        }
+
+        // Check column/property applies to selector/type
+
+        if (!typeDef.getPropertyDefinitions().containsKey(propDef.getPropertyId().getId()))
+        {
+            throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + propertyName);
+        }
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#isMultiValued(java.lang.String)
+     */
+    public boolean isMultiValued(String propertyName)
+    {
+        CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(propertyName);
+        if (propDef == null)
+        {
+            throw new CMISQueryException("Unknown column/property " + propertyName);
+        }
+        return propDef.getCardinality() == CMISCardinalityEnum.MULTI_VALUED;
     }
     
     

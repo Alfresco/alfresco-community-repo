@@ -195,7 +195,12 @@ public class AuditDAOTest extends TestCase
         final LinkedList<Long> timestamps = new LinkedList<Long>();
         // Find everything, but look for a specific key
         final AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        {            
+            public boolean valuesRequired()
+            {
+                return false;
+            }
+
             public boolean handleAuditEntry(
                     Long entryId,
                     String applicationName,
@@ -263,6 +268,11 @@ public class AuditDAOTest extends TestCase
     {
         final AuditQueryCallback noResultsCallback = new AuditQueryCallback()
         {
+            public boolean valuesRequired()
+            {
+                return false;
+            }
+
             public boolean handleAuditEntry(
                     Long entryId,
                     String applicationName,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -27,14 +27,18 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISRelationshipDirectionEnum;
+import org.alfresco.cmis.CMISRendition;
+import org.alfresco.cmis.CMISRenditionService;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
@@ -111,6 +115,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private NodeService nodeService;
     private TenantAdminService tenantAdminService;
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
+    private CMISRenditionService cmisRenditionService;
 
     // CMIS supported version
     private String cmisVersion = "[undefined]";
@@ -220,8 +225,19 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     public void setRepository(Repository repository)
     {
         this.repository = repository;
-    }
+    }        
     
+    /**
+     * Sets the cmis rendition service.
+     * 
+     * @param cmisRenditionService
+     *            the cmis rendition service
+     */
+    public void setCMISRenditionService(CMISRenditionService cmisRenditionService)
+    {
+        this.cmisRenditionService = cmisRenditionService;
+    }
+
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -375,6 +391,30 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     {
         NodeRef nodeRef = repository.findNodeRef(referenceType, reference);
         return nodeRef;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getRenditions(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    public Map<String, Object> getRenditions(NodeRef nodeRef, String renditionFilter)
+    {
+        Map<String, Object> result = new TreeMap<String, Object>();
+        List<CMISRendition> renditions = cmisRenditionService.getRenditions(nodeRef, renditionFilter);
+        if (renditions == null)
+        {
+            renditions = Collections.emptyList();
+        }
+        result.put("node", nodeRef);
+        result.put("renditionFilter", renditionFilter); // Record rendition filter to aid recursion on node maps
+        result.put("renditions", renditions);
+        List<NodeRef> renditionNodes = new ArrayList<NodeRef>(renditions.size());
+        for (CMISRendition rendition : renditions)
+        {
+            renditionNodes.add(rendition.getNodeRef());
+        }
+        result.put("renditionNodes", renditionNodes);
+        return result;
     }
     
     /*

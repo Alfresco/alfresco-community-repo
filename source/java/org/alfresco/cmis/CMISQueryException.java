@@ -24,13 +24,12 @@
  */
 package org.alfresco.cmis;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * @author andyh
  *
  */
-public class CMISQueryException extends AlfrescoRuntimeException
+public class CMISQueryException extends CMISRuntimeException
 {
 
     /**

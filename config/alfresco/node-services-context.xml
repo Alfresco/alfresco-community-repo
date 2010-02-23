@@ -234,5 +234,14 @@
          <value>${system.cascadeDeleteInTransaction}</value>
       </property>
    </bean>
+
+   <bean id="nodeAuditor" class="org.alfresco.repo.node.NodeAuditor">
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="auditComponent">
+         <ref bean="auditComponent"/>
+      </property>
+   </bean>
    
 </beans>

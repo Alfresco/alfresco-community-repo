@@ -116,20 +116,17 @@
         <property name="personService" ref="personService" />
         <property name="nodeService" ref="nodeService" />
     </bean>
-    
-    <!-- Models -->
-    <bean id="auditModel.modelRegistry" class="org.alfresco.repo.audit.model.AuditModelRegistry">
-        <property name="transactionService" ref="transactionService"/>
-        <property name="auditDAO" ref="auditDAO"/>
-        <property name="dataExtractors" ref="auditModel.extractorRegistry"/>
-        <property name="dataGenerators" ref="auditModel.generatorRegistry"/>
-    </bean>
-    
-    <bean id="auditModel.repository" class="org.alfresco.repo.audit.model.AuditModelReader">
-        <property name="auditModelUrl">
-           <value>classpath:alfresco/audit/alfresco-audit-repository.xml</value>
+
+    <!-- Mount registry from Audit subsystem -->
+    <bean id="auditModel.modelRegistry" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="Audit" />
         </property>
-        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.audit.model.AuditModelRegistry</value>
+            </list>
+        </property>
     </bean>
-  
+      
 </beans>

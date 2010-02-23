@@ -53,6 +53,11 @@ public abstract class BaseComparison extends BaseFunction
      * Right hand side
      */
     public final static String ARG_RHS = "RHS";
+    
+    /**
+     * Mode: SVP or mode for MVP comparisons
+     */
+    public final static String ARG_MODE = "Mode";
 
     /**
      * Args
@@ -70,6 +75,8 @@ public abstract class BaseComparison extends BaseFunction
         ARGS = new LinkedHashMap<String, ArgumentDefinition>();
         ARGS.put(ARG_LHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_LHS, DataTypeDefinition.ANY, true));
         ARGS.put(ARG_RHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_RHS, DataTypeDefinition.ANY, true));
+        ARGS.put(ARG_MODE, new BaseArgumentDefinition(Multiplicity.ANY, ARG_MODE, DataTypeDefinition.ANY, true));
+        
     }
 
     /**
@@ -82,7 +89,7 @@ public abstract class BaseComparison extends BaseFunction
         super(name, returnType, argumentDefinitions);
     }
 
-    protected void setPropertyAndStaticArguments(Map<String, Argument> functionArgs)
+    public void setPropertyAndStaticArguments(Map<String, Argument> functionArgs)
     {
         Argument lhs = functionArgs.get(ARG_LHS);
         Argument rhs = functionArgs.get(ARG_RHS);
@@ -181,7 +188,7 @@ public abstract class BaseComparison extends BaseFunction
         return functionArgument;
     }
 
-    protected String getPropertyName()
+    public String getPropertyName()
     {
         if (propertyArgument != null)
         {

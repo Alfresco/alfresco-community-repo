@@ -88,7 +88,7 @@ public class LuceneCmisStrictSqlQueryLanguage implements LuceneQueryLanguageSPI
 
     public String getName()
     {
-        return SearchService.LANGUAGE_SQL_CMIS_STRICT;
+        return SearchService.LANGUAGE_CMIS_STRICT;
     }
 
     public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)

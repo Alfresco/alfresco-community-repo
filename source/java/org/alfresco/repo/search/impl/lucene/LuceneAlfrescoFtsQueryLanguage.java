@@ -6,8 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
+import org.alfresco.repo.search.impl.parsers.FTSParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Column;
@@ -77,7 +79,18 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
         options.setLocales(searchParameters.getLocales());
         options.setStores(searchParameters.getStores());
 
-        Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, options.getDefaultFTSConnective(), options.getDefaultFTSFieldConnective(),
+        FTSParser.Mode mode;
+
+        if(options.getDefaultFTSConnective() == Connective.AND)
+        {
+            mode = FTSParser.Mode.DEFAULT_CONJUNCTION;
+        }
+        else
+        {
+            mode = FTSParser.Mode.DEFAULT_DISJUNCTION;
+        }
+
+        Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, mode, options.getDefaultFTSFieldConnective(),
                 searchParameters.getQueryTemplates(), options.getDefaultFieldName());
         org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));
 

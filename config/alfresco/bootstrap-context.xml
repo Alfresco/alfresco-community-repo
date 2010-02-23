@@ -552,9 +552,10 @@
     </bean>
 
     <!--  Start Auditing -->
-    <bean id="audit.bootstrap" class="org.alfresco.repo.audit.AuditBootstrap">
-        <property name="transactionService" ref="transactionService"/>
-        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+    <bean id="Audit" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
     </bean>
 
    <!-- Repository helper class -->

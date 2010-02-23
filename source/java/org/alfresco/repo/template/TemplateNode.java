@@ -167,6 +167,14 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     }
     
     /**
+     * @return <code>true</code> if this node still exists
+     */
+    public boolean getExists()
+    {
+        return this.services.getNodeService().exists(this.nodeRef);
+    }
+
+    /**
      * @return Returns the type.
      */
     public QName getType()

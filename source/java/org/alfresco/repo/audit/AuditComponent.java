@@ -93,6 +93,15 @@ public interface AuditComponent
     /*
      * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
      */
+
+    /**
+     * Determines whether the given source path is mapped to any audit applications. Allows optimizations to be made in
+     * calling components.
+     * 
+     * @return <code>true</code> if the given source path is mapped to one or more audit applications
+     * @since 3.3
+     */
+    public boolean isSourcePathMapped(String sourcePath);
     
     /**
      * Delete audit entries for the given application and time range

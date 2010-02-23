@@ -266,7 +266,7 @@ public class ObjectTypeIdProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
-    public String getLuceneSortField()
+    public String getLuceneSortField(LuceneQueryParser lqp)
     {
         return getLuceneFieldName();
     }

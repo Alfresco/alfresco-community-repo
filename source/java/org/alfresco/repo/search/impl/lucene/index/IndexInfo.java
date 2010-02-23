@@ -3278,11 +3278,11 @@ public class IndexInfo implements IndexMonitor
 
             if (action == MergeAction.APPLY_DELTA_DELETION)
             {
-                mergeDeletions();
+                action = mergeDeletions();
             }
             else if (action == MergeAction.MERGE_INDEX)
             {
-                mergeIndexes();
+                action = mergeIndexes();
             }
 
             if (action == MergeAction.NONE)
@@ -3401,7 +3401,7 @@ public class IndexInfo implements IndexMonitor
             return ExitState.DONE;
         }
 
-        void mergeDeletions() throws IOException
+        MergeAction mergeDeletions() throws IOException
         {
             if (s_logger.isDebugEnabled())
             {
@@ -3495,7 +3495,7 @@ public class IndexInfo implements IndexMonitor
 
             if (toDelete.size() == 0)
             {
-                return;
+                return MergeAction.NONE;
             }
             // Build readers
 
@@ -3709,9 +3709,10 @@ public class IndexInfo implements IndexMonitor
             {
                 releaseWriteLock();
             }
+            return MergeAction.APPLY_DELTA_DELETION;
         }
 
-        void mergeIndexes() throws IOException
+        MergeAction mergeIndexes() throws IOException
         {
 
             if (s_logger.isDebugEnabled())
@@ -3813,7 +3814,7 @@ public class IndexInfo implements IndexMonitor
 
             if (toMerge.size() == 0)
             {
-                return;
+                return MergeAction.NONE;
             }
 
             String mergeTargetId = null;
@@ -3983,6 +3984,7 @@ public class IndexInfo implements IndexMonitor
                 s_logger.debug("..done merging");
             }
 
+            return MergeAction.MERGE_INDEX;
         }
 
         private final int findMergeIndex(long min, long max, int factor, List<IndexEntry> entries) throws IOException

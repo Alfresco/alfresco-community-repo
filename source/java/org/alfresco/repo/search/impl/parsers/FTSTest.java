@@ -46,7 +46,7 @@ public class FTSTest extends TestCase
         CharStream input = new ANTLRInputStream(modelStream);
         
         
-        gUnitExecutor executer = new gUnitExecutor(parse(input));
+        gUnitExecutor executer = new gUnitExecutor(parse(input), "FTS");
         
         System.out.print(executer.execTest());  // unit test result
         

@@ -41,6 +41,7 @@ public abstract class M2Class
     private String description = null;
     private String parentName = null;
     private Boolean archive = null;
+    private Boolean includedInSuperTypeQuery = null;
     
     private List<M2Property> properties = new ArrayList<M2Property>();
     private List<M2PropertyOverride> propertyOverrides = new ArrayList<M2PropertyOverride>();
@@ -108,6 +109,16 @@ public abstract class M2Class
     public void setArchive(boolean archive)
     {
         this.archive = Boolean.valueOf(archive);
+    }
+    
+    public Boolean getIncludedInSuperTypeQuery()
+    {
+        return includedInSuperTypeQuery;
+    }
+
+    public void setIncludedInSuperTypeQuery(boolean includedInSuperTypeQuery)
+    {
+        this.includedInSuperTypeQuery = Boolean.valueOf(includedInSuperTypeQuery);
     }
 
     public M2Property createProperty(String name)

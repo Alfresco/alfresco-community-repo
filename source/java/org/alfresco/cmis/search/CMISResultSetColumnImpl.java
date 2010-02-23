@@ -25,7 +25,6 @@
 package org.alfresco.cmis.search;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.service.namespace.QName;

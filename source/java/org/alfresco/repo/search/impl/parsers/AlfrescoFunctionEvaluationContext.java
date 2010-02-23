@@ -41,7 +41,7 @@ import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -49,16 +49,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.SortField;
 
 /**
  * Alfrecso function evaluation context for evaluating FTS expressions against lucene.
+ * 
  * @author andyh
- *
  */
 public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationContext
 {
@@ -103,7 +101,6 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         this.dictionaryService = dictionaryService;
         this.defaultNamespace = defaultNamespace;
     }
-   
 
     public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
@@ -120,7 +117,8 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
+            throws ParseException
     {
         throw new UnsupportedOperationException();
     }
@@ -140,7 +138,8 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
         throw new UnsupportedOperationException();
     }
 
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode, LuceneFunction luceneFunction)
+            throws ParseException
     {
         throw new UnsupportedOperationException();
     }
@@ -153,11 +152,11 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     public String getLuceneSortField(LuceneQueryParser lqp, String propertyName)
     {
         // Score is special
-        if(propertyName.equalsIgnoreCase("Score"))
+        if (propertyName.equalsIgnoreCase("Score"))
         {
             return "Score";
         }
-        String field =  getLuceneFieldName(propertyName);
+        String field = getLuceneFieldName(propertyName);
         // need to find the real field to use
         Locale sortLocale = null;
         if (field.startsWith("@"))
@@ -168,8 +167,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
             {
                 throw new SearcherException("Order on content properties is not curently supported");
             }
-            else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
-                    || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+            else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)) || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
             {
                 List<Locale> locales = lqp.getSearchParameters().getLocales();
                 if (((locales == null) || (locales.size() == 0)))
@@ -194,7 +192,7 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
 
                 String sortField = field;
 
-                for (Object current :  lqp.getIndexReader().getFieldNames(FieldOption.INDEXED))
+                for (Object current : lqp.getIndexReader().getFieldNames(FieldOption.INDEXED))
                 {
                     String currentString = (String) current;
                     if (currentString.startsWith(field) && currentString.endsWith(".sort"))
@@ -351,6 +349,26 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
     }
 
     public LuceneFunction getLuceneFunction(FunctionArgument functionArgument)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#checkFieldApplies(org.alfresco.service.namespace
+     * .QName, java.lang.String)
+     */
+    public void checkFieldApplies(Selector selector, String propertyName)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#isMultiValued(java.lang.String)
+     */
+    public boolean isMultiValued(String propertyName)
     {
         throw new UnsupportedOperationException();
     }

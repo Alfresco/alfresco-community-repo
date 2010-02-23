@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -82,6 +82,17 @@ public interface CMISServices
      * @return  nodeRef (or null, if not found)
      */
     public NodeRef getNode(String referenceType, String[] reference);
+    
+    /**
+     * Gets a map of node attributes relating to renditions.
+     * 
+     * @param nodeRef
+     *            the node ref
+     * @param renditionFilter
+     *            the rendition filter
+     * @return the attribute map
+     */
+    public Map<String, Object> getRenditions(NodeRef nodeRef, String renditionFilter);
     
     /**
      * Query for node children

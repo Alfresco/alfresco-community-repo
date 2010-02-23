@@ -33,7 +33,8 @@ import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
-import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
@@ -57,12 +58,15 @@ public class AuditBootstrapTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     private static final Log logger = LogFactory.getLog(AuditBootstrapTest.class);
     
-    private AuditModelRegistry auditModelRegistry;
+    private AuditModelRegistryImpl auditModelRegistry;
     
     @Override
     public void setUp() throws Exception
     {
-        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
+        // We have to look inside the subsystem for this test
+        ApplicationContextFactory subsystem = (ApplicationContextFactory) ctx.getBean("Audit");
+        ApplicationContext subCtx = subsystem.getApplicationContext();
+        auditModelRegistry = (AuditModelRegistryImpl) subCtx.getBean("auditModel.modelRegistry");
         
         // Register a new model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test.xml");

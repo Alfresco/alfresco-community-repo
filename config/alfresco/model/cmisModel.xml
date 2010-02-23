@@ -9,7 +9,7 @@
   </imports>
 
   <namespaces>
-    <namespace uri="http://www.alfresco.org/model/cmis/1.0/cd04" prefix="cmis" />
+    <namespace uri="http://www.alfresco.org/model/cmis/1.0/cd07" prefix="cmis" />
   </namespaces>
 
   <data-types>
@@ -78,9 +78,7 @@
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
           <multiple>false</multiple>
-          <index enabled="true">
-            <tokenised>false</tokenised>
-          </index>
+          <index enabled="false" />
         </property>
         <property name="cmis:createdBy">
           <title>Created by</title>
@@ -215,9 +213,7 @@
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
           <multiple>false</multiple>
-          <index enabled="true">
-            <tokenised>false</tokenised>
-          </index>
+          <index enabled="false"/>
         </property>
         <property name="cmis:isVersionSeriesCheckedOut">
           <title>Is Version Series Checked Out</title>
@@ -258,7 +254,7 @@
         <property name="cmis:contentStreamLength">
           <title>Content Stream Length</title>
           <description>The length of the content stream</description>
-          <type>d:int</type>
+          <type>d:long</type>
           <protected>true</protected>
           <mandatory enforced="false">false</mandatory>
           <multiple>false</multiple>
@@ -295,9 +291,7 @@
           <protected>true</protected>
           <mandatory enforced="false">false</mandatory>
           <multiple>false</multiple>
-          <index enabled="true">
-            <tokenised>false</tokenised>
-          </index>
+          <index enabled="false" />
         </property>
       </properties>
     </type>
@@ -325,9 +319,7 @@
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
           <multiple>false</multiple>
-          <index enabled="true">
-            <tokenised>false</tokenised>
-          </index>
+          <index enabled="false"/>
         </property>
         <property name="cmis:allowedChildObjectTypeIds">
           <title>Allowed Child Object Types Ids</title>

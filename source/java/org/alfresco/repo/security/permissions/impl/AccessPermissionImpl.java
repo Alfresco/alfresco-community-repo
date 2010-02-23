@@ -80,27 +80,60 @@ public class AccessPermissionImpl implements AccessPermission
         return accessStatus + " " + this.permission + " - " + this.authority + " (" + this.authorityType + ")";
     }
 
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (!(o instanceof AccessPermissionImpl))
-        {
-            return false;
-        }
-        AccessPermissionImpl other = (AccessPermissionImpl) o;
-        return this.getPermission().equals(other.getPermission())
-                && (this.getAccessStatus() == other.getAccessStatus() && (this.getAccessStatus().equals(other
-                        .getAccessStatus())));
-    }
+    
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode()
     {
-        return ((authority.hashCode() * 37) + permission.hashCode()) * 37 + accessStatus.hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((accessStatus == null) ? 0 : accessStatus.hashCode());
+        result = prime * result + ((authority == null) ? 0 : authority.hashCode());
+        result = prime * result + ((permission == null) ? 0 : permission.hashCode());
+        result = prime * result + position;
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final AccessPermissionImpl other = (AccessPermissionImpl) obj;
+        if (accessStatus == null)
+        {
+            if (other.accessStatus != null)
+                return false;
+        }
+        else if (!accessStatus.equals(other.accessStatus))
+            return false;
+        if (authority == null)
+        {
+            if (other.authority != null)
+                return false;
+        }
+        else if (!authority.equals(other.authority))
+            return false;
+        if (permission == null)
+        {
+            if (other.permission != null)
+                return false;
+        }
+        else if (!permission.equals(other.permission))
+            return false;
+        if (position != other.position)
+            return false;
+        return true;
     }
 
     public int getPosition()

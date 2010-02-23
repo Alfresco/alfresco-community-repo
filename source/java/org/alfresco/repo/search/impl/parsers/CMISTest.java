@@ -43,7 +43,7 @@ public class CMISTest extends TestCase
         CharStream input = new ANTLRInputStream(modelStream);
         
         
-        gUnitExecutor executer = new gUnitExecutor(parse(input));
+        gUnitExecutor executer = new gUnitExecutor(parse(input), "CMIS");
         
         System.out.print(executer.execTest());  // unit test result
         

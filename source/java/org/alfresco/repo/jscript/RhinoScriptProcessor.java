@@ -448,7 +448,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             Object result = script.exec(cx, scope);
             
             // extract java object result if wrapped by Rhino 
-            return valueConverter.convertValueForRepo((Serializable)result);
+            return valueConverter.convertValueForJava(result);
         }
         catch (WrappedException w)
         {

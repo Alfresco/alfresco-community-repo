@@ -153,6 +153,14 @@ public interface AuditService
     public static interface AuditQueryCallback
     {
         /**
+         * Determines whether this callback requires the values argument to be populated when {@link #handleAuditEntry}
+         * is called.
+         * 
+         * @return <code>true</code> if this callback requires the values argument to be populated
+         */
+        boolean valuesRequired();
+        
+        /**
          * Handle a row of audit entry data.
          * 
          * @param entryId                   the unique audit entry ID

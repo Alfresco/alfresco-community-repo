@@ -40,8 +40,8 @@ import java.util.TreeMap;
  */
 public class EnumFactory<E extends Enum<E>>
 {
-    private Enum<E> defaultEnum;
-    private Map<String, Enum<E>> labelMap = new HashMap<String, Enum<E>>(10);
+    private E defaultEnum;
+    private Map<String, E> labelMap = new HashMap<String, E>(10);
     
     /**
      * @param enumClass
@@ -55,7 +55,7 @@ public class EnumFactory<E extends Enum<E>>
      * @param enumClass
      * @param defaultEnum
      */
-    public EnumFactory(Class<E> enumClass, Enum<E> defaultEnum)
+    public EnumFactory(Class<E> enumClass, E defaultEnum)
     {
         this(enumClass, defaultEnum, false);
     }
@@ -65,17 +65,17 @@ public class EnumFactory<E extends Enum<E>>
      * @param defaultEnum
      * @param caseSensitive  case-sensitive lookup for Enum label
      */
-    public EnumFactory(Class<E> enumClass, Enum<E> defaultEnum, boolean caseSensitive)
+    public EnumFactory(Class<E> enumClass, E defaultEnum, boolean caseSensitive)
     {
         this.defaultEnum = defaultEnum;
 
         // setup label map
-        labelMap = caseSensitive ? new HashMap<String, Enum<E>>(10) : new TreeMap<String, Enum<E>>(String.CASE_INSENSITIVE_ORDER);
+        labelMap = caseSensitive ? new HashMap<String, E>(10) : new TreeMap<String, E>(String.CASE_INSENSITIVE_ORDER);
         EnumSet<E> enumSet = EnumSet.allOf(enumClass);
         Iterator<E> iter = enumSet.iterator();
         while(iter.hasNext())
         {
-            Enum<E> e = iter.next();
+            E e = iter.next();
             if (e instanceof EnumLabel)
             {
                 labelMap.put(((EnumLabel)e).getLabel(), e);
@@ -109,7 +109,7 @@ public class EnumFactory<E extends Enum<E>>
      * @param e  enum
      * @return  label (or null, if no label specified)
      */
-    public String label(Enum<E> e)
+    public String label(E e)
     {
         if (e instanceof EnumLabel)
         {
@@ -135,7 +135,7 @@ public class EnumFactory<E extends Enum<E>>
      * @param label
      * @return  enum (or null, if no enum has specified label)
      */
-    public Enum<E> fromLabel(String label)
+    public E fromLabel(String label)
     {
         return labelMap.get(label);
     }
@@ -148,9 +148,9 @@ public class EnumFactory<E extends Enum<E>>
      * @param label
      * @return  enum (or default enum, if label is invalid)
      */
-    public Enum<E> toEnum(String label)
+    public E toEnum(String label)
     {
-        Enum<E> e = (label == null) ? null : fromLabel(label);
+        E e = (label == null) ? null : fromLabel(label);
         if (e == null)
         {
             e = defaultEnum;

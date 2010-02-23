@@ -33,7 +33,9 @@ import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetMetaData;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.search.impl.querymodel.Column;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.Query;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.results.ResultSetSPIWrapper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,7 +68,8 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     private CMISDictionaryService cmisDictionaryService;
 
-    public CMISResultSetRowImpl(CMISResultSet resultSet, int index, Map<String, Float> scores, NodeService nodeService, Map<String, NodeRef> nodeRefs, Query query, CMISDictionaryService cmisDictionaryService)
+    public CMISResultSetRowImpl(CMISResultSet resultSet, int index, Map<String, Float> scores, NodeService nodeService, Map<String, NodeRef> nodeRefs, Query query,
+            CMISDictionaryService cmisDictionaryService)
     {
         this.resultSet = resultSet;
         this.index = index;
@@ -79,7 +82,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getIndex()
      */
     public int getIndex()
@@ -89,7 +91,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet()
      */
     public ResultSet getResultSet()
@@ -99,7 +100,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getScore()
      */
     public float getScore()
@@ -115,7 +115,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
      */
     public float getScore(String selectorName)
@@ -125,7 +124,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
      */
     public Map<String, Float> getScores()
@@ -135,7 +133,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
      */
     public NodeRef getNodeRef(String selectorName)
@@ -145,7 +142,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
      */
     public Map<String, NodeRef> getNodeRefs()
@@ -155,22 +151,58 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String)
      */
     public Serializable getValue(String columnName)
     {
+        CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
+        context.setCmisDictionaryService(cmisDictionaryService);
+        context.setNodeRefs(nodeRefs);
+        context.setNodeService(nodeService);
+        context.setScores(scores);
+        context.setScore(getScore());
         for (Column column : query.getColumns())
         {
             if (column.getAlias().equals(columnName))
             {
-                CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
-                context.setCmisDictionaryService(cmisDictionaryService);
-                context.setNodeRefs(nodeRefs);
-                context.setNodeService(nodeService);
-                context.setScores(scores);
-                context.setScore(getScore());
                 return column.getFunction().getValue(column.getFunctionArguments(), context);
+            }
+            // Special case for one selector - ignore any table aliases
+            // also allows look up direct and not by alias
+            // Perhaps we should add the duplicates instead
+            // TODO: check SQL 92 for single alias table behaviour for selectors
+            if (nodeRefs.size() == 1)
+            {
+                if (column.getFunction().getName().equals(PropertyAccessor.NAME))
+                {
+                    PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
+                    String propertyName = arg.getPropertyName();
+                    if (propertyName.equals(columnName))
+                    {
+                        return column.getFunction().getValue(column.getFunctionArguments(), context);
+                    }
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(arg.getSelector()).append(".").append(propertyName);
+                    propertyName = builder.toString();
+                    if (propertyName.equals(columnName))
+                    {
+                        return column.getFunction().getValue(column.getFunctionArguments(), context);
+                    }
+                }
+            }
+            else
+            {
+                if (column.getFunction().getName().equals(PropertyAccessor.NAME))
+                {
+                    PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(arg.getSelector()).append(".").append(arg.getPropertyName());
+                    String propertyName = builder.toString();
+                    if (propertyName.equals(columnName))
+                    {
+                        return column.getFunction().getValue(column.getFunctionArguments(), context);
+                    }
+                }
             }
         }
         return null;
@@ -178,7 +210,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSetRow#getValues()
      */
     public Map<String, Serializable> getValues()
@@ -208,12 +239,36 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         {
             return nodeRefs.values().iterator().next();
         }
+        else if(allNodeRefsEqual(nodeRefs))
+        {
+            return nodeRefs.values().iterator().next();
+        }
         throw new UnsupportedOperationException("Ambiguous selector");
     }
 
+    private boolean allNodeRefsEqual(Map<String, NodeRef> selected)
+    {
+        NodeRef last = null;
+        for(NodeRef current : selected.values())
+        {
+            if(last == null)
+            {
+                last = current;
+            }
+            else
+            {
+                if(!last.equals(current))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
     public QName getQName()
     {
-       return getChildAssocRef().getQName();
+        return getChildAssocRef().getQName();
     }
 
     public Serializable getValue(QName qname)

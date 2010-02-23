@@ -763,7 +763,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
         return permissions;
     }
 
-    private Set<PermissionReference> getAllPermissions()
+    public Set<PermissionReference> getAllPermissions()
     {
         HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(256, 1.0f);
         for (PermissionSet ps : permissionSets.values())
@@ -1322,6 +1322,32 @@ public class PermissionModel implements ModelDAO, InitializingBean
         uniqueMap.put(PermissionService.ALL_PERMISSIONS, SimplePermissionReference.getPermissionReference(QName.createQName(NamespaceService.SECURITY_MODEL_1_0_URI,
                 PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS));
 
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getAllExposedPermissions()
+     */
+    public Set<PermissionReference> getAllExposedPermissions()
+    {
+        HashSet<PermissionReference> permissions = new HashSet<PermissionReference>(256, 1.0f);
+        for (PermissionSet ps : permissionSets.values())
+        {
+            for (PermissionGroup pg : ps.getPermissionGroups())
+            {
+                if(pg.isExposed())
+                {
+                    permissions.add(SimplePermissionReference.getPermissionReference(pg.getQName(), pg.getName()));
+                }
+            }
+            for (Permission p : ps.getPermissions())
+            {
+                if(p.isExposed())
+                {
+                    permissions.add(SimplePermissionReference.getPermissionReference(p.getQName(), p.getName()));
+                }
+            }
+        }
+        return permissions;
     }
 
 }

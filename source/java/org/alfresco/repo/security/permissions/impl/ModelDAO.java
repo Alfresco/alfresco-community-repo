@@ -152,4 +152,17 @@ public interface ModelDAO
      */
     public Set<? extends PermissionEntry> getGlobalPermissionEntries();
 
+
+    /**
+     * Get all exposed permissions (regardless of type exposure)
+     * @return
+     */
+    public Set<PermissionReference> getAllExposedPermissions();
+    
+    /**
+     * Get all exposed permissions (regardless of type exposure)
+     * @return
+     */
+    public Set<PermissionReference> getAllPermissions();
+
 }

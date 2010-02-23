@@ -362,6 +362,12 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             this.callback = callback;
             this.more = true;
         }
+        
+        public boolean valuesRequired()
+        {
+            return callback.valuesRequired();
+        }
+
         @SuppressWarnings("unchecked")
         public void processResult(AuditQueryResult row)
         {
@@ -371,56 +377,53 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
                 return;
             }
             // See if the value is available or if it has to be built up
-            Map<String, Serializable> auditValues = row.getAuditValue();
-            if (auditValues == null)
+            Map<String, Serializable> auditValues = null;
+            if (valuesRequired())
             {
-                List<PropertyIdSearchRow> propMapRows = row.getAuditValueRows();
-                if (propMapRows == null)
+                auditValues = row.getAuditValue();
+                if (auditValues == null)
                 {
-                    // Use the audit values ID
-                    Long auditValuesId = row.getAuditValuesId();
-                    Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
-                    if (auditValuesPair == null)
+                    List<PropertyIdSearchRow> propMapRows = row.getAuditValueRows();
+                    if (propMapRows == null)
                     {
-                        // Ignore
-                        more = callback.handleAuditEntryError(
-                                row.getAuditEntryId(),
-                                "Audit entry not joined to audit properties: " + row,
-                                null);
-                        return;
+                        // Use the audit values ID
+                        Long auditValuesId = row.getAuditValuesId();
+                        Pair<Long, Serializable> auditValuesPair = propertyValueDAO.getPropertyValueById(auditValuesId);
+                        if (auditValuesPair == null)
+                        {
+                            // Ignore
+                            more = callback.handleAuditEntryError(row.getAuditEntryId(),
+                                    "Audit entry not joined to audit properties: " + row, null);
+                            return;
+                        }
+                        auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
                     }
-                    auditValues = (Map<String, Serializable>) auditValuesPair.getSecond();
-                }
-                else
-                {
-                    // Resolve the map
-                    try
+                    else
                     {
-                        auditValues = (Map<String, Serializable>) propertyValueDAO.convertPropertyIdSearchRows(propMapRows);
-                    }
-                    catch (ClassCastException e)
-                    {
-                        more = callback.handleAuditEntryError(
-                                row.getAuditEntryId(),
-                                "Audit entry not linked to a Map<String, Serializable> value: " + row,
-                                e);
-                        return;
-                    }
-                    catch (Throwable e)
-                    {
-                        more = callback.handleAuditEntryError(
-                                row.getAuditEntryId(),
-                                "Audit entry unable to extract audited values: " + row,
-                                e);
-                        return;
-                    }
-                    if (auditValues == null)
-                    {
-                        more = callback.handleAuditEntryError(
-                                row.getAuditEntryId(),
-                                "Audit entry incompletely joined to audit properties: " + row,
-                                null);
-                        return;
+                        // Resolve the map
+                        try
+                        {
+                            auditValues = (Map<String, Serializable>) propertyValueDAO
+                                    .convertPropertyIdSearchRows(propMapRows);
+                        }
+                        catch (ClassCastException e)
+                        {
+                            more = callback.handleAuditEntryError(row.getAuditEntryId(),
+                                    "Audit entry not linked to a Map<String, Serializable> value: " + row, e);
+                            return;
+                        }
+                        catch (Throwable e)
+                        {
+                            more = callback.handleAuditEntryError(row.getAuditEntryId(),
+                                    "Audit entry unable to extract audited values: " + row, e);
+                            return;
+                        }
+                        if (auditValues == null)
+                        {
+                            more = callback.handleAuditEntryError(row.getAuditEntryId(),
+                                    "Audit entry incompletely joined to audit properties: " + row, null);
+                            return;
+                        }
                     }
                 }
             }

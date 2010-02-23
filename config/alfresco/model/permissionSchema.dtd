@@ -160,7 +160,7 @@
     
     on - if required permission must be present on the node, its primary parent, or its children 
     
-    imples - false - the permission wil be checked
+    implies - false - the permission wil be checked
            - true - the permission is effectively granted along with this one.  
 	
 	       This will normally be false. For example, to require read permission on the

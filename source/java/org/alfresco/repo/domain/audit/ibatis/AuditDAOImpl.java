@@ -315,7 +315,8 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                     queryRowHandler,
                     maxResults);
             
-            template.queryWithRowHandler(SELECT_ENTRIES_WITH_VALUES, params, rollupRowHandler);
+            template.queryWithRowHandler(rowHandler.valuesRequired() ? SELECT_ENTRIES_WITH_VALUES
+                    : SELECT_ENTRIES_WITHOUT_VALUES, params, rollupRowHandler);
             rollupRowHandler.processLastResults();
         }
     }

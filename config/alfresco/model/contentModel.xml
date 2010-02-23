@@ -1,4 +1,8 @@
-<model name="cm:contentmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 modelSchema.xsd" -->
+<model name="cm:contentmodel" 
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
    <description>Alfresco Content Domain Model</description>
    <author>Alfresco</author>
@@ -419,6 +423,7 @@
 	     <title>Thumbnail</title>
 		 <parent>cm:content</parent>
 		 <archive>true</archive>
+		 <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
 		 <properties>     
 		    <property name="cm:thumbnailName">
 		        <title>Thumbnail Name</title>
@@ -431,7 +436,7 @@
 			    <mandatory>true</mandatory>
 		    </property>   		       
 		 </properties>
-	  </type>
+		 </type>
             
    </types>
    

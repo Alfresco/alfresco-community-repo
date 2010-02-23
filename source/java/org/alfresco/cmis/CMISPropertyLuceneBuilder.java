@@ -128,9 +128,10 @@ public interface CMISPropertyLuceneBuilder
     public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException;
 
     /**
+     * @param lqp TODO
      * @return the sort field
      */
-    public String getLuceneSortField();
+    public String getLuceneSortField(LuceneQueryParser lqp);
     
     /**
      * @return the field name

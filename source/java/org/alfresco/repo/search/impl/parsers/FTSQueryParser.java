@@ -63,7 +63,7 @@ import org.antlr.runtime.tree.Tree;
 public class FTSQueryParser
 {
     static public Constraint buildFTS(String ftsExpression, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext, Selector selector,
-            ArrayList<Column> columns, Connective defaultConnective, Connective defaultFieldConnective, Map<String, String> templates, String defaultField)
+            Map<String, Column> columnMap, FTSParser.Mode mode, Connective defaultFieldConnective, Map<String, String> templates, String defaultField)
     {
         // TODO: Decode sql escape for '' should do in CMIS layer
 
@@ -84,7 +84,7 @@ public class FTSQueryParser
                     FTSLexer lexer = new FTSLexer(cs);
                     CommonTokenStream tokens = new CommonTokenStream(lexer);
                     parser = new FTSParser(tokens);
-                    parser.setDefaultConjunction(defaultConnective == Connective.AND ? true : false);
+                    parser.setMode(mode);
                     parser.setDefaultFieldConjunction(defaultFieldConnective == Connective.AND ? true : false);
                     CommonTree ftsNode = (CommonTree) parser.ftsQuery().getTree();
                     templateTrees.put(name, ftsNode);
@@ -110,10 +110,10 @@ public class FTSQueryParser
             FTSLexer lexer = new FTSLexer(cs);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             parser = new FTSParser(tokens);
-            parser.setDefaultConjunction(defaultConnective == Connective.AND ? true : false);
+            parser.setMode(mode);
             parser.setDefaultFieldConjunction(defaultFieldConnective == Connective.AND ? true : false);
             CommonTree ftsNode = (CommonTree) parser.ftsQuery().getTree();
-            return buildFTSConnective(null, ftsNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+            return buildFTSConnective(null, ftsNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
         }
         catch (RecognitionException e)
         {
@@ -130,7 +130,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildFTSConnective(CommonTree fieldReferenceNode, CommonTree node, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns, Map<String, CommonTree> templateTrees, String defaultField)
+            Selector selector, Map<String, Column> columnMap, Map<String, CommonTree> templateTrees, String defaultField)
     {
         Connective connective;
         switch (node.getType())
@@ -159,41 +159,41 @@ public class FTSQueryParser
             case FTSParser.FIELD_DISJUNCTION:
             case FTSParser.CONJUNCTION:
             case FTSParser.FIELD_CONJUNCTION:
-                constraint = buildFTSConnective(fieldReferenceNode, subNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+                constraint = buildFTSConnective(fieldReferenceNode, subNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
                 setBoost(constraint, subNode);
                 break;
             case FTSParser.NEGATION:
             case FTSParser.FIELD_NEGATION:
                 testNode = (CommonTree) subNode.getChild(0);
-                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
                 constraint.setOccur(Occur.EXCLUDE);
                 setBoost(constraint, subNode);
                 break;
             case FTSParser.DEFAULT:
             case FTSParser.FIELD_DEFAULT:
                 testNode = (CommonTree) subNode.getChild(0);
-                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
                 constraint.setOccur(Occur.DEFAULT);
                 setBoost(constraint, subNode);
                 break;
             case FTSParser.MANDATORY:
             case FTSParser.FIELD_MANDATORY:
                 testNode = (CommonTree) subNode.getChild(0);
-                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
                 constraint.setOccur(Occur.MANDATORY);
                 setBoost(constraint, subNode);
                 break;
             case FTSParser.OPTIONAL:
             case FTSParser.FIELD_OPTIONAL:
                 testNode = (CommonTree) subNode.getChild(0);
-                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
                 constraint.setOccur(Occur.OPTIONAL);
                 setBoost(constraint, subNode);
                 break;
             case FTSParser.EXCLUDE:
             case FTSParser.FIELD_EXCLUDE:
                 testNode = (CommonTree) subNode.getChild(0);
-                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+                constraint = buildFTSTest(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
                 constraint.setOccur(Occur.EXCLUDE);
                 setBoost(constraint, subNode);
                 break;
@@ -236,7 +236,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildFTSTest(CommonTree fieldReferenceNode, CommonTree argNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns, Map<String, CommonTree> templateTrees, String defaultField)
+            Selector selector, Map<String, Column> columnMap, Map<String, CommonTree> templateTrees, String defaultField)
     {
         CommonTree testNode = argNode;
         // Check for template replacement
@@ -244,14 +244,14 @@ public class FTSQueryParser
         PropertyArgument parg = null;
         if (fieldReferenceNode != null)
         {
-            parg = buildFieldReference("", fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            parg = buildFieldReference("", fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
         }
         else
         {
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                parg = buildFieldReference(FTSRange.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                parg = buildFieldReference(FTSRange.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             }
         }
         if (parg != null)
@@ -282,7 +282,7 @@ public class FTSQueryParser
         case FTSParser.FIELD_DISJUNCTION:
         case FTSParser.CONJUNCTION:
         case FTSParser.FIELD_CONJUNCTION:
-            return buildFTSConnective(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+            return buildFTSConnective(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
         case FTSParser.TERM:
         case FTSParser.FG_TERM:
             termNode = testNode.getChild(0);
@@ -291,11 +291,13 @@ public class FTSQueryParser
                 switch (termNode.getType())
                 {
                 case FTSParser.FTSPRE:
-                    return buildPrefixTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildPrefixTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 case FTSParser.FTSWILD:
-                    return buildWildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                case FTSParser.STAR:
+                case FTSParser.QUESTION_MARK:
+                    return buildWildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 default:
-                    return buildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 }
             }
             else
@@ -304,9 +306,11 @@ public class FTSQueryParser
                 {
                 case FTSParser.FTSPRE:
                 case FTSParser.FTSWILD:
+                case FTSParser.STAR:
+                case FTSParser.QUESTION_MARK:
                     throw new FTSQueryException("Fuzzy queries are not supported with wild cards");
                 default:
-                    return buildFuzzyTerm(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildFuzzyTerm(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 }
             }
         case FTSParser.EXACT_TERM:
@@ -317,11 +321,13 @@ public class FTSQueryParser
                 switch (termNode.getType())
                 {
                 case FTSParser.FTSPRE:
-                    return buildPrefixTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildPrefixTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 case FTSParser.FTSWILD:
-                    return buildWildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                case FTSParser.STAR:
+                case FTSParser.QUESTION_MARK:
+                    return buildWildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 default:
-                    return buildExactTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildExactTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 }
             }
             else
@@ -330,14 +336,16 @@ public class FTSQueryParser
                 {
                 case FTSParser.FTSPRE:
                 case FTSParser.FTSWILD:
+                case FTSParser.STAR:
+                case FTSParser.QUESTION_MARK:
                     throw new FTSQueryException("Fuzzy queries are not supported with wild cards");
                 default:
-                    return buildFuzzyTerm(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildFuzzyTerm(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 }
             }
         case FTSParser.PHRASE:
         case FTSParser.FG_PHRASE:
-            return buildPhrase(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+            return buildPhrase(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
         case FTSParser.SYNONYM:
         case FTSParser.FG_SYNONYM:
             termNode = testNode.getChild(0);
@@ -346,11 +354,13 @@ public class FTSQueryParser
                 switch (termNode.getType())
                 {
                 case FTSParser.FTSPRE:
-                    return buildPrefixTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildPrefixTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 case FTSParser.FTSWILD:
-                    return buildWildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                case FTSParser.STAR:
+                case FTSParser.QUESTION_MARK:
+                    return buildWildTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 default:
-                    return buildExpandTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildExpandTerm(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 }
             }
             else
@@ -359,17 +369,19 @@ public class FTSQueryParser
                 {
                 case FTSParser.FTSPRE:
                 case FTSParser.FTSWILD:
+                case FTSParser.STAR:
+                case FTSParser.QUESTION_MARK:
                     throw new FTSQueryException("Fuzzy queries are not supported with wild cards");
                 default:
-                    return buildFuzzyTerm(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+                    return buildFuzzyTerm(fuzzy, fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
                 }
             }
         case FTSParser.PROXIMITY:
         case FTSParser.FG_PROXIMITY:
-            return buildProximity(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+            return buildProximity(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
         case FTSParser.RANGE:
         case FTSParser.FG_RANGE:
-            return buildRange(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columns);
+            return buildRange(fieldReferenceNode, testNode, factory, functionEvaluationContext, selector, columnMap);
         case FTSParser.FIELD_GROUP:
             if (fieldReferenceNode != null)
             {
@@ -377,14 +389,14 @@ public class FTSQueryParser
             }
             CommonTree newFieldReferenceNode = (CommonTree) testNode.getChild(0);
             CommonTree fieldExperssion = (CommonTree) testNode.getChild(1);
-            return buildFTSConnective(newFieldReferenceNode, fieldExperssion, factory, functionEvaluationContext, selector, columns, templateTrees, defaultField);
+            return buildFTSConnective(newFieldReferenceNode, fieldExperssion, factory, functionEvaluationContext, selector, columnMap, templateTrees, defaultField);
         default:
             throw new FTSQueryException("Unsupported FTS option " + testNode.getText());
         }
     }
 
     static private Constraint buildRange(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSRange.NAME;
         Function function = factory.getFunction(functionName);
@@ -399,7 +411,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSRange.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSRange.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -407,7 +419,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSRange.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSRange.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -415,7 +427,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildProximity(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSProximity.NAME;
         Function function = factory.getFunction(functionName);
@@ -431,14 +443,14 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSProximity.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSProximity.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         return factory.createFunctionalConstraint(function, functionArguments);
     }
 
     static private Constraint buildExpandTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSTerm.NAME;
         Function function = factory.getFunction(functionName);
@@ -449,7 +461,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -457,7 +469,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -465,7 +477,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildPhrase(Float fuzzy, CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory,
-            FunctionEvaluationContext functionEvaluationContext, Selector selector, ArrayList<Column> columns)
+            FunctionEvaluationContext functionEvaluationContext, Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSPhrase.NAME;
         Function function = factory.getFunction(functionName);
@@ -479,7 +491,7 @@ public class FTSQueryParser
         }
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSPhrase.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSPhrase.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -487,7 +499,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSPhrase.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSPhrase.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -495,7 +507,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildExactTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSTerm.NAME;
         Function function = factory.getFunction(functionName);
@@ -506,7 +518,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -514,7 +526,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -522,7 +534,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSTerm.NAME;
         Function function = factory.getFunction(functionName);
@@ -533,7 +545,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -541,7 +553,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -828,7 +840,7 @@ public class FTSQueryParser
     }
     
     static private Constraint buildFuzzyTerm(Float fuzzy, CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory,
-            FunctionEvaluationContext functionEvaluationContext, Selector selector, ArrayList<Column> columns)
+            FunctionEvaluationContext functionEvaluationContext, Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSFuzzyTerm.NAME;
         Function function = factory.getFunction(functionName);
@@ -839,7 +851,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSFuzzyTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSFuzzyTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -847,7 +859,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSFuzzyTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSFuzzyTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -855,7 +867,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildWildTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSWildTerm.NAME;
         Function function = factory.getFunction(functionName);
@@ -864,7 +876,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSWildTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSWildTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -872,7 +884,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSWildTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSWildTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -880,7 +892,7 @@ public class FTSQueryParser
     }
 
     static private Constraint buildPrefixTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, ArrayList<Column> columns)
+            Selector selector, Map<String, Column> columnMap)
     {
         String functionName = FTSPrefixTerm.NAME;
         Function function = factory.getFunction(functionName);
@@ -889,7 +901,7 @@ public class FTSQueryParser
         functionArguments.put(larg.getName(), larg);
         if (fieldReferenceNode != null)
         {
-            PropertyArgument parg = buildFieldReference(FTSPrefixTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            PropertyArgument parg = buildFieldReference(FTSPrefixTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
             functionArguments.put(parg.getName(), parg);
         }
         else
@@ -897,7 +909,7 @@ public class FTSQueryParser
             CommonTree specifiedFieldReferenceNode = findFieldReference(testNode);
             if (specifiedFieldReferenceNode != null)
             {
-                PropertyArgument parg = buildFieldReference(FTSPrefixTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+                PropertyArgument parg = buildFieldReference(FTSPrefixTerm.ARG_PROPERTY, specifiedFieldReferenceNode, factory, functionEvaluationContext, selector, columnMap);
                 functionArguments.put(parg.getName(), parg);
             }
         }
@@ -933,16 +945,16 @@ public class FTSQueryParser
     }
 
     static public PropertyArgument buildFieldReference(String argumentName, CommonTree fieldReferenceNode, QueryModelFactory factory,
-            FunctionEvaluationContext functionEvaluationContext, Selector selector, ArrayList<Column> columns)
+            FunctionEvaluationContext functionEvaluationContext, Selector selector, Map<String, Column> columnMap)
     {
         if (fieldReferenceNode.getType() != FTSParser.FIELD_REF)
         {
             throw new FTSQueryException("Not column ref  ..." + fieldReferenceNode.getText());
         }
         String fieldName = getText(fieldReferenceNode.getChild(0));
-        if (columns != null)
+        if (columnMap != null)
         {
-            for (Column column : columns)
+            for (Column column : columnMap.values())
             {
                 if (column.getAlias().equals(fieldName))
                 {
@@ -972,6 +984,7 @@ public class FTSQueryParser
         String alias = "";
         if (selector != null)
         {
+            functionEvaluationContext.checkFieldApplies(selector, fieldName);
             alias = selector.getAlias();
         }
 

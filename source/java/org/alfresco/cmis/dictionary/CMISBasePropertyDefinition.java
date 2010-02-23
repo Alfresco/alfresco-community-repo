@@ -42,6 +42,7 @@ import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
+import org.alfresco.repo.search.impl.lucene.analysis.DateAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.DoubleAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.FloatAnalyser;
@@ -51,6 +52,7 @@ import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 
 /**
@@ -64,23 +66,37 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
 
     // Properties of Property
     private CMISTypeDefinition typeDef;
+
     private CMISPropertyId propertyId;
+
     private String queryName;
+
     private String displayName;
+
     private String description;
+
     private CMISDataTypeEnum propertyType;
+
     private CMISCardinalityEnum cardinality;
+
     private int maximumLength = -1;
+
     private Collection<CMISChoice> choices = new HashSet<CMISChoice>();
+
     private boolean isOpenChoice = false;
+
     private boolean required;
+
     private String defaultValue;
+
     private CMISUpdatabilityEnum updatability;
+
     private boolean queryable;
+
     private boolean orderable;
+
     private AbstractProperty propertyAccessor;
 
-    
     /**
      * Construct
      * 
@@ -103,7 +119,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
             Constraint constraint = constraintDef.getConstraint();
             if (constraint instanceof ListOfValuesConstraint)
             {
-                int position = 1;  // CMIS is 1 based (according to XSDs)
+                int position = 1; // CMIS is 1 based (according to XSDs)
                 ListOfValuesConstraint lovc = (ListOfValuesConstraint) constraint;
                 for (String allowed : lovc.getAllowedValues())
                 {
@@ -123,31 +139,43 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         queryable = propDef.isIndexed();
         if (queryable)
         {
-            IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
-            if (propDef.getIndexTokenisationMode() != null)
+            if (cardinality == CMISCardinalityEnum.SINGLE_VALUED)
             {
-                indexTokenisationMode = propDef.getIndexTokenisationMode();
-            }
-            switch (indexTokenisationMode)
-            {
-            case BOTH:
-            case FALSE:
-                orderable = true;
-                break;
-            case TRUE:
-            default:
-                String analyserClassName = propDef.getDataType().getAnalyserClassName();
-                if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
-                        || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
-                        || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
-                        || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
+                IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
+                if (propDef.getIndexTokenisationMode() != null)
                 {
+                    indexTokenisationMode = propDef.getIndexTokenisationMode();
+                }
+                switch (indexTokenisationMode)
+                {
+                case BOTH:
+                case FALSE:
                     orderable = true;
+                    break;
+                case TRUE:
+                default:
+                    String analyserClassName = propDef.getDataType().getAnalyserClassName();
+                    if(propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
+                    {
+                        orderable = true;
+                    }
+                    else if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(DateAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
+                    {
+                        orderable = true;
+                    }
+                    else
+                    {
+                        orderable = false;
+                    }
                 }
-                else
-                {
-                    orderable = false;
-                }
+            }
+            else
+            {
+                orderable = false;
             }
         }
         else
@@ -186,7 +214,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     {
         return queryName;
     }
-    
+
     /**
      * Get the display name
      * 
@@ -316,7 +344,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     {
         return propertyAccessor;
     }
-    
+
     /**
      * Gets the property Lucene builder
      * 
@@ -326,8 +354,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     {
         return propertyAccessor;
     }
-    
-    
+
     /*
      * (non-Javadoc)
      * @see java.lang.Object#toString()

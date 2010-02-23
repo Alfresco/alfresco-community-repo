@@ -91,8 +91,8 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
         queryable = true;
         fullTextIndexed = true;
         controllablePolicy = false;
-        controllableACL = false;
-        includeInSuperTypeQuery = true;
+        controllableACL = true;
+        includedInSuperTypeQuery = cmisClassDef.getIncludedInSuperTypeQuery();
 
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
 
@@ -160,7 +160,7 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
         builder.append("Creatable=").append(isCreatable()).append(", ");
         builder.append("Queryable=").append(isQueryable()).append(", ");
         builder.append("FullTextIndexed=").append(isFullTextIndexed()).append(", ");
-        builder.append("IncludeInSuperTypeQuery=").append(isIncludeInSuperTypeQuery()).append(", ");
+        builder.append("IncludedInSuperTypeQuery=").append(isIncludedInSuperTypeQuery()).append(", ");
         builder.append("ControllablePolicy=").append(isControllablePolicy()).append(", ");
         builder.append("ControllableACL=").append(isControllableACL()).append(", ");
         builder.append("Fileable=").append(isFileable()).append(", ");

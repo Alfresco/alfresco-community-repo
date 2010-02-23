@@ -71,6 +71,8 @@ import org.alfresco.util.EqualsHelper;
     private Set<QName> inheritedDefaultAspectNames = new HashSet<QName>();
     private Boolean archive = null;
     private Boolean inheritedArchive = null;
+    private Boolean includedInSuperTypeQuery = null;
+    private Boolean inheritedIncludedInSuperTypeQuery = null;
     
     /**
      * Construct
@@ -88,6 +90,7 @@ import org.alfresco.util.EqualsHelper;
         // Resolve Names
         this.name = QName.createQName(m2Class.getName(), resolver);
         this.archive = m2Class.getArchive();
+        this.includedInSuperTypeQuery = m2Class.getIncludedInSuperTypeQuery();
         if (m2Class.getParentName() != null && m2Class.getParentName().length() > 0)
         {
             this.parentName = QName.createQName(m2Class.getParentName(), resolver);
@@ -315,6 +318,13 @@ import org.alfresco.util.EqualsHelper;
             // archive not explicitly set on this class and there is a parent class
             inheritedArchive = ((M2ClassDefinition)parentClass).getArchive();
         }
+        
+        // resolve includedInSuperTypeQuery inheritance
+        if (parentClass != null && includedInSuperTypeQuery == null)
+        {
+            // archive not explicitly set on this class and there is a parent class
+            inheritedIncludedInSuperTypeQuery = ((M2ClassDefinition)parentClass).getIncludedInSuperTypeQuery();
+        }
     }
     
     /* (non-Javadoc)
@@ -381,6 +391,22 @@ import org.alfresco.util.EqualsHelper;
     public Boolean getArchive()
     {
         return archive == null ? inheritedArchive : archive;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#includedInSuperTypeQuery()
+     */
+    public Boolean getIncludedInSuperTypeQuery()
+    {
+        if(includedInSuperTypeQuery != null)
+        {
+            return includedInSuperTypeQuery;
+        }
+        if(inheritedIncludedInSuperTypeQuery != null)
+        {
+            return inheritedIncludedInSuperTypeQuery;
+        }
+        return Boolean.TRUE;
     }
 
     /* (non-Javadoc)
@@ -613,6 +639,23 @@ import org.alfresco.util.EqualsHelper;
         {
             Boolean classArchive = classDef.getArchive();
             if (classArchive == null || classArchive.booleanValue() != archive.booleanValue())
+            {
+                isUpdatedIncrementally = true;
+            }
+        }
+       
+        // check includedInSuperTypeQuery/inheritedIncludedInSuperTypeQuery
+        if (includedInSuperTypeQuery == null)
+        {
+            if (classDef.getIncludedInSuperTypeQuery() != null)
+            {
+                isUpdatedIncrementally = true;
+            }
+        }
+        else
+        {
+            Boolean classIncludedInSuperTypeQuery = classDef.getIncludedInSuperTypeQuery();
+            if (classIncludedInSuperTypeQuery == null || classIncludedInSuperTypeQuery.booleanValue() != includedInSuperTypeQuery.booleanValue())
             {
                 isUpdatedIncrementally = true;
             }

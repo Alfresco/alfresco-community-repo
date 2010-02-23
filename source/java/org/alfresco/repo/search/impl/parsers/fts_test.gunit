@@ -7,19 +7,19 @@ gunit FTS;
 /** Parser */
 
 ftsQuery:
-"\"zebra\"" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"zebra\")))))"
-"one and cm:name:two and cm_name:three and {http://www.alfresco.org/model/content/1.0}name:\"four\" seven * eight \"nine * ten\"" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM one)) (DEFAULT (TERM two (FIELD_REF name (PREFIX cm)))) (DEFAULT (TERM three (FIELD_REF cm_name))) (DEFAULT (PHRASE \"four\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))))) (DISJUNCTION (CONJUNCTION (DEFAULT (PROXIMITY seven PROXIMITY eight)))) (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"nine * ten\")))))"
-"1..2" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1 2 INCLUSIVE)))))"
-"test:flag:true AND %test:field" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF field (PREFIX test)))))))"
-"test:flag:true AND %NEST" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST))))))"
-"test:flag:true AND %(NEST,test:field, test_field1, {http://www.alfresco.org/model/content/1.0}name)" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST) (FIELD_REF field (PREFIX test)) (FIELD_REF test_field1) (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))))))" 
-"+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" +(ASPECT:\"{http://www.alfresco.org/model/recordsmanagement/1.0}record\") -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (MANDATORY (PHRASE \"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" (FIELD_REF PATH))))) (DISJUNCTION (CONJUNCTION (MANDATORY (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"{http://www.alfresco.org/model/recordsmanagement/1.0}record\" (FIELD_REF ASPECT))))))))) (DISJUNCTION (CONJUNCTION (EXCLUDE (PHRASE \"{http://www.alfresco.org/model/content/1.0}thumbnail\" (FIELD_REF TYPE))))))"
+"\"zebra\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"zebra\"))))"
+"one and cm:name:two and cm_name:three and {http://www.alfresco.org/model/content/1.0}name:\"four\" seven * eight \"nine * ten\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM one)) (DEFAULT (TERM two (FIELD_REF name (PREFIX cm)))) (DEFAULT (TERM three (FIELD_REF cm_name))) (DEFAULT (PHRASE \"four\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))) (DEFAULT (PROXIMITY seven PROXIMITY eight)) (DEFAULT (PHRASE \"nine * ten\"))))"
+"1..2" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1 2 INCLUSIVE))))"
+"test:flag:true AND %test:field" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF field (PREFIX test))))))"
+"test:flag:true AND %NEST" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST)))))"
+"test:flag:true AND %(NEST,test:field, test_field1, {http://www.alfresco.org/model/content/1.0}name)" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST) (FIELD_REF field (PREFIX test)) (FIELD_REF test_field1) (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0}))))))" 
+"+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" +(ASPECT:\"{http://www.alfresco.org/model/recordsmanagement/1.0}record\") -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" -> "(DISJUNCTION (CONJUNCTION (MANDATORY (PHRASE \"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" (FIELD_REF PATH))) (MANDATORY (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"{http://www.alfresco.org/model/recordsmanagement/1.0}record\" (FIELD_REF ASPECT)))))) (EXCLUDE (PHRASE \"{http://www.alfresco.org/model/content/1.0}thumbnail\" (FIELD_REF TYPE)))))"
+"TEXT:(\"lazy\")" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (FIELD_GROUP (FIELD_REF TEXT) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_PHRASE \"lazy\"))))))))"
 
-
-ftsImplicitConjunctionOrDisjunction:
-"red" -> (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red)))))
-"red or blue" -> (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue)))))
-"red or blue OR pink" -> (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))) (CONJUNCTION (DEFAULT (TERM pink)))))
+ftsDisjunction:
+"red" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))))
+"red or blue" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))))
+"red or blue OR pink" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))) (CONJUNCTION (DEFAULT (TERM pink))))
 
 
 ftsExplicitDisjunction:
@@ -28,7 +28,7 @@ ftsExplicitDisjunction:
 "red or blue OR pink" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))) (CONJUNCTION (DEFAULT (TERM pink))))
 
 
-ftsExplictConjunction:
+ftsExplicitConjunction:
 "red" -> (CONJUNCTION (DEFAULT (TERM red)))
 "red and blue" -> (CONJUNCTION (DEFAULT (TERM red)) (DEFAULT (TERM blue)))
 "red and blue AND pink" -> (CONJUNCTION (DEFAULT (TERM red)) (DEFAULT (TERM blue)) (DEFAULT (TERM pink)))
@@ -44,7 +44,7 @@ ftsPrefixed:
 ftsTest:
 "zebra"     -> (TERM zebra)
 "\"zebra\"" -> (PHRASE "zebra")
-"or"        -> (TERM or)
+"or"        FAIL
 "\\+"        -> (TERM \+)
 "+"         FAIL
 "name:woof" -> "(TERM woof (FIELD_REF name))"
@@ -88,9 +88,9 @@ ftsTest:
 "{http://www.alfresco.org/model/content/1.0}name:1\.2..2\.5" -> "(RANGE INCLUSIVE 1\\.2 2\\.5 INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
 "{http://www.alfresco.org/model/content/1.0}name:\"apple\"..\"pear\"" -> "(RANGE INCLUSIVE \"apple\" \"pear\" INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
 "{http://www.alfresco.org/model/content/1.0}name:\"1.2\"..\"2.5\"" -> "(RANGE INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
-"cm:name:(woof)" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_CONJUNCTION (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM woof))))))"
-"cm:name:(\"woof\")" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_CONJUNCTION (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_PHRASE \"woof\"))))))"
-"cm:name:(woof ~banana)" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_CONJUNCTION (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM woof)))) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_SYNONYM banana))))))"
+"cm:name:(woof)" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM woof)))))"
+"cm:name:(\"woof\")" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_PHRASE \"woof\")))))"
+"cm:name:(woof ~banana)" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM woof)) (FIELD_DEFAULT (FG_SYNONYM banana)))))"
 "big * apple" -> "(PROXIMITY big PROXIMITY apple)" 
 "big *() apple" -> "(PROXIMITY big PROXIMITY apple)" 
 "big *(7) apple" -> "(PROXIMITY big (PROXIMITY 7) apple)" 
@@ -108,13 +108,31 @@ ftsTest:
 "~cm_name:zebra~2.4" -> "(SYNONYM zebra (FIELD_REF cm_name) (FUZZY 2.4))"
 "aardvark..zebra" -> "(RANGE INCLUSIVE aardvark zebra INCLUSIVE)"
 "cm_name:[1.2 TO 3.4]" -> "(RANGE INCLUSIVE 1.2 3.4 INCLUSIVE (FIELD_REF cm_name))"
-"(zebra~2 AND (cm_name:[1.2 TO 3.4] OR cm_name:zebra~2.4))" -> "(CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (TERM zebra (FUZZY 2))) (DEFAULT (CONJUNCTION (DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1.2 3.4 INCLUSIVE (FIELD_REF cm_name)))) (CONJUNCTION (DEFAULT (TERM zebra (FIELD_REF cm_name) (FUZZY 2.4))))))))))"
+"(zebra~2 AND (cm_name:[1.2 TO 3.4] OR cm_name:zebra~2.4))" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM zebra (FUZZY 2))) (DEFAULT (DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1.2 3.4 INCLUSIVE (FIELD_REF cm_name)))) (CONJUNCTION (DEFAULT (TERM zebra (FIELD_REF cm_name) (FUZZY 2.4))))))))"
+"ID * OR" FAIL
+"*" -> "(TERM *)"
+"name:*" -> "(TERM * (FIELD_REF name))"
+"cm:name:*" -> "(TERM * (FIELD_REF name (PREFIX cm)))"
+"?" -> "(TERM ?)"
+"name:?" -> "(TERM ? (FIELD_REF name))"
+"cm:name:?" -> "(TERM ? (FIELD_REF name (PREFIX cm)))"
+"*woof" -> "(TERM *woof)"
+"name:*woof" -> "(TERM *woof (FIELD_REF name))"
+"cm:name:*woof" -> "(TERM *woof (FIELD_REF name (PREFIX cm)))"
+"?woof" -> "(TERM ?woof)"
+"name:?woof" -> "(TERM ?woof (FIELD_REF name))"
+"cm:name:?woof" -> "(TERM ?woof (FIELD_REF name (PREFIX cm)))"
+"woof*woof" ->"(TERM woof*woof)"
+"woof * woof" ->"(PROXIMITY woof PROXIMITY woof)"
+"*woof*woof*" ->"(TERM *woof*woof*)"
+
 
 ftsTerm:
 "name:woof" -> "woof (FIELD_REF name)"
 "cm_name:woof" -> "woof (FIELD_REF cm_name)"
 "cm:name:woof" -> "woof (FIELD_REF name (PREFIX cm))"
 "{http://www.alfresco.org/model/content/1.0}name:woof"  -> "woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0}))"
+
 
 ftsExactTerm:
 "=name:woof" -> "woof (FIELD_REF name)"
@@ -125,6 +143,7 @@ ftsExactTerm:
 
 ftsPhrase:
 "\"zebra\"" -> "\"zebra\""
+"'zebra'" -> "'zebra'"
 "name:\"zebra\"" -> "\"zebra\" (FIELD_REF name)"
 "cm_name:\"zebra\"" -> "\"zebra\" (FIELD_REF cm_name)"
 "cm:name:\"zebra\"" -> "\"zebra\" (FIELD_REF name (PREFIX cm))"
@@ -145,14 +164,14 @@ ftsSynonym:
 // Term and phrase can not be tested in isolation as they have context
 ftsFieldGroupTest:
 //"woof" -> "(FG_TERM woof)"
-"=woof" -> "(FG_EXACT_TERM woof)"
+//"=woof" -> "(FG_EXACT_TERM woof)"
 //"\"woof\"" -> "(FG_PHRASE \"woof\")"
-"~woof" -> "(FG_SYNONYM woof)"
+//"~woof" -> "(FG_SYNONYM woof)"
 "apple * pear" -> "(FG_PROXIMITY apple PROXIMITY pear)"
 "12 .. 14" -> "(FG_RANGE INCLUSIVE 12 14 INCLUSIVE)"
 "[12 TO 14]" -> "(FG_RANGE INCLUSIVE 12 14 INCLUSIVE)"
 "<12 TO 14>" -> "(FG_RANGE EXCLUSIVE 12 14 EXCLUSIVE)"
-"(apple cheese and (pear or banana or not orange))" -> "(FIELD_CONJUNCTION (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)))) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM cheese)) (FIELD_DEFAULT (FIELD_CONJUNCTION (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM pear))) (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM banana))) (FIELD_CONJUNCTION (FIELD_NEGATION (FG_TERM orange)))))))))"
+"(apple cheese and (pear or banana or not orange))" -> "(FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)) (FIELD_DEFAULT (FG_TERM cheese)) (FIELD_DEFAULT (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM pear))) (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM banana))) (FIELD_CONJUNCTION (FIELD_NEGATION (FG_TERM orange)))))))"
 
 ftsFieldGroupTerm:
 "woof" -> "woof"
@@ -194,8 +213,8 @@ range_right:
 ">" -> "EXCLUSIVE"
 
 fieldReference:
-"name" OK
-"cm_name" OK
+//"name" OK
+//"cm_name" OK
 // Fails do to context sensitive colon check; tested above
 //"cm:name" OK  
 "{http://www.alfresco.org/model/content/1.0}name" OK
@@ -209,8 +228,8 @@ identifier:
 "name"   OK
 
 ftsWord:
-"OR"       -> "OR"
-"and"      -> "and"
+"OR"       FAIL
+"and"      FAIL
 "nOT"      -> "nOT"
 "TO"       -> "TO"
 "banana"   -> "banana"
@@ -416,6 +435,9 @@ FTSWORD:
 "×"   FAIL
 "Ø"   OK
 "÷"   FAIL
+"ə"   OK
+"("   FAIL
+")"   FAIL
 
 DECIMAL_INTEGER_LITERAL:
 "0" OK

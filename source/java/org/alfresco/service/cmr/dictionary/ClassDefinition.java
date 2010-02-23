@@ -73,6 +73,13 @@ public interface ClassDefinition
      *         deleted or <code>null</code> if not defined.
      */
     public Boolean getArchive();
+    
+    /**
+     * 
+     * @return Return <code>true</code> if the type should be included in supertypes queries, <code>false</code> if not
+     *         deleted or <code>null</code> if not defined.
+     */
+    public Boolean getIncludedInSuperTypeQuery();
 
     /**
      * @return the properties of the class, including inherited properties

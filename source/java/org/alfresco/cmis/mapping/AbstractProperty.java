@@ -139,7 +139,7 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
         throw new UnsupportedOperationException();
     }
 
-    public String getLuceneSortField()
+    public String getLuceneSortField(LuceneQueryParser lqp)
     {
         throw new UnsupportedOperationException();
     }

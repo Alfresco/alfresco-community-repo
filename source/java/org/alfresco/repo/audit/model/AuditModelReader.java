@@ -39,7 +39,8 @@ import org.springframework.util.ResourceUtils;
 public class AuditModelReader implements InitializingBean
 {
     private URL auditModelUrl;
-    private AuditModelRegistry auditModelRegistry;
+    private AuditModelRegistryImpl auditModelRegistry;
+    private boolean isActive = true;
     
     /**
      * Set the XML location using <b>file:</b>, <b>classpath:</b> or any of the
@@ -56,9 +57,20 @@ public class AuditModelReader implements InitializingBean
      * 
      * @param auditModelRegistry    the registry that combines all loaded models
      */
-    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
+    public void setAuditModelRegistry(AuditModelRegistryImpl auditModelRegistry)
     {
         this.auditModelRegistry = auditModelRegistry;
+    }
+    
+    /**
+     * Controls whether or not this bean registers its model with the registry on initialization.
+     * 
+     * @param isActive
+     *            <code>true</code> if this bean should register its model with the registry on initialization.
+     */
+    public void setActive(boolean isActive)
+    {
+        this.isActive = isActive;
     }
 
     /**
@@ -66,6 +78,11 @@ public class AuditModelReader implements InitializingBean
      */
     public void afterPropertiesSet() throws Exception
     {
+        if (!this.isActive)
+        {
+            return;
+        }
+
         PropertyCheck.mandatory(this, "configUrl", auditModelUrl);
         PropertyCheck.mandatory(this, "auditModelRegistry", auditModelRegistry);
         

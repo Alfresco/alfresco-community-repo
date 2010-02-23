@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -84,8 +84,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AuditMethodInterceptor implements MethodInterceptor
 {
-    public static final String AUDIT_PATH_API_PRE = "/alfresco-api/pre";
-    public static final String AUDIT_PATH_API_POST = "/alfresco-api/post";
+    public static final String AUDIT_PATH_API_ROOT = "/alfresco-api";
+    public static final String AUDIT_PATH_API_PRE = AUDIT_PATH_API_ROOT + "/pre";
+    public static final String AUDIT_PATH_API_POST = AUDIT_PATH_API_ROOT + "/post";
     public static final String AUDIT_SNIPPET_ARGS = "/args";
     public static final String AUDIT_SNIPPET_RESULT = "/result";
     public static final String AUDIT_SNIPPET_ERROR = "/error";
@@ -97,24 +98,17 @@ public class AuditMethodInterceptor implements MethodInterceptor
     private AuditComponent auditComponent;
     private TransactionService transactionService;
 
-    private boolean enabled = false;
+    // SysAdmin cache - used to cluster certain configuration parameters
     private boolean useNewConfig = false;
     
     private final ThreadLocal<Boolean> inAudit = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> auditEnabled = new ThreadLocal<Boolean>();
     
     public AuditMethodInterceptor()
     {
         super();
     }
-
-    /**
-     * Enable or disable auditing at a high level (default: <b>false</b>)
-     */
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
-
+    
     /**
      * Use the new audit configuration (default: <b>false</b>)
      * 
@@ -142,22 +136,44 @@ public class AuditMethodInterceptor implements MethodInterceptor
 
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        if(!enabled)
+        // Cache the enabled flag at the top of the stack
+        Boolean wasEnabled = auditEnabled.get();
+        try
         {
-            // No auditing
-            return mi.proceed();
+            boolean enabled;
+            if (wasEnabled == null)
+            {
+                // There hasn't been an invocation in this thread yet, so check whether we are currently enabled in the
+                // audit subsystem
+                enabled = this.auditComponent.isSourcePathMapped(AUDIT_PATH_API_ROOT);
+                auditEnabled.set(enabled);
+            }
+            else
+            {
+                enabled = wasEnabled;
+            }
+
+            if(!enabled)
+            {
+                // No auditing
+                return mi.proceed();
+            }
+            else if (useNewConfig)
+            {
+                // New configuration to be used
+                return proceed(mi);
+            }
+            else
+            {
+                // Use previous configuration
+                return auditComponent.audit(mi);
+            }
         }
-        else if (useNewConfig)
+        finally
         {
-            // New configuration to be used
-            return proceed(mi);
+            auditEnabled.set(wasEnabled);
         }
-        else
-        {
-            // Use previous configuration
-            return auditComponent.audit(mi);
-        }
-        
+                
     }
     
     /**

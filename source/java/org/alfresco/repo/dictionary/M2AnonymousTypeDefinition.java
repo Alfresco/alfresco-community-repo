@@ -158,6 +158,11 @@ import org.alfresco.service.namespace.QName;
     {
         return type.getArchive();
     }
+    
+    public Boolean getIncludedInSuperTypeQuery()
+    {
+        return type.getIncludedInSuperTypeQuery();
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ClassDefinition#getProperties()

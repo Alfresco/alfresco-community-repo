@@ -210,7 +210,10 @@ public class SearchLanguageConversion
         {
             if (escaping) // if we are currently escaping, just escape the current character
             {
-                sb.append(to.escapeChar); // the to format escape char
+                if(to.isReserved(chars[i]))
+                {
+                    sb.append(to.escapeChar); // the to format escape char
+                }
                 sb.append(chars[i]); // the current char
                 escaping = false;
             }

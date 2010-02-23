@@ -14,11 +14,12 @@
 
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
         <property name="CMISSpecVersion"><value>1.0</value></property>
-        <property name="CMISSpecTitle"><value>Version 1.0 Committee Draft 04</value></property>
+        <property name="CMISSpecTitle"><value>Version 1.0 Committee Draft 07</value></property>
         <property name="defaultStore"><value>workspace://SpacesStore</value></property>
         <property name="defaultRootPath"><value>/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+        <property name="CMISRenditionService" ref="CMISRenditionService" />
         <property name="searchService" ref="SearchService" />
         <property name="transactionHelper" ref="retryingTransactionHelper" />
         <property name="tenantAdminService" ref="tenantAdminService" />
@@ -67,10 +68,78 @@
             <ref bean="dictionaryService" />
         </property>
     </bean>
-   
+
+    <bean id="CMISRenditionService" class="org.alfresco.cmis.renditions.CMISRenditionServiceImpl">
+        <property name="renditionKindMapping">
+            <map>
+                <entry key="cmis:thumbnail">
+                    <list><value>doclib</value></list>
+                </entry>
+                <entry key="alf:webpreview">
+                    <list><value>webpreview</value><value>imgpreview</value></list>
+                </entry>
+            </map>
+        </property>
+        <property name="customRenditions">
+            <list>
+                <bean class="org.alfresco.cmis.renditions.CMISRenditionImpl">
+                    <property name="streamId"><value>alf:icon16</value></property>
+                    <property name="mimeType"><value>image/gif</value></property>
+                    <property name="kind"><value>ICON16</value></property>
+                    <property name="width"><value>16</value></property>
+                    <property name="height"><value>16</value></property>
+                </bean>
+                <bean class="org.alfresco.cmis.renditions.CMISRenditionImpl">
+                    <property name="streamId"><value>alf:icon32</value></property>
+                    <property name="mimeType"><value>image/gif</value></property>
+                    <property name="kind"><value>ICON32</value></property>
+                    <property name="width"><value>32</value></property>
+                    <property name="height"><value>32</value></property>
+                </bean>
+            </list>
+        </property>
+        <property name="thumbnailService">
+            <ref bean="ThumbnailService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+    </bean>
+
+    <bean id="CMISChangeLogService" class="org.alfresco.cmis.changelog.CMISChangeLogServiceImpl">
+        <property name="cmisAuditApplicationName" value="CMISChangeLog" />
+        <property name="changesOnTypeCapability">
+            <list>
+                <value>FOLDER</value>
+                <value>DOCUMENT</value>
+            </list>
+        </property>
+        <property name="auditService" ref="auditService" />
+    </bean>
+
+    <bean id="CMISChangeLogDataExtractor" class="org.alfresco.cmis.changelog.CMISChangeLogDataExtractor">        
+        <property name="cmisService" ref="CMISService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="registry" ref="auditModel.extractorRegistry" />        
+    </bean>
+
     <bean id="CMISReferenceFactory" class="org.alfresco.cmis.reference.ReferenceFactory">
         <property name="CMISService" ref="CMISService" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+    </bean>
+    
+    <bean id="CMISAccessControlService" class="org.alfresco.cmis.acl.CMISAccessControlServiceImpl" >
+        <!-- Valid values are: NONE, DISCOVER, MANAGE -->
+        <property name="aclCapabilityEnum" value="MANAGE" />
+        <!-- Valid values are: BASIC, REPOSITORY, BOTH -->
+        <property name="aclSupportedPermissionEnum" value="BOTH" />
+        <!-- Alfrecso only supports PROPAGATE -->
+        <property name="aclPropagationEnum" value="PROPAGATE" />
+        <property name="permissionModelDao" ref="permissionsModelDAO" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="CMISMapping" ref="CMISMapping" />
+        <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+        <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.lucene.LuceneCmisStrictSqlQueryLanguage" >

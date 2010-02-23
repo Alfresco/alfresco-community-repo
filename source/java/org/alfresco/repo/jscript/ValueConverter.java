@@ -25,6 +25,7 @@
 package org.alfresco.repo.jscript;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -64,6 +65,7 @@ public class ValueConverter
      * 
      * @return Value safe for scripting usage
      */
+    @SuppressWarnings("unchecked")
     public Serializable convertValueForScript(ServiceRegistry services, Scriptable scope, QName qname, Serializable value)
     {
         // perform conversions from Java objects to JavaScript scriptable instances
@@ -133,8 +135,7 @@ public class ValueConverter
         
         return value;
     }
-    
-    
+
     /**
      * Convert an object from any script wrapper value to a valid repository serializable value.
      * This includes converting JavaScript Array objects to Lists of valid objects.
@@ -144,6 +145,12 @@ public class ValueConverter
      * @return valid repo value
      */
     public Serializable convertValueForRepo(Serializable value)
+    {
+        Object converted = convertValueForJava((Object)value);
+        return converted instanceof Serializable ? (Serializable)converted : value;
+    }
+        
+    public final Object convertValueForJava(Object value)
     {
         if (value == null)
         {
@@ -166,7 +173,7 @@ public class ValueConverter
         {
             // unwrap a Java object from a JavaScript wrapper
             // recursively call this method to convert the unwrapped value
-            value = convertValueForRepo((Serializable)((Wrapper)value).unwrap());
+            value = convertValueForJava(((Wrapper)value).unwrap());
         }
         else if (value instanceof Scriptable)
         {
@@ -179,19 +186,15 @@ public class ValueConverter
                 // TODO: add code here to use the dictionary and convert to correct value type
                 if (TYPE_DATE.equals(((IdScriptableObject)value).getClassName()))
                 {
-                    Object javaObj = Context.jsToJava(value, Date.class);
-                    if (javaObj instanceof Serializable)
-                    {
-                        value = (Serializable)javaObj;
-                    }
+                    value = Context.jsToJava(value, Date.class);
                 }
                 else if (value instanceof NativeArray)
                 {
-                    // convert JavaScript array of values to a List of Serializable objects
+                    // convert JavaScript array of values to a List of objects
                     Object[] propIds = values.getIds();
                     if (isArray(propIds) == true)
                     {                    
-                        List<Serializable> propValues = new ArrayList<Serializable>(propIds.length);
+                        List<Object> propValues = new ArrayList<Object>(propIds.length);
                         for (int i=0; i<propIds.length; i++)
                         {
                             // work on each key in turn
@@ -201,32 +204,32 @@ public class ValueConverter
                             if (propId instanceof Integer)
                             {
                                 // get the value out for the specified key
-                                Serializable val = (Serializable)values.get((Integer)propId, values);
+                                Object val = values.get((Integer)propId, values);
                                 // recursively call this method to convert the value
-                                propValues.add(convertValueForRepo(val));
+                                propValues.add(convertValueForJava(val));
                             }
                         }
 
-                        value = (Serializable)propValues;
+                        value = propValues;
                     }
                     else
                     {
-                        Map<Serializable, Serializable> propValues = new HashMap<Serializable, Serializable>(propIds.length);
+                        Map<Object, Object> propValues = new HashMap<Object, Object>(propIds.length);
                         for (Object propId : propIds)
                         {
                             // Get the value and add to the map
-                            Serializable val = (Serializable)values.get(propId.toString(), values);
-                            propValues.put(convertValueForRepo((Serializable)propId), convertValueForRepo(val));
+                            Object val = values.get(propId.toString(), values);
+                            propValues.put(convertValueForJava(propId), convertValueForJava(val));
                         }
                         
-                        value = (Serializable)propValues;
+                        value = propValues;
                     }
                 }
                 else
                 {
-                    // convert Scriptable object of values to a Map of Serializable objects
+                    // convert Scriptable object of values to a Map of objects
                     Object[] propIds = values.getIds();
-                    Map<String, Serializable> propValues = new HashMap<String, Serializable>(propIds.length);
+                    Map<String, Object> propValues = new HashMap<String, Object>(propIds.length);
                     for (int i=0; i<propIds.length; i++)
                     {
                         // work on each key in turn
@@ -236,19 +239,19 @@ public class ValueConverter
                         if (propId instanceof String)
                         {
                             // get the value out for the specified key
-                            Serializable val = (Serializable)values.get((String)propId, values);
+                            Object val = values.get((String)propId, values);
                             // recursively call this method to convert the value
-                            propValues.put((String)propId, convertValueForRepo(val));
+                            propValues.put((String)propId, convertValueForJava(val));
                         }
                     }
-                    value = (Serializable)propValues;
+                    value = propValues;
                 }
             }
             else
             {
-                // convert Scriptable object of values to a Map of Serializable objects
+                // convert Scriptable object of values to a Map of objects
                 Object[] propIds = values.getIds();
-                Map<String, Serializable> propValues = new HashMap<String, Serializable>(propIds.length);
+                Map<String, Object> propValues = new HashMap<String, Object>(propIds.length);
                 for (int i=0; i<propIds.length; i++)
                 {
                     // work on each key in turn
@@ -258,22 +261,22 @@ public class ValueConverter
                     if (propId instanceof String)
                     {
                         // get the value out for the specified key
-                        Serializable val = (Serializable)values.get((String)propId, values);
+                        Object val = values.get((String)propId, values);
                         // recursively call this method to convert the value
-                        propValues.put((String)propId, convertValueForRepo(val));
+                        propValues.put((String)propId, convertValueForJava(val));
                     }
                 }
-                value = (Serializable)propValues;
+                value = propValues;
             }
         }
-        else if (value instanceof Serializable[])
+        else if (value.getClass().isArray())
         {
             // convert back a list of Java values
-            Serializable[] array = (Serializable[])value;
-            ArrayList<Serializable> list = new ArrayList<Serializable>(array.length);
-            for (int i=0; i<array.length; i++)
+            int length = Array.getLength(value);
+            ArrayList<Object> list = new ArrayList<Object>(length);
+            for (int i=0; i<length; i++)
             {
-                list.add(convertValueForRepo(array[i]));
+                list.add(convertValueForJava(Array.get(value, i)));
             }
             value = list;
         }

@@ -80,7 +80,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         
         queryable = false;
         fullTextIndexed = false;
-        includeInSuperTypeQuery = true;
+        includedInSuperTypeQuery = true;
         controllablePolicy = false;
         controllableACL = false;
         
@@ -247,7 +247,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         builder.append("Creatable=").append(isCreatable()).append(", ");
         builder.append("Queryable=").append(isQueryable()).append(", ");
         builder.append("Controllable=").append(isControllablePolicy()).append(", ");
-        builder.append("IncludeInSuperTypeQuery=").append(isIncludeInSuperTypeQuery()).append(", ");
+        builder.append("IncludedInSuperTypeQuery=").append(isIncludedInSuperTypeQuery()).append(", ");
         builder.append("AllowedSourceTypes=[");
         for (CMISTypeDefinition type : getAllowedSourceTypes())
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.cmr.repository.TemplateValueConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -65,7 +66,7 @@ import freemarker.template.TemplateExceptionHandler;
  * 
  * @author Kevin Roast
  */
-public class FreeMarkerProcessor extends BaseProcessor implements TemplateProcessor
+public class FreeMarkerProcessor extends BaseProcessor implements TemplateProcessor, TemplateValueConverter
 {
     private final static String MSG_ERROR_NO_TEMPLATE   = "error_no_template";
     private final static String MSG_ERROR_TEMPLATE_FAIL = "error_template_fail";
@@ -319,14 +320,10 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         }
     }
 
-    /**
-     * Converts a value to a freemarker value
-     * 
-     * @param value
-     * @param imageResolver
-     * @return
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.repository.TemplateValueConverter#convertValue(java.lang.Object, org.alfresco.service.cmr.repository.TemplateImageResolver)
      */
-    private Object convertValue(Object value, TemplateImageResolver imageResolver)
+    public Object convertValue(Object value, TemplateImageResolver imageResolver)
     {
         if (value instanceof NodeRef)
         {

@@ -70,17 +70,20 @@ public class ObjectIdProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        if (!getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-            if (value != null)
+            if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
-                String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-                StringBuilder builder = new StringBuilder(128);
-                builder.append(nodeRef.toString());
-                builder.append(";");
-                builder.append(versionLabel);
-                return builder.toString();
+                Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+                if (value != null)
+                {
+                    String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                    StringBuilder builder = new StringBuilder(128);
+                    builder.append(nodeRef.toString());
+                    builder.append(";");
+                    builder.append(versionLabel);
+                    return builder.toString();
+                }
             }
         }
 
@@ -270,7 +273,7 @@ public class ObjectIdProperty extends AbstractProperty
     /* (non-Javadoc)
      * @see org.alfresco.cmis.property.NamedPropertyAccessor#getLuceneSortField(java.lang.String)
      */
-    public String getLuceneSortField()
+    public String getLuceneSortField(LuceneQueryParser lqp)
     {
         return getLuceneFieldName();
     }

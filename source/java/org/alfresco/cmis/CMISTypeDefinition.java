@@ -139,7 +139,7 @@ public interface CMISTypeDefinition
      * 
      * @return
      */
-    public boolean isIncludeInSuperTypeQuery();
+    public boolean isIncludedInSuperTypeQuery();
 
     /**
      * Is this type versionable? If true this implies all instances of the type are versionable.

@@ -30,5 +30,5 @@ package org.alfresco.repo.search.impl.querymodel;
  */
 public enum PredicateMode
 {
-    ANY, ALL;
+    ANY, SINGLE_VALUED_PROPERTY;
 }

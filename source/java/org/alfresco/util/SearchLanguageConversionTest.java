@@ -87,12 +87,12 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.convertXPathLikeToRegex(BAD_STRING);
         assertEquals("XPath like to regex failed",
-                "(?s)\\ \\| ! \" £ " +
+                "(?s) \\| ! \" £ " +
                 "\\$ .* \\^ & \\* \\( " +
                 "\\) . \\{ \\} [ ] " +
                 "@ # ~ ' : ; " +
                 ", \\. < > \\+ \\? " +
-                "/ \\\\ \\* \\? \\_",
+                "/ \\\\ \\* \\? _",
                 good);
     }
     
@@ -100,12 +100,29 @@ public class SearchLanguageConversionTest extends TestCase
     {
         String good = SearchLanguageConversion.convertXPathLikeToLucene(BAD_STRING);
         assertEquals("XPath like to Lucene failed",
-                "\\ \\| \\! \\\" £ " +
+                " \\| \\! \\\" £ " +
                 "$ * \\^ \\& \\* \\( " +
                 "\\) ? \\{ \\} \\[ \\] " +
                 "@ # \\~ ' \\: ; " +
                 ", . < > \\+ \\? " +
-                "/ \\\\ \\* \\? \\_",
+                "/ \\\\ \\* \\? _",
                 good);
     }
+    
+    public void testSqlToLucene()
+    {
+        String sqlLike = "AB%_*?\\%\\_";
+        String lucene = "AB*?\\*\\?%_";
+        String converted = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_SQL_LIKE, SearchLanguageConversion.DEF_LUCENE, sqlLike);
+        assertEquals(lucene, converted);
+    }
+    
+    public void testLuceneToRegexp()
+    {
+        String lucene = "AB*?\\*\\?.*.";
+        String regexp = "AB.*.\\*\\?\\..*\\.";
+        String converted = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, lucene);
+        assertEquals(regexp, converted);
+    }
+    
 }

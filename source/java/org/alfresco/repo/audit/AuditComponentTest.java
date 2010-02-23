@@ -38,7 +38,8 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
-import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -79,9 +80,9 @@ public class AuditComponentTest extends TestCase
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private AuditModelRegistry auditModelRegistry;
+    private ApplicationContextFactory subsystem;
+    private AuditModelRegistryImpl auditModelRegistry;
     private AuditComponent auditComponent;
-    private AuditMethodInterceptor auditMethodInterceptor;
     private AuditService auditService;
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
@@ -93,9 +94,11 @@ public class AuditComponentTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        auditModelRegistry = (AuditModelRegistry) ctx.getBean("auditModel.modelRegistry");
+        // We have to look inside the subsystem for this test
+        subsystem = (ApplicationContextFactory) ctx.getBean("Audit");
+        ApplicationContext subCtx = subsystem.getApplicationContext();
+        auditModelRegistry = (AuditModelRegistryImpl) subCtx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
-        auditMethodInterceptor = (AuditMethodInterceptor) ctx.getBean("AuditMethodInterceptor");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY); 
         auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();
@@ -129,17 +132,14 @@ public class AuditComponentTest extends TestCase
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(resetDisabledPathsCallback);
-        
-        auditMethodInterceptor.setEnabled(true);
-        auditMethodInterceptor.setUseNewConfig(true);
     }
     
     @Override
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
-        auditMethodInterceptor.setEnabled(false);
-        auditMethodInterceptor.setUseNewConfig(false);
+        // Throw away the reconfigured registry in the subsystem
+        subsystem.stop();
     }
     
     public void testSetUp()
@@ -314,7 +314,12 @@ public class AuditComponentTest extends TestCase
         final MutableInt rowCount = new MutableInt();
         
         AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        {            
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
             public boolean handleAuditEntry(
                     Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
             {
@@ -482,6 +487,11 @@ public class AuditComponentTest extends TestCase
         final StringBuilder sb = new StringBuilder();
         AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
         {
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
             public boolean handleAuditEntry(
                     Long entryId,
                     String applicationName,
@@ -576,6 +586,11 @@ public class AuditComponentTest extends TestCase
     {
         AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
         {
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
             public boolean handleAuditEntry(
                     Long entryId,
                     String applicationName,
@@ -604,4 +619,5 @@ public class AuditComponentTest extends TestCase
         params.setToId(Long.MAX_VALUE);
         auditService.auditQuery(auditQueryCallback, params, 1);
     }
+
 }

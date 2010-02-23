@@ -36,6 +36,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
@@ -215,6 +216,19 @@ public interface FunctionEvaluationContext
      * @return the lucene function appropriate to a function argument
      */
     public LuceneFunction getLuceneFunction(FunctionArgument functionArgument);
+
+    /**
+     * @param type
+     * @param propertyName
+     */
+    public void checkFieldApplies(Selector selector, String propertyName);
+    
+    /**
+     * Is this a multi-valued property? 
+     * @param propertyName
+     * @return
+     */
+    public boolean isMultiValued(String propertyName);
     
 
 }

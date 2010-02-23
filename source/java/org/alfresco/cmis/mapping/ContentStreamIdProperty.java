@@ -27,11 +27,14 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
- * Accessor for CMIS content stream length property
+ * Accessor for CMIS content stream property id
  * 
  * @author andyh
  */
@@ -53,7 +56,13 @@ public class ContentStreamIdProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        return "cm:content";
+        Serializable sValue = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        if (sValue != null)
+        {
+            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, sValue);
+            return contentData.getContentUrl();
+        }
+        return null;
     }
     
 }

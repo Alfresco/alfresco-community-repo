@@ -67,6 +67,9 @@ public class ThumbnailServiceImpl implements ThumbnailService
     private static final String ERR_DUPLICATE_NAME = "Thumbnail could not be created because of a duplicate name";
     private static final String ERR_NO_PARENT = "Thumbnail has no parent so update cannot take place.";
     
+    /** Mimetype wildcard postfix */
+    private static final String SUBTYPES_POSTFIX = "/*";
+    
     /** Node service */
     private NodeService nodeService;
     
@@ -458,10 +461,22 @@ public class ThumbnailServiceImpl implements ThumbnailService
         if (mimetype != null)
         {
             // Check the mimetype
-            String thumbnailMimetype = ((ContentData)this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT)).getMimetype();
-            if (mimetype.equals(thumbnailMimetype) == false)
-            {             
-                result = false;
+            String thumbnailMimetype = ((ContentData) this.nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT)).getMimetype();
+
+            if (mimetype.endsWith(SUBTYPES_POSTFIX))
+            {
+                String baseMimetype = mimetype.substring(0, mimetype.length() - SUBTYPES_POSTFIX.length());
+                if (thumbnailMimetype == null || thumbnailMimetype.startsWith(baseMimetype) == false)
+                {
+                    result = false;
+                }
+            }
+            else
+            {
+                if (mimetype.equals(thumbnailMimetype) == false)
+                {
+                    result = false;
+                }
             }
         }
         

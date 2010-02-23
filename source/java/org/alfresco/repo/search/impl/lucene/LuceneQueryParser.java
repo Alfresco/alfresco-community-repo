@@ -83,6 +83,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardTermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.regex.RegexQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
@@ -307,8 +308,8 @@ public class LuceneQueryParser extends QueryParser
      */
     public Query getLikeQuery(String field, String sqlLikeClause, AnalysisMode analysisMode) throws ParseException
     {
-        String luceneWildCardExpression = SearchLanguageConversion.convertSQLLikeToLucene(sqlLikeClause);
-        return getFieldQuery(field, luceneWildCardExpression, analysisMode, LuceneFunction.FIELD);
+        String luceneWildCardExpression = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_SQL_LIKE, SearchLanguageConversion.DEF_LUCENE, sqlLikeClause);
+        return getWildcardQuery(field, luceneWildCardExpression, AnalysisMode.LIKE);
     }
 
     /**
@@ -649,10 +650,14 @@ public class LuceneQueryParser extends QueryParser
                 BooleanQuery booleanQuery = new BooleanQuery();
                 for (QName qname : subclasses)
                 {
-                    TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
-                    if (termQuery != null)
+                    TypeDefinition current = dictionaryService.getType(qname);
+                    if (target.getName().equals(current.getName()) || current.getIncludedInSuperTypeQuery())
                     {
-                        booleanQuery.add(termQuery, Occur.SHOULD);
+                        TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
+                        if (termQuery != null)
+                        {
+                            booleanQuery.add(termQuery, Occur.SHOULD);
+                        }
                     }
                 }
                 return booleanQuery;
@@ -722,10 +727,14 @@ public class LuceneQueryParser extends QueryParser
                 BooleanQuery booleanQuery = new BooleanQuery();
                 for (QName qname : subclasses)
                 {
-                    TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
-                    if (termQuery != null)
+                    AspectDefinition current = dictionaryService.getAspect(qname);
+                    if (target.getName().equals(current.getName()) || current.getIncludedInSuperTypeQuery())
                     {
-                        booleanQuery.add(termQuery, Occur.SHOULD);
+                        TermQuery termQuery = new TermQuery(new Term(field, qname.toString()));
+                        if (termQuery != null)
+                        {
+                            booleanQuery.add(termQuery, Occur.SHOULD);
+                        }
                     }
                 }
                 return booleanQuery;
@@ -1637,21 +1646,25 @@ public class LuceneQueryParser extends QueryParser
                     }
                     for (Locale locale : (((expandedLocales == null) || (expandedLocales.size() == 0)) ? Collections.singletonList(I18NUtil.getLocale()) : expandedLocales))
                     {
-                        if (locale.toString().length() == 0)
-                        {
-                            continue;
-                        }
 
                         String textFieldName = fieldName;
 
-                        if (analysisMode == AnalysisMode.IDENTIFIER)
+                        if ((analysisMode == AnalysisMode.IDENTIFIER) || (analysisMode == AnalysisMode.LIKE))
                         {
                             {
                                 // text and ml text need locale
                                 IndexTokenisationMode tm = propertyDef.getIndexTokenisationMode();
                                 if ((tm != null) && (tm == IndexTokenisationMode.BOTH))
                                 {
-                                    textFieldName = textFieldName + "." + locale + ".sort";
+                                    if (locale.toString().length() == 0)
+                                    {
+                                        textFieldName = textFieldName + ".no_locale";
+                                    }
+                                    else
+                                    {
+                                        textFieldName = textFieldName + "." + locale + ".sort";
+                                    }
+
                                 }
 
                             }
@@ -1668,8 +1681,8 @@ public class LuceneQueryParser extends QueryParser
                             case IDENTIFIER:
                                 addLocaleSpecificUntokenisedTextRange(field, part1, part2, includeLower, includeUpper, booleanQuery, mlAnalysisMode, locale, textFieldName);
                                 break;
-
                             case WILD:
+                            case LIKE:
                             case PREFIX:
                             case FUZZY:
                             default:
@@ -1736,7 +1749,7 @@ public class LuceneQueryParser extends QueryParser
                                     start.set(Calendar.MINUTE, start.getMinimum(Calendar.MINUTE));
                                     start.set(Calendar.SECOND, start.getMinimum(Calendar.SECOND));
                                     start.set(Calendar.MILLISECOND, start.getMinimum(Calendar.MILLISECOND));
-                                    
+
                                 }
                                 else
                                 {
@@ -1780,7 +1793,7 @@ public class LuceneQueryParser extends QueryParser
                                     end.set(Calendar.MINUTE, end.getMinimum(Calendar.MINUTE));
                                     end.set(Calendar.SECOND, end.getMinimum(Calendar.SECOND));
                                     end.set(Calendar.MILLISECOND, end.getMinimum(Calendar.MILLISECOND));
-                                    
+
                                 }
                                 else
                                 {
@@ -2712,6 +2725,32 @@ public class LuceneQueryParser extends QueryParser
                 return query;
             }
         }
+        else if (field.equals("ID"))
+        {
+            boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+            try
+            {
+                setLowercaseExpandedTerms(false);
+                return super.getPrefixQuery(field, termStr);
+            }
+            finally
+            {
+                setLowercaseExpandedTerms(lowercaseExpandedTerms);
+            }
+        }
+        else if (field.equals("PARENT"))
+        {
+            boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+            try
+            {
+                setLowercaseExpandedTerms(false);
+                return super.getPrefixQuery(field, termStr);
+            }
+            finally
+            {
+                setLowercaseExpandedTerms(lowercaseExpandedTerms);
+            }
+        }
         else
         {
             return super.getPrefixQuery(field, termStr);
@@ -2721,9 +2760,14 @@ public class LuceneQueryParser extends QueryParser
     @Override
     public Query getWildcardQuery(String field, String termStr) throws ParseException
     {
+        return getWildcardQuery(field, termStr, AnalysisMode.WILD);
+    }
+
+    private Query getWildcardQuery(String field, String termStr, AnalysisMode analysisMode) throws ParseException
+    {
         if (field.startsWith("@"))
         {
-            return attributeQueryBuilder(field, termStr, new WildcardQuery(), AnalysisMode.WILD, LuceneFunction.FIELD);
+            return attributeQueryBuilder(field, termStr, new WildcardQuery(), analysisMode, LuceneFunction.FIELD);
         }
 
         else if (field.equals("TEXT"))
@@ -2764,6 +2808,32 @@ public class LuceneQueryParser extends QueryParser
                     }
                 }
                 return query;
+            }
+        }
+        else if (field.equals("ID"))
+        {
+            boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+            try
+            {
+                setLowercaseExpandedTerms(false);
+                return super.getWildcardQuery(field, termStr);
+            }
+            finally
+            {
+                setLowercaseExpandedTerms(lowercaseExpandedTerms);
+            }
+        }
+        else if (field.equals("PARENT"))
+        {
+            boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+            try
+            {
+                setLowercaseExpandedTerms(false);
+                return super.getWildcardQuery(field, termStr);
+            }
+            finally
+            {
+                setLowercaseExpandedTerms(lowercaseExpandedTerms);
             }
         }
         else
@@ -2818,6 +2888,32 @@ public class LuceneQueryParser extends QueryParser
                     }
                 }
                 return query;
+            }
+        }
+        else if (field.equals("ID"))
+        {
+            boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+            try
+            {
+                setLowercaseExpandedTerms(false);
+                return super.getFuzzyQuery(field, termStr, minSimilarity);
+            }
+            finally
+            {
+                setLowercaseExpandedTerms(lowercaseExpandedTerms);
+            }
+        }
+        else if (field.equals("PARENT"))
+        {
+            boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+            try
+            {
+                setLowercaseExpandedTerms(false);
+                return super.getFuzzyQuery(field, termStr, minSimilarity);
+            }
+            finally
+            {
+                setLowercaseExpandedTerms(lowercaseExpandedTerms);
             }
         }
         else
@@ -2879,6 +2975,43 @@ public class LuceneQueryParser extends QueryParser
     public Query getSuperWildcardQuery(String field, String termStr) throws ParseException
     {
         return super.getWildcardQuery(field, termStr);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.apache.lucene.queryParser.QueryParser#newWildcardQuery(org.apache.lucene.index.Term)
+     */
+    @Override
+    protected Query newWildcardQuery(Term t)
+    {
+        if (t.text().contains("\\"))
+        {
+            String regexp = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, t.text());
+            return new RegexQuery(new Term(t.field(), regexp));
+        }
+        else
+        {
+            return super.newWildcardQuery(t);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.apache.lucene.queryParser.QueryParser#newPrefixQuery(org.apache.lucene.index.Term)
+     */
+    @Override
+    protected Query newPrefixQuery(Term prefix)
+    {
+        if (prefix.text().contains("\\"))
+        {
+            String regexp = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, prefix.text());
+            return new RegexQuery(new Term(prefix.field(), regexp));
+        }
+        else
+        {
+            return super.newPrefixQuery(prefix);
+        }
+
     }
 
     interface SubQuery
@@ -3025,59 +3158,79 @@ public class LuceneQueryParser extends QueryParser
             {
                 String mlFieldName = expandedFieldName;
 
-                if ((tokenisationMode == IndexTokenisationMode.BOTH) && (analysisMode == AnalysisMode.IDENTIFIER))
+                if ((tokenisationMode == IndexTokenisationMode.BOTH) && ((analysisMode == AnalysisMode.IDENTIFIER) || (analysisMode == AnalysisMode.LIKE)))
                 {
                     {
                         // text and ml text need locale
                         IndexTokenisationMode tm = propertyDef.getIndexTokenisationMode();
                         if ((tm != null) && (tm == IndexTokenisationMode.BOTH))
                         {
-                            mlFieldName = mlFieldName + "." + locale + ".sort";
+                            if (locale.toString().length() == 0)
+                            {
+                                mlFieldName = mlFieldName + ".no_locale";
+                            }
+                            else
+                            {
+                                mlFieldName = mlFieldName + "." + locale + ".sort";
+                            }
                         }
 
                     }
                 }
 
-                switch (tokenisationMode)
+                boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+                try
                 {
-                case BOTH:
-                    switch (analysisMode)
+                    switch (tokenisationMode)
                     {
-                    default:
-                    case DEFAULT:
-                    case TOKENISE:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, mlFieldName);
+                    case BOTH:
+                        switch (analysisMode)
+                        {
+                        default:
+                        case DEFAULT:
+                        case TOKENISE:
+                            addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, expandedFieldName);
+                            break;
+                        case IDENTIFIER:
+                        case FUZZY:
+                        case PREFIX:
+                        case WILD:
+                        case LIKE:
+                            setLowercaseExpandedTerms(false);
+                            addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                    mlFieldName);
+
+                            break;
+                        }
                         break;
-                    case IDENTIFIER:
-                    case FUZZY:
-                    case PREFIX:
-                    case WILD:
+                    case FALSE:
+                        setLowercaseExpandedTerms(false);
                         addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
                                 mlFieldName);
                         break;
-                    }
-                    break;
-                case FALSE:
-                    addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
-                            mlFieldName);
-                    break;
-                case TRUE:
-                default:
-                    switch (analysisMode)
-                    {
+                    case TRUE:
                     default:
-                    case DEFAULT:
-                    case TOKENISE:
-                    case IDENTIFIER:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, mlFieldName);
-                        break;
-                    case FUZZY:
-                    case PREFIX:
-                    case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
-                                mlFieldName);
-                        break;
+                        switch (analysisMode)
+                        {
+                        default:
+                        case DEFAULT:
+                        case TOKENISE:
+                        case IDENTIFIER:
+                            addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, expandedFieldName);
+                            break;
+                        case FUZZY:
+                        case PREFIX:
+                        case WILD:
+                        case LIKE:
+                            addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                    mlFieldName);
+                            break;
+                        }
                     }
+                }
+                finally
+                {
+                    setLowercaseExpandedTerms(lowercaseExpandedTerms);
                 }
             }
             return booleanQuery;
@@ -3179,7 +3332,7 @@ public class LuceneQueryParser extends QueryParser
             {
                 String textFieldName = expandedFieldName;
 
-                if ((tokenisationMode == IndexTokenisationMode.BOTH) && (analysisMode == AnalysisMode.IDENTIFIER))
+                if ((tokenisationMode == IndexTokenisationMode.BOTH) && ((analysisMode == AnalysisMode.IDENTIFIER) || (analysisMode == AnalysisMode.LIKE)))
                 {
                     {
                         // text and ml text need locale
@@ -3192,46 +3345,58 @@ public class LuceneQueryParser extends QueryParser
                     }
                 }
 
-                switch (tokenisationMode)
+                boolean lowercaseExpandedTerms = getLowercaseExpandedTerms();
+                try
                 {
-                case BOTH:
-                    switch (analysisMode)
+                    switch (tokenisationMode)
                     {
+                    case BOTH:
+                        switch (analysisMode)
+                        {
+                        default:
+                        case DEFAULT:
+                        case TOKENISE:
+                            addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, textFieldName);
+                            break;
+                        case IDENTIFIER:
+                        case FUZZY:
+                        case PREFIX:
+                        case WILD:
+                        case LIKE:
+                            setLowercaseExpandedTerms(false);
+                            addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                    textFieldName);
+                            break;
+                        }
+                        break;
+                    case FALSE:
+                        setLowercaseExpandedTerms(false);
+                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                textFieldName);
+                        break;
+                    case TRUE:
                     default:
-                    case DEFAULT:
-                    case TOKENISE:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, textFieldName);
-                        break;
-                    case IDENTIFIER:
-                    case FUZZY:
-                    case PREFIX:
-                    case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
-                                textFieldName);
-                        break;
-                    }
-                    break;
-                case FALSE:
-                    addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
-                            textFieldName);
-                    break;
-                case TRUE:
-                default:
-                    switch (analysisMode)
-                    {
-                    case DEFAULT:
-                    case TOKENISE:
-                    case IDENTIFIER:
-                        addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, textFieldName);
-                        break;
-                    case FUZZY:
-                    case PREFIX:
-                    case WILD:
-                        addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
-                                textFieldName);
+                        switch (analysisMode)
+                        {
+                        case DEFAULT:
+                        case TOKENISE:
+                        case IDENTIFIER:
+                            addLocaleSpecificTokenisedMLOrTextAttribute(queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, locale, expandedFieldName);
+                            break;
+                        case FUZZY:
+                        case PREFIX:
+                        case WILD:
+                        case LIKE:
+                            addLocaleSpecificUntokenisedMLOrTextAttribute(field, queryText, subQueryBuilder, analysisMode, luceneFunction, booleanQuery, mlAnalysisMode, locale,
+                                    textFieldName);
+                            break;
+                        }
                         break;
                     }
-                    break;
+                }
+                finally
+                {
+                    setLowercaseExpandedTerms(lowercaseExpandedTerms);
                 }
 
             }
@@ -3239,6 +3404,15 @@ public class LuceneQueryParser extends QueryParser
         }
         else
         {
+            // Date does not support like
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)))
+            {
+                if (analysisMode == AnalysisMode.LIKE)
+                {
+                    throw new UnsupportedOperationException("Wild cards are not supported for the datetime type");
+                }
+            }
+
             // Sort and id is only special for MLText, text, and content
             // Dates are not special in this case
             Query query = subQueryBuilder.getQuery(expandedFieldName, queryText, AnalysisMode.DEFAULT, luceneFunction);

@@ -36,6 +36,7 @@ import org.alfresco.repo.search.impl.lucene.analysis.LongAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.MLAnalayser;
 import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
+import org.alfresco.repo.search.impl.lucene.analysis.VerbatimMLAnalayser;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -95,23 +96,6 @@ public class LuceneAnalyser extends Analyzer
 
     public TokenStream tokenStream(String fieldName, Reader reader, AnalysisMode analysisMode)
     {
-        // Treat multilingual as a special case.
-        // If multilingual then we need to find the correct tokeniser.
-        // This is done dynamically by reading a language code at the start of the reader.
-        if (fieldName.startsWith("@"))
-        {
-            QName propertyQName = QName.createQName(fieldName.substring(1));
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if (propertyDef != null)
-            {
-                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
-                {
-                    MLAnalayser analyser = new MLAnalayser(dictionaryService, mlAlaysisMode);
-                    return analyser.tokenStream(fieldName, reader);
-                }
-            }
-        }
-
         Analyzer analyser = (Analyzer) analysers.get(fieldName);
         if (analyser == null)
         {
@@ -209,6 +193,10 @@ public class LuceneAnalyser extends Analyzer
                             {
                                 analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
                             }
+                            else if (dataType.getName().equals(DataTypeDefinition.MLTEXT))
+                            {
+                                analyser = new MLAnalayser(dictionaryService, mlAlaysisMode);
+                            }
                             else
                             {
                                 analyser = loadAnalyzer(dataType);
@@ -227,13 +215,24 @@ public class LuceneAnalyser extends Analyzer
                                 {
                                     analyser = new MLAnalayser(dictionaryService, MLAnalysisMode.ALL_ONLY);
                                 }
+                                else if (dataType.getName().equals(DataTypeDefinition.MLTEXT))
+                                {
+                                    analyser = new MLAnalayser(dictionaryService, mlAlaysisMode);
+                                }
                                 else
                                 {
                                     analyser = loadAnalyzer(dataType);
                                 }
                                 break;
                             case IDENTIFIER:
-                                analyser = new VerbatimAnalyser();
+                                if (dataType.getName().equals(DataTypeDefinition.MLTEXT))
+                                {
+                                    analyser = new VerbatimMLAnalayser(mlAlaysisMode);
+                                }
+                                else
+                                {
+                                    analyser = new VerbatimAnalyser();
+                                }
                                 break;
                             default:
                                 throw new UnsupportedOperationException("TYPE must not be tokenised");
@@ -241,6 +240,7 @@ public class LuceneAnalyser extends Analyzer
 
                             break;
                         case FALSE:
+                            // TODO: MLText verbatim analyser
                             analyser = new VerbatimAnalyser();
                             break;
                         default:
@@ -274,6 +274,7 @@ public class LuceneAnalyser extends Analyzer
         analysers.put(fieldName, analyser);
         return analyser;
     }
+    
 
     /**
      * Find an instantiate an analyser. The shuld all be thread sade as Analyser.tokenStream should be re-entrant.

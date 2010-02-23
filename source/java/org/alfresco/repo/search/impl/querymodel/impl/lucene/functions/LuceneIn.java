@@ -33,6 +33,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.ListArgument;
+import org.alfresco.repo.search.impl.querymodel.LiteralArgument;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
@@ -58,10 +59,10 @@ public class LuceneIn extends In implements LuceneQueryBuilderComponent
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
+     * @see
+     * org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene
+     * .search.BooleanQuery, org.apache.lucene.search.BooleanQuery,
+     * org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
@@ -71,11 +72,14 @@ public class LuceneIn extends In implements LuceneQueryBuilderComponent
         PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Argument inverseArgument = functionArgs.get(ARG_NOT);
         Boolean not = DefaultTypeConverter.INSTANCE.convert(Boolean.class, inverseArgument.getValue(functionContext));
+        LiteralArgument modeArgument = (LiteralArgument) functionArgs.get(ARG_MODE);
+        String modeString = DefaultTypeConverter.INSTANCE.convert(String.class, modeArgument.getValue(functionContext));
+        PredicateMode mode = PredicateMode.valueOf(modeString);
 
-        ListArgument listArgument = (ListArgument)functionArgs.get(ARG_LIST);
-        Collection<Serializable> collection = (Collection<Serializable>)listArgument.getValue(functionContext);
-        
-        Query query = functionContext.buildLuceneIn(lqp, propertyArgument.getPropertyName(), collection, not, PredicateMode.ANY);
+        ListArgument listArgument = (ListArgument) functionArgs.get(ARG_LIST);
+        Collection<Serializable> collection = (Collection<Serializable>) listArgument.getValue(functionContext);
+
+        Query query = functionContext.buildLuceneIn(lqp, propertyArgument.getPropertyName(), collection, not, mode);
 
         if (query == null)
         {

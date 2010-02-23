@@ -70,6 +70,22 @@ public class LuceneDescendant extends Descendant implements LuceneQueryBuilderCo
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         Argument argument = functionArgs.get(ARG_ANCESTOR);
         String id = (String) argument.getValue(functionContext);
+        argument = functionArgs.get(ARG_SELECTOR);
+        if(argument != null)
+        {
+            String selector = (String) argument.getValue(functionContext);
+            if(!selectors.contains(selector))
+            {
+                throw new QueryModelException("Unkown selector "+selector); 
+            }
+        }
+        else
+        {
+            if(selectors.size() > 1)
+            {
+                throw new QueryModelException("Selector must be specified for child constraint (IN_TREE) and join"); 
+            }
+        }
         NodeRef nodeRef;
         if(NodeRef.isNodeRef(id))
         {
@@ -97,6 +113,10 @@ public class LuceneDescendant extends Descendant implements LuceneQueryBuilderCo
             {
                 throw new QueryModelException("Invalid Object Id "+id);
             }
+        }
+        if(!functionContext.getNodeService().exists(nodeRef))
+        {
+            throw new QueryModelException("Object does not exist: "+id); 
         }
         Path path = functionContext.getNodeService().getPath(nodeRef);
         StringBuilder builder = new StringBuilder(path.toPrefixString(luceneContext.getNamespacePrefixResolver()));

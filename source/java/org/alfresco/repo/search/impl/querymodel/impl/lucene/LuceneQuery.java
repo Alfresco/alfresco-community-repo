@@ -110,6 +110,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
+                constraintQuery.setBoost(constraint.getBoost());
                 if (constraintQuery != null)
                 {
                     switch (constraint.getOccur())

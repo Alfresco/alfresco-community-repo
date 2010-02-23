@@ -37,6 +37,8 @@ public enum AnalysisMode
     PREFIX
     , 
     WILD
+    ,
+    LIKE
     ;
 
 }

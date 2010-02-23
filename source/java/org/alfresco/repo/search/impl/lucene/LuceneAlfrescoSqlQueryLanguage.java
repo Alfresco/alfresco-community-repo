@@ -89,7 +89,7 @@ public class LuceneAlfrescoSqlQueryLanguage implements LuceneQueryLanguageSPI
 
     public String getName()
     {
-        return SearchService.LANGUAGE_SQL_ALFTRESCO;
+        return SearchService.LANGUAGE_CMIS_ALFRESCO;
     }
 
     public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)

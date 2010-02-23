@@ -78,7 +78,7 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
     protected Boolean fullTextIndexed = null;
     protected Boolean controllablePolicy = null;
     protected Boolean controllableACL = null;
-    protected Boolean includeInSuperTypeQuery = null;
+    protected Boolean includedInSuperTypeQuery = null;
     protected Collection<CMISTypeId> subTypeIds = null;
     protected Collection<CMISTypeDefinition> subTypes = null;
     protected Map<String, CMISPropertyDefinition> properties = null;
@@ -103,7 +103,7 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
         if (fullTextIndexed == null) throw new IllegalStateException("fullTextIndexed not specified; objectTypeId=" + objectTypeId);
         if (controllablePolicy == null) throw new IllegalStateException("controllablePolicy not specified; objectTypeId=" + objectTypeId);
         if (controllableACL == null) throw new IllegalStateException("controllablePolicy not specified; objectTypeId=" + objectTypeId);
-        if (includeInSuperTypeQuery == null) throw new IllegalStateException("includeInSuperTypeQuery not specified; objectTypeId=" + objectTypeId);
+        if (includedInSuperTypeQuery == null) throw new IllegalStateException("includedInSuperTypeQuery not specified; objectTypeId=" + objectTypeId);
         if (subTypeIds == null) throw new IllegalStateException("subTypeIds not specified; objectTypeId=" + objectTypeId);
         if (subTypes == null) throw new IllegalStateException("subTypes not specified; objectTypeId=" + objectTypeId);
         if (properties == null) throw new IllegalStateException("properties not specified; objectTypeId=" + objectTypeId);
@@ -413,11 +413,11 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isIncludeInSuperTypeQuery()
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isIncludedInSuperTypeQuery()
      */
-    public boolean isIncludeInSuperTypeQuery()
+    public boolean isIncludedInSuperTypeQuery()
     {
-        return includeInSuperTypeQuery;
+        return includedInSuperTypeQuery;
     }
 
     /*

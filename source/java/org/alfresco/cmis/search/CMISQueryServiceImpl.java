@@ -34,7 +34,9 @@ import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
@@ -117,9 +119,13 @@ public class CMISQueryServiceImpl implements CMISQueryService
             joinSupport = CMISJoinEnum.INNER_JOIN_SUPPORT;
         }
         
+        // TODO: Refactor to avoid duplication of valid scopes here and in CMISQueryParser
+        
+        CMISScope[] validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
         functionContext.setNodeService(nodeService);
+        functionContext.setValidScopes(validScopes);
         
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
         Query query = parser.parse(queryEngine.getQueryModelFactory(), functionContext);

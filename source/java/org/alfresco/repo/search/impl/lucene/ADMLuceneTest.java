@@ -221,6 +221,8 @@ public class ADMLuceneTest extends TestCase
 
     private QueryEngine queryEngine;
 
+    private NodeRef n15;
+
     /**
      *
      */
@@ -418,6 +420,8 @@ public class ADMLuceneTest extends TestCase
         // nodeService.addAspect(n14, DictionaryBootstrap.ASPECT_QNAME_CONTENT,
         // properties);
 
+        n15 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fifteen"), ContentModel.TYPE_THUMBNAIL, getOrderProperties()).getChildRef();
+        
         ContentWriter writer = contentService.getWriter(n14, ContentModel.PROP_CONTENT, true);
         writer.setEncoding("UTF-8");
         // InputStream is =
@@ -439,7 +443,7 @@ public class ADMLuceneTest extends TestCase
         nodeService.addChild(n12, n14, ASSOC_TYPE_QNAME, QName.createQName("{namespace}common"));
         nodeService.addChild(n13, n14, ASSOC_TYPE_QNAME, QName.createQName("{namespace}common"));
 
-        documentOrder = new NodeRef[] { rootNodeRef, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n3, n1, n2 };
+        documentOrder = new NodeRef[] { rootNodeRef, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n3, n1, n2 };
 
         // TODO: Why was the cm:auditable aspect added here?
         // By adding it, the auditable properties were set automatically.
@@ -476,7 +480,7 @@ public class ADMLuceneTest extends TestCase
 
         MLText mlText = new MLText();
         mlText.addValue(Locale.ENGLISH, new String(new char[] { (char) ('a' + orderTextCount) }) + " banana");
-        mlText.addValue(Locale.FRENCH, new String(new char[] { (char) ('z' - orderTextCount) }) + " banane");
+        mlText.addValue(Locale.FRENCH, new String(new char[] { (char) ('Z' - orderTextCount) }) + " banane");
         mlText.addValue(Locale.CHINESE, new String(new char[] { (char) ('香' + orderTextCount) }) + " 香蕉");
         testProperties.put(orderMLText, mlText);
 
@@ -687,7 +691,7 @@ public class ADMLuceneTest extends TestCase
         ResultSetMetaData md;
 
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         md = results.getResultSetMetaData();
         for (ResultSetRow row : results)
         {
@@ -710,7 +714,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(true);
 
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         sp.setMaxPermissionChecks(2);
@@ -738,8 +742,8 @@ public class ADMLuceneTest extends TestCase
         sp.setSkipCount(skip);
         sp.setMaxItems(max);
         ResultSet results = searcher.query(sp);
-        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 15 ? 15 - skip : max, results.length());
-        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 15, results.hasMore());
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
         assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
         int actualPosition = skip;
         for (ResultSetRow row : results)
@@ -776,7 +780,7 @@ public class ADMLuceneTest extends TestCase
         ResultSetMetaData md;
 
         results = searcher.query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         md = results.getResultSetMetaData();
         for (ResultSetRow row : results)
         {
@@ -799,8 +803,8 @@ public class ADMLuceneTest extends TestCase
         sp.setSkipCount(skip);
         sp.setMaxItems(max);
         ResultSet results = searcher.query(sp);
-        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 15 ? 15 - skip : max, results.length());
-        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 15, results.hasMore());
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
         assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
         int actualPosition = skip;
         for (ResultSetRow row : results)
@@ -831,7 +835,7 @@ public class ADMLuceneTest extends TestCase
 
     public void alfrescoSqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_SQL_ALFTRESCO, query, null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_CMIS_ALFRESCO, query, null);
         assertEquals(count, results.length());
         results.getResultSetMetaData();
         results.close();
@@ -856,7 +860,7 @@ public class ADMLuceneTest extends TestCase
 
     public void sqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
-        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_SQL_CMIS_STRICT, query, null);
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_CMIS_STRICT, query, null);
         assertEquals(count, results.length());
         results.getResultSetMetaData();
         results.close();
@@ -884,7 +888,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(true);
         sp.addSort(ContentModel.PROP_NODE_UUID.toString(), true);
         ResultSet results = searcher.query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
 
         String f = null;
         for (ResultSetRow row : results)
@@ -909,7 +913,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(true);
         sp.addSort(ContentModel.PROP_NODE_UUID.toString(), false);
         results = searcher.query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
 
         f = null;
         for (ResultSetRow row : results)
@@ -934,7 +938,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(true);
         sp.addSort("@" + ContentModel.PROP_NODE_UUID.toString(), false);
         results = searcher.query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
 
         f = null;
         for (ResultSetRow row : results)
@@ -959,7 +963,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(true);
         sp.addSort("cm:name", false);
         results = searcher.query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
 
         f = null;
         for (ResultSetRow row : results)
@@ -984,7 +988,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(true);
         sp.addSort("test:neverIndexed", false);
         results = searcher.query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
     }
@@ -1004,24 +1008,24 @@ public class ADMLuceneTest extends TestCase
 
         ftsQueryWithCount(searcher, "\"lazy\"", 1);
         ftsQueryWithCount(searcher, "lazy and dog", 1);
-        ftsQueryWithCount(searcher, "-lazy and -dog", 14);
+        ftsQueryWithCount(searcher, "-lazy and -dog", 15);
         ftsQueryWithCount(searcher, "-lazy and dog", 0);
         ftsQueryWithCount(searcher, "lazy and -dog", 0);
         ftsQueryWithCount(searcher, "|lazy and |dog", 1);
         ftsQueryWithCount(searcher, "|eager and |dog", 1);
         ftsQueryWithCount(searcher, "|lazy and |wolf", 1);
         ftsQueryWithCount(searcher, "|eager and |wolf", 0);
-        ftsQueryWithCount(searcher, "-lazy or -dog", 14);
-        ftsQueryWithCount(searcher, "-eager or -dog", 15);
-        ftsQueryWithCount(searcher, "-lazy or -wolf", 15);
-        ftsQueryWithCount(searcher, "-eager or -wolf", 15);
+        ftsQueryWithCount(searcher, "-lazy or -dog", 15);
+        ftsQueryWithCount(searcher, "-eager or -dog", 16);
+        ftsQueryWithCount(searcher, "-lazy or -wolf", 16);
+        ftsQueryWithCount(searcher, "-eager or -wolf", 16);
         ftsQueryWithCount(searcher, "lazy dog", 1);
         ftsQueryWithCount(searcher, "lazy and not dog", 0);
-        ftsQueryWithCount(searcher, "lazy not dog", 15);
+        ftsQueryWithCount(searcher, "lazy not dog", 16);
         ftsQueryWithCount(searcher, "lazy and !dog", 0);
-        ftsQueryWithCount(searcher, "lazy !dog", 15);
+        ftsQueryWithCount(searcher, "lazy !dog", 16);
         ftsQueryWithCount(searcher, "lazy and -dog", 0);
-        ftsQueryWithCount(searcher, "lazy -dog", 15);
+        ftsQueryWithCount(searcher, "lazy -dog", 16);
         ftsQueryWithCount(searcher, "TEXT:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm_content:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm:content:big OR cm:content:lazy", 1);
@@ -1044,24 +1048,24 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "brown *(6) dog", 1);
         ftsQueryWithCount(searcher, "TEXT:(\"lazy\")", 1);
         ftsQueryWithCount(searcher, "TEXT:(lazy and dog)", 1);
-        ftsQueryWithCount(searcher, "TEXT:(-lazy and -dog)", 14);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy and -dog)", 15);
         ftsQueryWithCount(searcher, "TEXT:(-lazy and dog)", 0);
         ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
         ftsQueryWithCount(searcher, "TEXT:(|lazy and |dog)", 1);
         ftsQueryWithCount(searcher, "TEXT:(|eager and |dog)", 1);
         ftsQueryWithCount(searcher, "TEXT:(|lazy and |wolf)", 1);
         ftsQueryWithCount(searcher, "TEXT:(|eager and |wolf)", 0);
-        ftsQueryWithCount(searcher, "TEXT:(-lazy or -dog)", 14);
-        ftsQueryWithCount(searcher, "TEXT:(-eager or -dog)", 15);
-        ftsQueryWithCount(searcher, "TEXT:(-lazy or -wolf)", 15);
-        ftsQueryWithCount(searcher, "TEXT:(-eager or -wolf)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy or -dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(-eager or -dog)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy or -wolf)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(-eager or -wolf)", 16);
         ftsQueryWithCount(searcher, "TEXT:(lazy dog)", 1);
         ftsQueryWithCount(searcher, "TEXT:(lazy and not dog)", 0);
-        ftsQueryWithCount(searcher, "TEXT:(lazy not dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(lazy not dog)", 16);
         ftsQueryWithCount(searcher, "TEXT:(lazy and !dog)", 0);
-        ftsQueryWithCount(searcher, "TEXT:(lazy !dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(lazy !dog)", 16);
         ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
-        ftsQueryWithCount(searcher, "TEXT:(lazy -dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(lazy -dog)", 16);
         ftsQueryWithCount(searcher, "cm_content:(\"lazy\")", 1);
         ftsQueryWithCount(searcher, "cm:content:(big OR lazy)", 1);
         ftsQueryWithCount(searcher, "cm:content:(big AND lazy)", 0);
@@ -1181,10 +1185,10 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "\"fox quick\"~3", 1);
 
         ftsQueryWithCount(searcher, "lazy", 1);
-        ftsQueryWithCount(searcher, "-lazy", 14);
-        ftsQueryWithCount(searcher, "lazy -lazy", 15, null, n14);
-        ftsQueryWithCount(searcher, "lazy^20 -lazy", 15, n14, null);
-        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 15, null, n14);
+        ftsQueryWithCount(searcher, "-lazy", 15);
+        ftsQueryWithCount(searcher, "lazy -lazy", 16, null, n14);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy", 16, n14, null);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 16, null, n14);
 
         ftsQueryWithCount(searcher, "cm:content:lazy", 1);
         // Simple template
@@ -1192,21 +1196,24 @@ public class ADMLuceneTest extends TestCase
         // default namesapce cm
         ftsQueryWithCount(searcher, "content:lazy", 1);
 
-        ftsQueryWithCount(searcher, "PATH:\"//.\"", 15);
+        ftsQueryWithCount(searcher, "PATH:\"//.\"", 16);
 
         ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
         ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
         ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
                 0);
 
-        
         ftsQueryWithCount(searcher, "(brown *(6) dog)", 1);
         ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
         ftsQueryWithCount(searcher, "\"//.\"", 0);
-        ftsQueryWithCount(searcher, "PATH", "\"//.\"", 15);
+        ftsQueryWithCount(searcher, "PATH", "\"//.\"", 16);
         ftsQueryWithCount(searcher, "cm:content:brown", 1);
         ftsQueryWithCount(searcher, "ANDY:brown", 1);
         ftsQueryWithCount(searcher, "ANDY", "brown", 1);
+
+        // test date ranges
+        ftsQueryWithCount(searcher, "modified:*", 2);
+        ftsQueryWithCount(searcher, "modified:[MIN TO NOW]", 2);
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
@@ -1569,7 +1576,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(false);
         sp.addSort("ID", true);
         ResultSet results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
 
         String current = null;
         for (ResultSetRow row : results)
@@ -1598,7 +1605,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(false);
         sp.addSort("ID", true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(16, results.length());
+        assertEquals(17, results.length());
         current = null;
         for (ResultSetRow row : results)
         {
@@ -1626,7 +1633,7 @@ public class ADMLuceneTest extends TestCase
         sp.excludeDataInTheCurrentTransaction(false);
         sp.addSort("ID", true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(17, results.length());
+        assertEquals(18, results.length());
         current = null;
         for (ResultSetRow row : results)
         {
@@ -1862,40 +1869,40 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-        assertEquals(23, results.length());
+        assertEquals(24, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
         assertEquals(1, results.length());
@@ -1904,13 +1911,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-        assertEquals(6, results.length());
+        assertEquals(7, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-        assertEquals(9, results.length());
+        assertEquals(10, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
-        assertEquals(7, results.length());
+        assertEquals(8, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
         assertEquals(1, results.length());
@@ -2038,7 +2045,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
-        assertEquals(5, results.length());
+        assertEquals(6, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
         assertEquals(4, results.length());
@@ -2062,7 +2069,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
-        assertEquals(5, results.length());
+        assertEquals(6, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
         assertEquals(4, results.length());
@@ -2074,40 +2081,40 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-        assertEquals(25, results.length());
+        assertEquals(27, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-        assertEquals(24, results.length());
+        assertEquals(26, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-        assertEquals(24, results.length());
+        assertEquals(26, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-        assertEquals(24, results.length());
+        assertEquals(26, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-        assertEquals(24, results.length());
+        assertEquals(26, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-        assertEquals(24, results.length());
+        assertEquals(26, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
         assertEquals(1, results.length());
@@ -2116,13 +2123,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-        assertEquals(6, results.length());
+        assertEquals(7, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-        assertEquals(8, results.length());
+        assertEquals(9, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
-        assertEquals(7, results.length());
+        assertEquals(8, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
         assertEquals(1, results.length());
@@ -2396,7 +2403,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         ResultSet results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -2405,7 +2412,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         runBaseTests();
@@ -2416,7 +2423,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
@@ -2429,7 +2436,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         pns.setProperty(n1, ContentModel.PROP_TITLE, "cube");
@@ -2440,7 +2447,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -2927,7 +2934,8 @@ public class ADMLuceneTest extends TestCase
 
         // sort by ML text
 
-        Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH, Locale.CHINESE };
+        //Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH, Locale.CHINESE };
+        Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH };
         for (Locale testLocale : testLocales)
         {
 
@@ -3312,6 +3320,7 @@ public class ADMLuceneTest extends TestCase
         indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n5, QName.createQName("{namespace}twelve"), n12));
         indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n12, QName.createQName("{namespace}thirteen"), n13));
         indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n13, QName.createQName("{namespace}fourteen"), n14));
+        indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n13, QName.createQName("{namespace}fifteen"), n15));
         indexer.updateNode(n3);
         indexer.updateNode(n1);
         indexer.updateNode(n2);
@@ -3441,10 +3450,10 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null);
-        assertEquals(8, results.length());
+        assertEquals(9, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
-        assertEquals(5, results.length());
+        assertEquals(6, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
         assertEquals(4, results.length());
@@ -3468,10 +3477,10 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*/*\"", null);
-        assertEquals(8, results.length());
+        assertEquals(9, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
-        assertEquals(5, results.length());
+        assertEquals(6, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
         assertEquals(4, results.length());
@@ -3483,40 +3492,40 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-        assertEquals(26, results.length());
+        assertEquals(28, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-        assertEquals(25, results.length());
+        assertEquals(27, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-        assertEquals(25, results.length());
+        assertEquals(27, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-        assertEquals(25, results.length());
+        assertEquals(27, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-        assertEquals(25, results.length());
+        assertEquals(27, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-        assertEquals(25, results.length());
+        assertEquals(27, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
         assertEquals(1, results.length());
@@ -3531,16 +3540,16 @@ public class ADMLuceneTest extends TestCase
         assertEquals(5, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-        assertEquals(6, results.length());
-        results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-        assertEquals(9, results.length());
-        results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
         assertEquals(10, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        assertEquals(8, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        assertEquals(11, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
         assertEquals(1, results.length());
@@ -3562,11 +3571,11 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PRIMARYASSOCTYPEQNAME:\"test:assoc\"", null);
-        assertEquals(10, results.length());
+        assertEquals(11, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASSOCTYPEQNAME:\"test:assoc\"", null);
-        assertEquals(10, results.length());
+        assertEquals(11, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PRIMARYASSOCTYPEQNAME:\"sys:children\"", null);
@@ -3914,22 +3923,22 @@ public class ADMLuceneTest extends TestCase
 
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null);
-            assertEquals(1, results.length());
+            assertEquals(2, results.length());
             results.close();
 
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
-            assertEquals(1, results.length());
+            assertEquals(2, results.length());
             results.close();
             
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO TODAY]", null);
-            assertEquals(1, results.length());
+            assertEquals(2, results.length());
             results.close();
 
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null);
-            assertEquals(1, results.length());
+            assertEquals(2, results.length());
             results.close();
 
             // Date ranges
@@ -4265,7 +4274,19 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + testSuperType.toPrefixString(namespacePrefixResolver) + "\"", null);
         assertEquals(13, results.length());
         results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\"", null);
+        assertEquals(1, results.length());
+        results.close();
 
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_THUMBNAIL.toString() + "\" TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", null);
+        assertEquals(2, results.length());
+        results.close();
+        
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTTYPE:\"" + testSuperType.toString() + "\"", null);
         assertEquals(12, results.length());
         results.close();
@@ -4431,7 +4452,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:\"cabbage\"");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4440,7 +4461,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:\"cab*\"");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4449,7 +4470,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:\"*bage\"");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4458,7 +4479,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:\"*ba*\"");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         // term
@@ -4469,7 +4490,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:cabbage");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4479,7 +4500,7 @@ public class ADMLuceneTest extends TestCase
         sp.addTextAttribute("@" + orderText.toString());
         sp.addLocale(Locale.ENGLISH);
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4488,7 +4509,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:*bage");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4497,7 +4518,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:*ba*");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4506,7 +4527,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("TEXT:dabbage~0.8");
         sp.addTextAttribute("@" + orderText.toString());
         results = searcher.query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         // Wild cards in TEXT phrase
@@ -5476,7 +5497,7 @@ public class ADMLuceneTest extends TestCase
         queryQName = QName.createQName("alf:test3", namespacePrefixResolver);
         qp = new QueryParameter(QName.createQName("alf:banana", namespacePrefixResolver), "/one/five//*");
         results = searcher.query(rootNodeRef.getStoreRef(), queryQName, new QueryParameter[] { qp });
-        assertEquals(6, results.length());
+        assertEquals(7, results.length());
         results.close();
 
         // TODO: should not have a null property type definition
@@ -5543,17 +5564,17 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-        assertEquals(6, results.length());
+        assertEquals(7, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-        assertEquals(9, results.length());
+        assertEquals(10, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
-        assertEquals(7, results.length());
+        assertEquals(8, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
-        assertEquals(10, results.length());
+        assertEquals(11, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
@@ -5585,13 +5606,13 @@ public class ADMLuceneTest extends TestCase
         ResultSet
 
         results = searcher.query(rootNodeRef.getStoreRef(), "xpath", "//./*", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         luceneFTS.resume();
 
         QueryParameterDefinition paramDef = new QueryParameterDefImpl(QName.createQName("alf:query", namespacePrefixResolver), (DataTypeDefinition) null, true, "//./*");
         results = searcher.query(rootNodeRef.getStoreRef(), "xpath", "${alf:query}", new QueryParameterDefinition[] { paramDef });
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
     }
 
@@ -5778,7 +5799,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
-        assertEquals(4, results.length());
+        assertEquals(5, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
         assertEquals(3, results.length());
@@ -5802,7 +5823,7 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
-        assertEquals(4, results.length());
+        assertEquals(5, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
         assertEquals(3, results.length());
@@ -5814,40 +5835,40 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-        assertEquals(17, results.length());
+        assertEquals(19, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-        assertEquals(13, results.length());
+        assertEquals(14, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-        assertEquals(16, results.length());
+        assertEquals(18, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-        assertEquals(13, results.length());
+        assertEquals(14, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-        assertEquals(16, results.length());
+        assertEquals(18, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-        assertEquals(13, results.length());
+        assertEquals(14, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-        assertEquals(16, results.length());
+        assertEquals(18, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-        assertEquals(13, results.length());
+        assertEquals(14, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-        assertEquals(16, results.length());
+        assertEquals(18, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-        assertEquals(13, results.length());
+        assertEquals(14, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-        assertEquals(16, results.length());
+        assertEquals(18, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
         assertEquals(0, results.length());
@@ -5856,13 +5877,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(0, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-        assertEquals(5, results.length());
+        assertEquals(6, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-        assertEquals(5, results.length());
+        assertEquals(6, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
-        assertEquals(6, results.length());
+        assertEquals(7, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
         assertEquals(1, results.length());
@@ -6325,40 +6346,40 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-        assertEquals(23, results.length());
+        assertEquals(24, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-        assertEquals(14, results.length());
+        assertEquals(15, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-        assertEquals(22, results.length());
+        assertEquals(23, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
         assertEquals(1, results.length());
@@ -6373,16 +6394,16 @@ public class ADMLuceneTest extends TestCase
         assertEquals(5, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-        assertEquals(6, results.length());
-        results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-        assertEquals(9, results.length());
-        results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
         assertEquals(7, results.length());
         results.close();
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
         assertEquals(10, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        assertEquals(8, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//.\"", null);
+        assertEquals(11, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
         assertEquals(1, results.length());
@@ -6425,11 +6446,11 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
 
         ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:link//.\"", null);
-        assertEquals(2, results.length());
+        assertEquals(3, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//namespace:link//.\"", null);
-        assertEquals(3, results.length());
+        assertEquals(4, results.length());
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:renamed_link//.\"", null);
@@ -6465,10 +6486,10 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//namespace:renamed_link//.\"", null);
-        assertEquals(2, results.length());
+        assertEquals(3, results.length());
         results.close();
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//namespace:renamed_link//.\"", null);
-        assertEquals(3, results.length());
+        assertEquals(4, results.length());
         results.close();
         luceneFTS.resume();
     }
@@ -6757,7 +6778,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -6772,7 +6793,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -6794,7 +6815,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(12, results.length());
+        assertEquals(13, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -6803,7 +6824,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -6818,7 +6839,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -6840,7 +6861,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(16, results.length());
+        assertEquals(17, results.length());
         results.close();
 
         testTX.rollback();
@@ -6855,7 +6876,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -6933,7 +6954,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         NodeRef created = serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas"), testSuperType).getChildRef();
@@ -6953,7 +6974,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         serviceRegistry.getNodeService().deleteNode(created);
@@ -6973,7 +6994,7 @@ public class ADMLuceneTest extends TestCase
         sp.setQuery("PATH:\"//.\"");
         sp.excludeDataInTheCurrentTransaction(true);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
         testTX.rollback();
@@ -6988,7 +7009,7 @@ public class ADMLuceneTest extends TestCase
         sp.addSort("ID", true);
         sp.excludeDataInTheCurrentTransaction(false);
         results = serviceRegistry.getSearchService().query(sp);
-        assertEquals(15, results.length());
+        assertEquals(16, results.length());
         results.close();
 
     }

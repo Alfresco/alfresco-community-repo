@@ -69,6 +69,22 @@ public class LuceneChild extends Child implements LuceneQueryBuilderComponent
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
         Argument argument = functionArgs.get(ARG_PARENT);
         String id = (String) argument.getValue(functionContext);
+        argument = functionArgs.get(ARG_SELECTOR);
+        if(argument != null)
+        {
+            String selector = (String) argument.getValue(functionContext);
+            if(!selectors.contains(selector))
+            {
+                throw new QueryModelException("Unkown selector "+selector); 
+            }
+        }
+        else
+        {
+            if(selectors.size() > 1)
+            {
+                throw new QueryModelException("Selector must be specified for child constraint (IN_FOLDER) and join"); 
+            }
+        }
         NodeRef nodeRef;
         if(NodeRef.isNodeRef(id))
         {
@@ -96,6 +112,10 @@ public class LuceneChild extends Child implements LuceneQueryBuilderComponent
             {
                 throw new QueryModelException("Invalid Object Id "+id);
             }
+        }
+        if(!functionContext.getNodeService().exists(nodeRef))
+        {
+            throw new QueryModelException("Object does not exist: "+id); 
         }
         Query query = lqp.getFieldQuery("PARENT", nodeRef.toString());
         return query;

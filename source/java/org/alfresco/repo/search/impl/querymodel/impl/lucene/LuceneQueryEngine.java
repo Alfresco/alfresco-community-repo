@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -143,10 +144,19 @@ public class LuceneQueryEngine implements QueryEngine
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.setBulkFetch(options.getFetchSize() > 0);
         searchParameters.setBulkFetchSize(options.getFetchSize());
+        if(options.getLocales().size() > 0)
+        {
+           for(Locale locale: options.getLocales())
+           {
+               searchParameters.addLocale(locale);
+           }
+        }
+        searchParameters.excludeDataInTheCurrentTransaction(!options.isIncludeInTransactionData());
         searchParameters.setSkipCount(options.getSkipCount());
         searchParameters.setMaxPermissionChecks(options.getMaxPermissionChecks());
         searchParameters.setMaxPermissionCheckTimeMillis(options.getMaxPermissionCheckTimeMillis());
         searchParameters.setDefaultFieldName(options.getDefaultFieldName());
+        searchParameters.setMlAnalaysisMode(options.getMlAnalaysisMode());
         if (options.getMaxItems() >= 0)
         {
             searchParameters.setLimitBy(LimitBy.FINAL_SIZE);

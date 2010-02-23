@@ -43,7 +43,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 
@@ -79,7 +78,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSet#close()
      */
     public void close()
@@ -98,7 +96,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSet#getMetaData()
      */
     public CMISResultSetMetaData getMetaData()
@@ -108,7 +105,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSet#getRow(int)
      */
     public CMISResultSetRow getRow(int i)
@@ -118,7 +114,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSet#hasMore()
      */
     public boolean hasMore()
@@ -135,7 +130,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSet#length()
      */
     public int getLength()
@@ -149,7 +143,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.cmis.search.CMISResultSet#start()
      */
     public int getStart()
@@ -159,7 +152,6 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     /*
      * (non-Javadoc)
-     * 
      * @see java.lang.Iterable#iterator()
      */
     public Iterator<CMISResultSetRow> iterator()
@@ -212,10 +204,33 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         {
             return refs.values().iterator().next();
         }
-        else
+        else if(allNodeRefsEqual(refs))
         {
+            return refs.values().iterator().next();
+        }
+        else       {
             throw new IllegalStateException("Ambiguous selector");
         }
+    }
+
+    private boolean allNodeRefsEqual(Map<String, NodeRef> selected)
+    {
+        NodeRef last = null;
+        for (NodeRef current : selected.values())
+        {
+            if (last == null)
+            {
+                last = current;
+            }
+            else
+            {
+                if (!last.equals(current))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public List<NodeRef> getNodeRefs()
@@ -240,10 +255,34 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         {
             return scores.values().iterator().next();
         }
+        else if(allScoresEqual(scores))
+        {
+            return scores.values().iterator().next();
+        }
         else
         {
             throw new IllegalStateException("Ambiguous selector");
         }
+    }
+    
+    private boolean allScoresEqual(Map<String, Float> scores)
+    {
+        Float last = null;
+        for (Float current : scores.values())
+        {
+            if (last == null)
+            {
+                last = current;
+            }
+            else
+            {
+                if (!last.equals(current))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public int length()

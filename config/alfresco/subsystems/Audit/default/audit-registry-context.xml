@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--  Start Auditing -->
+    <bean id="audit.bootstrap" class="org.alfresco.repo.audit.AuditBootstrap">
+        <property name="active">
+           <value>${audit.enabled}</value>
+        </property>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+    </bean>
+        
+    <!-- Models -->
+    <bean id="auditModel.modelRegistry" class="org.alfresco.repo.audit.model.AuditModelRegistryImpl">
+        <property name="transactionService" ref="transactionService"/>
+        <property name="auditDAO" ref="auditDAO"/>
+        <property name="dataExtractors" ref="auditModel.extractorRegistry"/>
+        <property name="dataGenerators" ref="auditModel.generatorRegistry"/>
+    </bean>
+    
+    <bean id="auditModel.repository" class="org.alfresco.repo.audit.model.AuditModelReader">
+        <property name="active">
+           <value>${audit.repository.enabled}</value>
+        </property>
+        <property name="auditModelUrl">
+           <value>classpath:alfresco/audit/alfresco-audit-repository.xml</value>
+        </property>
+        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+    </bean>
+
+    <bean id="auditModel.cmis" class="org.alfresco.repo.audit.model.AuditModelReader">
+        <property name="active">
+           <value>${audit.cmis.enabled}</value>
+        </property>
+        <property name="auditModelUrl">
+           <value>classpath:alfresco/audit/alfresco-audit-cmis.xml</value>
+        </property>
+        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+    </bean>
+  
+</beans>

@@ -31,12 +31,17 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.cmis.CMISAccessControlService;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISQueryService;
+import org.alfresco.cmis.CMISRenditionService;
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -47,6 +52,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -68,6 +74,10 @@ public abstract class BaseCMISTest extends TestCase
     protected CMISServices cmisService;
     
     protected CMISDictionaryService cmisDictionaryService;
+    
+    protected CMISRenditionService cmisRenditionService;
+    
+    protected CMISAccessControlService cmisAccessControlService;
     
     protected DictionaryService dictionaryService;
 
@@ -98,6 +108,14 @@ public abstract class BaseCMISTest extends TestCase
     protected ContentService contentService;
 
     protected PermissionService permissionService;
+    
+    protected ThumbnailService thumbnailService;
+    
+    protected ModelDAO permissionModelDao;
+
+    protected DictionaryDAO dictionaryDAO;
+
+    protected NamespaceDAOImpl namespaceDao;
 
     public void setUp() throws Exception
     {
@@ -107,6 +125,8 @@ public abstract class BaseCMISTest extends TestCase
         cmisMapping = (CMISMapping) ctx.getBean("CMISMapping");
         cmisQueryService = (CMISQueryService) ctx.getBean("CMISQueryService");
         cmisService = (CMISServices) ctx.getBean("CMISService");
+        cmisRenditionService = (CMISRenditionService) ctx.getBean("CMISRenditionService");
+        cmisAccessControlService = (CMISAccessControlService) ctx.getBean("CMISAccessControlService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         nodeService = (NodeService) ctx.getBean("nodeService");
         fileFolderService = (FileFolderService) ctx.getBean("fileFolderService");
@@ -124,6 +144,13 @@ public abstract class BaseCMISTest extends TestCase
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         
+        thumbnailService = (ThumbnailService) ctx.getBean("thumbnailService");
+        
+        permissionModelDao = (ModelDAO) ctx.getBean("permissionsModelDAO");
+        
+        dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
+        
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -136,7 +163,7 @@ public abstract class BaseCMISTest extends TestCase
         {
             authenticationService.deleteAuthentication("cmis");
         }
-        authenticationService.createAuthentication("cmis", "cmis".toCharArray());
+        authenticationService.createAuthentication("cmis", "cmis".toCharArray());        
     }
     
     private String getStoreName()

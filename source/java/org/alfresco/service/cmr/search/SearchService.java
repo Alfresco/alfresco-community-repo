@@ -57,9 +57,9 @@ public interface SearchService
     
     public static final String LANGUAGE_FTS_ALFRESCO = "fts-alfresco";
     
-    public static final String LANGUAGE_SQL_CMIS_STRICT = "sql-cmis-strict";
+    public static final String LANGUAGE_CMIS_STRICT = "cmis-strict";
     
-    public static final String LANGUAGE_SQL_ALFTRESCO = "sql-alfresco";
+    public static final String LANGUAGE_CMIS_ALFRESCO = "cmis-alfresco";
 
     /**
      * Search against a store. Pulls back all attributes on each node. Does not

@@ -40,9 +40,6 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
-        <property name="enabled">
-            <value>${audit.enabled}</value>
-        </property>
         <property name="useNewConfig">
             <value>${audit.useNewConfig}</value>
         </property>

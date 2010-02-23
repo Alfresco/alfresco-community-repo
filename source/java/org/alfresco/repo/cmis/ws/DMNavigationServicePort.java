@@ -55,7 +55,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
     private static final String FILTER_TOKENS_DELIMETER = ", ";
 
-    private static final Pattern ORDER_BY_CLAUSE_MASK = Pattern.compile("^( )*([\\p{Alnum}_]+(( )+((ASC)|(DESC)))?){1}((,){1}( )*[\\p{Alnum}_]+(( )+((ASC)|(DESC)))?)*( )*$",
+    private static final Pattern ORDER_BY_CLAUSE_MASK = Pattern.compile("^( )*([\\p{Alnum}_]+(( )+((ASC)|(DESC))){1}){1}((,){1}( )*[\\p{Alnum}_]+(( )+((ASC)|(DESC))){1})*( )*$",
             Pattern.CASE_INSENSITIVE);
 
     /**
@@ -93,7 +93,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
         for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
         {
-            resultListing.add(createCmisObject(nodeRefs[index].toString(), propertyFilter, includeAllowableActions));
+            resultListing.add(createCmisObject(nodeRefs[index].toString(), propertyFilter, includeAllowableActions, renditionFilter));
         }
         result.setHasMoreItems(new Boolean(cursor.getEndRow() < (nodeRefs.length - 1)));
 
@@ -136,7 +136,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
         for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
         {
-            CmisObjectType cmisObject = createCmisObject(listing[index].toString(), propertyFilter, includeAllowableActions);
+            CmisObjectType cmisObject = createCmisObject(listing[index].toString(), propertyFilter, includeAllowableActions, renditionFilter);
             CmisObjectInFolderType cmisObjectInFolder = new CmisObjectInFolderType();
             cmisObjectInFolder.setObject(cmisObject);
             if (includePathSegments != null && includePathSegments)
@@ -149,7 +149,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         result.setHasMoreItems(cursor.getEndRow() < (listing.length - 1));
         result.setNumItems(BigInteger.valueOf(listing.length));
 
-        // TODO: Process includeAllowableActions, includeRelationships, includeRenditions, includeACL
+        // TODO: Process includeRelationships, includeACL
         return result;
     }
 
@@ -197,9 +197,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      */
     public CmisObjectType getFolderParent(String repositoryId, String folderId, String filter, CmisExtensionType extension) throws CmisException
     {
-        // FIXME: [BUG] It is necessary to check with specification for behaviour of this method with folderId equal to rootFolderId!!!
         checkRepositoryId(repositoryId);
-
         if ((filter != null) && !filter.equals("") && !filter.equals("*"))
         {
             if (!filter.contains(CMISDictionaryModel.PROP_PARENT_ID))
@@ -212,12 +210,10 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
                 filter = CMISDictionaryModel.PROP_OBJECT_ID + FILTER_TOKENS_DELIMETER + filter;
             }
         }
-
         PropertyFilter propertyFilter = createPropertyFilter(filter);
-
         NodeRef parentRef = receiveParent(folderId);
-        CmisObjectType result = createCmisObject(parentRef, propertyFilter, false);
-
+        CmisObjectType result = createCmisObject(parentRef, propertyFilter, false, null);
+        // TODO: It is not clear whether ACL etc should be returned
         return result;
     }
 
@@ -242,8 +238,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         String relativePathSegment = propertiesUtil.getProperty(childNode, CMISDictionaryModel.PROP_NAME, "");
         for (NodeRef objectNodeRef : parents)
         {
-            CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeAllowableActions);
-            //TODO: includeRelationship, renditions
+            CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeAllowableActions, renditionFilter);
+            // TODO: includeRelationship, renditions
             CmisObjectParentsType cmisObjectParentsType = new CmisObjectParentsType();
             cmisObjectParentsType.setObject(cmisObject);
             if (includeRelativePathSegment != null && includeRelativePathSegment)
@@ -300,8 +296,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments) throws CmisException
     {
         includeAllowableActions = includeAllowableActions == null ? Boolean.FALSE : includeAllowableActions;
-        CmisObjectType cmisObject = createCmisObject(nodeRef, filter, includeAllowableActions);
-        //TODO: add relationships and renditions
+        CmisObjectType cmisObject = createCmisObject(nodeRef, filter, includeAllowableActions, renditionFilter);
+        // TODO: add relationships and renditions
 
         CmisObjectInFolderType objectInFolderType = new CmisObjectInFolderType();
         objectInFolderType.setObject(cmisObject);
@@ -330,8 +326,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
             String[] direction = token.split(" ");
             String fieldName = direction[0];
-
-            result.add(new Pair<String, Boolean>(fieldName, ((direction.length == 1) ? (true) : (direction[direction.length - 1].toLowerCase().equals("asc")))));
+            result.add(new Pair<String, Boolean>(fieldName, direction[direction.length - 1].toLowerCase().equals("asc")));
         }
 
         return result;
@@ -339,11 +334,12 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
     private NodeRef receiveParent(String targetChildIdentifier) throws CmisException
     {
-        if (targetChildIdentifier.equals(cmisService.getDefaultRootNodeRef().toString()))
+        if (cmisService.getDefaultRootNodeRef().toString().equals(targetChildIdentifier))
         {
-            return null;
+            throw cmisObjectsUtils.createCmisException("Root Folder has no parents", EnumServiceException.INVALID_ARGUMENT);
         }
-        return receiveNextParentNodeReference((NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT), new ArrayList<NodeRef>());
+        NodeRef identifierInstance = (NodeRef) cmisObjectsUtils.getIdentifierInstance(targetChildIdentifier, AlfrescoObjectType.FOLDER_OBJECT);
+        return receiveNextParentNodeReference(identifierInstance, new LinkedList<NodeRef>());
     }
 
     private void checkDepthParameter(BigInteger depth) throws CmisException

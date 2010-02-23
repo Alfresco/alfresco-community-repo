@@ -39,7 +39,6 @@ import org.apache.ws.security.handler.WSHandlerConstants;
 import org.apache.ws.security.handler.WSHandlerResult;
 
 /**
- * 
  * @author Dmitry Velichkevich
  */
 public class AuthenticationInterceptor extends AbstractSoapInterceptor

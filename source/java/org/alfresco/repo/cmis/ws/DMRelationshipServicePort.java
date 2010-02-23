@@ -100,7 +100,7 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         CmisObjectListType result = new CmisObjectListType();
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
-            result.getObjects().add(createCmisObject(sourceArray[i].toString(), filter, includeAllowableActions));
+            result.getObjects().add(createCmisObject(sourceArray[i].toString(), filter, includeAllowableActions, null));
         }
         result.setHasMoreItems(cursor.getEndRow() < sourceArray.length);
         result.setNumItems(BigInteger.valueOf(cursor.getPageSize()));
@@ -126,7 +126,6 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
             }
             else if (includeSubtypes)
             {
-                // TODO: it is necessary introduce checking on descendants
                 return null != dictionaryService.getAssociation(qname);
             }
             else

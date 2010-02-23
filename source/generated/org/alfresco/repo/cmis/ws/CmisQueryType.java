@@ -26,7 +26,6 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="statement" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="searchAllVersions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
@@ -46,7 +45,6 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisQueryType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
-    "repositoryId",
     "statement",
     "searchAllVersions",
     "includeAllowableActions",
@@ -58,7 +56,6 @@ import org.w3c.dom.Element;
 })
 public class CmisQueryType {
 
-    protected String repositoryId;
     @XmlElement(required = true)
     protected String statement;
     protected Boolean searchAllVersions;
@@ -71,30 +68,6 @@ public class CmisQueryType {
     protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
-
-    /**
-     * Gets the value of the repositoryId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRepositoryId() {
-        return repositoryId;
-    }
-
-    /**
-     * Sets the value of the repositoryId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRepositoryId(String value) {
-        this.repositoryId = value;
-    }
 
     /**
      * Gets the value of the statement property.

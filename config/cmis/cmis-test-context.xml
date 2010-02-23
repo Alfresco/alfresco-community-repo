@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="alfresco.test.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>cmis/cmisCustomModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="testCmisChangeLogService" class="org.alfresco.cmis.CMISChangeLogService" parent="CMISChangeLogService">
+        <property name="auditingService" ref="auditingService" />
+    </bean>
+
+    <bean id="auditingService" class="org.alfresco.service.cmr.audit.AuditService" parent="AuditService">
+        <replaced-method name="isAuditEnabled" replacer="auditingEnabledReplacer" />
+    </bean>
+
+    <bean id="auditingEnabledReplacer" class="org.alfresco.cmis.changelog.CMISChangeLogServiceTest" />
+
+</beans>

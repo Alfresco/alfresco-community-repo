@@ -82,8 +82,8 @@ public class CmisObjectIterator implements Iterator<FileInfo>
      * @param fileFolderService - A {@link FileFolderService} implementation instance for manipulating with Objects
      * @param objectsUtils - {@link CmisObjectsUtils} service instance for simplifying manipulations with Objects and Object Properties
      */
-    public CmisObjectIterator(NodeRef rootObject, EnumUnfileObject unfillingStrategy, boolean continueOnFailure, boolean deleteAllVersions, NodeService nodeService, FileFolderService fileFolderService,
-            VersionService versionService, CheckOutCheckInService checkOutCheckInService, CmisObjectsUtils objectsUtils)
+    public CmisObjectIterator(NodeRef rootObject, EnumUnfileObject unfillingStrategy, boolean continueOnFailure, boolean deleteAllVersions, NodeService nodeService,
+            FileFolderService fileFolderService, VersionService versionService, CheckOutCheckInService checkOutCheckInService, CmisObjectsUtils objectsUtils)
     {
         this.unfillingStrategy = unfillingStrategy;
         this.deleteAllVersions = deleteAllVersions;
@@ -207,12 +207,12 @@ public class CmisObjectIterator implements Iterator<FileInfo>
             else
             {
                 howToDelete = EnumUnfileObject.DELETE;
-            }             
-            if (EnumUnfileObject.DELETESINGLEFILED == howToDelete) 
-            {
-                lastDeleted = objectsUtils.removeObject(info.getNodeRef(), parentRef); 
             }
-            else 
+            if (EnumUnfileObject.DELETESINGLEFILED == howToDelete)
+            {
+                lastDeleted = objectsUtils.removeObject(info.getNodeRef(), parentRef);
+            }
+            else
             {
                 if (deleteAllVersions)
                 {
@@ -220,12 +220,10 @@ public class CmisObjectIterator implements Iterator<FileInfo>
                     if (null == workingCopyRef)
                     {
                         versionService.deleteVersionHistory(info.getNodeRef());
-                    }                    
+                    }
                 }
                 lastDeleted = (objectsUtils.deleteObject(info.getNodeRef()));
             }
-            
-            
         }
         if (!lastDeleted && (null != info))
         {

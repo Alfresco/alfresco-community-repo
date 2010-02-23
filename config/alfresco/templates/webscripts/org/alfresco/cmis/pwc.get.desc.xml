@@ -2,8 +2,8 @@
   <shortname>Retrieve properties of PWC</shortname>
   <description>Retrieves the properties of a private working copy</description>
   
-  <url>/cmis/pwc/i/{id}?filter={filter?}</url>
-  <url>/cmis/pwc/s/{store}/i/{id}?filter={filter?}</url>
+  <url>/cmis/pwc/i/{id}?filter={filter?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/pwc/s/{store}/i/{id}?filter={filter?}&amp;renditionFilter={renditionFilter?}</url>
   
   <authentication>user</authentication>
   <transaction allow="readonly"/>

@@ -112,22 +112,23 @@ public class DMObjectServiceTest extends AbstractServiceTest
         helper.deleteDocument(documentId);
 
     }
-    
+
     public void testCreateDocumentFromSource() throws Exception
     {
         String folderForCopyId = helper.createFolder("FolderForCopy" + System.currentTimeMillis(), folderId);
         String newName = "CopyName" + System.currentTimeMillis();
-        CmisPropertiesType properties = new CmisPropertiesType();        
+        CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
         cmisProperty.setLocalName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.getValue().add(newName);
         propertiesList.add(cmisProperty);
         Holder<String> objectId = new Holder<String>();
-        ((ObjectServicePort) servicePort).createDocumentFromSource(repositoryId, documentId, properties, folderForCopyId, EnumVersioningState.NONE, null, null, null, new Holder<CmisExtensionType>(), objectId);
+        ((ObjectServicePort) servicePort).createDocumentFromSource(repositoryId, documentId, properties, folderForCopyId, EnumVersioningState.NONE, null, null, null,
+                new Holder<CmisExtensionType>(), objectId);
         assertNotNull(objectId.value);
         resultObject = helper.getObjectProperties(objectId.value);
-        assertTrue(newName.equals(getStringProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_NAME)));        
+        assertTrue(newName.equals(getStringProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_NAME)));
     }
 
     public void testCreateDocument_Versioning() throws Exception
@@ -147,7 +148,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         helper.checkIn(documentIdHolder, "checkin Comment", true);
         assertTrue(getStringProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_VERSION_LABEL).equals("1.0"));
-        
+
     }
 
     public void testCreateDocument_Exceptions() throws Exception
@@ -200,13 +201,13 @@ public class DMObjectServiceTest extends AbstractServiceTest
         assertTrue(getBooleanProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
 
     }
-    
+
     public void testGetObject() throws Exception
     {
         CmisObjectType resultObject = ((ObjectServicePort) servicePort).getObject(repositoryId, documentId, "*", false, EnumIncludeRelationships.NONE, null, null, null, null);
-      
+
         assertObjectPropertiesNotNull(resultObject);
-        
+
         assertNotNull(getStringProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_NAME));
         assertNotNull(getStringProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
         assertNotNull(getStringProperty(resultObject.getProperties(), CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
@@ -328,7 +329,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         helper.checkIn(documentIdHolder, checkinComment, true);
 
     }
-    
+
     public void testGetContentStreamPortioning() throws Exception
     {
         String newDocumentId = helper.createDocument("TestFile" + System.currentTimeMillis(), folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.NONE);
@@ -417,7 +418,20 @@ public class DMObjectServiceTest extends AbstractServiceTest
     {
         // public void deleteObject(String repositoryId, String objectId)
         ((ObjectServicePort) servicePort).deleteObject(repositoryId, documentId, true, new Holder<CmisExtensionType>());
-        assertNull(helper.getObjectProperties(documentId));
+        assertObjectAbsence(documentId);
+    }
+
+    private void assertObjectAbsence(String objectId)
+    {
+        try
+        {
+            helper.getObjectProperties(objectId);
+            fail("Object with Id='" + objectId + "' was not deleted");
+        }
+        catch (CmisException e)
+        {
+            assertEquals(EnumServiceException.OBJECT_NOT_FOUND, e.getFaultInfo().getType());
+        }
     }
 
     public void testDeleteObject_Exceptions() throws Exception
@@ -473,9 +487,9 @@ public class DMObjectServiceTest extends AbstractServiceTest
         DeleteTreeResponse.FailedToDelete response = ((ObjectServicePort) servicePort).deleteTree(repositoryId, folderId1, true, EnumUnfileObject.DELETE, true, null);
         assertTrue("All objects should be deleted", response.getObjectIds().size() == 0);
 
-        assertNull("DELETE", helper.getObjectProperties(folderId1));
-        assertNull("DELETE", helper.getObjectProperties(folderId2));
-        assertNull("DELETE", helper.getObjectProperties(documentId2));
+        assertObjectAbsence(folderId1);
+        assertObjectAbsence(folderId2);
+        assertObjectAbsence(documentId2);
     }
 
     public void testDeleteTree_Exceptions() throws Exception
@@ -512,7 +526,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
     public void testMoveObject() throws Exception
     {
-         //test should be passed after transaction problem is fixed 
+        // test should be passed after transaction problem is fixed
         ((ObjectServicePort) servicePort).moveObject(repositoryId, new Holder<String>(documentId), folderId, companyHomeId, new Holder<CmisExtensionType>());
 
         CmisObjectType response = helper.getObjectProperties(documentId);
@@ -550,7 +564,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         }
 
     }
-        
+
     public void testSetContentStream() throws Exception
     {
         String newFileName = "New file name (" + System.currentTimeMillis() + ")";
@@ -567,7 +581,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         // public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream)
-        ((ObjectServicePort) servicePort).setContentStream(repositoryId, documentIdHolder, true, new Holder<String>(), contentStream,  new Holder<CmisExtensionType>());
+        ((ObjectServicePort) servicePort).setContentStream(repositoryId, documentIdHolder, true, new Holder<String>(), contentStream, new Holder<CmisExtensionType>());
 
         CmisContentStreamType result = ((ObjectServicePort) servicePort).getContentStream(repositoryId, documentIdHolder.value, null, null, null, null);
         if (result.getLength().intValue() == 0)

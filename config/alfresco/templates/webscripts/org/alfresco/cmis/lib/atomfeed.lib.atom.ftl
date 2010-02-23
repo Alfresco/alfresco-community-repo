@@ -16,8 +16,8 @@
 [#--                     --]
 
 [#macro generic id title author="System"]
-<author><name>${author}</name></author>
-<generator version="${server.version}">Alfresco (${server.edition})</generator>
+<author><name>${author?xml}</name></author>
+<generator version="${server.version?xml}">Alfresco (${server.edition?xml})</generator>
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
 <id>${id}</id>
 [#nested]  [#-- NOTE: Custom links --]
@@ -32,7 +32,7 @@
 
 [#macro node node kind=""]
 <author><name>${node.properties.creator!""}</name></author> 
-<generator version="${server.version}">Alfresco (${server.edition})</generator>
+<generator version="${server.version?xml}">Alfresco (${server.edition?xml})</generator>
 <icon>${absurl(url.context)}/images/logo/AlfrescoLogo16.ico</icon>
 <id>urn:uuid:${node.id}[#if kind != ""]-${kind}[/#if]</id>
 [#nested]  [#-- NOTE: Custom links --]

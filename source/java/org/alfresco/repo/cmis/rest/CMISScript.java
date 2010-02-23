@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,19 +18,34 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.cmis.rest;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISAccessControlEntry;
+import org.alfresco.cmis.CMISAccessControlService;
+import org.alfresco.cmis.CMISAclCapabilityEnum;
+import org.alfresco.cmis.CMISAclPropagationEnum;
+import org.alfresco.cmis.CMISAclSupportedPermissionEnum;
+import org.alfresco.cmis.CMISBaseObjectTypeIds;
+import org.alfresco.cmis.CMISCapabilityChanges;
+import org.alfresco.cmis.CMISChangeEvent;
+import org.alfresco.cmis.CMISChangeLog;
+import org.alfresco.cmis.CMISChangeLogService;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISObjectReference;
+import org.alfresco.cmis.CMISPermissionDefinition;
+import org.alfresco.cmis.CMISPermissionMapping;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISQueryOptions;
@@ -43,12 +58,14 @@ import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
+import org.alfresco.cmis.acl.CMISAccessControlEntryImpl;
 import org.alfresco.cmis.reference.NodeRefReference;
 import org.alfresco.cmis.reference.ReferenceFactory;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.Association;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.repo.web.util.paging.Page;
 import org.alfresco.repo.web.util.paging.PagedResults;
@@ -57,6 +74,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 
 /**
@@ -100,15 +120,20 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_UNFILE_MULTIFILE_DOCUMENTS = "unfileMultiFiledDocuments";
     public static final String ARG_VERSIONING_STATE = "versioningState";
     public static final String ARG_SOURCE_FOLDER_ID = "sourceFolderId";
-    
+    public static final String ARG_INCLUDE_ACL = "includeACL";    
+    public static final String ARG_RENDITION_FILTER = "renditionFilter";
+    public static final String ARG_CHANGE_LOG_TOKEN = "changeLogToken";
 
     // service dependencies
     private ServiceRegistry services;
     private CMISServices cmisService;
     private CMISDictionaryService cmisDictionaryService;
     private CMISQueryService cmisQueryService;
+    private CMISAccessControlService cmisAccessControlService;
+    private CMISChangeLogService cmisChangeLogService;
     private Paging paging;
     private ReferenceFactory referenceFactory;
+    private ValueConverter valueConverter = new ValueConverter();
 
     
     /**
@@ -159,6 +184,27 @@ public class CMISScript extends BaseScopableProcessorExtension
     public void setCMISQueryService(CMISQueryService cmisQueryService)
     {
         this.cmisQueryService = cmisQueryService;
+    }
+    
+    /**
+     * Sets the CMIS access control service.
+     * 
+     * @param cmisAccessControlService
+     *            the access control service
+     */
+    public void setCMISAccessControlService(CMISAccessControlService cmisAccessControlService)
+    {
+        this.cmisAccessControlService = cmisAccessControlService;
+    }
+    
+    /**
+     * Sets the CMIS change log service.
+     * 
+     * @param cmisChangeLogService
+     *            the change log service
+     */
+    public void setCMISChangeLogService(CMISChangeLogService cmisChangeLogService) {
+        this.cmisChangeLogService = cmisChangeLogService;
     }
 
     /**
@@ -557,13 +603,217 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public PagedResults query(String statement, Page page)
     {
+        Cursor unknownRows = paging.createCursor(Integer.MAX_VALUE, page);
         CMISQueryOptions options = new CMISQueryOptions(statement, cmisService.getDefaultRootStoreRef());
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-        options.setSkipCount(page.getNumber());
-        options.setMaxItems(page.getSize());
+        options.setSkipCount(unknownRows.getStartRow());
+        options.setMaxItems(unknownRows.getPageSize());
         CMISResultSet resultSet = cmisQueryService.query(options);
-        Cursor cursor = paging.createCursor(page.getNumber() + resultSet.getLength() + (resultSet.hasMore() ? 1 : 0) , page);
+        Cursor cursor = paging.createCursor(unknownRows.getStartRow() + resultSet.getLength() + (resultSet.hasMore() ? 1 : 0) , page);
         return paging.createPagedResult(resultSet, cursor);
     }
     
+    /**
+     * Gets the ACL capability.
+     * 
+     * @return the ACL capability
+     */
+    public CMISAclCapabilityEnum getAclCapability()
+    {
+        return cmisAccessControlService.getAclCapability();
+    }    
+
+    /**
+     * Gets the supported permission types
+     * 
+     * @return the supported permission types
+     */
+    public CMISAclSupportedPermissionEnum getAclSupportedPermissions()
+    {
+        return cmisAccessControlService.getSupportedPermissions();
+    }
+
+    /**
+     * Gets the ACL propagation.
+     * 
+     * @return the ACL propagation
+     */
+    public CMISAclPropagationEnum getAclPropagation()
+    {
+        return cmisAccessControlService.getAclPropagation();
+    }
+    
+    /**
+     * Get all the permissions defined by the repository.
+     * @return a list of permissions
+     */
+    public List<CMISPermissionDefinition> getRepositoryPermissions()
+    {
+        return cmisAccessControlService.getRepositoryPermissions();
+    }
+    
+    
+    /**
+     * Get the list of permission mappings.
+     * @return get the permission mapping as defined by the CMIS specification.
+     */
+    public List<? extends CMISPermissionMapping> getPermissionMappings()
+    {
+       return cmisAccessControlService.getPermissionMappings(); 
+    }
+    
+    /**
+     * Gets the name of the principal who is used for anonymous access. This principal can then be passed to the ACL
+     * services to specify what permissions anonymous users should have.
+     * 
+     * @return name of the principal who is used for anonymous access
+     */
+    public String getPrincipalAnonymous()
+    {
+        return cmisAccessControlService.getPrincipalAnonymous();
+    }
+
+    /**
+     * Gets the name of the principal who is used to indicate any authenticated user. This principal can then be passed
+     * to the ACL services to specify what permissions any authenticated user should have.
+     * 
+     * @return name of the principal who is used to indicate any authenticated user
+     */
+    public String getPrincipalAnyone()
+    {
+        return cmisAccessControlService.getPrincipalAnyone();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void applyACL(ScriptNode node, Serializable principalIds, Serializable permissions)
+    {
+        List<String> principalList = (List<String>) valueConverter.convertValueForRepo(principalIds);
+        List<String> permissionList = (List<String>) valueConverter.convertValueForRepo(permissions);
+        List<CMISAccessControlEntry> acesToApply = new ArrayList<CMISAccessControlEntry>(principalList.size());
+        for(int i=0; i<principalList.size(); i++)
+        {
+            acesToApply.add(new CMISAccessControlEntryImpl(principalList.get(i), permissionList.get(i)));
+        }
+        cmisAccessControlService.applyAcl(node.getNodeRef(), acesToApply);
+    }
+    
+    /**
+     * Gets the change log capability.
+     * 
+     * @return the change log capability
+     */
+    public CMISCapabilityChanges getChangeLogCapability()
+    {
+        return cmisChangeLogService.getCapability();
+    }
+
+    /**
+     * Gets the last change log token.
+     * 
+     * @return the last change log token
+     */
+    public String getLastChangeLogToken()
+    {
+        return cmisChangeLogService.getLastChangeLogToken();
+    }
+    
+    /**
+     * Gets the list of base types for which changes are available.
+     * 
+     * @return the list of base types for which changes are available
+     */
+    public String[] getChangesOnType()
+    {
+        List<CMISBaseObjectTypeIds> typeList = cmisChangeLogService.getChangesOnTypeCapability();
+        String[] changesOnType = new String[typeList.size()];
+        int i=0;
+        for (CMISBaseObjectTypeIds type: typeList)
+        {
+            changesOnType[i++] = type.getLabel();
+        }
+        return changesOnType;
+    }
+
+    /**
+     * Determines whether the repository's change log can return all changes ever made to any object in the repository
+     * or only changes made after a particular point in time.
+     * 
+     * @return <code>false</code> if the change log can return all changes ever made to every object.<code>true</code>
+     *         if the change log includes all changes made since a particular point in time, but not all changes ever
+     *         made.
+     */
+    public boolean getChangesIncomplete()
+    {
+        return cmisChangeLogService.getChangesIncomplete();
+    }
+    
+    /**
+     * Gets the change log attributes.
+     * 
+     * @param changeLogToken
+     *            the change log token
+     * @param maxItems
+     *            the maximum number of events to include to return or <code>null</code>
+     * @return the change log attributes
+     */
+    public Scriptable getChangeLog(String changeLogToken, Integer maxItems)
+    {
+        Scriptable scope = getScope();
+        Context cx = Context.enter();
+        try
+        {
+            Scriptable changeLogMap = cx.newObject(scope);
+            CMISChangeLog changeLog = cmisChangeLogService.getChangeLogEvents(changeLogToken, maxItems);
+            List<CMISChangeEvent> changeEvents = changeLog.getChangeEvents();
+
+            // Wrap the events
+            int size = changeEvents.size();
+            Scriptable changeEventArr = cx.newArray(scope, size);
+            for (int i = 0; i < size; i++)
+            {
+                ScriptableObject.putProperty(changeEventArr, i, Context.javaToJS(changeEvents.get(i), scope));
+            }
+            ScriptableObject.putProperty(changeLogMap, "changeEvents", changeEventArr);
+
+            // Wrap the nodes
+            Scriptable changeNodes = cx.newArray(scope, size);
+            for (int i = 0; i < size; i++)
+            {
+                ScriptableObject.putProperty(changeNodes, i, new ScriptNode(changeEvents.get(i).getNode(), services,
+                        scope));
+            }
+            ScriptableObject.putProperty(changeLogMap, "changeNodes", changeNodes);
+
+            // Provide the other attributes
+            ScriptableObject.putProperty(changeLogMap, "hasMoreItems", Context
+                    .javaToJS(changeLog.hasMoreItems(), scope));
+            ScriptableObject
+                    .putProperty(changeLogMap, "eventCount", Context.javaToJS(changeLog.getEventCount(), scope));
+
+            // Handle paging parameters
+            String nextChangeToken = changeLog.getNextChangeToken();
+            if (nextChangeToken != null)
+            {
+                ScriptableObject.putProperty(changeLogMap, "nextChangeToken", Context.javaToJS(nextChangeToken, scope));
+            }
+            String previousPageChangeLogToken = cmisChangeLogService.getPreviousPageChangeLogToken(changeLogToken,
+                    maxItems);
+            if (previousPageChangeLogToken != null)
+            {
+                ScriptableObject.putProperty(changeLogMap, "previousPageToken", Context.javaToJS(
+                        previousPageChangeLogToken, scope));
+            }
+            String lastPageChangeLogToken = cmisChangeLogService.getLastPageChangeLogToken(changeLogToken, maxItems);
+            if (lastPageChangeLogToken != null)
+            {
+                ScriptableObject.putProperty(changeLogMap, "lastPageToken", Context.javaToJS(lastPageChangeLogToken,
+                        scope));
+            }
+            return changeLogMap;
+        }
+        finally
+        {
+            Context.exit();
+        }
+    }
 }

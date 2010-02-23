@@ -47,6 +47,10 @@ script:
     var includeAllowableActions = cmisQuery.includeAllowableActions.toString();
     model.includeAllowableActions = (includeAllowableActions == null || includeAllowableActions == "true" ? true : false);
     
+    // rendition filter
+    var renditionFilter = cmisQuery.renditionFilter.toString();
+    model.renditionFilter = renditionFilter != null && renditionFilter.length > 0 ? renditionFilter : "cmis:none";
+
     // process paging
     var skipCount = parseInt(cmisQuery.skipCount);
     var maxItems = parseInt(cmisQuery.maxItems);

@@ -18,7 +18,16 @@ script:
         model.filter = "*";
     }
    
+    // ACL
+    model.includeACL = args[cmis.ARG_INCLUDE_ACL] == "true";
+
+    // rendition filter
+    model.renditionFilter = args[cmis.ARG_RENDITION_FILTER];
+    if (model.renditionFilter === null || model.renditionFilter.length == 0)
+    {
+        model.renditionFilter = "cmis:none";
+    }
+
     // include allowable actions
-    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
-    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
+    model.includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS] == "true";
 }

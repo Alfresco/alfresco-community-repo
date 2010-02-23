@@ -468,7 +468,8 @@ public class PropertyUtil
             return PropertyCheckingStateEnum.PROPERTY_NATIVE;
         }
 
-        boolean updatable = ((checkedOut) ? (CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT == propertyDefinition.getUpdatability())
+        // [FIXED BUG] condition and first calculating value were swapped
+        boolean updatable = ((CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT == propertyDefinition.getUpdatability()) ? (checkedOut)
                 : (CMISUpdatabilityEnum.READ_AND_WRITE == propertyDefinition.getUpdatability()));
 
         if (!updatable)

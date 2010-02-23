@@ -37,9 +37,17 @@
   <div id="body" class="wrapper">
     <div id="introduction">
       <h2>Explore and Test CMIS</h2>
-      <p>OASIS CMIS (Content Management Interoperability Services) v1.0 is now in <strong>Public Review</strong>. <a href="http://www.oasis-open.org/committees/comments/index.php?wg_abbrev=cmis">Comments</a> on the <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/cmis-spec-v1.0.html">specification</a> are welcome.</p>
+      <p>OASIS CMIS (Content Management Interoperability Services) v1.0 has now completed its second Public Review. Preparations are taking place for submitting the specification for approval as an OASIS standard.</p>
       <p>This site hosts a <a href="#repo">CMIS Repository</a> and <a href="#testatompub">CMIS AtomPub TCK</a> to assist the development of the specification and promote interoperability between up-and-coming implementations. Feel free to use them for building and testing your own CMIS clients and servers.</p>
       <p>Frequent updates are made to both the Repository and TCK as issues are resolved or new capabilities added. Currently, <strong class="highlight">${cmisSpecTitle}</strong> of the CMIS specification is supported.</p>
+      <p>Recent updates:
+         <ul>
+           <li>Added support for Renditions</li>
+           <li>Added support for ACLs</li>
+           <li>Added support for Change Log</li>
+           <li>Full sweep of Query language to ensure spec compliance</li>
+         </ul>
+      </p>
       
       <a name="repo"></a>
       <h3>Alfresco CMIS Repository</h3>
@@ -63,9 +71,9 @@
       
       <h5><span id="repocapabilities" class="toggle" onclick="return toggleDisplay(this)">[+]</span> CMIS Repository Capabilities</h5>
       <table id="repocapabilities_body" style="display: none;">
-        <tr><td>ACL</td><td>none</td></tr>
+        <tr><td>ACL</td><td>${aclCapability}</td></tr>
         <tr><td>AllVersionsSearchable</td><td>${allVersionsSearchable?string}</td></tr>
-        <tr><td>Changes</td><td>[#-- TODO --]none</td></tr>
+        <tr><td>Changes</td><td>objectidsonly</td></tr>
         <tr><td>ContentStreamUpdatability</td><td>anytime</td></tr>
         <tr><td>GetDescendants</td><td>true</td></tr>
         <tr><td>GetFolderTree</td><td>true</td></tr>
@@ -74,9 +82,11 @@
         <tr><td>PWCUpdateable</td><td>true</td></tr>
         <tr><td>Query</td><td>${querySupport}</td></tr>
         <tr><td>Join</td><td>${joinSupport}</td></tr>
-        <tr><td>Renditions</td><td>none</td></tr>
+        <tr><td>Renditions</td><td>read</td></tr>
         <tr><td>Unfiling</td><td>false</td></tr>
         <tr><td>VersionSpecificFiling</td><td>false</td></tr>
+        <tr><td>SupportedPermissions</td><td>${aclSupportedPermissions}</td></tr>
+        <tr><td>PermissionPropagation</td><td>${aclPropagation}</td></tr>
       </table>
 
       <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">CMIS FileShare browser</a>.</p>
@@ -100,7 +110,7 @@
         <p class="checkbox"><label>Fail on Validation Error</label><input type="checkbox" name="chemistry.tck.failOnValidationError" value="true"[#if tckOptions.failOnValidationError] checked="checked"[/#if]></p>
         <p class="checkbox"><label>Trace Reqs/Responses</label><input type="checkbox" name="chemistry.tck.traceRequests" value="true"[#if tckOptions.traceRequests] checked="checked"[/#if]><p>
         <p><label>Tests</label><input name="chemistry.tck.tests" value="RepositoryServiceTest.testRepository"></p>
-        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">[+]</span> Available Tests</label>
+        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">[+]</span> Available Tests (${tckTests?size})</label>
         <table id="availtests_body" style="display: none;">
         <tr><td>Note: Use wildcard * to execute multiple tests</td></tr>
         [#list tckTests as test]<tr><td>${test}</td></tr>[/#list]
@@ -116,14 +126,18 @@
         <li><a href="http://www.oasis-open.org/committees/cmis">OASIS Technical Committee</a></li>
         <li><a href="http://xml.coverpages.org/cmis.html">Cover Pages</a></li>
       </ul>
-      <h3>CMIS v1.0 (cd04)</h3>
+      <h3>CMIS v1.0 (cd07)</h3>
       <ul>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/cmis-spec-v1.0.doc">cmis-spec-v1.0.doc (Authoritative)</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/cmis-spec-v1.0.pdf">cmis-spec-v1.0.pdf</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd04/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
+        <li><a href="http://www.oasis-open.org/committees/document.php?document_id=36412">CMIS-cd07.zip</a></li>
+      </ul>
+      <h3>CMIS v1.0 (cd06)</h3>
+      <ul>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/cmis-spec-v1.0.doc">cmis-spec-v1.0.doc (Authoritative)</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/cmis-spec-v1.0.pdf">cmis-spec-v1.0.pdf</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
       </ul>
       <h3>Alfresco Resources</h3>
       <ul>
@@ -132,8 +146,9 @@
         <li><a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis">Restful Binding Reference</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
-        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.62f_to_v0.7.txt">Changes: v0.62 to v0.7</li>
+        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v1.0cd04_to_v1.0cd06.txt">Changes: v1.0 cd04 to cd06</li>
         <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.7_to_1.0cd04.txt">Changes: v0.7 to v1.0 cd04</li>
+        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.62f_to_v0.7.txt">Changes: v0.62 to v0.7</li>
       </ul>
       <h3>Apache Chemistry</h3>
       <ul>

@@ -45,12 +45,29 @@ public class ContentReaderDataSource implements DataSource
     private String name;
     private long offset = 0;
     private long length = Long.MAX_VALUE / 2;
-    private long sizeToRead = 0;    
+    private long sizeToRead = 0;
 
     public ContentReaderDataSource(ContentReader contentReader, String name, BigInteger offset, BigInteger length, long contentSize)
-    {        
+    {
+        createContentReaderDataSource(contentReader.getContentInputStream(), contentReader.getMimetype(), name, offset, length, contentSize);
+    }
+
+    public ContentReaderDataSource(InputStream contentInputStream, String mimeType, String name, BigInteger offset, BigInteger length)
+    {
+        try
+        {
+            createContentReaderDataSource(contentInputStream, mimeType, name, offset, length, contentInputStream.available());
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void createContentReaderDataSource(InputStream contentInputStream, String mimeType, String name, BigInteger offset, BigInteger length, long contentSize)
+    {
         this.name = name;
-        this.mimetype = contentReader.getMimetype();
+        this.mimetype = mimeType;
         if (offset != null)
         {
             this.offset = offset.longValue();
@@ -63,17 +80,17 @@ public class ContentReaderDataSource implements DataSource
         {
             this.sizeToRead = this.length;
         }
-        else 
+        else
         {
             this.sizeToRead = contentSize - this.offset;
         }
-        if (this.sizeToRead < 0)            
+        if (this.sizeToRead < 0)
         {
             throw new RuntimeException("Offset value exceeds content size");
-        }          
+        }
         try
         {
-            inputStream = new RangedInputStream(contentReader.getContentInputStream());
+            inputStream = new RangedInputStream(contentInputStream);
         }
         catch (IOException e)
         {
@@ -100,7 +117,7 @@ public class ContentReaderDataSource implements DataSource
     {
         return null;
     }
-    
+
     public long getSizeToRead()
     {
         return sizeToRead;
@@ -111,7 +128,7 @@ public class ContentReaderDataSource implements DataSource
 
         private InputStream inputStream;
         private int bytesread;
-        
+
         private RangedInputStream(InputStream inputStream) throws IOException
         {
             super();
@@ -133,19 +150,19 @@ public class ContentReaderDataSource implements DataSource
                 return -1;
             }
         }
-        
+
         @Override
         public int read(byte[] b) throws IOException
         {
             return read(b, 0, b.length);
         }
-        
+
         @Override
         public int read(byte[] b, int off, int len) throws IOException
         {
             if (len > sizeToRead - bytesread)
-            {   
-                len = (int)(sizeToRead - bytesread);                
+            {
+                len = (int) (sizeToRead - bytesread);
             }
             int readed = inputStream.read(b, off, len);
             bytesread += readed;
@@ -155,7 +172,7 @@ public class ContentReaderDataSource implements DataSource
         @Override
         public int available() throws IOException
         {
-            return (int)(sizeToRead - bytesread + 1);
+            return (int) (sizeToRead - bytesread + 1);
         }
 
         @Override
@@ -174,7 +191,6 @@ public class ContentReaderDataSource implements DataSource
             n = inputStream.skip(n);
             bytesread += n;
             return n;
-        }        
-    }   
-       
+        }
+    }
 }

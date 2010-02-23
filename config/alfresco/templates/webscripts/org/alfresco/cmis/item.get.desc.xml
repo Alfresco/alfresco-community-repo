@@ -28,20 +28,20 @@ PropertyCollection includes changeToken (if applicable to repository)<br>
   <!-- TODO: spec issue: returnVersion or returnCurrent? -->
   
   <!-- by object id -->
-  <url>/cmis/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/cmis/s/{store}/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
   <!-- by object path -->
-  <url>/cmis/p{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/cmis/s/{store}/p{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/p{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/p{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
   
   <!-- for CMIS URI template generators -->
-  <url>/cmis/s/{store}/arg/i?id={id}&amp;filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/cmis/s/{store}/arg/p?path={path}&amp;filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/cmis/arg/n?noderef={noderef}&amp;filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/s/{store}/arg/i?id={id}&amp;filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/arg/p?path={path}&amp;filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/arg/n?noderef={noderef}&amp;filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
 
   <!-- alfresco style -->
-  <url>/api/node/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
   
   <authentication>guest</authentication>
   <transaction allow="readonly"/>

@@ -44,58 +44,59 @@ namespace CmisTest
         {
             initialize();
 
-            cmisRepositoryEntryType[] repositories = repositoryService.getRepositories();
-            string repositoryId = repositories[0].id;
+            cmisRepositoryEntryType[] repositories = repositoryService.getRepositories(null);
+            string repositoryId = repositories[0].repositoryId;
             Console.WriteLine("Repositories description were received. Repositories amount: '" + repositories.Length + "'. First Repository Id='" + repositoryId + "'.");
-            string rootFolder = repositoryService.getRepositoryInfo(repositoryId).rootFolderId;
+            string rootFolder = repositoryService.getRepositoryInfo(repositoryId, null).rootFolderId;
             Console.WriteLine("Root folder Id='" + rootFolder + "'.\n");
 
-            try
-            {
-                Console.WriteLine("Actual Reaction of RepositoryService.getRepositoryInfo() service method with invalid Repository Id:");
-                repositoryService.getRepositoryInfo("Invalid Repository Id");
-                Console.WriteLine(INVALID_REACTION_MESSAGE);
-            }
-            catch (FaultException<cmisFaultType> e)
-            {
-                Console.WriteLine("    " + e.Message);
-            }
+            Console.WriteLine("Trying to get RepositoryInfo for the first repository:");
+            cmisRepositoryInfoType repositoryInfo = repositoryService.getRepositoryInfo(repositoryId, null);
+            Console.WriteLine("Repository info was received, name='" + repositoryInfo.repositoryName + "'.\n");
 
             try
             {
                 Console.WriteLine("Actual Reaction of ObjectService.getProperties() service method with invalid Object Id:");
-                objectService.getProperties(repositoryId, ("Invalid Object Id"), "*", false, null, false);
+                objectService.getProperties(repositoryId, "Invalid Object Id", "*", null);
                 Console.WriteLine(INVALID_REACTION_MESSAGE);
             }
             catch (FaultException<cmisFaultType> e)
             {
-                Console.WriteLine("    " + e.Message + "\n");
+                Console.WriteLine("Expected error was returned. Message: " + e.Message + "\n");
             }
 
-            cmisObjectType[] childrenResponse = null; 
+            cmisObjectInFolderListType childrenResponse = null;
             try
             {
-                bool hasMoreItems;
-                Console.WriteLine("Trying to receive Children Objects of Root Folder...");
-                childrenResponse = navigationService.getChildren(repositoryId, rootFolder, "*", false, null, false, false, "0", "0", null, out hasMoreItems);
-                Console.WriteLine("Children of Root Folder were received. Elements amount: '" + childrenResponse.Length + "'. Has More Items='" + hasMoreItems + "' (how it WAS " + ((hasMoreItems) ? ("NOT ") : ("")) + "expected).");
-            } catch (FaultException<cmisFaultType> e) {
-                Console.WriteLine("Can't receive Children of Root Folder. Cause error message: " + e.Message);
+                Console.WriteLine("Trying to receive the first 20 Children of Root Folder...");
+                childrenResponse = navigationService.getChildren(repositoryId, rootFolder, "*", null, false, enumIncludeRelationships.none, null, false, "20", "0", null);
+            }
+            catch (FaultException<cmisFaultType> e)
+            {
+                Console.WriteLine("Can't receive children of Root Folder. Cause error message: " + e.Message);
             }
 
-            if (null != childrenResponse) {
+            if (null != childrenResponse && null != childrenResponse.objects)
+            {
+                Console.WriteLine("Children of Root Folder were received."); 
+                Console.WriteLine("Total amount: '" + childrenResponse.numItems + "'");
+                Console.WriteLine("Received: '" + childrenResponse.objects.Length + "'"); 
+                Console.WriteLine("Has More Items='" + childrenResponse.hasMoreItems + "'");
                 Console.WriteLine("Root folder listing: ");
-                foreach (cmisObjectType cmisObject in childrenResponse) {
-                    if (null != cmisObject) {
-                        cmisProperty nameProperty = searchForProperty(cmisObject.properties, "cmis:Name");
-                        cmisProperty baseTypeProperty = searchForProperty(cmisObject.properties, "cmis:BaseTypeId");
-                        Console.WriteLine((("cmis:folder".Equals(getPropertyValue(baseTypeProperty))) ? ("Folder") : ("Document")) + " Child with Name='" + getPropertyValue(nameProperty) + "'");
+                foreach (cmisObjectInFolderType cmisObject in childrenResponse.objects)
+                {
+                    if (null != cmisObject && null != cmisObject.@object)
+                    {
+                        cmisProperty nameProperty = searchForProperty(cmisObject.@object.properties, "cmis:name");
+                        cmisProperty baseTypeProperty = searchForProperty(cmisObject.@object.properties, "cmis:baseTypeId");
+                        Console.WriteLine((("[" + getPropertyValue(baseTypeProperty) + "] ")) + getPropertyValue(nameProperty) + "'");
                     }
                 }
             }
         }
 
-        private static void initialize() {
+        private static void initialize()
+        {
             ServicePointManager.ServerCertificateValidationCallback = delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
             {
                 return true;
@@ -115,20 +116,24 @@ namespace CmisTest
         private static string getPropertyName(cmisProperty property)
         {
             string result = null;
-            if (null != property) {
-                result = (null != property.pdid) ? (property.pdid):(property.localname);
-                result = (null != result) ? (result):(property.displayname);
+            if (null != property)
+            {
+                result = (null != property.propertyDefinitionId) ? (property.propertyDefinitionId) : (property.localName);
             }
             return result;
         }
 
-        private static object getPropertyValue(cmisProperty property) {
-            if (null != property) {
+        private static object getPropertyValue(cmisProperty property)
+        {
+            if (null != property)
+            {
                 Type propertyType = property.GetType();
                 PropertyInfo valueProperty = propertyType.GetProperty("value");
-                if ((null != valueProperty) && valueProperty.CanRead) {
+                if ((null != valueProperty) && valueProperty.CanRead)
+                {
                     object[] values = (object[])valueProperty.GetValue(property, null);
-                    if ((null != values) && (values.Length > 0)) {
+                    if ((null != values) && (values.Length > 0))
+                    {
                         return values[0];
                     }
                 }
@@ -136,11 +141,15 @@ namespace CmisTest
             return null;
         }
 
-        private static cmisProperty searchForProperty(cmisPropertiesType properties, string propertyName) {
-            if((null != properties) && (null != properties.Items) && (properties.Items.Length > 0) && (null != propertyName) && !"".Equals(propertyName)) {
-                foreach(cmisProperty property in properties.Items) {
+        private static cmisProperty searchForProperty(cmisPropertiesType properties, string propertyName)
+        {
+            if ((null != properties) && (null != properties.Items) && (properties.Items.Length > 0) && (null != propertyName) && !"".Equals(propertyName))
+            {
+                foreach (cmisProperty property in properties.Items)
+                {
                     string name = getPropertyName(property);
-                    if((null != name) && name.Equals(propertyName)) {
+                    if ((null != name) && name.Equals(propertyName))
+                    {
                         return property;
                     }
                 }

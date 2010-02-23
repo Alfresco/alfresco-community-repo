@@ -27,6 +27,7 @@ package org.alfresco.repo.cmis.ws;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISFolderTypeDefinition;
@@ -45,6 +47,7 @@ import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -55,6 +58,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.VersionType;
@@ -72,6 +76,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     private static final String VERSION_DELIMETER = ".";
 
     private DictionaryService dictionaryService;
+
+    private FileTypeIconRetriever iconRetriever;
 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -184,7 +190,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public void createFolder(String repositoryId, CmisPropertiesType properties, String folderId, List<String> policies, CmisAccessControlListType addACEs,
             CmisAccessControlListType removeACEs, Holder<CmisExtensionType> extension, Holder<String> objectId) throws CmisException
     {
-        // TODO: process Policies and ACL
+        // TODO: process Policies
 
         checkRepositoryId(repositoryId);
         NodeRef folderNodeRef = null;
@@ -215,6 +221,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             NodeRef newFolderNodeRef = fileFolderService.create(folderNodeRef, name, type.getTypeId().getQName()).getNodeRef();
             propertiesUtil.setProperties(newFolderNodeRef, properties, createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_NAME,
                     CMISDictionaryModel.PROP_OBJECT_TYPE_ID })));
+            applyAclCarefully(newFolderNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
             objectId.value = propertiesUtil.getProperty(newFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, null);
         }
         catch (FileExistsException e)
@@ -252,7 +259,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public void createRelationship(String repositoryId, CmisPropertiesType properties, List<String> policies, CmisAccessControlListType addACEs,
             CmisAccessControlListType removeACEs, Holder<CmisExtensionType> extension, Holder<String> objectId) throws CmisException
     {
-        // TODO: process Policies and ACL
+        // TODO: process Policies
 
         Map<String, Object> propertiesMap = propertiesUtil.getPropertiesMap(properties);
         String sourceObjectId = (String) propertiesMap.get(CMISDictionaryModel.PROP_SOURCE_ID);
@@ -291,12 +298,10 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             {
                 throw cmisObjectsUtils.createCmisException("Source object type isn't allowed as source type", EnumServiceException.CONSTRAINT);
             }
-
             if (!dictionaryService.isSubClass(nodeService.getType(targetNodeRef), associationDef.getTargetClass().getName()))
             {
                 throw cmisObjectsUtils.createCmisException("Target object type isn't allowed as target type", EnumServiceException.CONSTRAINT);
             }
-
             String createdId = nodeService.createAssociation(sourceNodeRef, targetNodeRef, relationshipTypeQName).toString();
             objectId.value = createdId;
         }
@@ -397,7 +402,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public FailedToDelete deleteTree(String repositoryId, String folderId, Boolean allVersions, EnumUnfileObject unfileObject, Boolean continueOnFailure,
             CmisExtensionType extension) throws CmisException
     {
-        //TODO: Process allVersions
+        // TODO: Process allVersions
         checkRepositoryId(repositoryId);
         checkUnfilingIsNotRequested(unfileObject);
         checkForRootObject(repositoryId, folderId);
@@ -419,27 +424,25 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
      * @return list of properties for the Folder
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND)
      */
+    // FIXME: createCmisObject instead of manual set-upping
     public CmisObjectType getObject(String repositoryId, String objectId, String filter, Boolean includeAllowableActions, EnumIncludeRelationships includeRelationships,
             String renditionFilter, Boolean includePolicyIds, Boolean includeACL, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
 
-        PropertyFilter propertyFilter = createPropertyFilter(filter);
-
         Object identifierInstance = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.ANY_OBJECT);
-        String identifier = identifierInstance.toString();
-
-        CmisPropertiesType properties = propertiesUtil.getPropertiesType(identifier, propertyFilter);
-        CmisObjectType object = new CmisObjectType();
-        object.setProperties(properties);
-        if (includeAllowableActions)
-        {
-            object.setAllowableActions(determineObjectAllowableActions(identifierInstance));
-        }
+        PropertyFilter propertyFilter = createPropertyFilter(filter);
+        boolean includeActions = (null != includeAllowableActions) ? (includeAllowableActions.booleanValue()) : (false);
+        CmisObjectType object = createCmisObject(identifierInstance, propertyFilter, includeActions, renditionFilter);
 
         // TODO: process relationships
-        // TODO: process ACL
-        // TODO: process rendition
+        // TODO: process policyIds
+
+        boolean includeAcl = (null != includeACL) ? (includeACL.booleanValue()) : (false);
+        if (includeAcl && (identifierInstance instanceof NodeRef))
+        {
+            appendWithAce((NodeRef) identifierInstance, object);
+        }
 
         return object;
     }
@@ -457,25 +460,18 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             String renditionFilter, Boolean includePolicyIds, Boolean includeACL, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef objectNodeRef = resolvePathInfo(cmisService.getDefaultRootNodeRef(), path);
-        if ((null == path) || (null == objectNodeRef))
+        NodeRef objectNodeRef = resolvePathInfo(path);
+        if (null == objectNodeRef)
         {
             throw cmisObjectsUtils.createCmisException("Path to Folder was not specified or Folder Path is invalid", EnumServiceException.INVALID_ARGUMENT);
         }
-
-        Object identifierInstance = cmisObjectsUtils.getIdentifierInstance(objectNodeRef.toString(), AlfrescoObjectType.ANY_OBJECT);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
-        CmisObjectType object = new CmisObjectType();
-        object.setProperties(propertiesUtil.getPropertiesType(identifierInstance.toString(), propertyFilter));
-
-        if (includeAllowableActions)
+        CmisObjectType object = createCmisObject(objectNodeRef, propertyFilter, includeAllowableActions, renditionFilter);
+        if (includeACL)
         {
-            object.setAllowableActions(determineObjectAllowableActions(identifierInstance));
+            appendWithAce(objectNodeRef, object);
         }
-
         // TODO: process relationships
-        // TODO: process ACL
-        // TODO: process rendition
 
         return object;
     }
@@ -506,8 +502,6 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public CmisContentStreamType getContentStream(String repositoryId, String objectId, String streamId, BigInteger offset, BigInteger length, CmisExtensionType extension)
             throws CmisException
     {
-        // TODO: process streamId
-
         checkRepositoryId(repositoryId);
         NodeRef nodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
 
@@ -517,14 +511,52 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             throw cmisObjectsUtils.createCmisException("Content stream not allowed", EnumServiceException.STREAM_NOT_SUPPORTED);
         }
 
-        CmisContentStreamType response = new CmisContentStreamType();
-        ContentReader reader = safeGetContentReader(nodeRef);
         String filename = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_NAME, null);
+
+        ContentReaderDataSource dataSource = null;
+        if (streamId != null && streamId.length() > 0)
+        {
+            FileTypeImageSize streamIcon = null;
+            if (streamId.equals(CMISRenditionKind.ICON16.getLabel()))
+            {
+                streamIcon = FileTypeImageSize.Small;
+            }
+            else if (streamId.equals(CMISRenditionKind.ICON32.getLabel()))
+            {
+                streamIcon = FileTypeImageSize.Medium;
+            }
+            if (streamIcon != null)
+            {
+                InputStream iconInputStream = iconRetriever.getIconContent(filename, streamIcon);
+                String iconMimetype = iconRetriever.getIconMimetype(filename, streamIcon);
+                if (iconInputStream != null && iconMimetype != null)
+                {
+                    dataSource = new ContentReaderDataSource(iconInputStream, iconMimetype, filename, offset, length);
+                }
+            }
+            else
+            {
+                NodeRef renditionNodeRef = cmisObjectsUtils.getIdentifierInstance(streamId, AlfrescoObjectType.DOCUMENT_OBJECT);
+                ContentReader reader = safeGetContentReader(renditionNodeRef);
+                dataSource = new ContentReaderDataSource(reader, filename, offset, length, reader.getSize());
+            }
+        }
+        else
+        {
+            ContentReader reader = safeGetContentReader(nodeRef);
+            dataSource = new ContentReaderDataSource(reader, filename, offset, length, reader.getSize());
+        }
+
+        CmisContentStreamType response = new CmisContentStreamType();
+
         response.setFilename(filename);
-        response.setMimeType(reader.getMimetype());
-        ContentReaderDataSource dataSource = new ContentReaderDataSource(reader, filename, offset, length, reader.getSize());
-        response.setStream(new DataHandler(dataSource));
-        response.setLength(BigInteger.valueOf(dataSource.getSizeToRead()));
+
+        if (dataSource != null)
+        {
+            response.setMimeType(dataSource.getContentType());
+            response.setStream(new DataHandler(dataSource));
+            response.setLength(BigInteger.valueOf(dataSource.getSizeToRead()));
+        }
 
         return response;
     }
@@ -546,6 +578,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         // TODO: maybe this check will be need in terms of document version instead of final document (version specific filing is not supported)
         // checkOnLatestVersion(objectNodeRef);
 
+        NodeRef sourceFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(sourceFolderId, AlfrescoObjectType.FOLDER_OBJECT);
+        if (!cmisObjectsUtils.isChildOfThisFolder(objectNodeRef, sourceFolderNodeRef))
+        {
+            throw cmisObjectsUtils.createCmisException("The Docuemnt is not a Child of Source Forlder that was specified", EnumServiceException.INVALID_ARGUMENT);
+        }
         NodeRef targetFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(targetFolderId, AlfrescoObjectType.FOLDER_OBJECT);
         String objectType = propertiesUtil.getProperty(objectNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, null);
         String targetType = propertiesUtil.getProperty(targetFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, null);
@@ -555,6 +592,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             throw cmisObjectsUtils.createCmisException("Type Definition for Target Folder was not found", EnumServiceException.RUNTIME);
         }
 
+        // TODO: cmis:allowedChildObjectTypes
         // FIXME: targetTypeDef.getAllowedTargetTypes() should be changed to something like targetTypeDef.getAllowedChildTypes()
         CMISTypeDefinition objectTypeDef = (null != objectType) ? (cmisDictionaryService.findType(objectType)) : (null);
         if (!targetTypeDef.getAllowedTargetTypes().isEmpty() && !targetTypeDef.getAllowedTargetTypes().contains(objectTypeDef))
@@ -562,25 +600,15 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             throw cmisObjectsUtils.createCmisException(("Object with '" + objectType + "' Type can't be moved to Folder with '" + targetType + "' Type"),
                     EnumServiceException.CONSTRAINT);
         }
-        NodeRef sourceFolderNodeRef = null;
-        if ((null != sourceFolderId) && !"".equals(sourceFolderId))
+        if (!cmisObjectsUtils.isPrimaryObjectParent(sourceFolderNodeRef, objectNodeRef))
         {
-            sourceFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(sourceFolderId, AlfrescoObjectType.FOLDER_OBJECT);
-        }
-        if ((null != sourceFolderNodeRef) && !cmisObjectsUtils.isPrimaryObjectParent(sourceFolderNodeRef, objectNodeRef))
-        {
-            if (!cmisObjectsUtils.isChildOfThisFolder(objectNodeRef, sourceFolderNodeRef))
-            {
-                throw cmisObjectsUtils.createCmisException("The Docuemnt is not a Child of Source Forlder that was specified", EnumServiceException.INVALID_ARGUMENT);
-            }
             changeObjectParentAssociation(objectNodeRef, targetFolderNodeRef, sourceFolderNodeRef);
         }
         else
         {
+            // FIXME: it is necessary to reconsider how to convert TransactionRollback exception to nameConstraintViolation
             safeMove(objectNodeRef, targetFolderNodeRef);
         }
-
-        // TODO: Allowed_Child_Object_Types
     }
 
     /**
@@ -692,14 +720,25 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public List<CmisRenditionType> getRenditions(String repositoryId, String objectId, String renditionFilter, BigInteger maxItems, BigInteger skipCount,
             CmisExtensionType extension) throws CmisException
     {
-        // TODO: Process renditions
-        throw cmisObjectsUtils.createCmisException("Renditions objects not supported", EnumServiceException.NOT_SUPPORTED);
+        checkRepositoryId(repositoryId);
+        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
+        List<CmisRenditionType> result = new ArrayList<CmisRenditionType>();
+        List<CmisRenditionType> renditions = getRenditions(objectNodeRef, renditionFilter);
+        if (renditions != null)
+        {
+            Cursor cursor = createCursor(renditions.size(), skipCount, maxItems);
+            for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
+            {
+                result.add(renditions.get(index));
+            }
+        }
+        return renditions;
     }
 
     private void appendDataToDocument(NodeRef targetDocumentNodeRef, CmisPropertiesType properties, EnumVersioningState versioningState, List<String> policies,
             CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, Holder<String> objectId, PropertyFilter propertyFilter) throws CmisException
     {
-        // TODO: process Policies and ACE
+        // TODO: process Policies
 
         propertiesUtil.setProperties(targetDocumentNodeRef, properties, propertyFilter);
 
@@ -725,6 +764,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
         String createdObjectId = ((null != versionLabel) && versionLabel.contains(VERSION_DELIMETER)) ? (targetDocumentNodeRef.toString()
                 + CmisObjectsUtils.NODE_REFERENCE_ID_DELIMITER + versionLabel) : (targetDocumentNodeRef.toString());
+        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(createdObjectId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        applyAclCarefully(objectNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
         objectId.value = createdObjectId;
     }
 
@@ -818,26 +859,29 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
     }
 
-    private NodeRef resolvePathInfo(NodeRef rootNodeRef, String folderPath) throws CmisException
+    private NodeRef resolvePathInfo(String folderPath) throws CmisException
     {
         NodeRef result = null;
-        folderPath = folderPath.substring(1);
-        if ("".equals(folderPath))
+        if (null != folderPath)
         {
-            result = rootNodeRef;
-        }
-        else
-        {
-            FileInfo fileInfo = null;
-            try
+            folderPath = folderPath.substring(1);
+            if ("".equals(folderPath))
             {
-                List<String> splitedPath = Arrays.asList(folderPath.split("/"));
-                fileInfo = fileFolderService.resolveNamePath(rootNodeRef, splitedPath);
+                result = cmisService.getDefaultRootNodeRef();
             }
-            catch (FileNotFoundException e)
+            else
             {
+                FileInfo fileInfo = null;
+                try
+                {
+                    List<String> splitedPath = Arrays.asList(folderPath.split("/"));
+                    fileInfo = fileFolderService.resolveNamePath(cmisService.getDefaultRootNodeRef(), splitedPath);
+                }
+                catch (FileNotFoundException e)
+                {
+                }
+                result = (null != fileInfo) ? (fileInfo.getNodeRef()) : (null);
             }
-            result = fileInfo != null ? fileInfo.getNodeRef() : null;
         }
         return result;
     }
@@ -926,15 +970,6 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
     }
 
-    // TODO: see moveObject
-    // private void checkOnLatestVersion(NodeRef currentNode) throws CmisException
-    // {
-    // if (!cmisObjectsUtils.isFolder(currentNode) && !propertiesUtil.getProperty(currentNode, CMISDictionaryModel.PROP_IS_LATEST_VERSION, false))
-    // {
-    // throw cmisObjectsUtils.createCmisException("Document is a non-current Document Version", EnumServiceException.VERSIONING);
-    // }
-    // }
-
     private void determineException(Throwable lastException) throws CmisException
     {
         if (lastException instanceof AccessDeniedException)
@@ -943,5 +978,10 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
 
         throw cmisObjectsUtils.createCmisException("Couldn't to relocate multi-filed Object", EnumServiceException.UPDATE_CONFLICT);
+    }
+
+    public void setFileTypeIconRetriever(FileTypeIconRetriever iconRetriever)
+    {
+        this.iconRetriever = iconRetriever;
     }
 }

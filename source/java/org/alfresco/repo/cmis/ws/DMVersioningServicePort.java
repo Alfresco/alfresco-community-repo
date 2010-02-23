@@ -76,7 +76,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
         assertVersionableIsTrue(documentNodeRef);
         boolean checkedOut = propertiesUtil.getProperty(documentNodeRef, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, false);
-        NodeRef workingCopyNodeRef = definitelyGetWorkingCopy(checkedOut, documentNodeRef);        
+        NodeRef workingCopyNodeRef = definitelyGetWorkingCopy(checkedOut, documentNodeRef);
         checkOutCheckInService.cancelCheckout(workingCopyNodeRef);
     }
 
@@ -154,7 +154,8 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         {
             throw cmisObjectsUtils.createCmisException("Unable to check in Private Working Copy object that was specified", EnumServiceException.STORAGE, e);
         }
-        // TODO: applyPolicies, addACEs, removeACEs
+        // TODO: applyPolicies
+        applyAclCarefully(nodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
         objectId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
     }
 
@@ -185,7 +186,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         {
             NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
             objectId.value = propertiesUtil.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
-            contentCopied.value = null != nodeService.getProperty(pwcNodeRef, ContentModel.PROP_CONTENT);
+            contentCopied.value = null != fileFolderService.getReader(pwcNodeRef);
         }
         catch (Exception e)
         {
@@ -235,7 +236,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             NodeRef workingCopyNodeReference = cmisObjectsUtils.isWorkingCopy(documentNodeRef) ? documentNodeRef : checkOutCheckInService.getWorkingCopy(documentNodeRef);
             if (null != workingCopyNodeReference)
             {
-                objects.add(createCmisObject(workingCopyNodeReference, propertyFilter, includeAllowableActions));
+                objects.add(createCmisObject(workingCopyNodeReference, propertyFilter, includeAllowableActions, null));
             }
         }
         catch (Exception e)
@@ -251,7 +252,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         {
             for (Version version = versionService.getCurrentVersion(documentNodeRef); null != version; version = versionHistory.getPredecessor(version))
             {
-                objects.add(createCmisObject(version.getFrozenStateNodeRef(), propertyFilter, includeAllowableActions));
+                objects.add(createCmisObject(version.getFrozenStateNodeRef(), propertyFilter, includeAllowableActions, null));
             }
         }
         // TODO: includeRelationships
@@ -322,11 +323,13 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         includeAllowableActions = (null == includeAllowableActions) ? (false) : (includeAllowableActions);
         major = (null == major) ? (false) : (major);
         NodeRef latestVersionNodeRef = getAndCheckLatestNodeRef(documentNodeRef, major);
-        // TODO: includeACL
         // TODO: includeRelationships
         // TODO: includePolicyIds
-        // TODO: renditionFilter
-        CmisObjectType result = createCmisObject(latestVersionNodeRef.toString(), propertyFilter, includeAllowableActions);
+        CmisObjectType result = createCmisObject(latestVersionNodeRef.toString(), propertyFilter, includeAllowableActions, renditionFilter);
+        if (includeACL)
+        {
+            appendWithAce(documentNodeRef, result);
+        }
         return result;
     }
 

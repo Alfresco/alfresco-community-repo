@@ -84,7 +84,8 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         // TODO: policies
         // TODO: addACEs
         // TODO: removeACEs
-        ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, true, properties, contentStream, checkinComment, null, null, null, new Holder<CmisExtensionType>());
+        ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, true, properties, contentStream, checkinComment, null, null, null,
+                new Holder<CmisExtensionType>());
         documentId = documentIdHolder.value;
 
         assertEquals(checkinComment, getStringProperty(helper.getObjectProperties(documentIdHolder.value).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));

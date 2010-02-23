@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -133,6 +134,6 @@ public class ContentDelete extends AbstractWebScript
         }
      
         // no content returned
-        res.setStatus(204);
+        res.setStatus(Status.STATUS_NO_CONTENT);
     }
 }

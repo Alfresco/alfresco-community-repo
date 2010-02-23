@@ -8,9 +8,9 @@
 [#assign namespace][@nsLib.entryNS/][/#assign]
 
 [#if node.isDocument]  
-  [@entryLib.document node=node propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none" ns=namespace/]
+  [@entryLib.document node=node renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none" includeacl=includeACL ns=namespace/]
 [#else]
-  [@entryLib.folder node=node propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none" ns=namespace/]
+  [@entryLib.folder node=node renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none" includeacl=includeACL ns=namespace/]
 [/#if]
 
 [/#compress]

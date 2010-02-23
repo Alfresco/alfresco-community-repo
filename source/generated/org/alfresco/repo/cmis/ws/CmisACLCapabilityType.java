@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
+ *         &lt;element name="supportedPermissions" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumSupportedPermissions"/>
  *         &lt;element name="propagation" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumACLPropagation"/>
  *         &lt;element name="permissions" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPermissionDefinition" maxOccurs="unbounded"/>
  *         &lt;element name="mapping" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisPermissionMapping" maxOccurs="unbounded" minOccurs="0"/>
@@ -32,6 +33,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cmisACLCapabilityType", namespace = "http://docs.oasis-open.org/ns/cmis/core/200908/", propOrder = {
+    "supportedPermissions",
     "propagation",
     "permissions",
     "mapping"
@@ -39,10 +41,36 @@ import javax.xml.bind.annotation.XmlType;
 public class CmisACLCapabilityType {
 
     @XmlElement(required = true)
+    protected EnumSupportedPermissions supportedPermissions;
+    @XmlElement(required = true)
     protected EnumACLPropagation propagation;
     @XmlElement(required = true)
     protected List<CmisPermissionDefinition> permissions;
     protected List<CmisPermissionMapping> mapping;
+
+    /**
+     * Gets the value of the supportedPermissions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link EnumSupportedPermissions }
+     *     
+     */
+    public EnumSupportedPermissions getSupportedPermissions() {
+        return supportedPermissions;
+    }
+
+    /**
+     * Sets the value of the supportedPermissions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link EnumSupportedPermissions }
+     *     
+     */
+    public void setSupportedPermissions(EnumSupportedPermissions value) {
+        this.supportedPermissions = value;
+    }
 
     /**
      * Gets the value of the propagation property.

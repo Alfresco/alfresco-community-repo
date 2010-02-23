@@ -18,14 +18,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="canGetChildren.Folder"/>
  *     &lt;enumeration value="canGetParents.Folder"/>
  *     &lt;enumeration value="canGetFolderParent.Object"/>
- *     &lt;enumeration value="canCreateDocument.Type"/>
  *     &lt;enumeration value="canCreateDocument.Folder"/>
- *     &lt;enumeration value="canCreateFolder.Type"/>
  *     &lt;enumeration value="canCreateFolder.Folder"/>
- *     &lt;enumeration value="canCreateRelationship.Type"/>
  *     &lt;enumeration value="canCreateRelationship.Source"/>
  *     &lt;enumeration value="canCreateRelationship.Target"/>
- *     &lt;enumeration value="canCreatePolicy.Type"/>
  *     &lt;enumeration value="canGetProperties.Object"/>
  *     &lt;enumeration value="canViewContent.Object"/>
  *     &lt;enumeration value="canUpdateProperties.Object"/>
@@ -69,22 +65,14 @@ public enum EnumAllowableActionsKey {
     CAN_GET_PARENTS_FOLDER("canGetParents.Folder"),
     @XmlEnumValue("canGetFolderParent.Object")
     CAN_GET_FOLDER_PARENT_OBJECT("canGetFolderParent.Object"),
-    @XmlEnumValue("canCreateDocument.Type")
-    CAN_CREATE_DOCUMENT_TYPE("canCreateDocument.Type"),
     @XmlEnumValue("canCreateDocument.Folder")
     CAN_CREATE_DOCUMENT_FOLDER("canCreateDocument.Folder"),
-    @XmlEnumValue("canCreateFolder.Type")
-    CAN_CREATE_FOLDER_TYPE("canCreateFolder.Type"),
     @XmlEnumValue("canCreateFolder.Folder")
     CAN_CREATE_FOLDER_FOLDER("canCreateFolder.Folder"),
-    @XmlEnumValue("canCreateRelationship.Type")
-    CAN_CREATE_RELATIONSHIP_TYPE("canCreateRelationship.Type"),
     @XmlEnumValue("canCreateRelationship.Source")
     CAN_CREATE_RELATIONSHIP_SOURCE("canCreateRelationship.Source"),
     @XmlEnumValue("canCreateRelationship.Target")
     CAN_CREATE_RELATIONSHIP_TARGET("canCreateRelationship.Target"),
-    @XmlEnumValue("canCreatePolicy.Type")
-    CAN_CREATE_POLICY_TYPE("canCreatePolicy.Type"),
     @XmlEnumValue("canGetProperties.Object")
     CAN_GET_PROPERTIES_OBJECT("canGetProperties.Object"),
     @XmlEnumValue("canViewContent.Object")

@@ -73,3 +73,22 @@
 [#--       the enclosing document                                                                                      --]
 <cmisra:numItems>${cursor.totalRows}</cmisra:numItems>
 [/#macro]
+
+[#macro changelinks changeLog] 
+<link rel="first" href="${absurl(encodeuri(scripturl(argreplace(url.args, "changeLogToken", ""))))?xml}" type="${format.type}"/>
+[#if changeLog.lastPageToken??]
+<link rel="last" href="${absurl(encodeuri(scripturl(argreplace(url.args, "changeLogToken", changeLog.lastPageToken))))?xml}" type="${format.type}"/>
+[/#if]  
+[#if changeLog.previousPageToken??]
+<link rel="prev" href="${absurl(encodeuri(scripturl(argreplace(url.args, "changeLogToken", changeLog.previousPageToken))))?xml}" type="${format.type}"/>
+[/#if]  
+[#if changeLog.nextChangeToken??]
+<link rel="next" href="${absurl(encodeuri(scripturl(argreplace(url.args, "changeLogToken", changeLog.nextChangeToken))))?xml}" type="${format.type}"/>
+[/#if]
+[/#macro]
+
+[#macro changeNumItems changeLog]
+[#-- NOTE: this macro requires the definition of xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" in --]
+[#--       the enclosing document                                                                                      --]
+<cmisra:numItems>${changeLog.eventCount?c}</cmisra:numItems>
+[/#macro]

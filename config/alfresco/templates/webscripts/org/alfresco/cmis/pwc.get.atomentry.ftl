@@ -7,6 +7,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 [#assign namespace][@nsLib.entryNS/][/#assign]
 
-[@entryLib.pwc node=node includeallowableactions=false includerelationships="none" ns=namespace/]
+[@entryLib.pwc node=node renditionfilter=renditionFilter includeallowableactions=false includerelationships="none" ns=namespace/]
 
 [/#compress]

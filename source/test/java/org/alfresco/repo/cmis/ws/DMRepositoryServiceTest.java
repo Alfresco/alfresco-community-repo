@@ -25,11 +25,15 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class DMRepositoryServiceTest extends AbstractServiceTest
 {
-    public final static String TYPE_ID = "F/wca:webfolder";
+    public final static String TYPE_ID = "cmis:folder";
 
     public DMRepositoryServiceTest()
     {
@@ -93,7 +97,7 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
         assertNotNull(result.get(0));
         result = ((RepositoryServicePort) servicePort).getTypeDescendants(repositoryId, TYPE_ID, null, false, null);
         assertNotNull(result);
-        assertTrue(result.size() == 1);
+        assertFalse(result.isEmpty());
         assertNotNull(result.get(0));
     }
 
@@ -101,5 +105,62 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     {
         CmisTypeDefinitionType type = ((RepositoryServicePort) servicePort).getTypeDefinition(repositoryId, TYPE_ID, null);
         assertNotNull(type);
+    }
+
+    private static final Map<String, EnumBaseObjectTypeIds> BASE_TYPE_IDS = new HashMap<String, EnumBaseObjectTypeIds>();
+    static {
+        BASE_TYPE_IDS.put(EnumBaseObjectTypeIds.CMIS_DOCUMENT.value(), EnumBaseObjectTypeIds.CMIS_DOCUMENT);
+        BASE_TYPE_IDS.put(EnumBaseObjectTypeIds.CMIS_FOLDER.value(), EnumBaseObjectTypeIds.CMIS_FOLDER);
+        BASE_TYPE_IDS.put(EnumBaseObjectTypeIds.CMIS_RELATIONSHIP.value(), EnumBaseObjectTypeIds.CMIS_RELATIONSHIP);
+        BASE_TYPE_IDS.put(EnumBaseObjectTypeIds.CMIS_POLICY.value(), EnumBaseObjectTypeIds.CMIS_POLICY);
+    }
+
+    // CMIS SOAP webscript [https://issues.alfresco.com/jira/browse/SAIL-225]
+    public void testSail225Check() throws Exception
+    {
+        RepositoryServicePort repositoryServicePort = (RepositoryServicePort) getServicePort();
+
+        // Checking whether RepositoryService.getTypeChildren() returns all base type definitions if typeId is not specified
+        CmisTypeDefinitionListType typeChildren = repositoryServicePort.getTypeChildren(repositoryId, null, false, null, null, null);
+        assertNotNull(typeChildren);
+        assertNotNull(typeChildren.getTypes());
+        assertFalse(typeChildren.getTypes().isEmpty());
+        assertEquals(4, typeChildren.getTypes().size());
+        Set<EnumBaseObjectTypeIds> alreadyFound = new HashSet<EnumBaseObjectTypeIds>();
+        for (CmisTypeDefinitionType type : typeChildren.getTypes())
+        {
+            EnumBaseObjectTypeIds typeId = BASE_TYPE_IDS.get(type.getId());
+            assertNotNull("RepositoryService.getTypeChildren() returned superfluous Type Definition with not specified Type Id input parameter", typeId);
+            assertFalse(type.getId() + " Base Type Definition was returned twice", alreadyFound.contains(typeId));
+            alreadyFound.add(typeId);
+        }
+
+        // Checking receiving descendants for Base Types
+        for (EnumBaseObjectTypeIds typeId : EnumBaseObjectTypeIds.values())
+        {
+            assertBaseTypeDescendants(repositoryServicePort, typeId.value());
+        }
+
+        // Checking Type Definition receiving for Base Type Ids
+        for (EnumBaseObjectTypeIds typeId : EnumBaseObjectTypeIds.values())
+        {
+            CmisTypeDefinitionType typeDefinition = repositoryServicePort.getTypeDefinition(repositoryId, typeId.value(), null);
+            assertNotNull(("Type Definition for " + typeId.value() + " Base Type Id was not returned"), typeDefinition);
+            assertEquals(("Invalid Type Definitions was returned for " + typeId.value() + " Base Type Id"), typeId.value(), typeDefinition.getId());
+        }
+    }
+
+    private void assertBaseTypeDescendants(RepositoryServicePort repositoryServicePort, String typeId) throws CmisException
+    {
+        List<CmisTypeContainer> typeDescendants = repositoryServicePort.getTypeDescendants(repositoryId, typeId, BigInteger.valueOf(-1), false, null);
+        int typeFoundTimes = 0;
+        for (CmisTypeContainer container : typeDescendants)
+        {
+            if (container.getType().getId().equals(typeId))
+            {
+                typeFoundTimes++;
+            }
+        }
+        assertTrue((typeId + " was found at all"), (0 < typeFoundTimes));
     }
 }

@@ -5,12 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CmisTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("UTL")]
-[assembly: AssemblyProduct("CmisTest")]
-[assembly: AssemblyCopyright("Copyright © UTL 2008")]
+[assembly: AssemblyCompany("Alfresco Software")]
+[assembly: AssemblyProduct("Sample Cmis Client")]
+[assembly: AssemblyCopyright("Copyright © 2005-2009 Alfresco Software Limited")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

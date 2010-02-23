@@ -3,8 +3,8 @@
 	<classpathentry kind="src" path="source/java"/>
 	<classpathentry kind="src" path="source/generated"/>
 	<classpathentry kind="src" path="source/test/java"/>
-	<classpathentry kind="src" path="source/test-resources"/>
-	<classpathentry kind="src" path="config"/>
+	<classpathentry exported="true" kind="lib" path="source/test-resources"/>
+	<classpathentry exported="true" kind="lib" path="config"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Repository"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/3rd Party"/>

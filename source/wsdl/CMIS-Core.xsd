@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 	<!--
-		$Revision: 137 $ $Date: 2009-10-21 15:50:27 -0700 (Wed, 21 Oct 2009) $
-		$Author: albertcbrown $ $HeadURL:
+		$Revision: 149 $ $Date: 2009-12-22 08:01:48 -0800 (Tue, 22 Dec 2009) $
+		$Author: fmueller $ $HeadURL:
 		http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-Core.xsd
 		$
 	-->
@@ -41,7 +41,7 @@
 			<xs:enumeration value="oncreate" />
 		</xs:restriction>
 	</xs:simpleType>
-		<xs:simpleType name="enumDateTimeResolution">
+	<xs:simpleType name="enumDateTimeResolution">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="year" />
 			<xs:enumeration value="date" />
@@ -304,6 +304,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:boolean" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -314,6 +316,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:string" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -324,6 +328,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:integer" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -334,6 +340,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:dateTime" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -344,6 +352,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:decimal" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -354,6 +364,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:string" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -366,6 +378,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:string" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -376,6 +390,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="value"
 						type="xs:anyURI" />
+					<xs:any processContents="lax" namespace="##other" minOccurs="0"
+						maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -626,6 +642,7 @@
 						type="cmis:cmisPropertyBoolean" />
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
 						type="cmis:cmisChoiceBoolean" />
+
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -666,7 +683,8 @@
 				<xs:sequence>
 					<xs:element minOccurs="0" maxOccurs="1" name="defaultValue"
 						type="cmis:cmisPropertyDateTime" />
-					<xs:element minOccurs="0" maxOccurs="1" name="resolution" type="cmis:enumDateTimeResolution" />
+					<xs:element minOccurs="0" maxOccurs="1" name="resolution"
+						type="cmis:enumDateTimeResolution" />
 					<xs:element minOccurs="0" maxOccurs="unbounded" name="choice"
 						type="cmis:cmisChoiceDateTime" />
 
@@ -858,8 +876,6 @@
 	<!--  query -->
 	<xs:complexType name="cmisQueryType">
 		<xs:sequence>
-			<xs:element name="repositoryId" type="xs:string"
-				minOccurs="0" maxOccurs="1" />
 			<xs:element name="statement" type="xs:string" minOccurs="1"
 				maxOccurs="1" />
 			<xs:element name="searchAllVersions" type="xs:boolean"
@@ -907,7 +923,7 @@
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="aclCapability" type="cmis:cmisACLCapabilityType"
 				minOccurs="0" maxOccurs="1" />
-			<xs:element name="cmisVersionSupported" type="xs:decimal"
+			<xs:element name="cmisVersionSupported" type="xs:string"
 				minOccurs="1" maxOccurs="1" />
 			<xs:element name="thinClientURI" type="xs:anyURI"
 				minOccurs="0" maxOccurs="1" />
@@ -1088,14 +1104,10 @@
 			<xs:enumeration value="canGetChildren.Folder" />
 			<xs:enumeration value="canGetParents.Folder" />
 			<xs:enumeration value="canGetFolderParent.Object" />
-			<xs:enumeration value="canCreateDocument.Type" />
 			<xs:enumeration value="canCreateDocument.Folder" />
-			<xs:enumeration value="canCreateFolder.Type" />
 			<xs:enumeration value="canCreateFolder.Folder" />
-			<xs:enumeration value="canCreateRelationship.Type" />
 			<xs:enumeration value="canCreateRelationship.Source" />
 			<xs:enumeration value="canCreateRelationship.Target" />
-			<xs:enumeration value="canCreatePolicy.Type" />
 			<xs:enumeration value="canGetProperties.Object" />
 			<xs:enumeration value="canViewContent.Object" />
 			<xs:enumeration value="canUpdateProperties.Object" />
@@ -1170,8 +1182,10 @@
 		</xs:sequence>
 	</xs:complexType>
 
+
 	<xs:complexType name="cmisACLCapabilityType">
 		<xs:sequence>
+			<xs:element name="supportedPermissions" type="cmis:enumSupportedPermissions" />
 			<xs:element name="propagation" type="cmis:enumACLPropagation" />
 			<xs:element name="permissions" type="cmis:cmisPermissionDefinition"
 				minOccurs="1" maxOccurs="unbounded" />
@@ -1179,6 +1193,14 @@
 				minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
+
+	<xs:simpleType name="enumSupportedPermissions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="basic" />
+			<xs:enumeration value="repository" />
+			<xs:enumeration value="both" />
+		</xs:restriction>
+	</xs:simpleType>
 
 	<!-- renditions -->
 	<xs:simpleType name="enumCapabilityRendition">

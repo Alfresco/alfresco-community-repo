@@ -1,0 +1,31 @@
+<webscript>
+  <shortname>Get change log events (getContentChanges)</shortname>
+  <description>
+<![CDATA[
+Gets a list of change log events and optionally the ACLs applied to the changed objects.<br>
+<br>
+Inputs:<br>
+<br>
+ID objectId<br>
+(Optional) Integer maxItems: The maximum number of entries to return
+(Optional) Boolean includeACL: Include the ACLs applied to the object reference in the change event?<br>
+(Optional) String changeLogToken: the token of the change log entry to start from<br>
+list.
+<br>
+Outputs:<br>
+<br>
+Result set specified by arguments<br>
+<br>
+Notes:<br>
+<br>
+If “changeLogToken” is specified, the changes returned should start from the specified token. Otherwise, the changes will start from the first available change.<br>
+If “maxItems” is specified, only that number of changes will be returned and paging links embedding other change log tokens will allow navigation to further changes.<br>
+]]>
+  </description>
+  <url>/cmis/changes?maxItems={maxItems?}&amp;includeACL={includeACL?}&amp;changeLogToken={changeLogToken?}</url>
+  
+  <authentication>guest</authentication>
+  <transaction allow="readonly"/>
+  <format default="atomfeed">argument</format>
+  <family>CMIS</family>
+</webscript>

@@ -34,16 +34,16 @@ import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
 
 /**
  * Property filter supporting CMIS filter expression
- *
+ * 
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
  */
 public class PropertyFilter
 {
+    public static final String MATCH_ALL_FILTER = "*";
     public static final String PROPERTY_NAME_TOKENS_DELIMETER = ",";
 
     private static final int MINIMAL_ALLOWED_STRUCTURE_SIZE = 1;
-    private static final String MATCH_ALL_FILTER = "*";
     private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|(((cmis\\:)?[\\p{Alpha}\\p{Digit}_]+)((,){1}( )*((cmis\\:)?[\\p{Alpha}\\p{Digit}_]+))*)$");
 
     private Set<String> properties;

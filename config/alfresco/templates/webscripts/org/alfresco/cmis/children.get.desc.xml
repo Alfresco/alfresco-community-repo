@@ -36,14 +36,14 @@ If no “maxItems” value is provided, then the Repository will determine an ap
   </description>
 
   <!-- by object id -->
-  <url>/cmis/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/cmis/s/{store}/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
   <!-- by path -->
-  <url>/cmis/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/cmis/s/{store}/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/cmis/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
   <!-- alfresco style -->
-  <url>/api/node/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
 
   <authentication>guest</authentication>
   <transaction allow="readonly"/>

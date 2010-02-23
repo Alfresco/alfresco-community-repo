@@ -61,7 +61,6 @@ public class PropertyFilterTest extends TestCase
 
     private CmisObjectsUtils cmisObjectsUtils = new CmisObjectsUtils();
 
-
     public void testValidFilters() throws Exception
     {
         try

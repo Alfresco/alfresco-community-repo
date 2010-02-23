@@ -7,3 +7,6 @@ model.querySupport = cmis.querySupport.label;
 model.joinSupport = cmis.joinSupport.label;
 model.pwcSearchable = cmis.pwcSearchable;
 model.allVersionsSearchable = cmis.allVersionsSearchable;
+model.aclCapability = cmis.aclCapability.label;
+model.aclSupportedPermissions = cmis.aclSupportedPermissions.label;
+model.aclPropagation = cmis.aclPropagation.label;

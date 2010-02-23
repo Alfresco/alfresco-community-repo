@@ -340,7 +340,15 @@ public class CmisServiceTestHelper extends TestCase
     public void deleteDocument(String documentId) throws Exception
     {
         objectServicePort.deleteObject(repositoryId, documentId, true, new Holder<CmisExtensionType>());
-        assertNull("Document has not been deleted", getObjectProperties(documentId));
+        try
+        {
+            getObjectProperties(documentId);
+            fail("Document has not been deleted");
+        }
+        catch (Exception e)
+        {
+            // Doing nothing
+        }
     }
 
     public void deleteFolder(String folderId) throws Exception
@@ -348,33 +356,26 @@ public class CmisServiceTestHelper extends TestCase
         objectServicePort.deleteTree(repositoryId, folderId, true, EnumUnfileObject.DELETE, true, null);
     }
 
-    public CmisObjectType getObjectProperties(String objectId)
+    public CmisObjectType getObjectProperties(String objectId) throws CmisException
     {
         return getObjectProperties(objectId, "*");
     }
 
-    public CmisObjectType getObjectProperties(String objectId, String filter)
+    public CmisObjectType getObjectProperties(String objectId, String filter) throws CmisException
     {
         CmisPropertiesType response = null;
         CmisObjectType result = null;
-        try
-        {
-            response = objectServicePort.getProperties(repositoryId, objectId, filter, null);
-            result = new CmisObjectType();
-            result.setProperties(response);            
-        }
-        catch (Exception e)
-        {
-
-        }
+        response = objectServicePort.getProperties(repositoryId, objectId, filter, null);
+        result = new CmisObjectType();
+        result.setProperties(response);
         return result;
     }
 
     /**
-     * This method simplify receiving of Object Identificator for Company Home Root Folder
+     * This method simplify receiving of Object Identifier for Company Home Root Folder
      * 
      * @param servicesPort - <b>RepositoryServicePort</b> instance that configured with WSS4J Client
-     * @return <b>String</b> representation of <b>Object Identificator</b>
+     * @return <b>String</b> representation of <b>Object Identifier</b>
      * @throws Exception This exception throws when any <b>CMIS Services</b> operations was failed
      */
     public String getCompanyHomeId(String repositoryId)
@@ -629,8 +630,9 @@ public class CmisServiceTestHelper extends TestCase
 
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         Holder<String> changeToken = new Holder<String>("");
+        Holder<CmisExtensionType> extension = new Holder<CmisExtensionType>();
         // public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties)
-        objectServicePort.updateProperties(repositoryId, documentIdHolder, changeToken, properties, null);
+        objectServicePort.updateProperties(repositoryId, documentIdHolder, changeToken, properties, extension);
         assertEquals(documentId, documentIdHolder.value);
 
         return documentIdHolder.value;

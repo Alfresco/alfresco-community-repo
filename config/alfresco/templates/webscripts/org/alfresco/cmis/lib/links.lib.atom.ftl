@@ -19,6 +19,11 @@
 <link rel="${cmisconstants.REL_RELATIONSHIPS}" href="${absurl(url.serviceContext)}[@nodeuri node/]/rels"/>
 [/#macro]
 
+[#-- Link to node acl --]
+[#macro linkacl node]
+<link rel="${cmisconstants.REL_ACL}" href="${absurl(url.serviceContext)}[@nodeuri node/]/acl"/>
+[/#macro]
+
 [#-- Link to node parents --]
 [#macro linkparents node]
 <link rel="${cmisconstants.REL_UP}" href="${absurl(url.serviceContext)}[@nodeuri node/]/parents" type="${cmisconstants.MIMETYPE_FEED}"/>
@@ -41,7 +46,7 @@
 
 [#-- Link to node tree --]
 [#macro linktree node rel=""]
-<link rel="[#if rel == ""]${cmisconstants.REL_FOLDER_TREE}[#else]${rel}[/#if]" href="${absurl(url.serviceContext)}[@nodeuri node/]/tree" type="${cmisconstants.MIMETYPE_CMISTREE}"/>
+<link rel="[#if rel == ""]${cmisconstants.REL_FOLDER_TREE}[#else]${rel}[/#if]" href="${absurl(url.serviceContext)}[@nodeuri node/]/tree" type="${cmisconstants.MIMETYPE_FEED}"/>
 [/#macro]
 
 [#-- Link to node versions --]
@@ -119,6 +124,19 @@
 <link rel="via" href="${absurl(url.serviceContext)}${href}"[#if type != ""] type="${type}"[/#if]/>
 [/#macro]
 
+[#-- Link to rendition --]
+[#macro linkrendition node rendition renditionNode={}]
+[#switch rendition.kind.label]
+[#case "alf:icon16"]
+<link rel="${cmisconstants.REL_ALTERNATE}" href="${absurl(url.context)}${node.icon16}"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind.label}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
+[#break]
+[#case "alf:icon32"]
+<link rel="${cmisconstants.REL_ALTERNATE}" href="${absurl(url.context)}${node.icon32}"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind.label}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
+[#break]
+[#default]
+<link rel="${cmisconstants.REL_ALTERNATE}" href="[@contenturi renditionNode/]"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind.label}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
+[/#switch]
+[/#macro]
 
 [#--                                --]
 [#-- URLs                           --]

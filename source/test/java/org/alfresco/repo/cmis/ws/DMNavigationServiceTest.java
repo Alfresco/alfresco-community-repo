@@ -325,4 +325,43 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         assertNotNull(result);
         return result.getObjects();
     }
+
+    // CMIS Web Services: getFolderParent fails for folders in Company Home [https://issues.alfresco.com/jira/browse/SAIL-227]
+    public void testSail227Checking() throws Exception
+    {
+        NavigationServicePort navigationServicePort = (NavigationServicePort) getServicePort();
+
+        // Checking for Exception in case when Folder Id equal to Root Folder Id
+        try
+        {
+            navigationServicePort.getFolderParent(repositoryId, helper.companyHomeId, "*", null);
+            fail("RepositoryService.getFolderParent() MUST throw INVALID_ARGUMEANT exception for Root Folder Id");
+        }
+        catch (CmisException e)
+        {
+            assertEquals("Invalid exception was thrown. ", EnumServiceException.INVALID_ARGUMENT, e.getFaultInfo().getType());
+        }
+
+        // Checking for receiving parents for folders from Root Folder
+        String[] folders = new String[5];
+        for (int i = 0; i < folders.length; i++)
+        {
+            folders[i] = helper.createFolder(("TestFolder (" + System.currentTimeMillis() + ")"), helper.companyHomeId);
+        }
+        CmisObjectType parentOfDefaultFolder = navigationServicePort.getFolderParent(repositoryId, folderId, "*", null);
+        assertNotNull("Parent for some folder from Root Folder was not returned", parentOfDefaultFolder);
+        assertNotNull(parentOfDefaultFolder.getProperties());
+        String defaultFolderParentId = getIdProperty(parentOfDefaultFolder.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID);
+        assertNotNull("Id Property for some folder from Root Folder is invalid", defaultFolderParentId);
+        assertEquals("Not Root Folder Id was returned for Folder from Root Folder", helper.companyHomeId, defaultFolderParentId);
+        for (String customFolderId : folders)
+        {
+            CmisObjectType folderParent = navigationServicePort.getFolderParent(repositoryId, customFolderId, "*", null);
+            assertNotNull("Parent for some folder from Root Folder was not returned", folderParent);
+            assertNotNull(folderParent.getProperties());
+            String currentFolderParentId = getIdProperty(folderParent.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID);
+            assertNotNull("Id Property for some folder from Root Folder is invalid", currentFolderParentId);
+            assertEquals("Parents MUST be identical! ", defaultFolderParentId, currentFolderParentId);
+        }
+    }
 }

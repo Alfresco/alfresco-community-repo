@@ -24,26 +24,38 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import org.alfresco.cmis.CMISAccessControlFormatEnum;
+import org.alfresco.cmis.CMISAccessControlReport;
+import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
  * @author Dmitry Velichkevich
  */
 @javax.jws.WebService(name = "ACLServicePort", serviceName = "ACLService", portName = "ACLServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.ACLServicePort")
 public class DMAclServicePort extends DMAbstractServicePort implements ACLServicePort
 {
-    private static final String ACL_SERVICE_NOT_IMPLEMENTED_MESSAGE = "ACLService not implemented";
-
-    public DMAclServicePort()
-    {
-    }
-
+    /**
+     * 
+     */
     public CmisACLType applyACL(String repositoryId, String objectId, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation,
             CmisExtensionType extension) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(ACL_SERVICE_NOT_IMPLEMENTED_MESSAGE, EnumServiceException.RUNTIME);
+        checkRepositoryId(repositoryId);
+        NodeRef object = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.ANY_OBJECT);
+        return applyAclCarefully(object, addACEs, removeACEs, aclPropagation);
     }
 
+    /**
+     * 
+     */
     public CmisACLType getACL(String repositoryId, String objectId, Boolean onlyBasicPermissions, CmisExtensionType extension) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(ACL_SERVICE_NOT_IMPLEMENTED_MESSAGE, EnumServiceException.RUNTIME);
+        checkRepositoryId(repositoryId);
+        NodeRef object = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.ANY_OBJECT);
+        CMISAccessControlFormatEnum permissionsKind = ((null == onlyBasicPermissions) || onlyBasicPermissions) ? (CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS)
+                : (CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
+        CMISAccessControlReport aclReport = cmisAclService.getAcl(object, permissionsKind);
+        return convertAclReportToCmisAclType(aclReport);
     }
 }

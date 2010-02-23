@@ -35,17 +35,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.alfresco.cmis.CMISAclCapabilityEnum;
+import org.alfresco.cmis.CMISAclPropagationEnum;
+import org.alfresco.cmis.CMISAclSupportedPermissionEnum;
+import org.alfresco.cmis.CMISBaseObjectTypeIds;
+import org.alfresco.cmis.CMISCapabilityChanges;
 import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISChoice;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISPermissionDefinition;
+import org.alfresco.cmis.CMISPermissionMapping;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.descriptor.Descriptor;
 
@@ -57,54 +63,87 @@ import org.alfresco.service.descriptor.Descriptor;
 @javax.jws.WebService(name = "RepositoryServicePort", serviceName = "RepositoryService", portName = "RepositoryServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.RepositoryServicePort")
 public class DMRepositoryServicePort extends DMAbstractServicePort implements RepositoryServicePort
 {
-    private static Map<CMISJoinEnum, EnumCapabilityJoin> joinEnumMapping;
-    private static Map<CMISContentStreamAllowedEnum, EnumContentStreamAllowed> contentStreamAllowedEnumMapping;
-    private static Map<CMISUpdatabilityEnum, EnumUpdatability> updatabilityEnumMapping;
-    private static Map<CMISCardinalityEnum, EnumCardinality> cardinalityEnumMapping;
-    private static Map<CMISDataTypeEnum, EnumPropertyType> propertyTypeEnumMapping;
-    private static HashMap<CMISQueryEnum, EnumCapabilityQuery> queryTypeEnumMapping;
+    private static final Map<CMISJoinEnum, EnumCapabilityJoin> JOIN_ENUM_MAPPING;
+    private static final Map<CMISContentStreamAllowedEnum, EnumContentStreamAllowed> CONTENT_STREAM_ALLOWED_ENUM_MAPPING;
+    private static final Map<CMISUpdatabilityEnum, EnumUpdatability> UPDATABILITY_ENUM_MAPPING;
+    private static final Map<CMISCardinalityEnum, EnumCardinality> CARDINALITY_ENUM_MAPPING;
+    private static final Map<CMISDataTypeEnum, EnumPropertyType> PROPERTY_TYPE_ENUM_MAPPING;
+    private static final Map<CMISQueryEnum, EnumCapabilityQuery> QUERY_TYPE_ENUM_MAPPING;
+    private static final Map<CMISCapabilityChanges, EnumCapabilityChanges> CHANGES_TYPE_ENUM_MAPPING;
+    private static final Map<CMISBaseObjectTypeIds, EnumBaseObjectTypeIds> BASE_IDS_TYPE_ENUM_MAPPING;
+    private static final Map<CMISAclCapabilityEnum, EnumCapabilityACL> ACL_CAPABILITY_ENUM_MAPPING;
+    private static final Map<CMISAclSupportedPermissionEnum, EnumSupportedPermissions> ACL_SUPPORTED_PERMISSION_ENUM_MAPPING;
+    private static final Map<CMISAclPropagationEnum, EnumACLPropagation> ACL_PROPAGATION_ENUM_MAPPGIN;
 
     // FIXME: Hard-coded! should be retrieved using standard mechanism
-    private String repositoryUri = " http://localhost:8080/alfresco/cmis";
+    private String repositoryUri = "http://localhost:8080/alfresco/cmis";
 
     static
     {
-        joinEnumMapping = new HashMap<CMISJoinEnum, EnumCapabilityJoin>();
-        joinEnumMapping.put(CMISJoinEnum.INNER_AND_OUTER_JOIN_SUPPORT, EnumCapabilityJoin.INNERANDOUTER);
-        joinEnumMapping.put(CMISJoinEnum.INNER_JOIN_SUPPORT, EnumCapabilityJoin.INNERONLY);
-        joinEnumMapping.put(CMISJoinEnum.NO_JOIN_SUPPORT, EnumCapabilityJoin.NONE);
+        JOIN_ENUM_MAPPING = new HashMap<CMISJoinEnum, EnumCapabilityJoin>();
+        JOIN_ENUM_MAPPING.put(CMISJoinEnum.INNER_AND_OUTER_JOIN_SUPPORT, EnumCapabilityJoin.INNERANDOUTER);
+        JOIN_ENUM_MAPPING.put(CMISJoinEnum.INNER_JOIN_SUPPORT, EnumCapabilityJoin.INNERONLY);
+        JOIN_ENUM_MAPPING.put(CMISJoinEnum.NO_JOIN_SUPPORT, EnumCapabilityJoin.NONE);
 
-        contentStreamAllowedEnumMapping = new HashMap<CMISContentStreamAllowedEnum, EnumContentStreamAllowed>();
-        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.ALLOWED, EnumContentStreamAllowed.ALLOWED);
-        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.NOT_ALLOWED, EnumContentStreamAllowed.NOTALLOWED);
-        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.REQUIRED, EnumContentStreamAllowed.REQUIRED);
+        CONTENT_STREAM_ALLOWED_ENUM_MAPPING = new HashMap<CMISContentStreamAllowedEnum, EnumContentStreamAllowed>();
+        CONTENT_STREAM_ALLOWED_ENUM_MAPPING.put(CMISContentStreamAllowedEnum.ALLOWED, EnumContentStreamAllowed.ALLOWED);
+        CONTENT_STREAM_ALLOWED_ENUM_MAPPING.put(CMISContentStreamAllowedEnum.NOT_ALLOWED, EnumContentStreamAllowed.NOTALLOWED);
+        CONTENT_STREAM_ALLOWED_ENUM_MAPPING.put(CMISContentStreamAllowedEnum.REQUIRED, EnumContentStreamAllowed.REQUIRED);
 
-        updatabilityEnumMapping = new HashMap<CMISUpdatabilityEnum, EnumUpdatability>();
-        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE, EnumUpdatability.READWRITE);
-        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT, EnumUpdatability.WHENCHECKEDOUT);
-        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_ONLY, EnumUpdatability.READONLY);
+        UPDATABILITY_ENUM_MAPPING = new HashMap<CMISUpdatabilityEnum, EnumUpdatability>();
+        UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.READ_AND_WRITE, EnumUpdatability.READWRITE);
+        UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT, EnumUpdatability.WHENCHECKEDOUT);
+        UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.READ_ONLY, EnumUpdatability.READONLY);
 
-        cardinalityEnumMapping = new HashMap<CMISCardinalityEnum, EnumCardinality>();
-        cardinalityEnumMapping.put(CMISCardinalityEnum.MULTI_VALUED, EnumCardinality.MULTI);
-        cardinalityEnumMapping.put(CMISCardinalityEnum.SINGLE_VALUED, EnumCardinality.SINGLE);
+        CARDINALITY_ENUM_MAPPING = new HashMap<CMISCardinalityEnum, EnumCardinality>();
+        CARDINALITY_ENUM_MAPPING.put(CMISCardinalityEnum.MULTI_VALUED, EnumCardinality.MULTI);
+        CARDINALITY_ENUM_MAPPING.put(CMISCardinalityEnum.SINGLE_VALUED, EnumCardinality.SINGLE);
 
-        propertyTypeEnumMapping = new HashMap<CMISDataTypeEnum, EnumPropertyType>();
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.BOOLEAN, EnumPropertyType.BOOLEAN);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.DATETIME, EnumPropertyType.DATETIME);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.DECIMAL, EnumPropertyType.DECIMAL);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.HTML, EnumPropertyType.HTML);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.ID, EnumPropertyType.ID);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.INTEGER, EnumPropertyType.INTEGER);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.STRING, EnumPropertyType.STRING);
-        propertyTypeEnumMapping.put(CMISDataTypeEnum.URI, EnumPropertyType.URI);
+        PROPERTY_TYPE_ENUM_MAPPING = new HashMap<CMISDataTypeEnum, EnumPropertyType>();
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.BOOLEAN, EnumPropertyType.BOOLEAN);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.DATETIME, EnumPropertyType.DATETIME);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.DECIMAL, EnumPropertyType.DECIMAL);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.HTML, EnumPropertyType.HTML);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.ID, EnumPropertyType.ID);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.INTEGER, EnumPropertyType.INTEGER);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.STRING, EnumPropertyType.STRING);
+        PROPERTY_TYPE_ENUM_MAPPING.put(CMISDataTypeEnum.URI, EnumPropertyType.URI);
 
-        queryTypeEnumMapping = new HashMap<CMISQueryEnum, EnumCapabilityQuery>();
-        queryTypeEnumMapping.put(CMISQueryEnum.BOTH_COMBINED, EnumCapabilityQuery.BOTHCOMBINED);
-        queryTypeEnumMapping.put(CMISQueryEnum.BOTH_SEPERATE, EnumCapabilityQuery.BOTHSEPARATE);
-        queryTypeEnumMapping.put(CMISQueryEnum.FULLTEXT_ONLY, EnumCapabilityQuery.FULLTEXTONLY);
-        queryTypeEnumMapping.put(CMISQueryEnum.METADATA_ONLY, EnumCapabilityQuery.METADATAONLY);
-        queryTypeEnumMapping.put(CMISQueryEnum.NONE, EnumCapabilityQuery.NONE);
+        QUERY_TYPE_ENUM_MAPPING = new HashMap<CMISQueryEnum, EnumCapabilityQuery>();
+        QUERY_TYPE_ENUM_MAPPING.put(CMISQueryEnum.BOTH_COMBINED, EnumCapabilityQuery.BOTHCOMBINED);
+        QUERY_TYPE_ENUM_MAPPING.put(CMISQueryEnum.BOTH_SEPERATE, EnumCapabilityQuery.BOTHSEPARATE);
+        QUERY_TYPE_ENUM_MAPPING.put(CMISQueryEnum.FULLTEXT_ONLY, EnumCapabilityQuery.FULLTEXTONLY);
+        QUERY_TYPE_ENUM_MAPPING.put(CMISQueryEnum.METADATA_ONLY, EnumCapabilityQuery.METADATAONLY);
+        QUERY_TYPE_ENUM_MAPPING.put(CMISQueryEnum.NONE, EnumCapabilityQuery.NONE);
+
+        CHANGES_TYPE_ENUM_MAPPING = new HashMap<CMISCapabilityChanges, EnumCapabilityChanges>();
+        CHANGES_TYPE_ENUM_MAPPING.put(CMISCapabilityChanges.NONE, EnumCapabilityChanges.NONE);
+        CHANGES_TYPE_ENUM_MAPPING.put(CMISCapabilityChanges.OBJECTIDSONLY, EnumCapabilityChanges.OBJECTIDSONLY);
+
+        BASE_IDS_TYPE_ENUM_MAPPING = new HashMap<CMISBaseObjectTypeIds, EnumBaseObjectTypeIds>();
+        BASE_IDS_TYPE_ENUM_MAPPING.put(CMISBaseObjectTypeIds.DOCUMENT, EnumBaseObjectTypeIds.CMIS_DOCUMENT);
+        BASE_IDS_TYPE_ENUM_MAPPING.put(CMISBaseObjectTypeIds.FOLDER, EnumBaseObjectTypeIds.CMIS_FOLDER);
+        BASE_IDS_TYPE_ENUM_MAPPING.put(CMISBaseObjectTypeIds.RELATIONSHIP, EnumBaseObjectTypeIds.CMIS_RELATIONSHIP);
+        BASE_IDS_TYPE_ENUM_MAPPING.put(CMISBaseObjectTypeIds.POLICY, EnumBaseObjectTypeIds.CMIS_POLICY);
+
+        ACL_CAPABILITY_ENUM_MAPPING = new HashMap<CMISAclCapabilityEnum, EnumCapabilityACL>();
+        ACL_CAPABILITY_ENUM_MAPPING.put(CMISAclCapabilityEnum.DISCOVER, EnumCapabilityACL.DISCOVER);
+        ACL_CAPABILITY_ENUM_MAPPING.put(CMISAclCapabilityEnum.MANAGE, EnumCapabilityACL.MANAGE);
+        ACL_CAPABILITY_ENUM_MAPPING.put(CMISAclCapabilityEnum.NONE, EnumCapabilityACL.NONE);
+
+        ACL_PROPAGATION_ENUM_MAPPGIN = new HashMap<CMISAclPropagationEnum, EnumACLPropagation>();
+        ACL_PROPAGATION_ENUM_MAPPGIN.put(CMISAclPropagationEnum.OBJECT_ONLY, EnumACLPropagation.OBJECTONLY);
+        ACL_PROPAGATION_ENUM_MAPPGIN.put(CMISAclPropagationEnum.PROPAGATE, EnumACLPropagation.PROPAGATE);
+        ACL_PROPAGATION_ENUM_MAPPGIN.put(CMISAclPropagationEnum.REPOSITORY_DETERMINED, EnumACLPropagation.REPOSITORYDETERMINED);
+
+        ACL_SUPPORTED_PERMISSION_ENUM_MAPPING = new HashMap<CMISAclSupportedPermissionEnum, EnumSupportedPermissions>();
+        ACL_SUPPORTED_PERMISSION_ENUM_MAPPING.put(CMISAclSupportedPermissionEnum.BASIC, EnumSupportedPermissions.BASIC);
+        ACL_SUPPORTED_PERMISSION_ENUM_MAPPING.put(CMISAclSupportedPermissionEnum.REPOSITORY, EnumSupportedPermissions.REPOSITORY);
+        ACL_SUPPORTED_PERMISSION_ENUM_MAPPING.put(CMISAclSupportedPermissionEnum.BOTH, EnumSupportedPermissions.BOTH);
     }
+
+    private List<CmisPermissionDefinition> permissionDefinitions;
+    private List<CmisPermissionMapping> permissionMapping;
 
     /**
      * Add property definitions to list of definitions
@@ -120,9 +159,9 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         wsPropertyDef.setId(propertyDefinition.getPropertyId().getId());
         wsPropertyDef.setDisplayName(propertyDefinition.getDisplayName());
         wsPropertyDef.setDescription(propertyDefinition.getDescription());
-        wsPropertyDef.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getDataType()));
-        wsPropertyDef.setCardinality(cardinalityEnumMapping.get(propertyDefinition.getCardinality()));
-        wsPropertyDef.setUpdatability(updatabilityEnumMapping.get(propertyDefinition.getUpdatability()));
+        wsPropertyDef.setPropertyType(PROPERTY_TYPE_ENUM_MAPPING.get(propertyDefinition.getDataType()));
+        wsPropertyDef.setCardinality(CARDINALITY_ENUM_MAPPING.get(propertyDefinition.getCardinality()));
+        wsPropertyDef.setUpdatability(UPDATABILITY_ENUM_MAPPING.get(propertyDefinition.getUpdatability()));
         wsPropertyDef.setInherited(!typeDefinition.getOwnedPropertyDefinitions().containsKey(propertyDefinition.getPropertyId()));
         wsPropertyDef.setRequired(propertyDefinition.isRequired());
         wsPropertyDef.setQueryable(propertyDefinition.isQueryable());
@@ -316,7 +355,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         cmisTypeDefinition.setQueryable(typeDefinition.isQueryable());
         cmisTypeDefinition.setControllableACL(typeDefinition.isControllableACL());
         cmisTypeDefinition.setControllablePolicy(typeDefinition.isControllablePolicy());
-        cmisTypeDefinition.setIncludedInSupertypeQuery(typeDefinition.isIncludeInSuperTypeQuery());
+        cmisTypeDefinition.setIncludedInSupertypeQuery(typeDefinition.isIncludedInSuperTypeQuery());
 
         if (includeProperties)
         {
@@ -355,7 +394,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
                 documentDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
             }
             documentDefinitionType.setVersionable(true); // FIXME: this attribute MUST be setted with typeDef.isVersionable()
-            documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDef.getContentStreamAllowed()));
+            documentDefinitionType.setContentStreamAllowed(CONTENT_STREAM_ALLOWED_ENUM_MAPPING.get(typeDef.getContentStreamAllowed()));
             result = documentDefinitionType;
             break;
         case FOLDER:
@@ -444,28 +483,34 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
         repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));
-        repositoryInfoType.setLatestChangeLogToken(""); // TODO
+        repositoryInfoType.setLatestChangeLogToken(cmisChangeLogService.getLastChangeLogToken());
         // TODO: cmisVersionSupported is different in stubs and specification
-        repositoryInfoType.setCmisVersionSupported(BigDecimal.valueOf(0.723)); // TODO: ask how to specify supported version like '0.7b3'
+        repositoryInfoType.setCmisVersionSupported("1.0 cd06");
         repositoryInfoType.setThinClientURI(repositoryUri);
-        repositoryInfoType.setChangesIncomplete(true); // TODO
+        repositoryInfoType.setChangesIncomplete(cmisChangeLogService.getChangesIncomplete());
         // TODO: getFolderTree capability
-        // TODO: set chnagedOnType via getChangesOnType().add()...
-        // repositoryInfoType.getChangesOnType();
-        // FIXME [BUG]: 'supportedPermissions' defined in spec. is absent in schema
-        // FIXME [BUG]: 'propagate' defined in spec. is absent in schema
-        // FIXME [BUG]: 'repositoryPermissions' defined in spec. is absent in schema
-        // FIXME [BUG]: 'mappings' defined in spec. is absent in schema
-        repositoryInfoType.setPrincipalAnonymous(AuthenticationUtil.getGuestUserName());
-        repositoryInfoType.setPrincipalAnyone(""); // TODO
+        List<CMISBaseObjectTypeIds> changesOnTypeCapability = cmisChangeLogService.getChangesOnTypeCapability();
+        for (CMISBaseObjectTypeIds baseId : changesOnTypeCapability)
+        {
+            repositoryInfoType.getChangesOnType().add(BASE_IDS_TYPE_ENUM_MAPPING.get(baseId));
+        }
+        repositoryInfoType.setPrincipalAnonymous(cmisAclService.getPrincipalAnonymous());
+        repositoryInfoType.setPrincipalAnyone(cmisAclService.getPrincipalAnyone());
+
+        CmisACLCapabilityType aclCapability = new CmisACLCapabilityType();
+        aclCapability.setSupportedPermissions(ACL_SUPPORTED_PERMISSION_ENUM_MAPPING.get(cmisAclService.getSupportedPermissions()));
+        aclCapability.setPropagation(ACL_PROPAGATION_ENUM_MAPPGIN.get(cmisAclService.getAclPropagation()));
+        aclCapability.getMapping().addAll(getPermissionMapping());
+        aclCapability.getPermissions().addAll(getPermissionDefinitions());
+        repositoryInfoType.setAclCapability(aclCapability);
 
         CmisRepositoryCapabilitiesType capabilities = new CmisRepositoryCapabilitiesType();
         capabilities.setCapabilityGetDescendants(true);
         capabilities.setCapabilityGetFolderTree(true);
 
         capabilities.setCapabilityContentStreamUpdatability(EnumCapabilityContentStreamUpdates.ANYTIME);
-        capabilities.setCapabilityChanges(EnumCapabilityChanges.NONE); // TODO
-        capabilities.setCapabilityRenditions(EnumCapabilityRendition.NONE); // TODO
+        capabilities.setCapabilityChanges(CHANGES_TYPE_ENUM_MAPPING.get(cmisChangeLogService.getCapability()));
+        capabilities.setCapabilityRenditions(EnumCapabilityRendition.READ);
 
         capabilities.setCapabilityMultifiling(true);
         capabilities.setCapabilityUnfiling(false);
@@ -475,14 +520,45 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         capabilities.setCapabilityPWCSearchable(cmisQueryService.getPwcSearchable());
         capabilities.setCapabilityAllVersionsSearchable(cmisQueryService.getAllVersionsSearchable());
 
-        capabilities.setCapabilityQuery(queryTypeEnumMapping.get(cmisQueryService.getQuerySupport()));
-        capabilities.setCapabilityJoin(joinEnumMapping.get(cmisQueryService.getJoinSupport()));
+        capabilities.setCapabilityQuery(QUERY_TYPE_ENUM_MAPPING.get(cmisQueryService.getQuerySupport()));
+        capabilities.setCapabilityJoin(JOIN_ENUM_MAPPING.get(cmisQueryService.getJoinSupport()));
 
-        capabilities.setCapabilityACL(EnumCapabilityACL.NONE); // TODO
+        capabilities.setCapabilityACL(ACL_CAPABILITY_ENUM_MAPPING.get(cmisAclService.getAclCapability()));
 
         repositoryInfoType.setCapabilities(capabilities);
-        repositoryInfoType.setCmisVersionSupported(BigDecimal.valueOf(0.62));
         return repositoryInfoType;
+    }
+
+    private List<CmisPermissionDefinition> getPermissionDefinitions()
+    {
+        if (null == permissionDefinitions)
+        {
+            permissionDefinitions = new LinkedList<CmisPermissionDefinition>();
+            for (CMISPermissionDefinition definition : cmisAclService.getRepositoryPermissions())
+            {
+                CmisPermissionDefinition cmisDefinition = new CmisPermissionDefinition();
+                cmisDefinition.setDescription(definition.getDescription());
+                cmisDefinition.setPermission(definition.getPermission());
+                permissionDefinitions.add(cmisDefinition);
+            }
+        }
+        return permissionDefinitions;
+    }
+
+    private List<CmisPermissionMapping> getPermissionMapping()
+    {
+        if (null == permissionMapping)
+        {
+            permissionMapping = new LinkedList<CmisPermissionMapping>();
+            for (CMISPermissionMapping mapping : cmisAclService.getPermissionMappings())
+            {
+                CmisPermissionMapping cmisMapping = new CmisPermissionMapping();
+                cmisMapping.getPermission().addAll(mapping.getPermissions());
+                cmisMapping.setKey(EnumAllowableActionsKey.fromValue(mapping.getKey()));
+                permissionMapping.add(cmisMapping);
+            }
+        }
+        return permissionMapping;
     }
 
     /**
@@ -582,9 +658,9 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
                 for (CMISTypeDefinition typeDef : subTypes)
                 {
                     CmisTypeContainer childContainer = createTypeContainer(typeDef, includePropertyDefsBool);
-                    element.getContainer().getChildren().add(childContainer);
                     if ((-1 == depthLong) || (nextLevel <= depthLong))
                     {
+                        element.getContainer().getChildren().add(childContainer);
                         typesQueue.add(new TypeElement(nextLevel, typeDef, childContainer));
                     }
                 }

@@ -113,14 +113,14 @@ public class CmisTypeDefinitionType {
     protected boolean controllablePolicy;
     protected boolean controllableACL;
     @XmlElements({
-        @XmlElement(name = "propertyHtmlDefinition", type = CmisPropertyHtmlDefinitionType.class),
         @XmlElement(name = "propertyIntegerDefinition", type = CmisPropertyIntegerDefinitionType.class),
-        @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
-        @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class),
-        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class),
-        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class),
+        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class),
         @XmlElement(name = "propertyDecimalDefinition", type = CmisPropertyDecimalDefinitionType.class),
-        @XmlElement(name = "propertyStringDefinition", type = CmisPropertyStringDefinitionType.class)
+        @XmlElement(name = "propertyDateTimeDefinition", type = CmisPropertyDateTimeDefinitionType.class),
+        @XmlElement(name = "propertyHtmlDefinition", type = CmisPropertyHtmlDefinitionType.class),
+        @XmlElement(name = "propertyIdDefinition", type = CmisPropertyIdDefinitionType.class),
+        @XmlElement(name = "propertyBooleanDefinition", type = CmisPropertyBooleanDefinitionType.class),
+        @XmlElement(name = "propertyUriDefinition", type = CmisPropertyUriDefinitionType.class)
     })
     protected List<CmisPropertyDefinitionType> propertyDefinition;
     @XmlAnyElement(lax = true)
@@ -450,14 +450,14 @@ public class CmisTypeDefinitionType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CmisPropertyHtmlDefinitionType }
      * {@link CmisPropertyIntegerDefinitionType }
-     * {@link CmisPropertyDateTimeDefinitionType }
-     * {@link CmisPropertyIdDefinitionType }
-     * {@link CmisPropertyUriDefinitionType }
-     * {@link CmisPropertyBooleanDefinitionType }
-     * {@link CmisPropertyDecimalDefinitionType }
      * {@link CmisPropertyStringDefinitionType }
+     * {@link CmisPropertyDecimalDefinitionType }
+     * {@link CmisPropertyDateTimeDefinitionType }
+     * {@link CmisPropertyHtmlDefinitionType }
+     * {@link CmisPropertyIdDefinitionType }
+     * {@link CmisPropertyBooleanDefinitionType }
+     * {@link CmisPropertyUriDefinitionType }
      * 
      * 
      */

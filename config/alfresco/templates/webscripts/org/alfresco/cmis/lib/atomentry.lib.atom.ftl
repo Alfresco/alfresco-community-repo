@@ -25,7 +25,7 @@
 [#-- ATOM Entry for Document --]
 [#--                         --]
 
-[#macro document node propfilter="*" includeallowableactions=false includerelationships="none" ns=""]
+[#macro document node renditionfilter="cmis:none" propfilter="*" includeallowableactions=false includerelationships="none" includeacl=false ns=""]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
@@ -34,28 +34,34 @@
 [@linksLib.linkstream node "enclosure"/]
 [@linksLib.linknodeedit node/]
 [@linksLib.linkstream node "edit-media"/]
-[@documentCMISLinks node=node/]
+[@documentCMISLinks node=node renditionfilter=renditionfilter/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
-<title>${node.name}</title>
+<title>${node.name?xml}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmisra:object>
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
+[#if includeacl][@aclreport node/][/#if]
 </cmisra:object>
-<cmisra:pathSegment>${node.name}</cmisra:pathSegment>
+<cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
 [/@entry]
 [/#macro]
 
-[#macro documentCMISLinks node]
+[#macro documentCMISLinks node renditionfilter="cmis:none"]
 [@linksLib.linkallowableactions node/]
 [@linksLib.linkrelationships node/]
+[@linksLib.linkacl node/]
 [@linksLib.linkparents node/]
 [@linksLib.linkversions node/]
 [@linksLib.linktype node/]
 [@linksLib.linkservice/]
+[#local nodeMap=cmisrenditions(node, renditionfilter)/]
+[#list nodeMap.renditions as rendition]
+[@linksLib.linkrendition node=node rendition=rendition renditionNode=nodeMap.renditionNodes[rendition_index]/]
+[/#list]
 [/#macro]
 
 
@@ -65,7 +71,7 @@
 
 [#macro version node version propfilter="*" ns=""]
 [@entry ns]
-<author><name>${node.properties.creator}</name></author>
+<author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 [@linksLib.linknodeself node/]
@@ -73,7 +79,7 @@
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
-<title>${node.name}</title>
+<title>${node.name?xml}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
@@ -88,9 +94,9 @@
 [#-- ATOM Entry for Private Working Copy --]
 [#--                                     --]
 
-[#macro pwc node propfilter="*" includeallowableactions=false includerelationships="none" ns=""]
+[#macro pwc node renditionfilter="cmis:none" propfilter="*" includeallowableactions=false includerelationships="none" ns=""]
 [@entry ns]
-<author><name>${node.properties.creator}</name></author>
+<author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 [#assign pwcuri]/cmis/pwc/[@linksLib.noderef node/][/#assign]
@@ -98,10 +104,10 @@
 [@linksLib.linkstream node "enclosure"/]
 [@linksLib.linknodeedit node/]
 [@linksLib.linkstream node "edit-media"/]
-[@documentCMISLinks node=node/]
+[@documentCMISLinks node=node renditionfilter=renditionfilter/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
-<title>${node.name}</title>
+<title>${node.name?xml}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
@@ -109,7 +115,7 @@
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 </cmisra:object>
-<cmisra:pathSegment>${node.name}</cmisra:pathSegment>
+<cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
 [/@entry]
 [/#macro]
 
@@ -118,47 +124,50 @@
 [#-- ATOM Entry for Folder --]
 [#--                       --]
 
-[#macro foldertree node propfilter="*" includeallowableactions=false includerelationships="none" ns="" maxdepth=-1]
-[@folder node propfilter "folders" includeallowableactions includerelationships ns 1 maxdepth "" "tree"/]
+[#macro foldertree node renditionfilter="cmis:none" propfilter="*" includeallowableactions=false includerelationships="none" includeacl=false ns="" maxdepth=-1]
+[@folder node renditionfilter propfilter "folders" includeallowableactions includerelationships includeacl ns 1 maxdepth "" "tree"/]
 [/#macro]
 
-[#macro folder node propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" ns="" depth=1 maxdepth=1 relativePathSegment="" nestedkind=""]
+[#macro folder node renditionfilter="cmis:none" propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" includeacl=false ns="" depth=1 maxdepth=1 relativePathSegment="" nestedkind=""]
 [@entry ns]
-<author><name>${node.properties.creator}</name></author>
+<author><name>${node.properties.creator!""}</name></author>
 <content>${node.id}</content>  [#-- TODO --]
 <id>urn:uuid:${node.id}</id>
 [@linksLib.linknodeself node/]
 [@linksLib.linknodeedit node/]
 [@folderCMISLinks node/]
 <published>${xmldate(node.properties.created)}</published>
-<summary>${node.properties.description!node.properties.title!""}</summary>  [#-- TODO --]
-<title>${node.name}</title>
+<summary>${node.properties.description!node.properties.title!""?xml}</summary>  [#-- TODO --]
+<title>${node.name?xml}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmisra:object>
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
+[#if includeacl][@aclreport node/][/#if]
 </cmisra:object>
-<cmisra:pathSegment>${node.name}</cmisra:pathSegment>
+<cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
 [#if relativePathSegment != ""]
-<cmisra:relativePathSegment>${relativePathSegment}</cmisra:relativePathSegment>
+<cmisra:relativePathSegment>${relativePathSegment?xml}</cmisra:relativePathSegment>
 [/#if]
 [#-- recurse for depth greater than 1 --]
 [#if maxdepth == -1 || depth &lt; maxdepth]
 [#assign nested = cmischildren(node, typesfilter)/]
 [#if nested?size > 0]
 <cmisra:children>
+[@feedLib.feed]
 [@feedLib.node node "${nestedkind}"]
   [#if nestedkind == "tree"][@linksLib.linktree node "self"/][#else][@linksLib.linkdescendants node "self"/][/#if]
 [/@feedLib.node]
 [#list nested as child]
   [#if child.isDocument]
-    [@document child propfilter includeallowableactions includerelationships/]
+    [@document child renditionfilter propfilter includeallowableactions includerelationships includeacl/]
   [#else]
-    [@folder child propfilter typesfilter includeallowableactions includerelationships ns depth+1 maxdepth "" nestedkind/]
+    [@folder child renditionfilter propfilter typesfilter includeallowableactions includerelationships includeacl ns depth+1 maxdepth "" nestedkind/]
   [/#if]
 [/#list]
+[/@feedLib.feed]
 </cmisra:children>
 [/#if]
 [/#if]
@@ -168,6 +177,7 @@
 [#macro folderCMISLinks node]
 [@linksLib.linkallowableactions node/]
 [@linksLib.linkrelationships node/]
+[@linksLib.linkacl node/]
 [#if cmisproperty(node, cmisconstants.PROP_PARENT_ID)?is_string]
 [@linksLib.linkparent node/]
 [/#if]
@@ -217,7 +227,7 @@
 [#--                          --]
 
 [#-- TODO: spec issue 47 --]
-[#macro row row includeallowableactions=false]
+[#macro row row renditionfilter="cmis:none" includeallowableactions=false]
 [@entry]
 [#-- TODO: calculate multiNodeResultSet from result set --]
 [#if row.nodes?? && row.nodes?size == 1][#assign node = row.nodes?first/][/#if]
@@ -235,15 +245,15 @@
 [#if node.isDocument]
   [@linksLib.linkstream node "enclosure"/]
   [@linksLib.linkstream node "edit-media"/]
-  [@documentCMISLinks node=node/]
+  [@documentCMISLinks node=node renditionfilter=renditionfilter/]
 [#else]
   [@folderCMISLinks node=node/]
 [/#if]
-<title>${node.name}</title>
+<title>${node.name?xml}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 [#else]
-<author><name>${person.properties.userName}</name></author>
+<author><name>${person.properties.userName?xml}</name></author>
 <id>urn:uuid:row-${row.index?c}</id>
 <title>Row ${row.index?c}</title>
 <updated>${xmldate(now)}</updated>
@@ -261,6 +271,31 @@
 [/#list]
 </cmis:properties>
 [#if node?? && includeallowableactions][@allowableactions node/][/#if]
+</cmisra:object>
+[/@entry]
+[/#macro]
+
+[#--                                 --]
+[#-- ATOM Entry for Change Log Entry --]
+[#--                                 --]
+
+[#macro changeentry event node includeacl=false]
+[@entry]
+<author><name>${person.properties.userName}</name></author>
+<id>urn:uuid:${node.id}</id>
+[#if node.exists][@linksLib.linkacl node/][/#if]
+[@linksLib.linkservice/]
+<title>Change Log Entry</title>
+<updated>${xmldate(event.changeTime)}</updated>
+<cmisra:object>
+<cmis:properties>
+  [@propvalue "cmis:objectId" node.nodeRef?string cmisconstants.DATATYPE_ID/]
+</cmis:properties>    
+<cmis:changeEventInfo>
+  <cmis:changeType>${event.changeType.label}</cmis:changeType>
+  <cmis:changeTime>${xmldate(event.changeTime)}</cmis:changeTime>
+</cmis:changeEventInfo>
+[#if includeacl && node.exists][@aclreport node/][/#if]
 </cmisra:object>
 [/@entry]
 [/#macro]
@@ -354,13 +389,13 @@
 
 [#macro values vals][#if vals?is_enumerable][#list vals as val][#nested val][/#list][#else][#nested vals][/#if][/#macro]
 
-[#macro stringvalue value]${value}[/#macro]
+[#macro stringvalue value]${value?xml}[/#macro]
 [#macro integervalue value]${value?c}[/#macro]
 [#macro decimalvalue value]${value?c}[/#macro]
 [#macro booleanvalue value]${value?string}[/#macro]
 [#macro datetimevalue value]${xmldate(value)}[/#macro]
-[#macro urivalue value]${value}[/#macro]
-[#macro idvalue value]${value}[/#macro]
+[#macro urivalue value]${value?xml}[/#macro]
+[#macro idvalue value]${value?xml}[/#macro]
 
 
 [#--                        --]
@@ -381,6 +416,31 @@
 <cmis:${actionevaluator.action.label}>${actionevaluator.isAllowed(node.nodeRef)?string}</cmis:${actionevaluator.action.label}>
 [/#macro]
 
+[#--                           --]
+[#-- CMIS Access Control Lists --]
+[#--                           --]
+
+[#macro aclreport node ns=""]
+<cmis:acl[#if ns != ""] ${ns}[/#if]>
+[#local report = cmisacl(node)]
+[#list report.accessControlEntries as entry]
+  [@accessControlEntry entry/]
+[/#list]
+</cmis:acl>
+[#if ns == ""]
+<cmis:exactACL>${(!report.extract)?string}</cmis:exactACL>
+[/#if]
+[/#macro]
+
+[#macro accessControlEntry entry]
+<cmis:permission>
+  <cmis:principal>
+    <cmis:principalId>${entry.principalId}</cmis:principalId>
+  </cmis:principal>
+  <cmis:permission>${entry.permission}</cmis:permission>
+  <cmis:direct>${entry.direct?string}</cmis:direct>
+</cmis:permission>
+[/#macro]
 
 [#--                                --]
 [#-- ATOM Entry for Type Definition --]
@@ -388,13 +448,13 @@
 
 [#macro typedef typedefn includeProperties=true includeInheritedProperties=true ns="" depth=1 maxdepth=1]
 [@entry ns=ns]
-<author><name>${person.properties.userName}</name></author>
+<author><name>${person.properties.userName?xml}</name></author>
 <content>${typedefn.typeId.id}</content>  [#-- TODO --]
 <id>urn:uuid:type-${typedefn.typeId.id}</id>
 [@linksLib.linktypeself typedefn/]
 [@typedefCMISLinks typedefn/]
 <summary>[#if typedefn.description??]${typedefn.description?xml}[#else]${typedefn.displayName?xml}[/#if]</summary>
-<title>${typedefn.displayName}</title>
+<title>${typedefn.displayName?xml}</title>
 <updated>${xmldate(date)}</updated>  [#-- TODO --]
 [@typedefCMISProps typedefn includeProperties/]
 [#-- recurse for depth greater than 1 --]
@@ -402,12 +462,14 @@
 [#assign nested = typedefn.getSubTypes(false)/]
 [#if nested?size > 1]
 <cmisra:children>
+[@feedLib.feed]
 [@feedLib.generic "urn:uuid:type-${typedefn.typeId.id}-descendants" "Type ${typedefn.displayName} Descendants" "${person.properties.userName}"]
   [@linksLib.linktypedescendants typedefn "self"/]
 [/@feedLib.generic]
 [#list nested as child]
   [@typedef child includeProperties includeInheritedProperties ns depth+1 maxdepth/]
 [/#list]
+[/@feedLib.feed]
 </cmisra:children>
 [/#if]
 [/#if]
@@ -470,10 +532,10 @@
 
 [#macro objecttypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
   <cmis:id>${typedef.typeId.id}</cmis:id>
-  <cmis:localName>${typedef.typeId.localName}</cmis:localName>
-  <cmis:localNamespace>${typedef.typeId.localNamespace}</cmis:localNamespace>
+  <cmis:localName>${typedef.typeId.localName?xml}</cmis:localName>
+  <cmis:localNamespace>${typedef.typeId.localNamespace?xml}</cmis:localNamespace>
   <cmis:displayName>[#if typedef.displayName??]${typedef.displayName?xml}[/#if]</cmis:displayName>
-  <cmis:queryName>${typedef.queryName}</cmis:queryName>
+  <cmis:queryName>${typedef.queryName?xml}</cmis:queryName>
   <cmis:description>[#if typedef.description??]${typedef.description?xml}[/#if]</cmis:description>
   <cmis:baseId>${typedef.baseType.typeId.id}</cmis:baseId>
 [#if typedef.parentType??]  
@@ -483,7 +545,7 @@
   <cmis:fileable>${typedef.fileable?string}</cmis:fileable>
   <cmis:queryable>${typedef.queryable?string}</cmis:queryable>
   <cmis:fulltextIndexed>${typedef.fullTextIndexed?string}</cmis:fulltextIndexed>
-  <cmis:includedInSupertypeQuery>${typedef.includeInSuperTypeQuery?string}</cmis:includedInSupertypeQuery>
+  <cmis:includedInSupertypeQuery>${typedef.includedInSuperTypeQuery?string}</cmis:includedInSupertypeQuery>
   <cmis:controllablePolicy>${typedef.controllablePolicy?string}</cmis:controllablePolicy>
   <cmis:controllableACL>${typedef.controllableACL?string}</cmis:controllableACL>
   [#if includeProperties]
@@ -522,7 +584,7 @@
 <cmis:propertyBooleanDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyBooleanDefinition>
@@ -532,7 +594,7 @@
 <cmis:propertyIdDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyIdDefinition>
@@ -542,7 +604,7 @@
 <cmis:propertyIntegerDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [#-- TODO: maxValue, minValue --]
   [@cmisChoices propdef.choices propdef.dataType.label/]
@@ -553,7 +615,7 @@
 <cmis:propertyDateTimeDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyDateTimeDefinition>
@@ -563,7 +625,7 @@
 <cmis:propertyDecimalDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [#-- TODO: maxValue, minValue, precision --]
   [@cmisChoices propdef.choices propdef.dataType.label/]
@@ -574,7 +636,7 @@
 <cmis:propertyHtmlDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyHtmlDefinition>
@@ -584,7 +646,7 @@
 <cmis:propertyStringDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [#-- TODO: maxValue, minValue, precision --]
 [#if propdef.maximumLength != -1]
@@ -598,7 +660,7 @@
 <cmis:propertyUriDefinition>
 [@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.defaultValue??]
-  <cmis:defaultValue><cmis:value>${propdef.defaultValue}</cmis:value></cmis:defaultValue>
+  <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyUriDefinition>
@@ -606,10 +668,10 @@
 
 [#macro abstractpropdefCMISProps propdef inherited=false]
   <cmis:id>${propdef.propertyId.id}</cmis:id>
-  <cmis:localName>${propdef.propertyId.localName}</cmis:localName>
-  <cmis:localNamespace>${propdef.propertyId.localNamespace}</cmis:localNamespace>
+  <cmis:localName>${propdef.propertyId.localName?xml}</cmis:localName>
+  <cmis:localNamespace>${propdef.propertyId.localNamespace?xml}</cmis:localNamespace>
   <cmis:displayName>[#if propdef.displayName??]${propdef.displayName?xml}[/#if]</cmis:displayName>
-  <cmis:queryName>${propdef.queryName}</cmis:queryName>
+  <cmis:queryName>${propdef.queryName?xml}</cmis:queryName>
 [#if propdef.description??]
   <cmis:description>${propdef.description?xml}</cmis:description>
 [/#if]
@@ -673,7 +735,7 @@
 [#--                                --]
 
 [#-- Helper to render Atom Summary --]
-[#macro contentsummary node][#if node.properties.description??]${node.properties.description}[#elseif node.properties.title??]${node.properties.title}[#elseif node.mimetype?? && node.mimetype == "text/plain"]${cropContent(node.properties.content, 50)}[#else]${node.properties.name}[/#if][/#macro]
+[#macro contentsummary node][#if node.properties.description??]${node.properties.description?xml}[#elseif node.properties.title??]${node.properties.title?xml}[#elseif node.mimetype?? && node.mimetype == "text/plain"]${cropContent(node.properties.content, 50)?xml}[#else]${node.properties.name?xml}[/#if][/#macro]
 
 [#-- Helper to render Alfresco content type to Atom content type --]
 [#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text<#else>${type}[/#if][/#macro]

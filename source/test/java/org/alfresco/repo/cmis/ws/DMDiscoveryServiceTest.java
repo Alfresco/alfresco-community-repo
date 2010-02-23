@@ -24,14 +24,24 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Holder;
 import javax.xml.ws.Service;
 
+import org.alfresco.cmis.CMISChangeType;
+
+/**
+ * @author Andrey Sokolovsky
+ * @author Dmitry Velichkevich
+ */
 public class DMDiscoveryServiceTest extends AbstractServiceTest
 {
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/DiscoveryService?wsdl";
@@ -61,7 +71,9 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
         }
 
         Service service = Service.create(serviceWsdlURL, SERVICE_NAME);
-        return service.getPort(DiscoveryServicePort.class);
+        DiscoveryServicePort port = service.getPort(DiscoveryServicePort.class);
+        helper.authenticateServicePort(port, CmisServiceTestHelper.USERNAME_ADMIN, CmisServiceTestHelper.PASSWORD_ADMIN);
+        return port;
     }
 
     public void testQuery() throws Exception
@@ -79,9 +91,9 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
         {
             for (CmisObjectType object : response.getObjects().getObjects())
             {
+                assertNotNull(object);
                 assertNotNull(object.getProperties());
             }
-
         }
         else
         {
@@ -91,17 +103,140 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
 
     public void testGetContentChanges() throws Exception
     {
-        try
+        // TODO: test data creation
+        Map<CMISChangeType, Integer> expectedAmounts = new HashMap<CMISChangeType, Integer>();
+        List<String> testData = createTestData(18, expectedAmounts);
+        Holder<CmisObjectListType> resultHolder = new Holder<CmisObjectListType>();
+        Holder<String> changeLogToken = new Holder<String>();
+        RepositoryServicePort repositoryServicePort = helper.getRepositoryServicePort();
+        helper.authenticateServicePort(repositoryServicePort, CmisServiceTestHelper.USERNAME_ADMIN, CmisServiceTestHelper.PASSWORD_ADMIN);
+        CmisRepositoryInfoType repositoryInfo = repositoryServicePort.getRepositoryInfo(repositoryId, null);
+        changeLogToken.value = repositoryInfo.getLatestChangeLogToken();
+        // TODO: includeACL
+        // TODO: includePolicyIds
+        DiscoveryServicePort port = (DiscoveryServicePort) getServicePort();
+        port.getContentChanges(repositoryId, changeLogToken, true, "*", false, false, null, null, resultHolder);
+        assertNotNull(resultHolder.value);
+        assertNotNull(resultHolder.value.getObjects());
+        assertEquals(18, resultHolder.value.getNumItems());
+        assertFalse(resultHolder.value.isHasMoreItems());
+        for (CmisObjectType object : resultHolder.value.getObjects())
         {
-            Holder<String> changeLogToken = new Holder<String>();
-            Holder<CmisObjectListType> resultHolder = new Holder<CmisObjectListType>();
-            // TODO: includeACL
-            // TODO: includePolicyIds
-            ((DiscoveryServicePort) servicePort).getContentChanges(repositoryId, changeLogToken, false, "", false, false, BigInteger.ZERO, null, resultHolder);
+            assertNotNull(object);
+            assertNotNull(object.getProperties());
+            String idProperty = getIdProperty(object.getProperties(), "cmis:objectId");
+            assertNotNull(idProperty);
+            assertTrue(testData.contains(idProperty));
+            // TODO: Checking for Change Type (Object Diff etc...)
+            switch (object.getChangeEventInfo().getChangeType())
+            {
+            case DELETED:
+            {
+                try
+                {
+                    helper.getObjectProperties(idProperty);
+                }
+                catch (CmisException e)
+                {
+                    assertTrue(EnumServiceException.OBJECT_NOT_FOUND == e.getFaultInfo().getType());
+                }
+                break;
+            }
+            case UPDATED:
+            {
+                CmisObjectType objectProperties = helper.getObjectProperties(idProperty);
+                assertNotNull(objectProperties.getProperties());
+                String nameProperty = getStringProperty(objectProperties.getProperties(), "cmis:name");
+                assertNotNull(nameProperty);
+                assertTrue(nameProperty.startsWith("Changed"));
+                break;
+            }
+            case SECURITY:
+            {
+                // FIXME: Uncomment below when ACLService will be implemented
+                // ACLServicePort aclService = null;
+                // CmisACLType acl = aclService.getACL(repositoryId, idProperty, false, null);
+                // assertTrue(acl.getACL().getPermission().contains("DELETE"));
+            }
+            }
         }
-        catch (CmisException e)
+        deleteTestData(testData);
+    }
+
+    private List<String> createTestData(int totalAmountOfObjects, Map<CMISChangeType, Integer> expectedAmounts) throws Exception
+    {
+        RepositoryServicePort repositoryServicePort = helper.getRepositoryServicePort();
+        helper.authenticateServicePort(repositoryServicePort, CmisServiceTestHelper.USERNAME_ADMIN, CmisServiceTestHelper.PASSWORD_ADMIN);
+        repositoryServicePort.getRepositoryInfo(repositoryId, null);
+        List<String> result = new LinkedList<String>();
+        Random randomizer = new Random();
+        for (int i = 0; i < totalAmountOfObjects; i++)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.RUNTIME));
+            String generatedName = generateName();
+            String objectId = helper.createDocument(generatedName, companyHomeId);
+            result.add(objectId);
+            int type = randomizer.nextInt(4);
+            CMISChangeType changeType = CMISChangeType.CREATED;
+            switch (type)
+            {
+            case 1:
+            {
+                changeType = CMISChangeType.UPDATED;
+                StringBuilder nameGenerator = new StringBuilder("Changed");
+                nameGenerator.append(generatedName);
+                helper.updateProperty(objectId, "cmis:name", nameGenerator.toString());
+                break;
+            }
+            case 2:
+            {
+                changeType = CMISChangeType.SECURITY;
+                // FIXME: When AuditingService will be available
+                // 
+                // ACLServicePort aclServicePort = null;
+                // CmisAccessControlListType addACEs = new CmisAccessControlListType();
+                // CmisAccessControlEntryType aclEntry = new CmisAccessControlEntryType();
+                // CmisAccessControlPrincipalType value = new CmisAccessControlPrincipalType();
+                // value.setPrincipalId("admin");
+                // aclEntry.setPrincipal(value);
+                // aclEntry.setDirect(true);
+                // aclEntry.getPermission().add("DELETE");
+                // addACEs.getPermission().add(aclEntry);
+                // aclServicePort.applyACL(repositoryId, objectId, addACEs, null, EnumACLPropagation.OBJECTONLY, null);
+                break;
+            }
+            case 3:
+            {
+                changeType = CMISChangeType.DELETED;
+                helper.deleteDocument(objectId);
+            }
+            }
+            Integer amount = expectedAmounts.get(changeType);
+            amount = (null == amount) ? (Integer.valueOf(1)) : (Integer.valueOf(amount.intValue() + 1));
+            expectedAmounts.put(changeType, amount);
+        }
+        return result;
+    }
+
+    private String generateName()
+    {
+        StringBuilder nameBuilder = new StringBuilder();
+        nameBuilder.append("TestDocument(").append(System.currentTimeMillis()).append(").txt");
+        return nameBuilder.toString();
+    }
+
+    private void deleteTestData(List<String> testData)
+    {
+        for (String id : testData)
+        {
+            try
+            {
+                helper.getObjectProperties(id);
+                helper.deleteDocument(id);
+            }
+            catch (Exception e)
+            {
+                // doing nothing
+            }
         }
     }
 }

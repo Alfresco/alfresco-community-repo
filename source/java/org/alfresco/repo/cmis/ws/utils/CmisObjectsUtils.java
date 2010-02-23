@@ -514,7 +514,7 @@ public class CmisObjectsUtils
         NodeRef result = nodeRef;
 
         NodeRef latestNodeRef = ((null != versionLabel) && (null != nodeRef)) ? (getLatestNode(nodeRef, false)) : (null);
-        if ((null != latestNodeRef) && !versionLabel.equals(nodeService.getProperty(latestNodeRef, ContentModel.PROP_VERSION_LABEL)))
+        if ((null != latestNodeRef) && nodeService.exists(latestNodeRef) && !versionLabel.equals(nodeService.getProperty(latestNodeRef, ContentModel.PROP_VERSION_LABEL)))
         {
             VersionHistory versionHistory = versionService.getVersionHistory(latestNodeRef);
             if (null != versionHistory)

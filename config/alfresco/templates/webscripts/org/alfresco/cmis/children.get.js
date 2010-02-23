@@ -26,6 +26,13 @@ script:
     {
         model.filter = "*";
     }
+    
+    // rendition filter
+    model.renditionFilter = args[cmis.ARG_RENDITION_FILTER];
+    if (model.renditionFilter === null || model.renditionFilter.length == 0)
+    {
+        model.renditionFilter = "cmis:none";
+    }
    
     // include allowable actions
     var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];

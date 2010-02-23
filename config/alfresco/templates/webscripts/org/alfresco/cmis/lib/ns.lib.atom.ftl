@@ -10,3 +10,4 @@
 [#macro feedNS]xmlns="[@atomNS/]" xmlns:app="[@appNS/]" xmlns:cmisra="[@cmisraNS/]" xmlns:cmis="[@cmisNS/]" xmlns:alf="[@alfNS/]" xmlns:opensearch="[@opensearchNS/]"[/#macro]
 [#macro entryNS]xmlns="[@atomNS/]" xmlns:app="[@appNS/]" xmlns:cmisra="[@cmisraNS/]" xmlns:cmis="[@cmisNS/]" xmlns:alf="[@alfNS/]"[/#macro]
 [#macro allowableactionsNS]xmlns:cmis="[@cmisNS/]"[/#macro]
+[#macro aclNS]xmlns:cmis="[@cmisNS/]"[/#macro]

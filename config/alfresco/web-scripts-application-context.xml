@@ -84,22 +84,22 @@
    <bean id="webscripts.repo.registry.scriptprocessor" class="org.springframework.extensions.webscripts.ScriptProcessorRegistry" />
    
    <bean id="webscripts.repo.templateprocessor.factory" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessorFactory">
-      <property name="templateProcessor">
-         <bean id="webscripts.repo.templateprocessor" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessor">
-            <property name="serviceRegistry" ref="ServiceRegistry" />     
-	        <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
-	        <property name="searchPath" ref="webscripts.searchpath" />
-	     </bean>
-	  </property>
+      <property name="templateProcessor" ref="webscripts.repo.templateprocessor"/>
+   </bean>
+
+   <bean id="webscripts.repo.templateprocessor" class="org.alfresco.repo.web.scripts.RepositoryTemplateProcessor">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="freeMarkerProcessor" ref="freeMarkerProcessor" /> 
+      <property name="searchPath" ref="webscripts.searchpath" />
    </bean>
    
    <bean id="webscripts.repo.scriptprocessor.factory" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessorFactory">
-      <property name="scriptProcessor">
-         <bean id="webscripts.repo.scriptprocessor" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessor">
-            <property name="scriptService" ref="scriptService" />
-            <property name="searchPath" ref="webscripts.searchpath" />
-         </bean>
-      </property>
+      <property name="scriptProcessor" ref="webscripts.repo.scriptprocessor"/>
+   </bean>
+
+   <bean id="webscripts.repo.scriptprocessor" class="org.alfresco.repo.web.scripts.RepositoryScriptProcessor">
+      <property name="scriptService" ref="scriptService" />
+      <property name="searchPath" ref="webscripts.searchpath" />
    </bean>
 
    <bean class="org.springframework.extensions.webscripts.TemplateProcessorRegistrar" init-method="init">
@@ -150,6 +150,18 @@
               <bean class="org.alfresco.repo.cmis.rest.CMISChildrenMethod">
                  <constructor-arg><ref bean="CMISService"/></constructor-arg>
                  <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>
+                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>
+              </bean>
+           </entry>
+           <entry key="cmisacl">
+              <bean class="org.alfresco.repo.cmis.rest.CMISAclMethod">
+                 <constructor-arg><ref bean="CMISAccessControlService"/></constructor-arg>
+              </bean>
+           </entry>
+           <entry key="cmisrenditions">
+              <bean class="org.alfresco.repo.cmis.rest.CMISRenditionsMethod">
+                 <constructor-arg><ref bean="CMISService"/></constructor-arg>
+                 <constructor-arg><ref bean="webscripts.repo.templateprocessor"/></constructor-arg>
                  <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>
               </bean>
            </entry>
@@ -244,12 +256,14 @@
          <props>
             <prop key="cmisquery">application/cmisquery+xml</prop>
             <prop key="cmisallowableactions">application/cmisallowableactions+xml</prop>
+            <prop key="cmisacl">application/cmisacl+xml</prop>
          </props>
       </property>
       <property name="mimetypes">
          <props>
             <prop key="application/cmisquery+xml">cmisquery</prop>
             <prop key="application/cmisallowableactions+xml">application/cmisallowableactions+xml</prop>
+            <prop key="application/cmisacl+xml">cmisacl</prop>
          </props>
       </property>
    </bean>
@@ -261,6 +275,8 @@
       <property name="CMISService" ref="CMISService" />
       <property name="CMISDictionaryService" ref="CMISDictionaryService" />
       <property name="CMISQueryService" ref="CMISQueryService" />
+      <property name="CMISAccessControlService" ref="CMISAccessControlService" />
+      <property name="CMISChangeLogService" ref="CMISChangeLogService" />
       <property name="CMISReferenceFactory" ref="CMISReferenceFactory" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>

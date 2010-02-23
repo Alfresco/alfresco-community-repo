@@ -113,7 +113,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
      */
 	public Object unwrapValue(Object value)
 	{
-        return (value instanceof Serializable) ? valueConverter.convertValueForRepo((Serializable)value) : value;
+        return valueConverter.convertValueForJava(value);
 	}
 
     /* (non-Javadoc)

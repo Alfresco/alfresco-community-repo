@@ -1,7 +1,6 @@
 
 package org.alfresco.repo.cmis.ws;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +36,7 @@ import org.w3c.dom.Element;
  *         &lt;element name="latestChangeLogToken" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="capabilities" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisRepositoryCapabilitiesType"/>
  *         &lt;element name="aclCapability" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}cmisACLCapabilityType" minOccurs="0"/>
- *         &lt;element name="cmisVersionSupported" type="{http://www.w3.org/2001/XMLSchema}decimal"/>
+ *         &lt;element name="cmisVersionSupported" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="thinClientURI" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
  *         &lt;element name="changesIncomplete" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="changesOnType" type="{http://docs.oasis-open.org/ns/cmis/core/200908/}enumBaseObjectTypeIds" maxOccurs="unbounded" minOccurs="0"/>
@@ -94,7 +93,7 @@ public class CmisRepositoryInfoType {
     protected CmisRepositoryCapabilitiesType capabilities;
     protected CmisACLCapabilityType aclCapability;
     @XmlElement(required = true)
-    protected BigDecimal cmisVersionSupported;
+    protected String cmisVersionSupported;
     @XmlSchemaType(name = "anyURI")
     protected String thinClientURI;
     protected Boolean changesIncomplete;
@@ -351,10 +350,10 @@ public class CmisRepositoryInfoType {
      * 
      * @return
      *     possible object is
-     *     {@link BigDecimal }
+     *     {@link String }
      *     
      */
-    public BigDecimal getCmisVersionSupported() {
+    public String getCmisVersionSupported() {
         return cmisVersionSupported;
     }
 
@@ -363,10 +362,10 @@ public class CmisRepositoryInfoType {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigDecimal }
+     *     {@link String }
      *     
      */
-    public void setCmisVersionSupported(BigDecimal value) {
+    public void setCmisVersionSupported(String value) {
         this.cmisVersionSupported = value;
     }
 

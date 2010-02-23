@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<!--
-		$Revision: 135 $
-		$Date: 2009-10-19 10:59:00 -0700 (Mon, 19 Oct 2009) $
+		$Revision: 147 $
+		$Date: 2009-12-21 21:31:42 -0800 (Mon, 21 Dec 2009) $
 		$Author: albertcbrown $
 		$HeadURL: http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-Messaging.xsd $
 	-->
@@ -366,7 +366,7 @@
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="renditionFilter" type="xs:string"
 					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="includePathSegments" type="xs:boolean"
+				<xs:element name="includePathSegment" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 
 				<xs:element name="extension" type="cmism:cmisExtensionType"
@@ -411,7 +411,7 @@
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="renditionFilter" type="xs:string"
 					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="includePathSegments" type="xs:boolean"
+				<xs:element name="includePathSegment" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 
 				<xs:element name="extension" type="cmism:cmisExtensionType"
@@ -456,7 +456,7 @@
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="renditionFilter" type="xs:string"
 					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="includePathSegments" type="xs:boolean"
+				<xs:element name="includePathSegment" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="maxItems" type="xs:integer" minOccurs="0"
 					maxOccurs="1" nillable="true" />
@@ -1253,7 +1253,7 @@
 					maxOccurs="1" />
 				<xs:element name="allVersions" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />
-				<xs:element name="unfileObject" type="cmis:enumUnfileObject"
+				<xs:element name="unfileObjects" type="cmis:enumUnfileObject"
 					minOccurs="0" maxOccurs="1" nillable="true" />
 				<xs:element name="continueOnFailure" type="xs:boolean"
 					minOccurs="0" maxOccurs="1" nillable="true" />

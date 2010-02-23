@@ -240,6 +240,35 @@
         </jaxws:features>
     </jaxws:endpoint>
 
+    <jaxws:endpoint address="/ACLService" implementor="#dmAclService"
+        implementorClass="org.alfresco.repo.cmis.ws.DMAclServicePort">
+        <jaxws:inInterceptors>
+            <ref local="saajInInterceptor" />
+            <ref local="wss4jInInterceptor" />
+            <ref local="authenticationInterceptor" />
+        </jaxws:inInterceptors>
+
+        <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outInterceptors>
+
+        <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
+            <ref local="saajOutInterceptor" />
+            <ref local="wss4jOutInterceptor" />
+        </jaxws:outFaultInterceptors>
+
+        <jaxws:properties>
+            <entry key="mtom-enabled" value="false" />
+        </jaxws:properties>
+
+        <jaxws:features>
+            <bean class="org.apache.cxf.feature.LoggingFeature" />
+        </jaxws:features>
+    </jaxws:endpoint>
+
     <bean id="dmServicesProxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
         <property name="beanNames">
             <list>
@@ -307,6 +336,7 @@
 
     <bean id="dmObjectService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMObjectServicePort">
         <property name="dictionaryService" ref="DictionaryService" />
+        <property name="fileTypeIconRetriever" ref="fileTypeIconRetriever" />
     </bean>
 
     <bean id="dmMultiFilingService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMMultiFilingServicePort" />
@@ -323,10 +353,16 @@
 
     <bean id="dmPolicyService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMPolicyServicePort" />
 
+    <bean id="dmAclService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMAclServicePort" />
+
     <bean id="dmAbstractService" abstract="true" class="org.alfresco.repo.cmis.ws.DMAbstractServicePort">
         <property name="cmisService" ref="CMISService" />
         <property name="cmisQueryService" ref="CMISQueryService" />
         <property name="cmisDictionaryService" ref="CMISDictionaryService" />
+        <property name="cmisRenditionService" ref="CMISRenditionService" />
+        <property name="cmisChangeLogService" ref="CMISChangeLogService" />
+        <property name="cmisAclService" ref="CMISAccessControlService" />
+
         <property name="descriptorService" ref="DescriptorService" />
         <property name="nodeService" ref="NodeService" />
         <property name="versionService" ref="VersionService" />
@@ -334,9 +370,18 @@
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
         <property name="searchService" ref="SearchService" />
         <property name="permissionService" ref="PermissionService" />
-
+        
         <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
         <property name="propertiesUtil" ref="propertiesUtils" />
+    </bean>
+
+    <bean id="fileTypeIconRetriever" class="org.alfresco.repo.cmis.ws.FileTypeIconRetrieverImpl">
+        <property name="mimetypeForSmall">
+            <value>image/gif</value>
+        </property>
+        <property name="mimetypeForMedium">
+            <value>image/gif</value>
+        </property>
     </bean>
 
     <!-- ========================================================================================================= -->

@@ -48,12 +48,13 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -180,6 +181,8 @@ public class ContentSet extends AbstractWebScript
         }
         
         // setup content writer
+        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
+        boolean isUpdate = (reader != null && reader.exists());
         ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
         
         // establish mimetype
@@ -207,5 +210,8 @@ public class ContentSet extends AbstractWebScript
 
         // write the new data
         writer.putContent(is);
+        
+        // set status
+        res.setStatus(isUpdate ? Status.STATUS_OK : Status.STATUS_CREATED);
     }
 }

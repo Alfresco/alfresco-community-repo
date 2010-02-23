@@ -45,6 +45,7 @@ public class CmisWebServiceSuiteSystemTest extends TestSuite
         suite.addTestSuite(DMRelationshipServiceTest.class);
         suite.addTestSuite(DMRepositoryServiceTest.class);
         suite.addTestSuite(DMVersioningServiceTest.class);
+        suite.addTestSuite(DMAclServiceTest.class);
         suite.addTestSuite(MultiThreadsServiceTest.class);
 
         return suite;

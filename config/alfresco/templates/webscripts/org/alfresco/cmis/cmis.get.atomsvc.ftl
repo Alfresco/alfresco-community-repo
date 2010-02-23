@@ -5,7 +5,7 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <service [@nsLib.serviceNS/]>
   <workspace>
-    <atom:title>${server.name}</atom:title>
+    <atom:title>${server.name?xml}</atom:title>
 
     <collection href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/children"> 
       <atom:title>root collection</atom:title> 
@@ -34,21 +34,24 @@
     <atom:link title="root folder tree" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="${cmisconstants.REL_FOLDER_TREE}" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/tree"/>
     <atom:link title="root descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="${cmisconstants.REL_ROOT_DESCENDANTS}" href="${absurl(url.serviceContext)}[@linksLib.nodeuri defaultRootFolder/]/descendants"/>
     <atom:link title="type descendants" type="${cmisconstants.MIMETYPE_CMISTREE}" rel="${cmisconstants.REL_TYPES_DESCENDANTS}" href="${absurl(url.serviceContext)}/cmis/types/descendants"/>
+    <atom:link title="change log entries" type="${cmisconstants.MIMETYPE_FEED}" rel="${cmisconstants.REL_CHANGES}" href="${absurl(url.serviceContext)}/cmis/changes"/>
+    [#-- TODO: changes collection --]
 
     <cmisra:repositoryInfo>
       <cmis:repositoryId>${server.id}</cmis:repositoryId>
-      <cmis:repositoryName>${server.name}</cmis:repositoryName>
+      <cmis:repositoryName>${server.name?xml}</cmis:repositoryName>
       <cmis:repositoryDescription></cmis:repositoryDescription>   [#-- TODO --]
       <cmis:vendorName>Alfresco</cmis:vendorName> 
-      <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
-      <cmis:productVersion>${server.version}</cmis:productVersion>
+      <cmis:productName>Alfresco Repository (${server.edition?xml})</cmis:productName>
+      <cmis:productVersion>${server.version?xml}</cmis:productVersion>
       <cmis:rootFolderId>[@entryLib.namedvalue cmisconstants.PROP_OBJECT_ID defaultRootFolder cmisconstants.DATATYPE_ID/]</cmis:rootFolderId>
-      [#-- TODO: implement change log --]
-      [#-- TODO: <cmis:latestChangeLogToken></cmis:latestChangeLogToken> --]
+[#if lastChangeLogToken??]
+      <cmis:latestChangeLogToken>${lastChangeLogToken}</cmis:latestChangeLogToken>
+[/#if]          
       <cmis:capabilities>
-        <cmis:capabilityACL>[#-- TODO --]none</cmis:capabilityACL>
+        <cmis:capabilityACL>${aclCapability}</cmis:capabilityACL>
         <cmis:capabilityAllVersionsSearchable>${allVersionsSearchable?string}</cmis:capabilityAllVersionsSearchable>
-        <cmis:capabilityChanges>[#-- TODO --]none</cmis:capabilityChanges>
+        <cmis:capabilityChanges>${changeLogCapability}</cmis:capabilityChanges>
         <cmis:capabilityContentStreamUpdatability>anytime</cmis:capabilityContentStreamUpdatability>
         <cmis:capabilityGetDescendants>true</cmis:capabilityGetDescendants>
         <cmis:capabilityGetFolderTree>true</cmis:capabilityGetFolderTree>
@@ -56,19 +59,39 @@
         <cmis:capabilityPWCSearchable>${pwcSearchable?string}</cmis:capabilityPWCSearchable>
         <cmis:capabilityPWCUpdatable>true</cmis:capabilityPWCUpdatable>
         <cmis:capabilityQuery>${querySupport}</cmis:capabilityQuery>
-        [#-- TODO: implement rendition spec --]
-        <cmis:capabilityRenditions>none</cmis:capabilityRenditions>
+        <cmis:capabilityRenditions>read</cmis:capabilityRenditions>
         <cmis:capabilityUnfiling>false</cmis:capabilityUnfiling>
         <cmis:capabilityVersionSpecificFiling>false</cmis:capabilityVersionSpecificFiling>
         <cmis:capabilityJoin>${joinSupport}</cmis:capabilityJoin>
       </cmis:capabilities> 
-      [#-- TODO: implement ACL spec --]
-      [#-- <cmis:aclCapability></cmis:aclCapability> --]
+      <cmis:aclCapability>
+        <cmis:supportedPermissions>${aclSupportedPermissions}</cmis:supportedPermissions>
+        <cmis:propagation>${aclPropagation}</cmis:propagation>
+[#list repositoryPermissions as permission]
+        <cmis:permissions>
+          <cmis:permission>${permission.permission}</cmis:permission>
+[#if permission.description??]
+          <cmis:description>${permission.description}</cmis:description>
+[/#if]          
+        </cmis:permissions>
+[/#list]
+[#list permissionMappings as mapping]
+        <cmis:mapping>
+          <cmis:key>${mapping.key}</cmis:key>
+[#list mapping.permissions as permission]
+          <cmis:permission>${permission}</cmis:permission>
+[/#list]
+        </cmis:mapping>        
+[/#list]
+      </cmis:aclCapability>
       <cmis:cmisVersionSupported>${cmisVersion}</cmis:cmisVersionSupported>
-      [#-- TODO: implement change log --]
-      [#-- TODO: <cmis:changesIncomplete></cmis:changesIncomplete> --]
-      [#-- TODO: <cmis:changesOnType></cmis:changesOnType> --]
-      <alf:cmisSpecificationTitle>${cmisSpecTitle}</alf:cmisSpecificationTitle>
+      <cmis:changesIncomplete>${changesIncomplete?string}</cmis:changesIncomplete>
+[#list changesOnType as changetype]
+      <cmis:changesOnType>${changetype}</cmis:changesOnType>
+[/#list]
+      <cmis:principalAnonymous>${principalAnonymous}</cmis:principalAnonymous>
+      <cmis:principalAnyone>${principalAnyone}</cmis:principalAnyone>
+      <alf:cmisSpecificationTitle>${cmisSpecTitle?xml}</alf:cmisSpecificationTitle>
     </cmisra:repositoryInfo>
 
     <cmisra:uritemplate>

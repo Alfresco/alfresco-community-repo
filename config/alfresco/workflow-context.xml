@@ -107,6 +107,7 @@
       <property name="messageService" ref="messageService"/>
       <property name="personService" ref="personService"/>
       <property name="authorityDAO" ref="authorityDAO"/>
+      <!-- Creates JBPMNodes (ScriptNodes) which require the ServiceRegsitry -->
       <property name="serviceRegistry" ref="ServiceRegistry"/>
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>

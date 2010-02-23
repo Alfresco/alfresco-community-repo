@@ -49,6 +49,7 @@
         <property name="extensionName">
             <value>preferenceService</value>
         </property>
+        <!-- Has the ServiceRegistry for people extending it to use -->
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="preferenceService" ref="preferenceService"/>
     </bean>

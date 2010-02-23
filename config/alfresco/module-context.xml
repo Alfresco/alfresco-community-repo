@@ -8,6 +8,7 @@
 
    <!-- The ModuleService implementation -->
    <bean id="moduleService" class="org.alfresco.repo.module.ModuleServiceImpl">
+      <!-- Uses ModuleComponentHelper which requires the ServiceRegistry -->
       <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="descriptorService" ref="DescriptorService" />
       <property name="registryService" ref="RegistryService" />

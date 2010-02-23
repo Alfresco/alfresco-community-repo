@@ -65,6 +65,7 @@
         <property name="extensionName">
             <value>taggingService</value>
         </property>
+        <!-- Creates ScriptNodes which require the ServiceRegistry -->
         <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
     

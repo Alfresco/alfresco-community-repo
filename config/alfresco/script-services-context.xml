@@ -22,6 +22,7 @@
         <property name="scriptService">
             <ref bean="scriptService"/>
         </property>
+        <!-- Creates ScriptNodes which require the ServiceRegistry -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>

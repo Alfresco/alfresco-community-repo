@@ -388,6 +388,7 @@
     </bean>
 
     <bean name="baseHomeFolderProvider" class="org.alfresco.repo.security.person.AbstractHomeFolderProvider" abstract="true">
+        <!-- Requests services via ServiceRegistry for auditability -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
@@ -424,6 +425,7 @@
          
     
     <bean name="guestHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider" parent="baseHomeFolderProvider">
+        <!-- Requests services via ServiceRegistry for auditability -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
@@ -480,6 +482,7 @@
     </bean>
     
     <bean name="personalHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider"  parent="baseHomeFolderProvider">
+        <!-- Requests services via ServiceRegistry for auditability -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>

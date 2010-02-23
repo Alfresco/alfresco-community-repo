@@ -98,6 +98,7 @@
         <property name="extensionName">
             <value>siteService</value>
         </property>
+        <!-- Creates Sites which require the ServiceRegistry -->
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="siteService" ref="siteService"/>
     </bean>

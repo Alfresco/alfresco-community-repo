@@ -1238,8 +1238,7 @@ public class QueryTest extends BaseCMISTest
         options.setDefaultFTSFieldConnective(Connective.OR);
         CMISResultSet rs = cmisQueryService.query(options);
         assertEquals(file_count, rs.length());
-        for (@SuppressWarnings("unused")
-        CMISResultSetRow row : rs)
+        for (CMISResultSetRow row : rs)
         {
             // Serializable sValue = row.getValue("cmis:versionLabel");
             // String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);

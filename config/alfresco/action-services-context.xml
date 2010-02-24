@@ -151,6 +151,10 @@
       <property name="enumClassName" value="org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation" />
    </bean>
    
+   <bean id="ac-content-properties" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
+      <property name="enumClassName" value="org.alfresco.repo.action.evaluator.compare.ContentPropertyName" />
+   </bean>
+   
    <bean id="ac-mimetypes" class="org.alfresco.repo.action.constraint.MimetypeParameterConstraint" parent="action-constraint">      
     	<property name="mimetypeMap" ref="mimetypeService"/>
    </bean>

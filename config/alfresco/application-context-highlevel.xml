@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- These are the XML files of the high level parts of the context -->
+<beans>
+    <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
+    <import resource="classpath:alfresco/jcr-api-context.xml" />
+    <import resource="classpath:alfresco/remote-services-context.xml"/>
+    <import resource="classpath*:alfresco/office-addin-context.xml"/>
+    <import resource="classpath*:alfresco/portlets-context.xml"/>
+    <import resource="classpath:alfresco/blog-context.xml"/>
+    <import resource="classpath:alfresco/thumbnail-service-context.xml"/>
+    <import resource="classpath:alfresco/preference-service-context.xml"/>
+    <import resource="classpath:alfresco/swf-transform-context.xml"/>
+    <import resource="classpath:alfresco/form-services-context.xml"/>
+    <import resource="classpath:alfresco/cmis-api-context.xml" />
+    <import resource="classpath:alfresco/period-type-context.xml" />
+    <import resource="classpath*:alfresco/domain/*-context.xml" />
+    <import resource="classpath*:alfresco/linkvalidation-service-context.xml"/>
+</beans>

@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- These are the XML files of the "core" of the context -->
+<!-- This includes bootstrap-context.xml, so subsystems are "core" too -->
+<beans>
+    <import resource="classpath:alfresco/cache-context.xml" />
+    <import resource="classpath:alfresco/st-context.xml"/>
+    <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>
+    <import resource="classpath:alfresco/core-services-context.xml" />
+    <import resource="classpath:alfresco/public-services-context.xml" />
+    <import resource="classpath:alfresco/model-specific-services-context.xml" />
+    <import resource="classpath:alfresco/action-services-context.xml" />
+    <import resource="classpath:alfresco/rule-services-context.xml" />
+    <import resource="classpath:alfresco/node-services-context.xml" />
+    <import resource="classpath:alfresco/scheduler-core-context.xml" />
+    <import resource="classpath:alfresco/network-authentication-context.xml" />
+    <import resource="classpath:alfresco/network-protocol-context.xml" />
+    <import resource="classpath:alfresco/emailserver/email-service-context.xml" />
+    <import resource="classpath:alfresco/content-services-context.xml" />
+    <import resource="classpath:alfresco/mt/st-admin-context.xml"/>
+    <import resource="classpath:alfresco/dao/dao-context.xml" />
+    <import resource="classpath:alfresco/hibernate-context.xml" />
+    <import resource="classpath:alfresco/ibatis/ibatis-context.xml" />
+    <import resource="classpath:alfresco/activities/activities-feed-context.xml" />
+    <import resource="classpath:alfresco/ownable-services-context.xml" />
+    <import resource="classpath:alfresco/template-services-context.xml" />
+    <import resource="classpath:alfresco/script-services-context.xml" />
+    <import resource="classpath:alfresco/index-recovery-context.xml" />
+    <import resource="classpath:alfresco/authority-services-context.xml" />
+    <import resource="classpath:alfresco/authentication-services-context.xml" />
+    <import resource="classpath:alfresco/usage-services-context.xml" />
+    <import resource="classpath:alfresco/policy-context.xml" />
+    <import resource="classpath:alfresco/import-export-context.xml" />
+    <import resource="classpath:alfresco/bootstrap-context.xml" />
+    <import resource="classpath:alfresco/repo-admin-context.xml"/>
+    <import resource="classpath:alfresco/workflow-context.xml" />
+    <import resource="classpath:alfresco/avm-services-context.xml" />
+    <import resource="classpath:alfresco/wcm-services-context.xml"/>
+    <import resource="classpath:alfresco/audit-services-context.xml" />
+    <import resource="classpath:alfresco/attributes-service-context.xml"/>
+    <import resource="classpath:alfresco/deployment-service-context.xml"/>
+    <import resource="classpath:alfresco/site-services-context.xml"/>
+    <import resource="classpath:alfresco/tagging-services-context.xml"/>
+    <import resource="classpath:alfresco/invitation-service-context.xml"/>
+    <import resource="classpath*:alfresco/patch/*-context.xml" />
+</beans>

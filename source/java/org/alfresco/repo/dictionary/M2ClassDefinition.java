@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -521,7 +521,7 @@ import org.alfresco.util.EqualsHelper;
         }
         
         // check name - cannot be null
-        if (! name.equals(classDef.getName())) 
+        if (! getName().equals(classDef.getName()))
         { 
             isUpdated = true;
         }
@@ -539,9 +539,9 @@ import org.alfresco.util.EqualsHelper;
         }
         
         // check parent name
-        if (parentName != null) 
+        if (getParentName() != null) 
         {
-            if (! parentName.equals(classDef.getParentName())) 
+            if (! getParentName().equals(classDef.getParentName())) 
             { 
                 isUpdated = true;
             }
@@ -590,15 +590,15 @@ import org.alfresco.util.EqualsHelper;
                 break;
             }
         }
-               
+        
         // check all associations (including inherited associations, child associations and inherited child associations)
         Collection<M2ModelDiff> assocDiffs = M2AssociationDefinition.diffAssocLists(getAssociations().values(), classDef.getAssociations().values());
-
+        
         for (M2ModelDiff assocDiff : assocDiffs)
         {
             // note: incremental association updates not supported yet, added for completeness
             if (assocDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED) || assocDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
-            {     
+            {
                 isUpdatedIncrementally = true;
             }
             
@@ -608,7 +608,7 @@ import org.alfresco.util.EqualsHelper;
                 break;
             }
         }
-
+        
         // check default/mandatory aspects (including inherited default aspects)
         Collection<M2ModelDiff> defaultAspectsDiffs = M2ClassDefinition.diffClassLists(new ArrayList<ClassDefinition>(getDefaultAspects()), new ArrayList<ClassDefinition>(classDef.getDefaultAspects()), M2ModelDiff.TYPE_DEFAULT_ASPECT);
        
@@ -616,7 +616,7 @@ import org.alfresco.util.EqualsHelper;
         {
             // note: incremental default/mandatory aspect updates not supported yet, added for completeness
             if (defaultAspectDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
-            {     
+            {
                 isUpdatedIncrementally = true;
             }
             
@@ -628,7 +628,7 @@ import org.alfresco.util.EqualsHelper;
         }
         
         // check archive/inheritedArchive
-        if (archive == null)
+        if (getArchive() == null)
         {
             if (classDef.getArchive() != null)
             {
@@ -638,15 +638,16 @@ import org.alfresco.util.EqualsHelper;
         else
         {
             Boolean classArchive = classDef.getArchive();
-            if (classArchive == null || classArchive.booleanValue() != archive.booleanValue())
+            if (classArchive == null || classArchive.booleanValue() != getArchive().booleanValue())
             {
                 isUpdatedIncrementally = true;
             }
         }
        
         // check includedInSuperTypeQuery/inheritedIncludedInSuperTypeQuery
-        if (includedInSuperTypeQuery == null)
+        if (getIncludedInSuperTypeQuery() == null)
         {
+            // belts-and-braces (currently does not return null)
             if (classDef.getIncludedInSuperTypeQuery() != null)
             {
                 isUpdatedIncrementally = true;
@@ -655,7 +656,7 @@ import org.alfresco.util.EqualsHelper;
         else
         {
             Boolean classIncludedInSuperTypeQuery = classDef.getIncludedInSuperTypeQuery();
-            if (classIncludedInSuperTypeQuery == null || classIncludedInSuperTypeQuery.booleanValue() != includedInSuperTypeQuery.booleanValue())
+            if (classIncludedInSuperTypeQuery == null || classIncludedInSuperTypeQuery.booleanValue() != getIncludedInSuperTypeQuery().booleanValue())
             {
                 isUpdatedIncrementally = true;
             }

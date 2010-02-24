@@ -2,6 +2,9 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <beans>
+   <!-- Note - many beans in this file are not directly used -->
+   <!--  within the main context. Instead, they are used by -->
+   <!--  beans defined within the fileServer subsystem -->
 
    <!-- File Server Configuration -->
    <bean id="fileServerConfigurationBase"

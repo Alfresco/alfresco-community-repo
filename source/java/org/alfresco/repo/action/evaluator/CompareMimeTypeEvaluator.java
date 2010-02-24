@@ -102,8 +102,6 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
         paramList.add(new ParameterDefinitionImpl(PARAM_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_PROPERTY)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));
-        //paramList.add(new ParameterDefinitionImpl(PARAM_OPERATION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_OPERATION), false, "ac-compare-operations"));	    
+        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));        	    
 	}
 }

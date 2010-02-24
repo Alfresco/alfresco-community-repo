@@ -93,6 +93,7 @@ public class ActionParameterConstraintTest extends BaseSpringTest
         testConstraint("ac-mimetypes");
         testConstraint("ac-email-templates");
         testConstraint("ac-scripts");
+        testConstraint("ac-content-properties");
     }
     
     private void testConstraint(String name)

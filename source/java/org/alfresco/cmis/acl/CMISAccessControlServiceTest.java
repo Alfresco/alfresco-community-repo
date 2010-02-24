@@ -498,41 +498,41 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
     {
         List<? extends CMISPermissionMapping> mappings = cmisAccessControlService.getPermissionMappings();
         assertEquals(29, mappings.size());
-        assertTrue(contains(mappings, "canGetDescendants.Folder", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadChildren"));
-        assertTrue(contains(mappings, "canGetFolderTree.Folder", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadChildren"));
+        assertTrue(contains(mappings, "canGetDescendents.Folder", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadChildren"));
+        // "canGetFolderTree.Folder"
         assertTrue(contains(mappings, "canGetChildren.Folder", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadChildren"));
-        assertTrue(contains(mappings, "canGetFolderParent.Folder", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
-        assertTrue(contains(mappings, "canGetObjectParents.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
+        assertTrue(contains(mappings, "canGetParents.Folder", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
+        assertTrue(contains(mappings, "canGetFolderParent.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
         assertTrue(contains(mappings, "canCreateDocument.Folder", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.CreateChildren"));
         assertTrue(contains(mappings, "canCreateFolder.Folder", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.CreateChildren"));
         // "canCreateRelationship.Source"
         // "canCreateRelationship.Target"
         assertTrue(contains(mappings, "canGetProperties.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
-        assertTrue(contains(mappings, "canGetRenditions.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
-        assertTrue(contains(mappings, "canGetContentStream.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadContent"));
+        // "canGetRenditions.Object"
+        assertTrue(contains(mappings, "canViewContent.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadContent"));
         assertTrue(contains(mappings, "canUpdateProperties.Object", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.WriteProperties"));
-        assertTrue(contains(mappings, "canMoveObject.Object", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.DeleteNode"));
-        assertTrue(contains(mappings, "canMoveObject.Target", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.CreateChildren"));
+        assertTrue(contains(mappings, "canMove.Object", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.DeleteNode"));
+        assertTrue(contains(mappings, "canMove.Target", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.CreateChildren"));
         // "canMoveObject.Source"
         assertTrue(contains(mappings, "canDelete.Object", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.DeleteNode"));
         // "canDelete.Folder"
         // === SPEC BUG - should really be those below ...
         // "canDeleteObject.Object"
         // "canDeleteObject.Folder"
-        assertTrue(contains(mappings, "canSetContentStream.Document", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.WriteContent"));
-        assertTrue(contains(mappings, "canDeleteContentStream.Document", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.WriteContent"));
+        assertTrue(contains(mappings, "canSetContent.Document", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.WriteContent"));
+        assertTrue(contains(mappings, "canDeleteContent.Document", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.WriteContent"));
         assertTrue(contains(mappings, "canDeleteTree.Folder", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.DeleteNode"));
-        assertTrue(contains(mappings, "canAddObjectToFolder.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
-        assertTrue(contains(mappings, "canAddObjectToFolder.Folder", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.CreateChildren"));
-        assertTrue(contains(mappings, "canRemoveObjectFromFolder.Object", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.DeleteNode"));
+        assertTrue(contains(mappings, "canAddToFolder.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));
+        assertTrue(contains(mappings, "canAddToFolder.Folder", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.CreateChildren"));
+        assertTrue(contains(mappings, "canRemoveFromFolder.Object", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.DeleteNode"));
         // "canRemoveObjectFromFolder.Folder"
-        assertTrue(contains(mappings, "canCheckOut.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/content/1.0}lockable.CheckOut"));
-        assertTrue(contains(mappings, "canCancelCheckOut.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/content/1.0}lockable.CancelCheckOut"));
-        assertTrue(contains(mappings, "canCheckIn.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/content/1.0}lockable.CheckIn"));
-        assertTrue(contains(mappings, "canGetAllVersions.Document", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.Read"));
+        assertTrue(contains(mappings, "canCheckout.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/content/1.0}lockable.CheckOut"));
+        assertTrue(contains(mappings, "canCancelCheckout.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/content/1.0}lockable.CancelCheckOut"));
+        assertTrue(contains(mappings, "canCheckin.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "{http://www.alfresco.org/model/content/1.0}lockable.CheckIn"));
+        assertTrue(contains(mappings, "canGetAllVersions.VersionSeries", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.Read"));
         // "canGetObjectRelationships.Object"
-        assertTrue(contains(mappings, "canApplyPolicy.Object", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.Write"));
-        assertTrue(contains(mappings, "canApplyPolicy.Policy", CMISAccessControlService.CMIS_READ_PERMISSION));
+        assertTrue(contains(mappings, "canAddPolicy.Object", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.Write"));
+        assertTrue(contains(mappings, "canAddPolicy.Policy", CMISAccessControlService.CMIS_READ_PERMISSION));
         assertTrue(contains(mappings, "canRemovePolicy.Object", CMISAccessControlService.CMIS_WRITE_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.Write"));
         assertTrue(contains(mappings, "canRemovePolicy.Policy", CMISAccessControlService.CMIS_READ_PERMISSION));
         assertTrue(contains(mappings, "canGetAppliedPolicies.Object", CMISAccessControlService.CMIS_READ_PERMISSION, "{http://www.alfresco.org/model/system/1.0}base.ReadProperties"));

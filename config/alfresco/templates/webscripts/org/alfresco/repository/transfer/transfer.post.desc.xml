@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Node Transfer Service</shortname>
+  <description>Invoke commands on the Node Transfer Service</description>
+  <url>/api/transfer/{command}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>

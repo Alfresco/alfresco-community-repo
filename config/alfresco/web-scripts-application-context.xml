@@ -634,7 +634,52 @@
 	<!-- get all owned rules for node web script -->
 	<bean id="webscript.org.alfresco.repository.rule.rules.get" class="org.alfresco.repo.web.scripts.rule.RulesGet" parent="abstractRuleWebScript">		      
 	</bean>
-    
+
+	<bean id="webscript.org.alfresco.repository.transfer.transfer.post" class="org.alfresco.repo.web.scripts.transfer.TransferWebScript" parent="webscript" >
+		<property name="enabled"><value>${transferservice.receiver.enabled}</value></property>
+		<property name="commandProcessors">
+			<map>
+				<entry key="test">
+					<bean class="org.alfresco.repo.web.scripts.transfer.TestCredentialsCommandProcessor" />
+				</entry>
+				<entry key="begin">
+					<bean class="org.alfresco.repo.web.scripts.transfer.BeginTransferCommandProcessor">
+						<property name="receiver" ref="transferReceiver" />
+					</bean>
+				</entry>
+				<entry key="post-snapshot">
+					<bean class="org.alfresco.repo.web.scripts.transfer.PostSnapshotCommandProcessor">
+						<property name="receiver" ref="transferReceiver" />
+					</bean>
+				</entry>
+				<entry key="post-content">
+					<bean class="org.alfresco.repo.web.scripts.transfer.PostContentCommandProcessor">
+						<property name="receiver" ref="transferReceiver" />
+					</bean>
+				</entry>
+            <entry key="prepare">
+               <bean class="org.alfresco.repo.web.scripts.transfer.PrepareTransferCommandProcessor">
+                  <property name="receiver" ref="transferReceiver" />
+               </bean>
+            </entry>
+            <entry key="commit">
+               <bean class="org.alfresco.repo.web.scripts.transfer.CommitTransferCommandProcessor">
+                  <property name="receiver" ref="transferReceiver" />
+               </bean>
+            </entry>
+            <entry key="abort">
+               <bean class="org.alfresco.repo.web.scripts.transfer.AbortTransferCommandProcessor">
+                  <property name="receiver" ref="transferReceiver" />
+               </bean>
+            </entry>
+           <entry key="messages">
+               <bean class="org.alfresco.repo.web.scripts.transfer.MessagesTransferCommandProcessor">
+                  <property name="receiver" ref="transferReceiver" />
+               </bean>
+            </entry>
+			</map>
+		</property>
+	</bean>
 	<!-- get all inherited rules for node web script -->
 	<bean id="webscript.org.alfresco.repository.rule.inheritedrules.get" class="org.alfresco.repo.web.scripts.rule.InheritedRulesGet" parent="abstractRuleWebScript">		      
 	</bean>

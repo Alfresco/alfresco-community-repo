@@ -54,7 +54,7 @@
         <AuditPath key="SECURITY">
             <AuditPath key="args">
                  <AuditPath key="nodeRef">
-                    <RecordValue key="value" dataExtractor="simpleValue" />
+                    <RecordValue key="value" dataExtractor="changeLog" />
                  </AuditPath>
             </AuditPath>
             <AuditPath key="error">

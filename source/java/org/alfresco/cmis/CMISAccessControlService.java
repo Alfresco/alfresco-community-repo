@@ -111,8 +111,9 @@ public interface CMISAccessControlService
      * @param nodeRef
      * @param acesToApply
      * @return an access control report of the final state
+     * @throws CMISConstraintException 
      */
-    public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToApply);
+    public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToApply) throws CMISConstraintException;
 
     /**
      * Update the ACEs on a node.
@@ -125,7 +126,7 @@ public interface CMISAccessControlService
      * @param propagation
      * @param format 
      * @return an access control report of the final state
-     * @exception UnsupportedCMISAclPropagationMode will be thrown for unsupported propagation modes. 
+     * @throws CMISConstraintException 
      */
-    public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToRemove, List<CMISAccessControlEntry> acesToAdd, CMISAclPropagationEnum propagation, CMISAccessControlFormatEnum format);
+    public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToRemove, List<CMISAccessControlEntry> acesToAdd, CMISAclPropagationEnum propagation, CMISAccessControlFormatEnum format) throws CMISConstraintException;
 }

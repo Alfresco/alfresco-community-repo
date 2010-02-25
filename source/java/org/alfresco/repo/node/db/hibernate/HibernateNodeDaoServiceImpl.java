@@ -3858,6 +3858,16 @@ public class HibernateNodeDaoServiceImpl
         return ret;
     }
 
+    public AssociationRef getNodeAssocOrNull(Long assocId)
+    {
+        NodeAssoc result = (NodeAssoc) getHibernateTemplate().get(NodeAssocImpl.class, assocId);
+        if (result == null)
+        {
+            return null;
+        }
+        return result.getNodeAssocRef(qnameDAO);
+    }
+
     @SuppressWarnings("unchecked")
     public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(final Long sourceNodeId)
     {

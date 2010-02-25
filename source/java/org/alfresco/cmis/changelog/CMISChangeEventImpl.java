@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have received a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.cmis.changelog;
@@ -37,22 +37,30 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CMISChangeEventImpl implements CMISChangeEvent
 {
-    private NodeRef node;
     private CMISChangeType changeType;
     private Date changeTime;
+    private NodeRef changedNode;
+    private String objectId;
+
 
     /**
-     * Construct a CMISChangeEvent using fields
+     * Instantiates a new CMIS change event.
      * 
-     * @param changeType change type
-     * @param node node reference
-     * @param changeTime change time
+     * @param changeType
+     *            the change type
+     * @param changeTime
+     *            the change time
+     * @param changedNode
+     *            the changed node
+     * @param objectId
+     *            the object id
      */
-    public CMISChangeEventImpl(CMISChangeType changeType, NodeRef node, Date changeTime)
+    public CMISChangeEventImpl(CMISChangeType changeType, Date changeTime, NodeRef changedNode, String objectId)
     {
         this.changeType = changeType;
-        this.node = node;
         this.changeTime = changeTime;
+        this.changedNode = changedNode;
+        this.objectId = objectId;
     }
 
     /**
@@ -64,19 +72,28 @@ public class CMISChangeEventImpl implements CMISChangeEvent
     }
 
     /**
-     * @see org.alfresco.cmis.CMISChangeEvent#getNode()
-     */
-    public NodeRef getNode()
-    {
-        return node;
-    }
-    
-    /**
      * @see org.alfresco.cmis.CMISChangeEvent#getChangeTime()
      */
     public Date getChangeTime()
     {
         return changeTime;
+    }
+
+    
+    /**
+     * @see org.alfresco.cmis.CMISChangeEvent#getChangedNode()
+     */
+    public NodeRef getChangedNode()
+    {
+        return changedNode;
+    }
+
+    /**
+     * @see org.alfresco.cmis.CMISChangeEvent#getObjectId()
+     */
+    public String getObjectId()
+    {
+        return objectId;
     }
 
     /**
@@ -90,7 +107,7 @@ public class CMISChangeEventImpl implements CMISChangeEvent
             return false;
         }
         CMISChangeEvent converted = (CMISChangeEvent) obj;
-        return same(node, converted.getNode()) && same(changeType, converted.getChangeType()) && same(changeTime, converted.getChangeTime());
+        return same(changedNode, converted.getChangedNode()) && same(changeType, converted.getChangeType()) && same(changeTime, converted.getChangeTime());
     }
 
     private boolean same(Object left, Object right)
@@ -104,7 +121,7 @@ public class CMISChangeEventImpl implements CMISChangeEvent
     @Override
     public int hashCode()
     {
-        int result = (null != node) ? (node.hashCode()) : (31);
+        int result = (null != changedNode) ? (changedNode.hashCode()) : (31);
         return result * 37 + (null != changeType ? changeType.hashCode() : 31) + (null != changeTime ? changeTime.hashCode() : 31);
     }
 

@@ -24,38 +24,67 @@
  */
 package org.alfresco.cmis.mapping;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.alfresco.cmis.CMISConstraintException;
+import org.alfresco.cmis.CMISContentAlreadyExistsException;
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISFilterNotValidException;
+import org.alfresco.cmis.CMISInvalidArgumentException;
+import org.alfresco.cmis.CMISNotSupportedException;
+import org.alfresco.cmis.CMISObjectNotFoundException;
+import org.alfresco.cmis.CMISPermissionDeniedException;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISRendition;
 import org.alfresco.cmis.CMISRenditionService;
+import org.alfresco.cmis.CMISRuntimeException;
 import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.cmis.CMISStreamNotSupportedException;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
+import org.alfresco.cmis.CMISVersioningException;
+import org.alfresco.cmis.CMISVersioningStateEnum;
+import org.alfresco.cmis.dictionary.CMISFolderTypeDefinition;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.version.VersionModel;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -63,40 +92,33 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionDoesNotExistException;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-
+import org.springframework.context.event.ApplicationContextEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
- * CMIS Services Implementation
+ * CMIS Services Implementation.
  * 
  * @author davidc
+ * @author dward
  */
-public class CMISServicesImpl implements CMISServices, ApplicationContextAware, ApplicationListener, TenantDeployer
+public class CMISServicesImpl implements CMISServices, ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
 {
     /** Query Parameters */
     private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
     private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
-
-    /** Shallow search for all files and folders */
-    private static final String LUCENE_QUERY_SHALLOW_FOLDERS =
-        "+PARENT:\"${cm:parent}\" " +
-        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+TYPE:\"" + ContentModel.TYPE_FOLDER + "\"";
-    
-    /** Shallow search for all files and folders */
-    private static final String LUCENE_QUERY_SHALLOW_FILES =
-        "+PARENT:\"${cm:parent}\" " +
-        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+TYPE:\"" + ContentModel.TYPE_CONTENT + "\" " +
-        "-ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"";
 
     private static final String LUCENE_QUERY_CHECKEDOUT =
         "+@cm\\:workingCopyOwner:${cm:username}";
@@ -104,7 +126,10 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private static final String LUCENE_QUERY_CHECKEDOUT_IN_FOLDER =
         "+@cm\\:workingCopyOwner:${cm:username} " +
         "+PARENT:\"${cm:parent}\"";
-        
+    
+    private static final int ASSOC_ID_PREFIX_LENGTH = ASSOC_ID_PREFIX.length();
+    
+    private static final Pattern ORDER_BY_PATTERN = Pattern.compile("^([^\\s,\"'\\\\\\.\\(\\)]+)\\s+(ASC|DESC)$");
     
     // dependencies
     private Repository repository;
@@ -113,9 +138,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private CMISDictionaryService cmisDictionaryService;
     private SearchService searchService;
     private NodeService nodeService;
+    private ContentService contentService;
     private TenantAdminService tenantAdminService;
-    private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
     private CMISRenditionService cmisRenditionService;
+    private CheckOutCheckInService checkOutCheckInService;
+    private VersionService versionService;
+    private MimetypeService mimetypeService;
+    private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
 
     // CMIS supported version
     private String cmisVersion = "[undefined]";
@@ -220,7 +249,21 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     }
 
     /**
+     * Sets the content service.
+     * 
+     * @param contentService
+     *            the content service
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
+    /**
+     * Sets the repository.
+     * 
      * @param repository
+     *            the repository
      */
     public void setRepository(Repository repository)
     {
@@ -238,6 +281,39 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         this.cmisRenditionService = cmisRenditionService;
     }
 
+    /**
+     * Sets the check out check in service.
+     * 
+     * @param checkOutCheckInService
+     *            the check out check in service
+     */
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
+    /**
+     * Sets the version service.
+     * 
+     * @param versionService
+     *            the version service
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+    
+    /**
+     * Sets the mimetype service.
+     * 
+     * @param mimetypeService
+     *            the mimetype service
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -249,22 +325,29 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
      */
-    public void onApplicationEvent(ApplicationEvent event)
+    public void onApplicationEvent(ApplicationContextEvent event)
     {
         lifecycle.onApplicationEvent(event);
     }
     
     /**
-     * Hooks into Spring Application Lifecycle
+     * Hooks into Spring Application Lifecycle.
      */
     private class ProcessorLifecycle extends AbstractLifecycleBean
     {
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+         */
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
             init();
         }
     
+        /* (non-Javadoc)
+         * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+         */
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
@@ -397,7 +480,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getRenditions(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public Map<String, Object> getRenditions(NodeRef nodeRef, String renditionFilter)
+    public Map<String, Object> getRenditions(NodeRef nodeRef, String renditionFilter) throws CMISFilterNotValidException
     {
         Map<String, Object> result = new TreeMap<String, Object>();
         List<CMISRendition> renditions = cmisRenditionService.getRenditions(nodeRef, renditionFilter);
@@ -419,38 +502,65 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypesFilterEnum)
+     * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef,
+     * org.alfresco.cmis.CMISTypesFilterEnum, java.lang.String)
      */
-    public NodeRef[] getChildren(NodeRef parent, CMISTypesFilterEnum typesFilter)
+    public NodeRef[] getChildren(NodeRef parent, CMISTypesFilterEnum typesFilter, String orderBy)
+            throws CMISInvalidArgumentException
     {
-        if (typesFilter == CMISTypesFilterEnum.ANY)
+        if (typesFilter == CMISTypesFilterEnum.POLICIES)
         {
-            NodeRef[] folders = queryChildren(parent, CMISTypesFilterEnum.FOLDERS);
-            NodeRef[] docs = queryChildren(parent, CMISTypesFilterEnum.DOCUMENTS);
-            NodeRef[] foldersAndDocs = new NodeRef[folders.length + docs.length];
-            System.arraycopy(folders, 0, foldersAndDocs, 0, folders.length);
-            System.arraycopy(docs, 0, foldersAndDocs, folders.length, docs.length);
-            return foldersAndDocs;
+            return new NodeRef[0];
         }
-        else if (typesFilter == CMISTypesFilterEnum.FOLDERS)
+        SearchParameters params = new SearchParameters();
+        params.setLanguage(SearchService.LANGUAGE_LUCENE);
+        params.addStore(parent.getStoreRef());
+        QueryParameterDefinition parentDef = new QueryParameterDefImpl(PARAM_PARENT, nodeRefDataType, true, parent.toString());
+        params.addQueryParameterDefinition(parentDef);
+
+        // Build a query for the appropriate types
+        StringBuilder query = new StringBuilder(1024).append("+PARENT:\"${cm:parent}\" -ASPECT:\"").append(
+                ContentModel.ASPECT_WORKING_COPY).append("\" +TYPE:(");
+
+        // Include doc type if necessary
+        if (typesFilter != CMISTypesFilterEnum.FOLDERS)
         {
-            NodeRef[] folders = queryChildren(parent, CMISTypesFilterEnum.FOLDERS);
-            return folders;
+            query.append('"').append(ContentModel.TYPE_CONTENT).append('"');
         }
-        else if (typesFilter == CMISTypesFilterEnum.DOCUMENTS)
+        // Include folder type if necessary
+        if (typesFilter != CMISTypesFilterEnum.DOCUMENTS)
         {
-            NodeRef[] docs = queryChildren(parent, CMISTypesFilterEnum.DOCUMENTS);
-            return docs;
+            if (typesFilter == CMISTypesFilterEnum.ANY)
+            {
+                query.append(" ");
+            }
+            query.append('"').append(ContentModel.TYPE_FOLDER).append('"');
         }
-        
-        return new NodeRef[0];
+        // Always exclude system folders
+        query.append(") -TYPE:\"").append(ContentModel.TYPE_SYSTEM_FOLDER).append("\"");
+        params.setQuery(query.toString());
+        parseOrderBy(orderBy, params);
+        ResultSet resultSet = null;
+        try
+        {
+            resultSet = searchService.query(params);
+            List<NodeRef> results = resultSet.getNodeRefs();
+            NodeRef[] nodeRefs = new NodeRef[results.size()];
+            return results.toArray(nodeRefs);
+        }
+        finally
+        {
+            if (resultSet != null) resultSet.close();
+        }
     }
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getCheckedOut(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.cmis.CMISServices#getCheckedOut(java.lang.String, org.alfresco.service.cmr.repository.NodeRef,
+     * boolean, java.lang.String)
      */
-    public NodeRef[] getCheckedOut(String username, NodeRef folder, boolean includeDescendants)
+    public NodeRef[] getCheckedOut(String username, NodeRef folder, boolean includeDescendants, String orderBy)
+            throws CMISInvalidArgumentException
     {
         SearchParameters params = new SearchParameters();
         params.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -482,6 +592,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 params.addQueryParameterDefinition(parentDef);
             }
         }
+        parseOrderBy(orderBy, params);
         
         ResultSet resultSet = null;
         try
@@ -498,86 +609,54 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     }
 
     /**
-     * Query children helper
+     * Parses an order by clause and adds its orderings to the given search parameters.
      * 
-     * NOTE: Queries for folders only or documents only
-     * 
-     * @param parent  node to query children for
-     * @param typesFilter  folders or documents
-     * @return  node children
+     * @param orderBy
+     *            the order by clause
+     * @param params
+     *            the search parameters
+     * @throws CMISInvalidArgumentException
+     *             if the order by clause is invalid
      */
-    private NodeRef[] queryChildren(NodeRef parent, CMISTypesFilterEnum typesFilter)
+    private void parseOrderBy(String orderBy, SearchParameters params) throws CMISInvalidArgumentException
     {
-        SearchParameters params = new SearchParameters();
-        params.setLanguage(SearchService.LANGUAGE_LUCENE);
-        params.addStore(parent.getStoreRef());
-        QueryParameterDefinition parentDef = new QueryParameterDefImpl(PARAM_PARENT, nodeRefDataType, true, parent.toString());
-        params.addQueryParameterDefinition(parentDef);
-        
-        if (typesFilter == CMISTypesFilterEnum.FOLDERS)
+        if (orderBy == null)
         {
-            params.setQuery(LUCENE_QUERY_SHALLOW_FOLDERS);
+            return;
         }
-        else if (typesFilter == CMISTypesFilterEnum.DOCUMENTS)
+        for (String token : orderBy.split(","))
         {
-            params.setQuery(LUCENE_QUERY_SHALLOW_FILES);
-        }
-
-        ResultSet resultSet = null;
-        try
-        {
-            resultSet = searchService.query(params);
-            List<NodeRef> results = resultSet.getNodeRefs();
-            NodeRef[] nodeRefs = new NodeRef[results.size()];
-            return results.toArray(nodeRefs);
-        }
-        finally
-        {
-            if (resultSet != null) resultSet.close();
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getRelationship(org.alfresco.cmis.CMISTypeDefinition, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public AssociationRef getRelationship(CMISTypeDefinition relDef, NodeRef source, NodeRef target)
-    {
-        if (relDef == null)
-        {
-            relDef = cmisDictionaryService.findType(CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
-        }
-        if (!relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
-        {
-            throw new AlfrescoRuntimeException("Type Id " + relDef.getTypeId() + " is not a relationship type");
-        }
-
-        QName relDefQName = relDef.getTypeId().getQName();
-        List<AssociationRef> assocs = nodeService.getTargetAssocs(source, new RegexQNamePattern(relDefQName.getNamespaceURI(), relDefQName.getLocalName()));
-        for (AssociationRef assoc : assocs)
-        {
-            if (assoc.getTargetRef().equals(target))
+            Matcher matcher = ORDER_BY_PATTERN.matcher(token);
+            if (!matcher.matches())
             {
-                return assoc;
+                throw new CMISInvalidArgumentException("Invalid order by clause: \"" + orderBy + '"');
+            }
+            String queryName = matcher.group(1);
+            CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(queryName);
+            if (propDef == null)
+            {
+                throw new CMISInvalidArgumentException("No such property: \"" + queryName + '"');
+            }
+            // We can only order by orderable properties
+            if (propDef.isOrderable())
+            {
+                params.addSort(propDef.getPropertyLuceneBuilder().getLuceneFieldName(), matcher.group(2).equals("ASC"));
             }
         }
-        return null;
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getRelationships(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypeId, boolean, org.alfresco.cmis.CMISRelationshipDirectionEnum)
      */
     public AssociationRef[] getRelationships(NodeRef node, CMISTypeDefinition relDef, boolean includeSubTypes, CMISRelationshipDirectionEnum direction)
+            throws CMISInvalidArgumentException
     {
+        // by the spec. if typeId=null then it is necessary return ALL associated Relationship objects!
         // establish relationship type to filter on
-        if (relDef == null)
+        if ((relDef != null) && !relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
         {
-            relDef = cmisDictionaryService.findType(CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
-        }
-        if (!relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
-        {
-            throw new AlfrescoRuntimeException("Type Id " + relDef.getTypeId() + " is not a relationship type");
+            throw new CMISInvalidArgumentException("Type Id " + relDef.getTypeId() + " is not a relationship type");
         }
 
         // retrieve associations
@@ -591,21 +670,28 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             assocs.addAll(nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL));
         }
 
-        // filter association by type
-        Collection<CMISTypeDefinition> subRelDefs = (includeSubTypes ? relDef.getSubTypes(true) : null);
         List<AssociationRef> filteredAssocs = new ArrayList<AssociationRef>(assocs.size());
-        for (AssociationRef assoc : assocs)
+        if (null != relDef)
         {
-            CMISTypeDefinition assocTypeDef = cmisDictionaryService.findTypeForClass(assoc.getTypeQName(), CMISScope.RELATIONSHIP);
-            if (assocTypeDef == null)
+            // filter association by type
+            Collection<CMISTypeDefinition> subRelDefs = (includeSubTypes ? relDef.getSubTypes(true) : null);
+            for (AssociationRef assoc : assocs)
             {
-                throw new AlfrescoRuntimeException("Association Type QName " + assoc.getTypeQName() + " does not map to a CMIS Relationship Type");
+                CMISTypeDefinition assocTypeDef = cmisDictionaryService.findTypeForClass(assoc.getTypeQName(), CMISScope.RELATIONSHIP);
+                if (assocTypeDef == null)
+                {
+                    throw new CMISInvalidArgumentException("Association Type QName " + assoc.getTypeQName() + " does not map to a CMIS Relationship Type");
+                }
+
+                if (assocTypeDef.equals(relDef) || (subRelDefs != null && subRelDefs.contains(assocTypeDef)))
+                {
+                    filteredAssocs.add(assoc);
+                }
             }
-            
-            if (assocTypeDef.equals(relDef) || (subRelDefs != null && subRelDefs.contains(assocTypeDef)))
-            {
-                filteredAssocs.add(assoc);
-            }
+        }
+        else
+        {
+            filteredAssocs = assocs;
         }
 
         AssociationRef[] assocArray = new AssociationRef[filteredAssocs.size()];
@@ -617,20 +703,76 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getProperty(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public Serializable getProperty(NodeRef nodeRef, String propertyName)
+    public Serializable getProperty(NodeRef nodeRef, String propertyName) throws CMISInvalidArgumentException
+    {
+        CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
+        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
+        if (propDef == null)
+        {
+            throw new CMISInvalidArgumentException("Property " + propertyName + " not found for type "
+                    + typeDef.getTypeId() + " in CMIS Dictionary");
+        }
+        return propDef.getPropertyAccessor().getValue(nodeRef);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getTypeDefinition(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public CMISTypeDefinition getTypeDefinition(NodeRef nodeRef) throws CMISInvalidArgumentException
     {
         QName typeQName = nodeService.getType(nodeRef);
         CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
         if (typeDef == null)
         {
-            throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
+            throw new CMISInvalidArgumentException("Type " + typeQName + " not found in CMIS Dictionary");
         }
-        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
-        if (propDef == null)
+        return typeDef;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getTypeDefinition(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public CMISTypeDefinition getTypeDefinition(AssociationRef associationRef) throws CMISInvalidArgumentException
+    {
+        QName typeQName = associationRef.getTypeQName();
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName, CMISScope.RELATIONSHIP);
+        if (typeDef == null)
         {
-            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for type " + typeDef.getTypeId() + " in CMIS Dictionary");
+            throw new CMISInvalidArgumentException("Association Type " + typeQName + " not found in CMIS Dictionary");
         }
-        return propDef.getPropertyAccessor().getValue(nodeRef);
+        return typeDef;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getTypeDefinition(java.lang.String)
+     */
+    public CMISTypeDefinition getTypeDefinition(String typeId) throws CMISInvalidArgumentException
+    {
+        CMISTypeDefinition typeDef = null;
+        try
+        {
+            typeDef = cmisDictionaryService.findType(typeId);
+        }
+        catch (Exception e)
+        {
+        }
+        if (typeDef == null)
+        {
+            throw new CMISInvalidArgumentException("Invalid typeId " + typeId);
+        }
+        return typeDef;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getBaseTypes()
+     */
+    public Collection<CMISTypeDefinition> getBaseTypes()
+    {
+        return cmisDictionaryService.getBaseTypes();
     }
 
     /*
@@ -648,7 +790,8 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
         if (propDef == null)
         {
-            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for relationship type " + typeDef.getTypeId() + " in CMIS Dictionary");
+            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for relationship type "
+                    + typeDef.getTypeId() + " in CMIS Dictionary");
         }
         return propDef.getPropertyAccessor().getValue(assocRef);
     }
@@ -657,14 +800,9 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getProperties(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public Map<String, Serializable> getProperties(NodeRef nodeRef)
+    public Map<String, Serializable> getProperties(NodeRef nodeRef) throws CMISInvalidArgumentException
     {
-        QName typeQName = nodeService.getType(nodeRef);
-        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
-        if (typeDef == null)
-        {
-            throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
-        }
+        CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
         Map<String, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
         Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size());
         for (CMISPropertyDefinition propDef : propDefs.values())
@@ -679,18 +817,821 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      * @see org.alfresco.cmis.CMISServices#setProperty(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.io.Serializable)
      */
     public void setProperty(NodeRef nodeRef, String propertyName, Serializable value)
+            throws CMISInvalidArgumentException
     {
-        QName typeQName = nodeService.getType(nodeRef);
-        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
-        if (typeDef == null)
-        {
-            throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
-        }
+        CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
         if (propDef == null)
         {
-            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for type " + typeDef.getTypeId() + " in CMIS Dictionary");
+            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for type "
+                    + typeDef.getTypeId() + " in CMIS Dictionary");
         }
         propDef.getPropertyAccessor().setValue(nodeRef, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#applyVersioningState(org.alfresco.service.cmr.repository.NodeRef,
+     * org.alfresco.cmis.CMISVersioningStateEnum)
+     */
+    public NodeRef applyVersioningState(NodeRef source, CMISVersioningStateEnum versioningState)
+            throws CMISConstraintException, CMISInvalidArgumentException
+    {
+        switch (versioningState)
+        {
+        case NONE:
+            return source;
+        case CHECKED_OUT:
+            validateVersionable(source);
+            return this.checkOutCheckInService.checkout(source);
+        default:
+            validateVersionable(source);
+            this.versionService.createVersion(source, createVersionProperties("Initial Version",
+                    versioningState != CMISVersioningStateEnum.MINOR));
+            break;
+        }
+        return source;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#checkOut(java.lang.String)
+     */
+    public NodeRef checkOut(String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef nodeRef = getObject(objectId, NodeRef.class, true, true, false);
+        try
+        {
+            return this.checkOutCheckInService.checkout(nodeRef);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new CMISVersioningException(e.getMessage(), e);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#checkIn(java.lang.String, java.lang.String, boolean)
+     */
+    public NodeRef checkIn(String objectId, String checkinComment, boolean isMajor) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException
+    {
+        NodeRef nodeRef = getObject(objectId, NodeRef.class, true, true, true);
+        try
+        {
+            return checkOutCheckInService.checkin(nodeRef, createVersionProperties(checkinComment, isMajor));
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new CMISVersioningException(e.getMessage(), e);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#cancelCheckOut(java.lang.String)
+     */
+    public void cancelCheckOut(String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef nodeRef = getObject(objectId, NodeRef.class, true, true, true);
+        try
+        {
+            checkOutCheckInService.cancelCheckout(nodeRef);
+        }
+        catch (CheckOutCheckInServiceException e)
+        {
+            throw new CMISVersioningException(e.getMessage(), e);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getAllVersions(java.lang.String)
+     */
+    public List<NodeRef> getAllVersions(String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef nodeRef = getVersionSeries(objectId, NodeRef.class, true);
+
+        List<NodeRef> objects = new LinkedList<NodeRef>();
+        NodeRef pwc = checkOutCheckInService.getWorkingCopy(nodeRef);
+        if (pwc != null)
+        {
+            objects.add(pwc);
+        }
+        objects.add(nodeRef);
+        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+        if (versionHistory != null)
+        {
+            Version current = versionService.getCurrentVersion(nodeRef);
+            while (current != null)
+            {
+                objects.add(current.getFrozenStateNodeRef());
+                current = versionHistory.getPredecessor(current);
+            }
+        }
+        return objects;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getObject(java.lang.String, java.lang.Class, boolean, boolean, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(String objectId, Class<T> requiredType, boolean forUpdate, boolean isVersionable,
+            boolean isPwc) throws CMISConstraintException, CMISVersioningException, CMISObjectNotFoundException,
+            CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        try
+        {
+            int sepIndex = objectId.lastIndexOf(';');
+            String nodeRefString;
+            // Handle version format IDs
+            if (sepIndex != -1 && NodeRef.isNodeRef(nodeRefString = objectId.substring(0, sepIndex)))
+            {
+                if (isPwc)
+                {
+                    throw new CMISVersioningException(objectId + " is not a working copy");
+                }
+
+                // Allow returning of non-updateable version nodes as noderefs
+                if (requiredType.isAssignableFrom(Version.class) || !forUpdate
+                        && requiredType.isAssignableFrom(NodeRef.class))
+                {
+                    NodeRef nodeRef = new NodeRef(nodeRefString);
+                    if (!nodeService.exists(nodeRef))
+                    {
+                        throw new CMISObjectNotFoundException(objectId);
+                    }
+                    VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+                    if (versionHistory == null)
+                    {
+                        throw new CMISObjectNotFoundException(objectId);
+                    }
+                    try
+                    {
+                        Version version = versionHistory.getVersion(objectId.substring(sepIndex + 1));
+
+                        // Return as noderef if required
+                        return requiredType.isAssignableFrom(Version.class) ? (T) version : (T) version
+                                .getFrozenStateNodeRef();
+                    }
+                    catch (VersionDoesNotExistException e)
+                    {
+                        throw new CMISObjectNotFoundException(objectId);
+                    }
+                }
+                else if (requiredType.isAssignableFrom(NodeRef.class))
+                {
+                    // We wanted an updateable node but got a history node
+                    throw new CMISVersioningException(objectId + " is not a current node");
+                }
+            }
+            // Handle node format IDs
+            else if (NodeRef.isNodeRef(objectId))
+            {
+                if (requiredType.isAssignableFrom(NodeRef.class))
+                {
+                    NodeRef nodeRef = new NodeRef(objectId);
+                    if (!nodeService.exists(nodeRef))
+                    {
+                        throw new CMISObjectNotFoundException(objectId);
+                    }
+                    if (isVersionable)
+                    {
+                        validateVersionable(nodeRef);
+
+                        // Check that the PWC status is as we require
+                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+                        {
+                            // This is a PWC so make sure we wanted one
+                            if (!isPwc)
+                            {
+                                throw new CMISVersioningException(objectId + " is a working copy");
+                            }
+                        }
+                        else
+                        {
+                            // This is not a PWC so make sure we didn't want one
+                            if (isPwc)
+                            {
+                                throw new CMISVersioningException(objectId + " is not a working copy");
+                            }
+
+                            // If it should be updateable, make sure it's not currently checked out
+                            if (forUpdate)
+                            {
+                                if (checkOutCheckInService.getWorkingCopy(nodeRef) != null)
+                                {
+                                    throw new CMISVersioningException("Can't update " + objectId + " while checked out");
+                                }
+                            }
+                        }
+                    }
+                    return (T) new NodeRef(objectId);
+                }
+            }
+            // Handle Assoc IDs
+            else if (objectId.startsWith(ASSOC_ID_PREFIX))
+            {
+                if (isPwc)
+                {
+                    throw new CMISVersioningException(objectId + " is not a working copy");
+                }
+                if (isVersionable)
+                {
+                    throw new CMISConstraintException("Type " + CMISDictionaryModel.RELATIONSHIP_TYPE_ID
+                            + " is not versionable");
+                }
+                if (requiredType.isAssignableFrom(AssociationRef.class))
+                {
+                    AssociationRef associationRef = nodeService.getAssoc(new Long(objectId.substring(ASSOC_ID_PREFIX_LENGTH)));
+                    if (associationRef == null)
+                    {
+                        throw new CMISObjectNotFoundException("Unable to find object " + objectId);
+                    }
+                    return (T) associationRef;
+                }
+            }
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e);
+        }
+        throw new CMISConstraintException("Object " + objectId + " is not of required type");
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getReadableObject(java.lang.String, java.lang.Class)
+     */
+    public <T> T getReadableObject(String objectId, Class<T> requiredType) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException
+    {
+        return getObject(objectId, requiredType, false, false, false);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getFolder(java.lang.String)
+     */
+    public NodeRef getFolder(String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef folderRef = getReadableObject(objectId, NodeRef.class);
+        CMISTypeDefinition typeDef = getTypeDefinition(folderRef);
+        if (typeDef.getTypeId().getBaseTypeId() != CMISDictionaryModel.FOLDER_TYPE_ID)
+        {
+            throw new CMISInvalidArgumentException("Object " + objectId + " is not a folder");
+        }
+        return folderRef;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getFolderParent(java.lang.String)
+     */
+    public NodeRef getFolderParent(String folderId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef folderRef = getFolder(folderId);
+        if (getDefaultRootNodeRef().equals(folderRef))
+        {
+            throw new CMISInvalidArgumentException("Root Folder has no parents");
+        }
+        return nodeService.getPrimaryParent(folderRef).getParentRef();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getVersionSeries(java.lang.String, java.lang.Class, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getVersionSeries(String objectId, Class<T> requiredType, boolean isVersionable)
+            throws CMISConstraintException, CMISVersioningException, CMISObjectNotFoundException,
+            CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        // Preserve non-node objects
+        if (!requiredType.isAssignableFrom(NodeRef.class))
+        {
+            return getObject(objectId, requiredType, false, isVersionable, false);
+        }
+
+        Object object = getReadableObject(objectId, Object.class);
+        NodeRef result;
+        // Map version nodes back to their source node
+        if (object instanceof Version)
+        {
+            result = ((Version) object).getVersionedNodeRef();
+        }
+        else if (object instanceof NodeRef)
+        {
+            NodeRef nodeRef = (NodeRef) object;
+            // Map working copy nodes back to where they were checked out from
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+            {
+                result = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
+            }
+            // Preserve all other nodes
+            else
+            {
+                result = nodeRef;
+            }
+        }
+        else
+        {
+            throw new CMISConstraintException("Object " + objectId + " is not of required type");            
+        }
+        if (isVersionable)
+        {
+            validateVersionable(result);
+        }
+        return (T)result;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getLatestVersion(java.lang.String, boolean)
+     */
+    public NodeRef getLatestVersion(String objectId, boolean major) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException
+    {
+        NodeRef versionSeries = getVersionSeries(objectId, NodeRef.class, false);
+        // If we don't care whether the latest version is major or minor, the latest version is either the working copy
+        // or the live node
+        if (!major)
+        {
+            NodeRef nodeRef = checkOutCheckInService.getWorkingCopy(versionSeries);
+            if (nodeRef != null)
+            {
+                return nodeRef;
+            }
+
+            return versionSeries;
+        }
+
+        // Now check the version history
+        VersionHistory versionHistory = versionService.getVersionHistory(versionSeries);
+        if (versionHistory == null)
+        {
+            throw new CMISObjectNotFoundException(objectId);
+        }
+        Version current = versionService.getCurrentVersion(versionSeries);
+        while (current != null && current.getVersionType() != VersionType.MAJOR)
+        {
+            current = versionHistory.getPredecessor(current);
+        }
+        if (current == null)
+        {
+            throw new CMISObjectNotFoundException(objectId);
+        }
+        return current.getFrozenStateNodeRef();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#deleteContentStream(java.lang.String)
+     */
+    public void deleteContentStream(String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef currentNode = getObject(objectId, NodeRef.class, true, false, false);
+        CMISTypeDefinition typeDef = getTypeDefinition(currentNode);
+        if (CMISContentStreamAllowedEnum.REQUIRED.equals(typeDef.getContentStreamAllowed()))
+        {
+            throw new CMISConstraintException(
+                    "The 'contentStreamAllowed' attribute of the specified Object-Type definition is set to 'required'.");
+        }
+
+        try
+        {
+            nodeService.setProperty(currentNode, ContentModel.PROP_CONTENT, null);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#deleteObject(java.lang.String, boolean)
+     */
+    public void deleteObject(String objectId, boolean allVersions) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException, CMISRuntimeException
+    {
+        try
+        {
+            Object object = allVersions ? getVersionSeries(objectId, Object.class, false) : getObject(objectId, Object.class, true, false,
+                    false);
+
+            // Handle associations
+            if (object instanceof AssociationRef)
+            {
+                AssociationRef assocRef = (AssociationRef) object;
+                nodeService
+                        .removeAssociation(assocRef.getSourceRef(), assocRef.getTargetRef(), assocRef.getTypeQName());
+                return;
+            }
+
+            // Handle individual versions
+            if (object instanceof Version)
+            {
+                Version version = (Version) object;
+                versionService.deleteVersion(version.getVersionedNodeRef(), version);
+                return;
+            }
+            NodeRef nodeRef = (NodeRef) object;
+
+            // Handle a working copy
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+            {
+                checkOutCheckInService.cancelCheckout(nodeRef);
+                return;
+            }
+
+            // Handle 'real' nodes
+            CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
+            if (typeDef.getTypeId().getBaseTypeId() == CMISDictionaryModel.FOLDER_TYPE_ID)
+            {
+                if (nodeService.getChildAssocs(nodeRef).size() > 0)
+                {
+                    throw new CMISConstraintException("Could not delete folder with at least one Child");
+                }
+            }
+            // Only honour the allVersions flag for non-folder versionable objects
+            else if (typeDef.isVersionable() && allVersions)
+            {
+                NodeRef workingCopy = checkOutCheckInService.getWorkingCopy(nodeRef);
+                if (workingCopy != null)
+                {
+                    checkOutCheckInService.cancelCheckout(workingCopy);
+                }
+                versionService.deleteVersionHistory(nodeRef);
+            }
+
+            // Attempt to delete the node
+            nodeService.deleteNode(nodeRef);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e);
+        }
+        catch (Exception e)
+        {
+            throw new CMISRuntimeException(e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#deleteTree(java.lang.String, boolean, boolean, boolean)
+     */
+    public List<String> deleteTree(String objectId, boolean continueOnFailure, boolean unfile, boolean deleteAllVersions)
+            throws CMISConstraintException, CMISVersioningException, CMISObjectNotFoundException,
+            CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        NodeRef folderRef = getFolder(objectId);
+        List<String> failedToDelete = new LinkedList<String>();
+        deleteTree(nodeService.getPrimaryParent(folderRef), continueOnFailure, unfile, deleteAllVersions,
+                failedToDelete);
+        return failedToDelete;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#deleteTreeReportLastError(java.lang.String, boolean, boolean, boolean)
+     */
+    public void deleteTreeReportLastError(String objectId, boolean continueOnFailure, boolean unfile,
+            boolean deleteAllVersions) throws CMISServiceException
+    {
+        NodeRef folderRef = getFolder(objectId);
+        List<String> failedToDelete = new LinkedList<String>();
+        CMISServiceException lastError = deleteTree(nodeService.getPrimaryParent(folderRef), continueOnFailure, unfile,
+                deleteAllVersions, failedToDelete);
+        if (lastError != null)
+        {
+            throw lastError;
+        }
+    }
+
+    /**
+     * Internal recursive helper method for tree deletion. Returns the last error encountered, rather than throwing it,
+     * to avoid transaction rollback.
+     * 
+     * @param parentRef
+     *            the parent folder
+     * @param continueOnFailure
+     *            should we continue if an error occurs with one of the children?
+     * @param unfile
+     *            should we remove non-primary associations to nodes rather than delete them?
+     * @param deleteAllVersions
+     *            should we delete all the versions of the documents we delete?
+     * @param failedToDelete
+     *            list of object IDs of the children we failed to delete
+     * @return the last error encountered.
+     * @throws CMISInvalidArgumentException
+     *             the CMIS invalid argument exception
+     */
+    private CMISServiceException deleteTree(ChildAssociationRef parentRef, boolean continueOnFailure, boolean unfile,
+            boolean deleteAllVersions, List<String> failedToDelete) throws CMISInvalidArgumentException
+    {
+        CMISServiceException lastError = null;
+        NodeRef child = parentRef.getChildRef();
+
+        // Due to multi-filing, it could be that a sub-tree has already been deleted
+        if (!nodeService.exists(child))
+        {
+            return lastError;
+        }
+
+        String objectId = (String) getProperty(child, CMISDictionaryModel.PROP_OBJECT_ID);
+
+        // First Delete children
+        for (ChildAssociationRef childRef : nodeService.getChildAssocs(child))
+        {
+            CMISServiceException thisError = deleteTree(childRef, continueOnFailure, unfile, deleteAllVersions,
+                    failedToDelete);
+            if (thisError != null)
+            {
+                lastError = thisError;
+                if (!continueOnFailure)
+                {
+                    return lastError;
+                }
+            }
+        }
+
+        // Don't try deleting the parent if we couldn't delete one or more of its children
+        if (lastError != null)
+        {
+            failedToDelete.add(objectId);
+            return lastError;
+        }
+
+        // Now delete the parent
+        try
+        {
+            if (unfile && !parentRef.isPrimary())
+            {
+                this.nodeService.removeChildAssociation(parentRef);
+            }
+            else
+            {
+                deleteObject(objectId, deleteAllVersions);
+            }
+        }
+        catch (AccessDeniedException t)
+        {
+            failedToDelete.add(objectId);
+            lastError = new CMISPermissionDeniedException(t);
+        }
+        catch (Throwable t)
+        {
+            // Before absorbing an exception, check whether it is a transactional one that should be retried further up
+            // the stack
+            if (RetryingTransactionHelper.extractRetryCause(t) != null)
+            {
+                throw new AlfrescoRuntimeException("Transactional Error", t);
+            }
+            failedToDelete.add(objectId);
+            lastError = t instanceof CMISServiceException ? (CMISServiceException) t : new CMISRuntimeException(t);
+        }
+
+        return lastError;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#addObjectToFolder(java.lang.String, java.lang.String)
+     */
+    public void addObjectToFolder(String objectId, String folderId) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException
+    {
+        try
+        {
+            NodeRef objectNodeRef = getObject(objectId, NodeRef.class, true, false, false);
+            NodeRef parentFolderNodeRef = getFolder(folderId);
+            CMISTypeDefinition objectType = getTypeDefinition(objectNodeRef);
+            CMISTypeDefinition folderType = getTypeDefinition(parentFolderNodeRef);
+            if (!folderType.getAllowedTargetTypes().isEmpty()
+                    && !folderType.getAllowedTargetTypes().contains(objectType))
+            {
+                throw new CMISConstraintException("An object of type '" + objectType.getTypeId()
+                        + "' can't be a child of a folder of type '" + folderType.getTypeId() + "'");
+            }
+            QName name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName
+                    .createValidLocalName((String) nodeService.getProperty(objectNodeRef, ContentModel.PROP_NAME)));
+            nodeService.addChild(parentFolderNodeRef, objectNodeRef, ContentModel.ASSOC_CONTAINS, name);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#removeObjectFromFolder(java.lang.String, java.lang.String)
+     */
+    public void removeObjectFromFolder(String objectId, String folderId) throws CMISNotSupportedException,
+            CMISConstraintException, CMISVersioningException, CMISObjectNotFoundException,
+            CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        try
+        {
+            if (folderId == null || folderId.length() == 0)
+            {
+                throw new CMISNotSupportedException(
+                        "Unfiling from primary parent folder is not supported. Use deleteObject() instead");
+            }
+            NodeRef objectNodeRef = getObject(objectId, NodeRef.class, true, false, false);
+            NodeRef parentFolderNodeRef = getFolder(folderId);
+            if (nodeService.getPrimaryParent(objectNodeRef).getParentRef().equals(parentFolderNodeRef))
+            {
+                throw new CMISNotSupportedException(
+                        "Unfiling from primary parent folder is not supported. Use deleteObject() instead");
+            }
+            nodeService.removeChild(parentFolderNodeRef, objectNodeRef);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#moveObject(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void moveObject(String objectId, String targetFolderId, String sourceFolderId)
+            throws CMISConstraintException, CMISVersioningException, CMISObjectNotFoundException,
+            CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        try
+        {
+            NodeRef objectNodeRef = getObject(objectId, NodeRef.class, true, false, false);
+
+            NodeRef sourceFolderNodeRef;
+            // We have a specific requirement in the spec to throw invalidArgument for missing source folders, rather
+            // than objectNotFound
+            try
+            {
+                sourceFolderNodeRef = getFolder(sourceFolderId);
+            }
+            catch (CMISObjectNotFoundException e)
+            {
+                throw new CMISInvalidArgumentException(e.getMessage(), e);
+            }
+            NodeRef targetFolderNodeRef = getFolder(targetFolderId);
+            CMISFolderTypeDefinition targetTypeDef = (CMISFolderTypeDefinition) getTypeDefinition(targetFolderNodeRef);
+
+            CMISTypeDefinition objectTypeDef = getTypeDefinition(objectNodeRef);
+            if (!targetTypeDef.getAllowedTargetTypes().isEmpty()
+                    && !targetTypeDef.getAllowedTargetTypes().contains(objectTypeDef))
+            {
+                throw new CMISConstraintException("Object with '" + objectTypeDef.getTypeId()
+                        + "' Type can't be moved to Folder with '" + targetTypeDef.getTypeId() + "' Type");
+            }
+
+            // If this is a primary child node, move it
+            ChildAssociationRef primaryParentRef = nodeService.getPrimaryParent(objectNodeRef);
+            if (primaryParentRef.getParentRef().equals(sourceFolderNodeRef))
+            {
+                nodeService.moveNode(objectNodeRef, targetFolderNodeRef, primaryParentRef.getTypeQName(),
+                        primaryParentRef.getQName());
+            }
+            else
+            {
+                // Otherwise, reparent it
+                for (ChildAssociationRef parent : nodeService.getParentAssocs(objectNodeRef,
+                        ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL))
+                {
+                    if (parent.getParentRef().equals(sourceFolderNodeRef))
+                    {
+                        nodeService.removeChildAssociation(parent);
+                        nodeService.addChild(targetFolderNodeRef, objectNodeRef, ContentModel.ASSOC_CONTAINS, parent
+                                .getQName());
+                        return;
+                    }
+                }
+                throw new CMISInvalidArgumentException(
+                        "The Document is not a Child of the Source Folder that was specified");
+            }
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#setContentStream(java.lang.String, org.alfresco.service.namespace.QName,
+     * boolean, java.io.InputStream, java.lang.String)
+     */
+    public boolean setContentStream(String objectId, QName propertyQName, boolean overwriteFlag,
+            InputStream contentStream, String mimeType) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISContentAlreadyExistsException, CMISStreamNotSupportedException,
+            CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        try
+        {
+            NodeRef nodeRef = getObject(objectId, NodeRef.class, true, false, false);
+
+            CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
+            if (CMISContentStreamAllowedEnum.NOT_ALLOWED.equals(typeDef.getContentStreamAllowed()))
+            {
+                throw new CMISStreamNotSupportedException(typeDef);
+            }
+            // Alfresco extension for setting the content property
+            if (propertyQName == null)
+            {
+                propertyQName = ContentModel.PROP_CONTENT;
+            }
+
+            // Determine whether content already exists
+            boolean existed = contentService.getReader(nodeRef, propertyQName) != null;
+            if (existed && !overwriteFlag)
+            {
+                throw new CMISContentAlreadyExistsException();
+            }
+
+            contentStream = contentStream.markSupported() ? contentStream : new BufferedInputStream(contentStream);
+
+            // establish content encoding
+            ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+            Charset encoding = charsetFinder.getCharset(contentStream, mimeType);
+
+            ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
+            writer.setMimetype(mimeType);
+            writer.setEncoding(encoding.name());
+            writer.putContent(contentStream);
+
+            return existed;
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new CMISPermissionDeniedException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validates that a node is versionable.
+     * 
+     * @param source
+     *            the node
+     * @throws CMISConstraintException
+     *             if the node is not versionable
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    private void validateVersionable(NodeRef source) throws CMISConstraintException, CMISInvalidArgumentException
+    {
+        CMISTypeDefinition typeDef = getTypeDefinition(source);
+        if (!typeDef.isVersionable())
+        {
+            throw new CMISConstraintException("Type " + typeDef.getTypeId() + " is not versionable");
+        }
+    }
+
+    /**
+     * Creates a property map for the version service.
+     * 
+     * @param versionDescription
+     *            a version description
+     * @param isMajor
+     *            is this a major version?
+     * @return the property map
+     */
+    private Map<String, Serializable> createVersionProperties(String versionDescription, boolean isMajor)
+    {
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, isMajor ? VersionType.MAJOR : VersionType.MINOR);
+        if (versionDescription != null)
+        {
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, versionDescription);
+        }
+        return versionProperties;
     }
 }

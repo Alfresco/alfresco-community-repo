@@ -34,7 +34,7 @@ import org.alfresco.service.ServiceRegistry;
  * @author davidc
  *
  */
-public abstract class AbstractActionEvaluator implements CMISActionEvaluator
+public abstract class AbstractActionEvaluator <T> implements CMISActionEvaluator <T>
 {
     private ServiceRegistry serviceRegistry;
     private CMISAllowedActionEnum action;

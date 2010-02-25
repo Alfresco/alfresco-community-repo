@@ -25,7 +25,9 @@
 package org.alfresco.cmis.changelog;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -42,15 +44,23 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
 {
     private CMISServices cmisService;
     private FileFolderService fileFolderService;
+    
+    public static final String KEY_NODE_REF = "nodeRef";
+    public static final String KEY_OBJECT_ID = "objectId";
 
     /**
-     * Extracts the NodeRef from auditing data
+     * Extracts relevant node refs and Ids from auditing data
      * 
      * @see org.alfresco.repo.audit.extractor.DataExtractor.extractData(java.io.Serializable)
      */
     public Serializable extractData(Serializable value) throws Throwable
     {
-        return getNodeRef(value);
+        NodeRef nodeRef = getNodeRef(value);
+        HashMap <String, Serializable> result = new HashMap<String, Serializable>(5);
+        result.put(KEY_NODE_REF, nodeRef);
+        // Support version nodes by recording the object ID
+        result.put(KEY_OBJECT_ID, cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID));
+        return result;
     }
 
     /**

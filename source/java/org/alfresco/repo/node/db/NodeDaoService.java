@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -456,6 +456,16 @@ public interface NodeDaoService
     @DirtySessionAnnotation(markDirty=false)
     public Pair<Long, AssociationRef> getNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName);
     
+    /**
+     * Gets a node association by ID.
+     * 
+     * @param assocId
+     *            the association id
+     * @return the node association, or <code>null</code> if it does not exist
+     */
+    @DirtySessionAnnotation(markDirty = false)
+    public AssociationRef getNodeAssocOrNull(Long assocId);
+
     /**
      * @return Returns all the node associations where the node is the <b>source</b>
      */

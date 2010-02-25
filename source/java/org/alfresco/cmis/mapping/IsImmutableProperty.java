@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -27,18 +27,15 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * Property accessor for CMIS is immutable property
  * 
- * @author andyh
+ * @author dward
  */
-public class IsImmutableProperty extends AbstractProperty
+public class IsImmutableProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
@@ -56,20 +53,14 @@ public class IsImmutableProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        LockType type = getServiceRegistry().getLockService().getLockType(nodeRef);
-        if (type == LockType.READ_ONLY_LOCK)
+        if (isWorkingCopy(nodeRef))
         {
-            return Boolean.valueOf(true);
+            return false;
         }
-        Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
-        if (value != null)
+        if (getVersionSeries(nodeRef).equals(nodeRef))
         {
-            Boolean autoVersion = DefaultTypeConverter.INSTANCE.convert(Boolean.class, value);
-            if (false == autoVersion.booleanValue())
-            {
-                return Boolean.valueOf(true);
-            }
+            return hasWorkingCopy(nodeRef);
         }
-        return Boolean.valueOf(false);
+        return true;
     }
 }

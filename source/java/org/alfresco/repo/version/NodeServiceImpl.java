@@ -602,6 +602,18 @@ public class NodeServiceImpl implements NodeService, VersionModel
     }
 
     /**
+     * Gets an association by ID.
+     * 
+     * @param assocId
+     *            the association id
+     * @return the association, or <code>null</code> if it does not exist
+     */
+    public AssociationRef getAssoc(Long id)
+    {
+        return null;
+    }
+
+    /**
      * @throws UnsupportedOperationException always
      */
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
@@ -624,7 +636,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
 
                 if (qnamePattern.isMatch(qName) == true)
                 {
-                    AssociationRef newAssocRef = new AssociationRef(sourceRef, qName, referencedNode);
+                    AssociationRef newAssocRef = new AssociationRef(null, sourceRef, qName, referencedNode);
                     result.add(newAssocRef);
                 }
             }

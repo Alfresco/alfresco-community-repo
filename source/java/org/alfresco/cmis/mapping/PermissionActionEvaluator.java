@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.security.PermissionService;
  * 
  * @author davidc
  */
-public class PermissionActionEvaluator extends AbstractActionEvaluator
+public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
 {
     private String[] permissions;
     private PermissionService permissionService;

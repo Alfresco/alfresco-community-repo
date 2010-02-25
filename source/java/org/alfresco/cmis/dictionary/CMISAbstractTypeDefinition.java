@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-20079 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -84,7 +84,7 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
     protected Map<String, CMISPropertyDefinition> properties = null;
     protected Map<String, CMISPropertyDefinition> inheritedProperties = null;
     protected Map<String, CMISPropertyDefinition> ownedProperties = null;
-    protected Map<CMISAllowedActionEnum, CMISActionEvaluator> actionEvaluators = null;
+    protected Map<CMISAllowedActionEnum, CMISActionEvaluator<? extends Object>> actionEvaluators = null;
     
 
     /*package*/ void assertComplete()
@@ -442,7 +442,7 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISTypeDefinition#getActionEvaluators()
      */
-    public Map<CMISAllowedActionEnum, CMISActionEvaluator> getActionEvaluators()
+    public Map<CMISAllowedActionEnum, CMISActionEvaluator<? extends Object>> getActionEvaluators()
     {
         return actionEvaluators;
     }

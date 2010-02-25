@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,61 +22,47 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis;
+package org.alfresco.cmis.mapping;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.io.Serializable;
 
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * @author andyh
- *
+ * @author dward
  */
-public class CMISQueryException extends AlfrescoRuntimeException
+public class VersionLabelProperty extends AbstractVersioningProperty
 {
-
     /**
+     * Construct
      * 
+     * @param serviceRegistry
      */
-    private static final long serialVersionUID = 8281715613061152219L;
-
-    /**
-     * @param msgId
-     */
-    public CMISQueryException(String msgId)
+    public VersionLabelProperty(ServiceRegistry serviceRegistry)
     {
-        super(msgId);
-        // TODO Auto-generated constructor stub
+        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_LABEL);
     }
 
-    /**
-     * @param msgId
-     * @param msgParams
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public CMISQueryException(String msgId, Object[] msgParams)
+    public Serializable getValue(NodeRef nodeRef)
     {
-        super(msgId, msgParams);
-        // TODO Auto-generated constructor stub
+        if (isWorkingCopy(nodeRef))
+        {
+            return "pwc";
+        }
+        if (getVersionSeries(nodeRef).equals(nodeRef))
+        {
+            return "current";
+        }
+        else
+        {
+            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+        }
     }
-
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public CMISQueryException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
-     */
-    public CMISQueryException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-        // TODO Auto-generated constructor stub
-    }
-
 }

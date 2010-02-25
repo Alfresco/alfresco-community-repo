@@ -41,7 +41,8 @@ public interface CMISRenditionService
      * @param node node reference of document
      * @param renditionFilter renditions filter
      * @return list of renditions
+     * @throws CMISFilterNotValidException 
      */
-    public List<CMISRendition> getRenditions(NodeRef node, String renditionFilter);
+    public List<CMISRendition> getRenditions(NodeRef node, String renditionFilter) throws CMISFilterNotValidException;
 
 }

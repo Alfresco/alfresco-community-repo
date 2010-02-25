@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -642,6 +642,15 @@ public interface NodeService
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"sourceRef", "targetRef", "assocTypeQName"})
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException;
+    
+    /**
+     * Gets an association by ID.
+     * 
+     * @param assocId
+     *            the association id
+     * @return the association, or <code>null</code> if it does not exist
+     */
+    public AssociationRef getAssoc(Long id);
     
     /**
      * Fetches all associations <i>from</i> the given source where the associations'

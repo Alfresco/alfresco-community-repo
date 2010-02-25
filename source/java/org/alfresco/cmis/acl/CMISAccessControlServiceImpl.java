@@ -160,7 +160,7 @@ public class CMISAccessControlServiceImpl implements CMISAccessControlService
      * @see org.alfresco.cmis.CMISAccessControlService#applyAcl(org.alfresco.service.cmr.repository.NodeRef,
      * java.util.List)
      */
-    public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToApply)
+    public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToApply) throws CMISConstraintException
     {
         Set<CMISAccessControlEntry> acesToAdd = new LinkedHashSet<CMISAccessControlEntry>(acesToApply);
         List<? extends CMISAccessControlEntry> acesExisting = getAcl(nodeRef,
@@ -186,7 +186,7 @@ public class CMISAccessControlServiceImpl implements CMISAccessControlService
      *      java.util.List, java.util.List, org.alfresco.cmis.CMISAclPropagationEnum)
      */
     public CMISAccessControlReport applyAcl(NodeRef nodeRef, List<CMISAccessControlEntry> acesToRemove, List<CMISAccessControlEntry> acesToAdd, CMISAclPropagationEnum propagation,
-            CMISAccessControlFormatEnum format)
+            CMISAccessControlFormatEnum format) throws CMISConstraintException
     {
         if (propagation != CMISAclPropagationEnum.PROPAGATE)
         {

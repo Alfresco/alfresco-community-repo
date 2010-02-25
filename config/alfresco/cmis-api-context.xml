@@ -24,7 +24,11 @@
         <property name="transactionHelper" ref="retryingTransactionHelper" />
         <property name="tenantAdminService" ref="tenantAdminService" />
         <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
         <property name="repository" ref="repositoryHelper" />
+        <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
+        <property name="versionService" ref="VersionService" />
+        <property name="mimetypeService" ref="MimetypeService" />
     </bean>
     
     <bean id="CMISDictionaryService" class="org.alfresco.cmis.dictionary.CMISStrictDictionaryService" >
@@ -121,11 +125,6 @@
         <property name="cmisService" ref="CMISService" />
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="registry" ref="auditModel.extractorRegistry" />        
-    </bean>
-
-    <bean id="CMISReferenceFactory" class="org.alfresco.cmis.reference.ReferenceFactory">
-        <property name="CMISService" ref="CMISService" />
-        <property name="CMISDictionaryService" ref="CMISDictionaryService" />
     </bean>
     
     <bean id="CMISAccessControlService" class="org.alfresco.cmis.acl.CMISAccessControlServiceImpl" >

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,62 +18,29 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.cmis;
 
-/**
- * @author andyh
- *
- */
-public class CMISConstraintException extends CMISRuntimeException
+public class CMISConstraintException extends CMISServiceException
 {
+    private static final long serialVersionUID = -6416548401387587007L;
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 575343231113393902L;
-
-    /**
-     * @param msgId
-     */
-    public CMISConstraintException(String msgId)
+    public CMISConstraintException(String message)
     {
-        super(msgId);
-        // TODO Auto-generated constructor stub
+        super(message, "constraint", 409);
     }
 
-    /**
-     * @param msgId
-     * @param msgParams
-     */
-    public CMISConstraintException(String msgId, Object[] msgParams)
+    public CMISConstraintException(Throwable cause)
     {
-        super(msgId, msgParams);
-        // TODO Auto-generated constructor stub
+        super(cause, "constraint", 409);
     }
 
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public CMISConstraintException(String msgId, Throwable cause)
+    public CMISConstraintException(String message, Throwable cause)
     {
-        super(msgId, cause);
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
-     */
-    public CMISConstraintException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-        // TODO Auto-generated constructor stub
+        super(message, cause, "constraint", 409);
     }
 
 }

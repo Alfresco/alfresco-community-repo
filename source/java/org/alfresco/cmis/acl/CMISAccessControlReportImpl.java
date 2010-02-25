@@ -31,6 +31,7 @@ import java.util.List;
 import org.alfresco.cmis.CMISAccessControlEntriesGroupedByPrincipalId;
 import org.alfresco.cmis.CMISAccessControlEntry;
 import org.alfresco.cmis.CMISAccessControlReport;
+import org.alfresco.cmis.CMISConstraintException;
 
 /**
  * A simple CMIS access control report
@@ -92,7 +93,7 @@ public class CMISAccessControlReportImpl implements CMISAccessControlReport
     /* (non-Javadoc)
      * @see org.alfresco.cmis.CMISAccessControlReport#getAccessControlEntriesGroupedByPrincipalId()
      */
-    public List<? extends CMISAccessControlEntriesGroupedByPrincipalId> getAccessControlEntriesGroupedByPrincipalId()
+    public List<? extends CMISAccessControlEntriesGroupedByPrincipalId> getAccessControlEntriesGroupedByPrincipalId() throws CMISConstraintException
     {
         HashMap<String, CMISAccessControlEntriesGroupedByPrincipalIdImpl> grouped = new HashMap<String, CMISAccessControlEntriesGroupedByPrincipalIdImpl>();
         for(CMISAccessControlEntry entry : getAccessControlEntries())

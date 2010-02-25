@@ -121,7 +121,7 @@ public class MultiTServiceImpl implements TenantService
     {
         if (assocRef == null) { return null; }
         
-        return new AssociationRef(
+        return new AssociationRef(assocRef.getId(),
                 getName(assocRef.getSourceRef()),
                 assocRef.getTypeQName(),
                 getName(assocRef.getTargetRef()));
@@ -321,7 +321,7 @@ public class MultiTServiceImpl implements TenantService
     {
         if (assocRef == null) { return null; }
         
-        return new AssociationRef(
+        return new AssociationRef(assocRef.getId(),
                 getBaseName(assocRef.getSourceRef()),
                 assocRef.getTypeQName(),
                 getBaseName(assocRef.getTargetRef()));

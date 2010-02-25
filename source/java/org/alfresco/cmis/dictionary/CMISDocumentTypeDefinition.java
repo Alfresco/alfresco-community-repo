@@ -24,15 +24,11 @@
  */
 package org.alfresco.cmis.dictionary;
 
-import java.util.List;
-
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.mapping.CMISMapping;
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.namespace.QName;
 
@@ -48,7 +44,6 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
     
     // document specific properties
     protected boolean fileable;
-    protected boolean versionable;
     protected CMISContentStreamAllowedEnum contentStreamAllowed;
 
 
@@ -96,17 +91,6 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
 
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
 
-        // Document type properties
-        versionable = false;
-        List<AspectDefinition> defaultAspects = cmisClassDef.getDefaultAspects();
-        for (AspectDefinition aspectDefinition : defaultAspects)
-        {
-            if (aspectDefinition.getName().equals(ContentModel.ASPECT_VERSIONABLE))
-            {
-                versionable = true;
-                break;
-            }
-        }
         fileable = true;
         contentStreamAllowed = CMISContentStreamAllowedEnum.ALLOWED;
     }
@@ -128,7 +112,8 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
      */
     public boolean isVersionable()
     {
-        return versionable;
+        // Documents and their subtypes are versionable
+        return true;
     }
 
     /**

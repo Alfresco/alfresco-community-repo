@@ -42,6 +42,7 @@ public class AssociationRef implements EntityRef, Serializable
     
     private static final String FILLER = "|";
 
+    private Long id;
     private NodeRef sourceRef;
     private QName assocTypeQName;
     private NodeRef targetRef;
@@ -49,7 +50,9 @@ public class AssociationRef implements EntityRef, Serializable
     /**
      * Construct a representation of a source --- name ----> target
      * relationship.
-     * 
+     *
+     * @param id
+     *            unique identifier
      * @param sourceRef
      *            the source reference - never null
      * @param assocTypeQName
@@ -57,8 +60,9 @@ public class AssociationRef implements EntityRef, Serializable
      * @param targetRef
      *            the target node reference - never null.
      */
-    public AssociationRef(NodeRef sourceRef, QName assocTypeQName, NodeRef targetRef)
+    public AssociationRef(Long id, NodeRef sourceRef, QName assocTypeQName, NodeRef targetRef)
     {
+        this.id = id;
         this.sourceRef = sourceRef;
         this.assocTypeQName = assocTypeQName;
         this.targetRef = targetRef;
@@ -88,10 +92,12 @@ public class AssociationRef implements EntityRef, Serializable
         {
             throw new AlfrescoRuntimeException("Unable to parse association string: " + assocRefStr);
         }
+        String idStr = tokenizer.nextToken();
         String sourceNodeRefStr = tokenizer.nextToken();
         String targetNodeRefStr = tokenizer.nextToken();
         String assocTypeQNameStr = tokenizer.nextToken();
         
+        this.id = new Long(idStr);
         this.sourceRef = new NodeRef(sourceNodeRefStr);
         this.targetRef = new NodeRef(targetNodeRefStr);
         this.assocTypeQName = QName.createQName(assocTypeQNameStr);
@@ -103,7 +109,8 @@ public class AssociationRef implements EntityRef, Serializable
     public String toString()
     {
         StringBuilder sb = new StringBuilder(180);
-        sb.append(sourceRef).append(FILLER)
+        sb.append(id).append(FILLER)
+          .append(sourceRef).append(FILLER)
           .append(targetRef).append(FILLER)
           .append(assocTypeQName);
         return sb.toString();
@@ -112,6 +119,7 @@ public class AssociationRef implements EntityRef, Serializable
     /**
      * Compares:
      * <ul>
+     * <li>{@link #id}</li>
      * <li>{@link #sourceRef}</li>
      * <li>{@link #targetRef}</li>
      * <li>{@link #assocTypeQName}</li>
@@ -129,17 +137,29 @@ public class AssociationRef implements EntityRef, Serializable
         }
         AssociationRef other = (AssociationRef) o;
 
-        return (EqualsHelper.nullSafeEquals(this.sourceRef, other.sourceRef)
+        return (EqualsHelper.nullSafeEquals(this.id, other.id)
+                && EqualsHelper.nullSafeEquals(this.sourceRef, other.sourceRef)
                 && EqualsHelper.nullSafeEquals(this.assocTypeQName, other.assocTypeQName)
                 && EqualsHelper.nullSafeEquals(this.targetRef, other.targetRef));
     }
 
     public int hashCode()
     {
-        int hashCode = (getSourceRef() == null) ? 0 : getSourceRef().hashCode();
+        int hashCode = (getId() == null) ? 0 : getId().hashCode();
+        hashCode = 37 * hashCode + ((getSourceRef() == null) ? 0 : getSourceRef().hashCode());
         hashCode = 37 * hashCode + ((getTypeQName() == null) ? 0 : getTypeQName().hashCode());
         hashCode = 37 * hashCode + getTargetRef().hashCode();
         return hashCode;
+    }
+
+    /**
+     * Gets the unique identifier for this association.
+     * 
+     * @return the unique identifier for this association
+     */
+    public Long getId()
+    {
+        return this.id;
     }
 
     /**

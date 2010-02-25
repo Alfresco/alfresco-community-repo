@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -29,6 +29,7 @@ import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryException;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
@@ -51,8 +52,9 @@ import org.apache.lucene.search.BooleanClause.Occur;
  * Get the CMIS object id property.
  * 
  * @author andyh
+ * @author dward
  */
-public class ObjectIdProperty extends AbstractProperty
+public class ObjectIdProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
@@ -70,24 +72,17 @@ public class ObjectIdProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        if (!getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        NodeRef versionSeries;
+        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
         {
-            if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            {
-                Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-                if (value != null)
-                {
-                    String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-                    StringBuilder builder = new StringBuilder(128);
-                    builder.append(nodeRef.toString());
-                    builder.append(";");
-                    builder.append(versionLabel);
-                    return builder.toString();
-                }
-            }
+            return nodeRef.toString();
         }
-
-        return nodeRef.toString();
+        else
+        {
+            return new StringBuilder(1024).append(versionSeries.toString()).append(';').append(
+                    getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL))
+                    .toString();
+        }
     }
     
     /*
@@ -96,8 +91,7 @@ public class ObjectIdProperty extends AbstractProperty
      */
     public Serializable getValue(AssociationRef assocRef)
     {
-        // TODO: determine appropriate id for associations
-        return assocRef.getSourceRef().toString();
+        return CMISServices.ASSOC_ID_PREFIX + assocRef.getId();
     }
 
     public String getLuceneFieldName()

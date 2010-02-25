@@ -37,8 +37,9 @@ public interface CMISChangeLogService
      * @param changeLogToken - {@link String} value that represents some <b>Change Log Token</b>
      * @param maxItems - {@link Integer} value that determines required amount of entries
      * @return {@link CMISChangeLog} instance that describes entry mapped to specified <b>Change Log Token</b>
+     * @throws CMISInvalidArgumentException 
      */
-    public CMISChangeLog getChangeLogEvents(String changeLogToken, Integer maxItems);
+    public CMISChangeLog getChangeLogEvents(String changeLogToken, Integer maxItems) throws CMISInvalidArgumentException;
 
     /**
      * @return {@link String} value that represents <b>Change Log Token</b> which is currently actual

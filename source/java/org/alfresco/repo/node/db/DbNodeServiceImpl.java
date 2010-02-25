@@ -73,11 +73,11 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.Pair;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.Pair;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.util.Assert;
 
 /**
@@ -2006,6 +2006,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Invoke policy behaviours
         invokeOnDeleteAssociation(assocRef);
+    }
+    
+    public AssociationRef getAssoc(Long id)
+    {
+        return nodeDaoService.getNodeAssocOrNull(id);
     }
 
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.alfresco.cmis.CMISFilterNotValidException;
 import org.alfresco.cmis.CMISRendition;
 import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISRenditionService;
@@ -73,9 +74,10 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
     private CustomRenditionsCache customRenditionsCache;
 
     /**
+     * @throws CMISFilterNotValidException 
      * @see org.alfresco.cmis.CMISRenditionService#getRenditions(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public List<CMISRendition> getRenditions(NodeRef node, String renditionFilter)
+    public List<CMISRendition> getRenditions(NodeRef node, String renditionFilter) throws CMISFilterNotValidException
     {
         Collection<CMISRendition> result = null;
         ThumbnailFilter thumbnailFilter = getThumbnailFilter(renditionFilter);
@@ -171,12 +173,21 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
      * 
      * @param renditionFilter rendition filter
      * @return thumbnail filter
+     * @throws CMISFilterNotValidException 
      */
-    private ThumbnailFilter getThumbnailFilter(String renditionFilter)
+    private ThumbnailFilter getThumbnailFilter(String renditionFilter) throws CMISFilterNotValidException
     {
         ThumbnailFilter result = null;
         if (renditionFilter != null && !renditionFilter.equals(FILTER_NONE))
         {
+            // Scan the filter for whitespace, which is disallowed by the spec
+            for (int i=0; i < renditionFilter.length(); i = renditionFilter.offsetByCodePoints(i, 1))
+            {
+                if (Character.isWhitespace(renditionFilter.codePointAt(i)))
+                {
+                    throw new CMISFilterNotValidException(renditionFilter);
+                }
+            }
             result = new ThumbnailFilter();
             if (renditionFilter.equals(FILTER_WILDCARD))
             {

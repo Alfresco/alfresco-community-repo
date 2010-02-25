@@ -22,45 +22,19 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.mapping;
+package org.alfresco.cmis;
 
-import java.io.Serializable;
-
-import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-
-/**
- * @author dward
- */
-public class VersionSeriesIdProperty extends AbstractVersioningProperty
+public class CMISFilterNotValidException extends CMISServiceException
 {
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     */
-    public VersionSeriesIdProperty(ServiceRegistry serviceRegistry)
+    private static final long serialVersionUID = -1947056142715192667L;
+
+    public CMISFilterNotValidException(String filter)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_ID);
+        super("Filter not valid: " + filter, "filterNotValid", 400);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public CMISFilterNotValidException(String filter, Throwable cause)
     {
-        NodeService nodeService = getServiceRegistry().getNodeService();
-        if (isWorkingCopy(nodeRef))
-        {
-            return nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE).toString();
-        }
-        else
-        {
-            return getVersionSeries(nodeRef).toString();
-        }
+        super("Filter not valid: " + filter, cause, "filterNotValid", 400);
     }
 }

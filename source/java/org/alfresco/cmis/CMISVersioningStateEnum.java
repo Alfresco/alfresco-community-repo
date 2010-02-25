@@ -22,47 +22,38 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.mapping;
-
-import java.io.Serializable;
-
-import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
+package org.alfresco.cmis;
 
 /**
- * Get the CMIS version series checked out by property
+ * CMIS Versioning State Enumeration.
  * 
  * @author dward
  */
-public class VersionSeriesCheckedOutByProperty extends AbstractVersioningProperty
+public enum CMISVersioningStateEnum implements EnumLabel
 {
+    NONE("none"), CHECKED_OUT("checkedout"), MAJOR("major"), MINOR("minor");
+
+    private String label;
+
     /**
-     * Construct
+     * Construct.
      * 
-     * @param serviceRegistry
+     * @param label
      */
-    public VersionSeriesCheckedOutByProperty(ServiceRegistry serviceRegistry)
+    CMISVersioningStateEnum(String label)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY);
+        this.label = label;
     }
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.cmis.EnumLabel#label()
      */
-    public Serializable getValue(NodeRef nodeRef)
+    public String getLabel()
     {
-        NodeRef versionSeries;
-        if (isWorkingCopy(nodeRef))
-        {
-            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
-        }
-        else if (hasWorkingCopy((versionSeries = getVersionSeries(nodeRef))))
-        {
-            return getServiceRegistry().getNodeService().getProperty(versionSeries, ContentModel.PROP_LOCK_OWNER);
-        }
-        return null;
+        return label;
     }
+
+    public static EnumFactory<CMISVersioningStateEnum> FACTORY = new EnumFactory<CMISVersioningStateEnum>(
+            CMISVersioningStateEnum.class, null, true);
 }

@@ -81,7 +81,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
 
     }
 
-    public void testAclReportingCmisPermissionsOnly()
+    public void testAclReportingCmisPermissionsOnly() throws Exception
     {
         createTestAcls();
 
@@ -144,7 +144,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         return answer;
     }
 
-    private boolean checkCounts(CMISAccessControlReport report, String key, int direct, int indirect)
+    private boolean checkCounts(CMISAccessControlReport report, String key, int direct, int indirect) throws Exception
     {
         // check all permissions are valid
 
@@ -178,7 +178,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         return false;
     }
 
-    private boolean checkAbsent(CMISAccessControlReport report, String key)
+    private boolean checkAbsent(CMISAccessControlReport report, String key) throws Exception
     {
         for (CMISAccessControlEntriesGroupedByPrincipalId group : report.getAccessControlEntriesGroupedByPrincipalId())
         {
@@ -190,7 +190,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         return true;
     }
 
-    public void testAclReportingAllPermissions()
+    public void testAclReportingAllPermissions() throws Exception
     {
         createTestAcls();
 
@@ -381,7 +381,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         assertEquals("Writer2", ordered.get(i).getAuthority());
     }
 
-    public void testApplyAcl()
+    public void testApplyAcl() throws Exception
     {
         grandParent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Parent", namespaceService), ContentModel.TYPE_FOLDER).getChildRef();
         nodeService.setProperty(grandParent, ContentModel.PROP_NAME, "GrandParent");

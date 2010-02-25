@@ -26,6 +26,7 @@ package org.alfresco.cmis;
 
 import java.util.List;
 
+
 /**
  * An Access control report.
  * This is an ACL.
@@ -53,8 +54,9 @@ public interface CMISAccessControlReport
     /**
      * Get ACEs grouped by principal id
      * @return
+     * @throws CMISConstraintException 
      */
-    public List<? extends CMISAccessControlEntriesGroupedByPrincipalId> getAccessControlEntriesGroupedByPrincipalId();
+    public List<? extends CMISAccessControlEntriesGroupedByPrincipalId> getAccessControlEntriesGroupedByPrincipalId() throws CMISConstraintException;
     
     
 }

@@ -32,9 +32,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author davidc
  */
-public class ParentActionEvaluator extends AbstractActionEvaluator
+public class ParentActionEvaluator extends AbstractActionEvaluator<NodeRef>
 {
-    private AbstractActionEvaluator evaluator;
+    private AbstractActionEvaluator<NodeRef> evaluator;
 
     /**
      * Construct
@@ -42,7 +42,7 @@ public class ParentActionEvaluator extends AbstractActionEvaluator
      * @param serviceRegistry
      * @param action
      */
-    protected ParentActionEvaluator(AbstractActionEvaluator evaluator)
+    protected ParentActionEvaluator(AbstractActionEvaluator<NodeRef> evaluator)
     {
         super(evaluator.getServiceRegistry(), evaluator.getAction());
         this.evaluator = evaluator;

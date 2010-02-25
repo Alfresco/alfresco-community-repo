@@ -27,16 +27,18 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 
 /**
  * Accessor for the CMIS Checkin Comment
  * 
- * @author andyh
+ * @author dward
  */
-public class CheckinCommentProperty extends AbstractProperty
+public class CheckinCommentProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
@@ -54,14 +56,27 @@ public class CheckinCommentProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
-        if (version != null)
-        {
-            return version.getDescription();
-        }
-        else
+        NodeRef versionSeries;
+        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
         {
             return null;
         }
+        ServiceRegistry serviceRegistry = getServiceRegistry();
+        String versionLabel = (String)serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+        if (versionLabel == null)
+        {
+            return null;
+        }        
+        VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
+        if (versionHistory == null)
+        {
+            return null;
+        }
+        Version version = versionHistory.getVersion(versionLabel);
+        if (version == null)
+        {
+            return null;
+        }
+        return version.getDescription();
     }
 }

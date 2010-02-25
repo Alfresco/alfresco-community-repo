@@ -108,6 +108,7 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
             if (nodeAssocRef == null || trashReference)
             {
                 nodeAssocRef = new AssociationRef(
+                        this.id,
                         getSource().getNodeRef(),
                         this.typeQName,
                         getTarget().getNodeRef());

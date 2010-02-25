@@ -188,5 +188,5 @@ public interface CMISTypeDefinition
      * 
      * @return
      */
-    public Map<CMISAllowedActionEnum, CMISActionEvaluator> getActionEvaluators();
+    public Map<CMISAllowedActionEnum, CMISActionEvaluator<? extends Object>> getActionEvaluators();
 }

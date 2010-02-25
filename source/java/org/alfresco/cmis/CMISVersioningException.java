@@ -22,45 +22,24 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.mapping;
+package org.alfresco.cmis;
 
-import java.io.Serializable;
-
-import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-
-/**
- * @author dward
- */
-public class VersionSeriesIdProperty extends AbstractVersioningProperty
+public class CMISVersioningException extends CMISServiceException
 {
-    /**
-     * Construct
-     * 
-     * @param serviceRegistry
-     */
-    public VersionSeriesIdProperty(ServiceRegistry serviceRegistry)
+    private static final long serialVersionUID = 6876828094374256016L;
+
+    public CMISVersioningException(String message)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_ID);
+        super(message, "versioning", 409);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public CMISVersioningException(Throwable cause)
     {
-        NodeService nodeService = getServiceRegistry().getNodeService();
-        if (isWorkingCopy(nodeRef))
-        {
-            return nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE).toString();
-        }
-        else
-        {
-            return getVersionSeries(nodeRef).toString();
-        }
+        super(cause, "versioning", 409);
+    }
+
+    public CMISVersioningException(String message, Throwable cause)
+    {
+        super(message, cause, "versioning", 409);
     }
 }

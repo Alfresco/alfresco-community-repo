@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.version.VersionType;
 
 public class CMISPropertyServiceTest extends BaseCMISTest
 {
-    public void testBasicFolder()
+    public void testBasicFolder() throws Exception
     {
         NodeRef folder = fileFolderService.create(cmisService.getDefaultRootNodeRef(), "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         Map<String, Serializable> properties = cmisService.getProperties(folder);
@@ -76,7 +76,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
 
-    public void testBasicDocument()
+    public void testBasicDocument() throws Exception
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
@@ -109,7 +109,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
 
-    public void testContentProperties()
+    public void testContentProperties() throws Exception
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
@@ -160,7 +160,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNotNull(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ID));
     }
 
-    public void testLock()
+    public void testLock() throws Exception
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
@@ -239,7 +239,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
 
-    public void testCheckOut()
+    public void testCheckOut() throws Exception
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
@@ -423,7 +423,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
 
-    public void testVersioning()
+    public void testVersioning() throws Exception
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
@@ -719,7 +719,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
     }
     
-    public void testSinglePropertyFolderAccess()
+    public void testSinglePropertyFolderAccess() throws Exception
     {   
         NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_ID), folder.toString());

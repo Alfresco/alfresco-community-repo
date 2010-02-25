@@ -24,9 +24,8 @@
  */
 package org.alfresco.cmis;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 
-public interface CMISActionEvaluator
+public interface CMISActionEvaluator <T>
 {
     /**
      * Gets the CMIS Allowed Action
@@ -36,10 +35,10 @@ public interface CMISActionEvaluator
     public CMISAllowedActionEnum getAction();
     
     /**
-     * Determines if Action is allowed
+     * Determines if an action is allowed on an object
      * 
-     * @param nodeRef
+     * @param object
      * @return
      */
-    public boolean isAllowed(NodeRef nodeRef);
+    public boolean isAllowed(T object);
 }

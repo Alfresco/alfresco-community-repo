@@ -26,7 +26,6 @@ package org.alfresco.cmis.mapping;
 
 import org.alfresco.cmis.CMISAllowedActionEnum;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Action Evaluator whose evaluation is fixed
@@ -34,7 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author davidc
  *
  */
-public class FixedValueActionEvaluator extends AbstractActionEvaluator
+public class FixedValueActionEvaluator <T> extends AbstractActionEvaluator <T>
 {
     private boolean allowed;
 
@@ -54,7 +53,7 @@ public class FixedValueActionEvaluator extends AbstractActionEvaluator
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISActionEvaluator#isAllowed(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(T object)
     {
         return allowed;
     }

@@ -38,6 +38,7 @@ import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.cmis.CMISChangeLog;
 import org.alfresco.cmis.CMISChangeLogService;
 import org.alfresco.cmis.CMISChangeType;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -68,9 +69,10 @@ public class CMISChangeLogServiceImpl implements CMISChangeLogService
     }
 
     /**
+     * @throws CMISInvalidArgumentException 
      * @see org.alfresco.cmis.CMISChangeLogService#getChangeLogEvents(java.lang.String, java.lang.Integer)
      */
-    public CMISChangeLog getChangeLogEvents(String changeLogToken, Integer maxItems)
+    public CMISChangeLog getChangeLogEvents(String changeLogToken, Integer maxItems) throws CMISInvalidArgumentException
     {
         if (!auditService.isAuditEnabled(cmisAuditApplicationName, ("/" + cmisAuditApplicationName)))
         {
@@ -88,7 +90,15 @@ public class CMISChangeLogServiceImpl implements CMISChangeLogService
                 return super.handleAuditEntry(entryId, user, time, values);
             }
         };
-        Long from = changeLogToken != null ? Long.parseLong(changeLogToken) : null;
+        Long from;
+        try
+        {
+            from = changeLogToken != null ? Long.parseLong(changeLogToken) : null;
+        }
+        catch (NumberFormatException e)
+        {
+            throw new CMISInvalidArgumentException("Invalid change log token " + changeLogToken);
+        }
         AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(cmisAuditApplicationName);
         params.setForward(true);
@@ -213,6 +223,7 @@ public class CMISChangeLogServiceImpl implements CMISChangeLogService
      * @param time audit event time
      * @return list of CMISChangeEvent
      */
+    @SuppressWarnings("unchecked")
     private List<CMISChangeEvent> convertValuesMapToChangeLogEvents(Map<String, Serializable> values, long time)
     {
         List<CMISChangeEvent> result = new ArrayList<CMISChangeEvent>();
@@ -224,10 +235,12 @@ public class CMISChangeLogServiceImpl implements CMISChangeLogService
                 {
                     String path = entry.getKey();
                     CMISChangeType changeType = getCMISChangeType(path);
-                    NodeRef nodeRef = entry.getValue() instanceof NodeRef ? (NodeRef) entry.getValue() : null;
-                    if (changeType != null && nodeRef != null)
+                    if (changeType != null && entry.getValue() instanceof Map)
                     {
-                        result.add(new CMISChangeEventImpl(changeType, nodeRef, new Date(time)));
+                        Map<String, Serializable> valueMap = (Map<String, Serializable>)entry.getValue();
+                        result.add(new CMISChangeEventImpl(changeType, new Date(time), (NodeRef) valueMap
+                                .get(CMISChangeLogDataExtractor.KEY_NODE_REF), (String) valueMap
+                                .get(CMISChangeLogDataExtractor.KEY_OBJECT_ID)));
                     }
                 }
             }

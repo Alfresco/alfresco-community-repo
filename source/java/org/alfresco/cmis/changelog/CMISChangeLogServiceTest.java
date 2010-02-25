@@ -36,6 +36,7 @@ import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.cmis.CMISChangeLog;
 import org.alfresco.cmis.CMISChangeLogService;
 import org.alfresco.cmis.CMISChangeType;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -252,22 +253,22 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
         for (CMISChangeEvent event : changeLog.getChangeEvents())
         {
             assertNotNull(("One of the Change Log Event Enries is undefined for '" + logToken + "' Change Log Token"), event);
-            assertNotNull(("Change Event Entry Id of one of the Change Entries is undefined for '" + logToken + "' Change Log Token"), event.getNode());
+            assertNotNull(("Change Event Entry Id of one of the Change Entries is undefined for '" + logToken + "' Change Log Token"), event.getChangedNode());
             assertNotNull(("Change Event Change Type of one of the Change Entries is undefined for '" + logToken + "' Change Log Token"), event.getChangeType());
-            assertTrue("Unexpected Object Id='" + event.getNode().toString() + "' from Change Log Token Entries list for '" + logToken + "' Change Log Token", created
-                    .contains(event.getNode()));
-            if (!deleted.contains(event.getNode()))
+            assertTrue("Unexpected Object Id='" + event.getChangedNode().toString() + "' from Change Log Token Entries list for '" + logToken + "' Change Log Token", created
+                    .contains(event.getChangedNode()));
+            if (!deleted.contains(event.getChangedNode()))
             {
-                folderWasFound = folderWasFound || fileFolderService.getFileInfo(event.getNode()).isFolder();
+                folderWasFound = folderWasFound || fileFolderService.getFileInfo(event.getChangedNode()).isFolder();
                 assertTrue(
                         ("Object from Change Event Entries list is marked as '" + event.getChangeType().toString() + "' but does not exist for '" + logToken + "' Change Log Token"),
-                        nodeService.exists(event.getNode()));
+                        nodeService.exists(event.getChangedNode()));
             }
             else
             {
-                assertTrue("Object has been deleted", deleted.contains(event.getNode()));
+                assertTrue("Object has been deleted", deleted.contains(event.getChangedNode()));
                 assertFalse(("Object from Change Event Entries list is marked as 'DELETED' but it still exist for '" + logToken + "' Change Log Token"), nodeService.exists(event
-                        .getNode()));
+                        .getChangedNode()));
             }
             addOneToAmount(logAmounts, event.getChangeType());
         }
@@ -348,7 +349,7 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
         }
         catch (Exception e)
         {
-            assertTrue("Invalid exception type from Change Log Service method call with enabled Changes Logging", e instanceof java.lang.NumberFormatException);
+            assertTrue("Invalid exception type from Change Log Service method call with enabled Changes Logging", e instanceof CMISInvalidArgumentException);
         }
         disableAudit();
         try

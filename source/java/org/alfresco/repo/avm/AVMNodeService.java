@@ -1798,6 +1798,18 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     }
     
     /**
+     * Gets an association by ID.
+     * 
+     * @param assocId
+     *            the association id
+     * @return the association, or <code>null</code> if it does not exist
+     */
+    public AssociationRef getAssoc(Long id)
+    {
+        return null;
+    }
+
+    /**
      * Fetches all associations <i>from</i> the given source where the associations'
      * qualified names match the pattern provided.
      * 

@@ -72,7 +72,7 @@ public class CMISAccessControlEntriesGroupedByPrincipalIdImpl implements CMISAcc
        return principalId;
     }
     
-    /* package */ void addEntry(CMISAccessControlEntry entry)
+    /* package */ void addEntry(CMISAccessControlEntry entry) throws CMISConstraintException
     {
         if(!principalId.equals(entry.getPrincipalId()))
         {

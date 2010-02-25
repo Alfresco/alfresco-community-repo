@@ -70,7 +70,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         }
     }
 
-    public void testGetAllRenditions()
+    public void testGetAllRenditions() throws Exception
     {
         List<CMISRendition> receivedRenditions = cmisRenditionService.getRenditions(document, "*");
 
@@ -82,7 +82,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         assertRendiions(receivedRenditions, expectedRenditions);
     }
 
-    public void testGetRenditionsByKind()
+    public void testGetRenditionsByKind() throws Exception
     {
         testGetRenditionsByKind(CMISRenditionKind.THUMBNAIL);
         testGetRenditionsByKind(CMISRenditionKind.WEB_PREVIEW);
@@ -93,7 +93,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         testGetRenditionsByKind(CMISRenditionKind.THUMBNAIL, CMISRenditionKind.WEB_PREVIEW, CMISRenditionKind.ICON16, CMISRenditionKind.ICON32);
     }
 
-    public void testGetRenditionsByMimetype()
+    public void testGetRenditionsByMimetype() throws Exception
     {
         for (CMISRendition rendition : documentRenditions)
         {
@@ -106,7 +106,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         testGetRenditionsByMimetype(mimetypes);
     }
 
-    public void testEmptyFilter()
+    public void testEmptyFilter() throws Exception
     {
         List<CMISRendition> receivedRenditions = cmisRenditionService.getRenditions(document, null);
         assertTrue(receivedRenditions == null || receivedRenditions.size() == 0);
@@ -115,7 +115,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         assertTrue(receivedRenditions == null || receivedRenditions.size() == 0);
     }
 
-    public void testRenditionsByBaseMimetype()
+    public void testRenditionsByBaseMimetype() throws Exception
     {
         String[] mimetypes = getDifferentMimetypes();
         List<String> baseMimetypeFilters = new ArrayList<String>();
@@ -131,23 +131,23 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         testGetRenditionsByMimetype(baseMimetypeFilters.toArray(new String[0]));
     }
 
-    public void testMixedFilter()
+    public void testMixedFilter() throws Exception
     {
         String[] mimetypes = getDifferentMimetypes();
         testGetRenditions(THUMBNAIL_KINDS, mimetypes);
     }
 
-    private void testGetRenditionsByMimetype(String... mimetypes)
+    private void testGetRenditionsByMimetype(String... mimetypes) throws Exception
     {
         testGetRenditions(null, mimetypes);
     }
 
-    private void testGetRenditionsByKind(CMISRenditionKind... kinds)
+    private void testGetRenditionsByKind(CMISRenditionKind... kinds) throws Exception
     {
         testGetRenditions(kinds, null);
     }
 
-    private void testGetRenditions(CMISRenditionKind[] kinds, String[] mimetypes)
+    private void testGetRenditions(CMISRenditionKind[] kinds, String[] mimetypes) throws Exception
     {
         String filter = createFilter(kinds, mimetypes);
         List<CMISRendition> receivedRenditions = cmisRenditionService.getRenditions(document, filter);

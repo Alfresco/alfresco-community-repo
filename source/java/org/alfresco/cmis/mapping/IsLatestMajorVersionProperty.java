@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -27,18 +27,19 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 
 /**
  * Accessor for CMIS is latest major version property
  * 
- * @author andyh
+ * @author dward
  */
-public class IsLatestMajorVersionProperty extends AbstractProperty
+public class IsLatestMajorVersionProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
@@ -57,21 +58,33 @@ public class IsLatestMajorVersionProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        NodeRef versionSeries;
+        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
         {
             return false;
         }
-        else
+        ServiceRegistry serviceRegistry = getServiceRegistry();
+        VersionService versionService = serviceRegistry.getVersionService();
+        VersionHistory versionHistory = versionService.getVersionHistory(versionSeries);
+        if (versionHistory == null)
         {
-            Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
-            if (version != null)
+            return false;
+        }
+        // Go back in time to the last major version
+        Version currentVersion = versionService.getCurrentVersion(versionSeries);
+        while (currentVersion != null)
+        {
+            if (currentVersion.getVersionType() == VersionType.MAJOR)
             {
-                return (version.getVersionType() == VersionType.MAJOR);
+                return currentVersion.getFrozenStateNodeRef().equals(nodeRef);
             }
-            else
+            // We got to the current node and its not major. We failed!
+            else if (currentVersion.getFrozenStateNodeRef().equals(nodeRef))
             {
                 return false;
             }
+            currentVersion = versionHistory.getPredecessor(currentVersion);
         }
+        return false;
     }
 }

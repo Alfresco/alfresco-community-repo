@@ -425,18 +425,18 @@ public class QueryTest extends BaseCMISTest
         nodeService.setProperty(c9, ContentModel.PROP_VERSION_LABEL, "label");
     }
 
-    private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow)
+    private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow) throws Exception
     {
         return testQuery(query, size, dump, returnPropertyName, returnType, shouldThrow, CMISQueryMode.CMS_STRICT);
     }
 
-    private <T> T testExtendedQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow)
+    private <T> T testExtendedQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow) throws Exception
     {
         return testQuery(query, size, dump, returnPropertyName, returnType, shouldThrow, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow, CMISQueryMode mode)
+    private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow, CMISQueryMode mode) throws Exception
     {
         CMISResultSet rs = null;
         try
@@ -535,7 +535,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_ALLOWED_CHILD_OBJECT_TYPES()
+    public void test_ALLOWED_CHILD_OBJECT_TYPES() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Folder", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -603,7 +603,7 @@ public class QueryTest extends BaseCMISTest
                 new String(), true);
     }
 
-    public void test_PARENT()
+    public void test_PARENT() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Folder", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -668,7 +668,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId NOT IN ('" + rootNodeRef.toString() + "')", 6, false, "cmis:parentId", new String(), true);
     }
 
-    public void test_PATH()
+    public void test_PATH() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -693,7 +693,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_CONTENT_STREAM_ID()
+    public void test_CONTENT_STREAM_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -740,7 +740,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_CONTENT_STREAM_FILENAME()
+    public void test_CONTENT_STREAM_FILENAME() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -835,7 +835,7 @@ public class QueryTest extends BaseCMISTest
                 new String(), true);
     }
 
-    public void test_CONTENT_STREAM_MIME_TYPE()
+    public void test_CONTENT_STREAM_MIME_TYPE() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -918,7 +918,7 @@ public class QueryTest extends BaseCMISTest
                 new String(), true);
     }
 
-    public void test_CONTENT_STREAM_LENGTH()
+    public void test_CONTENT_STREAM_LENGTH() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -983,7 +983,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:contentStreamLength FROM cmis:document WHERE ANY cmis:contentStreamLength NOT IN (750)", 10, false, "cmis:contentStreamLength", new String(), true);
     }
 
-    public void test_CHECKIN_COMMENT()
+    public void test_CHECKIN_COMMENT() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1032,7 +1032,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE ANY cmis:checkinComment NOT IN ('admin')", 10, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_VERSION_SERIES_CHECKED_OUT_ID()
+    public void test_VERSION_SERIES_CHECKED_OUT_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1083,7 +1083,7 @@ public class QueryTest extends BaseCMISTest
                 true);
     }
 
-    public void test_VERSION_SERIES_CHECKED_OUT_BY()
+    public void test_VERSION_SERIES_CHECKED_OUT_BY() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1134,7 +1134,7 @@ public class QueryTest extends BaseCMISTest
                 true);
     }
 
-    public void test_IS_VERSION_SERIES_CHECKED_OUT()
+    public void test_IS_VERSION_SERIES_CHECKED_OUT() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1183,7 +1183,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_VERSION_SERIES_ID()
+    public void test_VERSION_SERIES_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1231,7 +1231,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE ANY cmis:versionSeriesId NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_VERSION_LABEL()
+    public void test_VERSION_LABEL() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1298,7 +1298,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE ANY cmis:versionLabel NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_IS_LATEST_MAJOR_VERSION()
+    public void test_IS_LATEST_MAJOR_VERSION() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1347,7 +1347,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document WHERE ANY cmis:isLatestMajorVersion NOT IN ('TRUE')", 0, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_IS_MAJOR_VERSION()
+    public void test_IS_MAJOR_VERSION() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1399,7 +1399,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE ANY cmis:isMajorVersion NOT IN ('TRUE')", 0, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_IS_LATEST_VERSION()
+    public void test_IS_LATEST_VERSION() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1448,7 +1448,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document WHERE ANY cmis:isLatestVersion NOT IN ('TRUE')", 0, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_IS_IMMUTABLE()
+    public void test_IS_IMMUTABLE() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:Document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1497,7 +1497,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE ANY cmis:isImmutable NOT IN ('TRUE')", 0, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_folder_NAME()
+    public void test_folder_NAME() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1563,7 +1563,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:name FROM cmis:folder WHERE ANY cmis:name NOT IN ('Folder 1')", 9, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_document_Name()
+    public void test_document_Name() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1629,7 +1629,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:name FROM cmis:document WHERE ANY cmis:name NOT IN ('Alfresco Tutorial')", 9, false, "cmis:name", new String(), true);
     }
 
-    public void test_CHANGE_TOKEN()
+    public void test_CHANGE_TOKEN() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1678,7 +1678,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE ANY cmis:changeToken NOT IN ('test')", 10, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_LAST_MODIFICATION_DATE()
+    public void test_LAST_MODIFICATION_DATE() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1851,7 +1851,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_LAST_MODIFIED_BY()
+    public void test_LAST_MODIFIED_BY() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -1920,7 +1920,7 @@ public class QueryTest extends BaseCMISTest
                 new String(), true);
     }
 
-    public void test_CREATION_DATE()
+    public void test_CREATION_DATE() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -2085,7 +2085,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_CREATED_BY()
+    public void test_CREATED_BY() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -2154,7 +2154,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_OBJECT_TYPE_ID()
+    public void test_OBJECT_TYPE_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -2256,7 +2256,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_BASE_TYPE_ID()
+    public void test_BASE_TYPE_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -2305,7 +2305,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_ObjectId()
+    public void test_ObjectId() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
@@ -2400,7 +2400,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE ANY cmis:objectId NOT IN ('" + companyHomeId + "')", 9, false, "cmis:objectId", new String(), true);
     }
 
-    public void testOrderBy()
+    public void testOrderBy() throws Exception
     {
         testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectId");
         testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectTypeId", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectTypeId");
@@ -2790,7 +2790,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void testUpperAndLower()
+    public void testUpperAndLower() throws Exception
     {
         testExtendedQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'FOLDER 1'", 0, false, "cmis:objectId", new String(), false);
@@ -2812,7 +2812,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE Upper(cmis:name) > 'FOLDER 1'", 8, false, "cmis:objectId", new String(), true);
     }
 
-    public void testAllSimpleTextPredicates()
+    public void testAllSimpleTextPredicates() throws Exception
     {
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder 9'", 0, false, "cmis:objectId", new String(), false);
@@ -2840,13 +2840,13 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name NOT LIKE 'F_l_e_ _'", 1, false, "cmis:objectId", new String(), false);
     }
 
-    public void testSimpleConjunction()
+    public void testSimpleConjunction() throws Exception
     {
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL AND cmis:name = 'Folder'", 0, false, "cmis:objectId", new String(), false);
     }
 
-    public void testSimpleDisjunction()
+    public void testSimpleDisjunction() throws Exception
     {
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'Folder 2'", 1, false, "cmis:objectId", new String(), false);
@@ -2855,8 +2855,9 @@ public class QueryTest extends BaseCMISTest
 
     /**
      * In strict mode you should not be able to refer to aspect properties direct from the type
+     * @throws Exception 
      */
-    public void testPropertyToSelectorBinding()
+    public void testPropertyToSelectorBinding() throws Exception
     {
         testQuery("SELECT cmis:parentId FROM cmis:document", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where cmis:parentId <> 'woof://woof/woof'", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
@@ -2866,7 +2867,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:document where CONTAINS('cmis:parentId:*')", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
     }
 
-    public void testExists()
+    public void testExists() throws Exception
     {
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name IS NULL", 0, false, "cmis:objectId", new String(), false);
@@ -2884,7 +2885,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void testFolderEquals()
+    public void testFolderEquals() throws Exception
     {
         Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_NAME);
         String Name = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
@@ -2895,7 +2896,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE cmis:allowedChildObjectTypeIds = 'meep'", 0, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_IN_TREE()
+    public void test_IN_TREE() throws Exception
     {
         Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
@@ -2912,7 +2913,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE IN_TREE('woof://woof/woof')", 6, false, "cmis:objectId", new String(), true);
     }
 
-    public void test_IN_FOLDER()
+    public void test_IN_FOLDER() throws Exception
     {
         Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
@@ -2932,7 +2933,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE IN_FOLDER('woof://woof/woof')", 2, false, "cmis:objectId", new String(), true);
     }
 
-    public void testFTS()
+    public void testFTS() throws Exception
     {
         testQuery("SELECT SCORE(), D.* FROM cmis:document D WHERE D.cmis:contentStreamFileName = 'zebra'", 9, false, "cmis:objectId", new String(), true);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('\\'zebra\\'') AND CONTAINS('\\'quick\\'')", 9, false, "cmis:objectId", new String(), true);
@@ -2981,21 +2982,21 @@ public class QueryTest extends BaseCMISTest
         rs = null;
     }
 
-    public void testBasicSelectAsGuest()
+    public void testBasicSelectAsGuest() throws Exception
     {
         runAs("guest");
         testQuery("SELECT * FROM cmis:document", 0, false, "cmis:objectId", new String(), false);
 
     }
 
-    public void testBasicSelectAsCmis()
+    public void testBasicSelectAsCmis() throws Exception
     {
         runAs("cmis");
         testQuery("SELECT * FROM cmis:document", 7, false, "cmis:objectId", new String(), false);
 
     }
 
-    public void testBasicSelect()
+    public void testBasicSelect() throws Exception
     {
         testQuery("SELECT * FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
     }
@@ -3193,7 +3194,7 @@ public class QueryTest extends BaseCMISTest
         parse(query);
     }
 
-    public void testDateFormattingErrors()
+    public void testDateFormattingErrors() throws Exception
     {
         testQuery("SELECT * FROM cm:lockable L WHERE L.cm:expiryDate =  TIMESTAMP '2012-12-12T12:12:12.012Z'", 1, false, "cmis:objectId", new String(), false,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -3227,7 +3228,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
     }
 
-    public void testAspectJoin()
+    public void testAspectJoin() throws Exception
     {
         testQuery(
                 "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN CMIS:DOCUMENT AS D ON D.cmis:objectId = o.cmis:objectId  ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, '\\'jumped\\'') and D.cmis:contentStreamLength <> 2",
@@ -3291,7 +3292,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void testFTSConnectives()
+    public void testFTSConnectives() throws Exception
     {
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
@@ -3320,7 +3321,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
     }
 
-    public void testLikeEscaping()
+    public void testLikeEscaping() throws Exception
     {
         // TODO:
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'Alfresco Tutorial'", 1, false, "cmis:name", new String(), false);
@@ -3353,7 +3354,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'DD\\''", 1, false, "cmis:name", new String(), false);
     }
 
-    public void testColumnAliasUse()
+    public void testColumnAliasUse() throws Exception
     {
         testQuery("SELECT cmis:name as myname FROM cmis:document WHERE myname LIKE 'Alfresco Tutorial'", 1, false, "myname", new String(), false);
         testQuery("SELECT cmis:name as myname FROM cmis:document WHERE myname LIKE 'A%' order by myname", 2, false, "cmis:name", new String(), false);
@@ -3393,7 +3394,7 @@ public class QueryTest extends BaseCMISTest
         return queryNode;
     }
 
-    public void test_d_text()
+    public void test_d_text() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -3598,7 +3599,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT T.test:multipleTextTokenised alias FROM test:extendedContent T WHERE ANY alias NOT IN ('tokenized')", 1, false, "cmis:name", new String(), false);
     }
 
-    public void test_locale()
+    public void test_locale() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -3702,7 +3703,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
     }
 
-    public void test_d_mltext()
+    public void test_d_mltext() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4021,7 +4022,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleMLTextTokenised alias FROM test:extendedContent WHERE ANY alias NOT IN ('EEEE')", 1, false, "cmis:name", new String(), false);
     }
 
-    public void test_d_float()
+    public void test_d_float() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4154,7 +4155,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleFloat as alias FROM test:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)", 1, false, "cmis:name", new String(), false);
     }
 
-    public void test_d_double()
+    public void test_d_double() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4287,7 +4288,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleDouble alias FROM test:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)", 1, false, "cmis:name", new String(), false);
     }
 
-    public void test_d_int()
+    public void test_d_int() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4422,7 +4423,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleInteger as alias FROM test:extendedContent WHERE ANY alias NOT IN (3, 4)", 1, false, "cmis:name", new String(), false);
     }
 
-    public void test_d_long()
+    public void test_d_long() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4557,7 +4558,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleLong alias FROM test:extendedContent WHERE ANY alias NOT IN (3, 4)", 1, false, "cmis:name", new String(), false);
     }
 
-    public void test_d_date()
+    public void test_d_date() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4723,7 +4724,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_d_datetime()
+    public void test_d_datetime() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -4892,7 +4893,7 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void test_d_boolean()
+    public void test_d_boolean() throws Exception
     {
         addTypeTestData();
         assertNotNull(dictionaryService.getType(extendedContent));
@@ -5035,7 +5036,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleBoolean as alias FROM test:extendedContent WHERE ANY alias NOT IN (3, 4)", 1, false, "cmis:name", new String(), true);
     }
 
-    public void testBasicContainsSyntax()
+    public void testBasicContainsSyntax() throws Exception
     {
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick')", 1, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('one')", 1, false, "cmis:name", new String(), false);
@@ -5151,7 +5152,7 @@ public class QueryTest extends BaseCMISTest
         testOrderablePropertyFail("test:multipleBoolean");
     }
 
-    public void testNonQueryableTypes()
+    public void testNonQueryableTypes() throws Exception
     {
         testQuery("SELECT * FROM cmis:policy", 0, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM cmis:relationship ", 0, false, "cmis:name", new String(), true);

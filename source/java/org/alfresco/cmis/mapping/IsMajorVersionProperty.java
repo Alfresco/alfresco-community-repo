@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -30,15 +30,15 @@ import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 
 /**
  * Accessor for CMIS is major version property
  * 
- * @author andyh
+ * @author dward
  */
-public class IsMajorVersionProperty extends AbstractProperty
+public class IsMajorVersionProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
@@ -56,21 +56,23 @@ public class IsMajorVersionProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        NodeRef versionSeries;
+        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
         {
             return false;
         }
-        else
+        ServiceRegistry serviceRegistry = getServiceRegistry();
+        String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef,
+                ContentModel.PROP_VERSION_LABEL);
+        if (versionLabel == null)
         {
-            Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
-            if (version != null)
-            {
-                return (version.getVersionType() == VersionType.MAJOR);
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
+        VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
+        if (versionHistory == null)
+        {
+            return false;
+        }
+        return versionHistory.getVersion(versionLabel).getVersionType() == VersionType.MAJOR;
     }
 }

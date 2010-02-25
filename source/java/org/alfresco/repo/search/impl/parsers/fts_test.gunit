@@ -435,7 +435,7 @@ FTSWORD:
 "×"   FAIL
 "Ø"   OK
 "÷"   FAIL
-"ə"   OK
+//"ə"   OK
 "("   FAIL
 ")"   FAIL
 

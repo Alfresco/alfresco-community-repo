@@ -34,7 +34,6 @@ import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
-import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
@@ -63,17 +62,21 @@ public class AuditBootstrapTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        // We have to look inside the subsystem for this test
-        ApplicationContextFactory subsystem = (ApplicationContextFactory) ctx.getBean("Audit");
-        ApplicationContext subCtx = subsystem.getApplicationContext();
-        auditModelRegistry = (AuditModelRegistryImpl) subCtx.getBean("auditModel.modelRegistry");
+        auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
         
         // Register a new model
-        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test.xml");
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
     }
-    
+            
+    @Override
+    protected void tearDown() throws Exception
+    {
+        // Throw away the reconfigured registry state
+        auditModelRegistry.destroy();
+    }
+
     public void testSetUp()
     {
         // Just here to fail if the basic startup fails
@@ -97,32 +100,32 @@ public class AuditBootstrapTest extends TestCase
     
     public void testModelLoading_NoDataExtractor() throws Exception
     {
-        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-01.xml");
+        loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-01.xml");
     }
     
     public void testModelLoading_NoDataGenerator() throws Exception
     {
-        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-02.xml");
+        loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-02.xml");
     }
     
     public void testModelLoading_DuplicatePath() throws Exception
     {
-        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-03.xml");
+        loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-03.xml");
     }
     
     public void testModelLoading_UppercasePath() throws Exception
     {
-        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-04.xml");
+        loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-04.xml");
     }
     
     public void testModelLoading_InvalidDataGeneratorName() throws Exception
     {
-        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-05.xml");
+        loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-05.xml");
     }
     
     public void testModelLoading_BadGeneratorRegisteredName() throws Exception
     {
-        loadBadModel("classpath:alfresco/audit/alfresco-audit-test-bad-06.xml");
+        loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-06.xml");
     }
     
     public void testGetApplicationId()

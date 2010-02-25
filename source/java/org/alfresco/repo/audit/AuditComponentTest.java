@@ -39,7 +39,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
-import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -80,7 +79,6 @@ public class AuditComponentTest extends TestCase
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private ApplicationContextFactory subsystem;
     private AuditModelRegistryImpl auditModelRegistry;
     private AuditComponent auditComponent;
     private AuditService auditService;
@@ -94,10 +92,7 @@ public class AuditComponentTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        // We have to look inside the subsystem for this test
-        subsystem = (ApplicationContextFactory) ctx.getBean("Audit");
-        ApplicationContext subCtx = subsystem.getApplicationContext();
-        auditModelRegistry = (AuditModelRegistryImpl) subCtx.getBean("auditModel.modelRegistry");
+        auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY); 
         auditService = serviceRegistry.getAuditService();
@@ -105,7 +100,7 @@ public class AuditComponentTest extends TestCase
         nodeService = serviceRegistry.getNodeService();
         
         // Register the test model
-        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test.xml");
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
         
@@ -138,8 +133,8 @@ public class AuditComponentTest extends TestCase
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
-        // Throw away the reconfigured registry in the subsystem
-        subsystem.stop();
+        // Throw away the reconfigured registry state
+        auditModelRegistry.destroy();
     }
     
     public void testSetUp()
@@ -479,7 +474,7 @@ public class AuditComponentTest extends TestCase
         params.setApplicationName(APPLICATION_API_TEST);
         
         // Load in the config for this specific test: alfresco-audit-test-authenticationservice.xml
-        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/audit/alfresco-audit-test-authenticationservice.xml");
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-authenticationservice.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
         

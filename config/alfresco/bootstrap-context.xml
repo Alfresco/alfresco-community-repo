@@ -552,7 +552,19 @@
     </bean>
 
     <!--  Start Auditing -->
-    <bean id="Audit" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+    <bean id="Audit" class="org.alfresco.repo.audit.model.AuditModelRegistryImpl" parent="abstractPropertyBackedBean">
+        <property name="searchPath">
+            <list>
+                <value>classpath*:alfresco/audit/*.xml</value>
+                <value>classpath*:alfresco/enterprise/audit/*.xml</value>
+                <value>classpath*:alfresco/module/*/audit/*.xml</value>
+                <value>classpath*:alfresco/extension/audit/*.xml</value>
+            </list>
+        </property>
+        <property name="transactionService" ref="transactionService" />
+        <property name="auditDAO" ref="auditDAO" />
+        <property name="dataExtractors" ref="auditModel.extractorRegistry" />
+        <property name="dataGenerators" ref="auditModel.generatorRegistry" />
         <property name="autoStart">
             <value>true</value>
         </property>

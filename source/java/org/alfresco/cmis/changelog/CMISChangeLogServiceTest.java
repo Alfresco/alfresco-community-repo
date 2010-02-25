@@ -39,7 +39,7 @@ import org.alfresco.cmis.CMISChangeType;
 import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -76,7 +76,7 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
         EXPECTED_AMOUNTS.put(CMISChangeType.UPDATED, 6);
     }
 
-    private ApplicationContextFactory auditSubsystem;
+    private AuditModelRegistryImpl auditSubsystem;
     private CMISChangeLogService changeLogService;
 
     private int actualCount = 0;
@@ -88,14 +88,14 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
     {
         auditSubsystem.stop();
         auditSubsystem.setProperty("audit.enabled", "true");
-        auditSubsystem.setProperty("audit.cmis.enabled", "false");
+        auditSubsystem.setProperty("audit.cmischangelog.enabled", "false");
     }
 
     private void enableAudit()
     {
         auditSubsystem.stop();
         auditSubsystem.setProperty("audit.enabled", "true");
-        auditSubsystem.setProperty("audit.cmis.enabled", "true");
+        auditSubsystem.setProperty("audit.cmischangelog.enabled", "true");
     }
 
     /**
@@ -407,7 +407,7 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
         nodeService = (NodeService) applicationContext.getBean("NodeService");
         permissionService = (PermissionService) applicationContext.getBean("PermissionService");
         fileFolderService = (FileFolderService) applicationContext.getBean("FileFolderService");
-        auditSubsystem = (ApplicationContextFactory) applicationContext.getBean("Audit");
+        auditSubsystem = (AuditModelRegistryImpl) applicationContext.getBean("Audit");
     }
 
     @Override
@@ -415,5 +415,6 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
     {
         deleteTestData();
         super.tearDown();
+        auditSubsystem.destroy();
     }
 }

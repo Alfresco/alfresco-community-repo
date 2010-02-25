@@ -28,13 +28,11 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -58,74 +56,588 @@ import org.alfresco.repo.audit.model._3.PathMap;
 import org.alfresco.repo.audit.model._3.PathMappings;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
+import org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean;
+import org.alfresco.repo.management.subsystems.PropertyBackedBeanState;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PathMapper;
+import org.alfresco.util.ResourceFinder;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.extensions.surf.util.PropertyCheck;
 import org.springframework.util.ResourceUtils;
 import org.xml.sax.SAXParseException;
 
 /**
- * Component used to store audit model definitions.  It ensures that duplicate application and converter
- * definitions are detected and provides a single lookup for code using the Audit model.
+ * Component used to store audit model definitions. It ensures that duplicate application and converter definitions are
+ * detected and provides a single lookup for code using the Audit model. It is factored as a subsystem and exposes a
+ * global enablement property plus enablement properties for each individual audit application.
  * 
  * @author Derek Hulley
+ * @author dward
  * @since 3.2
  */
-public class AuditModelRegistryImpl implements AuditModelRegistry
+public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implements AuditModelRegistry
 {
+    
+    /** The name of the global enablement property. */
+    private static final String PROPERTY_AUDIT_ENABLED = "audit.enabled";
+    
     private static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
     
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
     
+    private String[] searchPath;
     private TransactionService transactionService;
     private AuditDAO auditDAO;
     private NamedObjectRegistry<DataExtractor> dataExtractors;
     private NamedObjectRegistry<DataGenerator> dataGenerators;
-    
-    private final ReentrantReadWriteLock.ReadLock readLock;
-    private final ReentrantReadWriteLock.WriteLock writeLock;
     private final ObjectFactory objectFactory;
     
-    private final Set<URL> auditModelUrls;
-    private final List<Audit> auditModels;
     /**
-     * Used to lookup path translations
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#afterPropertiesSet()
      */
-    private PathMapper auditPathMapper;
-    /**
-     * Used to lookup the audit application java hierarchy 
-     */
-    private final Map<String, AuditApplication> auditApplicationsByKey;
-    /**
-     * Used to lookup the audit application java hierarchy 
-     */
-    private final Map<String, AuditApplication> auditApplicationsByName;
-    
-    /**
-     * Default constructor
-     */
-    public AuditModelRegistryImpl()
-    {
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        readLock = lock.readLock();
-        writeLock = lock.writeLock();
-        
-        objectFactory = new ObjectFactory();
-        
-        auditModelUrls = new HashSet<URL>(7);
-        auditModels = new ArrayList<Audit>(7);
-        auditPathMapper = new PathMapper();
-        auditApplicationsByKey = new HashMap<String, AuditApplication>(7);
-        auditApplicationsByName = new HashMap<String, AuditApplication>(7);
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {    
+        PropertyCheck.mandatory(this, "searchPath", searchPath);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "auditDAO", auditDAO);
+        PropertyCheck.mandatory(this, "dataExtractors", dataExtractors);
+        PropertyCheck.mandatory(this, "dataGenerators", dataGenerators);        
+        super.afterPropertiesSet();
     }
 
     /**
-     * Service to ensure DAO calls are transactionally wrapped
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getState(boolean)
+     */
+    @Override
+    protected synchronized AuditModelRegistryState getState(boolean start)
+    {
+        return (AuditModelRegistryState)super.getState(start);
+    }
+
+    /**
+     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByKey(java.lang.String)
+     */
+    public AuditApplication getAuditApplicationByKey(String key)
+    {
+        return getState(true).getAuditApplicationByKey(key);
+    }
+
+    /**
+     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByName(java.lang.String)
+     */
+    public AuditApplication getAuditApplicationByName(String applicationName)
+    {
+        return getState(true).getAuditApplicationByName(applicationName);
+    }
+
+    /**
+     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditPathMapper()
+     */
+    public PathMapper getAuditPathMapper()
+    {
+        return getState(true).getAuditPathMapper();
+    }
+
+    /**
+     * @see org.alfresco.repo.audit.model.AuditModelRegistry#loadAuditModels()
+     */
+    public void loadAuditModels()
+    {
+        stop();
+        start();
+    }
+    
+    /**
+     * Enables audit and registers an audit model at a given URL. Does not register across the cluster and should only
+     * be used for unit test purposes.
+     * 
+     * @param auditModelUrl
+     *            the source of the model
+     */
+    public synchronized void registerModel(URL auditModelUrl)
+    {
+        stop();
+        setProperty(PROPERTY_AUDIT_ENABLED, "true");
+        getState(false).registerModel(auditModelUrl);
+    }
+        
+    /**
+     * A class encapsulating the disposable/resettable state of the audit model registry.
+     */
+    public class AuditModelRegistryState implements PropertyBackedBeanState
+    {        
+        
+        /** The audit models. */
+        private final Map<URL, Audit> auditModels;
+        
+        /** Used to lookup path translations. */
+        private PathMapper auditPathMapper;
+        
+        /** Used to lookup the audit application java hierarchy. */
+        private Map<String, AuditApplication> auditApplicationsByKey;
+        
+        /** Used to lookup the audit application java hierarchy. */
+        private Map<String, AuditApplication> auditApplicationsByName;
+        
+        /** The exposed configuration properties. */
+        private final Map<String, Boolean> properties;
+        
+
+        /**
+         * Instantiates a new audit model registry state.
+         */
+        public AuditModelRegistryState()
+        {
+            auditModels = new LinkedHashMap<URL, Audit>(7);
+            properties = new HashMap<String, Boolean>(7);
+            
+            // Default value for global enabled property
+            properties.put(PROPERTY_AUDIT_ENABLED, false);
+
+            // Let's search for config files in the appropriate places. The individual applications they contain can still
+            // be enabled/disabled by the bean properties
+            ResourceFinder resourceFinder = new ResourceFinder(getParent());
+            try
+            {
+                for (Resource resource : resourceFinder.getResources(searchPath))
+                {
+                    registerModel(resource.getURL());
+                }
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to find audit resources", e);
+            }                    
+        }
+
+        /**
+         * Register an audit model at a given URL.
+         * 
+         * @param auditModelUrl
+         *            the source of the model
+         */
+        public void registerModel(URL auditModelUrl)
+        {
+            try
+            {
+                if (auditModels.containsKey(auditModelUrl))
+                {
+                    logger.warn("An audit model has already been registered at URL " + auditModelUrl);
+                }
+                Audit audit = AuditModelRegistryImpl.unmarshallModel(auditModelUrl);
+
+                // Store the model itself
+                auditModels.put(auditModelUrl, audit);
+
+                // Cache property enabling each application by default
+                List<Application> applications = audit.getApplication();
+                for (Application application : applications)
+                {
+                    properties.put(getEnabledProperty(application.getKey()), true);
+                }
+            }
+            catch (Throwable e)
+            {
+                throw new AuditModelException("Failed to load audit model: " + auditModelUrl, e);
+            }
+        }
+
+        /**
+         * Gets the name of an enablement property.
+         * 
+         * @param key
+         *            an application key
+         * @return the property name
+         */
+        private String getEnabledProperty(String key)
+        {
+            return "audit." + key.toLowerCase() + ".enabled";
+        }
+        
+        /**
+         * Checks if an application enabled.
+         * 
+         * @param key
+         *            the application key
+         * @return true, if the application is enabled
+         */
+        private boolean isApplicationEnabled(String key)
+        {
+            Boolean enabled = properties.get(getEnabledProperty(key));
+            return enabled != null && enabled;
+        }
+
+        /**
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#getProperty(java.lang.String)
+         */
+        public String getProperty(String name)
+        {
+            return String.valueOf(properties.get(name));
+        }
+
+        /**
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#getPropertyNames()
+         */
+        public Set<String> getPropertyNames()
+        {
+            return properties.keySet();
+        }
+
+        /**
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#setProperty(java.lang.String, java.lang.String)
+         */
+        public void setProperty(String name, String value)
+        {
+            properties.put(name, Boolean.parseBoolean(value));
+        }
+
+        /**
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#start()
+         */
+        public void start()
+        {
+            auditApplicationsByKey = new HashMap<String, AuditApplication>(7);
+            auditApplicationsByName = new HashMap<String, AuditApplication>(7);
+            auditPathMapper = new PathMapper();
+
+            // If we are globally disabled, skip processing the models
+            Boolean enabled = properties.get(PROPERTY_AUDIT_ENABLED);
+            if (enabled != null && enabled)
+            {
+
+                final RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        // Load models from the URLs
+                        for (Map.Entry<URL, Audit> entry : auditModels.entrySet())
+                        {
+                            URL auditModelUrl = entry.getKey();
+                            Audit audit = entry.getValue();
+                            try
+                            {
+                                // Get an input stream and write the model
+                                Long auditModelId = auditDAO.getOrCreateAuditModel(auditModelUrl).getFirst();
+
+                                // Now cache it (eagerly)
+                                cacheAuditElements(auditModelId, audit);
+                            }
+                            catch (Throwable e)
+                            {
+                                throw new AuditModelException("Failed to load audit model: " + auditModelUrl, e);
+                            }
+                        }
+                        // NOTE: If we support other types of loading, then that will have to go here, too
+
+                        // Done
+                        return null;
+                    }
+                };
+
+                // Run as system user to avoid cyclical dependency in bootstrap read-only checking (and we are anyway!)
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback,
+                                transactionService.isReadOnly(), true);
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+
+            auditPathMapper.lock();
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#stop()
+         */
+        public void stop()
+        {
+            auditPathMapper = null;
+        }
+        
+                
+        /**
+         * Gets an audit application by key.
+         * 
+         * @param key
+         *            the application key
+         * @return the audit application
+         * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByKey(java.lang.String)
+         */
+        public AuditApplication getAuditApplicationByKey(String key)
+        {
+            return auditApplicationsByKey.get(key);
+        }
+        
+        /**
+         * Gets an audit application by name.
+         * 
+         * @param applicationName
+         *            the application name
+         * @return the audit application
+         * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByName(java.lang.String)
+         */
+        public AuditApplication getAuditApplicationByName(String applicationName)
+        {
+            return auditApplicationsByName.get(applicationName);
+        }
+        
+        /**
+         * Gets the audit path mapper.
+         * 
+         * @return the audit path mapper
+         * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditPathMapper()
+         */
+        public PathMapper getAuditPathMapper()
+        {
+            return auditPathMapper;
+        }
+        
+        /**
+         * Caches audit elements from a model.
+         * 
+         * @param auditModelId
+         *            the audit model id
+         * @param audit
+         *            the audit model
+         */
+        private void cacheAuditElements(Long auditModelId, Audit audit)
+        {
+            Map<String, DataExtractor> dataExtractorsByName = new HashMap<String, DataExtractor>(13);
+            Map<String, DataGenerator> dataGeneratorsByName = new HashMap<String, DataGenerator>(13);
+
+            // Get the data extractors and check for duplicates
+            DataExtractors extractorsElement = audit.getDataExtractors();
+            if (extractorsElement == null)
+            {
+                extractorsElement = objectFactory.createDataExtractors();
+            }
+            List<org.alfresco.repo.audit.model._3.DataExtractor> extractorElements = extractorsElement.getDataExtractor();
+            for (org.alfresco.repo.audit.model._3.DataExtractor extractorElement : extractorElements)
+            {
+                String name = extractorElement.getName();
+                // If the name is taken, make sure that they are equal
+                if (dataExtractorsByName.containsKey(name))
+                {
+                    throw new AuditModelException(
+                            "Audit data extractor '" + name + "' has already been defined.");
+                }
+                // Construct the converter
+                final DataExtractor dataExtractor;
+                if (extractorElement.getClazz() != null)
+                {
+                    try
+                    {
+                        Class<?> dataExtractorClazz = Class.forName(extractorElement.getClazz());
+                        dataExtractor = (DataExtractor) dataExtractorClazz.newInstance();
+                    }
+                    catch (ClassNotFoundException e)
+                    {
+                        throw new AuditModelException(
+                                "Audit data extractor '" + name + "' class not found: " + extractorElement.getClazz());
+                    }
+                    catch (Exception e)
+                    {
+                        throw new AuditModelException(
+                                "Audit data extractor '" + name + "' could not be constructed: " + extractorElement.getClazz());
+                    }
+                }
+                else if (extractorElement.getRegisteredName() != null)
+                {
+                    String registeredName = extractorElement.getRegisteredName();
+                    dataExtractor = dataExtractors.getNamedObject(registeredName);
+                    if (dataExtractor == null)
+                    {
+                        throw new AuditModelException(
+                                "No registered audit data extractor exists for '" + registeredName + "'.");
+                    }
+                }
+                else
+                {
+                    throw new AuditModelException(
+                            "Audit data extractor has no class or registered name: " + name);
+                }
+                // Store
+                dataExtractorsByName.put(name, dataExtractor);
+            }
+            // Get the data generators and check for duplicates
+            DataGenerators generatorsElement = audit.getDataGenerators();
+            if (generatorsElement == null)
+            {
+                generatorsElement = objectFactory.createDataGenerators();
+            }
+            List<org.alfresco.repo.audit.model._3.DataGenerator> generatorElements = generatorsElement.getDataGenerator();
+            for (org.alfresco.repo.audit.model._3.DataGenerator generatorElement : generatorElements)
+            {
+                String name = generatorElement.getName();
+                // If the name is taken, make sure that they are equal
+                if (dataGeneratorsByName.containsKey(name))
+                {
+                    throw new AuditModelException(
+                            "Audit data generator '" + name + "' has already been defined.");
+                }
+                // Construct the generator
+                final DataGenerator dataGenerator;
+                if (generatorElement.getClazz() != null)
+                {
+                    try
+                    {
+                        Class<?> dataGeneratorClazz = Class.forName(generatorElement.getClazz());
+                        dataGenerator = (DataGenerator) dataGeneratorClazz.newInstance();
+                    }
+                    catch (ClassNotFoundException e)
+                    {
+                        throw new AuditModelException(
+                                "Audit data generator '" + name + "' class not found: " + generatorElement.getClazz());
+                    }
+                    catch (Exception e)
+                    {
+                        throw new AuditModelException(
+                                "Audit data generator '" + name + "' could not be constructed: " + generatorElement.getClazz());
+                    }
+                }
+                else if (generatorElement.getRegisteredName() != null)
+                {
+                    String registeredName = generatorElement.getRegisteredName();
+                    dataGenerator = dataGenerators.getNamedObject(registeredName);
+                    if (dataGenerator == null)
+                    {
+                        throw new AuditModelException(
+                                "No registered audit data generator exists for '" + registeredName + "'.");
+                    }
+                }
+                else
+                {
+                    throw new AuditModelException(
+                            "Audit data generator has no class or registered name: " + name);
+                }
+                // Store
+                dataGeneratorsByName.put(name, dataGenerator);
+            }
+            // Get the application and check for duplicates
+            List<Application> applications = audit.getApplication();
+            for (Application application : applications)
+            {
+                String key = application.getKey();
+                if (!isApplicationEnabled(key))
+                {
+                    continue;
+                }
+
+                if (auditApplicationsByKey.containsKey(key))
+                {
+                    throw new AuditModelException(
+                            "Audit application key '" + key + "' is used by: " + auditApplicationsByKey.get(key));
+                }
+                
+                String name = application.getName();
+                if (auditApplicationsByName.containsKey(name))
+                {
+                    throw new AuditModelException(
+                            "Audit application '" + name + "' is used by: " + auditApplicationsByName.get(name));
+                }
+                
+                // Get the ID of the application
+                AuditApplicationInfo appInfo = auditDAO.getAuditApplication(name);
+                if (appInfo == null)
+                {
+                    appInfo = auditDAO.createAuditApplication(name, auditModelId);
+                }
+                else
+                {
+                    // Update it with the new model ID
+                    auditDAO.updateAuditApplicationModel(appInfo.getId(), auditModelId);
+                }
+                
+                AuditApplication wrapperApp = new AuditApplication(
+                        dataExtractorsByName,
+                        dataGeneratorsByName,
+                        application,
+                        appInfo.getId(),
+                        appInfo.getDisabledPathsId());
+                auditApplicationsByName.put(name, wrapperApp);
+                auditApplicationsByKey.put(key, wrapperApp);
+            }
+            
+            // Pull out all the audit path maps
+            buildAuditPathMap(audit);            
+        }
+        
+        /**
+         * Construct the reverse lookup maps for quick conversion of data to target maps.
+         * 
+         * @param audit
+         *            the audit model
+         */
+        private void buildAuditPathMap(Audit audit)
+        {
+            PathMappings pathMappings = audit.getPathMappings();
+            if (pathMappings == null)
+            {
+                pathMappings = objectFactory.createPathMappings();
+            }
+            for (PathMap pathMap : pathMappings.getPathMap())
+            {
+                String sourcePath = pathMap.getSource();
+                String targetPath = pathMap.getTarget();
+
+                // Extract the application key from the root of the path
+                int keyStart = targetPath.charAt(0) == '/' ? 1 : 0;
+                int keyEnd = targetPath.indexOf('/', keyStart);
+                String key = keyEnd == -1 ? targetPath.substring(keyStart) : targetPath.substring(keyStart, keyEnd);
+
+                // Only add the path if the application is not disabled
+                if (isApplicationEnabled(key))
+                {
+                    auditPathMapper.addPathMap(sourcePath, targetPath);
+                }
+            }
+        }
+    }
+
+    /**
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
+     */
+    @Override
+    protected PropertyBackedBeanState createInitialState() throws IOException
+    {
+        return new AuditModelRegistryState();
+    }
+
+    /**
+     * Default constructor.
+     */
+    public AuditModelRegistryImpl()
+    {        
+        objectFactory = new ObjectFactory();        
+    }
+
+    
+    /**
+     * Sets the search path for config files.
+     * 
+     * @param searchPath
+     *            the search path
+     */
+    public void setSearchPath(String[] searchPath)
+    {
+        this.searchPath = searchPath;
+    }
+
+    /**
+     * Service to ensure DAO calls are transactionally wrapped.
+     * 
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -133,7 +645,10 @@ public class AuditModelRegistryImpl implements AuditModelRegistry
     }
 
     /**
-     * Set the DAO used to persisted the registered audit models
+     * Set the DAO used to persisted the registered audit models.
+     * 
+     * @param auditDAO
+     *            the audit dao
      */
     public void setAuditDAO(AuditDAO auditDAO)
     {
@@ -141,7 +656,10 @@ public class AuditModelRegistryImpl implements AuditModelRegistry
     }
 
     /**
-     * Set the registry of {@link DataExtractor data extractors}
+     * Set the registry of {@link DataExtractor data extractors}.
+     * 
+     * @param dataExtractors
+     *            the data extractors
      */
     public void setDataExtractors(NamedObjectRegistry<DataExtractor> dataExtractors)
     {
@@ -149,7 +667,10 @@ public class AuditModelRegistryImpl implements AuditModelRegistry
     }
 
     /**
-     * Set the registry of {@link DataGenerator data generators}
+     * Set the registry of {@link DataGenerator data generators}.
+     * 
+     * @param dataGenerators
+     *            the data generators
      */
     public void setDataGenerators(NamedObjectRegistry<DataGenerator> dataGenerators)
     {
@@ -157,169 +678,13 @@ public class AuditModelRegistryImpl implements AuditModelRegistry
     }
 
     /**
-     * Ensures that all properties have been set for use.
-     */
-    private void checkProperties()
-    {
-        PropertyCheck.mandatory(this, "transactionService", transactionService);
-        PropertyCheck.mandatory(this, "auditDAO", auditDAO);
-        PropertyCheck.mandatory(this, "dataExtractors", dataExtractors);
-        PropertyCheck.mandatory(this, "dataGenerators", dataGenerators);
-    }
-
-    /**
-     * Register an audit model at a given URL.
-     * 
-     * @param auditModelUrl             the source of the model
-     */
-    public void registerModel(URL auditModelUrl)
-    {
-        checkProperties();
-        writeLock.lock();
-        try
-        {
-            if (auditModelUrls.contains(auditModelUrl))
-            {
-                logger.warn("An audit model has already been registered at URL " + auditModelUrl);
-            }
-            auditModelUrls.add(auditModelUrl);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    }
-    
-    /**
-     * Register an audit model at a given node reference.
-     * 
-     * @param auditModelNodeRef         the source of the audit model
-     */
-    public void registerModel(NodeRef auditModelNodeRef)
-    {
-        checkProperties();
-        writeLock.lock();
-        try
-        {
-            throw new UnsupportedOperationException();
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    }
-    
-    /**
-     * Cleans out all derived data
-     */
-    private void clearCaches()
-    {
-        auditModels.clear();
-        auditApplicationsByKey.clear();
-        auditApplicationsByName.clear();
-    }
-    
-    /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#loadAuditModels()
-     */
-    public void loadAuditModels()
-    {
-        checkProperties();
-        
-        RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                // Load models from the URLs
-                Set<URL> auditModelUrlsInner = new HashSet<URL>(auditModelUrls);
-                for (URL auditModelUrl : auditModelUrlsInner)
-                {
-                    try
-                    {
-                        Audit audit = AuditModelRegistryImpl.unmarshallModel(auditModelUrl);
-                        // That worked, so now get an input stream and write the model
-                        Long auditModelId = auditDAO.getOrCreateAuditModel(auditModelUrl).getFirst();
-                        // Now cache it (eagerly)
-                        cacheAuditElements(auditModelId, audit);
-                    }
-                    catch (Throwable e)
-                    {
-                        // Mainly for test purposes, we clear out the failed URL
-                        auditModelUrls.remove(auditModelUrl);
-                        clearCaches();
-                        
-                        throw new AuditModelException(
-                                "Failed to load audit model: " + auditModelUrl,
-                                e);
-                    }
-                }
-                // NOTE: If we support other types of loading, then that will have to go here, too
-                
-                // Done
-                return null;
-            }
-        };
-
-        writeLock.lock();
-        // Drop all cached data
-        clearCaches();
-        try
-        {
-            auditPathMapper = new PathMapper();
-            transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback,
-                    transactionService.isReadOnly(), true);
-            auditPathMapper.lock();
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    }
-    
-    /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByKey(java.lang.String)
-     */
-    public AuditApplication getAuditApplicationByKey(String key)
-    {
-        readLock.lock();
-        try
-        {
-            return auditApplicationsByKey.get(key);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-    }
-    
-    /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByName(java.lang.String)
-     */
-    public AuditApplication getAuditApplicationByName(String applicationName)
-    {
-        readLock.lock();
-        try
-        {
-            return auditApplicationsByName.get(applicationName);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-    }
-    
-    /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditPathMapper()
-     */
-    public PathMapper getAuditPathMapper()
-    {
-        return auditPathMapper;
-    }
-    
-    /**
      * Unmarshalls the Audit model from the URL.
      * 
-     * @throws AlfrescoRuntimeException         if an IOException occurs
+     * @param configUrl
+     *            the config url
+     * @return the audit model
+     * @throws AlfrescoRuntimeException
+     *             if an IOException occurs
      */
     public static Audit unmarshallModel(URL configUrl)
     {
@@ -336,7 +701,13 @@ public class AuditModelRegistryImpl implements AuditModelRegistry
     }
 
     /**
-     * Unmarshalls the Audit model from a stream
+     * Unmarshalls the Audit model from a stream.
+     * 
+     * @param is
+     *            the is
+     * @param source
+     *            the source
+     * @return the audit model
      */
     private static Audit unmarshallModel(InputStream is, final String source)
     {
@@ -398,181 +769,5 @@ public class AuditModelRegistryImpl implements AuditModelRegistry
         {
             try { is.close(); } catch (IOException e) {}
         }
-    }
-    
-    private void cacheAuditElements(Long auditModelId, Audit audit)
-    {
-        Map<String, DataExtractor> dataExtractorsByName = new HashMap<String, DataExtractor>(13);
-        Map<String, DataGenerator> dataGeneratorsByName = new HashMap<String, DataGenerator>(13);
-
-        // Get the data extractors and check for duplicates
-        DataExtractors extractorsElement = audit.getDataExtractors();
-        if (extractorsElement == null)
-        {
-            extractorsElement = objectFactory.createDataExtractors();
-        }
-        List<org.alfresco.repo.audit.model._3.DataExtractor> extractorElements = extractorsElement.getDataExtractor();
-        for (org.alfresco.repo.audit.model._3.DataExtractor extractorElement : extractorElements)
-        {
-            String name = extractorElement.getName();
-            // If the name is taken, make sure that they are equal
-            if (dataExtractorsByName.containsKey(name))
-            {
-                throw new AuditModelException(
-                        "Audit data extractor '" + name + "' has already been defined.");
-            }
-            // Construct the converter
-            final DataExtractor dataExtractor;
-            if (extractorElement.getClazz() != null)
-            {
-                try
-                {
-                    Class<?> dataExtractorClazz = Class.forName(extractorElement.getClazz());
-                    dataExtractor = (DataExtractor) dataExtractorClazz.newInstance();
-                }
-                catch (ClassNotFoundException e)
-                {
-                    throw new AuditModelException(
-                            "Audit data extractor '" + name + "' class not found: " + extractorElement.getClazz());
-                }
-                catch (Exception e)
-                {
-                    throw new AuditModelException(
-                            "Audit data extractor '" + name + "' could not be constructed: " + extractorElement.getClazz());
-                }
-            }
-            else if (extractorElement.getRegisteredName() != null)
-            {
-                String registeredName = extractorElement.getRegisteredName();
-                dataExtractor = dataExtractors.getNamedObject(registeredName);
-                if (dataExtractor == null)
-                {
-                    throw new AuditModelException(
-                            "No registered audit data extractor exists for '" + registeredName + "'.");
-                }
-            }
-            else
-            {
-                throw new AuditModelException(
-                        "Audit data extractor has no class or registered name: " + name);
-            }
-            // Store
-            dataExtractorsByName.put(name, dataExtractor);
-        }
-        // Get the data generators and check for duplicates
-        DataGenerators generatorsElement = audit.getDataGenerators();
-        if (generatorsElement == null)
-        {
-            generatorsElement = objectFactory.createDataGenerators();
-        }
-        List<org.alfresco.repo.audit.model._3.DataGenerator> generatorElements = generatorsElement.getDataGenerator();
-        for (org.alfresco.repo.audit.model._3.DataGenerator generatorElement : generatorElements)
-        {
-            String name = generatorElement.getName();
-            // If the name is taken, make sure that they are equal
-            if (dataGeneratorsByName.containsKey(name))
-            {
-                throw new AuditModelException(
-                        "Audit data generator '" + name + "' has already been defined.");
-            }
-            // Construct the generator
-            final DataGenerator dataGenerator;
-            if (generatorElement.getClazz() != null)
-            {
-                try
-                {
-                    Class<?> dataGeneratorClazz = Class.forName(generatorElement.getClazz());
-                    dataGenerator = (DataGenerator) dataGeneratorClazz.newInstance();
-                }
-                catch (ClassNotFoundException e)
-                {
-                    throw new AuditModelException(
-                            "Audit data generator '" + name + "' class not found: " + generatorElement.getClazz());
-                }
-                catch (Exception e)
-                {
-                    throw new AuditModelException(
-                            "Audit data generator '" + name + "' could not be constructed: " + generatorElement.getClazz());
-                }
-            }
-            else if (generatorElement.getRegisteredName() != null)
-            {
-                String registeredName = generatorElement.getRegisteredName();
-                dataGenerator = dataGenerators.getNamedObject(registeredName);
-                if (dataGenerator == null)
-                {
-                    throw new AuditModelException(
-                            "No registered audit data generator exists for '" + registeredName + "'.");
-                }
-            }
-            else
-            {
-                throw new AuditModelException(
-                        "Audit data generator has no class or registered name: " + name);
-            }
-            // Store
-            dataGeneratorsByName.put(name, dataGenerator);
-        }
-        // Get the application and check for duplicates
-        List<Application> applications = audit.getApplication();
-        for (Application application : applications)
-        {
-            String key = application.getKey();
-            if (auditApplicationsByKey.containsKey(key))
-            {
-                throw new AuditModelException(
-                        "Audit application key '" + key + "' is used by: " + auditApplicationsByKey.get(key));
-            }
-            
-            String name = application.getName();
-            if (auditApplicationsByName.containsKey(name))
-            {
-                throw new AuditModelException(
-                        "Audit application '" + name + "' is used by: " + auditApplicationsByName.get(name));
-            }
-            
-            // Get the ID of the application
-            AuditApplicationInfo appInfo = auditDAO.getAuditApplication(name);
-            if (appInfo == null)
-            {
-                appInfo = auditDAO.createAuditApplication(name, auditModelId);
-            }
-            else
-            {
-                // Update it with the new model ID
-                auditDAO.updateAuditApplicationModel(appInfo.getId(), auditModelId);
-            }
-            
-            AuditApplication wrapperApp = new AuditApplication(
-                    dataExtractorsByName,
-                    dataGeneratorsByName,
-                    application,
-                    appInfo.getId(),
-                    appInfo.getDisabledPathsId());
-            auditApplicationsByName.put(name, wrapperApp);
-            auditApplicationsByKey.put(key, wrapperApp);
-        }
-        // Pull out all the audit path maps
-        buildAuditPathMap(audit);
-        // Store the model itself
-        auditModels.add(audit);
-    }
-    
-    /**
-     * Construct the reverse lookup maps for quick conversion of data to target maps
-     */
-    private void buildAuditPathMap(Audit audit)
-    {
-        PathMappings pathMappings = audit.getPathMappings();
-        if (pathMappings == null)
-        {
-            pathMappings = objectFactory.createPathMappings();
-        }
-        for (PathMap pathMap : pathMappings.getPathMap())
-        {
-            String sourcePath = pathMap.getSource();
-            String targetPath = pathMap.getTarget();
-            auditPathMapper.addPathMap(sourcePath, targetPath);
-        }
-    }
+    }    
 }

@@ -66,7 +66,7 @@ public class ResourceFinder extends ServletContextResourcePatternResolver
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public Resource[] getResources(String[] locationPatterns) throws IOException
+    public Resource[] getResources(String... locationPatterns) throws IOException
     {
         List<Resource> resources = new LinkedList<Resource>();
         for (String locationPattern : locationPatterns)

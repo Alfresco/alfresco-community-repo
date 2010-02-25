@@ -117,16 +117,7 @@
         <property name="nodeService" ref="nodeService" />
     </bean>
 
-    <!-- Mount registry from Audit subsystem -->
-    <bean id="auditModel.modelRegistry" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-        <property name="sourceApplicationContextFactory">
-            <ref bean="Audit" />
-        </property>
-        <property name="interfaces">
-            <list>
-                <value>org.alfresco.repo.audit.model.AuditModelRegistry</value>
-            </list>
-        </property>
-    </bean>
+    <!-- Reference in the audit registry managed bean -->
+    <alias name="Audit" alias="auditModel.modelRegistry"/>
       
 </beans>

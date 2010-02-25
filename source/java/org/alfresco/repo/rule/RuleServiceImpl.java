@@ -61,9 +61,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Rule service implementation.
@@ -779,6 +779,57 @@ public class RuleServiceImpl
         {
             throw new RuleServiceException("Insufficient permissions to save a rule.");
         }
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#saveRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, int)
+     */    
+    public void saveRule(NodeRef nodeRef, Rule rule, int index)
+    {
+        saveRule(nodeRef, rule);
+        setRulePosition(nodeRef, rule.getNodeRef(), index);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#setRulePosition(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, int)
+     */
+    public void setRulePosition(NodeRef nodeRef, NodeRef ruleNodeRef, int index)
+    {
+        NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
+        if (ruleFolder != null)
+        {
+            List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            List<ChildAssociationRef> orderedAssocs = new ArrayList<ChildAssociationRef>(assocs.size());
+            ChildAssociationRef movedAssoc = null;
+            for (ChildAssociationRef assoc : assocs)
+            {
+                NodeRef childNodeRef = assoc.getChildRef();
+                if (childNodeRef.equals(ruleNodeRef) == true)
+                {
+                    movedAssoc = assoc;
+                }
+                else
+                {
+                    orderedAssocs.add(assoc);
+                }
+            }            
+            orderedAssocs.add(index, movedAssoc);
+            
+            index = 0;
+            for (ChildAssociationRef orderedAssoc : orderedAssocs)
+            {
+                nodeService.setChildAssociationIndex(orderedAssoc, index);
+                index++;
+            }
+        }
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.rule.RuleService#setRulePosition(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, int)
+     */
+    public void setRulePosition(NodeRef nodeRef, Rule rule, int index)
+    {
+        setRulePosition(nodeRef, rule.getNodeRef(), index);
     }
     
     /**

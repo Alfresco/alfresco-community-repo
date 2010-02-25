@@ -200,7 +200,34 @@ public interface RuleService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule"})
     public void saveRule(NodeRef nodeRef, Rule rule);
-        
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param rule
+     * @param index
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule", "index"})
+    public void saveRule(NodeRef nodeRef, Rule rule, int index);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param ruleNodeRef
+     * @param index
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "ruleNodeRef", "index"})
+    public void setRulePosition(NodeRef nodeRef, NodeRef ruleNodeRef, int index);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param rule
+     * @param index
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "rule", "index"})
+    public void setRulePosition(NodeRef nodeRef, Rule rule, int index);
+    
     /**
      * Removes a rule from the given rule actionable node
      * 

@@ -38,6 +38,7 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,6 +47,7 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 
 /**
@@ -55,6 +57,9 @@ import org.alfresco.service.namespace.QName;
  */
 public class RuleServiceImplTest extends BaseRuleTest
 {    
+    private String ASSOC_NAME_RULES_PREFIX = "rules";
+    private RegexQNamePattern ASSOC_NAME_RULES_REGEX = new RegexQNamePattern(RuleModel.RULE_MODEL_URI, "^" + ASSOC_NAME_RULES_PREFIX + ".*");
+    
     MutableAuthenticationService authenticationService;
 	PermissionService permissionService;  
 	
@@ -240,6 +245,37 @@ public class RuleServiceImplTest extends BaseRuleTest
         {
             assertEquals(Integer.toString(index4), rule.getTitle());
             index4++;
+        }
+        
+        // Lets have a look at the assoc index and see if the are set correctly
+        NodeRef ruleFolder = ((RuntimeRuleService)ruleService).getSavedRuleFolderAssoc(nodeRef).getChildRef();
+        if (ruleFolder != null)
+        {
+            // Get the rules for this node
+            List<ChildAssociationRef> ruleChildAssocRefs = nodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            System.out.println("Association Nth Sibling values ...");
+            for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
+            {
+                System.out.println(" - Assoc index = " + ruleChildAssocRef.getNthSibling() + ", name = " + 
+                                                         nodeService.getProperty(ruleChildAssocRef.getChildRef(), ContentModel.PROP_TITLE));
+            }
+        }
+        
+        rules = ruleService.getRules(nodeRef);
+        
+        Rule rule = rules.get(3);
+        ruleService.setRulePosition(nodeRef, rule, 1);
+        
+        if (ruleFolder != null)
+        {
+            // Get the rules for this node
+            List<ChildAssociationRef> ruleChildAssocRefs = nodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            System.out.println("After change of index ...");
+            for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
+            {
+                System.out.println(" - Assoc index = " + ruleChildAssocRef.getNthSibling() + ", name = " + 
+                        nodeService.getProperty(ruleChildAssocRef.getChildRef(), ContentModel.PROP_TITLE));
+}
         }
     }
     

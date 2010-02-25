@@ -30,6 +30,7 @@ import org.alfresco.service.namespace.QName;
  * Transfer Model Constants
  * 
  * @author Mark Rogers
+ * @author Brian Remmington
  */
 public interface TransferModel
 {
@@ -61,10 +62,26 @@ public interface TransferModel
      */
     static final QName TYPE_TRANSFER_LOCK = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferLock");
     static final QName PROP_TRANSFER_ID = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferId");
+
+    /*
+     * Type : Transfer Record
+     */
+    static final QName TYPE_TRANSFER_RECORD = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferRecord");
+    static final QName PROP_PROGRESS_POSITION = QName.createQName(TRANSFER_MODEL_1_0_URI, "progressPosition");
+    static final QName PROP_PROGRESS_ENDPOINT = QName.createQName(TRANSFER_MODEL_1_0_URI, "progressEndpoint");
+    static final QName PROP_TRANSFER_STATUS = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferStatus");
+    static final QName PROP_TRANSFER_ERROR = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferError");
+    
     
     /*
      * Type : Transfer report
      */
     static final QName TYPE_TRANSFER_REPORT = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferReport");
+
+    /*
+     * Type : Temp Transfer Storage
+     */
+    static final QName TYPE_TEMP_TRANSFER_STORE = QName.createQName(TRANSFER_MODEL_1_0_URI, "tempTransferStore");
+    static final QName ASSOC_TRANSFER_ORPHAN = QName.createQName(TRANSFER_MODEL_1_0_URI, "orphan");
     
 }

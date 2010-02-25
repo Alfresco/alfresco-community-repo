@@ -31,19 +31,16 @@ import org.alfresco.service.cmr.transfer.TransferException;
  * @author brian
  *
  */
-public class TransferProcessingException extends TransferException
+public class TransferFatalException extends TransferException
 {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 2547803698674661069L;
+    private static final long serialVersionUID = 1022985703059592513L;
 
     /**
      * @param msgId
      * @param msgParams
      * @param cause
      */
-    public TransferProcessingException(String msgId, Object[] msgParams, Throwable cause)
+    public TransferFatalException(String msgId, Object[] msgParams, Throwable cause)
     {
         super(msgId, msgParams, cause);
     }
@@ -52,7 +49,7 @@ public class TransferProcessingException extends TransferException
      * @param msgId
      * @param msgParams
      */
-    public TransferProcessingException(String msgId, Object[] msgParams)
+    public TransferFatalException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
     }
@@ -61,7 +58,7 @@ public class TransferProcessingException extends TransferException
      * @param msgId
      * @param cause
      */
-    public TransferProcessingException(String msgId, Throwable cause)
+    public TransferFatalException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
@@ -69,7 +66,7 @@ public class TransferProcessingException extends TransferException
     /**
      * @param msgId
      */
-    public TransferProcessingException(String msgId)
+    public TransferFatalException(String msgId)
     {
         super(msgId);
     }

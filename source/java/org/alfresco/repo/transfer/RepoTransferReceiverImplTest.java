@@ -38,271 +38,422 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Unit test for RepoTransferReceiverImpl
  * 
  * @author Brian Remmington
  */
+@SuppressWarnings("deprecation")
+// It's a test
 public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 {
     private static int fileCount = 0;
     private static final Log log = LogFactory.getLog(RepoTransferReceiverImplTest.class);
-    
+
     private RepoTransferReceiverImpl receiver;
     private String dummyContent;
     private byte[] dummyContentBytes;
 
+    @Override
+    public void runBare() throws Throwable
+    {
+        preventTransaction();
+        super.runBare();
+    }
+
     /**
      * Called during the transaction setup
      */
-    @SuppressWarnings("deprecation")
-    protected void onSetUpInTransaction() throws Exception
+    protected void onSetUp() throws Exception
     {
+        super.onSetUp();
         System.out.println("java.io.tmpdir == " + System.getProperty("java.io.tmpdir"));
-        super.onSetUpInTransaction();
 
         // Get the required services
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        this.contentService = (ContentService) this.applicationContext.getBean("contentService");
+        this.authenticationService = (MutableAuthenticationService) this.applicationContext
+                .getBean("authenticationService");
+        this.actionService = (ActionService) this.applicationContext.getBean("actionService");
+        this.transactionService = (TransactionService) this.applicationContext.getBean("transactionComponent");
+        this.authenticationComponent = (AuthenticationComponent) this.applicationContext
+                .getBean("authenticationComponent");
         this.receiver = (RepoTransferReceiverImpl) this.getApplicationContext().getBean("transferReceiver");
         this.dummyContent = "This is some dummy content.";
         this.dummyContentBytes = dummyContent.getBytes("UTF-8");
+        setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
+        authenticationComponent.setSystemUserAsCurrentUser();
     }
 
     public void testStartAndEnd() throws Exception
     {
-        String transferId = receiver.start();
-        System.out.println("TransferId == " + transferId);
-
-        File stagingFolder = receiver.getStagingFolder(transferId);
-        assertTrue(receiver.getStagingFolder(transferId).exists());
-
+        log.info("testStartAndEnd");
+        startNewTransaction();
         try
         {
-            receiver.start();
-            fail("Successfully started twice!");
-        } catch (TransferException ex)
-        {
-            // Expected
-        }
-        try
-        {
-            receiver.end(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()).toString());
-            fail("Successfully ended with transfer id that doesn't own lock.");
-        } catch (TransferException ex)
-        {
-            // Expected
-        }
-        receiver.end(transferId);
-        assertFalse(stagingFolder.exists());
+            String transferId = receiver.start();
+            System.out.println("TransferId == " + transferId);
 
-        receiver.end(receiver.start());
+            File stagingFolder = receiver.getStagingFolder(transferId);
+            assertTrue(receiver.getStagingFolder(transferId).exists());
+
+            try
+            {
+                receiver.start();
+                fail("Successfully started twice!");
+            }
+            catch (TransferException ex)
+            {
+                // Expected
+            }
+            try
+            {
+                receiver.end(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()).toString());
+                fail("Successfully ended with transfer id that doesn't own lock.");
+            }
+            catch (TransferException ex)
+            {
+                // Expected
+            }
+            receiver.end(transferId);
+            assertFalse(stagingFolder.exists());
+
+            receiver.end(receiver.start());
+        }
+        finally
+        {
+            endTransaction();
+        }
     }
 
     public void testSaveContent() throws Exception
     {
-        String transferId = receiver.start();
+        log.info("testSaveContent");
+        startNewTransaction();
         try
         {
-            String contentId = "mytestcontent";
-            receiver.saveContent(transferId, contentId, new ByteArrayInputStream(dummyContentBytes));
-            File contentFile = new File(receiver.getStagingFolder(transferId), contentId);
-            assertTrue(contentFile.exists());
-            assertEquals(dummyContentBytes.length, contentFile.length());
-        } finally
+            String transferId = receiver.start();
+            try
+            {
+                String contentId = "mytestcontent";
+                receiver.saveContent(transferId, contentId, new ByteArrayInputStream(dummyContentBytes));
+                File contentFile = new File(receiver.getStagingFolder(transferId), contentId);
+                assertTrue(contentFile.exists());
+                assertEquals(dummyContentBytes.length, contentFile.length());
+            }
+            finally
+            {
+                receiver.end(transferId);
+            }
+        }
+        finally
         {
-            receiver.end(transferId);
+            endTransaction();
         }
     }
 
     public void testSaveSnapshot() throws Exception
     {
-        String transferId = receiver.start();
-        File snapshotFile = null;
+        log.info("testSaveSnapshot");
+        startNewTransaction();
         try
         {
-            TransferManifestNode node = createContentNode(transferId);
-            List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
-            nodes.add(node);
-            String snapshot = createSnapshot(nodes);
+            String transferId = receiver.start();
+            File snapshotFile = null;
+            try
+            {
+                TransferManifestNode node = createContentNode(transferId);
+                List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+                nodes.add(node);
+                String snapshot = createSnapshot(nodes);
 
-            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
 
-            File stagingFolder = receiver.getStagingFolder(transferId);
-            snapshotFile = new File(stagingFolder, "snapshot.xml");
-            assertTrue(snapshotFile.exists());
-            assertEquals(snapshot.getBytes("UTF-8").length, snapshotFile.length());
-        } finally
-        {
-            receiver.end(transferId);
-            if (snapshotFile != null) {
-                assertFalse(snapshotFile.exists());
+                File stagingFolder = receiver.getStagingFolder(transferId);
+                snapshotFile = new File(stagingFolder, "snapshot.xml");
+                assertTrue(snapshotFile.exists());
+                assertEquals(snapshot.getBytes("UTF-8").length, snapshotFile.length());
+            }
+            finally
+            {
+                receiver.end(transferId);
+                if (snapshotFile != null)
+                {
+                    assertFalse(snapshotFile.exists());
+                }
             }
         }
+        finally
+        {
+            endTransaction();
+        }
     }
-    
-    public void testBasicCommit() throws Exception {
-        String transferId = receiver.start();
+
+    public void testBasicCommit() throws Exception
+    {
+        log.info("testBasicCommit");
+        startNewTransaction();
+        TransferManifestNode node = null;
+
         try
         {
-            TransferManifestNode node = createContentNode(transferId);
-            List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
-            nodes.add(node);
-            String snapshot = createSnapshot(nodes);
+            String transferId = receiver.start();
+            try
+            {
+                node = createContentNode(transferId);
+                List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+                nodes.add(node);
+                String snapshot = createSnapshot(nodes);
 
-            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
-            receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
-            receiver.commit(transferId);
+                receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+                receiver.commit(transferId);
 
+            }
+            catch (Exception ex)
+            {
+                receiver.end(transferId);
+                throw ex;
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
             assertTrue(nodeService.exists(node.getNodeRef()));
             nodeService.deleteNode(node.getNodeRef());
-        } catch (Exception ex)
-        {
-            receiver.end(transferId);
-            throw ex;
         }
-        
+        finally
+        {
+            endTransaction();
+        }
     }
-    
-    public void testMoreComplexCommit() throws Exception {
-        String transferId = receiver.start();
+
+    public void testMoreComplexCommit() throws Exception
+    {
+        log.info("testMoreComplexCommit");
+        List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+        TransferManifestNormalNode node1 = null;
+        TransferManifestNormalNode node2 = null;
+        TransferManifestNode node3 = null;
+        TransferManifestNode node4 = null;
+        TransferManifestNode node5 = null;
+        TransferManifestNode node6 = null;
+        TransferManifestNode node7 = null;
+        TransferManifestNode node8 = null;
+        TransferManifestNode node9 = null;
+        TransferManifestNode node10 = null;
+        TransferManifestNormalNode node11 = null;
+        TransferManifestNode node12 = null;
+        String transferId = null;
+
+        startNewTransaction();
         try
         {
-            List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
-            TransferManifestNormalNode node1 = createContentNode(transferId);
+            transferId = receiver.start();
+            node1 = createContentNode(transferId);
             nodes.add(node1);
-            TransferManifestNormalNode node2 = createContentNode(transferId);
+            node2 = createContentNode(transferId);
             nodes.add(node2);
-            TransferManifestNode node3 = createContentNode(transferId);
+            node3 = createContentNode(transferId);
             nodes.add(node3);
-            TransferManifestNode node4 = createContentNode(transferId);
+            node4 = createContentNode(transferId);
             nodes.add(node4);
-            TransferManifestNode node5 = createContentNode(transferId);
+            node5 = createContentNode(transferId);
             nodes.add(node5);
-            TransferManifestNode node6 = createContentNode(transferId);
+            node6 = createContentNode(transferId);
             nodes.add(node6);
-            TransferManifestNode node7 = createContentNode(transferId);
+            node7 = createContentNode(transferId);
             nodes.add(node7);
-            TransferManifestNode node8 = createFolderNode(transferId);
+            node8 = createFolderNode(transferId);
             nodes.add(node8);
-            TransferManifestNode node9 = createFolderNode(transferId);
+            node9 = createFolderNode(transferId);
             nodes.add(node9);
-            TransferManifestNode node10 = createFolderNode(transferId);
+            node10 = createFolderNode(transferId);
             nodes.add(node10);
-            TransferManifestNormalNode node11 = createFolderNode(transferId);
+            node11 = createFolderNode(transferId);
             nodes.add(node11);
-            TransferManifestNode node12 = createFolderNode(transferId);
+            node12 = createFolderNode(transferId);
             nodes.add(node12);
-            
+
             associatePeers(node1, node2);
             moveNode(node2, node11);
-            
+
             String snapshot = createSnapshot(nodes);
 
             receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
-            
-            for (TransferManifestNode node : nodes) {
+
+            for (TransferManifestNode node : nodes)
+            {
                 receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
             }
             receiver.commit(transferId);
 
-            assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
-            assertFalse(nodeService.getSourceAssocs(node2.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS).isEmpty());
-            for (TransferManifestNode node : nodes) {
-                assertTrue(nodeService.exists(node.getNodeRef()));
-            }
-        } catch (Exception ex)
+        }
+        finally
         {
             receiver.end(transferId);
-            throw ex;
+            endTransaction();
         }
-        
-    }
-    
-    public void testNodeDeleteAndRestore() throws Exception {
-        String transferId = receiver.start();
+
+        startNewTransaction();
         try
         {
-            List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
-            TransferManifestNormalNode node1 = createContentNode(transferId);
-            nodes.add(node1);
-            TransferManifestNormalNode node2 = createContentNode(transferId);
-            nodes.add(node2);
-            TransferManifestNode node3 = createContentNode(transferId);
-            nodes.add(node3);
-            TransferManifestNode node4 = createContentNode(transferId);
-            nodes.add(node4);
-            TransferManifestNode node5 = createContentNode(transferId);
-            nodes.add(node5);
-            TransferManifestNode node6 = createContentNode(transferId);
-            nodes.add(node6);
-            TransferManifestNode node7 = createContentNode(transferId);
-            nodes.add(node7);
-            TransferManifestNode node8 = createFolderNode(transferId);
-            nodes.add(node8);
-            TransferManifestNode node9 = createFolderNode(transferId);
-            nodes.add(node9);
-            TransferManifestNode node10 = createFolderNode(transferId);
-            nodes.add(node10);
-            TransferManifestNormalNode node11 = createFolderNode(transferId);
-            nodes.add(node11);
-            TransferManifestNode node12 = createFolderNode(transferId);
-            nodes.add(node12);
-            
-            associatePeers(node1, node2);
-            moveNode(node2, node11);
-            
+            assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
+            assertFalse(nodeService.getSourceAssocs(node2.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS).isEmpty());
+            for (TransferManifestNode node : nodes)
+            {
+                assertTrue(nodeService.exists(node.getNodeRef()));
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+    }
+
+    public void testNodeDeleteAndRestore() throws Exception
+    {
+        log.info("testNodeDeleteAndRestore");
+
+        this.setDefaultRollback(false);
+        startNewTransaction();
+        String transferId = receiver.start();
+
+        List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+        TransferManifestNormalNode node1 = createContentNode(transferId);
+        nodes.add(node1);
+        TransferManifestNormalNode node2 = createContentNode(transferId);
+        nodes.add(node2);
+        TransferManifestNode node3 = createContentNode(transferId);
+        nodes.add(node3);
+        TransferManifestNode node4 = createContentNode(transferId);
+        nodes.add(node4);
+        TransferManifestNode node5 = createContentNode(transferId);
+        nodes.add(node5);
+        TransferManifestNode node6 = createContentNode(transferId);
+        nodes.add(node6);
+        TransferManifestNode node7 = createContentNode(transferId);
+        nodes.add(node7);
+        TransferManifestNode node8 = createFolderNode(transferId);
+        nodes.add(node8);
+        TransferManifestNode node9 = createFolderNode(transferId);
+        nodes.add(node9);
+        TransferManifestNode node10 = createFolderNode(transferId);
+        nodes.add(node10);
+        TransferManifestNormalNode node11 = createFolderNode(transferId);
+        nodes.add(node11);
+        TransferManifestNode node12 = createFolderNode(transferId);
+        nodes.add(node12);
+
+        associatePeers(node1, node2);
+        moveNode(node2, node11);
+
+        TransferManifestDeletedNode deletedNode8 = createDeletedNode(node8);
+        TransferManifestDeletedNode deletedNode2 = createDeletedNode(node2);
+        TransferManifestDeletedNode deletedNode11 = createDeletedNode(node11);
+
+        endTransaction();
+
+        startNewTransaction();
+        try
+        {
             String snapshot = createSnapshot(nodes);
             log.debug(snapshot);
             receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
-            
-            for (TransferManifestNode node : nodes) {
+
+            for (TransferManifestNode node : nodes)
+            {
                 receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
             }
             receiver.commit(transferId);
 
             assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
             assertFalse(nodeService.getSourceAssocs(node2.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS).isEmpty());
-            for (TransferManifestNode node : nodes) {
+            for (TransferManifestNode node : nodes)
+            {
                 assertTrue(nodeService.exists(node.getNodeRef()));
             }
-            
-            //Now delete nodes 8, 2, and 11 (2 and 11 are parent/child)
-            TransferManifestDeletedNode deletedNode8 = createDeletedNode(node8);
-            TransferManifestDeletedNode deletedNode2 = createDeletedNode(node2);
-            TransferManifestDeletedNode deletedNode11 = createDeletedNode(node11);
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now delete nodes 8, 2, and 11 (2 and 11 are parent/child)
             transferId = receiver.start();
-            snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] {deletedNode8, deletedNode2, deletedNode11}));
+            String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { deletedNode8, deletedNode2,
+                    deletedNode11 }));
             receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
             receiver.commit(transferId);
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
             assertTrue(nodeService.exists(deletedNode8.getNodeRef()));
             assertTrue(nodeService.hasAspect(deletedNode8.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
             assertTrue(nodeService.exists(deletedNode2.getNodeRef()));
             assertTrue(nodeService.hasAspect(deletedNode2.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
             assertTrue(nodeService.exists(deletedNode11.getNodeRef()));
             assertTrue(nodeService.hasAspect(deletedNode11.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
-            
-            //try to restore node 2. Expect an "orphan" failure, since its parent (node11) is deleted
+            TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
+            assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
+            log.debug("Progress indication: " + progress.getCurrentPosition() + "/" + progress.getEndPosition());
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        String errorMsgId = null;
+        startNewTransaction();
+        try
+        {
+            // try to restore node 2. Expect an "orphan" failure, since its parent (node11) is deleted
             transferId = receiver.start();
-            snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] {node2}));
+            String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { node2 }));
             log.debug(snapshot);
             receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
             receiver.saveContent(transferId, node2.getUuid(), new ByteArrayInputStream(dummyContentBytes));
@@ -311,19 +462,129 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 receiver.commit(transferId);
                 fail("Expected an exception!");
             }
-            catch (TransferException ex) 
+            catch (TransferException ex)
             {
-                assertTrue(ex.getMsgId(), ex.getMsgId().contains("orphan"));
+                // Expected
+                errorMsgId = ex.getMsgId();
             }
-            
-        } catch (Exception ex)
+
+        }
+        catch (Exception ex)
         {
             receiver.end(transferId);
             throw ex;
         }
-        
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
+            assertEquals(TransferProgress.Status.ERROR, progress.getStatus());
+            log.debug("Progress indication: " + progress.getCurrentPosition() + "/" + progress.getEndPosition());
+            assertNotNull("Progress error", progress.getError());
+            assertTrue(progress.getError() instanceof Exception);
+            assertTrue(errorMsgId, errorMsgId.contains("orphan"));
+        }
+        finally
+        {
+            endTransaction();
+        }
     }
-    
+
+    public void testAsyncCommit() throws Exception
+    {
+        log.info("testAsyncCommit");
+
+        this.setDefaultRollback(false);
+
+        startNewTransaction();
+        final String transferId = receiver.start();
+        endTransaction();
+
+        startNewTransaction();
+        final List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+        final TransferManifestNormalNode node1 = createContentNode(transferId);
+        nodes.add(node1);
+        final TransferManifestNormalNode node2 = createContentNode(transferId);
+        nodes.add(node2);
+        TransferManifestNode node3 = createContentNode(transferId);
+        nodes.add(node3);
+        TransferManifestNode node4 = createContentNode(transferId);
+        nodes.add(node4);
+        TransferManifestNode node5 = createContentNode(transferId);
+        nodes.add(node5);
+        TransferManifestNode node6 = createContentNode(transferId);
+        nodes.add(node6);
+        TransferManifestNode node7 = createContentNode(transferId);
+        nodes.add(node7);
+        TransferManifestNode node8 = createFolderNode(transferId);
+        nodes.add(node8);
+        TransferManifestNode node9 = createFolderNode(transferId);
+        nodes.add(node9);
+        TransferManifestNode node10 = createFolderNode(transferId);
+        nodes.add(node10);
+        TransferManifestNormalNode node11 = createFolderNode(transferId);
+        nodes.add(node11);
+        TransferManifestNode node12 = createFolderNode(transferId);
+        nodes.add(node12);
+
+        associatePeers(node1, node2);
+        moveNode(node2, node11);
+
+        endTransaction();
+
+        String snapshot = createSnapshot(nodes);
+
+        startNewTransaction();
+        receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+        endTransaction();
+
+        for (TransferManifestNode node : nodes)
+        {
+            startNewTransaction();
+            receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+            endTransaction();
+        }
+
+        startNewTransaction();
+        receiver.commitAsync(transferId);
+        endTransaction();
+
+        log.debug("Posted request for commit");
+
+        TransferProgressMonitor progressMonitor = receiver.getProgressMonitor();
+        TransferProgress progress = null;
+        while (progress == null || !TransferProgress.getTerminalStatuses().contains(progress.getStatus()))
+        {
+            Thread.sleep(500);
+            startNewTransaction();
+            progress = progressMonitor.getProgress(transferId);
+            endTransaction();
+            log.debug("Progress indication: " + progress.getStatus() + ": " + progress.getCurrentPosition() + "/"
+                    + progress.getEndPosition());
+        }
+        assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
+
+        startNewTransaction();
+        try
+        {
+            assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
+            assertFalse(nodeService.getSourceAssocs(node2.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS).isEmpty());
+            for (TransferManifestNode node : nodes)
+            {
+                assertTrue(nodeService.exists(node.getNodeRef()));
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+    }
+
     /**
      * @param nodeToDelete
      * @return
@@ -346,13 +607,17 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     {
         List<ChildAssociationRef> currentParents = childNode.getParentAssocs();
         List<ChildAssociationRef> newParents = new ArrayList<ChildAssociationRef>();
-        
-        for (ChildAssociationRef parent : currentParents) {
-            if (!parent.isPrimary()) {
+
+        for (ChildAssociationRef parent : currentParents)
+        {
+            if (!parent.isPrimary())
+            {
                 newParents.add(parent);
-            } else {
-                ChildAssociationRef newPrimaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, 
-                        newParent.getNodeRef(), parent.getQName(), parent.getChildRef(), true, -1); 
+            }
+            else
+            {
+                ChildAssociationRef newPrimaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, newParent
+                        .getNodeRef(), parent.getQName(), parent.getChildRef(), true, -1);
                 newParents.add(newPrimaryAssoc);
                 childNode.setPrimaryParentAssoc(newPrimaryAssoc);
                 Path newParentPath = new Path();
@@ -364,45 +629,53 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         childNode.setParentAssocs(newParents);
     }
 
-    private void associatePeers(TransferManifestNormalNode source, TransferManifestNormalNode target) {
+    private void associatePeers(TransferManifestNormalNode source, TransferManifestNormalNode target)
+    {
         List<AssociationRef> currentReferencedPeers = source.getTargetAssocs();
-        if (currentReferencedPeers == null) {
+        if (currentReferencedPeers == null)
+        {
             currentReferencedPeers = new ArrayList<AssociationRef>();
             source.setTargetAssocs(currentReferencedPeers);
         }
-        
+
         List<AssociationRef> currentRefereePeers = target.getSourceAssocs();
-        if (currentRefereePeers == null) {
+        if (currentRefereePeers == null)
+        {
             currentRefereePeers = new ArrayList<AssociationRef>();
             target.setSourceAssocs(currentRefereePeers);
         }
-    
+
         Set<QName> aspects = source.getAspects();
-        if (aspects == null ) {
+        if (aspects == null)
+        {
             aspects = new HashSet<QName>();
             source.setAspects(aspects);
         }
         aspects.add(ContentModel.ASPECT_ATTACHABLE);
-        
-        AssociationRef newAssoc = new AssociationRef(source.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS, target.getNodeRef());
+
+        AssociationRef newAssoc = new AssociationRef(source.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS, target
+                .getNodeRef());
         currentRefereePeers.add(newAssoc);
         currentReferencedPeers.add(newAssoc);
     }
-    
-    private String createSnapshot(List<TransferManifestNode> nodes) throws Exception {
+
+    private String createSnapshot(List<TransferManifestNode> nodes) throws Exception
+    {
         XMLTransferManifestWriter manifestWriter = new XMLTransferManifestWriter();
         StringWriter output = new StringWriter();
         manifestWriter.startTransferManifest(output);
         TransferManifestHeader header = new TransferManifestHeader();
         header.setCreatedDate(new Date());
+        header.setNodeCount(nodes.size());
         manifestWriter.writeTransferManifestHeader(header);
-        for (TransferManifestNode node : nodes) {
+        for (TransferManifestNode node : nodes)
+        {
             manifestWriter.writeTransferManifestNode(node);
         }
         manifestWriter.endTransferManifest();
 
         return output.toString();
-        
+
     }
 
     /**
@@ -420,11 +693,11 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         node.setType(ContentModel.TYPE_CONTENT);
 
         NodeRef parentFolder = receiver.getTempFolder(transferId);
-        String nodeName = transferId + ".testnode" + getNameSuffix();
+        String nodeName = uuid + ".testnode" + getNameSuffix();
 
         List<ChildAssociationRef> parents = new ArrayList<ChildAssociationRef>();
-        ChildAssociationRef primaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentFolder, QName.createQName(
-                NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), node.getNodeRef(), true, -1);
+        ChildAssociationRef primaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentFolder, QName
+                .createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), node.getNodeRef(), true, -1);
         parents.add(primaryAssoc);
         node.setParentAssocs(parents);
         node.setParentPath(nodeService.getPath(parentFolder));
@@ -451,11 +724,11 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         node.setType(ContentModel.TYPE_FOLDER);
 
         NodeRef parentFolder = receiver.getTempFolder(transferId);
-        String nodeName = transferId + ".folder" + getNameSuffix();
+        String nodeName = uuid + ".folder" + getNameSuffix();
 
         List<ChildAssociationRef> parents = new ArrayList<ChildAssociationRef>();
-        ChildAssociationRef primaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentFolder, QName.createQName(
-                NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), node.getNodeRef(), true, -1);
+        ChildAssociationRef primaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentFolder, QName
+                .createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), node.getNodeRef(), true, -1);
         parents.add(primaryAssoc);
         node.setParentAssocs(parents);
         node.setParentPath(nodeService.getPath(parentFolder));
@@ -469,7 +742,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         return node;
     }
 
-    private String getNameSuffix() {
+    private String getNameSuffix()
+    {
         return "" + fileCount++;
     }
 }

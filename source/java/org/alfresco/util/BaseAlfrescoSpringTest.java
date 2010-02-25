@@ -63,6 +63,8 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
     protected ActionService actionService;
     protected TransactionService transactionService;
 
+    protected AuthenticationComponent authenticationComponent;
+
     /**
      * On setup in transaction override
      */
@@ -79,7 +81,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
 
         // Authenticate as the system user
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
+        authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
         

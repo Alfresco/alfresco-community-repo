@@ -25,52 +25,42 @@
 
 package org.alfresco.repo.transfer;
 
-import org.alfresco.service.cmr.transfer.TransferException;
+import java.util.List;
+
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.transfer.TransferService;
 
 /**
  * @author brian
  *
  */
-public class TransferProcessingException extends TransferException
+public class CreateTransferTargetActionExecuter extends ActionExecuterAbstractBase
 {
+    public static final String NAME = "create-transfer-target";
+    private TransferService transferService;
+    
     /**
-     * 
+     * @param transferService the transferService to set
      */
-    private static final long serialVersionUID = 2547803698674661069L;
-
-    /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
-     */
-    public TransferProcessingException(String msgId, Object[] msgParams, Throwable cause)
+    public void setTransferService(TransferService transferService)
     {
-        super(msgId, msgParams, cause);
+        this.transferService = transferService;
     }
 
-    /**
-     * @param msgId
-     * @param msgParams
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public TransferProcessingException(String msgId, Object[] msgParams)
+    @Override
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        super(msgId, msgParams);
+        TransferTestUtil.getTestTarget(transferService);
     }
 
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public TransferProcessingException(String msgId, Throwable cause)
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        super(msgId, cause);
-    }
-
-    /**
-     * @param msgId
-     */
-    public TransferProcessingException(String msgId)
-    {
-        super(msgId);
     }
 }

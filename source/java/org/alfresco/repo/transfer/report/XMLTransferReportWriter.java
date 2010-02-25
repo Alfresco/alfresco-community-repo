@@ -7,9 +7,13 @@ import java.util.List;
 import org.alfresco.repo.transfer.TransferModel;
 import org.alfresco.repo.transfer.manifest.ManifestModel;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
+import org.alfresco.repo.transfer.manifest.TransferManifestNode;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.namespace.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -44,7 +48,7 @@ public class XMLTransferReportWriter
         this.writer.startPrefixMapping(PREFIX, TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI);
     
         // Start Transfer Manifest  // uri, name, prefix
-        this.writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_REPORT, EMPTY_ATTRIBUTES);
+        this.writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT, TransferReportModel.LOCALNAME_TRANSFER_REPORT, EMPTY_ATTRIBUTES);
     }
     
     /**
@@ -53,7 +57,7 @@ public class XMLTransferReportWriter
     public void endTransferReport() throws SAXException
     {
         // End Transfer Manifest
-        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_REPORT);
+        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT, TransferReportModel.LOCALNAME_TRANSFER_REPORT);
         writer.endPrefixMapping(PREFIX);
         writer.endDocument();
     }
@@ -84,6 +88,18 @@ public class XMLTransferReportWriter
     }
     
     /**
+     * Write the definition to the report
+     */
+    public void writeException(Exception e) throws SAXException
+    {
+        AttributesImpl attributes = new AttributesImpl();
+        attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "type", "type", "String", e.getClass().getName());
+        attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "message", "message", "String", e.getMessage());
+        writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_EXCEPTION, PREFIX + ":" + TransferReportModel.LOCALNAME_EXCEPTION, attributes);
+        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_EXCEPTION, PREFIX + ":" + TransferReportModel.LOCALNAME_EXCEPTION);
+    }
+    
+    /**
      * Write the transfer manifest header
      */
     public void writeTransferEvents(List<TransferEvent> events) throws SAXException
@@ -97,6 +113,57 @@ public class XMLTransferReportWriter
         
         writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_EVENTS, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_EVENTS);
     
+    }
+    
+    /**
+     * Write the transfer manifest header
+     */
+    public void writeNodeSummary(TransferManifestNode node) throws SAXException
+    {
+        AttributesImpl attributes = new AttributesImpl();
+        attributes.addAttribute("uri", "nodeRef", "nodeRef", "String", node.getNodeRef().toString());
+        writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_NODE, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_NODE, attributes);
+        
+        if(node.getPrimaryParentAssoc() != null)
+        {
+            writePrimaryParent(node.getPrimaryParentAssoc(), node.getParentPath());
+        }  
+                   
+        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_NODE, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_NODE);
+    }
+    
+    private void writePrimaryParent(ChildAssociationRef parentAssoc, Path parentPath) throws SAXException
+    {   
+        writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_PRIMARY_PARENT, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_PRIMARY_PARENT,  EMPTY_ATTRIBUTES);
+
+        writeParentAssoc(parentAssoc);
+        
+        writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_PRIMARY_PATH, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_PRIMARY_PATH,  EMPTY_ATTRIBUTES);
+        if(parentPath != null)
+        {  
+            String path = parentPath.toString();
+            writer.characters(path.toCharArray(), 0, path.length()); 
+        }
+        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_PRIMARY_PATH, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PATH); 
+
+        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_PRIMARY_PARENT, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PARENT); 
+    }
+    
+    private void writeParentAssoc(ChildAssociationRef assoc) throws SAXException
+    {
+        if(assoc != null)
+        {
+            AttributesImpl attributes = new AttributesImpl();
+            attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "from", "from", "String", assoc.getParentRef().toString());     
+            attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "type", "type", "String", formatQName(assoc.getTypeQName()));
+            attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "type", "isPrimary", "Boolean", assoc.isPrimary()?"true":"false");
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOC, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOC,  attributes);
+            String name= formatQName(assoc.getQName());
+            writer.characters(name.toCharArray(), 0, name.length());            
+            assoc.isPrimary();
+
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOC, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOC); 
+        }
     }
     
     /**
@@ -116,4 +183,10 @@ public class XMLTransferReportWriter
         }
         writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_EVENT, PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_EVENT);
     }
+    
+    private String formatQName(QName qname)
+    {
+        return qname.toString();
+    }
+    
 }

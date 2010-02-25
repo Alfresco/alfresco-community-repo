@@ -1,124 +1,224 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
-    <!-- Transfer Service Configuration -->    
-    <bean id="transferService" class="org.alfresco.repo.transfer.TransferServiceImpl" init-method="init">
-        <property name="actionService">
-            <ref bean="ActionService"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="NodeService"/>
-        </property>
-        <property name="searchService">
-            <ref bean="SearchService"/>
-        </property>
-        <property name="transactionService">
-            <ref bean="TransactionService"/>
-        </property>
-        <property name="transferSpaceQuery">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_groups.childname}</value>
-        </property>
-        <property name="defaultTransferGroup">
-            <value>Default Group</value>
-        </property>
-        <property name="transmitter" ref="transferTransmitter" />
-        
-        <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
-        
-        <property name="transferReporter" ref="transferReporter" />
-        
-    </bean>
+	<!-- Transfer Service Configuration -->
+	<bean id="transferService" class="org.alfresco.repo.transfer.TransferServiceImpl"
+		init-method="init">
+		<property name="actionService">
+			<ref bean="ActionService" />
+		</property>
+		<property name="nodeService">
+			<ref bean="NodeService" />
+		</property>
+		<property name="searchService">
+			<ref bean="SearchService" />
+		</property>
+		<property name="transactionService">
+			<ref bean="TransactionService" />
+		</property>
+		<property name="transferSpaceQuery">
+			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_groups.childname}</value>
+		</property>
+		<property name="defaultTransferGroup">
+			<value>Default Group</value>
+		</property>
+		<property name="transmitter" ref="transferTransmitter" />
 
-	<bean id="transferTransmitter" class="org.alfresco.repo.transfer.HttpClientTransmitterImpl" init-method="init" >
-         <property name="contentService" ref="ContentService" />
-   </bean>
-   
+		<property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
+		<property name="transferReporter" ref="transferReporter" />
+      
+      <!--  How long to wait while polling for commit status, in mS -->
+      <property name="commitPollDelay">
+         <value>2000</value>
+      </property>
+	</bean>
+
+	<bean id="transferTransmitter" class="org.alfresco.repo.transfer.HttpClientTransmitterImpl"
+		init-method="init">
+		<property name="contentService" ref="ContentService" />
+	</bean>
+
    <bean id="transferReporter" class="org.alfresco.repo.transfer.report.TransferReporterImpl" init-method="init" >
          <property name="contentService" ref="ContentService" />
          <property name="nodeService" ref="NodeService" />
    </bean>
    
    <bean id="transferManifestNodeFactory" class="org.alfresco.repo.transfer.manifest.TransferManifestNodeFactoryImpl" init-method="init" >
-         <property name="nodeService" ref="NodeService" />
-   </bean>
-   
-    
-    <bean id="transferReceiver" class="org.alfresco.repo.transfer.RepoTransferReceiverImpl" init-method="init">
-    	<property name="nodeService" ref="NodeService" />
-    	<property name="searchService" ref="SearchService" />
-    	<property name="transactionService" ref="TransactionService" />
-    	<property name="transferLockFolderPath"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}</value></property>
-    	<property name="transferTempFolderPath"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_temp.childname}</value></property>
-    	<property name="inboundTransferRecordsPath"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.inbound_transfer_records.childname}</value></property>
-		<property name="rootStagingDirectory"><value>${transferservice.receiver.stagingDir}</value></property>
-		<property name="manifestProcessorFactory" ref="transferManifestProcessorFactory" />
-    	<property name="behaviourFilter" ref="policyBehaviourFilter" />
-    </bean>
-    
-    <bean id="transferManifestProcessorFactory" class="org.alfresco.repo.transfer.DefaultManifestProcessorFactoryImpl">
-    	<property name="nodeService" ref="NodeService" />
-    	<property name="contentService" ref="ContentService" />
-    	<property name="nodeResolverFactory" ref="transferNodeResolverFactory" />
-    </bean>
-    
-    <bean id="transferNodeResolverFactory" class="org.alfresco.repo.transfer.DefaultCorrespondingNodeResolverFactory">
-    	<property name="nodeService" ref="NodeService" />
-    </bean>
-    
-    <!-- I18N -->   
-    <bean id="transferServiceResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-       <property name="resourceBundles">
-          <list>
-             <value>alfresco.messages.transfer-service</value>
-          </list>
-       </property>
-    </bean>
-    <bean id="TransferService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+		<property name="nodeService" ref="NodeService" />
+	</bean>
 
-    <bean id="TransferService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-    
-    <!-- Transfer service bean -->
-    <bean id="TransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.service.cmr.transfer.TransferService</value>
-        </property>
-        <property name="target">
-            <ref bean="transferService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="TransferService_transaction"/>
-                <idref bean="AuditMethodInterceptor"/>
-                <idref bean="exceptionTranslator"/>
-                <idref local="TransferService_security"/>
-            </list>
-        </property>
-    </bean>
-    
-    <!--  Action for transfer async -->
-    <bean id="transfer-async" class="org.alfresco.repo.transfer.TransferAsyncAction" parent="action-executer">
-      
-      <!--  Run transferAsyncAction on the deployment queue -->
-      <property name="queueName">
-          <value>deployment</value>
-      </property>    
-      <property name="transferService">
-            <ref bean="TransferService"/>
-      </property>
-      <property name="publicAction">
-            <value>false</value>
-      </property>
-    </bean>
-   
-    
-    
+
+	<bean id="transferReceiver" class="org.alfresco.repo.transfer.RepoTransferReceiverImpl"
+		init-method="init">
+		<property name="nodeService" ref="NodeService" />
+		<property name="searchService" ref="SearchService" />
+		<property name="transactionService" ref="TransactionService" />
+		<property name="actionService" ref="ActionService" />
+
+		<property name="transferLockFolderPath">
+			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}</value>
+		</property>
+		<property name="transferTempFolderPath">
+			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_temp.childname}</value>
+		</property>
+		<property name="inboundTransferRecordsPath">
+			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.inbound_transfer_records.childname}</value>
+		</property>
+		<property name="rootStagingDirectory">
+			<value>${transferservice.receiver.stagingDir}</value>
+		</property>
+		<property name="manifestProcessorFactory" ref="transferManifestProcessorFactory" />
+		<property name="behaviourFilter" ref="policyBehaviourFilter" />
+		<property name="progressMonitor" ref="transferProgressMonitor" />
+	</bean>
+
+	<bean id="transferProgressMonitor"
+		class="org.alfresco.repo.transfer.LoggingTransferProgressMonitorImpl">
+		<property name="delegate">
+			<bean class="org.alfresco.repo.transfer.RepoTransferProgressMonitorImpl">
+				<property name="nodeService" ref="NodeService" />
+				<property name="contentService" ref="ContentService" />
+				<property name="transactionService" ref="TransactionService" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="commit-transfer" class="org.alfresco.repo.transfer.TransferCommitActionExecuter" parent="action-executer">
+		<property name="receiver" ref="TransferReceiver" />
+		<property name="publicAction">
+			<value>false</value>
+		</property>
+	</bean>
+
+	<bean id="transferManifestProcessorFactory"
+		class="org.alfresco.repo.transfer.DefaultManifestProcessorFactoryImpl">
+		<property name="nodeService" ref="NodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="nodeResolverFactory" ref="transferNodeResolverFactory" />
+	</bean>
+
+	<bean id="transferNodeResolverFactory"
+		class="org.alfresco.repo.transfer.DefaultCorrespondingNodeResolverFactory">
+		<property name="nodeService" ref="NodeService" />
+	</bean>
+
+	<!-- I18N -->
+	<bean id="transferServiceResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+		<property name="resourceBundles">
+			<list>
+				<value>alfresco.messages.transfer-service</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="TransferService_security"
+		class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+	<bean id="TransferService_transaction"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref bean="transactionManager" />
+		</property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">${server.transaction.mode.default}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- Transfer service bean -->
+	<bean id="TransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>org.alfresco.service.cmr.transfer.TransferService</value>
+		</property>
+		<property name="target">
+			<ref bean="transferService" />
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<idref local="TransferService_transaction" />
+				<idref bean="AuditMethodInterceptor" />
+				<idref bean="exceptionTranslator" />
+				<idref local="TransferService_security" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="TransferReceiver_security"
+		class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+	<bean id="TransferReceiver_transaction"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager">
+			<ref bean="transactionManager" />
+		</property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">${server.transaction.mode.default}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- Transfer service bean -->
+	<bean id="TransferReceiver" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>org.alfresco.service.cmr.transfer.TransferReceiver</value>
+		</property>
+		<property name="target">
+			<ref bean="transferReceiver" />
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<idref local="TransferReceiver_transaction" />
+				<idref bean="AuditMethodInterceptor" />
+				<idref bean="exceptionTranslator" />
+				<idref local="TransferReceiver_security" />
+			</list>
+		</property>
+	</bean>
+
+
+	<bean id="transfer-async" class="org.alfresco.repo.transfer.TransferAsyncAction"
+		parent="action-executer">
+
+		<!--  Run transferAsyncAction on the deployment queue -->
+		<property name="queueName">
+			<value>deployment</value>
+		</property>
+		<property name="transferService">
+			<ref bean="TransferService" />
+		</property>
+		<property name="publicAction">
+			<value>false</value>
+		</property>
+	</bean>
+
+	<bean id="transfer-this-node" class="org.alfresco.repo.transfer.TransferOneNodeActionExecuter"
+		parent="action-executer">
+		<property name="transferService">
+			<ref bean="TransferService" />
+		</property>
+	</bean>
+
+	<bean id="create-transfer-target" class="org.alfresco.repo.transfer.CreateTransferTargetActionExecuter"
+		parent="action-executer">
+		<property name="transferService">
+			<ref bean="TransferService" />
+		</property>
+	</bean>
+
+	<bean id="transfer-this-tree" class="org.alfresco.repo.transfer.TransferTreeActionExecuter"
+		parent="action-executer">
+		<property name="transferService">
+			<ref bean="TransferService" />
+		</property>
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+	</bean>
+
+	<bean id="transfer-tree-with-cancel" class="org.alfresco.repo.transfer.TransferTreeWithCancelActionExecuter"
+		parent="action-executer">
+		<property name="transferService">
+			<ref bean="TransferService" />
+		</property>
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+	</bean>
 </beans>

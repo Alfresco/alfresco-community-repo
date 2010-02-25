@@ -26,51 +26,18 @@
 package org.alfresco.repo.transfer;
 
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 
 /**
  * @author brian
  *
  */
-public class TransferProcessingException extends TransferException
+public interface TransferProgressMonitor
 {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 2547803698674661069L;
-
-    /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
-     */
-    public TransferProcessingException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-    }
-
-    /**
-     * @param msgId
-     * @param msgParams
-     */
-    public TransferProcessingException(String msgId, Object[] msgParams)
-    {
-        super(msgId, msgParams);
-    }
-
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public TransferProcessingException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-    }
-
-    /**
-     * @param msgId
-     */
-    public TransferProcessingException(String msgId)
-    {
-        super(msgId);
-    }
+    void log(String transferId, Object obj) throws TransferException;
+    void log(String transferId, Object obj, Throwable ex) throws TransferException;
+    void updateProgress(String transferId, int currPos) throws TransferException;
+    void updateProgress(String transferId, int currPos, int endPos) throws TransferException;
+    void updateStatus(String transferId, TransferProgress.Status status) throws TransferException;
+    TransferProgress getProgress(String transferId) throws TransferException;
 }

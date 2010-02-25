@@ -41,9 +41,15 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,7 +58,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -68,6 +76,46 @@ import org.springframework.util.FileCopyUtils;
  */
 public class RepoTransferReceiverImpl implements TransferReceiver
 {
+    /**
+     * This embedded class is used to push requests for asynchronous commits onto a different thread
+     * 
+     * @author Brian
+     * 
+     */
+    public class AsyncCommitCommand implements Runnable
+    {
+
+        private String transferId;
+        private String runAsUser;
+
+        public AsyncCommitCommand(String transferId)
+        {
+            this.transferId = transferId;
+            this.runAsUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        }
+
+        public void run()
+        {
+            RunAsWork<Object> actionRunAs = new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    return transactionService.getRetryingTransactionHelper().doInTransaction(
+                            new RetryingTransactionCallback<Object>()
+                            {
+                                public Object execute()
+                                {
+                                    commit(transferId);
+                                    return null;
+                                }
+                            }, false, true);
+                }
+            };
+            AuthenticationUtil.runAs(actionRunAs, runAsUser);
+        }
+
+    }
+
     private final static Log log = LogFactory.getLog(RepoTransferReceiverImpl.class);
 
     private static final String MSG_FAILED_TO_CREATE_STAGING_FOLDER = "transfer_service.receiver.failed_to_create_staging_folder";
@@ -95,7 +143,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     private String transferTempFolderPath;
     private ManifestProcessorFactory manifestProcessorFactory;
     private BehaviourFilter behaviourFilter;
-
+    private TransferProgressMonitor progressMonitor;
+    private ActionService actionService;
 
     private NodeRef transferLockFolder;
     private NodeRef transferTempFolder;
@@ -133,7 +182,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
             if (!tempFolder.mkdirs())
             {
                 tempFolder = null;
-                throw new TransferException(MSG_FAILED_TO_CREATE_STAGING_FOLDER, new Object[] {transferId});
+                throw new TransferException(MSG_FAILED_TO_CREATE_STAGING_FOLDER, new Object[] { transferId });
             }
         }
         return tempFolder;
@@ -151,13 +200,15 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                 if (transferLockFolder == null)
                 {
                     ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_LUCENE, "PATH:\"" + transferLockFolderPath + "\"");
+                            SearchService.LANGUAGE_XPATH, transferLockFolderPath);
                     if (rs.length() > 0)
                     {
                         transferLockFolder = rs.getNodeRef(0);
-                    } else
+                    }
+                    else
                     {
-                        throw new TransferException(MSG_TRANSFER_LOCK_FOLDER_NOT_FOUND, new Object[] {transferLockFolderPath});
+                        throw new TransferException(MSG_TRANSFER_LOCK_FOLDER_NOT_FOUND,
+                                new Object[] { transferLockFolderPath });
                     }
                 }
             }
@@ -177,13 +228,15 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                 if (transferTempFolder == null)
                 {
                     ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_LUCENE, "PATH:\"" + transferTempFolderPath + "\"");
+                            SearchService.LANGUAGE_XPATH, transferTempFolderPath);
                     if (rs.length() > 0)
                     {
                         transferTempFolder = rs.getNodeRef(0);
-                    } else
+                    }
+                    else
                     {
-                        throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] {transferId, transferTempFolderPath});
+                        throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
+                                transferTempFolderPath });
                     }
                 }
             }
@@ -203,8 +256,9 @@ public class RepoTransferReceiverImpl implements TransferReceiver
             Map<QName, Serializable> props = new HashMap<QName, Serializable>();
             props.put(ContentModel.PROP_NAME, tempTransferFolderName);
             tempFolderNode = nodeService.createNode(transferTempFolder, ContentModel.ASSOC_CONTAINS, folderName,
-                    ContentModel.TYPE_FOLDER, props).getChildRef();
-        } else
+                    TransferModel.TYPE_TEMP_TRANSFER_STORE, props).getChildRef();
+        }
+        else
         {
             // Yes, we do have a temp folder for this transfer already. Return it.
             tempFolderNode = tempChildren.get(0).getChildRef();
@@ -220,29 +274,41 @@ public class RepoTransferReceiverImpl implements TransferReceiver
      */
     public String start()
     {
-        log.debug("start");
-        final NodeRef relatedTransferRecord = createTransferRecord();
         final NodeRef lockFolder = getLockFolder();
+        NodeRef relatedTransferRecord = null;
 
         RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
         try
         {
-            txHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-            {
-                public NodeRef execute() throws Throwable
-                {
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                    props.put(ContentModel.PROP_NAME, LOCK_FILE_NAME);
-                    props.put(TransferModel.PROP_TRANSFER_ID, relatedTransferRecord.toString());
+            relatedTransferRecord = txHelper.doInTransaction(
+                    new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+                    {
+                        public NodeRef execute() throws Throwable
+                        {
+                            final NodeRef relatedTransferRecord = createTransferRecord();
+                            getTempFolder(relatedTransferRecord.toString());
 
-                    log.error("Creating transfer lock associated with this transfer record: " + relatedTransferRecord);
-                    ChildAssociationRef assoc = nodeService.createNode(lockFolder, ContentModel.ASSOC_CONTAINS,
-                            LOCK_QNAME, TransferModel.TYPE_TRANSFER_LOCK, props);
-                    log.error("Transfer lock created as node " + assoc.getChildRef());
-                    return assoc.getChildRef();
-                }
-            }, false, true);
-        } 
+                            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                            props.put(ContentModel.PROP_NAME, LOCK_FILE_NAME);
+                            props.put(TransferModel.PROP_TRANSFER_ID, relatedTransferRecord.toString());
+
+                            if (log.isInfoEnabled())
+                            {
+                                log.info("Creating transfer lock associated with this transfer record: "
+                                        + relatedTransferRecord);
+                            }
+
+                            ChildAssociationRef assoc = nodeService.createNode(lockFolder, ContentModel.ASSOC_CONTAINS,
+                                    LOCK_QNAME, TransferModel.TYPE_TRANSFER_LOCK, props);
+
+                            if (log.isInfoEnabled())
+                            {
+                                log.info("Transfer lock created as node " + assoc.getChildRef());
+                            }
+                            return relatedTransferRecord;
+                        }
+                    }, false, true);
+        }
         catch (DuplicateChildNodeNameException ex)
         {
             log.debug("lock is already taken");
@@ -268,28 +334,33 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                 {
                     log.debug("Trying to find transfer records folder: " + inboundTransferRecordsPath);
                     ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_LUCENE, "PATH:\"" + inboundTransferRecordsPath + "\"");
+                            SearchService.LANGUAGE_XPATH, inboundTransferRecordsPath);
                     if (rs.length() > 0)
                     {
                         inboundTransferRecordsFolder = rs.getNodeRef(0);
                         log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
-                    } else
+                    }
+                    else
                     {
-                        throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND, new Object[] {inboundTransferRecordsPath});
+                        throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
+                                new Object[] { inboundTransferRecordsPath });
                     }
                 }
             }
         }
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmssSSSZ");
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSSZ");
         String timeNow = format.format(new Date());
         QName recordName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, timeNow);
 
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, timeNow);
+        props.put(TransferModel.PROP_PROGRESS_POSITION, 0);
+        props.put(TransferModel.PROP_PROGRESS_ENDPOINT, 1);
+        props.put(TransferModel.PROP_TRANSFER_STATUS, TransferProgress.Status.PRE_COMMIT.toString());
 
         log.debug("Creating transfer record with name: " + timeNow);
         ChildAssociationRef assoc = nodeService.createNode(inboundTransferRecordsFolder, ContentModel.ASSOC_CONTAINS,
-                recordName, ContentModel.TYPE_CONTENT, props);
+                recordName, TransferModel.TYPE_TRANSFER_RECORD, props);
         log.debug("<-createTransferRecord: " + assoc.getChildRef());
         return assoc.getChildRef();
     }
@@ -301,7 +372,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver
      */
     public void end(final String transferId)
     {
-        log.debug("end transferId:" + transferId);
+        if (log.isDebugEnabled())
+        {
+            log.debug("Request to end transfer " + transferId);
+        }
         if (transferId == null)
         {
             throw new IllegalArgumentException("transferId = " + transferId);
@@ -321,12 +395,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                             {
                                 if (!testLockedTransfer(lockId, transferId))
                                 {
-                                    throw new TransferException(MSG_NOT_LOCK_OWNER, new Object[] {transferId});
+                                    throw new TransferException(MSG_NOT_LOCK_OWNER, new Object[] { transferId });
                                 }
                                 // Delete the lock node.
                                 log.debug("delete lock node :" + lockId);
                                 nodeService.deleteNode(lockId);
-
+                                log.debug("lock deleted :" + lockId);
                             }
                             return null;
                         }
@@ -336,21 +410,25 @@ public class RepoTransferReceiverImpl implements TransferReceiver
             File stagingFolder = getStagingFolder(transferId);
             deleteFile(stagingFolder);
             log.debug("Staging folder deleted");
-        } 
+        }
         catch (TransferException ex)
         {
             throw ex;
-        } 
+        }
         catch (Exception ex)
         {
             throw new TransferException(MSG_ERROR_WHILE_ENDING_TRANSFER, ex);
         }
     }
 
-    public void abort(String transferId) throws TransferException
+    public void cancel(String transferId) throws TransferException
     {
-        //TODO Think about the relationship between abort and end.
-        end(transferId);
+        TransferProgress progress = getProgressMonitor().getProgress(transferId);
+        getProgressMonitor().updateStatus(transferId, TransferProgress.Status.CANCELLED);
+        if (progress.getStatus().equals(TransferProgress.Status.PRE_COMMIT))
+        {
+            end(transferId);
+        }
     }
 
     public void prepare(String transferId) throws TransferException
@@ -362,11 +440,15 @@ public class RepoTransferReceiverImpl implements TransferReceiver
      */
     private void deleteFile(File file)
     {
-        if (!file.isDirectory()) file.delete();
-        File[] fileList = file.listFiles();
-        if (fileList != null) {
-            for (File currentFile : fileList) {
-                deleteFile(currentFile);
+        if (file.isDirectory())
+        {
+            File[] fileList = file.listFiles();
+            if (fileList != null)
+            {
+                for (File currentFile : fileList)
+                {
+                    deleteFile(currentFile);
+                }
             }
         }
         file.delete();
@@ -432,9 +514,13 @@ public class RepoTransferReceiverImpl implements TransferReceiver
      */
     public void saveSnapshot(String transferId, InputStream openStream) throws TransferException
     {
-        log.debug("save snapshot transferId=" + transferId);
         // Check that this transfer owns the lock and give it a nudge to stop it expiring
         nudgeLock(transferId);
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("Saving snapshot for transferId =" + transferId);
+        }
         File snapshotFile = new File(getStagingFolder(transferId), SNAPSHOT_FILE_NAME);
         try
         {
@@ -442,8 +528,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver
             {
                 FileCopyUtils.copy(openStream, new FileOutputStream(snapshotFile));
             }
-            log.debug("saved snapshot for transferId=" + transferId);
-        } 
+            if (log.isDebugEnabled())
+            {
+                log.debug("Saved snapshot for transferId =" + transferId);
+            }
+        }
         catch (Exception ex)
         {
             throw new TransferException(MSG_ERROR_WHILE_STAGING_SNAPSHOT, ex);
@@ -467,74 +556,124 @@ public class RepoTransferReceiverImpl implements TransferReceiver
             {
                 FileCopyUtils.copy(contentStream, new BufferedOutputStream(new FileOutputStream(stagedFile)));
             }
-        } 
+        }
         catch (Exception ex)
         {
             throw new TransferException(MSG_ERROR_WHILE_STAGING_CONTENT, ex);
         }
     }
 
-    public void commit(String transferId) throws TransferException
+    public void commitAsync(String transferId)
     {
-        log.debug("commit transferId=" + transferId);
+        nudgeLock(transferId);
+        progressMonitor.updateStatus(transferId, Status.COMMIT_REQUESTED);
+        Action commitAction = actionService.createAction(TransferCommitActionExecuter.NAME);
+        commitAction.setParameterValue(TransferCommitActionExecuter.PARAM_TRANSFER_ID, transferId);
+        commitAction.setExecuteAsynchronously(true);
+        actionService.executeAction(commitAction, new NodeRef(transferId));
+        if (log.isDebugEnabled())
+        {
+            log.debug("Registered transfer commit for asynchronous execution: " + transferId);
+        }
+    }
+
+    public void commit(final String transferId) throws TransferException
+    {
+        if (log.isDebugEnabled())
+        {
+            log.debug("Committing transferId=" + transferId);
+        }
         try
         {
             nudgeLock(transferId);
-            List<TransferManifestProcessor> commitProcessors = manifestProcessorFactory.getCommitProcessors(this, transferId);
-            
-            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-            SAXParser parser = saxParserFactory.newSAXParser();
-            File snapshotFile = getSnapshotFile(transferId);
+            progressMonitor.updateStatus(transferId, Status.COMMITTING);
 
-            if (snapshotFile.exists())
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> commitWork = new RetryingTransactionCallback<Object>()
             {
-                log.debug("processing manifest file:" + snapshotFile.getAbsolutePath());
-                //We parse the file as many times as we have processors
-                for (TransferManifestProcessor processor : commitProcessors) 
+                public Object execute() throws Throwable
                 {
-                    XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
-                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                    try 
+                    AlfrescoTransactionSupport.bindListener(new TransferCommitTransactionListener(transferId,
+                            RepoTransferReceiverImpl.this));
+
+                    List<TransferManifestProcessor> commitProcessors = manifestProcessorFactory.getCommitProcessors(
+                            RepoTransferReceiverImpl.this, transferId);
+
+                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                    SAXParser parser = saxParserFactory.newSAXParser();
+                    File snapshotFile = getSnapshotFile(transferId);
+
+                    if (snapshotFile.exists())
                     {
-                        parser.parse(snapshotFile, reader);
-                    } 
-                    finally 
-                    {
-                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                        if (log.isDebugEnabled())
+                        {
+                            log.debug("Processing manifest file:" + snapshotFile.getAbsolutePath());
+                        }
+                        // We parse the file as many times as we have processors
+                        for (TransferManifestProcessor processor : commitProcessors)
+                        {
+                            XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
+                            behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                            try
+                            {
+                                parser.parse(snapshotFile, reader);
+                            }
+                            finally
+                            {
+                                behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                            }
+                            nudgeLock(transferId);
+                            parser.reset();
+                        }
                     }
-                    nudgeLock(transferId);
-                    parser.reset();
+                    else
+                    {
+                        progressMonitor.log(transferId, "Unable to start commit. No snapshot file received",
+                                new TransferException(MSG_NO_SNAPSHOT_RECEIVED));
+                    }
+                    return null;
                 }
-            } 
-            else
+            };
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(commitWork, false, true);
+
+            Throwable error = progressMonitor.getProgress(transferId).getError();
+            if (error != null)
             {
-                log.debug("no snapshot received");
-                throw new TransferException(MSG_NO_SNAPSHOT_RECEIVED);
+                if (TransferException.class.isAssignableFrom(error.getClass()))
+                {
+                    throw (TransferException) error;
+                }
+                else
+                {
+                    throw new TransferException(MSG_ERROR_WHILE_COMMITTING_TRANSFER, error);
+                }
             }
-            
-            
+
             /**
-             * Successfully transfred
+             * Successfully committed
              */
-            log.debug("commit success transferId=" + transferId);
-            
-        } 
-        catch (TransferException ex)
-        {
-            log.debug("unable to commit", ex);
-            throw ex;
-        } 
+            if (log.isDebugEnabled())
+            {
+                log.debug("Commit success transferId=" + transferId);
+            }
+        }
         catch (Exception ex)
         {
-            log.debug("unable to commit", ex);
-            throw new TransferException(MSG_ERROR_WHILE_COMMITTING_TRANSFER, ex);
+            if (TransferException.class.isAssignableFrom(ex.getClass()))
+            {
+                throw (TransferException) ex;
+            }
+            else
+            {
+                throw new TransferException(MSG_ERROR_WHILE_COMMITTING_TRANSFER, ex);
+            }
         }
         finally
         {
             /**
              * Clean up at the end of the transfer
              */
-            try 
+            try
             {
                 log.debug("calling end");
                 end(transferId);
@@ -545,6 +684,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                 log.error("Failed to clean up transfer. Lock may still be in place: " + transferId);
             }
         }
+    }
+
+    public TransferProgress getStatus(String transferId) throws TransferException
+    {
+        return getProgressMonitor().getProgress(transferId);
     }
 
     private File getSnapshotFile(String transferId)
@@ -580,7 +724,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     }
 
     /**
-     * @param transferTempFolderPath the transferTempFolderPath to set
+     * @param transferTempFolderPath
+     *            the transferTempFolderPath to set
      */
     public void setTransferTempFolderPath(String transferTempFolderPath)
     {
@@ -613,9 +758,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param manifestProcessorFactory the manifestProcessorFactory to set
+     * @param manifestProcessorFactory
+     *            the manifestProcessorFactory to set
      */
     public void setManifestProcessorFactory(ManifestProcessorFactory manifestProcessorFactory)
     {
@@ -623,11 +769,34 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     }
 
     /**
-     * @param behaviourFilter the behaviourFilter to set
+     * @param behaviourFilter
+     *            the behaviourFilter to set
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+
+    /**
+     * @return the progressMonitor
+     */
+    public TransferProgressMonitor getProgressMonitor()
+    {
+        return progressMonitor;
+    }
+
+    /**
+     * @param progressMonitor
+     *            the progressMonitor to set
+     */
+    public void setProgressMonitor(TransferProgressMonitor progressMonitor)
+    {
+        this.progressMonitor = progressMonitor;
+    }
+
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
     }
 
 }

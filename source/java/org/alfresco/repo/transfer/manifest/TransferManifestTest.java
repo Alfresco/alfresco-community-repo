@@ -57,6 +57,11 @@ import junit.framework.TestCase;
 
 public class TransferManifestTest extends TestCase 
 {
+    /**
+     * This unit test creates and reads a manifest.
+     * 
+     * @throws Exception
+     */
     public void testCreateAndReadSnapshot() throws Exception
     {
         /**
@@ -78,7 +83,8 @@ public class TransferManifestTest extends TestCase
         
         // node to transmit
         TransferManifestNormalNode node = new TransferManifestNormalNode();
-        node.setNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123")); 
+        NodeRef nodeRefA = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123");
+        node.setNodeRef(nodeRefA); 
         node.setParentPath(new Path());
         Set<QName> aspects = new HashSet<QName>();
         aspects.add(QName.createQName("{gsxhjsx}", "cm:wobble"));
@@ -86,17 +92,70 @@ public class TransferManifestTest extends TestCase
         node.setAspects(aspects);
         
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        
+        /**
+         * String type
+         */
         properties.put(QName.createQName("{gsxhjsx}", "cm:name"), "brian.jpg");
+        
+        /**
+         * Date type
+         */
         properties.put(QName.createQName("{gsxhjsx}", "cm:created"), new java.util.Date());
+        
+        /**
+         * Boolean type
+         */
         properties.put(QName.createQName("{gsxhjsx}", "trx:enabled"), Boolean.FALSE);
+        
+        /**
+         * MLText value
+         */
         MLText mltext = new MLText();
         mltext.addValue(Locale.FRENCH, "Bonjour");
         mltext.addValue(Locale.ENGLISH, "Hello");
         mltext.addValue(Locale.ITALY, "Buongiorno");
         properties.put(QName.createQName("{gsxhjsx}", "cm:title"), mltext);
         String password = "helloWorld";
+        
+        /**
+         * Put a char array type
+         */
         properties.put(QName.createQName("{gsxhjsx}", "trx:password"), password.toCharArray());
         
+        /**
+         * Put an ArrayList type
+         */
+        ArrayList a1 = new ArrayList();
+        a1.add("Rhubarb");
+        a1.add("Custard");
+        properties.put(QName.createQName("{gsxhjsx}", "trx:arrayList"), a1);
+        
+        /**
+         * Put a HashMap type
+         */
+        HashMap m1 = new HashMap();
+        m1.put("Rhubarb", "Rhubarb");
+        m1.put("Custard", "Custard");
+        properties.put(QName.createQName("{gsxhjsx}", "trx:hashMap"), m1);
+        
+        /**
+         * Put a null value
+         */
+        properties.put(QName.createQName("{gsxhjsx}", "cm:nullTest"), null);
+        
+        /**
+         * Put a node ref property
+         */
+        properties.put(QName.createQName("{gsxhjsx}", "trx:nodeRef"), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"));
+        
+        /**
+         * Put an obscure "unknown type".
+         */
+//        TestPrivateBean obscure = new TestPrivateBean();
+//        obscure.a = "hello";
+//        obscure.b = "world";
+//        properties.put(QName.createQName("{gsxhjsx}", "cm:obscure"), obscure);
         
         List<ChildAssociationRef> parents = new ArrayList<ChildAssociationRef>();
         ChildAssociationRef primaryParent = new ChildAssociationRef(QName.createQName("{gsxhjsx}", "cm:contains"),
@@ -201,14 +260,68 @@ public class TransferManifestTest extends TestCase
         SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
         SAXParser parser = saxParserFactory.newSAXParser();
         
-        TransferManifestProcessor tp = new TestTransferManifestProcessor(); 
+        TestTransferManifestProcessor tp = new TestTransferManifestProcessor(); 
         
         XMLTransferManifestReader xmlReader = new  XMLTransferManifestReader(tp);
         parser.parse(snapshotFile, xmlReader );
         
-
+        /**
+         * Now validate the parsed data.
+         */
+        
+        Map<NodeRef, TransferManifestNode> nodes = tp.getNodes();
+        
+        TransferManifestNormalNode rxNodeA = (TransferManifestNormalNode)nodes.get(nodeRefA);
+        
+        assertNotNull("rxNodeA is null", rxNodeA);
+        
+        Map<QName, Serializable> rxNodeAProps = rxNodeA.getProperties();
+        System.out.println(rxNodeAProps.get(QName.createQName("{gsxhjsx}", "trx:password")));
+        for(Map.Entry value : rxNodeAProps.entrySet())
+        {
+            System.out.println("key = " + value.getKey() + " value =" + value.getValue());
+            if(value.getValue() != null)
+            {
+                if(value.getValue().getClass().isArray())
+                {
+                    System.out.println("arrayValue="+ value.getValue().toString());
+                    char[] chars = (char[])value.getValue();
+                    
+                    System.out.println(chars);
+                }
+            }
+            
+        }
+                
+        tp.getHeader();
         
         snapshotFile.delete();
+    }
+    
+    public class TestPrivateBean implements Serializable
+    {
+        public TestPrivateBean()
+        {
+            
+        }
+        
+        public void setA(String a)
+        {
+            this.a = a;
+        }
+        public String getA()
+        {
+            return a;
+        }
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1053132227110567282L;
+        private String a;
+        private String b;
+        
         
     }
+    
 }

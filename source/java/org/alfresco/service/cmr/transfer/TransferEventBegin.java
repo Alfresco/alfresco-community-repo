@@ -24,50 +24,27 @@
  */
 package org.alfresco.service.cmr.transfer;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.repo.transfer.TransferEventImpl;
 
 /**
- * Definition of a transfer.
- * 
- *  Specifies which node to transfer
- *
+ * TransferEventBegin is produced when a transfer has started.
  */
-public class TransferDefinition implements Serializable
+public class TransferEventBegin extends TransferEventImpl  
 {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -8497919749300106861L;
+    private String transferId;
     
-    // Which nodes to deploy
-    private Set<NodeRef> nodes;
-
-    /**
-     * Set which nodes to transfer
-     * @param nodes
-     */
-    public void setNodes(Collection<NodeRef> nodes)
-    {
-        this.nodes = new HashSet<NodeRef>(nodes);
-    }
-    
-    public void setNodes(NodeRef...nodes)
-    {
-        this.setNodes(new HashSet<NodeRef>(Arrays.asList(nodes)));
+    public String toString()
+    {   
+        return "TransferEventBegin: " + transferId;
     }
 
-    /**
-     * Get which nodes to transfer
-     * @return
-     */
-    public Set<NodeRef> getNodes()
+    public void setTransferId(String transferId)
     {
-        return nodes;
+        this.transferId = transferId;
+    }
+
+    public String getTransferId()
+    {
+        return transferId;
     }
 }

@@ -1,44 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.alfresco.org/model/transferReport/1.0" xmlns:report="http://www.alfresco.org/model/transferReport/1.0" elementFormDefault="qualified">
 
-    <!-- XML Schema for the client side transferReport -->
-    <complexType name="transferReport">
-      <xs:annotation>
-         <xs:documentation>
-            This is the transfer report root tag
-         </xs:documentation>
-         </xs:annotation>
-          <sequence>
-             <element name="target" type="report:target" maxOccurs="1" minOccurs="1"></element>
-             <element name="definition" type="report:definition" maxOccurs="1" minOccurs="1"></element>
-             <element name="events" type="report:events"></element>
-          </sequence>
-    </complexType>
-    
-    <complexType name="target">
-         <xs:annotation>
-         <xs:documentation>
+<schema 
+   targetNamespace="http://www.alfresco.org/model/transferReport/1.0"
+   xmlns:report="http://www.alfresco.org/model/transferReport/1.0"
+   xmlns="http://www.w3.org/2001/XMLSchema"
+   elementFormDefault="qualified">
+
+   <!-- XML Schema for the client side transferReport -->
+   
+   <complexType name="transferReport">
+      <annotation>
+         <documentation>
+            This is an alfresco client side transfer report
+         </documentation>
+      </annotation>
+      <sequence>
+         <element name="target" type="report:target" maxOccurs="1"
+            minOccurs="1">
+         </element>
+         <element name="definition" type="report:definition"
+            maxOccurs="1" minOccurs="1">
+         </element>
+         <element name="exception" type="report:exception" maxOccurs="1"
+            minOccurs="0">
+         </element>
+         <element name="events" type="report:events"></element>
+      </sequence>
+   </complexType>
+
+   <complexType name="target">
+      <annotation>
+         <documentation>
             The destination of the transfer
-         </xs:documentation>
-         </xs:annotation>
-       <attribute name="name" type="string"></attribute>
-       <attribute name="endpointPort" type="int"></attribute>
-       <attribute name="endpointHost" type="string"></attribute>
-    </complexType>
-    
-    <complexType name="definition">
-    </complexType>
-    
-    <complexType name="events">
-        <sequence maxOccurs="unbounded" minOccurs="0">
-            <element name="event" type="report:event"></element>
-        </sequence>
-    </complexType>
-    
-    <complexType name="event">
-       <attribute name="date" type="dateTime"></attribute>
-       <!--   message is content -->
-    </complexType>
+         </documentation>
+      </annotation>
+      <attribute name="name" type="string"></attribute>
+      <attribute name="endpointPort" type="int"></attribute>
+      <attribute name="endpointHost" type="string"></attribute>
+   </complexType>
 
+   <complexType name="definition"></complexType>
 
+   <complexType name="events">
+      <sequence maxOccurs="unbounded" minOccurs="0">
+         <element name="event" type="report:event"></element>
+      </sequence>
+   </complexType>
+
+   <complexType name="event">
+   </complexType>
+   
+   <complexType name="exception">
+   
+   </complexType>
+
+   <element name="report" type="string"></element>
 </schema>

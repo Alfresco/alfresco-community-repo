@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -171,7 +172,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         nodeService.addChild(node8, node15, ContentModel.ASSOC_THUMBNAILS, QName.createQName(
                 NamespaceService.APP_MODEL_1_0_URI, "temp"));
 
-        StandardNodeCrawlerImpl crawler = new StandardNodeCrawlerImpl(serviceRegistry);
+        NodeCrawler crawler = new StandardNodeCrawlerImpl(serviceRegistry);
         crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
 
         Set<NodeRef> crawledNodes = crawler.crawl(node8);

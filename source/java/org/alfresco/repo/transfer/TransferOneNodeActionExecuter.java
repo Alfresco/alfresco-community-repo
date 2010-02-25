@@ -25,27 +25,23 @@
 
 package org.alfresco.repo.transfer;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferTarget;
 
 /**
  * @author brian
  *
  */
-public class TransferActionExecuter extends ActionExecuterAbstractBase
+public class TransferOneNodeActionExecuter extends ActionExecuterAbstractBase
 {
-    public static final String NAME = "transfer-node";
-    public static final String PARAM_TRANSFER_TARGET = "target-name";
+    public static final String NAME = "transfer-this-node";
     private TransferService transferService;
     
     /**
@@ -62,20 +58,14 @@ public class TransferActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
+        TransferTarget target = TransferTestUtil.getTestTarget(transferService);
         TransferDefinition td = new TransferDefinition();
-        Set<NodeRef> nodes = new HashSet<NodeRef>();
-        nodes.add(actionedUponNodeRef);
-        td.setNodes(nodes);
-        transferService.transfer("transferMe", td);
+        td.setNodes(actionedUponNodeRef);
+        transferService.transfer(target.getName(), td);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        //paramList.add(new ParameterDefinitionImpl(PARAM_TRANSFER_TARGET, DataTypeDefinition.TEXT, true, "Transfer Target Name"));    
     }
-
 }

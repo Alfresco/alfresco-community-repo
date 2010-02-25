@@ -25,6 +25,7 @@
 
 package org.alfresco.service.cmr.transfer;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,24 +64,55 @@ public interface TransferService
      * @throws TransferException
      * @return the node reference of the transfer report
      */       
-   public NodeRef transfer(String targetName, TransferDefinition definition, Set<TransferCallback> callback) throws TransferException;
+   public NodeRef transfer(String targetName, TransferDefinition definition, Collection<TransferCallback> callback) throws TransferException;
    
    /**
-    * Transfer nodes async with callback.   The asynchronous version of the transfer method starts a transfer and returns as 
-    * soon as possible.
-    * The transfer callbacks will be called by a different thread to that used to call the transferAsync method so transaction 
-    * context will be different to the calling context. 
-    * 
-    * Please also be aware that the asychronous transfer does not have access to uncommitted 
-    * data in the calling transaction.
-    * 
+    * Transfer nodes sync, with callback.  This synchronous version of the transfer method waits for the transfer to complete 
+    * before returning to the caller.  Callbacks are called in the current thread context, so will be associated with the current 
+    * transaction and user.
+    *  
     * @param targetName the name of the target to transfer to
-    * @param definition - the definition of the transfer. Specifies which nodes to transfer.  
+    * @param definition - the definition of the transfer.   Specifies which nodes to transfer. 
     * The following properties must be set, nodes
-    * @param callback - a set of callback handlers that will be called as transfer proceeds.  May be null.
+    * @param callbacks - a list of callback handlers that will be called as transfer proceeds.  May be null.
     * @throws TransferException
+    * @return the node reference of the transfer report
     */       
-   public void transferAsync(String targetName, TransferDefinition definition, Set<TransferCallback> callback) throws TransferException;
+  public NodeRef transfer(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
+  
+  /**
+   * Transfer nodes async with callback.   The asynchronous version of the transfer method starts a transfer and returns as 
+   * soon as possible.
+   * 
+   * The transfer callbacks will be called by a different thread to that used to call the transferAsync method so transaction 
+   * context will be different to the calling context. The asychronous transfer does not have access to uncommitted 
+   * data in the calling transaction.
+   * 
+   * @param targetName the name of the target to transfer to
+   * @param definition - the definition of the transfer. Specifies which nodes to transfer.  
+   * The following properties must be set, nodes
+   * @param callback - a collection of callback handlers that will be called as transfer proceeds.  May be null.
+   * 
+   * @throws TransferException
+   */       
+  public void transferAsync(String targetName, TransferDefinition definition, Collection<TransferCallback> callback) throws TransferException;
+
+  /**
+   * Transfer nodes async with callback.   The asynchronous version of the transfer method starts a transfer and returns as 
+   * soon as possible.
+   * 
+   * The transfer callbacks will be called by a different thread to that used to call the transferAsync method so transaction 
+   * context will be different to the calling context. The asychronous transfer does not have access to uncommitted 
+   * data in the calling transaction.
+   * 
+   * @param targetName the name of the target to transfer to
+   * @param definition - the definition of the transfer. Specifies which nodes to transfer.  
+   * The following properties must be set, nodes
+   * @param callbacks - a collection of callback handlers that will be called as transfer proceeds.  May be null.
+   * 
+   * @throws TransferException
+   */       
+  public void transferAsync(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
 
     /**
       * Verify a target is available and that the configured credentials correctly identify an admin user.     
@@ -120,6 +152,13 @@ public interface TransferService
     public TransferTarget getTransferTarget(String name) throws TransferException;
     
     /**
+     * Test to see if the target with the specified name exists
+     * @param name
+     * @return true if the specified target exists, and false otherwise
+     */
+    public boolean targetExists(String name);
+    
+    /**
      * Delete a transfer target.  After calling this method the transfer target will no longer exist.
      * @throws TransferException - target does not exist
      * @param name, the name of this transfer target,
@@ -152,5 +191,24 @@ public interface TransferService
      * @param enable (or false=disable)
      */
     public void enableTransferTarget(String name, boolean enable) throws TransferException;
+    
+    /**
+     * Asynchronously cancel an in-progress transfer
+     * 
+     * This method tells an in-process transfer to give up, rollback and stop as soon as possible.
+     * 
+     * Depending upon the state of the in-progress transfer, the transfer may still complete, 
+     * despite calling this method, however in most cases the transfer will not complete.    
+     * 
+     * Calling this method for a transfer that does not exist, possibly because it has already finished, has no 
+     * effect and will not throw an exception.
+     * 
+     * The transfer handle is returned by a TransferEventBegin event callback.
+     * 
+     * @param transferId the unique identifier for the instance of the transfer to cancel.
+     * 
+     * @see TransferEventBegin;
+     */
+    public void cancelAsync(String transferId);
     
 }

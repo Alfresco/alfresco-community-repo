@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.transfer;
 import java.io.File;
 import java.io.InputStream;
 
+import org.alfresco.repo.transfer.TransferProgressMonitor;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -96,12 +97,23 @@ public interface TransferReceiver
      * @param transferId
      * @throws TransferException
      */
-    void abort(String transferId) throws TransferException;
+    void cancel(String transferId) throws TransferException;
     
+    /**
+     * Commit asynchronously
+     * @param transferId
+     * @throws TransferException
+     */
+    void commitAsync(String transferId) throws TransferException;
+
     /**
      * Commit
      * @param transferId
      * @throws TransferException
      */
     void commit(String transferId) throws TransferException;
+    
+    TransferProgress getStatus(String transferId) throws TransferException;
+    
+    TransferProgressMonitor getProgressMonitor();
 }

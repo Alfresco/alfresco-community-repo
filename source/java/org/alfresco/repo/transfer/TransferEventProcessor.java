@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.transfer;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,6 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferEvent;
+import org.alfresco.service.cmr.transfer.TransferEventBegin;
 import org.alfresco.service.cmr.transfer.TransferEventCommittingStatus;
 import org.alfresco.service.cmr.transfer.TransferEventEndState;
 import org.alfresco.service.cmr.transfer.TransferEventEnterState;
@@ -76,6 +76,17 @@ public class TransferEventProcessor
     {
         
     }
+    
+    public void begin(String transferId)
+    {
+        setState(TransferEvent.TransferState.START);  
+        TransferEventBegin event = new TransferEventBegin();
+        event.setTransferState(TransferEvent.TransferState.START);
+        event.setMessage("begin transferId:" + transferId);
+        queue.add(event); 
+        event.setTransferId(transferId);     
+        notifyObservers();
+    }
       
     public void start()
     {
@@ -93,6 +104,7 @@ public class TransferEventProcessor
         TransferEventSuccess event = new TransferEventSuccess();
         event.setTransferState(TransferEvent.TransferState.SUCCESS);
         event.setLast(true);
+        event.setMessage("success lastEvent:true");
         queue.add(event); 
         notifyObservers();
     }
@@ -107,6 +119,7 @@ public class TransferEventProcessor
         TransferEventError event = new TransferEventError();
         event.setTransferState(TransferEvent.TransferState.ERROR);
         event.setLast(true);
+        event.setMessage("error lastEvent:true, " + exception.getMessage());
         event.setException(exception);
         queue.add(event); 
         notifyObservers();
@@ -154,6 +167,12 @@ public class TransferEventProcessor
     public void prepare()
     {
         setState(TransferEvent.TransferState.PREPARING);
+        notifyObservers();
+    }
+    
+    public void commit()
+    {
+        setState(TransferEvent.TransferState.COMMITTING);
         notifyObservers();
     }
     

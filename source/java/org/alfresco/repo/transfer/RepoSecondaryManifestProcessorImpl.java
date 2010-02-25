@@ -34,57 +34,42 @@ import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeHelper;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
-import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * @author brian
  * 
  */
-public class RepoSecondaryManifestProcessorImpl implements TransferManifestProcessor
+public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcessorBase
 {
     private NodeService nodeService;
     private CorrespondingNodeResolver nodeResolver;
-    private String transferId;
 
     /**
+     * @param receiver 
      * @param transferId
      */
-    public RepoSecondaryManifestProcessorImpl(String transferId)
+    public RepoSecondaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {
-        this.transferId = transferId;
+        super(receiver, transferId);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#endTransferManifest()
-     */
-    public void endTransferManifest()
+    protected void endManifest()
     {
-        // TODO Auto-generated method stub
-
+        //NOOP
     }
     
-    /**
-     * 
-     */
-    public void processTransferManifestNode(TransferManifestDeletedNode node)
+    protected void processNode(TransferManifestDeletedNode node)
     {
+        //NOOP
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifestNode(org.alfresco.repo.transfer
-     * .manifest.TransferManifestNode)
-     */
-    public void processTransferManifestNode(TransferManifestNormalNode node)
+    protected void processNode(TransferManifestNormalNode node)
     {
         NodeRef correspondingNodeRef = nodeResolver.resolveCorrespondingNode(node.getNodeRef(),
                 TransferManifestNodeHelper.getPrimaryParentAssoc(node), node.getParentPath()).resolvedChild;
@@ -245,17 +230,9 @@ public class RepoSecondaryManifestProcessorImpl implements TransferManifestProce
     }
     
     
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifiestHeader(org.alfresco.repo
-     * .transfer.manifest.TransferManifestHeader)
-     */
-    public void processTransferManifiestHeader(TransferManifestHeader header)
+    protected void processHeader(TransferManifestHeader header)
     {
-        // TODO Auto-generated method stub
-
+        //NOOP
     }
 
     /*
@@ -263,10 +240,9 @@ public class RepoSecondaryManifestProcessorImpl implements TransferManifestProce
      * 
      * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest()
      */
-    public void startTransferManifest()
+    protected void startManifest()
     {
-        // TODO Auto-generated method stub
-
+        //NOOP
     }
 
     /**
@@ -286,7 +262,4 @@ public class RepoSecondaryManifestProcessorImpl implements TransferManifestProce
     {
         this.nodeResolver = nodeResolver;
     }
-
-
-
 }

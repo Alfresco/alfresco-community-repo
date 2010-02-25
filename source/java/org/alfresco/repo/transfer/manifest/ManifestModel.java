@@ -25,7 +25,6 @@
 package org.alfresco.repo.transfer.manifest;
 
 import org.alfresco.repo.transfer.TransferModel;
-import org.alfresco.service.namespace.QName;
 
 /**
  * The transfer model - extended for XML Manifest Model
@@ -35,6 +34,7 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_TRANSFER_MAINIFEST = "transferManifest";
     static final String LOCALNAME_TRANSFER_HEADER = "transferManifestHeader";
     static final String LOCALNAME_HEADER_CREATED_DATE = "createdDate";
+    static final String LOCALNAME_HEADER_NODE_COUNT = "nodeCount";
     static final String LOCALNAME_ELEMENT_NODES = "nodes";
     static final String LOCALNAME_ELEMENT_NODE = "node";
     static final String LOCALNAME_ELEMENT_DELETED_NODE = "deletedNode";
@@ -52,7 +52,9 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_ELEMENT_PRIMARY_PARENT = "primaryParent";
     static final String LOCALNAME_ELEMENT_PRIMARY_PATH = "primaryPath";
     static final String LOCALNAME_ELEMENT_VALUES = "values";
-    static final String LOCALNAME_ELEMENT_VALUE = "value";
+    static final String LOCALNAME_ELEMENT_VALUE_STRING = "value";
+    static final String LOCALNAME_ELEMENT_VALUE_NULL = "nullValue";
+    static final String LOCALNAME_ELEMENT_VALUE_SERIALIZED = "serializedValue";
     static final String LOCALNAME_ELEMENT_MLVALUE = "mlvalue";
     static final String LOCALNAME_ELEMENT_CONTENT_HEADER = "content";
     

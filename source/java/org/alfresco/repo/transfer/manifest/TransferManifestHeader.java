@@ -35,6 +35,7 @@ import java.util.Date;
 public class TransferManifestHeader
 {
     private Date createdDate;
+    private int nodeCount; 
 
     public void setCreatedDate(Date createDate)
     {
@@ -44,6 +45,22 @@ public class TransferManifestHeader
     public Date getCreatedDate()
     {
         return createdDate;
+    }
+
+    /**
+     * @return the nodeCount
+     */
+    public int getNodeCount()
+    {
+        return nodeCount;
+    }
+
+    /**
+     * @param nodeCount the nodeCount to set
+     */
+    public void setNodeCount(int nodeCount)
+    {
+        this.nodeCount = nodeCount;
     }
 
 }

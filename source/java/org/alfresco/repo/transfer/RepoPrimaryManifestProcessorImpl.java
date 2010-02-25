@@ -40,7 +40,6 @@ import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
-import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -49,7 +48,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +56,7 @@ import org.apache.commons.logging.LogFactory;
  * @author brian
  * 
  */
-public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcessor
+public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorBase
 {
     private static final Log log = LogFactory.getLog(RepoPrimaryManifestProcessorImpl.class);
 
@@ -78,8 +76,6 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         DEFAULT_LOCAL_PROPERTIES.add(ContentModel.PROP_NODE_UUID);
     }
 
-    private TransferReceiver receiver;
-    private String transferId;
     private NodeService nodeService;
     private ContentService contentService;
     private CorrespondingNodeResolver nodeResolver;
@@ -91,16 +87,15 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
      */
     public RepoPrimaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {
-        this.receiver = receiver;
-        this.transferId = transferId;
+        super(receiver, transferId);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#endTransferManifest()
+     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# endTransferManifest()
      */
-    public void endTransferManifest()
+    protected void endManifest()
     {
         if (!orphans.isEmpty())
         {
@@ -111,7 +106,7 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
     /**
      * 
      */
-    public void processTransferManifestNode(TransferManifestDeletedNode node)
+    protected void processNode(TransferManifestDeletedNode node)
     {
         // This is a deleted node. First we need to check whether it has already been deleted in this repo
         // too by looking in the local archive store. If we find it then we need not do anything.
@@ -119,10 +114,11 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         // store in which its old parent lives.
         // If we can find a corresponding node then we'll delete it.
         // If we can't find a corresponding node then we'll do nothing.
-
+        logProgress("Processing incoming deleted node: " + node.getNodeRef());
         if (!nodeService.exists(node.getNodeRef()))
         {
-            // It's not in our archive store. Check to see if we can find it in its original store...
+            // It's not in our archive store. Check to see if we can find it in
+            // its original store...
             ChildAssociationRef origPrimaryParent = node.getPrimaryParentAssoc();
             NodeRef origNodeRef = new NodeRef(origPrimaryParent.getParentRef().getStoreRef(), node.getNodeRef().getId());
 
@@ -135,112 +131,99 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
                 // Yes, it does. Delete it.
                 if (log.isDebugEnabled())
                 {
-                    log.debug("Incoming deleted noderef " + node.getNodeRef() +
-                            " has been resolved to existing local noderef " + resolvedNodes.resolvedChild +
-                            "  - deleting");
+                    log.debug("Incoming deleted noderef " + node.getNodeRef()
+                            + " has been resolved to existing local noderef " + resolvedNodes.resolvedChild
+                            + "  - deleting");
                 }
+                logProgress("Deleting local node: " + resolvedNodes.resolvedChild);
                 nodeService.deleteNode(resolvedNodes.resolvedChild);
             }
             else
             {
+                logProgress("Unable to find corresponding node for incoming deleted node: " + node.getNodeRef());
                 if (log.isDebugEnabled())
                 {
-                    log.debug("Incoming deleted noderef has no corresponding local noderef: " + node.getNodeRef() +
-                            "  - ignoring");
+                    log.debug("Incoming deleted noderef has no corresponding local noderef: " + node.getNodeRef()
+                            + "  - ignoring");
                 }
             }
+        }
+        else
+        {
+            logProgress("Incoming deleted node is already in the local archive store - ignoring: " + node.getNodeRef());
         }
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifestNode(org.alfresco.repo.transfer
-     * .manifest.TransferManifestNode)
+     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor#
+     * processTransferManifestNode(org.alfresco.repo.transfer .manifest.TransferManifestNode)
      */
-    public void processTransferManifestNode(TransferManifestNormalNode node)
+    protected void processNode(TransferManifestNormalNode node)
     {
-        try
+        if (log.isDebugEnabled())
         {
+            log.debug("Processing node with incoming noderef of " + node.getNodeRef());
+        }
+        logProgress("Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
+
+        ChildAssociationRef primaryParentAssoc = node.getPrimaryParentAssoc();
+        if (primaryParentAssoc == null)
+        {
+            error(node, MSG_NO_PRIMARY_PARENT_SUPPLIED);
+        }
+
+        CorrespondingNodeResolver.ResolvedParentChildPair resolvedNodes = nodeResolver.resolveCorrespondingNode(node
+                .getNodeRef(), primaryParentAssoc, node.getParentPath());
+
+        // Does a corresponding node exist in this repo?
+        if (resolvedNodes.resolvedChild != null)
+        {
+            // Yes, it does. Update it.
             if (log.isDebugEnabled())
             {
-                log.debug("Processing node with incoming noderef of " + node.getNodeRef());
+                log.debug("Incoming noderef " + node.getNodeRef() + " has been resolved to existing local noderef "
+                        + resolvedNodes.resolvedChild);
             }
-            ChildAssociationRef primaryParentAssoc = getPrimaryParent(node);
-            if (primaryParentAssoc == null)
-            {
-                error(node, MSG_NO_PRIMARY_PARENT_SUPPLIED);
-            }
-
-            CorrespondingNodeResolver.ResolvedParentChildPair resolvedNodes = nodeResolver.resolveCorrespondingNode(
-                    node.getNodeRef(), primaryParentAssoc, node.getParentPath());
-
-            // Does a corresponding node exist in this repo?
-            if (resolvedNodes.resolvedChild != null)
-            {
-                // Yes, it does. Update it.
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Incoming noderef " + node.getNodeRef() +
-                            " has been resolved to existing local noderef " + resolvedNodes.resolvedChild);
-                }
-                update(node, resolvedNodes, primaryParentAssoc);
-            }
-            else
-            {
-                // No, there is no corresponding node. Worth just quickly checking the archive store...
-                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node.getNodeRef().getId());
-                if (nodeService.exists(archiveNodeRef))
-                {
-                    // We have found a node in the archive store that has the same UUID as the one that we've
-                    // been sent. We'll restore that archived node to a temporary location and then try 
-                    // processing this node again
-                    if (log.isInfoEnabled())
-                    {
-                        log.info("Located an archived node with UUID matching transferred node: " + archiveNodeRef);
-                        log.info("Attempting to restore " + archiveNodeRef);
-                    }
-                    ChildAssociationRef tempLocation = getTemporaryLocation(node.getNodeRef());
-                    NodeRef restoredNodeRef = nodeService.restoreNode(archiveNodeRef, tempLocation.getParentRef(),
-                            tempLocation.getTypeQName(), tempLocation.getQName());
-                    if (log.isInfoEnabled())
-                    {
-                        log.info("Successfully restored node as " + restoredNodeRef + "  - retrying transferred node");
-                    }
-                    processTransferManifestNode(node);
-                    return;
-                }
-
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Incoming noderef has no corresponding local noderef: " + node.getNodeRef());
-                }
-                create(node, resolvedNodes, primaryParentAssoc);
-            }
-
+            update(node, resolvedNodes, primaryParentAssoc);
         }
-        catch (TransferProcessingException ex)
+        else
         {
-            log.error("transfer processing exception" + ex.toString(), ex);
-            //TODO MER BUGBUG - What to do here? probably can't just swallow it
-            // does this mean that the manifest is stuffed?
-        }
-    }
+            // No, there is no corresponding node. Worth just quickly checking
+            // the archive store...
+            NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node.getNodeRef().getId());
+            if (nodeService.exists(archiveNodeRef))
+            {
+                // We have found a node in the archive store that has the same
+                // UUID as the one that we've
+                // been sent. We'll restore that archived node to a temporary
+                // location and then try
+                // processing this node again
+                if (log.isInfoEnabled())
+                {
+                    log.info("Located an archived node with UUID matching transferred node: " + archiveNodeRef);
+                    log.info("Attempting to restore " + archiveNodeRef);
+                }
+                logProgress("Restoring node from archive: " + archiveNodeRef);
 
-    /**
-     * Given the node ref, this method constructs the appropriate ChildAssociationRef that would place this node in the
-     * transfer's temporary folder. Useful when handling orphans.
-     * 
-     * @param nodeRef
-     * @return
-     */
-    private ChildAssociationRef getTemporaryLocation(NodeRef nodeRef)
-    {
-        NodeRef parentNodeRef = receiver.getTempFolder(transferId);
-        QName parentAssocType = ContentModel.ASSOC_CONTAINS;
-        QName parentAssocName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, nodeRef.getId());
-        return new ChildAssociationRef(parentAssocType, parentNodeRef, parentAssocName, nodeRef, true, -1);
+                ChildAssociationRef tempLocation = getTemporaryLocation(node.getNodeRef());
+                NodeRef restoredNodeRef = nodeService.restoreNode(archiveNodeRef, tempLocation.getParentRef(),
+                        tempLocation.getTypeQName(), tempLocation.getQName());
+                if (log.isInfoEnabled())
+                {
+                    log.info("Successfully restored node as " + restoredNodeRef + "  - retrying transferred node");
+                }
+                processTransferManifestNode(node);
+                return;
+            }
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("Incoming noderef has no corresponding local noderef: " + node.getNodeRef());
+            }
+            create(node, resolvedNodes, primaryParentAssoc);
+        }
     }
 
     /**
@@ -253,6 +236,8 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
             ChildAssociationRef primaryParentAssoc)
     {
         log.info("Creating new node with noderef " + node.getNodeRef());
+        logProgress("Creating new node to correspond to incoming node: " + node.getNodeRef());
+        
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
         NodeRef parentNodeRef = resolvedNodes.resolvedParent;
@@ -260,20 +245,23 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         {
             if (log.isDebugEnabled())
             {
-                log.debug("Unable to resolve parent for inbound noderef " + node.getNodeRef() +
-                        ".\n  Supplied parent noderef is " + primaryParentAssoc.getParentRef() +
-                        ".\n  Supplied parent path is " + node.getParentPath().toString());
+                log.debug("Unable to resolve parent for inbound noderef " + node.getNodeRef()
+                        + ".\n  Supplied parent noderef is " + primaryParentAssoc.getParentRef()
+                        + ".\n  Supplied parent path is " + node.getParentPath().toString());
             }
             // We can't find the node's parent.
-            // We'll store the node in a temporary location and record it for later processing
+            // We'll store the node in a temporary location and record it for
+            // later processing
             ChildAssociationRef tempLocation = getTemporaryLocation(node.getNodeRef());
             parentNodeRef = tempLocation.getParentRef();
             parentAssocType = tempLocation.getTypeQName();
             parentAssocName = tempLocation.getQName();
             log.info("Recording orphaned transfer node: " + node.getNodeRef());
+            logProgress("Unable to resolve parent for new incoming node. Storing it in temp folder: " + node.getNodeRef());
             storeOrphanNode(primaryParentAssoc);
         }
-        // We now know that this is a new node, and we have found the appropriate parent node in the
+        // We now know that this is a new node, and we have found the
+        // appropriate parent node in the
         // local repository.
         log.info("Resolved parent node to " + parentNodeRef);
 
@@ -285,8 +273,8 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         Map<QName, Serializable> contentProps = processProperties(null, props, true);
 
         // Create the corresponding node...
-        ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName,
-                node.getType(), props);
+        ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName, node
+                .getType(), props);
 
         if (log.isDebugEnabled())
         {
@@ -296,7 +284,8 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         // Deal with the content properties
         writeContent(newNode.getChildRef(), contentProps);
 
-        // Apply any aspects that are needed but haven't automatically been applied
+        // Apply any aspects that are needed but haven't automatically been
+        // applied
         Set<QName> aspects = new HashSet<QName>(node.getAspects());
         aspects.removeAll(nodeService.getAspects(newNode.getChildRef()));
         for (QName aspect : aspects)
@@ -304,17 +293,20 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
             nodeService.addAspect(newNode.getChildRef(), aspect, null);
         }
 
-        // Is the node that we've just added the parent of any orphans that we've found earlier?
+        // Is the node that we've just added the parent of any orphans that
+        // we've found earlier?
         List<ChildAssociationRef> orphansToClaim = orphans.get(newNode.getChildRef());
         if (orphansToClaim != null)
         {
             // Yes, it is...
             for (ChildAssociationRef orphan : orphansToClaim)
             {
-                nodeService.moveNode(orphan.getChildRef(), orphan.getParentRef(), orphan.getTypeQName(),
-                        orphan.getQName());
+                logProgress("Re-parenting previously orphaned node (" + orphan.getChildRef() + ") with found parent " + orphan.getParentRef());
+                nodeService.moveNode(orphan.getChildRef(), orphan.getParentRef(), orphan.getTypeQName(), orphan
+                        .getQName());
             }
-            // We can now remove the record of these orphans, as their parent has been found
+            // We can now remove the record of these orphans, as their parent
+            // has been found
             orphans.remove(newNode.getChildRef());
         }
     }
@@ -330,28 +322,32 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
     {
         NodeRef nodeToUpdate = resolvedNodes.resolvedChild;
 
+        logProgress("Updating local node: " + node.getNodeRef());
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
         NodeRef parentNodeRef = resolvedNodes.resolvedParent;
         if (parentNodeRef == null)
         {
             // We can't find the node's parent.
-            // We'll store the node in a temporary location and record it for later processing
+            // We'll store the node in a temporary location and record it for
+            // later processing
             ChildAssociationRef tempLocation = getTemporaryLocation(node.getNodeRef());
             parentNodeRef = tempLocation.getParentRef();
             parentAssocType = tempLocation.getTypeQName();
             parentAssocName = tempLocation.getQName();
             storeOrphanNode(primaryParentAssoc);
         }
-        // First of all, do we need to move the node? If any aspect of the primary parent association has changed
+        // First of all, do we need to move the node? If any aspect of the
+        // primary parent association has changed
         // then the answer is "yes"
         ChildAssociationRef currentParent = nodeService.getPrimaryParent(nodeToUpdate);
-        if (!currentParent.getParentRef().equals(parentNodeRef) ||
-                !currentParent.getTypeQName().equals(parentAssocType) ||
-                !currentParent.getQName().equals(parentAssocName))
+        if (!currentParent.getParentRef().equals(parentNodeRef)
+                || !currentParent.getTypeQName().equals(parentAssocType)
+                || !currentParent.getQName().equals(parentAssocName))
         {
             // Yes, we need to move the node
             nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
+            logProgress("Moved node " + nodeToUpdate + " to be under parent node " + parentNodeRef);
         }
 
         log.info("Resolved parent node to " + parentNodeRef);
@@ -415,13 +411,22 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         // ...and copy any supplied content properties into this new map...
         for (Map.Entry<QName, Serializable> propEntry : props.entrySet())
         {
-            if (ContentData.class.isAssignableFrom(propEntry.getValue().getClass()))
+            Serializable value = propEntry.getValue();
+            if (log.isDebugEnabled())
+            {
+                if (value == null)
+                {
+                    log.debug("Received a null value for property " + propEntry.getKey());
+                }
+            }
+            if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
             {
                 contentProps.put(propEntry.getKey(), propEntry.getValue());
             }
         }
 
-        // Now we can remove the content properties from amongst the other kinds of properties
+        // Now we can remove the content properties from amongst the other kinds
+        // of properties
         // (no removeAll on a Map...)
         for (QName contentPropertyName : contentProps.keySet())
         {
@@ -430,7 +435,8 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
 
         if (!isNew)
         {
-            // Finally, overlay the repo-specific properties from the existing node (if there is one)
+            // Finally, overlay the repo-specific properties from the existing
+            // node (if there is one)
             Map<QName, Serializable> existingProps = (nodeToUpdate == null) ? new HashMap<QName, Serializable>()
                     : nodeService.getProperties(nodeToUpdate);
 
@@ -457,7 +463,7 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
      */
     private void writeContent(NodeRef nodeToUpdate, Map<QName, Serializable> contentProps)
     {
-        File stagingDir = receiver.getStagingFolder(transferId);
+        File stagingDir = getStagingFolder();
         for (Map.Entry<QName, Serializable> contentEntry : contentProps.entrySet())
         {
             ContentData contentData = (ContentData) contentEntry.getValue();
@@ -476,32 +482,30 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         }
     }
 
-    protected boolean updateNeeded(TransferManifestNode node, NodeRef nodeToUpdate)
+    protected boolean updateNeeded(TransferManifestNormalNode node, NodeRef nodeToUpdate)
     {
-        return true;
-        // TODO MER - Temp commenting out.
-        // //Assumption: if the modified and modifier properties haven't changed, and the cm:content property
-        // //(if it exists) hasn't changed size then we can assume that properties don't need to be updated...
-        // Map<QName, Serializable> suppliedProps = node.getProperties();
-        // Date suppliedModifiedDate = (Date)suppliedProps.get(ContentModel.PROP_MODIFIED);
-        // String suppliedModifier = (String)suppliedProps.get(ContentModel.PROP_MODIFIER);
-        // ContentData suppliedContent = (ContentData)suppliedProps.get(ContentModel.PROP_CONTENT);
-        //        
-        // Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
-        // Date existingModifiedDate = (Date)existingProps.get(ContentModel.PROP_MODIFIED);
-        // String existingModifier = (String)existingProps.get(ContentModel.PROP_MODIFIER);
-        // ContentData existingContent = (ContentData)existingProps.get(ContentModel.PROP_CONTENT);
-        //        
-        // boolean updateNeeded = false;
-        // updateNeeded |= ((suppliedModifiedDate != null && !suppliedModifiedDate.equals(existingModifiedDate)) ||
-        // (existingModifiedDate != null && !existingModifiedDate.equals(suppliedModifiedDate)));
-        // updateNeeded |= ((suppliedContent != null && existingContent == null) ||
-        // (suppliedContent == null && existingContent != null) ||
-        // (suppliedContent != null && existingContent != null && suppliedContent.getSize() !=
-        // existingContent.getSize()));
-        // updateNeeded |= ((suppliedModifier != null && !suppliedModifier.equals(existingModifier)) ||
-        // (existingModifier != null && !existingModifier.equals(suppliedModifier)));
-        // return updateNeeded;
+        boolean updateNeeded = true;
+        // Assumption: if the modified and modifier properties haven't changed, and the cm:content property
+        // (if it exists) hasn't changed size then we can assume that properties don't need to be updated...
+//        Map<QName, Serializable> suppliedProps = node.getProperties();
+//        Date suppliedModifiedDate = (Date) suppliedProps.get(ContentModel.PROP_MODIFIED);
+//        String suppliedModifier = (String) suppliedProps.get(ContentModel.PROP_MODIFIER);
+//        ContentData suppliedContent = (ContentData) suppliedProps.get(ContentModel.PROP_CONTENT);
+//
+//        Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
+//        Date existingModifiedDate = (Date) existingProps.get(ContentModel.PROP_MODIFIED);
+//        String existingModifier = (String) existingProps.get(ContentModel.PROP_MODIFIER);
+//        ContentData existingContent = (ContentData) existingProps.get(ContentModel.PROP_CONTENT);
+//
+//        updateNeeded = false;
+//        updateNeeded |= ((suppliedModifiedDate != null && !suppliedModifiedDate.equals(existingModifiedDate)) || 
+//                (existingModifiedDate != null && !existingModifiedDate.equals(suppliedModifiedDate)));
+//        updateNeeded |= ((suppliedContent != null && existingContent == null)
+//                || (suppliedContent == null && existingContent != null) || (suppliedContent != null
+//                && existingContent != null && suppliedContent.getSize() != existingContent.getSize()));
+//        updateNeeded |= ((suppliedModifier != null && !suppliedModifier.equals(existingModifier)) || 
+//                (existingModifier != null && !existingModifier.equals(suppliedModifier)));
+        return updateNeeded;
     }
 
     /**
@@ -547,38 +551,16 @@ public class RepoPrimaryManifestProcessorImpl implements TransferManifestProcess
         throw ex;
     }
 
-    /**
-     * @param node
-     * @return
-     */
-    private ChildAssociationRef getPrimaryParent(TransferManifestNormalNode node)
-    {
-        List<ChildAssociationRef> parents = node.getParentAssocs();
-        for (ChildAssociationRef parent : parents)
-        {
-            if (parent.isPrimary())
-                return parent;
-        }
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.transfer.manifest.TransferManifestProcessor#processTransferManifiestHeader(org.alfresco.repo
-     * .transfer.manifest.TransferManifestHeader)
-     */
-    public void processTransferManifiestHeader(TransferManifestHeader header)
+    protected void processHeader(TransferManifestHeader header)
     {
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest()
+     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# startTransferManifest()
      */
-    public void startTransferManifest()
+    protected void startManifest()
     {
     }
 

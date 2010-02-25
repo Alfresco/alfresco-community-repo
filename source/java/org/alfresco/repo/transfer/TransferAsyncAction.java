@@ -25,8 +25,8 @@
 
 package org.alfresco.repo.transfer;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -39,50 +39,47 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Deploys a website to a remote server.
- *
- * TODO refactor and add to WCM services (when we support WCM deployment config)
- *
- * @author gavinc
+ * 
+ * @author markr
  */
 public class TransferAsyncAction extends ActionExecuterAbstractBase
 {
-   public static final String ASYNC_QUEUE_NAME = "deployment";
-   
-   private TransferService transferService;
+    public static final String ASYNC_QUEUE_NAME = "deployment";
 
-   private static Log logger = LogFactory.getLog(TransferAsyncAction.class);
-   
-   public void init()
-   {
-       super.name = "transfer-async";
-   }
-   
-   
-   @Override
-   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-   {
-       System.out.println("In TransferAsyncAction");
-       
-       String targetName = (String)action.getParameterValue("targetName");
-       TransferDefinition definition = (TransferDefinition)action.getParameterValue("definition");
-       Set<TransferCallback> callback = (Set<TransferCallback>) action.getParameterValue("callbacks");
-       
-       transferService.transfer(targetName, definition, callback);
-   }
+    private TransferService transferService;
 
-   @Override
-   protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-   {
-   }
+    private static Log logger = LogFactory.getLog(TransferAsyncAction.class);
 
-public void setTransferService(TransferService transferService)
-{
-    this.transferService = transferService;
-}
+    public void init()
+    {
+        super.name = "transfer-async";
+    }
 
-public TransferService getTransferService()
-{
-    return transferService;
-}
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    {
+        logger.debug("In TransferAsyncAction");
+
+        String targetName = (String) action.getParameterValue("targetName");
+        TransferDefinition definition = (TransferDefinition) action.getParameterValue("definition");
+        Collection<TransferCallback> callback = (Collection<TransferCallback>) action.getParameterValue("callbacks");
+
+        transferService.transfer(targetName, definition, callback);
+    }
+
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
+    }
+
+    public void setTransferService(TransferService transferService)
+    {
+        this.transferService = transferService;
+    }
+
+    public TransferService getTransferService()
+    {
+        return transferService;
+    }
 }

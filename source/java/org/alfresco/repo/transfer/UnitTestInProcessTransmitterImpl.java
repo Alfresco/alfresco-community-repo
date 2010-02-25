@@ -33,11 +33,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * This class delegates transfer service to the transfer receiver without 
@@ -53,32 +56,54 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
     private TransferReceiver receiver;
     
     private ContentService contentService;
+    private TransactionService transactionService;
     
-    public UnitTestInProcessTransmitterImpl(TransferReceiver receiver, ContentService contentService)
+    public UnitTestInProcessTransmitterImpl(TransferReceiver receiver, ContentService contentService, TransactionService transactionService)
     {
         this.receiver = receiver;
         this.contentService = contentService;
+        this.transactionService = transactionService;
     }
     
-    public Transfer begin(TransferTarget target) throws TransferException
+    public Transfer begin(final TransferTarget target) throws TransferException
     {
-        Transfer transfer = new Transfer();
-        String transferId = receiver.start();
-        transfer.setTransferId(transferId);
-        transfer.setTransferTarget(target);
-        return transfer;
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Transfer>()
+        {
+            public Transfer execute() throws Throwable
+            {
+                Transfer transfer = new Transfer();
+                String transferId = receiver.start();
+                transfer.setTransferId(transferId);
+                transfer.setTransferTarget(target);
+                return transfer;
+            }
+        }, false, true);
     }
 
-    public void abort(Transfer transfer) throws TransferException
+    public void abort(final Transfer transfer) throws TransferException
     {
-        String transferId = transfer.getTransferId();
-        receiver.abort(transferId);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Transfer>()
+        {
+            public Transfer execute() throws Throwable
+            {
+                String transferId = transfer.getTransferId();
+                receiver.cancel(transferId);
+                return null;
+            }
+        }, false, true);
     }
 
-    public void commit(Transfer transfer) throws TransferException
+    public void commit(final Transfer transfer) throws TransferException
     {
-        String transferId = transfer.getTransferId();
-        receiver.commit(transferId);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Transfer>()
+        {
+            public Transfer execute() throws Throwable
+            {
+                String transferId = transfer.getTransferId();
+                receiver.commit(transferId);
+                return null;
+            }
+        }, false, true);
     }
 
     public Set<TransferMessage> getMessages(Transfer transfer)
@@ -127,6 +152,12 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
     {
 
     }
+    
+    public TransferProgress getStatus(Transfer transfer) throws TransferException
+    {
+        String transferId = transfer.getTransferId();
+        return receiver.getStatus(transferId);
+    }
 
     public void setReceiver(TransferReceiver receiver)
     {
@@ -147,4 +178,6 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
     {
         return contentService;
     }
+
+
 }

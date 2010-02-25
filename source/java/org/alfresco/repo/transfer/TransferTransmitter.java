@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 
 /**
@@ -92,6 +93,11 @@ public interface TransferTransmitter
      * @throws TransferException 
      */
     void abort(Transfer transfer) throws TransferException;
+    
+    /**
+     * Get the status of an in process transfer
+     */
+    TransferProgress getStatus(Transfer transfer) throws TransferException;
     
     /**
      * Get Async Messages for a transfer.

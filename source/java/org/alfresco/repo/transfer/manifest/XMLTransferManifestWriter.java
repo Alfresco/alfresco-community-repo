@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.transfer.manifest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.Collection;
@@ -39,16 +42,20 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.surf.util.Base64;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+//import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 /**
  * XMLTransferManifestWriter
@@ -115,6 +122,12 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":" + ManifestModel.LOCALNAME_HEADER_CREATED_DATE,  EMPTY_ATTRIBUTES);
         writeDate(header.getCreatedDate());
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":" + ManifestModel.LOCALNAME_HEADER_CREATED_DATE);
+       
+        // Node count
+        writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":" + ManifestModel.LOCALNAME_HEADER_NODE_COUNT,  EMPTY_ATTRIBUTES);
+        char[] nodeCountChars = Integer.toString(header.getNodeCount()).toCharArray();
+        writer.characters(nodeCountChars, 0, nodeCountChars.length);
+        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":" + ManifestModel.LOCALNAME_HEADER_NODE_COUNT);
        
         // End Header
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_TRANSFER_HEADER, PREFIX + ":" + ManifestModel.LOCALNAME_TRANSFER_HEADER);
@@ -217,12 +230,10 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_PROPERTY, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_PROPERTY,  attributes);
         }
         
-        //  TODO - Char [] does not seem to be processed correctly
-        if(value.getClass().isArray())
+        if(value == null)
         {
-            writeValue(value.toString());
+            writeNullValue();
         }
-        // Collection
         else if(value instanceof ContentData)
         {
             ContentData data = (ContentData)value;
@@ -235,7 +246,6 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_CONTENT_HEADER, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_CONTENT_HEADER,  dataAttributes);
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_CONTENT_HEADER, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_CONTENT_HEADER);
         }
-            // Collection
         else if(value instanceof Collection)
         {
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUES, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUES,  EMPTY_ATTRIBUTES);
@@ -264,11 +274,59 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
     
     private void writeValue(Serializable value) throws SAXException
     {
-        writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE,  EMPTY_ATTRIBUTES);
-        String strValue = (String)DefaultTypeConverter.INSTANCE.convert(String.class, value);
-        
-        writer.characters(strValue.toCharArray(), 0, strValue.length());
-        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE);
+        try
+        {
+            String strValue = (String)DefaultTypeConverter.INSTANCE.convert(String.class, value);
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING,  EMPTY_ATTRIBUTES);       
+            
+            writer.characters(strValue.toCharArray(), 0, strValue.length());
+            
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING);
+        }
+        catch (TypeConversionException e)
+        {
+            /**
+             * Can't convert this to a string for transmission
+             * 
+             * Need to serialize the Java Object
+             */
+            
+            try
+            {    
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+                
+                ObjectOutputStream oos;
+                oos = new ObjectOutputStream(bos);
+                oos.writeObject(value);
+                oos.close();
+              
+                byte[] ba = bos.toByteArray();
+                String s = new String(Base64.encodeBytes(ba));
+                
+                AttributesImpl attributes = new AttributesImpl();
+                attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "className", "className", "String", value.getClass().getName());
+                attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "encoding", "encoding", "String", "base64/ObjectOutputStream");
+                writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED,  attributes);           
+
+                writer.startCDATA();
+                writer.characters(s.toCharArray(), 0, s.length());
+                writer.endCDATA();
+                
+                writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED);
+              
+            }
+            catch (IOException err)
+            {
+                throw new TransferException("Unable to write property value", err);
+            }
+        }
+    }
+    
+    private void writeNullValue() throws SAXException
+    {
+        AttributesImpl attributes = new AttributesImpl();
+        writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL,  attributes);           
+        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI, ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL, PREFIX + ":" + ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL);
     }
     
     private void writeMLValue(Locale locale, Serializable value) throws SAXException

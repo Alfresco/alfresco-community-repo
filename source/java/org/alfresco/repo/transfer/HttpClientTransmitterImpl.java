@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -554,6 +555,59 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             messagesRequest.releaseConnection();
         }
     }
+    
+    /**
+     * 
+     */
+    public TransferProgress getStatus(Transfer transfer) throws TransferException
+    {
+        TransferTarget target = transfer.getTransferTarget();
+        HttpMethod statusRequest = new PostMethod();
+        try
+        {
+            HostConfiguration hostConfig = getHostConfig(target);
+            HttpState httpState = getHttpState(target);
+            
+            statusRequest.setPath(target.getEndpointPath() + "/status");
+            //Put the transferId on the query string
+            statusRequest.setQueryString(
+                    new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+            
+            try
+            {
+                int responseStatus = httpClient.executeMethod(hostConfig, statusRequest, httpState);
+                checkResponseStatus("status", responseStatus, statusRequest);
+                //If we get here then we've received a 200 response
+                String statusPayload = statusRequest.getResponseBodyAsString();
+                JSONObject statusObj = new JSONObject(statusPayload);
+                //We're expecting the transfer progress encoded in a JSON object... 
+                int currentPosition  = statusObj.getInt("currentPosition");
+                int endPosition  = statusObj.getInt("endPosition");
+                String statusStr= statusObj.getString("status");
+                //We're expecting the transfer progress encoded in a JSON object... 
+                TransferProgress p = new TransferProgress();
+                p.setStatus(TransferProgress.Status.valueOf(statusStr));
+                p.setCurrentPosition(currentPosition);
+                p.setEndPosition(endPosition);
+                return p;
+            } 
+            catch (RuntimeException e)
+            {
+                throw e;
+            } 
+            catch (Exception e)
+            {
+                String error = "Failed to execute HTTP request to target";
+                log.debug(error, e);
+                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[]{"status", target.toString(), e.toString()}, e);
+            }
+        } 
+        finally
+        {
+            statusRequest.releaseConnection();
+        }
+    }
+    
 
     public void setContentService(ContentService contentService)
     {
@@ -564,6 +618,8 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     {
         return contentService;
     }
+
+
 
 
 } // end of class

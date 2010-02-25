@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 
 import freemarker.ext.beans.BeanModel;
@@ -80,7 +81,15 @@ public final class ShortQNameMethod extends BaseProcessorExtension implements Te
                 arg0String = ((TemplateScalarModel)arg0).getAsString();
             }
 
+            try
+            {
             result = createQName(arg0String).toPrefixString(services.getNamespaceService());
+        }
+            catch (NamespaceException e) 
+            {
+                // not valid qname -> return original value
+                result = arg0String;
+            }
         }
         
         return result != null ? result : "";

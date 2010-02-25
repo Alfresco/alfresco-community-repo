@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.faces.context.ExternalContext;
@@ -42,10 +43,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.extensions.surf.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
@@ -79,9 +82,6 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import org.xml.sax.SAXException;
-
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.web.bean.repository.Repository;
 
 
 /**
@@ -122,6 +122,7 @@ public class XFormsBean implements Serializable
     */
    class XFormsSession implements FormProcessor.Session
    {
+      private static final long serialVersionUID = 1L;
       private final Document formInstanceData;
       private final String formInstanceDataName;
       private final Form form;
@@ -179,8 +180,10 @@ public class XFormsBean implements Serializable
    private transient Schema2XFormsProperties schema2XFormsProperties;
    private AVMBrowseBean avmBrowseBean;
    private NavigationBean navigator;
-   
-   private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+   // lock for XFormSession.eventLog
+   private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+   private Lock writeLock = rwLock.writeLock();
+   private Lock readLock = rwLock.readLock();
    
    public static String BEAN_NAME = "XFormsBean";
    
@@ -229,67 +232,67 @@ public class XFormsBean implements Serializable
       final ServletContext servletContext = (ServletContext)
          externalContext.getContext();
       
-      final ChibaBean chibaBean = new ChibaBean();
-      chibaBean.setConfig(servletContext.getRealPath("/WEB-INF/chiba.xml"));
-      Pair<Document, XSModel> chibaPair = this.getXFormsDocument();
-      chibaBean.setXMLContainer(chibaPair.getFirst(), chibaPair.getSecond());
-
-      final EventTarget et = (EventTarget)
-         chibaBean.getXMLContainer().getDocumentElement();
-      final EventListener el = new EventListener()
+      writeLock.lock();
+      try
       {
-         public void handleEvent(final Event e)
+         final ChibaBean chibaBean = new ChibaBean();
+         chibaBean.setConfig(servletContext.getRealPath("/WEB-INF/chiba.xml"));
+         Pair<Document, XSModel> chibaPair = this.getXFormsDocument();
+         chibaBean.setXMLContainer(chibaPair.getFirst(), chibaPair.getSecond());
+          
+         final EventTarget et = (EventTarget)
+         chibaBean.getXMLContainer().getDocumentElement();
+         final EventListener el = new EventListener()
          {
-            final XMLEvent xmle = (XMLEvent)e;
-            if (XFormsBean.LOGGER.isDebugEnabled())
-               XFormsBean.LOGGER.debug("received event " + xmle.getType() + ": " + xmle);
-            
-            try
+            public void handleEvent(final Event e)
             {
-                lock.writeLock().lock();
-                XFormsBean.this.xformsSession.eventLog.add(xmle);
+               final XMLEvent xmle = (XMLEvent)e;
+               if (XFormsBean.LOGGER.isDebugEnabled())
+                  XFormsBean.LOGGER.debug("received event " + xmle.getType() + ": " + xmle);
+
+               XFormsBean.this.xformsSession.eventLog.add(xmle);
             }
-            finally
-            {
-                lock.writeLock().unlock();
-            }
-         }
-      };
-
-      // interaction events my occur during init so we have to register before
-      et.addEventListener(ChibaEventNames.LOAD_URI, el, true);
-      et.addEventListener(ChibaEventNames.RENDER_MESSAGE, el, true);
-      et.addEventListener(ChibaEventNames.REPLACE_ALL, el, true);
-
-      et.addEventListener(XFormsEventNames.ENABLED, el, true);
-      et.addEventListener(XFormsEventNames.DISABLED, el, true);
-      et.addEventListener(XFormsEventNames.REQUIRED, el, true);
-      et.addEventListener(XFormsEventNames.OPTIONAL, el, true);
-      et.addEventListener(XFormsEventNames.READONLY, el, true);
-      et.addEventListener(XFormsEventNames.READWRITE, el, true);
-      et.addEventListener(XFormsEventNames.VALID, el, true);
-      et.addEventListener(XFormsEventNames.INVALID, el, true);
-      et.addEventListener(XFormsEventNames.IN_RANGE, el, true);
-      et.addEventListener(XFormsEventNames.OUT_OF_RANGE, el, true);
-      et.addEventListener(XFormsEventNames.SELECT, el, true);
-      et.addEventListener(XFormsEventNames.DESELECT, el, true);
-      et.addEventListener(XFormsEventNames.INSERT, el, true);
-      et.addEventListener(XFormsEventNames.DELETE, el, true);
-
-      chibaBean.init();
-
-      // register for notification events
-      et.addEventListener(XFormsEventNames.SUBMIT, el, true);
-      et.addEventListener(XFormsEventNames.SUBMIT_DONE, el, true);
-      et.addEventListener(XFormsEventNames.SUBMIT_ERROR, el, true);
-      et.addEventListener(ChibaEventNames.STATE_CHANGED, el, true);
-      et.addEventListener(ChibaEventNames.PROTOTYPE_CLONED, el, true);
-      et.addEventListener(ChibaEventNames.ID_GENERATED, el, true);
-      et.addEventListener(ChibaEventNames.ITEM_INSERTED, el, true);
-      et.addEventListener(ChibaEventNames.ITEM_DELETED, el, true);
-      et.addEventListener(ChibaEventNames.INDEX_CHANGED, el, true);
-      et.addEventListener(ChibaEventNames.SWITCH_TOGGLED, el, true);
-      this.xformsSession.chibaBean = chibaBean;
+         };
+          
+         // interaction events my occur during init so we have to register before
+         et.addEventListener(ChibaEventNames.LOAD_URI, el, true);
+         et.addEventListener(ChibaEventNames.RENDER_MESSAGE, el, true);
+         et.addEventListener(ChibaEventNames.REPLACE_ALL, el, true);
+    
+         et.addEventListener(XFormsEventNames.ENABLED, el, true);
+         et.addEventListener(XFormsEventNames.DISABLED, el, true);
+         et.addEventListener(XFormsEventNames.REQUIRED, el, true);
+         et.addEventListener(XFormsEventNames.OPTIONAL, el, true);
+         et.addEventListener(XFormsEventNames.READONLY, el, true);
+         et.addEventListener(XFormsEventNames.READWRITE, el, true);
+         et.addEventListener(XFormsEventNames.VALID, el, true);
+         et.addEventListener(XFormsEventNames.INVALID, el, true);
+         et.addEventListener(XFormsEventNames.IN_RANGE, el, true);
+         et.addEventListener(XFormsEventNames.OUT_OF_RANGE, el, true);
+         et.addEventListener(XFormsEventNames.SELECT, el, true);
+         et.addEventListener(XFormsEventNames.DESELECT, el, true);
+         et.addEventListener(XFormsEventNames.INSERT, el, true);
+         et.addEventListener(XFormsEventNames.DELETE, el, true);
+    
+         chibaBean.init();
+    
+         // register for notification events
+         et.addEventListener(XFormsEventNames.SUBMIT, el, true);
+         et.addEventListener(XFormsEventNames.SUBMIT_DONE, el, true);
+         et.addEventListener(XFormsEventNames.SUBMIT_ERROR, el, true);
+         et.addEventListener(ChibaEventNames.STATE_CHANGED, el, true);
+         et.addEventListener(ChibaEventNames.PROTOTYPE_CLONED, el, true);
+         et.addEventListener(ChibaEventNames.ID_GENERATED, el, true);
+         et.addEventListener(ChibaEventNames.ITEM_INSERTED, el, true);
+         et.addEventListener(ChibaEventNames.ITEM_DELETED, el, true);
+         et.addEventListener(ChibaEventNames.INDEX_CHANGED, el, true);
+         et.addEventListener(ChibaEventNames.SWITCH_TOGGLED, el, true);
+         this.xformsSession.chibaBean = chibaBean;
+      }
+      finally
+      {
+         writeLock.unlock();
+      }
    }
 
    /**
@@ -323,24 +326,30 @@ public class XFormsBean implements Serializable
     * Writes the xform out to the http servlet response.  This allows
     * us to use the browser to parse the xform using XMLHttpRequest.
     */
-   public synchronized void getXForm() 
-      throws IOException,
-      XFormsException
+   public void getXForm() throws IOException, XFormsException
    {
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".getXForm()");
       final FacesContext context = FacesContext.getCurrentInstance();
       final ResponseWriter out = context.getResponseWriter();
-      final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      final Node xformsDocument = chibaBean.getXMLContainer();
-      XMLUtil.print(xformsDocument, out);
+
+      readLock.lock();
+      try
+      {
+         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         final Node xformsDocument = chibaBean.getXMLContainer();
+         XMLUtil.print(xformsDocument, out);
+      }
+      finally
+      {
+         readLock.unlock();
+      }
    }
 
    /**
     * sets the value of a control in the processor.
     */
-   public synchronized void setXFormsValue() 
-      throws XFormsException, IOException
+   public void setXFormsValue() throws XFormsException, IOException
    {
       final FacesContext context = FacesContext.getCurrentInstance();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
@@ -349,50 +358,67 @@ public class XFormsBean implements Serializable
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".setXFormsValue(" + id + ", " + value + ")");
-      final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      if (chibaBean.getContainer().lookup(id) instanceof Upload)
-      {
-         chibaBean.updateControlValue(id, null, value, value.getBytes("UTF-8"));
-      }
-      else
-      {
-         chibaBean.updateControlValue(id, value);
-      }
 
-      final ResponseWriter out = context.getResponseWriter();
-      XMLUtil.print(this.getEventLog(), out);
-      out.close();
+      readLock.lock();
+      final ChibaBean chibaBean = this.xformsSession.chibaBean;
+      readLock.unlock();
+      writeLock.lock();
+      try
+      {
+         if (chibaBean.getContainer().lookup(id) instanceof Upload)
+         {
+            chibaBean.updateControlValue(id, null, value, value.getBytes("UTF-8"));
+         }
+         else
+         {
+            chibaBean.updateControlValue(id, value);
+         }
+         final ResponseWriter out = context.getResponseWriter();
+         XMLUtil.print(this.getEventLog(), out);
+         out.close();
+      }
+      finally
+      {
+         writeLock.unlock();
+      }
    }
 
    /**
     * sets the value of a control in the processor.
     */
-   public void setRepeatIndeces() 
-      throws XFormsException, IOException
+   public void setRepeatIndeces() throws XFormsException, IOException
    {
       final FacesContext context = FacesContext.getCurrentInstance();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
       final String repeatIds = (String)requestParameters.get("repeatIds");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".setRepeatIndeces(" + repeatIds + ")");
-      for (String id : repeatIds.split(","))
+
+      writeLock.lock();
+      try
       {
-         final int index = Integer.parseInt((String)requestParameters.get(id));
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
-         final ChibaBean chibaBean = this.xformsSession.chibaBean;
-         chibaBean.updateRepeatIndex(id, index);
+         for (String id : repeatIds.split(","))
+         {
+            final int index = Integer.parseInt((String)requestParameters.get(id));
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug(this + ".setRepeatIndex(" + id + ", " + index + ")");
+            final ChibaBean chibaBean = this.xformsSession.chibaBean;
+            chibaBean.updateRepeatIndex(id, index);
+         }
+         final ResponseWriter out = context.getResponseWriter();
+         XMLUtil.print(this.getEventLog(), out);
+         out.close();
       }
-      final ResponseWriter out = context.getResponseWriter();
-      XMLUtil.print(this.getEventLog(), out);
-      out.close();
+      finally
+      {
+         writeLock.unlock();
+      }
    }
 
    /**
     * fires an action associated with a trigger.
     */
-   public synchronized void fireAction() 
-      throws XFormsException, IOException
+   public void fireAction() throws XFormsException, IOException
    {
       final FacesContext context = FacesContext.getCurrentInstance();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
@@ -400,12 +426,21 @@ public class XFormsBean implements Serializable
 
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".fireAction(" + id + ")");
-      final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      chibaBean.dispatch(id, DOMEventNames.ACTIVATE);
 
-      final ResponseWriter out = context.getResponseWriter();
-      XMLUtil.print(this.getEventLog(), out);
-      out.close();
+      writeLock.lock();
+      try
+      {
+         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         chibaBean.dispatch(id, DOMEventNames.ACTIVATE);
+         
+         final ResponseWriter out = context.getResponseWriter();
+         XMLUtil.print(this.getEventLog(), out);
+         out.close();
+      }
+      finally
+      {
+         writeLock.unlock();
+      }
    }
 
    /**
@@ -454,8 +489,7 @@ public class XFormsBean implements Serializable
    /**
     * Swaps model nodes to implement reordering within repeats.
     */
-   public synchronized void swapRepeatItems() 
-      throws Exception
+   public void swapRepeatItems() throws Exception
    {
       final FacesContext context = FacesContext.getCurrentInstance();
       final Map requestParameters = context.getExternalContext().getRequestParameterMap();
@@ -464,22 +498,38 @@ public class XFormsBean implements Serializable
       final String toItemId = (String)requestParameters.get("toItemId");
       if (LOGGER.isDebugEnabled())
          LOGGER.debug(this + ".swapRepeatItems(" + fromItemId + ", " + toItemId + ")");
-      final ChibaBean chibaBean = this.xformsSession.chibaBean;
-      final RepeatItem from = (RepeatItem)chibaBean.getContainer().lookup(fromItemId);
-      if (from == null)
-      {
-         throw new NullPointerException("unable to find source repeat item " + fromItemId);
-      }
-      final RepeatItem to = (RepeatItem)chibaBean.getContainer().lookup(toItemId);
-      if (to == null)
-      {
-         throw new NullPointerException("unable to find destination repeat item " + toItemId);
-      }
-      this.swapRepeatItems(from, to);
 
-      final ResponseWriter out = context.getResponseWriter();
-      XMLUtil.print(this.getEventLog(), out);
-      out.close();
+      readLock.lock();
+      try
+      {
+         final ChibaBean chibaBean = this.xformsSession.chibaBean;
+         final RepeatItem from = (RepeatItem)chibaBean.getContainer().lookup(fromItemId);
+         if (from == null)
+         {
+            throw new NullPointerException("unable to find source repeat item " + fromItemId);
+         }
+         final RepeatItem to = (RepeatItem)chibaBean.getContainer().lookup(toItemId);
+         if (to == null)
+         {
+            throw new NullPointerException("unable to find destination repeat item " + toItemId);
+         }
+         readLock.unlock();
+         writeLock.lock();
+         this.swapRepeatItems(from, to);
+         
+         final ResponseWriter out = context.getResponseWriter();
+         XMLUtil.print(this.getEventLog(), out);
+         out.close();
+      }
+      catch (NullPointerException e)
+      {
+         readLock.unlock();
+         throw e;
+      }
+      finally
+      {
+         writeLock.unlock();
+      }
    }
 
    private void swapRepeatItems(final RepeatItem from,
@@ -644,89 +694,71 @@ public class XFormsBean implements Serializable
       final Element eventsElement = result.createElement("events");
       result.appendChild(eventsElement);
       
-      try
+      for (XMLEvent xfe : this.xformsSession.eventLog)
       {
-          lock.readLock().lock();
-      
-          for (XMLEvent xfe : this.xformsSession.eventLog)
-          {
-             final String type = xfe.getType();
-             if (LOGGER.isDebugEnabled())
-             {
-                LOGGER.debug("adding event " + type + " to the event log");
-             }
+         final String type = xfe.getType();
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("adding event " + type + " to the event log");
+         }
 
-             final Element target = (Element)xfe.getTarget();
+         final Element target = (Element)xfe.getTarget();
 
-             final Element eventElement = result.createElement(type);
-             eventsElement.appendChild(eventElement);
-             eventElement.setAttribute("targetId", target.getAttributeNS(null, "id"));
-             eventElement.setAttribute("targetName", target.getLocalName());
+         final Element eventElement = result.createElement(type);
+         eventsElement.appendChild(eventElement);
+         eventElement.setAttribute("targetId", target.getAttributeNS(null, "id"));
+         eventElement.setAttribute("targetName", target.getLocalName());
 
-             final Collection properties = xfe.getPropertyNames();
-             if (properties != null)
-             {
-                for (Object name : properties)
-                {
-                   final Object value = xfe.getContextInfo((String)name);
-                   if (LOGGER.isDebugEnabled())
-                   {
-                      LOGGER.debug("adding property {" + name + 
-                                   ":" + value + "} to event " + type);
-                   }
+         final Collection properties = xfe.getPropertyNames();
+         if (properties != null)
+         {
+            for (Object name : properties)
+            {
+               final Object value = xfe.getContextInfo((String)name);
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("adding property {" + name + 
+                               ":" + value + "} to event " + type);
+               }
 
-                   final Element propertyElement = result.createElement("property");
-                   eventElement.appendChild(propertyElement);
-                   propertyElement.setAttribute("name", name.toString());
-                   propertyElement.setAttribute("value", 
-                                                value != null ? value.toString() : null);
-                }
-             }
+               final Element propertyElement = result.createElement("property");
+               eventElement.appendChild(propertyElement);
+               propertyElement.setAttribute("name", name.toString());
+               propertyElement.setAttribute("value", 
+                                            value != null ? value.toString() : null);
+            }
+         }
 
-             if (LOGGER.isDebugEnabled() && XFormsEventNames.SUBMIT_ERROR.equals(type))
-             {
-				// debug for figuring out which elements aren't valid for submit
-				LOGGER.debug("performing full revalidate");
-				try
-				{
-				   final Model model = this.xformsSession.chibaBean.getContainer().getDefaultModel();
-				   final Instance instance = model.getDefaultInstance();
-				   model.getValidator().validate(instance, "/", new DefaultValidatorMode());
-				   final Iterator<ModelItem> it = instance.iterateModelItems("/");
-				   while (it.hasNext())
-				   {
-					  final ModelItem modelItem = it.next();
-					  if (!modelItem.isValid())
-					  {
-						 LOGGER.debug("model node " + modelItem.getNode() + " is invalid");
-					  }
-					  if (modelItem.isRequired() && modelItem.getValue().length() == 0)
-					  {
-						 LOGGER.debug("model node " + modelItem.getNode() + " is empty and required");
-					  }
-				   }
-				}
-				catch (final XFormsException xfe2)
-				{
-				   LOGGER.debug("error performing revaliation", xfe2);
-				}
-			 }
-		  }
-      }
-      finally
-      {
-          lock.readLock().unlock();
-      }
-      
-      try
-      {
-          lock.writeLock().lock();
-          this.xformsSession.eventLog.clear();
-      }
-      finally
-      {
-          lock.writeLock().unlock();
-      }
+         if (LOGGER.isDebugEnabled() && XFormsEventNames.SUBMIT_ERROR.equals(type))
+         {
+			// debug for figuring out which elements aren't valid for submit
+			LOGGER.debug("performing full revalidate");
+			try
+			{
+			   final Model model = this.xformsSession.chibaBean.getContainer().getDefaultModel();
+			   final Instance instance = model.getDefaultInstance();
+			   model.getValidator().validate(instance, "/", new DefaultValidatorMode());
+			   final Iterator<ModelItem> it = instance.iterateModelItems("/");
+			   while (it.hasNext())
+			   {
+				  final ModelItem modelItem = it.next();
+				  if (!modelItem.isValid())
+				  {
+					 LOGGER.debug("model node " + modelItem.getNode() + " is invalid");
+				  }
+				  if (modelItem.isRequired() && modelItem.getValue().length() == 0)
+				  {
+					 LOGGER.debug("model node " + modelItem.getNode() + " is empty and required");
+				  }
+			   }
+			}
+			catch (final XFormsException xfe2)
+			{
+			   LOGGER.debug("error performing revaliation", xfe2);
+			}
+		 }
+	  }
+      this.xformsSession.eventLog.clear();
 
       if (LOGGER.isDebugEnabled())
       {

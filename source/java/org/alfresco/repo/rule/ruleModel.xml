@@ -67,7 +67,7 @@
                <target>
                   <class>cm:systemfolder</class>
                   <mandatory>false</mandatory>
-                  <many>false</many>
+                  <many>true</many>
                </target>
             </child-association>
          </associations>  

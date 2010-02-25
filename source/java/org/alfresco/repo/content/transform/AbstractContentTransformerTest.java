@@ -62,7 +62,11 @@ public abstract class AbstractContentTransformerTest extends TestCase
     
     private static Log logger = LogFactory.getLog(AbstractContentTransformerTest.class);
     
-    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    /**
+     * This context will be fetched each time, but almost always
+     *  will have been cached by {@link ApplicationContextHelper}
+     */
+    protected ApplicationContext ctx;
 
     protected ServiceRegistry serviceRegistry;
     protected MimetypeService mimetypeService;
@@ -86,6 +90,10 @@ public abstract class AbstractContentTransformerTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        // Grab a suitably configured context
+        ctx = TransformTestSuite.getContext();
+
+        // Grab other useful beans
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         mimetypeService = serviceRegistry.getMimetypeService();
         // perform a little cleaning up

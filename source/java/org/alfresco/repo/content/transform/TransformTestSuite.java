@@ -28,15 +28,29 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 
 /**
- * Version test suite
+ * Content Transformation test suite
  * 
  * @author Roy Wetherall
  */
 public class TransformTestSuite extends TestSuite
 {
+    /**
+     * Asks {@link ApplicationContextHelper} to give us a 
+     *  suitable, perhaps cached context for use in our tests
+     */
+    public static ApplicationContext getContext() {
+       ApplicationContextHelper.setUseLazyLoading(false);
+       ApplicationContextHelper.setNoAutoStart(true);
+       return ApplicationContextHelper.getApplicationContext(
+            new String[] { "classpath:alfresco/minimal-context.xml" }
+       );
+    }
+    
     /**
      * Creates the test suite
      * 
@@ -44,6 +58,10 @@ public class TransformTestSuite extends TestSuite
      */
     public static Test suite() 
     {
+        // Setup the context
+        getContext();
+       
+        // Off we go
         TestSuite suite = new TestSuite();
         suite.addTestSuite(BinaryPassThroughContentTransformerTest.class);
         suite.addTestSuite(ComplexContentTransformerTest.class);
@@ -53,7 +71,7 @@ public class TransformTestSuite extends TestSuite
         suite.addTestSuite(MediaWikiContentTransformerTest.class);
         suite.addTestSuite(OpenOfficeContentTransformerTest.class);
         suite.addTestSuite(PdfBoxContentTransformerTest.class);
-        suite.addTestSuite(PoiHssfContentTransformerTest.class);        
+        suite.addTestSuite(PoiHssfContentTransformerTest.class);
         suite.addTestSuite(RuntimeExecutableContentTransformerTest.class);
         suite.addTestSuite(StringExtractingContentTransformerTest.class);
         suite.addTestSuite(TextMiningContentTransformerTest.class);

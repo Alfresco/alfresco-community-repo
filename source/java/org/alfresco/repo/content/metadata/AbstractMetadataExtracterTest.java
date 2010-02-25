@@ -56,11 +56,11 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractMetadataExtracterTest extends TestCase
 {
-    static {
-       ApplicationContextHelper.setUseLazyLoading(false);
-       ApplicationContextHelper.setNoAutoStart(true);
-    }
-    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+   /**
+    * This context will be fetched each time, but almost always
+    *  will have been cached by {@link ApplicationContextHelper}
+    */
+    protected ApplicationContext ctx;
     
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
     protected static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
@@ -79,6 +79,10 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        // Grab the context, which will normally have been
+        //  cached by the ApplicationContextHelper
+        ctx = MetadataTestSuite.getContext();
+        
         this.mimetypeMap = (MimetypeMap) ctx.getBean("mimetypeService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         
@@ -206,13 +210,13 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     }
     
     
-    protected void assertContains(String message, String needle, String haystack) {
+    protected static void assertContains(String message, String needle, String haystack) {
        if(haystack.indexOf(needle) > -1) {
           return;
        }
        fail(message);
     }
-    protected void assertContains(String needle, String haystack) {
+    protected static void assertContains(String needle, String haystack) {
        assertContains("'" + needle + "' wasn't found in '" + haystack + "'", needle, haystack);
     }
 }

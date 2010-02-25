@@ -48,6 +48,12 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
     private ContentTransformer transformer;
     
     @Override
+    protected void setUpContext() {
+       // We use a smaller context
+       ctx = TransformTestSuite.getContext();
+    }
+
+    @Override
     protected void setUp() throws Exception
     {
         super.setUp();

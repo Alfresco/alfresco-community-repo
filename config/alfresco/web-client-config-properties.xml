@@ -730,4 +730,26 @@
       </property-sheet>
    </config>
 
+   <!-- ********************************** -->
+   <!-- Configuration for Transfer model   -->
+   <!-- ********************************** -->
+   <config evaluator="node-type" condition="trx:transferTarget">
+      <property-sheet>
+         <show-property name="trx:endpointprotocol" display-label-id="trx.endpointprotocol" show-in-edit-mode="true" />
+         <show-property name="trx:endpointhost" display-label-id="trx.endpointhost" show-in-edit-mode="true" />
+         <show-property name="trx:endpointport" display-label-id="trx.endpointport" show-in-edit-mode="true" />
+         <show-property name="trx:endpointpath" display-label-id="trx.endpointpath" show-in-edit-mode="true" />
+      </property-sheet>
+   </config>
+   
+   <config evaluator="node-type" condition="trx:transferRecord">
+      <property-sheet>
+         <show-property name="trx:progressPosition" display-label-id="trx.progressPosition" show-in-edit-mode="false" />
+         <show-property name="trx:progressEndpoint" display-label-id="trx.progressEndpoint" show-in-edit-mode="false" />
+         <show-property name="trx:transferStatus" display-label-id="trx.transferStatus" show-in-edit-mode="false" />
+      </property-sheet>
+   </config>
+   
+   
+   
 </alfresco-config>

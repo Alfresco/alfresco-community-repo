@@ -549,7 +549,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         class Analyzer implements Worker<NodeDescription>
         {
             private final Set<String> allZoneAuthorities = new TreeSet<String>();
-            private final Set<String> groupsToCreate = new TreeSet<String>();
+            private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
             private final Map<String, Set<String>> groupAssocsToCreate = new TreeMap<String, Set<String>>();
             private final Map<String, Set<String>> groupAssocsToDelete = new TreeMap<String, Set<String>>();
             private long latestTime;
@@ -569,7 +569,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 return this.allZoneAuthorities;
             }
 
-            public Set<String> getGroupsToCreate()
+            public Map<String, String> getGroupsToCreate()
             {
                 return this.groupsToCreate;
             }
@@ -608,7 +608,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 if (groupZones == null)
                 {
                     // The group did not exist at all
-                    addAssociations(groupName, group.getChildAssociations(), false);
+                    addGroup(group);
                 }
                 else
                 {
@@ -632,7 +632,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     if (groupZones.contains(zoneId) || intersection.isEmpty())
                     {
                         // The group already existed in this zone or no valid zone: update the group
-                        updateAssociations(group, groupName);
+                        updateGroup(group);
                     }
                     else
                     {
@@ -652,8 +652,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                             + "'. This group was previously created through synchronization with a lower priority user registry.");
                         }
                         ChainingUserRegistrySynchronizer.this.authorityService.deleteAuthority(groupName);
+
                         // create the group
-                        addAssociations(groupName, group.getChildAssociations(), false);
+                        addGroup(group);
                     }
                 }
 
@@ -668,8 +669,20 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 }
             }
 
-            private synchronized void updateAssociations(NodeDescription group, String groupName)
+            private void updateGroup(NodeDescription group)
             {
+                PropertyMap groupProperties = group.getProperties();
+                String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                String groupDisplayName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                if (groupDisplayName == null)
+                {
+                    groupDisplayName = groupName;
+                }
+                // Update the display name now
+                ChainingUserRegistrySynchronizer.this.authorityService.setAuthorityDisplayName(groupName,
+                        groupDisplayName);
+
+                // Work out the association differences
                 Set<String> oldChildren = ChainingUserRegistrySynchronizer.this.authorityService
                         .getContainedAuthorities(null, groupName, true);
                 Set<String> newChildren = group.getChildAssociations();
@@ -677,17 +690,33 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 Set<String> toAdd = new TreeSet<String>(newChildren);
                 toDelete.removeAll(newChildren);
                 toAdd.removeAll(oldChildren);
-                addAssociations(groupName, toAdd, true);
-                deleteAssociations(groupName, toDelete);
+                synchronized (this)
+                {
+                    addAssociations(groupName, toAdd);
+                    deleteAssociations(groupName, toDelete);
+                }
             }
 
-            private synchronized void addAssociations(String groupName, Set<String> children, boolean existed)
+            private void addGroup(NodeDescription group)
+            {
+                PropertyMap groupProperties = group.getProperties();
+                String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                String groupDisplayName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                if (groupDisplayName == null)
+                {
+                    groupDisplayName = groupName;
+                }
+
+                synchronized (this)
+                {
+                    this.groupsToCreate.put(groupName, groupDisplayName);
+                    addAssociations(groupName, group.getChildAssociations());
+                }
+            }
+
+            private synchronized void addAssociations(String groupName, Set<String> children)
             {
                 this.allZoneAuthorities.add(groupName);
-                if (!existed)
-                {
-                    this.groupsToCreate.add(groupName);
-                }
                 // Add an entry for the parent itself, in case it is a root group
                 Set<String> parents = this.groupAssocsToCreate.get(groupName);
                 if (parents == null)
@@ -712,7 +741,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 for (String child : children)
                 {
                     // Make sure each child features as a key in the creation map
-                    addAssociations(child, Collections.<String> emptySet(), true);
+                    addAssociations(child, Collections.<String> emptySet());
 
                     Set<String> parents = this.groupAssocsToDelete.get(child);
                     if (parents == null)
@@ -775,7 +804,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 }
 
                 // Add the groups and their parent associations in depth-first order
-                final Set<String> groupsToCreate = groupAnalyzer.getGroupsToCreate();
+                final Map<String, String> groupsToCreate = groupAnalyzer.getGroupsToCreate();
                 BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
                         ChainingUserRegistrySynchronizer.logger, this.retryingTransactionHelper, this.ruleService,
                         this.applicationEventPublisher, sortedGroupAssociations.entrySet(), zone
@@ -793,7 +822,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         Set<String> parents = entry.getValue();
                         String child = entry.getKey();
 
-                        if (groupsToCreate.contains(child))
+                        String groupDisplayName = groupsToCreate.get(child);
+                        if (groupDisplayName != null)
                         {
                             String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
                                     .getShortName(child);
@@ -804,7 +834,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             }
                             // create the group
                             ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                                    .getAuthorityType(child), groupShortName, groupShortName, zoneSet);
+                                    .getAuthorityType(child), groupShortName, groupDisplayName, zoneSet);
                         }
                         if (!parents.isEmpty())
                         {
@@ -829,7 +859,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                 // Let's force a transaction retry if a parent doesn't exist. It may be because we are
                                 // waiting for another worker thread to create it
                                 throw new BatchUpdateException().initCause(e);
-                            }                            
+                            }
                         }
                         Set<String> parentsToDelete = groupAssocsToDelete.get(child);
                         if (parentsToDelete != null && !parentsToDelete.isEmpty())

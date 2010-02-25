@@ -29,8 +29,11 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractCollection;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
@@ -79,7 +82,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
 
     /** The logger. */
     private static Log logger = LogFactory.getLog(LDAPUserRegistry.class);
-    
+
     /** The regular expression that will match the attribute at the end of a range. */
     private static final Pattern PATTERN_RANGE_END = Pattern.compile(";range=[0-9]+-\\*");
 
@@ -128,14 +131,20 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     /** The ldap initial context factory. */
     private LDAPInitialDirContextFactory ldapInitialContextFactory;
 
-    /** The attribute mapping. */
-    private Map<String, String> attributeMapping;
-
     /** The namespace service. */
     private NamespaceService namespaceService;
 
-    /** The attribute defaults. */
-    private Map<String, String> attributeDefaults;
+    /** The person attribute mapping. */
+    private Map<String, String> personAttributeMapping;
+
+    /** The person attribute defaults. */
+    private Map<String, String> personAttributeDefaults = Collections.emptyMap();
+
+    /** The group attribute mapping. */
+    private Map<String, String> groupAttributeMapping;
+
+    /** The group attribute defaults. */
+    private Map<String, String> groupAttributeDefaults = Collections.emptyMap();
 
     /**
      * The query batch size. If positive, indicates that RFC 2696 paged results should be used to split query results
@@ -407,17 +416,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * Sets the attribute defaults.
-     * 
-     * @param attributeDefaults
-     *            the attribute defaults
-     */
-    public void setAttributeDefaults(Map<String, String> attributeDefaults)
-    {
-        this.attributeDefaults = attributeDefaults;
-    }
-
-    /**
      * Sets the namespace service.
      * 
      * @param namespaceService
@@ -429,14 +427,47 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * Sets the attribute mapping.
+     * Sets the person attribute defaults.
      * 
-     * @param attributeMapping
-     *            the attribute mapping
+     * @param personAttributeDefaults
+     *            the person attribute defaults
      */
-    public void setAttributeMapping(Map<String, String> attributeMapping)
+    public void setPersonAttributeDefaults(Map<String, String> personAttributeDefaults)
     {
-        this.attributeMapping = attributeMapping;
+        this.personAttributeDefaults = personAttributeDefaults;
+    }
+
+    /**
+     * Sets the person attribute mapping.
+     * 
+     * @param personAttributeMapping
+     *            the person attribute mapping
+     */
+    public void setPersonAttributeMapping(Map<String, String> personAttributeMapping)
+    {
+        this.personAttributeMapping = personAttributeMapping;
+    }
+
+    /**
+     * Sets the group attribute defaults.
+     * 
+     * @param groupAttributeDefaults
+     *            the group attribute defaults
+     */
+    public void setGroupAttributeDefaults(Map<String, String> groupAttributeDefaults)
+    {
+        this.groupAttributeDefaults = groupAttributeDefaults;
+    }
+
+    /**
+     * Sets the group attribute mapping.
+     * 
+     * @param groupAttributeMapping
+     *            the group attribute mapping
+     */
+    public void setGroupAttributeMapping(Map<String, String> groupAttributeMapping)
+    {
+        this.groupAttributeMapping = groupAttributeMapping;
     }
 
     /**
@@ -450,7 +481,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     {
         this.queryBatchSize = queryBatchSize;
     }
-    
+
     /**
      * Sets the attribute batch size.
      * 
@@ -478,27 +509,24 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      */
     public void afterPropertiesSet() throws Exception
     {
-        Set<String> userAttributeSet = new TreeSet<String>();
-        userAttributeSet.add(this.userIdAttributeName);
-        userAttributeSet.add(this.modifyTimestampAttributeName);
-        for (String attribute : this.attributeMapping.values())
+        if (this.personAttributeMapping == null)
         {
-            if (attribute != null)
-            {
-                userAttributeSet.add(attribute);
-            }
+            this.personAttributeMapping = new HashMap<String, String>(5);
         }
-        this.userAttributeNames = new String[userAttributeSet.size()];
-        userAttributeSet.toArray(this.userAttributeNames);
+        this.personAttributeMapping.put(ContentModel.PROP_USERNAME.toPrefixString(this.namespaceService),
+                this.userIdAttributeName);
+        this.userAttributeNames = getAttributeNames(this.personAttributeMapping);
 
         // Include a range restriction for the multi-valued member attribute if this is enabled
-        this.groupAttributeNames = new String[]
+        if (this.groupAttributeMapping == null)
         {
-            this.groupIdAttributeName,
-            this.modifyTimestampAttributeName,
-            this.attributeBatchSize > 0 ? this.memberAttributeName + ";range=0-" + (this.attributeBatchSize - 1)
-                    : this.memberAttributeName
-        };
+            this.groupAttributeMapping = new HashMap<String, String>(5);
+        }
+        this.groupAttributeMapping.put(ContentModel.PROP_AUTHORITY_NAME.toPrefixString(this.namespaceService),
+                this.groupIdAttributeName);
+        this.groupAttributeNames = getAttributeNames(this.groupAttributeMapping,
+                this.attributeBatchSize > 0 ? this.memberAttributeName + ";range=0-" + (this.attributeBatchSize - 1)
+                        : this.memberAttributeName);
     }
 
     /*
@@ -648,7 +676,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 NodeDescription group = lookup.get(gid);
                 if (group == null)
                 {
-                    group = new NodeDescription(result.getNameInNamespace());
+                    // Apply the mapped properties to the node description
+                    group = mapToNode(LDAPUserRegistry.this.groupAttributeMapping,
+                            LDAPUserRegistry.this.groupAttributeDefaults, result);
+
+                    // Make sure the "GROUP_" prefix is applied
                     group.getProperties().put(ContentModel.PROP_AUTHORITY_NAME, gid);
                     lookup.put(gid, group);
                 }
@@ -661,17 +693,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     LDAPUserRegistry.logger.warn("Duplicate gid found for " + gid + " -> merging definitions");
                 }
 
-                Attribute modifyTimestamp = attributes.get(LDAPUserRegistry.this.modifyTimestampAttributeName);
-                if (modifyTimestamp != null)
-                {
-                    group
-                            .setLastModified(LDAPUserRegistry.this.timestampFormat.parse(modifyTimestamp.get()
-                                    .toString()));
-                }
                 Set<String> childAssocs = group.getChildAssociations();
 
                 // Get the repeating (and possibly range restricted) member attribute
-                Attribute memAttribute = getRangeRestrictedAttribute(attributes, LDAPUserRegistry.this.memberAttributeName);
+                Attribute memAttribute = getRangeRestrictedAttribute(attributes,
+                        LDAPUserRegistry.this.memberAttributeName);
                 int nextStart = LDAPUserRegistry.this.attributeBatchSize;
 
                 // Loop until we get to the end of the range
@@ -722,11 +748,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 {
                                     try
                                     {
-                                        Attributes childAttributes = this.ctx.getAttributes(jndiName(attribute), new String[]
-                                        {
-                                            "objectclass", LDAPUserRegistry.this.groupIdAttributeName,
-                                            LDAPUserRegistry.this.userIdAttributeName
-                                        });
+                                        Attributes childAttributes = this.ctx.getAttributes(jndiName(attribute),
+                                                new String[]
+                                                {
+                                                    "objectclass", LDAPUserRegistry.this.groupIdAttributeName,
+                                                    LDAPUserRegistry.this.userIdAttributeName
+                                                });
                                         Attribute objectClass = childAttributes.get("objectclass");
                                         if (hasAttributeValue(objectClass, LDAPUserRegistry.this.personType))
                                         {
@@ -803,16 +830,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             }
                         }
                     }
-                    
+
                     // If we are using attribute matching and we haven't got to the end (indicated by an asterisk),
                     // fetch the next batch
-                    if (nextStart > 0 && !PATTERN_RANGE_END.matcher(memAttribute.getID().toLowerCase()).find())
+                    if (nextStart > 0
+                            && !LDAPUserRegistry.PATTERN_RANGE_END.matcher(memAttribute.getID().toLowerCase()).find())
                     {
-                        Attributes childAttributes = this.ctx.getAttributes(jndiName(result.getNameInNamespace()), new String[]
-                        {
-                            LDAPUserRegistry.this.memberAttributeName + ";range=" + nextStart + '-'
-                                    + (nextStart + LDAPUserRegistry.this.attributeBatchSize - 1)
-                        });
+                        Attributes childAttributes = this.ctx.getAttributes(jndiName(result.getNameInNamespace()),
+                                new String[]
+                                {
+                                    LDAPUserRegistry.this.memberAttributeName + ";range=" + nextStart + '-'
+                                            + (nextStart + LDAPUserRegistry.this.attributeBatchSize - 1)
+                                });
                         memAttribute = getRangeRestrictedAttribute(childAttributes,
                                 LDAPUserRegistry.this.memberAttributeName);
                         nextStart += LDAPUserRegistry.this.attributeBatchSize;
@@ -836,6 +865,127 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
 
         return lookup.values();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.ldap.LDAPNameResolver#resolveDistinguishedName(java.lang.String)
+     */
+    public String resolveDistinguishedName(String userId) throws AuthenticationException
+    {
+        SearchControls userSearchCtls = new SearchControls();
+        userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        userSearchCtls.setReturningAttributes(new String[] {});
+        InitialDirContext ctx = null;
+        try
+        {
+            ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext();
+
+            // Execute the user query with an additional condition that ensures only the user with the required ID is
+            // returned
+            NamingEnumeration<SearchResult> searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
+                    + "(" + this.userIdAttributeName + "=" + userId + "))", userSearchCtls);
+
+            if (searchResults.hasMore())
+            {
+                return searchResults.next().getNameInNamespace();
+            }
+            throw new AuthenticationException("Failed to resolve user: " + userId);
+        }
+        catch (NamingException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to resolve user ID: " + userId, e);
+        }
+        finally
+        {
+            if (ctx != null)
+            {
+                try
+                {
+                    ctx.close();
+                }
+                catch (NamingException e)
+                {
+                }
+            }
+        }
+    }
+
+    private String[] getAttributeNames(Map<String, String> attributeMapping, String... extraAttibutes)
+    {
+        Set<String> attributeSet = new TreeSet<String>();
+        attributeSet.addAll(Arrays.asList(extraAttibutes));
+        attributeSet.add(this.modifyTimestampAttributeName);
+        for (String attribute : attributeMapping.values())
+        {
+            if (attribute != null)
+            {
+                attributeSet.add(attribute);
+            }
+        }
+        String[] attributeNames = new String[attributeSet.size()];
+        attributeSet.toArray(attributeNames);
+        return attributeNames;
+    }
+
+    private NodeDescription mapToNode(Map<String, String> attributeMapping, Map<String, String> attributeDefaults,
+            SearchResult result) throws NamingException
+    {
+        NodeDescription nodeDescription = new NodeDescription(result.getNameInNamespace());
+        Attributes ldapAttributes = result.getAttributes();
+
+        // Parse the timestamp
+        Attribute modifyTimestamp = ldapAttributes.get(this.modifyTimestampAttributeName);
+        if (modifyTimestamp != null)
+        {
+            try
+            {
+                nodeDescription.setLastModified(this.timestampFormat.parse(modifyTimestamp.get().toString()));
+            }
+            catch (ParseException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to parse timestamp.", e);
+            }
+        }
+
+        // Apply the mapped attributes
+        PropertyMap properties = nodeDescription.getProperties();
+        for (String key : attributeMapping.keySet())
+        {
+            QName keyQName = QName.createQName(key, this.namespaceService);
+
+            // cater for null
+            String attributeName = attributeMapping.get(key);
+            if (attributeName != null)
+            {
+                Attribute attribute = ldapAttributes.get(attributeName);
+                if (attribute != null)
+                {
+                    String value = (String) attribute.get(0);
+                    if (value != null)
+                    {
+                        properties.put(keyQName, value);
+                    }
+                }
+                else
+                {
+                    String defaultValue = attributeDefaults.get(key);
+                    if (defaultValue != null)
+                    {
+                        properties.put(keyQName, defaultValue);
+                    }
+                }
+            }
+            else
+            {
+                String defaultValue = attributeDefaults.get(key);
+                if (defaultValue != null)
+                {
+                    properties.put(keyQName, defaultValue);
+                }
+            }
+        }
+        return nodeDescription;
     }
 
     /**
@@ -920,50 +1070,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.ldap.LDAPNameResolver#resolveDistinguishedName(java.lang.String)
-     */
-    public String resolveDistinguishedName(String userId) throws AuthenticationException
-    {
-        SearchControls userSearchCtls = new SearchControls();
-        userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        userSearchCtls.setReturningAttributes(new String[] {});
-        InitialDirContext ctx = null;
-        try
-        {
-            ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext();
-
-            // Execute the user query with an additional condition that ensures only the user with the required ID is
-            // returned
-            NamingEnumeration<SearchResult> searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
-                    + "(" + this.userIdAttributeName + "=" + userId + "))", userSearchCtls);
-
-            if (searchResults.hasMore())
-            {
-                return jndiName(searchResults.next().getNameInNamespace()).toString();
-            }
-            throw new AuthenticationException("Failed to resolve user: " + userId);
-        }
-        catch (NamingException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to resolve user ID: " + userId, e);
-        }
-        finally
-        {
-            if (ctx != null)
-            {
-                try
-                {
-                    ctx.close();
-                }
-                catch (NamingException e)
-                {
-                }
-            }
-        }
-    }
-
     /**
      * Does a case-insensitive search for the given value in an attribute.
      * 
@@ -994,7 +1100,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         return false;
     }
-    
+
     /**
      * Gets the values of a repeating attribute that may have range restriction options. If an attribute is range
      * restricted, it will appear in the attribute set with a ";range=i-j" option, where i and j indicate the start and
@@ -1016,7 +1122,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             return unrestricted;
         }
         NamingEnumeration<? extends Attribute> i = attributes.getAll();
-        String searchString = attributeName.toLowerCase() + ';'; 
+        String searchString = attributeName.toLowerCase() + ';';
         while (i.hasMore())
         {
             Attribute attribute = i.next();
@@ -1257,59 +1363,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             LDAPUserRegistry.logger.debug("Adding user for " + uid);
                         }
 
-                        NodeDescription person = new NodeDescription(result.getNameInNamespace());
-
-                        Attribute modifyTimestamp = attributes.get(LDAPUserRegistry.this.modifyTimestampAttributeName);
-                        if (modifyTimestamp != null)
-                        {
-                            try
-                            {
-                                person.setLastModified(LDAPUserRegistry.this.timestampFormat.parse(modifyTimestamp
-                                        .get().toString()));
-                            }
-                            catch (ParseException e)
-                            {
-                                throw new AlfrescoRuntimeException("Failed to import people.", e);
-                            }
-                        }
-
-                        PropertyMap properties = person.getProperties();
-                        for (String key : LDAPUserRegistry.this.attributeMapping.keySet())
-                        {
-                            QName keyQName = QName.createQName(key, LDAPUserRegistry.this.namespaceService);
-
-                            // cater for null
-                            String attributeName = LDAPUserRegistry.this.attributeMapping.get(key);
-                            if (attributeName != null)
-                            {
-                                Attribute attribute = attributes.get(attributeName);
-                                if (attribute != null)
-                                {
-                                    String value = (String) attribute.get(0);
-                                    if (value != null)
-                                    {
-                                        properties.put(keyQName, value);
-                                    }
-                                }
-                                else
-                                {
-                                    String defaultValue = LDAPUserRegistry.this.attributeDefaults.get(key);
-                                    if (defaultValue != null)
-                                    {
-                                        properties.put(keyQName, defaultValue);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                String defaultValue = LDAPUserRegistry.this.attributeDefaults.get(key);
-                                if (defaultValue != null)
-                                {
-                                    properties.put(keyQName, defaultValue);
-                                }
-                            }
-                        }
-                        return person;
+                        // Apply the mapped properties to the node description
+                        return mapToNode(LDAPUserRegistry.this.personAttributeMapping,
+                                LDAPUserRegistry.this.personAttributeDefaults, result);
                     }
 
                     // Examine the paged results control response for an indication that another page is available

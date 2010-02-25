@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -257,7 +257,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6")
         }, new NodeDescription[]
         {
-            newGroup("G1", "U1", "U6"), newGroup("G2", "U1"), newGroup("G5", "U6")
+            newGroup("G1", "U1", "U6"), newGroup("G2", "U1"), newGroupWithDisplayName("G5", "Amazing Group", "U6")
         }), new MockUserRegistry("Z2", new NodeDescription[]
         {
             newPerson("U1", "shouldbeignored@alfresco.com"), newPerson("U5", "u5email@alfresco.com"), newPerson("U6")
@@ -282,6 +282,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z1", "G3", "U2", "G4", "G5");
                 assertExists("Z1", "G4");
                 assertExists("Z1", "G5", "U6");
+                assertGroupDisplayNameEquals("G5", "Amazing Group");
                 assertExists("Z2", "U3");
                 assertExists("Z2", "U4");
                 assertExists("Z2", "U5");
@@ -330,7 +331,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6")
         }, new NodeDescription[]
         {
-            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U4", "U5")
+            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5")
         }));
         this.synchronizer.synchronize(true, true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
@@ -352,6 +353,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertNotExists("U4");
                 assertNotExists("U5");
                 assertExists("Z2", "G7");
+                assertGroupDisplayNameEquals("G7", "Late Arrival");
                 return null;
             }
         }, false, true);
@@ -409,10 +411,27 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private NodeDescription newGroup(String name, String... members)
     {
+        return newGroupWithDisplayName(name, name, members);
+    }
+
+    /**
+     * Constructs a description of a test group with a display name.
+     * 
+     * @param name
+     *            the name
+     * @param displayName
+     *            the display name
+     * @param members
+     *            the members
+     * @return the node description
+     */
+    private NodeDescription newGroupWithDisplayName(String name, String displayName, String... members)
+    {
         String longName = longName(name);
         NodeDescription group = new NodeDescription(longName);
         PropertyMap properties = group.getProperties();
         properties.put(ContentModel.PROP_AUTHORITY_NAME, longName);
+        properties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, displayName);
         if (members.length > 0)
         {
             Set<String> assocs = group.getChildAssociations();
@@ -424,7 +443,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         group.setLastModified(new Date());
         return group;
     }
-
+    
     /**
      * Constructs a description of a test person with default email (userName@alfresco.com)
      * 
@@ -527,6 +546,19 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     {
         NodeRef personRef = this.personService.getPerson(personName);
         assertEquals(email, this.nodeService.getProperty(personRef, ContentModel.PROP_EMAIL));
+    }
+
+    /**
+     * Asserts that a group's display name has the expected value.
+     * 
+     * @param personName
+     *            the person name
+     * @param email
+     *            the email
+     */
+    private void assertGroupDisplayNameEquals(String name, String displayName)
+    {
+        assertEquals(displayName, this.authorityService.getAuthorityDisplayName(longName(name)));
     }
 
     /**

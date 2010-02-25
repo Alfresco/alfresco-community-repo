@@ -290,7 +290,7 @@
         the repository, the value is the attribute name from the user/inetOrgPerson/.. object in the
         LDAP repository.     
         -->
-        <property name="attributeMapping">
+        <property name="personAttributeMapping">
             <map>
                 <entry key="cm:userName">
                     <!-- Must match the same attribute as userIdAttributeName -->
@@ -324,7 +324,7 @@
         </property>
         <!-- Set a default home folder provider -->
         <!-- Defaults only apply for values above -->
-        <property name="attributeDefaults">
+        <property name="personAttributeDefaults">
             <map>
                 <entry key="cm:homeFolderProvider">
                     <value>${ldap.synchronization.defaultHomeFolderProvider}</value>
@@ -332,6 +332,25 @@
             </map>
         </property>
     
+        <!--
+        This property defines a mapping between attributes held on LDAP group objects and
+        the properties of authorities held in the repository. The key is the QName of an attribute in
+        the repository, the value is the attribute name from the group object in the LDAP repository.     
+        -->
+        <property name="groupAttributeMapping">
+            <map>
+                <entry key="cm:authorityName">
+                    <!-- Must match the same attribute as groupIdAttributeName -->
+                    <value>${ldap.synchronization.groupIdAttributeName}</value>
+                </entry>
+                <entry key="cm:authorityDisplayName">
+                    <!-- OpenLDAP: "description" -->
+                    <!-- Active Directory: "displayName" -->
+                    <value>${ldap.synchronization.groupDisplayNameAttributeName}</value>
+                </entry>
+            </map>
+        </property>
+
         <property name="enableProgressEstimation">
             <value>${ldap.synchronization.enableProgressEstimation}</value>
         </property>

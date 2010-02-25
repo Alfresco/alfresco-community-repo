@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -1047,29 +1048,10 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
                 else if (dstAcl.getAclType().equals(ACLType.DEFINING))
                 {
-                    // compare ACEs
-                    NodeRef srcNodeRef = AVMNodeConverter.ToNodeRef(-1, srcDesc.getPath());
-                    Set<AccessPermission> srcSet = fPermissionService.getAllSetPermissions(srcNodeRef);
-                    
-                    NodeRef dstNodeRef = AVMNodeConverter.ToNodeRef(-1, dstDesc.getPath());
-                    Set<AccessPermission> dstSet = fPermissionService.getAllSetPermissions(dstNodeRef);
-                    
-                    if (srcSet.size() == dstSet.size())
+                    boolean same = compareACEs(srcDesc, dstDesc);
+                    if (same)
                     {
-                        boolean same = true;
-                        for (AccessPermission srcPerm : srcSet)
-                        {
-                            if (! dstSet.contains(srcPerm))
-                            {
-                                same = false;
-                                break;
-                            }
-                        }
-                        
-                        if (same) 
-                        { 
-                            return AVMDifference.SAME; 
-                        }
+                        return AVMDifference.SAME;
                     }
                 }
                 else
@@ -1082,32 +1064,11 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 if ((dstAcl == null) || dstAcl.getAclType().equals(ACLType.SHARED))
                 {
-                    // compare ACEs
-                    NodeRef srcNodeRef = AVMNodeConverter.ToNodeRef(-1, srcDesc.getPath());
-                    Set<AccessPermission> srcSet = fPermissionService.getAllSetPermissions(srcNodeRef);
-                    
-                    NodeRef dstNodeRef = AVMNodeConverter.ToNodeRef(-1, dstDesc.getPath());
-                    Set<AccessPermission> dstSet = fPermissionService.getAllSetPermissions(dstNodeRef);
-                    
-                    if (srcSet.size() == dstSet.size())
+                    boolean same = compareACEs(srcDesc, dstDesc);
+                    if (same)
                     {
-                        boolean same = true;
-                        for (AccessPermission srcPerm : srcSet)
-                        {
-                            if (! dstSet.contains(srcPerm))
-                            {
-                                same = false;
-                                break;
-                            }
-                        }
-                        
-                        if (same)
-                        {
-                            return AVMDifference.SAME;
-                        }
+                        return AVMDifference.SAME;
                     }
-                    
-                    return AVMDifference.CONFLICT;
                 }
                 else
                 {
@@ -1126,7 +1087,86 @@ public class AVMSyncServiceImpl implements AVMSyncService
         
         return AVMDifference.CONFLICT;
     }
-
+    
+    private boolean compareACEs(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
+    {
+        boolean same = false;
+        
+        NodeRef srcNodeRef = AVMNodeConverter.ToNodeRef(-1, srcDesc.getPath());
+        Set<AccessPermission> srcSet = fPermissionService.getAllSetPermissions(srcNodeRef);
+        
+        NodeRef dstNodeRef = AVMNodeConverter.ToNodeRef(-1, dstDesc.getPath());
+        Set<AccessPermission> dstSet = fPermissionService.getAllSetPermissions(dstNodeRef);
+        
+        if (srcSet.size() == dstSet.size())
+        {
+            for (AccessPermission srcPerm : srcSet)
+            {
+                for (AccessPermission dstPerm : dstSet)
+                {
+                    if (compareAccessPermission(srcPerm, dstPerm))
+                    {
+                        same = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return same;
+    }
+    
+    private boolean compareAccessPermission(AccessPermission srcPerm, AccessPermission dstPerm)
+    {
+        // TODO: currently ignores position (refer to updated AccessPermissionImpl.equals)
+        if (srcPerm == dstPerm)
+        {
+            return true;
+        }
+        if (srcPerm == null)
+        {
+            return false;
+        }
+        
+        if (srcPerm.getAccessStatus() == null)
+        {
+            if (dstPerm.getAccessStatus() != null)
+            {
+                return false;
+            }
+        }
+        else if (! srcPerm.getAccessStatus().equals(dstPerm.getAccessStatus()))
+        {
+            return false;
+        }
+        
+        if (srcPerm.getAuthority() == null)
+        {
+            if (dstPerm.getAuthority() != null)
+            {
+                return false;
+            }
+        }
+        else if (! srcPerm.getAuthority().equals(dstPerm.getAuthority()))
+        {
+            return false;
+        }
+        
+        if (srcPerm.getPermission() == null)
+        {
+            if (dstPerm.getPermission() != null)
+            {
+                return false;
+            }
+        }
+        else if (! srcPerm.getPermission().equals(dstPerm.getPermission()))
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
     /**
      * Flattens a layer so that all all nodes under and including
      * <code>layerPath</code> become translucent to any nodes in the

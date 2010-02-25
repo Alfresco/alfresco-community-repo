@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.transfer.PathHelper;
 import org.alfresco.service.cmr.repository.Path;
 
@@ -48,8 +47,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.ISO9075;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;

@@ -488,6 +488,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return testMode;
     }
 
+    public void setTestMode(boolean testMode)
+    {
+        this.testMode = testMode;
+    }
+
+    public boolean isTestMode()
+    {
+        return testMode;
+    }
+
     public static class URLHelper
     {
         String contextPath;

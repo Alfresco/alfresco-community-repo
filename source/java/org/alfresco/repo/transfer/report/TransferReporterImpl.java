@@ -47,8 +47,8 @@ import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyCheck;
 import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.surf.util.PropertyCheck;
 import org.xml.sax.SAXException;
 
 public class TransferReporterImpl implements TransferReporter

@@ -10,9 +10,9 @@ import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferTarget;
-import org.alfresco.util.ISO8601DateFormat;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 

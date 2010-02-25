@@ -44,9 +44,9 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO8601DateFormat;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 

@@ -46,8 +46,11 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class BaseAlfrescoTestCase extends TestCase
 {
-    /** the context to keep between tests */
-    public static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    /**
+     * This context will be fetched each time, but almost always
+     *  will have been cached by {@link ApplicationContextHelper}
+     */
+    protected ApplicationContext ctx;
 
     /** the service registry */
     protected ServiceRegistry serviceRegistry;
@@ -71,11 +74,22 @@ public abstract class BaseAlfrescoTestCase extends TestCase
     protected ActionService actionService;
     protected TransactionService transactionService;
     
+    /**
+     * By default will return the full context.
+     * Override this if your test needs a different one.
+     */
+    protected void setUpContext()
+    {
+       // Fetch the default, full context
+       ctx = ApplicationContextHelper.getApplicationContext();
+    }
     
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
+        setUpContext();
+
         // get the service register
         this.serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         //Get a reference to the node service

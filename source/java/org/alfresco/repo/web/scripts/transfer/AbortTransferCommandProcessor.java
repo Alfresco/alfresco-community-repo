@@ -79,7 +79,7 @@ public class AbortTransferCommandProcessor implements CommandProcessor
         {   
             logger.debug("abort transfer:" + transferId);
             
-            receiver.abort(transferId);
+            receiver.cancel(transferId);
 
             // return the unique transfer id (the lock id)
             StringWriter stringWriter = new StringWriter(300);

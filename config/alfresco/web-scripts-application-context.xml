@@ -677,6 +677,11 @@
                   <property name="receiver" ref="transferReceiver" />
                </bean>
             </entry>
+           <entry key="status">
+               <bean class="org.alfresco.repo.web.scripts.transfer.StatusCommandProcessor">
+                  <property name="receiver" ref="transferReceiver" />
+               </bean>
+            </entry>
 			</map>
 		</property>
 	</bean>

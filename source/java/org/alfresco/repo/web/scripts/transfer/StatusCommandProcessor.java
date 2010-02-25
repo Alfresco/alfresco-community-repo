@@ -30,6 +30,7 @@ import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,13 +47,13 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
  * @author brian
  * 
  */
-public class CommitTransferCommandProcessor implements CommandProcessor
+public class StatusCommandProcessor implements CommandProcessor
 {
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
-    
-    private static Log logger = LogFactory.getLog(CommitTransferCommandProcessor.class);
 
     private TransferReceiver receiver;
+
+    private final static Log logger = LogFactory.getLog(StatusCommandProcessor.class);
 
     /*
      * (non-Javadoc)
@@ -62,12 +63,11 @@ public class CommitTransferCommandProcessor implements CommandProcessor
      */
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {   
-
         //Read the transfer id from the request
         HttpServletRequest servletRequest = ((WebScriptServletRequest)req).getHttpServletRequest();
         String transferId = servletRequest.getParameter("transferId");
 
-        if ((transferId == null))
+        if (transferId == null) 
         {
             logger.debug("transferId is missing");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
@@ -75,47 +75,53 @@ public class CommitTransferCommandProcessor implements CommandProcessor
         }
         
         try
-        {   
-            receiver.commitAsync(transferId);
+        {
+            TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
 
             // return the unique transfer id (the lock id)
             StringWriter stringWriter = new StringWriter(300);
             JSONWriter jsonWriter = new JSONWriter(stringWriter);
             jsonWriter.startObject();
             jsonWriter.writeValue("transferId", transferId);
+            jsonWriter.writeValue("status", progress.getStatus().toString());
+            jsonWriter.writeValue("currentPosition", progress.getCurrentPosition());
+            jsonWriter.writeValue("endPosition", progress.getEndPosition());
+            if (progress.getError() != null)
+            {
+                //FIXME: bjr: write this
+            }
             jsonWriter.endObject();
             String response = stringWriter.toString();
-            
+
             resp.setContentType("application/json");
             resp.setContentEncoding("UTF-8");
             int length = response.getBytes("UTF-8").length;
             resp.addHeader("Content-Length", "" + length);
             resp.setStatus(Status.STATUS_OK);
             resp.getWriter().write(response);
-            
+
+            logger.debug("transfer started" + transferId);
+
             return Status.STATUS_OK;
-        } 
+
+        }
+        catch (TransferException ex)
+        {
+            throw ex;
+        }
         catch (Exception ex)
         {
-            if (logger.isDebugEnabled()) 
-            {
-                logger.debug("caught exception :" + ex.toString(), ex);
-            }
-            if (ex instanceof TransferException)
-            {
-                throw (TransferException) ex;
-            }
             throw new TransferException(MSG_CAUGHT_UNEXPECTED_EXCEPTION, ex);
         }
     }
 
     /**
-     * @param receiver the receiver to set
+     * @param receiver
+     *            the receiver to set
      */
     public void setReceiver(TransferReceiver receiver)
     {
         this.receiver = receiver;
     }
 
-    
 }

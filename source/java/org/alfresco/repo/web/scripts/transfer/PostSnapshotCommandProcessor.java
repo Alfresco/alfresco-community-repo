@@ -85,38 +85,33 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
         
         try 
         {
-          logger.debug("about to upload manifest file");
+            logger.debug("about to upload manifest file");
 
-          //  OLD implenementation            
-          //            ServletFileUpload upload = new ServletFileUpload();
-          //            FileItemIterator iter = upload.getItemIterator(servletRequest);
-          //            while (iter.hasNext()) 
-          //            {
-          //                FileItemStream item = iter.next();
-          //                if (!item.isFormField() && "manifest".equals(item.getFieldName())) 
-          //                {
-          //                    logger.debug("save snapshot content item");
-          //                    receiver.saveSnapshot(transferId, item.openStream());
-          //                    // receiver.saveContent(transferId, item.getName(), item.openStream());
-          //                }
-          //            }
-            
-            // Work Around impelemtation with an implementation that uses FormData
-            // This has the side effect that the content is written to disk and parsed twice.
-            // Needs reworking but requires changes to the WebScript framework
-            // MER - Brian and Kevin to discuss
-            WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
-            FormField field = alfRequest.getFileField(TransferCommons.PART_NAME_MANIFEST);
-          
-            if(field != null)
+            ServletFileUpload upload = new ServletFileUpload();
+            FileItemIterator iter = upload.getItemIterator(servletRequest);
+            while (iter.hasNext()) 
             {
-               logger.debug("got manifest file");
-               receiver.saveSnapshot(transferId, field.getInputStream());
+                FileItemStream item = iter.next();
+                if (!item.isFormField() && TransferCommons.PART_NAME_MANIFEST.equals(item.getFieldName())) 
+                {
+                    logger.debug("got manifest file");
+                    receiver.saveSnapshot(transferId, item.openStream());
+                }
             }
-            else
-            {
-               logger.debug("manifest is missing");    
-            }
+
+//   <formdata multipart-processing="false" /> so the following code does not work          
+//            WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
+//            FormField field = alfRequest.getFileField(TransferCommons.PART_NAME_MANIFEST);
+//          
+//            if(field != null)
+//            {
+//               logger.debug("got manifest file");
+//               receiver.saveSnapshot(transferId, field.getInputStream());
+//            }
+//            else
+//            {
+//               logger.debug("manifest is missing");    
+//            }
           
             logger.debug("success");
             resp.setStatus(Status.STATUS_OK);

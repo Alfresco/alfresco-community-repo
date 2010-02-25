@@ -26,7 +26,6 @@
 package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -109,7 +108,7 @@ public class TransferWebScript extends AbstractWebScript
                     {
                         log.debug("transfer exception caught", ex);
                         res.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
-                        String error = writeError(ex);
+                        String error = TransferProcessorUtil.writeError(ex);
                         
                         res.setContentType("application/json");
                         res.setContentEncoding("UTF-8");
@@ -129,48 +128,6 @@ public class TransferWebScript extends AbstractWebScript
                 log.warn("No processor found for requested command: " + command + ". Returning \"Not Found\"");
                 res.setStatus(Status.STATUS_NOT_FOUND);
             }
-        }
-    }
-
-    /**
-     * @param ex
-     * @return
-     */
-    private String writeError(TransferException ex) throws IOException
-    {
-        StringWriter stringWriter = new StringWriter(300);
-        JSONWriter jsonWriter = new JSONWriter(stringWriter);
-        jsonWriter.startObject();
-        jsonWriter.writeValue("errorId", ex.getMsgId());
-        jsonWriter.startValue("errorParams");
-        jsonWriter.startArray();
-        writeErrorParams(stringWriter, ex.getMsgParams());
-        jsonWriter.endArray();
-        jsonWriter.endObject();
-        return stringWriter.toString();
-    }
-
-    /**
-     * @param stringWriter
-     * @param msgParams
-     */
-    private void writeErrorParams(StringWriter writer, Object[] msgParams)
-    {
-        if (msgParams == null) return;
-        
-        boolean first = true;
-        for (Object param : msgParams) {
-            if (!first) {
-                writer.write(",");
-            }
-            if (param != null) {
-                writer.write("\"");
-                writer.write(JSONWriter.encodeJSONString(param.toString()));
-                writer.write("\"");
-            } else {
-                writer.write("null");
-            }
-            first = false;
         }
     }
 

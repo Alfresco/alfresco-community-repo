@@ -91,36 +91,37 @@ public class PostContentCommandProcessor implements CommandProcessor
 
         try
         {
-            //TODO - See comments on PostSnapshotCommandProcessor RE WebScript framework
-            // ServletFileUpload upload = new ServletFileUpload();
-            //            FileItemIterator iter = upload.getItemIterator(servletRequest);
-            //            while (iter.hasNext())
-            //            {
-            //                FileItemStream item = iter.next();
-            //                if (!item.isFormField() && "content".equals(item.getFieldName()))
-            //                {
-            //                    receiver.saveContent(transferId, item.getName(), item.openStream());
-            //                }
-            //            }
-            //            
-            
-            WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
-            String[] names = alfRequest.getParameterNames();
-            for(String name : names)
+           
+            ServletFileUpload upload = new ServletFileUpload();
+            FileItemIterator iter = upload.getItemIterator(servletRequest);
+            while (iter.hasNext())
             {
-                FormField item = alfRequest.getFileField(name);
-                
-                if(item != null)
+                FileItemStream item = iter.next();
+                String name = item.getFieldName();
+                if (!item.isFormField())
                 {
                     logger.debug("got content Mime Part : " + name);
-                    receiver.saveContent(transferId, item.getName(), item.getInputStream());
+                    receiver.saveContent(transferId, item.getName(), item.openStream());
                 }
-                else
-                {
-                    //TODO - should this be an exception?
-                    logger.debug("Unable to get content for Mime Part : " + name);
-                }
-            }
+            }            
+            
+//            WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
+//            String[] names = alfRequest.getParameterNames();
+//            for(String name : names)
+//            {
+//                FormField item = alfRequest.getFileField(name);
+//                
+//                if(item != null)
+//                {
+//                    logger.debug("got content Mime Part : " + name);
+//                    receiver.saveContent(transferId, item.getName(), item.getInputStream());
+//                }
+//                else
+//                {
+//                    //TODO - should this be an exception?
+//                    logger.debug("Unable to get content for Mime Part : " + name);
+//                }
+//            }
             
             logger.debug("success");
             

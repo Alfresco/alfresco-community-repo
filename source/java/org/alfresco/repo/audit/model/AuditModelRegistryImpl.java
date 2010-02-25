@@ -83,10 +83,8 @@ import org.xml.sax.SAXParseException;
  */
 public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implements AuditModelRegistry
 {
-    
     /** The name of the global enablement property. */
     private static final String PROPERTY_AUDIT_ENABLED = "audit.enabled";
-    
     private static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
     
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
@@ -99,7 +97,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     private final ObjectFactory objectFactory;
     
     /**
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#afterPropertiesSet()
+     * {@inheritDoc}
      */
     @Override
     public void afterPropertiesSet() throws Exception
@@ -113,7 +111,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getState(boolean)
+     * {@inheritDoc}
      */
     @Override
     protected synchronized AuditModelRegistryState getState(boolean start)
@@ -122,7 +120,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByKey(java.lang.String)
+     * {@inheritDoc}
      */
     public AuditApplication getAuditApplicationByKey(String key)
     {
@@ -130,7 +128,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByName(java.lang.String)
+     * {@inheritDoc}
      */
     public AuditApplication getAuditApplicationByName(String applicationName)
     {
@@ -138,7 +136,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditPathMapper()
+     * {@inheritDoc}
      */
     public PathMapper getAuditPathMapper()
     {
@@ -146,7 +144,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * @see org.alfresco.repo.audit.model.AuditModelRegistry#loadAuditModels()
+     * {@inheritDoc}
      */
     public void loadAuditModels()
     {
@@ -173,7 +171,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
      */
     public class AuditModelRegistryState implements PropertyBackedBeanState
     {        
-        
         /** The audit models. */
         private final Map<URL, Audit> auditModels;
         
@@ -346,8 +343,10 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
                 {
                     public Void doWork() throws Exception
                     {
-                        transactionService.getRetryingTransactionHelper().doInTransaction(loadModelsCallback,
-                                transactionService.isReadOnly(), true);
+                        transactionService.getRetryingTransactionHelper().doInTransaction(
+                                loadModelsCallback,
+                                transactionService.isReadOnly(),
+                                true);
                         return null;
                     }
                 }, AuthenticationUtil.getSystemUserName());
@@ -356,8 +355,8 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             auditPathMapper.lock();
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#stop()
+        /**
+         * {@inheritDoc}
          */
         public void stop()
         {
@@ -605,7 +604,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
 
     /**
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
+     * {@inheritDoc}
      */
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
@@ -624,9 +623,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     
     /**
      * Sets the search path for config files.
-     * 
-     * @param searchPath
-     *            the search path
      */
     public void setSearchPath(String[] searchPath)
     {
@@ -635,9 +631,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
     /**
      * Service to ensure DAO calls are transactionally wrapped.
-     * 
-     * @param transactionService
-     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -646,9 +639,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
     /**
      * Set the DAO used to persisted the registered audit models.
-     * 
-     * @param auditDAO
-     *            the audit dao
      */
     public void setAuditDAO(AuditDAO auditDAO)
     {
@@ -657,9 +647,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
     /**
      * Set the registry of {@link DataExtractor data extractors}.
-     * 
-     * @param dataExtractors
-     *            the data extractors
      */
     public void setDataExtractors(NamedObjectRegistry<DataExtractor> dataExtractors)
     {
@@ -668,9 +655,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
     /**
      * Set the registry of {@link DataGenerator data generators}.
-     * 
-     * @param dataGenerators
-     *            the data generators
      */
     public void setDataGenerators(NamedObjectRegistry<DataGenerator> dataGenerators)
     {
@@ -680,11 +664,9 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * Unmarshalls the Audit model from the URL.
      * 
-     * @param configUrl
-     *            the config url
-     * @return the audit model
-     * @throws AlfrescoRuntimeException
-     *             if an IOException occurs
+     * @param configUrl                     the config url
+     * @return                              the audit model
+     * @throws AlfrescoRuntimeException     if an IOException occurs
      */
     public static Audit unmarshallModel(URL configUrl)
     {
@@ -702,12 +684,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
 
     /**
      * Unmarshalls the Audit model from a stream.
-     * 
-     * @param is
-     *            the is
-     * @param source
-     *            the source
-     * @return the audit model
      */
     private static Audit unmarshallModel(InputStream is, final String source)
     {

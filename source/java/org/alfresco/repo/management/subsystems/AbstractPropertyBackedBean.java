@@ -53,7 +53,7 @@ import org.springframework.util.PropertyPlaceholderHelper;
  * @author dward
  */
 public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, ApplicationContextAware,
-        ApplicationListener, InitializingBean, DisposableBean, BeanNameAware
+        ApplicationListener<ApplicationEvent>, InitializingBean, DisposableBean, BeanNameAware
 {
 
     /** The default final part of an ID. */
@@ -215,9 +215,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.state;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+    /**
+     * {@inheritDoc}
      */
     public void afterPropertiesSet() throws Exception
     {
@@ -250,9 +249,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#revert()
+    /**
+     * {@inheritDoc}
      */
     public synchronized void revert()
     {
@@ -290,9 +288,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getId()
+    /**
+     * {@inheritDoc}
      */
     public List<String> getId()
     {
@@ -319,9 +316,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.instancePath;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.DisposableBean#destroy()
+    /**
+     * {@inheritDoc}
      */
     public void destroy()
     {
@@ -346,28 +342,24 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#isUpdateable(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public boolean isUpdateable(String name)
     {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getDescription(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public String getDescription(String name)
     {
         return isUpdateable(name) ? "Editable Property " + name : "Read-only Property " + name;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+    /**
+     * {@inheritDoc}
      */
     public void onApplicationEvent(ApplicationEvent event)
     {
@@ -395,9 +387,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#getProperty(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public synchronized String getProperty(String name)
     {
@@ -405,9 +396,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.state.getProperty(name);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#getPropertyNames()
+    /**
+     * {@inheritDoc}
      */
     public synchronized Set<String> getPropertyNames()
     {
@@ -415,10 +405,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.state.getPropertyNames();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#setProperty(java.lang.String,
-     * java.lang.String)
+    /**
+     * {@inheritDoc}
      */
     public synchronized void setProperty(String name, String value)
     {
@@ -426,9 +414,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         this.state.setProperty(name, value);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#start()
+    /**
+     * {@inheritDoc}
      */
     public synchronized void start()
     {
@@ -455,9 +442,8 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.PropertyBackedBeanState#stop()
+    /**
+     * {@inheritDoc}
      */
     public void stop()
     {

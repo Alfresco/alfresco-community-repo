@@ -200,13 +200,13 @@ public class TransferManifestTest extends TestCase
         List<AssociationRef> targetAssocs = new ArrayList<AssociationRef>();
         List<AssociationRef> sourceAssocs = new ArrayList<AssociationRef>();
         
-        targetAssocs.add(new AssociationRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "SA"),
+        targetAssocs.add(new AssociationRef(null, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "SA"),
                     QName.createQName("{gsxhjsx}", "app:super"),
                     new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "TA")));
         
 
         
-        sourceAssocs.add(new AssociationRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "HH"),
+        sourceAssocs.add(new AssociationRef(null, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "HH"),
                     QName.createQName("{gsxhjsx}", "app:super"),
                     new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "JJ")));
         

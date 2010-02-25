@@ -441,9 +441,9 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 NodeRef target =  (NodeRef)props.get("target");
                 QName type =  (QName) props.get("type");
                 List<AssociationRef> assocs = (List<AssociationRef>)props.get("assocs"); 
-                AssociationRef assoc = new AssociationRef(source, type, target);
+                AssociationRef assoc = new AssociationRef(null, source, type, target);
                 assocs.add(assoc);
-                props.put("assoc", new AssociationRef(source, type, target));
+                props.put("assoc", new AssociationRef(null, source, type, target));
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PATH))
             {

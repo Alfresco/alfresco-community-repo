@@ -653,7 +653,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         aspects.add(ContentModel.ASPECT_ATTACHABLE);
 
-        AssociationRef newAssoc = new AssociationRef(source.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS, target
+        AssociationRef newAssoc = new AssociationRef(null, source.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS, target
                 .getNodeRef());
         currentRefereePeers.add(newAssoc);
         currentReferencedPeers.add(newAssoc);

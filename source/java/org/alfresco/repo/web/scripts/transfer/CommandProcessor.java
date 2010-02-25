@@ -25,8 +25,9 @@
 
 package org.alfresco.repo.web.scripts.transfer;
 
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 
 /**
  * @author brian

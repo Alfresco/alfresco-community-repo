@@ -30,16 +30,16 @@ import javax.servlet.http.HttpServletRequest;
 import org.alfresco.repo.transfer.TransferCommons;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
-import org.alfresco.web.scripts.servlet.WebScriptServletRequest;
-import org.alfresco.web.scripts.servlet.FormData.FormField;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.extensions.webscripts.servlet.FormData.FormField;
 
 /**
  * This command processor is used to receive the snapshot for a given transfer.

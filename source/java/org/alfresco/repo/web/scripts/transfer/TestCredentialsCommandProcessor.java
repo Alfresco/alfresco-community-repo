@@ -25,9 +25,10 @@
 
 package org.alfresco.repo.web.scripts.transfer;
 
-import org.alfresco.web.scripts.Status;
-import org.alfresco.web.scripts.WebScriptRequest;
-import org.alfresco.web.scripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 
 /**
  * This command processor is used simply to check that the transfer receiver is enabled and that the supplied

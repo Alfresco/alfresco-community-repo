@@ -32,10 +32,11 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 
 /**
  * Test the transfer web script API
@@ -46,7 +47,7 @@ public class TransferWebScriptTest extends BaseWebScriptTest
 {    
     private static final String USERNAME = "noddy.transfer";
 
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private List<String> createdPeople = new ArrayList<String>(5);
@@ -57,7 +58,7 @@ public class TransferWebScriptTest extends BaseWebScriptTest
         super.setUp();       
  
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-        this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         

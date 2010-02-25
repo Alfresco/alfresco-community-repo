@@ -234,7 +234,7 @@ public class TransientNode extends Node
                         // create a association reference, add it to a list and add the list
                         // to the list of associations for this node
                         List<AssociationRef> assocs = new ArrayList<AssociationRef>(1);
-                        AssociationRef assocRef = new AssociationRef(this.nodeRef, assocDef.getName(), target);
+                        AssociationRef assocRef = new AssociationRef(null, this.nodeRef, assocDef.getName(), target);
                         assocs.add(assocRef);
                         
                         this.associations.put(item, assocs);
@@ -250,7 +250,7 @@ public class TransientNode extends Node
                            if (target instanceof NodeRef)
                            {
                               NodeRef currentTarget = (NodeRef)target;
-                              AssociationRef assocRef = new AssociationRef(this.nodeRef, assocDef.getName(), currentTarget);
+                              AssociationRef assocRef = new AssociationRef(null, this.nodeRef, assocDef.getName(), currentTarget);
                               assocs.add(assocRef);
                            }
                         }

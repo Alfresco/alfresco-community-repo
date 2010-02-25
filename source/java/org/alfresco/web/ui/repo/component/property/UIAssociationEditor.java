@@ -235,7 +235,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
       if (node != null && targetRef != null)
       {
          QName assocQName = Repository.resolveToQName(this.associationName);
-         AssociationRef newAssoc = new AssociationRef(node.getNodeRef(), assocQName, new NodeRef(targetRef));
+         AssociationRef newAssoc = new AssociationRef(null, node.getNodeRef(), assocQName, new NodeRef(targetRef));
          
          // update the node so it knows to remove the association, but only if the association
          // was one of the original ones
@@ -279,7 +279,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
             if (this.originalAssocs.containsKey(targetRef) == false)
             {
                QName assocQName = Repository.resolveToQName(this.associationName);
-               AssociationRef newAssoc = new AssociationRef(node.getNodeRef(), assocQName, 
+               AssociationRef newAssoc = new AssociationRef(null, node.getNodeRef(), assocQName, 
                      new NodeRef(targetRef));
             
                Map<String, AssociationRef> added = node.getAddedAssociations().get(this.associationName);

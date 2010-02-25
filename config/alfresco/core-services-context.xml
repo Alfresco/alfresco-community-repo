@@ -409,16 +409,16 @@
             <ref bean="tenantService"/>
         </property>
         <property name="searchService">
-            <ref bean="searchService"/>
+            <ref bean="SearchService"/>
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService"/>
         </property>
         <property name="nodeService">
-            <ref bean="nodeService" />
+            <ref bean="NodeService" />
         </property>
         <property name="contentService">
-            <ref bean="contentService"/>
+            <ref bean="ContentService"/>
         </property>
         <property name="resourceBundleBaseNamesCache">
             <ref bean="resourceBundleBaseNamesCache"/>

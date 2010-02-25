@@ -47,23 +47,23 @@ public class RuleDelete extends AbstractRuleWebScript
 {
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RuleDelete.class);
-        
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         NodeRef nodeRef = parseRequestForNodeRef(req);
-        
+
         // get request parameters
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String ruleId = templateVars.get("rule_id");
-        
+
         Rule ruleToDelete = null;
-        
+
         // get all rules for given nodeRef
-        List<Rule> rules = ruleService.getRules(nodeRef);
-        
+        List<Rule> rules = ruleService.getRules(nodeRef, false);
+
         // filter by rule id
         for (Rule rule : rules)
         {
@@ -73,16 +73,15 @@ public class RuleDelete extends AbstractRuleWebScript
                 break;
             }
         }
-        
+
         if (ruleToDelete == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find rule with id: " + 
-                    ruleId);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find rule with id: " + ruleId);
         }
-        
+
         // delete rule
         ruleService.removeRule(nodeRef, ruleToDelete);
-        
+
         return model;
     }
 }

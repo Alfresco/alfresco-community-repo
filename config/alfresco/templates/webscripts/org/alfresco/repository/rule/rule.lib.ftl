@@ -40,7 +40,7 @@
 				<@parameterValuesJSON parameterValues=actionCondition.parameterValues />					
 				},
 				</#if>
-				"url" : "${"/api/node/" + storeType + "/" + storeId + "/" + id + "/ruleset/rules/" + rule.nodeRef.id + "/action/conditions/" + actionCondition.id}"
+				"url" : "${"/api/node/" + ruleRef.owningFileInfo.nodeRef.storeRef.protocol + "/" + ruleRef.owningFileInfo.nodeRef.storeRef.identifier + "/" + ruleRef.owningFileInfo.nodeRef.id + "/ruleset/rules/" + ruleRef.rule.nodeRef.id + "/action/conditions/" + actionCondition.id}"
 			}<#if (actionCondition_has_next)>,</#if>
 		</#list>
 		],
@@ -48,42 +48,68 @@
 		<#if action.compensatingAction??>
 		"compensatingAction" : <@actionJSON action=action.compensatingAction />,
 		</#if>
-		"url" : "${"/api/node/" + storeType + "/" + storeId + "/" + id + "/ruleset/rules/" + rule.nodeRef.id + "/action/actions/" + action.id}"
+		"url" : "${"/api/node/" + ruleRef.owningFileInfo.nodeRef.storeRef.protocol + "/" + ruleRef.owningFileInfo.nodeRef.storeRef.identifier + "/" + ruleRef.owningFileInfo.nodeRef.id + "/ruleset/rules/" + ruleRef.rule.nodeRef.id + "/action/actions/" + action.id}"
 	}
 </#escape>
 </#macro>
 
 <#-- renders a complete rule object -->
-<#macro ruleJSON rule>
+<#macro ruleRefJSON ruleRef>
 <#escape x as jsonUtils.encodeJSONString(x)>
 	{
-		"id" : "${rule.nodeRef.id}",
-	    "title" : "${rule.title}",
-	    <#if rule.description??>
-	    "description" : "${rule.description}",
+		"id" : "${ruleRef.rule.nodeRef.id}",
+	    "title" : "${ruleRef.rule.title}",
+	    <#if ruleRef.rule.description??>
+	    "description" : "${ruleRef.rule.description}",
 	    </#if>
-	    "ruleType" : [<#list rule.ruleTypes as ruleType>"${ruleType}"<#if (ruleType_has_next)>, </#if></#list>],
-	    "applyToChildren" : ${rule.appliedToChildren?string},
-	    "executeAsynchronously" : ${rule.executeAsynchronously?string},
-	    "disabled" : ${rule.ruleDisabled?string},
-	    "action" : <@actionJSON action=rule.action />,    
-	    "url" : "${"/api/node/" + storeType + "/" + storeId + "/" + id + "/ruleset/rules/" + rule.nodeRef.id}"
+	    "ruleType" : [<#list ruleRef.rule.ruleTypes as ruleType>"${ruleType}"<#if (ruleType_has_next)>, </#if></#list>],
+	    "applyToChildren" : ${ruleRef.rule.appliedToChildren?string},
+	    "executeAsynchronously" : ${ruleRef.rule.executeAsynchronously?string},
+	    "disabled" : ${ruleRef.rule.ruleDisabled?string},
+	    "action" : <@actionJSON action=ruleRef.rule.action />,   
+	    "owningNode" :
+	    {
+	    	"nodeRef" : "${ruleRef.owningFileInfo.nodeRef}",
+	    	"name" : "${ruleRef.owningFileInfo.name}"
+	    },
+	    "url" : "${"/api/node/" + ruleRef.owningFileInfo.nodeRef.storeRef.protocol + "/" + ruleRef.owningFileInfo.nodeRef.storeRef.identifier + "/" + ruleRef.owningFileInfo.nodeRef.id + "/ruleset/rules/" + ruleRef.rule.nodeRef.id}"
 	}
 </#escape>
 </#macro>
 
-<#-- renders a summary rule object -->
-<#macro rulesummaryJSON rule>
+<#-- renders a summary rule object with owning nodeRef -->
+<#macro ruleRefOwningSummaryJSON ruleRef>
 <#escape x as jsonUtils.encodeJSONString(x)>
 	{
-		"id" : "${rule.nodeRef.id}",
-	    "title" : "${rule.title}",
-	    <#if rule.description??>
-	    "description" : "${rule.description}",
+		"id" : "${ruleRef.rule.nodeRef.id}",
+	    "title" : "${ruleRef.rule.title}",
+	    <#if ruleRef.rule.description??>
+	    "description" : "${ruleRef.rule.description}",
 	    </#if>
-	    "ruleType" : [<#list rule.ruleTypes as ruleType>"${ruleType}"<#if (ruleType_has_next)>, </#if></#list>],    
-	    "disabled" : ${rule.ruleDisabled?string},    
-	    "url" : "${"/api/node/" + storeType + "/" + storeId + "/" + id + "/ruleset/rules/" + rule.nodeRef.id}"
+	    "ruleType" : [<#list ruleRef.rule.ruleTypes as ruleType>"${ruleType}"<#if (ruleType_has_next)>, </#if></#list>],    
+	    "disabled" : ${ruleRef.rule.ruleDisabled?string},
+	    "owningNode" :
+	    {
+	    	"nodeRef" : "${ruleRef.owningFileInfo.nodeRef}",
+	    	"name" : "${ruleRef.owningFileInfo.name}"
+	    },    
+	    "url" : "${"/api/node/" + ruleRef.owningFileInfo.nodeRef.storeRef.protocol + "/" + ruleRef.owningFileInfo.nodeRef.storeRef.identifier + "/" + ruleRef.owningFileInfo.nodeRef.id + "/ruleset/rules/" + ruleRef.rule.nodeRef.id}"
+	}
+</#escape>
+</#macro>
+
+<#-- renders a summary rule object without owning nodeRef -->
+<#macro ruleRefSummaryJSON ruleRef>
+<#escape x as jsonUtils.encodeJSONString(x)>
+	{
+		"id" : "${ruleRef.rule.nodeRef.id}",
+	    "title" : "${ruleRef.rule.title}",
+	    <#if ruleRef.rule.description??>
+	    "description" : "${ruleRef.rule.description}",
+	    </#if>
+	    "ruleType" : [<#list ruleRef.rule.ruleTypes as ruleType>"${ruleType}"<#if (ruleType_has_next)>, </#if></#list>],    
+	    "disabled" : ${ruleRef.rule.ruleDisabled?string},
+	    "url" : "${"/api/node/" + ruleRef.owningFileInfo.nodeRef.storeRef.protocol + "/" + ruleRef.owningFileInfo.nodeRef.storeRef.identifier + "/" + ruleRef.owningFileInfo.nodeRef.id + "/ruleset/rules/" + ruleRef.rule.nodeRef.id}"
 	}
 </#escape>
 </#macro>
@@ -97,8 +123,14 @@
 		${val?string}
 		<#elseif val?is_date == true>
 		"${val?string("EEE MMM dd HH:mm:ss zzz yyyy")}"		
+		<#elseif val?is_sequence>
+		[
+			<#list val as element>
+			"${jsonUtils.encodeJSONString(element?string)}"<#if (element_has_next)>,</#if>
+			</#list>
+		]		
 		<#else>
-		"${jsonUtils.encodeJSONString(val?string)}"
+		"${jsonUtils.encodeJSONString(shortQName(val?string))}"
 		</#if>
 		<#if (parameterValue_has_next)>,</#if>				
 	</#list>	

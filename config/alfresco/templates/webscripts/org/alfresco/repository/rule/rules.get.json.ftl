@@ -2,9 +2,9 @@
 {
 	"data" : 
 	[
-	<#list rules as rule>
-		<@ruleLib.rulesummaryJSON rule=rule />
-		<#if rule_has_next>,</#if> 
+	<#list ruleRefs as ruleRef>
+		<@ruleLib.ruleRefOwningSummaryJSON ruleRef=ruleRef />
+		<#if ruleRef_has_next>,</#if> 
 	</#list>
 	]
 }

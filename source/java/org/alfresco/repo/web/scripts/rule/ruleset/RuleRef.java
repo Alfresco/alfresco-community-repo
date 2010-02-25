@@ -24,10 +24,8 @@
  */
 package org.alfresco.repo.web.scripts.rule.ruleset;
 
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.rule.Rule;
-
-
 
 /**
  * Rule object for REST API
@@ -40,17 +38,17 @@ public class RuleRef
 
     /** Serial version UID */
     private static final long serialVersionUID = -923276130307938661L;
-    
-    private NodeRef owningNodeRef;
-    
+
+    private FileInfo owningFileInfo;
+
     private Rule rule;
-    
-    public RuleRef(Rule rule, NodeRef owningNodeRef)
+
+    public RuleRef(Rule rule, FileInfo owningFileInfo)
     {
         this.rule = rule;
-        this.owningNodeRef = owningNodeRef;
+        this.owningFileInfo = owningFileInfo;
     }
-    
+
     /**
      * Set the rule
      * 
@@ -60,7 +58,7 @@ public class RuleRef
     {
         this.rule = rule;
     }
-    
+
     /**
      * Return the rule
      * 
@@ -70,24 +68,24 @@ public class RuleRef
     {
         return rule;
     }
-    
+
     /**
-     * Set the owning node reference for rule
+     * Set the owning file info reference for rule
      * 
-     * @param owningNodeRef the owning node reference to set
+     * @param owningNodeRef the owning file info reference to set
      */
-    public void setOwningNodeRef(NodeRef owningNodeRef)
+    public void setOwningFileInfo(FileInfo owningFileInfo)
     {
-        this.owningNodeRef = owningNodeRef;
+        this.owningFileInfo = owningFileInfo;
     }
-    
+
     /**
-     * Returns the owning node reference for a rule.
+     * Returns the owning file info reference for a rule.
      * 
-     * @return the owning node reference
+     * @return the owning file info reference
      */
-    public NodeRef getOwningNodeRef()
+    public FileInfo getOwningFileInfo()
     {
-        return owningNodeRef;
+        return owningFileInfo;
     }
 }

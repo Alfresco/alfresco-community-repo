@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -69,19 +70,20 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public abstract class AbstractRuleWebScript extends DeclarativeWebScript
 {
-    
+
     public static final SimpleDateFormat dateFormate = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-    
+
     protected NodeService nodeService;
     protected RuleService ruleService;
     protected DictionaryService dictionaryService;
     protected ActionService actionService;
+    protected FileFolderService fileFolderService;
     protected NamespaceService namespaceService;
-    
+
     private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    
-    private static Map<String, QName> propertyTypes = null;
-    
+
+    private static Map<String, Map<String, QName>> propertyTypes = null;
+
     /**
      * Sets the node service instance
      * 
@@ -91,7 +93,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set rule service instance 
      * 
@@ -101,7 +103,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     {
         this.ruleService = ruleService;
     }
-    
+
     /**
      * Set dictionary service instance
      * 
@@ -111,7 +113,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set action service instance
      * 
@@ -121,7 +123,17 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     {
         this.actionService = actionService;
     }
-    
+
+    /**
+     * Set file folder service instance
+     * 
+     * @param fileFolderService the fileFolderService to set
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
     /**
      * Set namespace service instance
      * 
@@ -131,7 +143,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Parses the request and providing it's valid returns the NodeRef.
      * 
@@ -147,138 +159,210 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         String storeType = templateVars.get("store_type");
         String storeId = templateVars.get("store_id");
         String nodeId = templateVars.get("id");
-        
+
         // create the NodeRef and ensure it is valid
         StoreRef storeRef = new StoreRef(storeType, storeId);
         NodeRef nodeRef = new NodeRef(storeRef, nodeId);
-        
+
         if (!this.nodeService.exists(nodeRef))
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: " + 
-                        nodeRef.toString());
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: " + nodeRef.toString());
         }
-        
+
         return nodeRef;
     }
-    
-    protected QName getPropertyType(String propertyName)
+
+    protected QName getPropertyType(String name, boolean isAction, String propertyName)
     {
+        QName result = null;
+
         if (propertyTypes == null)
-        {            
-            // no parameter types was cached
-            propertyTypes = new HashMap<String, QName>();
-            
+        {
+            propertyTypes = new HashMap<String, Map<String, QName>>();
+
             // get parameters for all action definitions
             List<ActionDefinition> actionDefinitions = actionService.getActionDefinitions();
+
             for (ActionDefinition actionDefinition : actionDefinitions)
             {
-                List<ParameterDefinition> parameterDefinitions = actionDefinition.getParameterDefinitions();  
-                
-                for (ParameterDefinition parameterDefinition : parameterDefinitions)
-                {
-                    try
-                    {
-                        // cache parameter
-                        lock.writeLock().lock();
-                        propertyTypes.put(parameterDefinition.getName(), parameterDefinition.getType());
-                    }
-                    finally
-                    {
-                        lock.writeLock().unlock();
-                    }
-                }
-            }
-            
-            // get parameters for all action condition definitions
-            List<ActionConditionDefinition> actionConditionDefinitions = actionService.getActionConditionDefinitions();
-            for (ActionConditionDefinition actionConditionDefinition : actionConditionDefinitions)
-            {
-                List<ParameterDefinition> parameterDefinitions = actionConditionDefinition.getParameterDefinitions();
-                
+                List<ParameterDefinition> parameterDefinitions = actionDefinition.getParameterDefinitions();
+                Map<String, QName> parameters = new HashMap<String, QName>();
 
                 for (ParameterDefinition parameterDefinition : parameterDefinitions)
                 {
-                    try
-                    {
-                        // cache parameter
-                        lock.writeLock().lock();
-                        propertyTypes.put(parameterDefinition.getName(), parameterDefinition.getType());
-                    }
-                    finally
-                    {
-                        lock.writeLock().unlock();
-                    }
+                    String parameterName = parameterDefinition.getName();
+                    QName parameterType = parameterDefinition.getType();
+                    parameters.put(parameterName, parameterType);
+                }
+
+                try
+                {
+                    // cache parameter
+                    lock.writeLock().lock();
+                    propertyTypes.put(actionDefinition.getName(), parameters);
+                }
+                finally
+                {
+                    lock.writeLock().unlock();
+                }
+            }
+
+            // get parameters for all action condition definitions
+            List<ActionConditionDefinition> actionConditionDefinitions = actionService.getActionConditionDefinitions();
+
+            for (ActionConditionDefinition actionConditionDefinition : actionConditionDefinitions)
+            {
+                List<ParameterDefinition> parameterDefinitions = actionConditionDefinition.getParameterDefinitions();
+                Map<String, QName> parameters = new HashMap<String, QName>();
+
+                for (ParameterDefinition parameterDefinition : parameterDefinitions)
+                {
+                    String parameterName = parameterDefinition.getName();
+                    QName parameterType = parameterDefinition.getType();
+                    parameters.put(parameterName, parameterType);
+                }
+
+                try
+                {
+                    lock.writeLock().lock();
+                    propertyTypes.put(actionConditionDefinition.getName(), parameters);
+                }
+                finally
+                {
+                    lock.writeLock().unlock();
                 }
             }
         }
-        
-        QName result = null;
-        try
+
+        if (propertyTypes.containsKey(name))
         {
-            // getting cached parameter type 
-            lock.readLock().lock();
-            result = propertyTypes.get(propertyName);
+            Map<String, QName> parameters;
+            try
+            {
+                lock.readLock().lock();
+                parameters = propertyTypes.get(name);
+            }
+            finally
+            {
+                lock.readLock().unlock();
+            }
+            result = parameters.get(propertyName);
+            return result;
         }
-        finally
+        else
         {
-            lock.readLock().unlock();
+            if (isAction)
+            {
+                ActionDefinition actionDefinition = actionService.getActionDefinition(name);
+                List<ParameterDefinition> parameterDefinitions = actionDefinition.getParameterDefinitions();
+                Map<String, QName> parameters = new HashMap<String, QName>();
+
+                for (ParameterDefinition parameterDefinition : parameterDefinitions)
+                {
+                    String parameterName = parameterDefinition.getName();
+                    QName parameterType = parameterDefinition.getType();
+                    parameters.put(parameterName, parameterType);
+
+                    if (parameterName.equals(propertyName))
+                    {
+                        result = parameterType;
+                    }
+                }
+
+                try
+                {
+                    // cache parameter
+                    lock.writeLock().lock();
+                    propertyTypes.put(name, parameters);
+                }
+                finally
+                {
+                    lock.writeLock().unlock();
+                }
+            }
+            else
+            {
+                ActionConditionDefinition actionConditionDefinition = actionService.getActionConditionDefinition(name);
+                List<ParameterDefinition> parameterDefinitions = actionConditionDefinition.getParameterDefinitions();
+                Map<String, QName> parameters = new HashMap<String, QName>();
+
+                for (ParameterDefinition parameterDefinition : parameterDefinitions)
+                {
+                    String parameterName = parameterDefinition.getName();
+                    QName parameterType = parameterDefinition.getType();
+                    parameters.put(parameterName, parameterType);
+
+                    if (parameterName.equals(propertyName))
+                    {
+                        result = parameterType;
+                    }
+                }
+
+                try
+                {
+                    lock.writeLock().lock();
+                    propertyTypes.put(name, parameters);
+                }
+                finally
+                {
+                    lock.writeLock().unlock();
+                }
+            }
         }
-        
+
         return result;
     }
-    
+
     protected Rule parseJsonRule(JSONObject jsonRule) throws JSONException
     {
         Rule result = new Rule();
-        
+
         if (jsonRule.has("title") == false || jsonRule.getString("title").length() == 0)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Title missing when creating rule");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Title missing when creating rule");
         }
-        
+
         result.setTitle(jsonRule.getString("title"));
-        
+
         result.setDescription(jsonRule.has("description") ? jsonRule.getString("description") : "");
-        
+
         if (jsonRule.has("ruleType") == false || jsonRule.getJSONArray("ruleType").length() == 0)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-            "Rule type missing when creating rule");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Rule type missing when creating rule");
         }
-        
+
         JSONArray types = jsonRule.getJSONArray("ruleType");
         List<String> ruleTypes = new ArrayList<String>();
-        
+
         for (int i = 0; i < types.length(); i++)
         {
-            ruleTypes.add(types.getString(i));                
+            ruleTypes.add(types.getString(i));
         }
-        
+
         result.setRuleTypes(ruleTypes);
-        
+
         result.applyToChildren(jsonRule.has("applyToChildren") ? jsonRule.getBoolean("applyToChildren") : false);
-        
+
         result.setExecuteAsynchronously(jsonRule.has("executeAsynchronously") ? jsonRule.getBoolean("executeAsynchronously") : false);
-        
+
         result.setRuleDisabled(jsonRule.has("disabled") ? jsonRule.getBoolean("disabled") : false);
-        
+
         JSONObject jsonAction = jsonRule.getJSONObject("action");
-        
+
         // parse action object
         Action ruleAction = parseJsonAction(jsonAction);
-        
+
         result.setAction(ruleAction);
-        
-        return result;        
+
+        return result;
     }
-    
-    protected ActionImpl parseJsonAction(JSONObject jsonAction) throws JSONException    
+
+    protected ActionImpl parseJsonAction(JSONObject jsonAction) throws JSONException
     {
         ActionImpl result = null;
-        
+
         String actionId = jsonAction.has("id") ? jsonAction.getString("id") : GUID.generate();
-        
+
         if (jsonAction.getString("actionDefinitionName").equalsIgnoreCase("composite-action"))
         {
             result = new CompositeActionImpl(null, actionId);
@@ -287,160 +371,176 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         {
             result = new ActionImpl(null, actionId, jsonAction.getString("actionDefinitionName"));
         }
-        
+
         // Post Action Queue parameter
         if (jsonAction.has("actionedUponNode"))
         {
             NodeRef actionedUponNode = new NodeRef(jsonAction.getString("actionedUponNode"));
             result.setNodeRef(actionedUponNode);
         }
-        
+
         if (jsonAction.has("description"))
         {
             result.setDescription(jsonAction.getString("description"));
         }
-        
+
         if (jsonAction.has("title"))
         {
             result.setTitle(jsonAction.getString("title"));
         }
-        
+
         if (jsonAction.has("parameterValues"))
         {
-            JSONObject jsonParameterValues = jsonAction.getJSONObject("parameterValues");            
-            result.setParameterValues(parseJsonParameterValues(jsonParameterValues));
+            JSONObject jsonParameterValues = jsonAction.getJSONObject("parameterValues");
+            result.setParameterValues(parseJsonParameterValues(jsonParameterValues, result.getActionDefinitionName(), true));
         }
-        
+
         if (jsonAction.has("executeAsync"))
         {
             result.setExecuteAsynchronously(jsonAction.getBoolean("executeAsync"));
         }
-        
+
         if (jsonAction.has("runAsUser"))
         {
             result.setRunAsUser(jsonAction.getString("runAsUser"));
         }
-        
+
         if (jsonAction.has("actions"))
         {
             JSONArray jsonActions = jsonAction.getJSONArray("actions");
-            
+
             for (int i = 0; i < jsonActions.length(); i++)
             {
                 JSONObject innerJsonAction = jsonActions.getJSONObject(i);
-                
+
                 Action innerAction = parseJsonAction(innerJsonAction);
-                
+
                 // we assume that only composite-action contains actions json array, so should be no cast exception
-                ((CompositeActionImpl)result).addAction(innerAction);
+                ((CompositeActionImpl) result).addAction(innerAction);
             }
         }
-        
+
         if (jsonAction.has("conditions"))
         {
             JSONArray jsonConditions = jsonAction.getJSONArray("conditions");
-            
+
             for (int i = 0; i < jsonConditions.length(); i++)
             {
-                JSONObject jsonCondition = jsonConditions.getJSONObject(i);   
-                
+                JSONObject jsonCondition = jsonConditions.getJSONObject(i);
+
                 // parse action conditions
                 ActionCondition actionCondition = parseJsonActionCondition(jsonCondition);
-                
+
                 result.getActionConditions().add(actionCondition);
-            }                                
+            }
         }
-        
+
         if (jsonAction.has("compensatingAction"))
         {
             Action compensatingAction = parseJsonAction(jsonAction.getJSONObject("compensatingAction"));
             result.setCompensatingAction(compensatingAction);
         }
-        
+
         return result;
     }
-    
+
     protected ActionConditionImpl parseJsonActionCondition(JSONObject jsonActionCondition) throws JSONException
     {
-        String id = jsonActionCondition.has("id") ? jsonActionCondition.getString("id"): GUID.generate();            
-        
+        String id = jsonActionCondition.has("id") ? jsonActionCondition.getString("id") : GUID.generate();
+
         ActionConditionImpl result = new ActionConditionImpl(id, jsonActionCondition.getString("conditionDefinitionName"));
-        
+
         if (jsonActionCondition.has("invertCondition"))
         {
             result.setInvertCondition(jsonActionCondition.getBoolean("invertCondition"));
         }
-        
+
         if (jsonActionCondition.has("parameterValues"))
         {
-            JSONObject jsonParameterValues = jsonActionCondition.getJSONObject("parameterValues");            
-            
-            result.setParameterValues(parseJsonParameterValues(jsonParameterValues));
+            JSONObject jsonParameterValues = jsonActionCondition.getJSONObject("parameterValues");
+
+            result.setParameterValues(parseJsonParameterValues(jsonParameterValues, result.getActionConditionDefinitionName(), false));
         }
-        
+
         return result;
     }
-    
-    protected Map<String, Serializable> parseJsonParameterValues(JSONObject jsonParameterValues) throws JSONException
+
+    @SuppressWarnings("unchecked")
+    protected Map<String, Serializable> parseJsonParameterValues(JSONObject jsonParameterValues, String name, boolean isAction) throws JSONException
     {
         Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();
-        
+
         // get parameters names
         JSONArray names = jsonParameterValues.names();
 
-        if (names != null)
+        if (names == null)
         {
-            for (int i = 0; i < names.length(); i++)
+            return null;
+        }
+
+        for (int i = 0; i < names.length(); i++)
+        {
+            String propertyName = names.getString(i);
+            Object propertyValue = jsonParameterValues.get(propertyName);
+
+            // get parameter repository type
+            QName typeQName = getPropertyType(name, isAction, propertyName);
+
+            if (typeQName == null)
             {
-                String propertyName = names.getString(i);
-                Object propertyValue = jsonParameterValues.get(propertyName);
-            
-                // get parameter repository type
-                QName typeQName = getPropertyType(propertyName);
-            
-                if (typeQName == null)
+                if (propertyValue.toString().equals("true") || propertyValue.toString().equals("false"))
                 {
-                    if (propertyValue.toString().equals("true") || propertyValue.toString().equals("false"))
-                    {
-                        typeQName = DataTypeDefinition.BOOLEAN;
-                    }
-                    else
-                    {
-                        typeQName = DataTypeDefinition.TEXT;
-                    }
+                    typeQName = DataTypeDefinition.BOOLEAN;
                 }
-            
-                Serializable value = null;
-            
-                if (typeQName.equals(DataTypeDefinition.ANY))
+                else
+                {
+                    typeQName = DataTypeDefinition.TEXT;
+                }
+            }
+
+            Serializable value = null;
+
+            if (typeQName.equals(DataTypeDefinition.QNAME))
+            {
+                value = QName.createQName(propertyValue.toString(), namespaceService);
+            }
+
+            if (typeQName.equals(DataTypeDefinition.ANY))
+            {
+                try
+                {
+                    value = dateFormate.parse(propertyValue.toString());
+                }
+                catch (ParseException e)
                 {
                     try
                     {
-                        value = dateFormate.parse(propertyValue.toString());
+                        value = Long.valueOf(propertyValue.toString());
                     }
-                    catch (ParseException e)
+                    catch (NumberFormatException e1)
                     {
-                        try
+                        if (propertyValue instanceof JSONArray)
                         {
-                            value = Long.valueOf(propertyValue.toString());
-                        }
-                        catch (NumberFormatException e1)
-                        {
-                            // do nothing
+                            value = new ArrayList<String>();
+                            JSONArray array = (JSONArray) propertyValue;
+                            for (int j = 0; j < array.length(); j++)
+                            {
+                                ((List<String>) value).add(array.getString(j));
+                            }
                         }
                     }
                 }
-            
-                if (value == null)
-                {
-                    // convert to correct repository type
-                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
-                }
-            
-                parameterValues.put(propertyName, value);
             }
+
+            if (value == null)
+            {
+                // convert to correct repository type
+                value = (Serializable) DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
+            }
+
+            parameterValues.put(propertyName, value);
         }
-        
+
         return parameterValues;
     }
 }

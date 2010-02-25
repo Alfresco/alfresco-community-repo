@@ -597,6 +597,7 @@
     	<property name="ruleService" ref="RuleService"/>      
 		<property name="actionService" ref="ActionService"/>
 		<property name="dictionaryService" ref="DictionaryService"/>
+		<property name="fileFolderService" ref="FileFolderService"/>
 		<property name="namespaceService" ref="NamespaceService" />
     </bean>
    
@@ -626,10 +627,14 @@
 	<bean id="webscript.org.alfresco.repository.rule.rule.put" class="org.alfresco.repo.web.scripts.rule.RulePut" parent="abstractRuleWebScript">		      
 	</bean>
    
-	<!-- get all rules for node web script -->
+	<!-- get all owned rules for node web script -->
 	<bean id="webscript.org.alfresco.repository.rule.rules.get" class="org.alfresco.repo.web.scripts.rule.RulesGet" parent="abstractRuleWebScript">		      
 	</bean>
     
+	<!-- get all inherited rules for node web script -->
+	<bean id="webscript.org.alfresco.repository.rule.inheritedrules.get" class="org.alfresco.repo.web.scripts.rule.InheritedRulesGet" parent="abstractRuleWebScript">		      
+	</bean>
+	
 	<!-- get ruleset for node web script -->
 	<bean id="webscript.org.alfresco.repository.rule.ruleset.get" class="org.alfresco.repo.web.scripts.rule.RulesetGet" parent="abstractRuleWebScript">		      
 	</bean>

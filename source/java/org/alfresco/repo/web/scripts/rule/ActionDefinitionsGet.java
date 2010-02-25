@@ -48,12 +48,12 @@ public class ActionDefinitionsGet extends AbstractRuleWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get all action definitions
         List<ActionDefinition> actiondefinitions = actionService.getActionDefinitions();
-        
+
         model.put("actiondefinitions", actiondefinitions);
-        
+
         return model;
     }
 }

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.web.scripts.rule.ruleset.RuleRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.apache.commons.logging.Log;
@@ -45,48 +46,45 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  */
 public class RulePost extends AbstractRuleWebScript
-{    
+{
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RulePost.class);
 
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {     
+    {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get request parameters
         NodeRef nodeRef = parseRequestForNodeRef(req);
-        
+
         Rule rule = null;
         JSONObject json = null;
-        
+
         try
         {
             // read request json
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             // parse request json
             rule = parseJsonRule(json);
-            
+
             // create rule
             ruleService.saveRule(nodeRef, rule);
-            
-            model.put("rule", rule);  
-            model.put("storeType", nodeRef.getStoreRef().getProtocol());
-            model.put("storeId", nodeRef.getStoreRef().getIdentifier());
-            model.put("id", nodeRef.getId());
+
+            RuleRef ruleRef = new RuleRef(rule, fileFolderService.getFileInfo(ruleService.getOwningNodeRef(rule)));
+
+            model.put("ruleRef", ruleRef);
         }
         catch (IOException iox)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
         }
         catch (JSONException je)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
         }
-        
+
         return model;
     }
 }

@@ -30,6 +30,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.web.scripts.rule.ruleset.RuleRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.apache.commons.logging.Log;
@@ -47,23 +48,23 @@ public class RuleGet extends AbstractRuleWebScript
 {
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RuleGet.class);
-        
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         NodeRef nodeRef = parseRequestForNodeRef(req);
-        
+
         // get request parameters
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String ruleId = templateVars.get("rule_id");
-        
+
         Rule ruleToReturn = null;
-        
+
         // get all rules for given nodeRef
         List<Rule> rules = ruleService.getRules(nodeRef);
-        
+
         // filter by rule id
         for (Rule rule : rules)
         {
@@ -73,18 +74,16 @@ public class RuleGet extends AbstractRuleWebScript
                 break;
             }
         }
-        
+
         if (ruleToReturn == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find rule with id: " + 
-                    ruleId);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find rule with id: " + ruleId);
         }
-        
-        model.put("rule", ruleToReturn);
-        model.put("storeType", nodeRef.getStoreRef().getProtocol());
-        model.put("storeId", nodeRef.getStoreRef().getIdentifier());
-        model.put("id", nodeRef.getId());
-        
+
+        RuleRef ruleRefToReturn = new RuleRef(ruleToReturn, fileFolderService.getFileInfo(ruleService.getOwningNodeRef(ruleToReturn)));
+
+        model.put("ruleRef", ruleRefToReturn);
+
         return model;
     }
 }

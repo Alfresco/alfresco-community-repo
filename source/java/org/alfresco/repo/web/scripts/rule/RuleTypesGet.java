@@ -44,17 +44,17 @@ public class RuleTypesGet extends AbstractRuleWebScript
 
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RuleTypesGet.class);
-    
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get all rule types
         List<RuleType> ruletypes = ruleService.getRuleTypes();
-        
+
         model.put("ruletypes", ruletypes);
-        
+
         return model;
     }
 }

@@ -48,36 +48,36 @@ public class ActionQueuePost extends AbstractRuleWebScript
 {
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(ActionQueuePost.class);
-    
+
     public static final String STATUS = "actionExecStatus";
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_FAIL = "fail";
     public static final String STATUS_QUEUED = "queued";
-    
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get request parameters
         boolean async = Boolean.parseBoolean(req.getParameter("async"));
-        
+
         ActionImpl action = null;
         JSONObject json = null;
-        
+
         try
         {
             // read request json
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             // parse request json
             action = parseJsonAction(json);
             NodeRef actionedUponNode = action.getNodeRef();
-            
+
             // clear nodeRef for action
             action.setNodeRef(null);
             json.remove("actionedUponNode");
-            
+
             if (async)
             {
                 model.put(STATUS, STATUS_QUEUED);
@@ -86,31 +86,29 @@ public class ActionQueuePost extends AbstractRuleWebScript
             {
                 model.put(STATUS, STATUS_SUCCESS);
             }
-            
+
             try
             {
                 actionService.executeAction(action, actionedUponNode, true, async);
             }
-            catch(Throwable e)
+            catch (Throwable e)
             {
                 model.put(STATUS, STATUS_FAIL);
                 model.put("exception", e);
             }
-            
+
             model.put("actionedUponNode", actionedUponNode.toString());
-            model.put("action", json);            
+            model.put("action", json);
         }
         catch (IOException iox)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
         }
         catch (JSONException je)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
         }
-        
+
         return model;
-    }    
+    }
 }

@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.web.scripts.rule.ruleset.RuleRef;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,20 +62,20 @@ public class RulePut extends RulePost
 
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {        
+    {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get request parameters
         NodeRef nodeRef = parseRequestForNodeRef(req);
-        
+
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String ruleId = templateVars.get("rule_id");
-        
+
         Rule ruleToUpdate = null;
-        
+
         // get all rules for given nodeRef
         List<Rule> rules = ruleService.getRules(nodeRef);
-        
+
         //filter by rule id
         for (Rule rule : rules)
         {
@@ -84,99 +85,95 @@ public class RulePut extends RulePost
                 break;
             }
         }
-        
+
         if (ruleToUpdate == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find rule with id: " + 
-                    ruleId);            
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find rule with id: " + ruleId);
         }
-        
+
         JSONObject json = null;
-        
+
         try
         {
             // read request json
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             // parse request json
             updateRuleFromJSON(json, ruleToUpdate);
-            
+
             // save changes
             ruleService.saveRule(nodeRef, ruleToUpdate);
-            
-            model.put("rule", ruleToUpdate);  
-            model.put("storeType", nodeRef.getStoreRef().getProtocol());
-            model.put("storeId", nodeRef.getStoreRef().getIdentifier());
-            model.put("id", nodeRef.getId());
+
+            RuleRef updatedRuleRef = new RuleRef(ruleToUpdate, fileFolderService.getFileInfo(ruleService.getOwningNodeRef(ruleToUpdate)));
+
+            model.put("ruleRef", updatedRuleRef);
         }
         catch (IOException iox)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
         }
         catch (JSONException je)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
         }
-        
+
         return model;
     }
-    
+
     protected void updateRuleFromJSON(JSONObject jsonRule, Rule ruleToUpdate) throws JSONException
     {
         if (jsonRule.has("title"))
         {
             ruleToUpdate.setTitle(jsonRule.getString("title"));
-        }        
-        
+        }
+
         if (jsonRule.has("description"))
         {
             ruleToUpdate.setDescription(jsonRule.getString("description"));
         }
-        
+
         if (jsonRule.has("ruleType"))
         {
             JSONArray jsonTypes = jsonRule.getJSONArray("ruleType");
             List<String> types = new ArrayList<String>();
-            
+
             for (int i = 0; i < jsonTypes.length(); i++)
             {
-                types.add(jsonTypes.getString(i));                
+                types.add(jsonTypes.getString(i));
             }
             ruleToUpdate.setRuleTypes(types);
         }
-        
+
         if (jsonRule.has("applyToChildren"))
         {
             ruleToUpdate.applyToChildren(jsonRule.getBoolean("applyToChildren"));
         }
-        
+
         if (jsonRule.has("executeAsynchronously"))
         {
             ruleToUpdate.setExecuteAsynchronously(jsonRule.getBoolean("executeAsynchronously"));
         }
-        
+
         if (jsonRule.has("disabled"))
         {
             ruleToUpdate.setRuleDisabled(jsonRule.getBoolean("disabled"));
         }
-        
+
         if (jsonRule.has("action"))
-        {                        
-            JSONObject jsonAction = jsonRule.getJSONObject("action");                        
-            
+        {
+            JSONObject jsonAction = jsonRule.getJSONObject("action");
+
             // update rule action 
-            Action action = updateActionFromJson(jsonAction, (ActionImpl)ruleToUpdate.getAction());
-            
+            Action action = updateActionFromJson(jsonAction, (ActionImpl) ruleToUpdate.getAction());
+
             ruleToUpdate.setAction(action);
         }
     }
-    
+
     protected Action updateActionFromJson(JSONObject jsonAction, ActionImpl actionToUpdate) throws JSONException
     {
         ActionImpl result = null;
-        
+
         if (jsonAction.has("id"))
         {
             // update existing action
@@ -186,82 +183,82 @@ public class RulePut extends RulePost
         {
             // create new object as id was not sent by client
             result = parseJsonAction(jsonAction);
-            return result;            
+            return result;
         }
-        
+
         if (jsonAction.has("description"))
         {
             result.setDescription(jsonAction.getString("description"));
         }
-        
+
         if (jsonAction.has("title"))
         {
             result.setTitle(jsonAction.getString("title"));
         }
-        
+
         if (jsonAction.has("parameterValues"))
         {
             JSONObject jsonParameterValues = jsonAction.getJSONObject("parameterValues");
-            result.setParameterValues(parseJsonParameterValues(jsonParameterValues));            
+            result.setParameterValues(parseJsonParameterValues(jsonParameterValues, result.getActionDefinitionName(), true));
         }
-        
+
         if (jsonAction.has("executeAsync"))
         {
             result.setExecuteAsynchronously(jsonAction.getBoolean("executeAsync"));
         }
-        
+
         if (jsonAction.has("runAsUser"))
         {
             result.setRunAsUser(jsonAction.getString("runAsUser"));
         }
-        
+
         if (jsonAction.has("actions"))
         {
             JSONArray jsonActions = jsonAction.getJSONArray("actions");
             if (jsonActions.length() == 0)
             {
                 // empty array was sent -> clear list
-                ((CompositeActionImpl)result).getActions().clear();
+                ((CompositeActionImpl) result).getActions().clear();
             }
             else
             {
-                List<Action> existingActions = ((CompositeActionImpl)result).getActions();
-                List<Action> newActions = new ArrayList<Action>(); 
-                
+                List<Action> existingActions = ((CompositeActionImpl) result).getActions();
+                List<Action> newActions = new ArrayList<Action>();
+
                 for (int i = 0; i < jsonActions.length(); i++)
                 {
                     JSONObject innerJsonAction = jsonActions.getJSONObject(i);
-                    
+
                     if (innerJsonAction.has("id"))
                     {
                         // update existing object
                         String actionId = innerJsonAction.getString("id");
-                        
+
                         Action existingAction = getAction(existingActions, actionId);
                         existingActions.remove(existingAction);
-                        
-                        Action updatedAction = updateActionFromJson(innerJsonAction, (ActionImpl)existingAction);
-                        newActions.add(updatedAction);                        
+
+                        Action updatedAction = updateActionFromJson(innerJsonAction, (ActionImpl) existingAction);
+                        newActions.add(updatedAction);
                     }
                     else
                     {
                         //create new action as id was not sent
-                        newActions.add(parseJsonAction(innerJsonAction));                        
-                    }                    
+                        newActions.add(parseJsonAction(innerJsonAction));
+                    }
                 }
                 existingActions.clear();
-                
+
                 for (Action action : newActions)
                 {
                     existingActions.add(action);
                 }
             }
         }
-        
+
         if (jsonAction.has("conditions"))
-        {   
+        {
             JSONArray jsonConditions = jsonAction.getJSONArray("conditions");
-            
+
             if (jsonConditions.length() == 0)
             {
                 // empty array was sent -> clear list
@@ -271,20 +268,20 @@ public class RulePut extends RulePost
             {
                 List<ActionCondition> existingConditions = result.getActionConditions();
                 List<ActionCondition> newConditions = new ArrayList<ActionCondition>();
-                
+
                 for (int i = 0; i < jsonConditions.length(); i++)
                 {
-                    JSONObject jsonCondition = jsonConditions.getJSONObject(i);   
-                    
+                    JSONObject jsonCondition = jsonConditions.getJSONObject(i);
+
                     if (jsonCondition.has("id"))
-                    {   
+                    {
                         // update existing object
                         String conditionId = jsonCondition.getString("id");
-                        
+
                         ActionCondition existingCondition = getCondition(existingConditions, conditionId);
                         existingConditions.remove(existingCondition);
-                        
-                        ActionCondition updatedActionCondition = updateActionConditionFromJson(jsonCondition, (ActionConditionImpl)existingCondition);
+
+                        ActionCondition updatedActionCondition = updateActionConditionFromJson(jsonCondition, (ActionConditionImpl) existingCondition);
                         newConditions.add(updatedActionCondition);
                     }
                     else
@@ -292,31 +289,31 @@ public class RulePut extends RulePost
                         // create new object as id was not sent
                         newConditions.add(parseJsonActionCondition(jsonCondition));
                     }
-                }   
-                    
+                }
+
                 existingConditions.clear();
-                
+
                 for (ActionCondition condition : newConditions)
                 {
                     existingConditions.add(condition);
                 }
-            }    
-        } 
-        
+            }
+        }
+
         if (jsonAction.has("compensatingAction"))
         {
             JSONObject jsonCompensatingAction = jsonAction.getJSONObject("compensatingAction");
-            Action compensatingAction = updateActionFromJson(jsonCompensatingAction, (ActionImpl)actionToUpdate.getCompensatingAction());
-            
+            Action compensatingAction = updateActionFromJson(jsonCompensatingAction, (ActionImpl) actionToUpdate.getCompensatingAction());
+
             actionToUpdate.setCompensatingAction(compensatingAction);
         }
         return result;
     }
-    
+
     protected ActionCondition updateActionConditionFromJson(JSONObject jsonCondition, ActionConditionImpl conditionToUpdate) throws JSONException
     {
         ActionConditionImpl result = null;
-        
+
         if (jsonCondition.has("id"))
         {
             // update exiting object
@@ -328,21 +325,21 @@ public class RulePut extends RulePost
             result = parseJsonActionCondition(jsonCondition);
             return result;
         }
-        
+
         if (jsonCondition.has("invertCondition"))
         {
             result.setInvertCondition(jsonCondition.getBoolean("invertCondition"));
         }
-        
+
         if (jsonCondition.has("parameterValues"))
         {
             JSONObject jsonParameterValues = jsonCondition.getJSONObject("parameterValues");
-            result.setParameterValues(parseJsonParameterValues(jsonParameterValues));
+            result.setParameterValues(parseJsonParameterValues(jsonParameterValues, result.getActionConditionDefinitionName(), false));
         }
-        
+
         return result;
     }
-    
+
     private Action getAction(List<Action> actions, String id)
     {
         Action result = null;
@@ -354,22 +351,22 @@ public class RulePut extends RulePost
                 break;
             }
         }
-        
+
         return result;
     }
-    
+
     private ActionCondition getCondition(List<ActionCondition> conditions, String id)
     {
-        ActionCondition result = null;        
+        ActionCondition result = null;
         for (ActionCondition сondition : conditions)
         {
             if (сondition.getId().equalsIgnoreCase(id))
             {
                 result = сondition;
                 break;
-            }            
+            }
         }
-        
-        return result;        
+
+        return result;
     }
 }

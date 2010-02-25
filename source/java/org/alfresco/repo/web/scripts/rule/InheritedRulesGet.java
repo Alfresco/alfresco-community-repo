@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.web.scripts.rule.ruleset.RuleRef;
-import org.alfresco.repo.web.scripts.rule.ruleset.RuleSet;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -44,10 +43,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author unknown
  *
  */
-public class RulesetGet extends AbstractRuleWebScript
+public class InheritedRulesGet extends AbstractRuleWebScript
 {
     @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RulesetGet.class);
+    private static Log logger = LogFactory.getLog(InheritedRulesGet.class);
 
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -65,40 +64,23 @@ public class RulesetGet extends AbstractRuleWebScript
             ruleType = null;
         }
 
-        RuleSet ruleset = new RuleSet();
-
-        // get all "owned" rules
-        List<Rule> ownedRules = ruleService.getRules(nodeRef, false, ruleType);
-
-        // get all rules (including inherited)
+        // get all rules (including inherited) filtered by rule type
         List<Rule> inheritedRules = ruleService.getRules(nodeRef, true, ruleType);
 
-        // remove "owned" rules
+        // get owned rules (excluding inherited) filtered by rule type
+        List<Rule> ownedRules = ruleService.getRules(nodeRef, false, ruleType);
+
+        // remove owned rules
         inheritedRules.removeAll(ownedRules);
 
-        List<RuleRef> rulesToSet = new ArrayList<RuleRef>();
-
-        for (Rule rule : ownedRules)
-        {
-            rulesToSet.add(new RuleRef(rule, fileFolderService.getFileInfo(ruleService.getOwningNodeRef(rule))));
-        }
-        ruleset.setRules(rulesToSet);
-
-        List<RuleRef> inheritedRulesToSet = new ArrayList<RuleRef>();
+        List<RuleRef> inheritedRuleRefs = new ArrayList<RuleRef>();
 
         for (Rule rule : inheritedRules)
         {
-            inheritedRulesToSet.add(new RuleRef(rule, fileFolderService.getFileInfo(ruleService.getOwningNodeRef(rule))));
+            inheritedRuleRefs.add(new RuleRef(rule, fileFolderService.getFileInfo(ruleService.getOwningNodeRef(rule))));
         }
-        ruleset.setInheritedRules(inheritedRulesToSet);
 
-        ruleset.setLinkedToRuleSet(ruleService.getLinkedToRuleNode(nodeRef));
-
-        ruleset.setLinkedFromRuleSets(ruleService.getLinkedFromRuleNodes(nodeRef));
-
-        ruleset.setRulesetNodeRef(nodeRef);
-
-        model.put("ruleset", ruleset);
+        model.put("inheritedRuleRefs", inheritedRuleRefs);
 
         return model;
     }

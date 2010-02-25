@@ -42,31 +42,30 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ActionConstraintsGet extends AbstractRuleWebScript
 {
-    
+
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(ActionConstraintsGet.class);
 
-    
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get request parameters
         String[] names = req.getParameterValues("name");
-        
+
         List<ParameterConstraint> parameterConstraints = null;
-        
+
         if (names != null && names.length > 0)
         {
             // filter is present in request
             parameterConstraints = new ArrayList<ParameterConstraint>();
-            
+
             // find specified parameter constraints
             for (String name : names)
             {
                 ParameterConstraint parameterConstraint = actionService.getParameterConstraint(name);
-                
+
                 if (parameterConstraint != null)
                 {
                     parameterConstraints.add(parameterConstraint);
@@ -78,9 +77,9 @@ public class ActionConstraintsGet extends AbstractRuleWebScript
             // no filter was provided, return all parameter constraints
             parameterConstraints = actionService.getParameterConstraints();
         }
-        
+
         model.put("actionConstraints", parameterConstraints);
-        
+
         return model;
     }
 }

@@ -2,5 +2,5 @@
 
 {
 	"data" :
-	<@ruleLib.rulesummaryJSON rule=rule />
+	<@ruleLib.ruleRefSummaryJSON ruleRef=ruleRef />
 }

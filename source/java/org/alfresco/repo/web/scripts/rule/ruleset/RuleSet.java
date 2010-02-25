@@ -35,19 +35,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RuleSet implements Serializable
 {
-    
+
     private static final long serialVersionUID = 6985140035928444095L;
-    
+
     private List<RuleRef> rules = null;
-    
+
     private List<RuleRef> inheritedRules = null;
-    
+
     private NodeRef rulesetNodeRef;
-    
+
     private NodeRef linkedToRuleSet;
-    
+
     private List<NodeRef> linkedFromRuleSets;
-    
+
     /**
      * Set list of the rules "owned" by this rule set
      * 
@@ -57,7 +57,7 @@ public class RuleSet implements Serializable
     {
         this.rules = rules;
     }
-    
+
     /**
      * Get list of the rules "owned" by this rule set
      * 
@@ -67,7 +67,7 @@ public class RuleSet implements Serializable
     {
         return rules;
     }
-    
+
     /**
      * Set list of the rules inherited by this rule set from parent
      * 
@@ -77,7 +77,7 @@ public class RuleSet implements Serializable
     {
         this.inheritedRules = inheritedRules;
     }
-    
+
     /**
      * Get list of the rules inherited by this rule set from parent
      * 
@@ -87,7 +87,7 @@ public class RuleSet implements Serializable
     {
         return inheritedRules;
     }
-    
+
     /**
      * Set the nodeRef to which this ruleset belongs
      * 
@@ -97,7 +97,7 @@ public class RuleSet implements Serializable
     {
         this.rulesetNodeRef = rulesetNodeRef;
     }
-    
+
     /**
      * Get the nodeRef to which this ruleset belongs
      * 
@@ -107,7 +107,7 @@ public class RuleSet implements Serializable
     {
         return rulesetNodeRef;
     }
-    
+
     /**
      * Set the nodeRef to which this ruleset linked to 
      * 
@@ -117,7 +117,7 @@ public class RuleSet implements Serializable
     {
         this.linkedToRuleSet = linkedToRuleSet;
     }
-    
+
     /**
      * Get the nodeRef to which this ruleset linked to
      * 
@@ -127,7 +127,7 @@ public class RuleSet implements Serializable
     {
         return linkedToRuleSet;
     }
-    
+
     /**
      * Set the list of nodeRefs that link to this ruleset
      * 
@@ -137,7 +137,7 @@ public class RuleSet implements Serializable
     {
         this.linkedFromRuleSets = linkedFromRuleSets;
     }
-    
+
     /**
      * Get the list of nodeRefs that link to this ruleset
      * 

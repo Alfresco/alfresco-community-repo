@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetMetaData;
@@ -232,6 +233,18 @@ public class CMISTemplateResultSet implements Serializable
             {
                 CMISResultSetColumn col = resultSet.getMetaData().getColumn(colName);
                 return col == null ? null : col.getCMISDataType().getLabel();
+            }
+
+            /**
+             * Gets property definition for specified column name
+             * 
+             * @param colName  column name
+             * @return  property definition (or null, if not applicable)
+             */
+            public CMISPropertyDefinition getPropertyDefinition(String colName)
+            {
+                CMISResultSetColumn col = resultSet.getMetaData().getColumn(colName);
+                return col == null ? null : col.getCMISPropertyDefinition();
             }
             
             /**

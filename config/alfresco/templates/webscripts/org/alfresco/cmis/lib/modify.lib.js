@@ -6,7 +6,7 @@
 // @param slug (optional)  node name
 // @return  created node (or null, in case of error)
 //
-function createNode(parent, entry, slug)
+function createNode(parent, entry, slug, versioningState)
 {
     var object = entry.getExtension(atom.names.cmisra_object);
     var typeId = (object !== null) ? object.objectTypeId.nativeValue : null;
@@ -29,7 +29,10 @@ function createNode(parent, entry, slug)
     if (baseType == DOCUMENT_TYPE_ID)
     {
         node = parent.createFile(name);
-        // TODO: versioningState argument (CheckedOut/CheckedInMinor/CheckedInMajor)
+        if (versioningState != null)
+        {
+            node = cmis.applyVersioningState(node, versioningState);
+        }
     }
     else if (baseType == FOLDER_TYPE_ID)
     {

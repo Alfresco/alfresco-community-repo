@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have received a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.cmis.ws.utils;
@@ -40,6 +40,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
@@ -65,6 +66,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -98,7 +100,6 @@ public class PropertyUtil
     private NamespaceService namespaceService;
     private CMISServices cmisService;
     private CMISDictionaryService cmisDictionaryService;
-    private CmisObjectsUtils cmisObjectsUtils;
 
     public PropertyUtil()
     {
@@ -127,11 +128,6 @@ public class PropertyUtil
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
-    }
-
-    public void setCmisObjectsUtils(CmisObjectsUtils cmisObjectsUtils)
-    {
-        this.cmisObjectsUtils = cmisObjectsUtils;
     }
 
     /**
@@ -275,7 +271,7 @@ public class PropertyUtil
 
         if ((PropertyMultiValueStateEnum.PROPERTY_NOT_MULTIVALUED == state) && (values.size() > 1))
         {
-            throw cmisObjectsUtils.createCmisException("\"" + propertyName + "\" property is not Multi Valued", EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException("\"" + propertyName + "\" property is not Multi Valued", EnumServiceException.INVALID_ARGUMENT);
         }
 
         return PropertyMultiValueStateEnum.PROPERTY_MULTIVALUED == state;
@@ -379,7 +375,7 @@ public class PropertyUtil
 
         if ((null == cmisObjectType) && (null == nativeObjectType))
         {
-            throw cmisObjectsUtils.createCmisException(("Can't find type definition for current object with \"" + typeId + "\" type Id"), EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException(("Can't find type definition for current object with \"" + typeId + "\" type Id"), EnumServiceException.INVALID_ARGUMENT);
         }
 
         for (CmisProperty property : properties.getProperty())
@@ -406,7 +402,7 @@ public class PropertyUtil
             }
             case PROPERTY_NOT_UPDATABLE:
             {
-                throw cmisObjectsUtils.createCmisException(("\"" + propertyName + "\" property is not updatable by repository for specified Object id"),
+                throw ExceptionUtil.createCmisException(("\"" + propertyName + "\" property is not updatable by repository for specified Object id"),
                         EnumServiceException.CONSTRAINT);
             }
             }
@@ -479,7 +475,7 @@ public class PropertyUtil
 
         if (propertyDefinition.isRequired() && (null == value))
         {
-            throw cmisObjectsUtils.createCmisException((propertyName + " property required"), EnumServiceException.CONSTRAINT);
+            throw ExceptionUtil.createCmisException((propertyName + " property required"), EnumServiceException.CONSTRAINT);
         }
 
         switch (propertyDefinition.getDataType())
@@ -514,7 +510,7 @@ public class PropertyUtil
     {
         if (value != null && (propertyDefinition.getMaximumLength() > 0) && (value.length() > propertyDefinition.getMaximumLength()))
         {
-            throw cmisObjectsUtils.createCmisException((propertyName + " property value is too long"), EnumServiceException.CONSTRAINT);
+            throw ExceptionUtil.createCmisException((propertyName + " property value is too long"), EnumServiceException.CONSTRAINT);
         }
     }
 
@@ -525,21 +521,32 @@ public class PropertyUtil
      * @param filter property filter
      * @return properties
      */
-    public CmisPropertiesType getPropertiesType(String identifier, PropertyFilter filter) throws CmisException
+    public CmisPropertiesType getProperties(Object object, PropertyFilter filter) throws CmisException
     {
-        Map<String, Serializable> properties;
-        if (!identifier.contains("|"))
+        try
         {
-            properties = cmisService.getProperties(new NodeRef(identifier));
-        }
-        else
-        {
-            properties = createBaseRelationshipProperties(new AssociationRef(identifier));
-        }
+            Map<String, Serializable> properties;
+            if (object instanceof NodeRef)
+            {
+                properties = cmisService.getProperties((NodeRef) object);
+            }
+            else if (object instanceof Version)
+            {
+                properties = cmisService.getProperties(((Version) object).getFrozenStateNodeRef());
+            }
+            else
+            {
+                properties = createBaseRelationshipProperties((AssociationRef) object);
+            }
 
-        CmisPropertiesType result = new CmisPropertiesType();
-        convertToCmisProperties(properties, filter, result);
-        return result;
+            CmisPropertiesType result = new CmisPropertiesType();
+            convertToCmisProperties(properties, filter, result);
+            return result;
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw ExceptionUtil.createCmisException(e.getMessage(), EnumServiceException.INVALID_ARGUMENT, e);
+        }
     }
 
     private Map<String, Serializable> createBaseRelationshipProperties(AssociationRef association)
@@ -562,7 +569,7 @@ public class PropertyUtil
 
         if (null == type)
         {
-            throw cmisObjectsUtils.createCmisException(("Type with " + typeId + " typeId was not found"), EnumServiceException.RUNTIME);
+            throw ExceptionUtil.createCmisException(("Type with " + typeId + " typeId was not found"), EnumServiceException.RUNTIME);
         }
 
         for (String propertyName : properties.keySet())

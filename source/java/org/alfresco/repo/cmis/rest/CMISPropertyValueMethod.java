@@ -26,9 +26,11 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.template.TemplateAssociation;
 import org.alfresco.repo.template.TemplateNode;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.ext.beans.BeansWrapper;
@@ -90,7 +92,14 @@ public final class CMISPropertyValueMethod implements TemplateMethodModelEx
                 if (wrapped != null && wrapped instanceof TemplateNode)
                 {
                     // retrieve property value from node
-                    result = cmisService.getProperty(((TemplateNode)wrapped).getNodeRef(), propertyName);
+                    try
+                    {
+                        result = cmisService.getProperty(((TemplateNode)wrapped).getNodeRef(), propertyName);
+                    }
+                    catch (CMISInvalidArgumentException e)
+                    {
+                        throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+                    }
                 }
                 else if (wrapped != null && wrapped instanceof TemplateAssociation)
                 {

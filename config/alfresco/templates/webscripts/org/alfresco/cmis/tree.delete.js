@@ -10,27 +10,24 @@ script:
     }
     var node = object.node;
     
-    // NOTE: Ignore continueOnDelete as complete tree is deleted in single transaction
-    // TODO: Throw error on invalid unfileMultiFiledDocuments error
-
-    if (!node.hasPermission("Delete"))
+    // unfileObjects
+    var unfileObjects = args[cmis.ARG_UNFILE_OBJECTS];
+    if (unfileObjects === null || unfileObjects.length == 0)
     {
-        status.code = 403;
-        status.message = "Permission to delete is denied";
-        status.redirect = true;
-        break script;
-    }
-
-    // TODO: Checked-out documents - are they automatically cancelled?
-
-    if (!node.remove())
-    {
-        status.code = 500;
-        status.message = "Failed to delete object " + object.ref;
-        status.redirect = true;
-        break script;
+       unfileObjects = "delete";
     }
     
-    status.code = 204;  // Success, but no response content
-    status.redirect = true;
+    // We only support delete and deletesinglefiled
+    if (unfileObjects == "unfile")
+    {
+       status.code = 405;
+       status.message = "Unfiling is not supported";
+       status.redirect = true;
+       break script;       
+    }
+    
+    var continueOnFailure = (args[cmis.ARG_CONTINUE_ON_FAILURE] == "true");
+
+    // Intentionally pass allVersions=false, even though this isn't the default!
+    cmis.deleteTree(node, status, continueOnFailure, unfileObjects != "delete", false);
 }

@@ -30,33 +30,8 @@ script:
     }
     model.node = object.node; 
     
-    // ensure node can be checked-out
-    if (!model.node.isDocument)
-    {
-        status.code = 400;
-        status.message = "Cannot checkout node " + object.ref + " as it is not a document";
-        status.redirect = true;
-        break script;
-    }
-
-    // TODO: need to test for isCheckedOut not isLocked
-    if (model.node.isLocked || model.node.hasAspect("cm:workingCopy"))
-    {
-        status.code = 400;
-        status.message = "Cannot checkout node " + object.ref + " as it is already checked-out";
-        status.redirect = true;
-        break script;
-    }
-
-    // switch on versioning 
-    if (!model.node.hasAspect("cm:versionable"))
-    {
-        // create an initial version of the current document
-        model.node.createVersion("Initial Version", true);
-    }
-    
     // checkout
-    model.pwc = model.node.checkout();
+    model.pwc = cmis.checkOut(objectId);
 
     // setup for 201 Created response
     // TODO: set Content-Location

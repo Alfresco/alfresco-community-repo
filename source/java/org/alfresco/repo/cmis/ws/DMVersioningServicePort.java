@@ -31,18 +31,12 @@ import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
-import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionType;
 
 /**
  * Port for versioning service.
@@ -53,13 +47,6 @@ import org.alfresco.service.cmr.version.VersionType;
 @javax.jws.WebService(name = "VersioningServicePort", serviceName = "VersioningService", portName = "VersioningServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.VersioningServicePort")
 public class DMVersioningServicePort extends DMAbstractServicePort implements VersioningServicePort
 {
-    private LockService lockService;
-
-    public void setLockService(LockService lockService)
-    {
-        this.lockService = lockService;
-    }
-
     /**
      * Reverses the effect of a check-out. Removes the private working copy of the checked-out document object, allowing other documents in the version series to be checked out
      * again.
@@ -73,31 +60,14 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     public void cancelCheckOut(String repositoryId, String objectId, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
-        assertVersionableIsTrue(documentNodeRef);
-        boolean checkedOut = propertiesUtil.getProperty(documentNodeRef, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, false);
-        NodeRef workingCopyNodeRef = definitelyGetWorkingCopy(checkedOut, documentNodeRef);
-        checkOutCheckInService.cancelCheckout(workingCopyNodeRef);
-    }
-
-    private void assertVersionableIsTrue(NodeRef workingCopyNodeRef) throws CmisException
-    {
-        if (!getTypeDefinition(workingCopyNodeRef).isVersionable())
+        try
         {
-            // FIXME: uncomment this when CMIS dictionary model will be corrected
-            // throw cmisObjectsUtils.createCmisException("Document that was specified is not versionable", EnumServiceException.CONSTRAINT);
+            cmisService.cancelCheckOut(objectId);
         }
-    }
-
-    private CMISTypeDefinition getTypeDefinition(NodeRef nodeRef) throws CmisException
-    {
-        String typeId = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, null);
-        CMISTypeDefinition typeDefinition = (null != typeId) ? (cmisDictionaryService.findType(typeId)) : (null);
-        if (null == typeDefinition)
+        catch (CMISServiceException e)
         {
-            throw cmisObjectsUtils.createCmisException(("Object type property is invalid"), EnumServiceException.RUNTIME);
+            throw ExceptionUtil.createCmisException(e);
         }
-        return typeDefinition;
     }
 
     /**
@@ -117,46 +87,41 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             List<String> policies, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef workingCopyNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
-        assertVersionableIsTrue(workingCopyNodeRef);
-        assertLatestVersion(workingCopyNodeRef, true);
-
-        String versionSeriesId = propertiesUtil.getProperty(workingCopyNodeRef, CMISDictionaryModel.PROP_VERSION_SERIES_ID, null);
-        CMISTypeDefinition seriesObjectTypeDefinition = getTypeDefinition((NodeRef) cmisObjectsUtils.getIdentifierInstance(versionSeriesId, AlfrescoObjectType.DOCUMENT_OBJECT));
-
-        if ((null != contentStream) && (CMISContentStreamAllowedEnum.NOT_ALLOWED == seriesObjectTypeDefinition.getContentStreamAllowed()))
-        {
-            throw cmisObjectsUtils.createCmisException("Content stream is not allowed", EnumServiceException.STREAM_NOT_SUPPORTED);
-        }
-
-        if (contentStream != null)
-        {
-            try
-            {
-                ContentWriter writer = fileFolderService.getWriter(workingCopyNodeRef);
-                writer.setMimetype(contentStream.getMimeType());
-                writer.putContent(contentStream.getStream().getInputStream());
-            }
-            catch (Exception e)
-            {
-                throw cmisObjectsUtils.createCmisException("Exception while updating content stream", EnumServiceException.UPDATE_CONFLICT, e);
-            }
-        }
-
-        NodeRef nodeRef;
         try
         {
-            nodeRef = checkOutCheckInService.checkin(workingCopyNodeRef, createVersionProperties(checkinComment, ((null == major) || major) ? (VersionType.MAJOR)
-                    : (VersionType.MINOR)));
-            propertiesUtil.setProperties(nodeRef, properties, null);
+            NodeRef workingCopyNodeRef = cmisService.getObject(objectId.value, NodeRef.class, true, true, true);
+            CMISTypeDefinition seriesObjectTypeDefinition = cmisService.getTypeDefinition(workingCopyNodeRef);
+
+            if ((null != contentStream) && (CMISContentStreamAllowedEnum.NOT_ALLOWED == seriesObjectTypeDefinition.getContentStreamAllowed()))
+            {
+                throw ExceptionUtil.createCmisException("Content stream is not allowed", EnumServiceException.STREAM_NOT_SUPPORTED);
+            }
+
+            if (contentStream != null)
+            {
+                try
+                {
+                    ContentWriter writer = fileFolderService.getWriter(workingCopyNodeRef);
+                    writer.setMimetype(contentStream.getMimeType());
+                    writer.putContent(contentStream.getStream().getInputStream());
+                }
+                catch (Exception e)
+                {
+                    throw ExceptionUtil.createCmisException("Exception while updating content stream", EnumServiceException.RUNTIME, e);
+                }
+            }
+
+            propertiesUtil.setProperties(workingCopyNodeRef, properties, null);
+            NodeRef nodeRef = cmisService.checkIn(objectId.value, checkinComment, major == null || major);
+
+            // TODO: applyPolicies
+            applyAclCarefully(nodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
+            objectId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
         }
-        catch (Exception e)
+        catch (CMISServiceException e)
         {
-            throw cmisObjectsUtils.createCmisException("Unable to check in Private Working Copy object that was specified", EnumServiceException.STORAGE, e);
+            throw ExceptionUtil.createCmisException(e);
         }
-        // TODO: applyPolicies
-        applyAclCarefully(nodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
-        objectId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
     }
 
     /**
@@ -172,46 +137,16 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     public void checkOut(String repositoryId, Holder<String> objectId, Holder<CmisExtensionType> extension, Holder<Boolean> contentCopied) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId.value, AlfrescoObjectType.DOCUMENT_OBJECT);
-        assertVersionableIsTrue(documentNodeRef);
-        assertLatestVersion(documentNodeRef, false);
-
-        LockStatus lockStatus = lockService.getLockStatus(documentNodeRef);
-        if (lockStatus.equals(LockStatus.LOCKED) || lockStatus.equals(LockStatus.LOCK_OWNER) || nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_WORKING_COPY))
-        {
-            throw cmisObjectsUtils.createCmisException("Object is locked or already checked out", EnumServiceException.UPDATE_CONFLICT);
-        }
-
         try
         {
-            NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
+            NodeRef pwcNodeRef = cmisService.checkOut(objectId.value);
             objectId.value = propertiesUtil.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
             contentCopied.value = null != fileFolderService.getReader(pwcNodeRef);
         }
-        catch (Exception e)
+        catch (CMISServiceException e)
         {
-            throw cmisObjectsUtils.createCmisException(("Unable to execute Check Out services. Cause message: " + e.toString()), EnumServiceException.STORAGE);
+            throw ExceptionUtil.createCmisException(e);
         }
-    }
-
-    /**
-     * Deletes all document versions in the specified version series.
-     * 
-     * @param repositoryId repository Id
-     * @param versionSeriesId version series Id
-     * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME)
-     */
-    public void deleteAllVersions(String repositoryId, String versionSeriesId) throws CmisException
-    {
-        checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(versionSeriesId, AlfrescoObjectType.DOCUMENT_OBJECT);
-        NodeRef workingCopyRef = (cmisObjectsUtils.isWorkingCopy(documentNodeRef)) ? (documentNodeRef) : (checkOutCheckInService.getWorkingCopy(documentNodeRef));
-        if ((null != workingCopyRef) && cmisObjectsUtils.isWorkingCopy(workingCopyRef))
-        {
-            documentNodeRef = checkOutCheckInService.cancelCheckout(workingCopyRef);
-        }
-
-        versionService.deleteVersionHistory(documentNodeRef);
     }
 
     /**
@@ -225,38 +160,23 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
-        documentNodeRef = cmisObjectsUtils.getLatestNode(documentNodeRef, false);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
         List<CmisObjectType> objects = new LinkedList<CmisObjectType>();
-        includeAllowableActions = (null == includeAllowableActions) ? (false) : (includeAllowableActions);
-
+        if (includeAllowableActions == null)
+        {
+            includeAllowableActions = false;
+        }
         try
         {
-            NodeRef workingCopyNodeReference = cmisObjectsUtils.isWorkingCopy(documentNodeRef) ? documentNodeRef : checkOutCheckInService.getWorkingCopy(documentNodeRef);
-            if (null != workingCopyNodeReference)
+            for (NodeRef nodeRef : cmisService.getAllVersions(objectId))
             {
-                objects.add(createCmisObject(workingCopyNodeReference, propertyFilter, includeAllowableActions, null));
+                objects.add(createCmisObject(nodeRef, propertyFilter, includeAllowableActions, null));
             }
         }
-        catch (Exception e)
+        catch (CMISServiceException e)
         {
-            if (!(e instanceof AccessDeniedException))
-            {
-                throw cmisObjectsUtils.createCmisException(e.toString(), EnumServiceException.RUNTIME);
-            }
+            throw ExceptionUtil.createCmisException(e);
         }
-
-        VersionHistory versionHistory = versionService.getVersionHistory(documentNodeRef);
-        if (null != versionHistory)
-        {
-            for (Version version = versionService.getCurrentVersion(documentNodeRef); null != version; version = versionHistory.getPredecessor(version))
-            {
-                objects.add(createCmisObject(version.getFrozenStateNodeRef(), propertyFilter, includeAllowableActions, null));
-            }
-        }
-        // TODO: includeRelationships
-
         return objects;
     }
 
@@ -271,43 +191,17 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
     public CmisPropertiesType getPropertiesOfLatestVersion(String repositoryId, String objectId, Boolean major, String filter, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
+        NodeRef latestVersionNodeRef;
+        try
+        {
+            latestVersionNodeRef = cmisService.getLatestVersion(objectId, major != null && major);
+        }
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
         PropertyFilter propertyFilter = createPropertyFilter(filter);
-        major = (null == major) ? (false) : (major);
-        NodeRef latestVersionNodeRef = getAndCheckLatestNodeRef(documentNodeRef, major);
-        return propertiesUtil.getPropertiesType(latestVersionNodeRef.toString(), propertyFilter);
-    }
-
-    private void assertLatestVersion(NodeRef nodeRef, boolean mustBePwc) throws CmisException
-    {
-        if (mustBePwc)
-        {
-            boolean checkedOut = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, false);
-            definitelyGetWorkingCopy(checkedOut, nodeRef);
-        }
-        else
-        {
-            Boolean latestVersion = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_IS_LATEST_VERSION, false);
-            if (!latestVersion && !cmisObjectsUtils.isWorkingCopy(nodeRef))
-            {
-                throw cmisObjectsUtils.createCmisException("Operation can be executed only on the latest document version", EnumServiceException.VERSIONING);
-            }
-        }
-    }
-
-    private NodeRef definitelyGetWorkingCopy(boolean checkedOut, NodeRef nodeRef) throws CmisException
-    {
-        NodeRef workingCopy = null;
-        String workingCopyId = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID, null);
-        if (checkedOut && (null != workingCopyId) && !"".equals(workingCopyId))
-        {
-            workingCopy = cmisObjectsUtils.getIdentifierInstance(workingCopyId, AlfrescoObjectType.DOCUMENT_OBJECT);
-        }
-        if ((null == workingCopy) || !cmisObjectsUtils.isWorkingCopy(workingCopy))
-        {
-            throw cmisObjectsUtils.createCmisException("Object isn't checked out", EnumServiceException.UPDATE_CONFLICT);
-        }
-        return workingCopy;
+        return propertiesUtil.getProperties(latestVersionNodeRef, propertyFilter);
     }
 
     /**
@@ -318,29 +212,23 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds, Boolean includeACL, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef documentNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OBJECT);
-        PropertyFilter propertyFilter = createPropertyFilter(filter);
-        includeAllowableActions = (null == includeAllowableActions) ? (false) : (includeAllowableActions);
-        major = (null == major) ? (false) : (major);
-        NodeRef latestVersionNodeRef = getAndCheckLatestNodeRef(documentNodeRef, major);
-        // TODO: includeRelationships
-        // TODO: includePolicyIds
-        CmisObjectType result = createCmisObject(latestVersionNodeRef.toString(), propertyFilter, includeAllowableActions, renditionFilter);
-        if (includeACL)
+        try
         {
-            appendWithAce(documentNodeRef, result);
-        }
-        return result;
-    }
+            NodeRef latestVersionNodeRef = cmisService.getLatestVersion(objectId, major != null && major);
+            // TODO: includeRelationships
+            // TODO: includePolicyIds
+            PropertyFilter propertyFilter = createPropertyFilter(filter);
+            CmisObjectType result = createCmisObject(latestVersionNodeRef, propertyFilter, includeAllowableActions, renditionFilter);
+            if (includeACL)
+            {
+                appendWithAce(cmisService.getVersionSeries(objectId, NodeRef.class, false), result);
+            }
 
-    private NodeRef getAndCheckLatestNodeRef(NodeRef documentNodeRef, Boolean major) throws CmisException
-    {
-        NodeRef latestVersionNodeRef = cmisObjectsUtils.getLatestNode(documentNodeRef, major);
-        Boolean majorVersionProperty = propertiesUtil.getProperty(latestVersionNodeRef, CMISDictionaryModel.PROP_IS_MAJOR_VERSION, false);
-        if (major && !majorVersionProperty)
-        {
-            throw cmisObjectsUtils.createCmisException("Object that was specified has no latest major version", EnumServiceException.OBJECT_NOT_FOUND);
+            return result;
         }
-        return latestVersionNodeRef;
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
     }
 }

@@ -31,8 +31,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.CMISObjectReference;
-import org.alfresco.cmis.reference.ReferenceFactory;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cmis.reference.ReferenceFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;

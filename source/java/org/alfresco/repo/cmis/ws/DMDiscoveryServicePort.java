@@ -26,7 +26,6 @@ package org.alfresco.repo.cmis.ws;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +42,9 @@ import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetRow;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.repo.cmis.PropertyFilter;
-import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 
 /**
  * Port for Discovery service.
@@ -118,7 +118,15 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
 
             CmisObjectType object = new CmisObjectType();
             object.setProperties(properties);
-            Object identifier = cmisObjectsUtils.getIdentifierInstance((String) values.get(CMISDictionaryModel.PROP_OBJECT_ID), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
+            Object identifier;
+            try
+            {
+                identifier = cmisService.getReadableObject((String) values.get(CMISDictionaryModel.PROP_OBJECT_ID), Object.class);
+            }
+            catch (CMISServiceException e)
+            {
+                throw ExceptionUtil.createCmisException(e);
+            }
             if (includeAllowableActions)
             {
                 object.setAllowableActions(determineObjectAllowableActions(identifier));
@@ -175,26 +183,14 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             filter = CMISDictionaryModel.PROP_OBJECT_ID;
         }
 
-        if (changeToken != null)
-        {
-            try
-            {
-                Long.parseLong(changeToken);
-            }
-            catch (Exception e)
-            {
-                throw cmisObjectsUtils.createCmisException("Invalid changeLogToken was specified", EnumServiceException.INVALID_ARGUMENT);
-            }
-        }
-
         CMISChangeLog changeLog = null;
         try
         {
             changeLog = cmisChangeLogService.getChangeLogEvents(changeToken, maxAmount);
         }
-        catch (Exception e)
+        catch (CMISServiceException e)
         {
-            throw cmisObjectsUtils.createCmisException(e.getMessage(), EnumServiceException.STORAGE);
+            throw ExceptionUtil.createCmisException(e);
         }
         if (null == objects.value)
         {
@@ -230,10 +226,10 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             CmisObjectType object = new CmisObjectType();
             CmisPropertiesType propertiesType = new CmisPropertiesType();
             object.setProperties(propertiesType);
-            propertiesType.getProperty().add(propertiesUtil.createProperty(CMISDictionaryModel.PROP_OBJECT_ID, CMISDataTypeEnum.ID, event.getNode()));
-            if (nodeService.exists(event.getNode()) && includeAce)
+            propertiesType.getProperty().add(propertiesUtil.createProperty(CMISDictionaryModel.PROP_OBJECT_ID, CMISDataTypeEnum.ID, event.getObjectId()));
+            if (nodeService.exists(event.getChangedNode()) && includeAce)
             {
-                appendWithAce(event.getNode(), object);
+                appendWithAce(event.getChangedNode(), object);
             }            
             CmisChangeEventType changeInfo = new CmisChangeEventType();
             XMLGregorianCalendar modificationDate = propertiesUtil.convert(event.getChangeTime());

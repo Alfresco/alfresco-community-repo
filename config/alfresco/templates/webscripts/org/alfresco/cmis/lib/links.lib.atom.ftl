@@ -158,7 +158,7 @@
 [#macro nodeuri node]/cmis/[@noderef node/][/#macro]
 
 [#-- Helper to render Alfresco Assoc uri --]
-[#macro assocuri assoc]/cmis/rel/[@noderef assoc.source/]/type/${cmistype(assoc).typeId.id!"undefined"}/target/[@noderef assoc.target/][/#macro]
+[#macro assocuri assoc]/cmis/rel/${assoc.associationRef.id}[/#macro]
 
 [#-- Helper to render Alfresco Type uri --]
 [#macro typeuri typedef]/cmis/type/${typedef.typeId.id}[/#macro]

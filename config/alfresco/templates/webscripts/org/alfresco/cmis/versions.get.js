@@ -4,7 +4,7 @@ script:
 {
     // NOTE: version series is identified by noderef (as this is constant during lifetime of node)
     var object = getObjectFromUrl();
-    if (object.node == null || !object.node.isVersioned)
+    if (object.node == null)
     {
         status.message = "Versions series " + object.ref + " not found";
         break script;
@@ -19,10 +19,5 @@ script:
     }
    
     // retrieve versions
-    model.versions = model.node.versionHistory;
-    model.nodes = new Array(model.versions.length);
-    for (i = 0; i < model.versions.length; i++)
-    {
-       model.nodes[i] = model.versions[i].node;
-    }
+    model.nodes = cmis.getAllVersions(model.node);
 }

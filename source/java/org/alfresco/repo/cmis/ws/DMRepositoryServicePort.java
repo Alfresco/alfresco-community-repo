@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import org.alfresco.cmis.CMISAclCapabilityEnum;
 import org.alfresco.cmis.CMISAclPropagationEnum;
@@ -50,8 +49,10 @@ import org.alfresco.cmis.CMISPermissionDefinition;
 import org.alfresco.cmis.CMISPermissionMapping;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.descriptor.Descriptor;
 
@@ -324,7 +325,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         }
         default:
         {
-            throw cmisObjectsUtils.createCmisException(type.getLabel(), EnumServiceException.OBJECT_NOT_FOUND);
+            throw ExceptionUtil.createCmisException(type.getLabel(), EnumServiceException.OBJECT_NOT_FOUND);
         }
         }
     }
@@ -379,7 +380,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     {
         if (typeDef == null)
         {
-            throw cmisObjectsUtils.createCmisException("Type not found", EnumServiceException.OBJECT_NOT_FOUND);
+            throw ExceptionUtil.createCmisException("Type not found", EnumServiceException.OBJECT_NOT_FOUND);
         }
 
         CmisTypeDefinitionType result = null;
@@ -439,7 +440,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             result = relationshipDefinitionType;
             break;
         case UNKNOWN:
-            throw cmisObjectsUtils.createCmisException("Unknown CMIS Type", EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException("Unknown CMIS Type", EnumServiceException.INVALID_ARGUMENT);
         }
 
         return result;
@@ -572,7 +573,15 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        Collection<CMISTypeDefinition> typeDefs = getBaseTypesCollection(typeId, true);
+        Collection<CMISTypeDefinition> typeDefs;
+        try
+        {
+            typeDefs = typeId == null ? cmisService.getBaseTypes() : cmisService.getTypeDefinition(typeId).getSubTypes(false);
+        }
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
         // skip
         Cursor cursor = createCursor(typeDefs.size(), skipCount, maxItems);
         Iterator<CMISTypeDefinition> iterTypeDefs = typeDefs.iterator();
@@ -593,7 +602,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             }
             else
             {
-                throw cmisObjectsUtils.createCmisException(("Subtypes collection is corrupted. Type id: " + typeId), EnumServiceException.STORAGE);
+                throw ExceptionUtil.createCmisException(("Subtypes collection is corrupted. Type id: " + typeId), EnumServiceException.STORAGE);
             }
         }
         result.setHasMoreItems(((maxItems == null) || (0 == maxItems.intValue())) ? (false) : ((cursor.getEndRow() < (typeDefs.size() - 1))));
@@ -614,11 +623,11 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         CMISTypeDefinition typeDef;
         try
         {
-            typeDef = cmisDictionaryService.findType(typeId);
+            typeDef = cmisService.getTypeDefinition(typeId);
         }
-        catch (Exception e)
+        catch (CMISServiceException e)
         {
-            throw cmisObjectsUtils.createCmisException(e.toString(), EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException(e);
         }
         return getCmisTypeDefinition(typeDef, true);
     }
@@ -634,39 +643,39 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
             throws CmisException
     {
         checkRepositoryId(repositoryId);
-        long depthLong = (null == depth) ? (-1) : (depth.longValue());
+        long depthLong = (null == depth || null == typeId) ? (-1) : (depth.longValue());
         if (0 == depthLong)
         {
-            throw cmisObjectsUtils.createCmisException("Depth parameter equal to '0' have no sence", EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException("Invalid depth '0'", EnumServiceException.INVALID_ARGUMENT);
         }
-        boolean includePropertyDefsBool = (null == includePropertyDefinitions) ? (false) : (includePropertyDefinitions);
         List<CmisTypeContainer> result = new LinkedList<CmisTypeContainer>();
-        Queue<TypeElement> typesQueue = new LinkedList<TypeElement>();
-        Collection<CMISTypeDefinition> typeDefs = getBaseTypesCollection(typeId, false);
-        for (CMISTypeDefinition typeDef : typeDefs)
+        CMISTypeDefinition typeDef;
+        try
         {
-            typesQueue.add(new TypeElement(0L, typeDef, createTypeContainer(typeDef, includePropertyDefsBool)));
+            typeDef = typeId == null ? null : cmisService.getTypeDefinition(typeId);
         }
-        for (TypeElement element = typesQueue.peek(); !typesQueue.isEmpty(); element = (typeDefs.isEmpty()) ? (null) : (typesQueue.peek()))
+        catch (CMISServiceException e)
         {
-            typesQueue.poll();
-            result.add(element.getContainer());
-            long nextLevel = element.getLevel() + 1;
-            Collection<CMISTypeDefinition> subTypes = element.getTypeDefinition().getSubTypes(false);
-            if (null != subTypes)
+            throw ExceptionUtil.createCmisException(e);
+        }
+        getTypeDescendants(typeDef, result, includePropertyDefinitions != null && includePropertyDefinitions, 1, depthLong);
+        return result;
+    }
+
+    private void getTypeDescendants(CMISTypeDefinition parent, List<CmisTypeContainer> result, boolean includePropertyDefs, long depth, long maxDepth) throws CmisException
+    {
+        Collection<CMISTypeDefinition> subtypes = parent == null ? cmisService.getBaseTypes() : parent.getSubTypes(false);
+        for (CMISTypeDefinition typeDef : subtypes)
+        {
+            result.add(createTypeContainer(typeDef, includePropertyDefs));
+        }
+        if (maxDepth == -1 || depth + 1 <= maxDepth)
+        {
+            for (CMISTypeDefinition typeDef : subtypes)
             {
-                for (CMISTypeDefinition typeDef : subTypes)
-                {
-                    CmisTypeContainer childContainer = createTypeContainer(typeDef, includePropertyDefsBool);
-                    if ((-1 == depthLong) || (nextLevel <= depthLong))
-                    {
-                        element.getContainer().getChildren().add(childContainer);
-                        typesQueue.add(new TypeElement(nextLevel, typeDef, childContainer));
-                    }
-                }
+                getTypeDescendants(typeDef, result, includePropertyDefs, depth + 1, maxDepth);
             }
         }
-        return result;
     }
 
     private CmisTypeContainer createTypeContainer(CMISTypeDefinition parentType, boolean includeProperties) throws CmisException
@@ -674,71 +683,5 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         CmisTypeContainer result = new CmisTypeContainer();
         result.setType(getCmisTypeDefinition(parentType, includeProperties));
         return result;
-    }
-
-    private class TypeElement
-    {
-        private long level;
-        private CMISTypeDefinition typeDefinition;
-        private CmisTypeContainer container;
-
-        public TypeElement(long level, CMISTypeDefinition typeDefinition, CmisTypeContainer container)
-        {
-            this.level = level;
-            this.typeDefinition = typeDefinition;
-            this.container = container;
-        }
-
-        public long getLevel()
-        {
-            return level;
-        }
-
-        public CMISTypeDefinition getTypeDefinition()
-        {
-            return typeDefinition;
-        }
-
-        public CmisTypeContainer getContainer()
-        {
-            return container;
-        }
-    }
-
-    private Collection<CMISTypeDefinition> getBaseTypesCollection(String typeId, boolean includeSubtypes) throws CmisException
-    {
-        Collection<CMISTypeDefinition> typeDefs = new LinkedList<CMISTypeDefinition>();
-        if ((null == typeId) || "".equals(typeId))
-        {
-            typeDefs = cmisDictionaryService.getBaseTypes();
-        }
-        else
-        {
-            CMISTypeDefinition typeDef = null;
-            try
-            {
-                typeDef = cmisDictionaryService.findType(typeId);
-            }
-            catch (Exception e)
-            {
-                throw cmisObjectsUtils.createCmisException(e.toString(), EnumServiceException.INVALID_ARGUMENT);
-            }
-
-            if (null == typeDef)
-            {
-                throw cmisObjectsUtils.createCmisException(("Invalid type id: \"" + typeId + "\""), EnumServiceException.INVALID_ARGUMENT);
-            }
-            typeDefs.add(typeDef);
-
-            if (includeSubtypes)
-            {
-                Collection<CMISTypeDefinition> subTypes = typeDef.getSubTypes(false);
-                if (null != subTypes)
-                {
-                    typeDefs.addAll(subTypes);
-                }
-            }
-        }
-        return typeDefs;
     }
 }

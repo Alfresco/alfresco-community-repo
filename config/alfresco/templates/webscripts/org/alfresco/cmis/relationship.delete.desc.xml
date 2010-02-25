@@ -3,7 +3,7 @@
   <description>
   </description>
   
-  <url>/cmis/rel/s/{store}/i/{id}/type/{rel_type}/target/s/{target_store}/i/{target_id}</url>
+  <url>/cmis/rel/{assoc_id}</url>
   
   <authentication>user</authentication>
   <format default="atomentry"/>

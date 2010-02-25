@@ -26,6 +26,7 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.repo.template.TemplateNode;
@@ -33,6 +34,7 @@ import org.alfresco.repo.web.scripts.RepositoryImageResolver;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.template.TemplateMethodModelEx;
@@ -98,7 +100,15 @@ public class CMISChildrenMethod implements TemplateMethodModelEx
                         }
                         
                         // query children
-                        NodeRef[] childNodeRefs = cmisService.getChildren(nodeRef, typesFilter);
+                        NodeRef[] childNodeRefs;
+                        try
+                        {
+                            childNodeRefs = cmisService.getChildren(nodeRef, typesFilter, null);
+                        }
+                        catch (CMISInvalidArgumentException e)
+                        {
+                            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+                        }
                         children = new TemplateNode[childNodeRefs.length];
                         for (int i = 0; i < childNodeRefs.length; i++)
                         {

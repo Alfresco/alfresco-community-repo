@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 	<!--
-		$Revision: 149 $ $Date: 2009-12-22 08:01:48 -0800 (Tue, 22 Dec 2009) $
-		$Author: fmueller $ $HeadURL:
+		$Revision: 169 $ $Date: 2010-01-25 10:34:39 -0800 (Mon, 25 Jan 2010) $
+		$Author: albertcbrown $ $HeadURL:
 		http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-Core.xsd
 		$
 	-->
@@ -555,8 +555,6 @@
 			<xs:element name="canCreateFolder" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canCreateRelationship" type="xs:boolean"
-				minOccurs="0" maxOccurs="1" />
-			<xs:element name="canCreatePolicy" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="canDeleteTree" type="xs:boolean"
 				minOccurs="0" maxOccurs="1" />

@@ -269,6 +269,10 @@
    </bean>
 
    <!-- CMIS Javsascript API -->
+   <bean id="CMISReferenceFactory" class="org.alfresco.repo.cmis.reference.ReferenceFactory">
+      <property name="CMISService" ref="CMISService" />
+   </bean>
+
    <bean id="webscripts.js.cmis" parent="baseJavaScriptExtension" class="org.alfresco.repo.cmis.rest.CMISScript">
       <property name="extensionName"><value>cmis</value></property>
       <property name="serviceRegistry" ref="ServiceRegistry" />
@@ -299,7 +303,7 @@
       <property name="referenceFactory" ref="CMISReferenceFactory" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="namespaceService" ref="NamespaceService" />
-      <property name="contentService" ref="ContentService" />
+      <property name="cmisService" ref="CMISService" />
       <property name="mimetypeService" ref="MimetypeService" />
    </bean>
 

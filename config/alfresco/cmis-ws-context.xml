@@ -280,6 +280,7 @@
                 <value>dmDiscoveryService</value>
                 <value>dmRelationshipService</value>
                 <value>dmPolicyService</value>
+                <value>dmAclService</value>
             </list>
         </property>
         <property name="interceptorNames">
@@ -305,25 +306,12 @@
 
     <bean id="exceptionPointcutAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
         <property name="advice">
-            <bean class="org.alfresco.repo.cmis.ws.DMServicePortThrowsAdvice">
-               <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
-            </bean>
+            <bean class="org.alfresco.repo.cmis.ws.DMServicePortThrowsAdvice" />
         </property>
-    </bean>
-
-    <bean id="cmisObjectsUtils" class="org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils">
-        <property name="lockService" ref="LockService" />
-        <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
-        <property name="authorityService" ref="AuthorityService" />
-        <property name="versionService" ref="VersionService" />
-        <property name="cmisDictionaryService" ref="CMISDictionaryService" />
-        <property name="fileFolderService" ref="FileFolderService" />
-        <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="propertiesUtils" class="org.alfresco.repo.cmis.ws.utils.PropertyUtil">
         <property name="cmisDictionaryService" ref="CMISDictionaryService" />
-        <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
         <property name="cmisService" ref="CMISService" />
         <property name="nodeService" ref="NodeService" />
         <property name="dictionaryService" ref="DictionaryService" />
@@ -341,15 +329,11 @@
 
     <bean id="dmMultiFilingService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMMultiFilingServicePort" />
 
-    <bean id="dmVersioningService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMVersioningServicePort">
-        <property name="lockService" ref="LockService" />
-    </bean>
+    <bean id="dmVersioningService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMVersioningServicePort" />
 
     <bean id="dmDiscoveryService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMDiscoveryServicePort" />
 
-    <bean id="dmRelationshipService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRelationshipServicePort" >
-        <property name="dictionaryService" ref="DictionaryService" />
-    </bean>
+    <bean id="dmRelationshipService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMRelationshipServicePort" />
 
     <bean id="dmPolicyService" parent="dmAbstractService" class="org.alfresco.repo.cmis.ws.DMPolicyServicePort" />
 
@@ -358,20 +342,16 @@
     <bean id="dmAbstractService" abstract="true" class="org.alfresco.repo.cmis.ws.DMAbstractServicePort">
         <property name="cmisService" ref="CMISService" />
         <property name="cmisQueryService" ref="CMISQueryService" />
-        <property name="cmisDictionaryService" ref="CMISDictionaryService" />
         <property name="cmisRenditionService" ref="CMISRenditionService" />
         <property name="cmisChangeLogService" ref="CMISChangeLogService" />
         <property name="cmisAclService" ref="CMISAccessControlService" />
 
         <property name="descriptorService" ref="DescriptorService" />
         <property name="nodeService" ref="NodeService" />
-        <property name="versionService" ref="VersionService" />
         <property name="fileFolderService" ref="FileFolderService" />
-        <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
         <property name="searchService" ref="SearchService" />
         <property name="permissionService" ref="PermissionService" />
-        
-        <property name="cmisObjectsUtils" ref="cmisObjectsUtils" />
+
         <property name="propertiesUtil" ref="propertiesUtils" />
     </bean>
 

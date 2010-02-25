@@ -82,7 +82,7 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         helper.versioningServicePort.checkOut(repositoryId, documentIdHolder1, new Holder<CmisExtensionType>(), contentCopied);
         assertTrue(contentCopied.value);
 
-        List<CmisObjectType> result = getCheckedoutDocs(null, 0, 0);
+        List<CmisObjectType> result = getCheckedoutDocs(null, "cmis:lastModificationDate DESC", 0, 0);
 
         if (result == null || result.size() < 2)
         {
@@ -90,23 +90,25 @@ public class DMNavigationServiceTest extends AbstractServiceTest
             helper.versioningServicePort.checkIn(repositoryId, documentIdHolder, false, null, null, null, null, null, null, new Holder<CmisExtensionType>());
             fail("Not all checkout docs have been found");
         }
+        
+        assertEquals("Wrong order", documentIdHolder1.value, getIdProperty(result.get(0).getProperties(), CMISDictionaryModel.PROP_OBJECT_ID));        
         validateResponse(result);
 
-        result = getCheckedoutDocs(null, 1, 0);
+        result = getCheckedoutDocs(null, "cmis:lastModificationDate DESC", 1, 0);
         assertNotNull(result);
         assertTrue(result.size() == 1);
 
         // check in
         helper.versioningServicePort.checkIn(repositoryId, documentIdHolder, false, null, null, null, null, null, null, new Holder<CmisExtensionType>());
 
-        result = getCheckedoutDocs(companyHomeId, 0, 0);
+        result = getCheckedoutDocs(companyHomeId, "cmis:lastModificationDate ASC", 0, 0);
         assertFalse("Wrong results", isExistItemWithProperty(result, CMISDictionaryModel.PROP_NAME, documentName));
 
     }
 
     public void testGetChildren() throws Exception
     {
-        List<CmisObjectInFolderType> response = getChildren(companyHomeId, 100, true);
+        List<CmisObjectInFolderType> response = getChildren(companyHomeId, null, 100, true);
 
         if (null != response)
         {
@@ -134,10 +136,10 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         @SuppressWarnings("unused")
         String documentId1 = helper.createDocument(documentName1, folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
 
-        response = getChildren(folderId, 2, false);
+        response = getChildren(folderId, CMISDictionaryModel.PROP_NAME + " ASC", 2, false);
         assertEquals(2, response.size());
-        assertTrue(getStringProperty(response.get(0).getObject().getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
-        assertTrue(getStringProperty(response.get(1).getObject().getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName1));
+        assertTrue(getStringProperty(response.get(0).getObject().getProperties(), CMISDictionaryModel.PROP_NAME).equals(documentName1));
+        assertTrue(getStringProperty(response.get(1).getObject().getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName1));
 
         // TODO: not implemented
         // assertNotNull(response.getObject().get(0).getAllowableActions());
@@ -290,9 +292,9 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         return result;
     }
 
-    private List<CmisObjectInFolderType> getChildren(String folderId, int maxItems, boolean includePathSegments) throws Exception
+    private List<CmisObjectInFolderType> getChildren(String folderId, String orderBy, int maxItems, boolean includePathSegments) throws Exception
     {
-        CmisObjectInFolderListType result = ((NavigationServicePort) servicePort).getChildren(repositoryId, folderId, "*", "", false, null, "", includePathSegments, BigInteger
+        CmisObjectInFolderListType result = ((NavigationServicePort) servicePort).getChildren(repositoryId, folderId, "*", orderBy, false, null, "", includePathSegments, BigInteger
                 .valueOf(maxItems), BigInteger.valueOf(0), null);
         assertNotNull("Get Children response is undefined", result);
         return result.getObjects();
@@ -318,9 +320,9 @@ public class DMNavigationServiceTest extends AbstractServiceTest
         return response;
     }
 
-    private List<CmisObjectType> getCheckedoutDocs(String folderId, long maxItems, long skipCount) throws Exception
+    private List<CmisObjectType> getCheckedoutDocs(String folderId, String orderBy, long maxItems, long skipCount) throws Exception
     {
-        CmisObjectListType result = ((NavigationServicePort) servicePort).getCheckedOutDocs(repositoryId, folderId, "*", null, false, null, "", BigInteger.valueOf(maxItems),
+        CmisObjectListType result = ((NavigationServicePort) servicePort).getCheckedOutDocs(repositoryId, folderId, "*", orderBy, false, null, "", BigInteger.valueOf(maxItems),
                 BigInteger.valueOf(skipCount), null);
         assertNotNull(result);
         return result.getObjects();

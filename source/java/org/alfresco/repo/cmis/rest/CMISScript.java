@@ -41,7 +41,10 @@ import org.alfresco.cmis.CMISCapabilityChanges;
 import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.cmis.CMISChangeLog;
 import org.alfresco.cmis.CMISChangeLogService;
+import org.alfresco.cmis.CMISConstraintException;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISObjectReference;
 import org.alfresco.cmis.CMISPermissionDefinition;
@@ -54,14 +57,15 @@ import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISRelationshipReference;
 import org.alfresco.cmis.CMISRepositoryReference;
 import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
+import org.alfresco.cmis.CMISVersioningStateEnum;
 import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.acl.CMISAccessControlEntryImpl;
-import org.alfresco.cmis.reference.NodeRefReference;
-import org.alfresco.cmis.reference.ReferenceFactory;
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cmis.reference.ObjectIdReference;
+import org.alfresco.repo.cmis.reference.ReferenceFactory;
 import org.alfresco.repo.jscript.Association;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -73,16 +77,18 @@ import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 
 /**
- * CMIS Javascript API
+ * CMIS Javascript API.
  * 
- * @author davic
+ * @author davidc
+ * @author dward
  */
 public class CMISScript extends BaseScopableProcessorExtension
 {
@@ -117,12 +123,13 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_THIS_VERSION = "thisVersion";
     public static final String ARG_TYPE_ID = "typeId";
     public static final String ARG_TYPES = "types";
-    public static final String ARG_UNFILE_MULTIFILE_DOCUMENTS = "unfileMultiFiledDocuments";
+    public static final String ARG_UNFILE_OBJECTS = "unfileObjects";
     public static final String ARG_VERSIONING_STATE = "versioningState";
     public static final String ARG_SOURCE_FOLDER_ID = "sourceFolderId";
     public static final String ARG_INCLUDE_ACL = "includeACL";    
     public static final String ARG_RENDITION_FILTER = "renditionFilter";
     public static final String ARG_CHANGE_LOG_TOKEN = "changeLogToken";
+    public static final String ARG_ORDER_BY = "orderBy";
 
     // service dependencies
     private ServiceRegistry services;
@@ -147,9 +154,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
 
     /**
-     * Set the paging helper
+     * Set the paging helper.
      * 
      * @param paging
+     *            the paging helper
      */
     public void setPaging(Paging paging)
     {
@@ -157,9 +165,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Set the CMIS Service
+     * Set the CMIS Service.
      * 
      * @param cmisService
+     *            the cmis service
      */
     public void setCMISService(CMISServices cmisService)
     {
@@ -167,9 +176,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
 
     /**
-     * Set the CMIS Dictionary Service
+     * Set the CMIS Dictionary Service.
      * 
      * @param cmisDictionaryService
+     *            the cmis dictionary service
      */
     public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -177,9 +187,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
 
     /**
-     * Set the CMIS Query Service
+     * Set the CMIS Query Service.
      * 
      * @param cmisQueryService
+     *            the cmis query service
      */
     public void setCMISQueryService(CMISQueryService cmisQueryService)
     {
@@ -208,9 +219,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
 
     /**
-     * Set the CMIS Reference Factory
-     *  
+     * Set the CMIS Reference Factory.
+     * 
      * @param referenceFactory
+     *            the reference factory
      */
     public void setCMISReferenceFactory(ReferenceFactory referenceFactory)
     {
@@ -337,7 +349,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public CMISObjectReference createObjectIdReference(String objectId)
     {
-        return new NodeRefReference(cmisService, objectId);
+        return new ObjectIdReference(cmisService, objectId);
     }
 
     /**
@@ -375,15 +387,29 @@ public class CMISScript extends BaseScopableProcessorExtension
     /**
      * Query for node children
      * 
-     * @param parent  node to query children for
-     * @param typesFilter  types filter
-     * @param page  page to query for
-     * @return  paged result set of children
+     * @param parent
+     *            node to query children for
+     * @param typesFilter
+     *            types filter
+     * @param orderBy
+     *            comma-separated list of query names and the ascending modifier "ASC" or the descending modifier "DESC"
+     *            for each query name
+     * @param page
+     *            page to query for
+     * @return paged result set of children
      */
-    public PagedResults queryChildren(ScriptNode parent, String typesFilter, Page page)
+    public PagedResults queryChildren(ScriptNode parent, String typesFilter, String orderBy, Page page)
     {
         CMISTypesFilterEnum filter = resolveTypesFilter(typesFilter);
-        NodeRef[] children = cmisService.getChildren(parent.getNodeRef(), filter);
+        NodeRef[] children;
+        try
+        {
+            children = cmisService.getChildren(parent.getNodeRef(), filter, orderBy);
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
         
         Cursor cursor = paging.createCursor(children.length, page);
         ScriptNode[] nodes = new ScriptNode[cursor.getRowCount()];
@@ -408,7 +434,15 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public PagedResults queryRelationships(ScriptNode node, CMISTypeDefinition relDef, boolean includeSubTypes, CMISRelationshipDirectionEnum direction, Page page)
     {
-        AssociationRef[] relationships = cmisService.getRelationships(node.getNodeRef(), relDef, includeSubTypes, direction);
+        AssociationRef[] relationships;
+        try
+        {
+            relationships = cmisService.getRelationships(node.getNodeRef(), relDef, includeSubTypes, direction);
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
         
         Cursor cursor = paging.createCursor(relationships.length, page);
         Association[] assocs = new Association[cursor.getRowCount()];
@@ -422,31 +456,6 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Query for items checked-out to user
-     * 
-     * @param username  user
-     * @param page
-     * @return  paged result set of checked-out items
-     */
-    public PagedResults queryCheckedOut(String username, Page page)
-    {
-        return queryCheckedOut(username, null, false, page);
-    }
-
-    /**
-     * Query for items checked-out to user within folder
-     * 
-     * @param username  user
-     * @param folder  folder
-     * @param page
-     * @return  paged result set of checked-out items
-     */
-    public PagedResults queryCheckedOut(String username, ScriptNode folder, Page page)
-    {
-        return queryCheckedOut(username, folder, false, page);
-    }
-
-    /**
      * Query for items checked-out to user within folder (and possibly descendants)
      * 
      * @param username  user
@@ -457,7 +466,15 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public PagedResults queryCheckedOut(String username, ScriptNode folder, boolean includeDescendants, Page page)
     {
-        NodeRef[] checkedout = cmisService.getCheckedOut(username, (folder == null) ? null : folder.getNodeRef(), includeDescendants);
+        NodeRef[] checkedout;
+        try
+        {
+            checkedout = cmisService.getCheckedOut(username, (folder == null) ? null : folder.getNodeRef(), includeDescendants, null);
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
         Cursor cursor = paging.createCursor(checkedout.length, page);
         ScriptNode[] nodes = new ScriptNode[cursor.getRowCount()];
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
@@ -470,15 +487,18 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
 
     /**
-     * Query for child types (of a given type), or the base types (if no type given)
+     * Query for child types (of a given type), or the base types (if no type given).
      * 
      * @param typeDef
+     *            the type def
      * @param page
-     * @return
+     *            the page
+     * @return the paged results
      */
     public PagedResults queryTypeChildren(CMISTypeDefinition typeDef, Page page)
     {
-        Collection<CMISTypeDefinition> children = (typeDef == null) ? cmisDictionaryService.getBaseTypes() : typeDef.getSubTypes(false);
+        Collection<CMISTypeDefinition> children = (typeDef == null) ? cmisService.getBaseTypes() : typeDef
+                .getSubTypes(false);
         Cursor cursor = paging.createCursor(children.size(), page);
         
         // skip
@@ -500,47 +520,49 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Query for a Type Definition given a CMIS Type Id
+     * Query for a Type Definition given a CMIS Type Id.
      * 
-     * @param page
-     * @return  CMIS Type Definition
+     * @param typeId
+     *            the type id
+     * @return CMIS Type Definition
      */
     public CMISTypeDefinition queryType(String typeId)
     {
         try
         {
-            return cmisDictionaryService.findType(typeId);
+            return cmisService.getTypeDefinition(typeId);
         }
-        catch(AlfrescoRuntimeException e)
+        catch (CMISInvalidArgumentException e)
         {
-            return null;
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
         }
     }
     
     /**
-     * Query the Type Definition for the given Node
+     * Query the Type Definition for the given Node.
      * 
      * @param node
-     * @return  CMIS Type Definition
+     *            the node
+     * @return CMIS Type Definition
      */
     public CMISTypeDefinition queryType(ScriptNode node)
     {
         try
         {
-            QName typeQName = node.getQNameType();
-            return cmisDictionaryService.findTypeForClass(typeQName);
+            return cmisService.getTypeDefinition(node.getNodeRef());
         }
-        catch(AlfrescoRuntimeException e)
+        catch (CMISInvalidArgumentException e)
         {
-            return null;
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
         }
     }
     
     /**
-     * Query the Property Definition for the given Property
+     * Query the Property Definition for the given Property.
      * 
      * @param propertyName
-     * @return
+     *            the property name
+     * @return the CMIS property definition
      */
     public CMISPropertyDefinition queryProperty(String propertyName)
     {
@@ -553,8 +575,8 @@ public class CMISScript extends BaseScopableProcessorExtension
 
     /**
      * Can you query the private working copy of a document.
-     *  
-     * @return
+     * 
+     * @return is the PWC searchable?
      */
     public boolean getPwcSearchable()
     {
@@ -576,7 +598,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     /**
      * Get the query support level.
      * 
-     * @return
+     * @return the query support level
      */
     public CMISQueryEnum getQuerySupport()
     {
@@ -586,7 +608,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     /**
      * Get the join support level in queries.
      * 
-     * @return
+     * @return the join support level
      */
     public CMISJoinEnum getJoinSupport()
     {
@@ -594,12 +616,13 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
     
     /**
-     * Issue query
+     * Issue query.
      * 
-     * @param statement  query statement
+     * @param statement
+     *            query statement
      * @param page
-     * 
-     * @return  paged result set
+     *            the page
+     * @return paged result set
      */
     public PagedResults query(String statement, Page page)
     {
@@ -624,7 +647,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     }    
 
     /**
-     * Gets the supported permission types
+     * Gets the supported permission types.
      * 
      * @return the supported permission types
      */
@@ -645,6 +668,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     
     /**
      * Get all the permissions defined by the repository.
+     * 
      * @return a list of permissions
      */
     public List<CMISPermissionDefinition> getRepositoryPermissions()
@@ -655,6 +679,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     
     /**
      * Get the list of permission mappings.
+     * 
      * @return get the permission mapping as defined by the CMIS specification.
      */
     public List<? extends CMISPermissionMapping> getPermissionMappings()
@@ -684,6 +709,16 @@ public class CMISScript extends BaseScopableProcessorExtension
         return cmisAccessControlService.getPrincipalAnyone();
     }
     
+    /**
+     * Applies an ACL to a node.
+     * 
+     * @param node
+     *            the node
+     * @param principalIds
+     *            the principal IDs
+     * @param permissions
+     *            the permissions for each principal ID
+     */
     @SuppressWarnings("unchecked")
     public void applyACL(ScriptNode node, Serializable principalIds, Serializable permissions)
     {
@@ -694,7 +729,15 @@ public class CMISScript extends BaseScopableProcessorExtension
         {
             acesToApply.add(new CMISAccessControlEntryImpl(principalList.get(i), permissionList.get(i)));
         }
-        cmisAccessControlService.applyAcl(node.getNodeRef(), acesToApply);
+        try
+        {
+            cmisAccessControlService.applyAcl(node.getNodeRef(), acesToApply);
+        }
+        catch (CMISConstraintException e)
+        {
+            // Force the appropriate status code on error
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
     }
     
     /**
@@ -779,7 +822,7 @@ public class CMISScript extends BaseScopableProcessorExtension
             Scriptable changeNodes = cx.newArray(scope, size);
             for (int i = 0; i < size; i++)
             {
-                ScriptableObject.putProperty(changeNodes, i, new ScriptNode(changeEvents.get(i).getNode(), services,
+                ScriptableObject.putProperty(changeNodes, i, new ScriptNode(changeEvents.get(i).getChangedNode(), services,
                         scope));
             }
             ScriptableObject.putProperty(changeLogMap, "changeNodes", changeNodes);
@@ -811,9 +854,298 @@ public class CMISScript extends BaseScopableProcessorExtension
             }
             return changeLogMap;
         }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
         finally
         {
             Context.exit();
+        }
+    }
+    
+    /**
+     * Applies a versioning state to a new node, potentially resulting in a new node.
+     * 
+     * @param source
+     *            the source
+     * @param versioningState
+     *            the versioning state
+     * @return the node to write changes to
+     * @throws CMISConstraintException
+     */
+    public ScriptNode applyVersioningState(ScriptNode source, String versioningState)
+    {
+        CMISVersioningStateEnum versioningStateEnum = CMISVersioningStateEnum.FACTORY.fromLabel(versioningState);
+        try
+        {
+            return new ScriptNode(cmisService.applyVersioningState(source.getNodeRef(), versioningStateEnum), services,
+                    getScope());
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+            
+    /**
+     * Checks out an object by ID.
+     * 
+     * @param objectId
+     *            the object id
+     * @return the private working copy node
+     */
+    public ScriptNode checkOut(String objectId)
+    {
+        try
+        {
+            return new ScriptNode(cmisService.checkOut(objectId), services, getScope());
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Checks in a given private working copy node.
+     * 
+     * @param source
+     *            the node
+     * @param checkinComment
+     *            the checkin comment
+     * @param isMajor
+     *            is this a major version?
+     * @return the checked-in node
+     */
+    public ScriptNode checkIn(ScriptNode source, String checkinComment, boolean isMajor)
+    {
+        try
+        {
+            return new ScriptNode(cmisService.checkIn((String) cmisService.getProperty(source.getNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID), checkinComment, isMajor), services,
+                    getScope());
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }        
+    }
+
+    /**
+     * Cancels a check out.
+     * 
+     * @param source
+     *            the private working copy
+     */
+    public void cancelCheckOut(ScriptNode source)
+    {
+        try
+        {
+            cmisService.cancelCheckOut((String) cmisService.getProperty(source.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID));
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }        
+    }
+    
+    /**
+     * Gets all the versions of a node.
+     * 
+     * @param source
+     *            the node
+     * @return a Javascript array of all the versions
+     */
+    public Scriptable getAllVersions(ScriptNode source)
+    {
+        Scriptable scope = getScope();
+        Context cx = Context.enter();
+        try
+        {
+            List<NodeRef> allVersions = cmisService.getAllVersions((String) cmisService.getProperty(
+                    source.getNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID));
+            // Wrap the version
+            int size = allVersions.size();
+            Scriptable allVersionsArr = cx.newArray(scope, size);
+            for (int i = 0; i < size; i++)
+            {
+                ScriptableObject.putProperty(allVersionsArr, i, new ScriptNode(allVersions.get(i), services, scope));
+            }
+            return allVersionsArr;
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+        finally
+        {
+            Context.exit();
+        }
+    }
+    
+    /**
+     * Gets the required version of a node
+     * 
+     * @param source
+     *            the node
+     * @param returnVersion
+     *            value indicating version required
+     * @return the version
+     */
+    public ScriptNode getReturnVersion(ScriptNode source, String returnVersion)
+    {
+        if (returnVersion == null || returnVersion.equals("this"))
+        {
+            return source;
+        }
+        try
+        {
+            return new ScriptNode(cmisService.getLatestVersion((String) cmisService.getProperty(source.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), returnVersion.equals("latestmajor")), services, getScope());
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Attempts to delete a folder and all of its children, recording the status in the given status object.
+     * 
+     * @param source
+     *            the folder node
+     * @param status
+     *            the status
+     * @param continueOnFailure
+     *            should we continue if an error occurs with one of the children?
+     * @param unfile
+     *            should we remove non-primary associations to nodes rather than delete them?
+     * @param deleteAllVersions
+     *            should we delete all the versions of the nodes we delete?
+     */
+    public void deleteTree(ScriptNode source, Status status, boolean continueOnFailure, boolean unfile,
+            boolean deleteAllVersions)
+    {
+        // Let's avoid all deletions getting rolled back by catching the exception and setting the status ourselves
+        try
+        {
+            cmisService.deleteTreeReportLastError((String) cmisService.getProperty(source.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), continueOnFailure, unfile, deleteAllVersions);
+            // Success, but no response content
+            status.setCode(Status.STATUS_NO_CONTENT);
+            status.setRedirect(true);
+        }
+        catch (CMISServiceException e)
+        {
+            status.setCode(e.getStatusCode());
+            status.setMessage(e.getMessage());
+            status.setRedirect(true);
+        }
+    }
+    
+    /**
+     * Deletes a node's content stream.
+     * 
+     * @param source
+     *            the node
+     */
+    public void deleteContentStream(ScriptNode source)
+    {
+        try
+        {
+            cmisService.deleteContentStream((String) cmisService.getProperty(source.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID));
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Deletes a node.
+     * 
+     * @param source
+     *            the node
+     * @param allVersions
+     *            should we delete all the versions of the node?
+     */
+    public void deleteObject(ScriptNode source, boolean allVersions)
+    {
+        try
+        {
+            cmisService.deleteObject((String) cmisService.getProperty(source.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), allVersions);
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }        
+    }
+    
+    /**
+     * Deletes an association.
+     * 
+     * @param assoc
+     *            the association
+     */
+    public void deleteObject(Association assoc)
+    {
+        try
+        {
+            cmisService.deleteObject((String) cmisService.getProperty(assoc.getAssociationRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), true);
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }        
+    }
+
+    /**
+     * Adds an object to a folder.
+     * 
+     * @param child
+     *            the object to add
+     * @param parent
+     *            the folder
+     */
+    public void addObjectToFolder(ScriptNode child, ScriptNode parent)
+    {
+        try
+        {
+            cmisService.addObjectToFolder((String) cmisService.getProperty(child.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), (String) cmisService.getProperty(parent.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID));
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Moves an object from a source folder to a target folder.
+     * 
+     * @param child
+     *            the object to move
+     * @param targetFolder
+     *            the target folder
+     * @param sourceFolderId
+     *            the source folder object ID
+     */
+    public void moveObject(ScriptNode child, ScriptNode targetFolder, String sourceFolderId)
+    {
+        try
+        {
+            cmisService.moveObject((String) cmisService.getProperty(child.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), (String) cmisService.getProperty(targetFolder.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), sourceFolderId);
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
         }
     }
 }

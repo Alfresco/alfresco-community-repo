@@ -28,7 +28,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
-import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
 
 /**
  * @author Dmitry Velichkevich
@@ -59,23 +58,21 @@ public class PropertyFilterTest extends TestCase
     private static final String INVALID_FILTER_WITH_DENIED_SYMBOL = "ObjectId; name";
     private static final String INVALID_FILTER_WITH_LAST_INVALID_SYMBOL = "ObjectId, name*";
 
-    private CmisObjectsUtils cmisObjectsUtils = new CmisObjectsUtils();
-
     public void testValidFilters() throws Exception
     {
         try
         {
             allTokensValidAssertion(new PropertyFilter());
-            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_EMPTY_FILTER, cmisObjectsUtils));
-            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_FILTER, cmisObjectsUtils));
+            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_EMPTY_FILTER));
+            allTokensValidAssertion(new PropertyFilter(VALID_MATCHE_ALL_FILTER));
 
-            onlyNameTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_NAME, cmisObjectsUtils));
+            onlyNameTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_NAME));
 
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS, cmisObjectsUtils));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(LONG_VALID_FILTER_WITH_SEVERAL_TOKENS, cmisObjectsUtils));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_WITHOUT_BREAKS, cmisObjectsUtils));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_BREAKS_IN_SOME_PLACES, cmisObjectsUtils));
-            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_SEVERAL_BREAKS_IN_SOME_PLACES, cmisObjectsUtils));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(LONG_VALID_FILTER_WITH_SEVERAL_TOKENS));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_WITHOUT_BREAKS));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_BREAKS_IN_SOME_PLACES));
+            nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_SEVERAL_BREAKS_IN_SOME_PLACES));
         }
         catch (Throwable e)
         {
@@ -144,7 +141,7 @@ public class PropertyFilterTest extends TestCase
     {
         try
         {
-            new PropertyFilter(filterValue, cmisObjectsUtils);
+            new PropertyFilter(filterValue);
 
             fail("Invalid filter \"" + filterValue + "\" was interpreted as valid");
         }

@@ -25,18 +25,17 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISRelationshipDirectionEnum;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.repo.cmis.PropertyFilter;
-import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
 
 /**
  * Port for relationship service
@@ -46,11 +45,13 @@ import org.alfresco.service.namespace.QNamePattern;
 @javax.jws.WebService(name = "RelationshipServicePort", serviceName = "RelationshipService", portName = "RelationshipServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.RelationshipServicePort")
 public class DMRelationshipServicePort extends DMAbstractServicePort implements RelationshipServicePort
 {
-    private DictionaryService dictionaryService;
-
-    public void setDictionaryService(DictionaryService dictionaryService)
+    private static final Map<EnumRelationshipDirection, CMISRelationshipDirectionEnum> RELATIONSHIP_DIRECTION_MAPPING;
+    static
     {
-        this.dictionaryService = dictionaryService;
+        RELATIONSHIP_DIRECTION_MAPPING = new HashMap<EnumRelationshipDirection, CMISRelationshipDirectionEnum>(5);
+        RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.SOURCE, CMISRelationshipDirectionEnum.SOURCE);
+        RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.TARGET, CMISRelationshipDirectionEnum.TARGET);
+        RELATIONSHIP_DIRECTION_MAPPING.put(EnumRelationshipDirection.EITHER, CMISRelationshipDirectionEnum.BOTH);
     }
 
     /**
@@ -66,31 +67,25 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
             String typeId, String filter, Boolean includeAllowableActions, BigInteger maxItems, BigInteger skipCount, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT);
-        if (null == includeSubRelationshipTypes)
+        if ((null == objectId) || "".equals(objectId) || !NodeRef.isNodeRef(objectId))
         {
-            throw cmisObjectsUtils.createCmisException("includeSubRelationshipTypes input parameter is required", EnumServiceException.INVALID_ARGUMENT);
+            throw ExceptionUtil.createCmisException(("Object with Id='" + objectId + "' is not exist!"), EnumServiceException.OBJECT_NOT_FOUND);
         }
-        relationshipDirection = (null != relationshipDirection) ? relationshipDirection : EnumRelationshipDirection.SOURCE;
-        skipCount = (null != skipCount) ? skipCount : BigInteger.ZERO;
-        maxItems = (null != maxItems) ? maxItems : BigInteger.ZERO;
-        QName associationType = null;
-        if ((null != typeId) && !"".equals(typeId))
-        {
-            CMISTypeDefinition cmisTypeDef = cmisDictionaryService.findType(typeId);
-            associationType = cmisTypeDef.getTypeId().getQName();
-        }
-        PropertyFilter propertyFilter = createPropertyFilter(filter);
-        List<AssociationRef> assocs = null;
         try
         {
-            assocs = cmisObjectsUtils.receiveAssociations(objectNodeRef, new RelationshipTypeFilter(associationType, includeSubRelationshipTypes), relationshipDirection);
+            CMISTypeDefinition relDef = (null != typeId) ? (cmisService.getTypeDefinition(typeId)):(null);
+            NodeRef nodeRef = cmisService.getReadableObject(objectId, NodeRef.class);
+            AssociationRef[] assocs = cmisService.getRelationships(nodeRef, relDef, includeSubRelationshipTypes != null && includeSubRelationshipTypes,
+                    relationshipDirection == null ? CMISRelationshipDirectionEnum.SOURCE : RELATIONSHIP_DIRECTION_MAPPING.get(relationshipDirection));
+            skipCount = (null != skipCount) ? skipCount : BigInteger.ZERO;
+            maxItems = (null != maxItems) ? maxItems : BigInteger.ZERO;
+            PropertyFilter propertyFilter = createPropertyFilter(filter);
+            return createResult(propertyFilter, includeAllowableActions, assocs, skipCount, maxItems);
         }
-        catch (Exception e)
+        catch (CMISServiceException e)
         {
-            throw cmisObjectsUtils.createCmisException("Can't receive associations", e);
+            throw ExceptionUtil.createCmisException(e);
         }
-        return createResult(propertyFilter, includeAllowableActions, assocs.toArray(), skipCount, maxItems);
     }
 
     private CmisObjectListType createResult(PropertyFilter filter, boolean includeAllowableActions, Object[] sourceArray, BigInteger skipCount, BigInteger maxItems)
@@ -100,39 +95,10 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         CmisObjectListType result = new CmisObjectListType();
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
-            result.getObjects().add(createCmisObject(sourceArray[i].toString(), filter, includeAllowableActions, null));
+            result.getObjects().add(createCmisObject(sourceArray[i], filter, includeAllowableActions, null));
         }
         result.setHasMoreItems(cursor.getEndRow() < sourceArray.length);
         result.setNumItems(BigInteger.valueOf(cursor.getPageSize()));
         return result;
-    }
-
-    private class RelationshipTypeFilter implements QNamePattern
-    {
-        private boolean includeSubtypes;
-        private QName relationshipType;
-
-        public RelationshipTypeFilter(QName ralationshipType, boolean includeSubtypes)
-        {
-            this.relationshipType = ralationshipType;
-            this.includeSubtypes = includeSubtypes;
-        }
-
-        public boolean isMatch(QName qname)
-        {
-            if (relationshipType == null)
-            {
-                return true;
-            }
-            else if (includeSubtypes)
-            {
-                return null != dictionaryService.getAssociation(qname);
-            }
-            else
-            {
-                CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(qname, CMISScope.RELATIONSHIP);
-                return typeDef != null && relationshipType.equals(qname);
-            }
-        }
     }
 }

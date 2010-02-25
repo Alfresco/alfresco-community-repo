@@ -27,12 +27,14 @@ package org.alfresco.repo.cmis.rest;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISFilterNotValidException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateValueConverter;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.template.TemplateMethodModelEx;
@@ -102,7 +104,15 @@ public class CMISRenditionsMethod implements TemplateMethodModelEx
         // query renditions
         if (nodeRef != null)
         {
-            Map<String, Object> renditions = cmisService.getRenditions(nodeRef, renditionFilter);
+            Map<String, Object> renditions;
+            try
+            {
+                renditions = cmisService.getRenditions(nodeRef, renditionFilter);
+            }
+            catch (CMISFilterNotValidException e)
+            {
+                throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+            }
             return templateValueConverter.convertValue(renditions, imageResolver);
         }
 

@@ -25,7 +25,6 @@ Does not return the content-stream of a document<br>
 PropertyCollection includes changeToken (if applicable to repository)<br>
 ]]>
   </description>
-  <!-- TODO: spec issue: returnVersion or returnCurrent? -->
   
   <!-- by object id -->
   <url>/cmis/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>

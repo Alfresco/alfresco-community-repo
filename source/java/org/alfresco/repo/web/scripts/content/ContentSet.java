@@ -24,26 +24,22 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISObjectReference;
-import org.alfresco.cmis.reference.ObjectPathReference;
-import org.alfresco.cmis.reference.ReferenceFactory;
+import org.alfresco.cmis.CMISServiceException;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.repo.cmis.reference.ObjectPathReference;
+import org.alfresco.repo.cmis.reference.ReferenceFactory;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -74,7 +70,7 @@ public class ContentSet extends AbstractWebScript
     private ReferenceFactory referenceFactory;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
-    private ContentService contentService;
+    private CMISServices cmisService;
     private MimetypeService mimetypeService;
     
     /**
@@ -102,11 +98,11 @@ public class ContentSet extends AbstractWebScript
     }
 
     /**
-     * @param contentService
+     * @param cmisServices
      */
-    public void setContentService(ContentService contentService)
+    public void setCmisService(CMISServices cmisService)
     {
-        this.contentService = contentService; 
+        this.cmisService = cmisService;
     }
 
     /**
@@ -168,22 +164,7 @@ public class ContentSet extends AbstractWebScript
         }
 
         // ensure content can be overwritten
-        // TODO: check parameter name
         String overwrite = req.getParameter("overwriteFlag");
-        if (overwrite != null && overwrite.equalsIgnoreCase("false"))
-        {
-            ContentReader reader = contentService.getReader(nodeRef, propertyQName);
-            if (reader != null)
-            {
-                // error code as per CMIS specification
-                throw new WebScriptException(HttpServletResponse.SC_CONFLICT, "Content already exists.");
-            }
-        }
-        
-        // setup content writer
-        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
-        boolean isUpdate = (reader != null && reader.exists());
-        ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
         
         // establish mimetype
         String mimetype = req.getContentType();
@@ -194,24 +175,19 @@ public class ContentSet extends AbstractWebScript
                 mimetype = mimetypeService.guessMimetype(((ObjectPathReference)reference).getPath());
             }
         }
-        if (mimetype != null)
-        {
-            writer.setMimetype(mimetype);
-        }
-        
-        // get the input stream from the request data
-        InputStream is = req.getContent().getInputStream();
-        is = is.markSupported() ? is : new BufferedInputStream(is);
-        
-        // establish content encoding
-        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-        Charset encoding = charsetFinder.getCharset(is, mimetype);
-        writer.setEncoding(encoding.name());
 
-        // write the new data
-        writer.putContent(is);
-        
-        // set status
-        res.setStatus(isUpdate ? Status.STATUS_OK : Status.STATUS_CREATED);
+        try
+        {
+            boolean isUpdate = cmisService.setContentStream((String) cmisService.getProperty(nodeRef,
+                    CMISDictionaryModel.PROP_OBJECT_ID), propertyQName, overwrite == null || overwrite.equals("true"),
+                    req.getContent().getInputStream(), mimetype);
+
+            // set status
+            res.setStatus(isUpdate ? Status.STATUS_OK : Status.STATUS_CREATED);
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
     }
 }

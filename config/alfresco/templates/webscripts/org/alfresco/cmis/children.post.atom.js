@@ -20,25 +20,48 @@ script:
         break script;
     }
     model.parent = parent.node;
-
+    
+    // versioning state
+    var versioningState = args[cmis.ARG_VERSIONING_STATE];
+    if (versioningState === null || versioningState.length == 0)
+    {
+       versioningState = "major";
+    }
+    
     // is this a create or move? 
     var object = entry.getExtension(atom.names.cmisra_object);
     var objectIdProp = (object !== null) ? object.objectId : null;
     var objectId = (objectIdProp !== null) ? objectIdProp.nativeValue : null;
+    var sourceFolderId = args[cmis.ARG_SOURCE_FOLDER_ID];
     var node = null;
 
     if (objectId == null)
     {
         // create node
-        node = createNode(model.parent, entry, slug);
+        node = createNode(model.parent, entry, slug, versioningState);
         if (node == null)
         {
             break script;
         }
+        node.save();
+    }
+    else if (sourceFolderId == null || sourceFolderId.length == 0)
+    {
+       // Add node
+       var object = getObjectFromObjectId(objectId);
+       if (object.node == null)
+       {
+           break script;
+       }
+       node = object.node;
+       
+       cmis.addObjectToFolder(node, model.parent);
     }
     else
     {
-        // locate node and its source folder
+        // move node
+
+        // locate node
         var object = getObjectFromObjectId(objectId);
         if (object.node == null)
         {
@@ -46,44 +69,11 @@ script:
         }
         node = object.node;
     
-        // move node
-        var sourceFolderId = args[cmis.ARG_SOURCE_FOLDER_ID];
-        if (sourceFolderId == null)
-        {
-            status.code = 400;
-            status.message = "Move of object " + object.ref + " requires sourceFolderId argument";
-            status.redirect = true;
-            break script;
-        }
-        
-        var sourceFolderObject = getObjectFromObjectId(sourceFolderId);
-        if (sourceFolderObject.node == null)
-        {
-            status.code = 400;
-            break script;
-        }
-        if (!sourceFolderObject.node.nodeRef.equals(node.parent.nodeRef))
-        {
-            status.code = 400;
-            status.message = "Source Folder " + sourceFolderObject.ref + " is not parent of object " + object.ref;
-            status.redirect = true;
-            break script;
-        }
-        var sourceFolder = sourceFolderObject.node;
-
         // perform move
-        var success = node.move(model.parent);
-        if (!success)
-        {
-            status.code = 500;
-            status.message = "Failed to move object " + object.ref + " from folder " + sourceFolderObject.ref + " to folder " + parent.ref;
-            status.redirect = true;
-            break script;
-        }
+        cmis.moveObject(node, model.parent, sourceFolderId);
     }
     
     // success
-    node.save();
     model.node = node;
     // TODO: set Content-Location
     status.code = 201;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -88,7 +88,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
                 new Holder<CmisExtensionType>());
         documentId = documentIdHolder.value;
 
-        assertEquals(checkinComment, getStringProperty(helper.getObjectProperties(documentIdHolder.value).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, getStringProperty(((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, true, null, null), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testCheckOutCheckInDefault() throws Exception
@@ -139,7 +139,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.UPDATE_CONFLICT));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.VERSIONING));
         }
     }
 
@@ -154,20 +154,20 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         }
         catch (CmisException e)
         {
-            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.UPDATE_CONFLICT));
+            assertTrue(e.getFaultInfo().getType().equals(EnumServiceException.VERSIONING));
         }
     }
 
     public void testGetPropertiesOfLatestVersion() throws Exception
     {
-        CmisPropertiesType objectType = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, true, "*", null);
+        CmisPropertiesType objectType = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, false, "*", null);
         assertNotNull(objectType);
         assertTrue(getBooleanProperty(objectType, CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     public void testGetPropertiesOfLatestVersionDefault() throws Exception
     {
-        CmisPropertiesType cmisObjectType = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, true, "", null);
+        CmisPropertiesType cmisObjectType = ((VersioningServicePort) servicePort).getPropertiesOfLatestVersion(repositoryId, documentId, false, "", null);
         assertNotNull(cmisObjectType);
         assertTrue(getBooleanProperty(cmisObjectType, CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
@@ -184,10 +184,10 @@ public class DMVersioningServiceTest extends AbstractServiceTest
 
         List<CmisObjectType> response = ((VersioningServicePort) servicePort).getAllVersions(repositoryId, documentId, "", null, null);
         assertNotNull(response);
-        assertFalse(response.isEmpty());
-        CmisObjectType firstElement = response.iterator().next();
-        assertNotNull(firstElement);
-        assertEquals(checkinComment, getStringProperty(firstElement.getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
+        assertTrue("Expected three versions", response.size() == 3);
+        CmisObjectType lastVersion = response.get(1);
+        assertNotNull(lastVersion);
+        assertEquals(checkinComment, getStringProperty(lastVersion.getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testGetAllVersions() throws Exception
@@ -202,10 +202,10 @@ public class DMVersioningServiceTest extends AbstractServiceTest
 
         List<CmisObjectType> response = ((VersioningServicePort) servicePort).getAllVersions(repositoryId, documentId, "*", false, null);
         assertNotNull(response);
-        assertFalse(response.isEmpty());
-        CmisObjectType firstElement = response.iterator().next();
-        assertNotNull(firstElement);
-        assertEquals(checkinComment, getStringProperty(firstElement.getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
+        assertTrue("Expected three versions", response.size() == 3);
+        CmisObjectType lastVersion = response.get(1);
+        assertNotNull(lastVersion);
+        assertEquals(checkinComment, getStringProperty(lastVersion.getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testGetAllVersionsForNoVersionHistory() throws Exception

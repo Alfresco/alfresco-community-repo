@@ -28,6 +28,8 @@ import java.util.List;
 
 import javax.xml.ws.Holder;
 
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
+
 @javax.jws.WebService(name = "PolicyServicePort", serviceName = "PolicyServicePort", portName = "PolicyServicePort", targetNamespace = "http://docs.oasis-open.org/ns/cmis/ws/200908/", endpointInterface = "org.alfresco.repo.cmis.ws.PolicyServicePort")
 public class DMPolicyServicePort extends DMAbstractServicePort implements PolicyServicePort
 {
@@ -43,7 +45,7 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      */
     public void applyPolicy(String repositoryId, String policyId, String objectId, Holder<CmisExtensionType> extension) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
+        throw ExceptionUtil.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 
     /**
@@ -54,7 +56,7 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      */
     public List<CmisObjectType> getAppliedPolicies(String repositoryId, String objectId, String filter, CmisExtensionType extension) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
+        throw ExceptionUtil.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 
     /**
@@ -67,6 +69,6 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
      */
     public void removePolicy(String repositoryId, String policyId, String objectId, Holder<CmisExtensionType> extension) throws CmisException
     {
-        throw cmisObjectsUtils.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
+        throw ExceptionUtil.createCmisException(POLICY_NOT_SUPPORTED_MESSAGE, EnumServiceException.RUNTIME);
     }
 }

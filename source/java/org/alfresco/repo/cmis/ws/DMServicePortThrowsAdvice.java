@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,16 +15,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have received a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.cmis.ws;
 
-import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,13 +40,6 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
 {
     private static final Log LOGGER = LogFactory.getLog("org.alfresco.repo.cmis.ws");
 
-    private CmisObjectsUtils cmisObjectsUtils;
-
-    public void setCmisObjectsUtils(CmisObjectsUtils cmisObjectsUtils)
-    {
-        this.cmisObjectsUtils = cmisObjectsUtils;
-    }
-
     public void afterThrowing(AccessDeniedException e) throws CmisException
     {
         if (LOGGER.isInfoEnabled())
@@ -54,7 +47,7 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
             LOGGER.error(e.toString(), e);
         }
 
-        throw cmisObjectsUtils.createCmisException(("Access denied. Message: " + e.toString()), e);
+        throw ExceptionUtil.createCmisException(("Access denied. Message: " + e.toString()), e);
     }
 
     public void afterThrowing(java.lang.RuntimeException e) throws CmisException
@@ -64,7 +57,7 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
             LOGGER.error(e.toString(), e);
         }
 
-        throw cmisObjectsUtils.createCmisException(("Runtime error. Message: " + e.toString()), e);
+        throw ExceptionUtil.createCmisException(("Runtime error. Message: " + e.toString()), e);
     }
 
     public void afterThrowing(java.lang.Exception e) throws CmisException
@@ -76,7 +69,7 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
 
         if (!(e instanceof CmisException))
         {
-            throw cmisObjectsUtils.createCmisException(("Some error occured during last service invokation. Message: " + e.toString()), e);
+            throw ExceptionUtil.createCmisException(("Some error occured during last service invokation. Message: " + e.toString()), e);
         }
         else
         {

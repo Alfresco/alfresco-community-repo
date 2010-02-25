@@ -17,7 +17,7 @@
 [/@feedLib.generic]
 
 [#list nodes as version]
-  [@entryLib.version version versions[version_index]/]
+  [@entryLib.version version/]
 [/#list]
 
 </feed>

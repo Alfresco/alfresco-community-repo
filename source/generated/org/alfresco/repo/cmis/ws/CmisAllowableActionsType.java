@@ -49,7 +49,6 @@ import org.w3c.dom.Element;
  *         &lt;element name="canCreateDocument" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canCreateFolder" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canCreateRelationship" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *         &lt;element name="canCreatePolicy" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canDeleteTree" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetRenditions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="canGetACL" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
@@ -91,7 +90,6 @@ import org.w3c.dom.Element;
     "canCreateDocument",
     "canCreateFolder",
     "canCreateRelationship",
-    "canCreatePolicy",
     "canDeleteTree",
     "canGetRenditions",
     "canGetACL",
@@ -125,7 +123,6 @@ public class CmisAllowableActionsType {
     protected Boolean canCreateDocument;
     protected Boolean canCreateFolder;
     protected Boolean canCreateRelationship;
-    protected Boolean canCreatePolicy;
     protected Boolean canDeleteTree;
     protected Boolean canGetRenditions;
     protected Boolean canGetACL;
@@ -736,30 +733,6 @@ public class CmisAllowableActionsType {
     }
 
     /**
-     * Gets the value of the canCreatePolicy property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Boolean }
-     *     
-     */
-    public Boolean isCanCreatePolicy() {
-        return canCreatePolicy;
-    }
-
-    /**
-     * Sets the value of the canCreatePolicy property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Boolean }
-     *     
-     */
-    public void setCanCreatePolicy(Boolean value) {
-        this.canCreatePolicy = value;
-    }
-
-    /**
      * Gets the value of the canDeleteTree property.
      * 
      * @return
@@ -873,8 +846,8 @@ public class CmisAllowableActionsType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */

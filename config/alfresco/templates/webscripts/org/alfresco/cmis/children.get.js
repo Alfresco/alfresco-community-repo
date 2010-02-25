@@ -33,14 +33,17 @@ script:
     {
         model.renditionFilter = "cmis:none";
     }
-   
+
+    // order by
+    var orderBy = args[cmis.ARG_ORDER_BY];
+    
     // include allowable actions
     var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
     model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
     
     // retrieve children
     var page = paging.createPageOrWindow(args);
-    var paged = cmis.queryChildren(model.node, model.types, page);
+    var paged = cmis.queryChildren(model.node, model.types, orderBy, page);
     model.results = paged.results;
     model.cursor = paged.cursor;
 }

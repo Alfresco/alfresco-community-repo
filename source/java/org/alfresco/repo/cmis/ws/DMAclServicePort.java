@@ -26,7 +26,8 @@ package org.alfresco.repo.cmis.ws;
 
 import org.alfresco.cmis.CMISAccessControlFormatEnum;
 import org.alfresco.cmis.CMISAccessControlReport;
-import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
+import org.alfresco.cmis.CMISServiceException;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -42,7 +43,15 @@ public class DMAclServicePort extends DMAbstractServicePort implements ACLServic
             CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef object = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.ANY_OBJECT);
+        NodeRef object;
+        try
+        {
+            object = cmisService.getObject(objectId, NodeRef.class, true, false, false);
+        }
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
         return applyAclCarefully(object, addACEs, removeACEs, aclPropagation);
     }
 
@@ -52,10 +61,18 @@ public class DMAclServicePort extends DMAbstractServicePort implements ACLServic
     public CmisACLType getACL(String repositoryId, String objectId, Boolean onlyBasicPermissions, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        NodeRef object = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.ANY_OBJECT);
+        NodeRef nodeRef;
+        try
+        {
+            nodeRef = cmisService.getReadableObject(objectId, NodeRef.class);
+        }
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
         CMISAccessControlFormatEnum permissionsKind = ((null == onlyBasicPermissions) || onlyBasicPermissions) ? (CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS)
                 : (CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
-        CMISAccessControlReport aclReport = cmisAclService.getAcl(object, permissionsKind);
+        CMISAccessControlReport aclReport = cmisAclService.getAcl(nodeRef, permissionsKind);
         return convertAclReportToCmisAclType(aclReport);
     }
 }

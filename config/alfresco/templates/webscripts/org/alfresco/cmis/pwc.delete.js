@@ -9,15 +9,7 @@ script:
     }
     var node = object.node;
     
-    if (!node.hasPermission("CancelCheckOut"))
-    {
-        status.code = 403;
-        status.message = "Permission to cancel checkout of " + object.ref + " is denied";
-        status.redirect = true;
-        break script;
-    }
-
-    node.cancelCheckout();
+    cmis.cancelCheckOut(node);
     
     status.code = 204;  // Success, but no response content
     status.redirect = true;

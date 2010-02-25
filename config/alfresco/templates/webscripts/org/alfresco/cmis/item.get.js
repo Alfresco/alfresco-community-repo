@@ -9,7 +9,13 @@ script:
     }
     model.node = object.node;
  
-    // TODO: handle version??
+    // return version
+    var returnVersion = args[cmis.ARG_RETURN_VERSION];
+    if (returnVersion === null || returnVersion.length == 0)
+    {
+        returnVersion = "this";
+    }
+    model.node = cmis.getReturnVersion(model.node, returnVersion);
     
     // property filter 
     model.filter = args[cmis.ARG_FILTER];

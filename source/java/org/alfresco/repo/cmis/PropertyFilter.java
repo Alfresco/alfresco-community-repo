@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
-import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
+import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 
 /**
  * Property filter supporting CMIS filter expression
@@ -56,11 +56,11 @@ public class PropertyFilter
      * @param filter filter value (case insensitive)
      * @throws FilterNotValidException if filter string isn't valid
      */
-    public PropertyFilter(String filter, CmisObjectsUtils cmisObjectsUtils) throws CmisException
+    public PropertyFilter(String filter) throws CmisException
     {
         if (filter == null || filter.length() < MINIMAL_ALLOWED_STRUCTURE_SIZE ? false : !PROPERTY_FILTER_REGEX.matcher(filter).matches())
         {
-            throw cmisObjectsUtils.createCmisException(("\"" + filter + "\" filter value is invalid"), EnumServiceException.FILTER_NOT_VALID);
+            throw ExceptionUtil.createCmisException(("\"" + filter + "\" filter value is invalid"), EnumServiceException.FILTER_NOT_VALID);
         }
 
         if (!filter.equals(MATCH_ALL_FILTER) && filter.length() >= MINIMAL_ALLOWED_STRUCTURE_SIZE)

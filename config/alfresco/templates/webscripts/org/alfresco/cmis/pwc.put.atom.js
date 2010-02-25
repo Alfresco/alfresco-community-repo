@@ -6,21 +6,9 @@ script:
 {
     // locate node
     var object = getObjectFromUrl();
-    if (object.node === null || !object.node.hasAspect("cm:workingcopy"))
-    {
-        break script;
-    }
     model.node = object.node;
     
-    // check permissions
     model.checkin = args[cmis.ARG_CHECKIN] == "true" ? true : false;
-    if (model.checkin && !model.node.hasPermission("CheckIn"))
-    {
-        status.code = 403;
-        status.message = "Permission to checkin is denied";
-        status.redirect = true;
-        break script;
-    }
     
     if (entry !== null)
     {
@@ -42,6 +30,6 @@ script:
         var comment = args[cmis.ARG_CHECKIN_COMMENT];
         var major = args[cmis.ARG_MAJOR];
         major = (major === null || major == "true") ? true : false;
-        model.node = model.node.checkin(comment === null ? "" : comment, major);
+        model.node = cmis.checkIn(model.node, comment, major);
     }
 }

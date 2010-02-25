@@ -333,4 +333,17 @@ public class ContentData implements Serializable
     {
         return locale;
     }
+    
+    /**
+     * @return hashCode
+     */
+    public int hashCode()
+    {
+        if(contentUrl!= null)
+        {
+            return contentUrl.hashCode();
+        }
+        return 0;
+    }
 }
+

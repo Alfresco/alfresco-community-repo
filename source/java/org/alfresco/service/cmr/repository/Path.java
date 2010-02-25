@@ -41,7 +41,7 @@ import org.alfresco.util.ISO9075;
  *   /x/y/z
  * </pre></b>
  * In the above example, there will be <b>4</b> elements, the first being a reference
- * to the root node, followed by qname elements for <b>x</b>, <b>x</b> and <b>z</b>.    
+ * to the root node, followed by qname elements for <b>x</b>, <b>y</b> and <b>z</b>.    
  * <p>
  * Methods and constructors are available to construct a <code>Path</code> instance
  * from a path string or by building the path incrementally, including the ability to

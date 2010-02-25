@@ -1,0 +1,134 @@
+<model name="trx:applicationmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Transfer Application Model</description>
+   <author>Alfresco</author>
+   <published>2009-12-16</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/transfer/1.0" prefix="trx"/>
+   </namespaces>
+   
+   <constraints>
+      <constraint name="trx:protocols" type="LIST">
+         <parameter name="allowedValues">
+            <list>
+               <value>http</value>
+               <value>https</value>
+            </list>
+         </parameter>
+      </constraint>
+   </constraints>
+   
+   <types>
+   
+    <type name="trx:transferGroup">
+         <title>Transfer Group</title>
+         <description>The definition of a transfer group</description>
+         <parent>cm:folder</parent>
+         <properties>         
+         </properties>
+      </type>
+   
+   
+      <type name="trx:transferTarget">
+         <title>Transfer Target</title>
+         <description>The definition of a transfer target</description>
+         <parent>cm:folder</parent>
+         <properties>
+         
+            <property name="trx:endpointhost">
+               <title>Endpoint Host</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            
+            <property name="trx:endpointport">
+               <title>Endpoint Port</title>
+               <type>d:int</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            
+            <property name="trx:endpointpath">
+               <title>Endpoint Path</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            
+            <property name="trx:endpointprotocol">
+               <title>Endpoint Protocol</title>
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <constraints>
+                  <constraint ref="trx:protocols" />
+               </constraints>
+            </property>
+                   
+            <property name="trx:username">
+               <title>Username</title>
+               <type>d:text</type>
+            </property>
+            
+            <!--  todo cleartext for now - needs encrypting -->
+            <property name="trx:password">
+               <title>Password</title>
+               <type>d:any</type>
+               <index enabled="false">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            
+         </properties>
+      </type>
+
+      <type name="trx:transferLock">
+         <title>Transfer Lock</title>
+         <description>Node type used to represent the transfer lock node</description>
+         <parent>cm:content</parent>
+         <properties>
+         
+            <property name="trx:transferId">
+               <title>Locked Transfer Identifier</title>
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+      <!-- The Transfer Report -->
+      <type name="trx:transferReport">
+         <title>Transfer Report</title>
+         <description>Transfer Report</description>
+         <parent>cm:content</parent>
+      </type>
+
+   </types>  
+   
+   <aspects>
+       <!-- Can this resorce be temporarily disabled? -->
+       <aspect name="trx:enableable">
+           <title>Can this resource be enabled/disabled.</title>
+           <properties>
+               <property name="trx:enabled">
+                   <title>Is this enabled.</title>
+                   <type>d:boolean</type>
+                   <mandatory>true</mandatory>
+               </property>
+           </properties>
+       </aspect>
+   </aspects>
+     
+</model>

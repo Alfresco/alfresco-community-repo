@@ -24,6 +24,7 @@
  */
 package org.alfresco.util;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -191,9 +192,11 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         
         if (workQueueSize < 0)
         {
-            workQueueSize = Integer.MAX_VALUE;
+            // Setting workQueueSize to MAX_VALUE prevents the pool growing and shrinking. See JavaDoc
+            // workQueueSize = Integer.MAX_VALUE;
+            workQueueSize = 1000;
         }
-        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(workQueueSize);
+        BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(workQueueSize);
         
         // construct the instance
         instance = new ThreadPoolExecutor(

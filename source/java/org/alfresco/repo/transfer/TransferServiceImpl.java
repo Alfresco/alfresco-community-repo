@@ -1,0 +1,889 @@
+/*
+ * Copyright (C) 2009-2010 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.repo.transfer;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
+import org.alfresco.service.cmr.transfer.TransferEvent;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.jlan.smb.dcerpc.UUID;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transfer.manifest.TestTransferManifestProcessor;
+import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
+import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
+import org.alfresco.repo.transfer.manifest.TransferManifestNode;
+import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
+import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactoryImpl;
+import org.alfresco.repo.transfer.manifest.TransferManifestNodeHelper;
+import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
+import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
+import org.alfresco.repo.transfer.manifest.TransferManifestWriter;
+import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
+import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
+import org.alfresco.repo.transfer.report.TransferReporter;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.transfer.TransferCallback;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.xml.sax.SAXException;
+
+
+public class TransferServiceImpl implements TransferService
+{
+    private static final String MSG_NO_HOME = "transfer_service.unable_to_find_transfer_home";
+    private static final String MSG_NO_GROUP = "transfer_service.unable_to_find_transfer_group";
+    private static final String MSG_NO_TARGET = "transfer_service.unable_to_find_transfer_target";
+    private static final String MSG_TARGET_EXISTS = "transfer_service.target_exists";
+    private static final String MSG_NO_NODES = "transfer_service.no_nodes";
+    
+    private static Log logger = LogFactory.getLog(TransferServiceImpl.class);
+    
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "searchService", getSearchService());
+        PropertyCheck.mandatory(this, "transferSpaceQuery", transferSpaceQuery);
+        PropertyCheck.mandatory(this, "defaultTransferGroup", defaultTransferGroup);
+        PropertyCheck.mandatory(this, "transmitter", transmitter);
+        PropertyCheck.mandatory(this, "namespaceResolver", transmitter);
+        PropertyCheck.mandatory(this, "actionService", actionService);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+    }
+    
+    private String transferSpaceQuery; 
+    private String defaultTransferGroup;
+    private NodeService nodeService;
+    private SearchService searchService;
+    private TransferTransmitter transmitter;
+    private TransactionService transactionService;
+    private ActionService actionService;
+    private TransferManifestNodeFactory transferManifestNodeFactory;
+    private TransferReporter transferReporter;
+    
+    /**
+     * create transfer target
+     */
+    public TransferTarget createTransferTarget(String name, String title, String description, String endpointProtocol, String endpointHost, int endpointPort, String endpointPath, String username, char[] password)
+    { 
+        /**
+         * Check whether name is already used
+         */
+        NodeRef dummy = lookupTransferTarget(name);
+        if(dummy != null)
+        {
+            throw new TransferException(MSG_TARGET_EXISTS, new Object[]{name} );
+        }
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        
+        // type properties
+        properties.put(TransferModel.PROP_ENDPOINT_HOST, endpointHost);
+        properties.put(TransferModel.PROP_ENDPOINT_PORT, endpointPort);
+        properties.put(TransferModel.PROP_ENDPOINT_PROTOCOL, endpointProtocol);
+        properties.put(TransferModel.PROP_ENDPOINT_PATH, endpointPath);
+        properties.put(TransferModel.PROP_USERNAME, username);
+        properties.put(TransferModel.PROP_PASSWORD, encrypt(password));
+        
+        // titled aspect
+        properties.put(ContentModel.PROP_TITLE, title);
+        properties.put(ContentModel.PROP_NAME, name);
+        properties.put(ContentModel.PROP_DESCRIPTION, description);
+        
+        // enableable aspect
+        properties.put(TransferModel.PROP_ENABLED, Boolean.TRUE);
+        
+        NodeRef home = getTransferHome();
+        
+        /**
+         * Work out which group the transfer target is for, in this case the default group.
+         */
+        NodeRef defaultGroup = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS, defaultTransferGroup);
+        
+        /**
+         * Go ahead and create the new node
+         */
+        ChildAssociationRef ref = nodeService.createNode(defaultGroup, ContentModel.ASSOC_CONTAINS, QName.createQName(TransferModel.TRANSFER_MODEL_1_0_URI, name), TransferModel.TYPE_TRANSFER_TARGET, properties);
+        
+        /**
+         * Now create a new TransferTarget object to return to the caller.
+         */
+        TransferTargetImpl newTarget = new TransferTargetImpl();
+        mapTransferTarget(ref.getChildRef(), newTarget);
+
+        return newTarget;
+    }
+
+    /**
+     * Get all transfer targets
+     */
+    public Set<TransferTarget> getTransferTargets()
+    {
+        NodeRef home = getTransferHome();
+        
+        Set<TransferTarget> ret = new HashSet<TransferTarget>();
+        
+        // get all groups
+        List<ChildAssociationRef> groups = nodeService.getChildAssocs(home);
+        
+        // for each group
+        for(ChildAssociationRef group : groups)
+        {
+            NodeRef groupNode = group.getChildRef();
+            List<ChildAssociationRef>children = nodeService.getChildAssocs(groupNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            
+            for(ChildAssociationRef child : children)
+            {
+                if(nodeService.getType(child.getChildRef()).equals(TransferModel.TYPE_TRANSFER_TARGET))
+                {
+                    TransferTargetImpl newTarget = new TransferTargetImpl();
+                    mapTransferTarget(child.getChildRef(), newTarget);
+                    ret.add(newTarget);
+                }
+            }
+        }
+          
+        return ret;
+    }
+
+    /**
+     * Get all transfer targets in the specified group
+     */
+    public Set<TransferTarget> getTransferTargets(String groupName)
+    {
+        NodeRef home = getTransferHome();
+        
+        Set<TransferTarget> ret = new HashSet<TransferTarget>();
+        
+        // get group with assoc groupName
+        NodeRef groupNode = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS, groupName);
+        
+        if(groupNode == null)
+        {
+            // No transfer group.
+            throw new TransferException(MSG_NO_GROUP, new Object[]{groupName});
+        }
+        
+        /**
+         * Get children of groupNode
+         */
+        List<ChildAssociationRef>children = nodeService.getChildAssocs(groupNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            
+        for(ChildAssociationRef child : children)
+        {
+           if(nodeService.getType(child.getChildRef()).equals(TransferModel.TYPE_TRANSFER_TARGET))
+           {
+               TransferTargetImpl newTarget = new TransferTargetImpl();
+               mapTransferTarget(child.getChildRef(), newTarget);
+               ret.add(newTarget);
+           }
+        }  
+        return ret;
+    }
+    
+    /**
+     * 
+     */
+    public void deleteTransferTarget(String name)
+    {
+        NodeRef nodeRef = lookupTransferTarget(name);
+        
+        if(nodeRef == null)
+        {
+            // target does not exist
+            throw new TransferException(MSG_NO_TARGET, new Object[]{name} );
+        }
+        nodeService.deleteNode(nodeRef);
+    }
+    
+    /**
+     * Enables/Disables the named transfer target
+     */
+    public void enableTransferTarget(String name, boolean enable)
+    {
+        NodeRef nodeRef = lookupTransferTarget(name);
+        nodeService.setProperty(nodeRef, TransferModel.PROP_ENABLED, new Boolean(enable));     
+    }
+
+    /**
+     * 
+     */
+    public TransferTarget getTransferTarget(String name)
+    {
+        NodeRef nodeRef = lookupTransferTarget(name);
+        
+        if(nodeRef == null)
+        {
+            // target does not exist
+            throw new TransferException(MSG_NO_TARGET, new Object[]{name} );
+        }
+        TransferTargetImpl newTarget = new TransferTargetImpl();
+        mapTransferTarget(nodeRef, newTarget);
+        
+        return newTarget;
+    }
+
+    /**
+     * 
+     */
+    public TransferTarget updateTransferTarget(TransferTarget update)
+    {       
+        NodeRef nodeRef = lookupTransferTarget(update.getName());
+        if(nodeRef == null)
+        {
+            // target does not exist
+            throw new TransferException(MSG_NO_TARGET, new Object[]{update.getName()} );
+        }
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(TransferModel.PROP_ENDPOINT_HOST, update.getEndpointHost());
+        properties.put(TransferModel.PROP_ENDPOINT_PORT, update.getEndpointPort());
+        properties.put(TransferModel.PROP_ENDPOINT_PROTOCOL, update.getEndpointProtocol());
+        properties.put(TransferModel.PROP_ENDPOINT_PATH, update.getEndpointPath());
+        properties.put(TransferModel.PROP_USERNAME, update.getUsername());
+        properties.put(TransferModel.PROP_PASSWORD, encrypt(update.getPassword()));
+        
+        // titled aspect
+        properties.put(ContentModel.PROP_TITLE, update.getTitle());
+        properties.put(ContentModel.PROP_NAME, update.getName());
+        properties.put(ContentModel.PROP_DESCRIPTION, update.getDescription());
+        
+        properties.put(TransferModel.PROP_ENABLED, new Boolean(update.isEnabled()));
+        nodeService.setProperties(nodeRef, properties);
+        
+        TransferTargetImpl newTarget = new TransferTargetImpl();
+        mapTransferTarget(nodeRef, newTarget);
+        return newTarget;
+    }
+    
+    /**
+     * 
+     */
+    public NodeRef transfer(String targetName, TransferDefinition definition)
+    {
+        final TransferEventProcessor eventProcessor = new TransferEventProcessor();
+        return transferImpl(targetName, definition, eventProcessor);
+    }
+    
+    /**
+     * Transfer async.
+     * 
+     * @param targetName
+     * @param definition
+     * @param callbacks
+     */
+    public void transferAsync(String targetName, TransferDefinition definition, Set<TransferCallback> callbacks)
+    {
+        /**
+         * Event processor for this transfer instance
+         */
+        final TransferEventProcessor eventProcessor = new TransferEventProcessor();
+        if(callbacks != null)
+        {
+            eventProcessor.observers.addAll(callbacks);
+        }
+       
+       Map<String, Serializable> params = new HashMap<String, Serializable>();
+       params.put("targetName", targetName);
+       params.put("definition", definition);
+       params.put("callbacks", (Serializable)callbacks);
+       
+       Action transferAction = getActionService().createAction("transfer-async", params); 
+       
+       /**
+        * Execute transfer async in its own transaction.
+        * The action service only runs actions in the post commit which is why there's
+        * a separate transaction here.
+        */
+       boolean success = false;
+       UserTransaction trx = transactionService.getNonPropagatingUserTransaction();
+       try
+       {
+           trx.begin();
+           logger.debug("calling action service to execute action");
+           getActionService().executeAction(transferAction, null, false, true);
+           trx.commit();   
+           logger.debug("committed successfully");
+           success = true;
+       }
+       catch (Exception error)
+       {
+           logger.error("unexpected exception", error);
+           throw new AlfrescoRuntimeException("unable to transfer async", error);
+       }
+       finally
+       {
+           if(!success)
+           {
+               try
+               {
+                   logger.debug("rolling back after error");
+                    trx.rollback();
+               }
+               catch (Exception error)
+               {
+                   logger.error("unexpected exception during rollback", error);
+                   // There's nothing much we can do here
+               }
+           }
+       }
+    }
+    
+    /**
+     * Transfer Synchronous
+     * @param targetName
+     * @param definition
+     * @param callbacks
+     */
+    public NodeRef transfer(String targetName, TransferDefinition definition, Set<TransferCallback> callbacks)
+    {
+        /**
+         * Event processor for this transfer instance
+         */
+        final TransferEventProcessor eventProcessor = new TransferEventProcessor();
+        if(callbacks != null)
+        {
+            eventProcessor.observers.addAll(callbacks);
+        }
+        
+        /**
+         * Now go ahead and do the transfer
+         */
+        return transferImpl(targetName, definition, eventProcessor);        
+    }
+
+
+    /**
+     * Transfer Implementation 
+     * @param targetName name of transfer target
+     * @param definition thranser definition
+     * @param eventProcessor
+     */
+    private NodeRef transferImpl(String targetName, final TransferDefinition definition, final TransferEventProcessor eventProcessor)
+    {
+        NodeRef reportNode = null;
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("transfer started to :" + targetName);
+        }
+        
+        /**
+         * Wire in the transferReport
+         */
+        final List<TransferEvent> transferReport = new LinkedList<TransferEvent>();
+        TransferCallback reportCallback = new TransferCallback()
+        {
+            private static final long serialVersionUID = 4072579605731036522L;
+
+            public void processEvent(TransferEvent event)
+            {
+                transferReport.add(event);
+            } 
+        };
+        eventProcessor.addObserver(reportCallback);
+        
+        File snapshotFile = null;
+        TransferTarget target = null;
+        try
+        { 
+            target = getTransferTarget(targetName);
+        
+            // which nodes to write to the snapshot
+            Set<NodeRef>nodes = definition.getNodes();
+        
+            if(nodes == null || nodes.size() == 0)
+            {
+                logger.debug("no nodes to transfer");
+                throw new TransferException(MSG_NO_NODES);
+            }
+
+            /**
+             * create snapshot
+             */
+            String prefix = "TRX-SNAP";
+            String suffix = ".xml";
+            
+            long numberOfNodes = 0;
+            
+            logger.debug("create snapshot");
+        
+            // where to put snapshot ?
+            snapshotFile = TempFileProvider.createTempFile(prefix, suffix);
+  
+            FileWriter snapshotWriter = new FileWriter(snapshotFile);
+            
+            // Write the manifest file
+            TransferManifestWriter formatter = new XMLTransferManifestWriter();
+            TransferManifestHeader header = new TransferManifestHeader();
+            header.setCreatedDate(new Date());
+            formatter.startTransferManifest(snapshotWriter);
+            formatter.writeTransferManifestHeader(header);
+            for(NodeRef nodeRef : nodes)
+            {
+                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef);
+                formatter.writeTransferManifestNode(node);
+                numberOfNodes++;
+            }
+            formatter.endTransferManifest();
+            snapshotWriter.close();        
+            
+            logger.debug("snapshot file written to local filesystem");
+            // If we are debugging then write the file to stdout.
+            if(logger.isDebugEnabled())
+            {
+                try
+                {
+                    outputFile(snapshotFile);
+                }
+                catch (Exception error)
+                {
+                    error.printStackTrace();
+                }
+            }
+        
+            /**
+             * Begin
+             */
+            eventProcessor.start();
+            final Transfer transfer = transmitter.begin(target);
+            if(transfer != null)
+            {
+                logger.debug("transfer begin");
+                
+                boolean prepared = false;
+                try
+                {
+                    /**
+                     * send Manifest
+                     */
+                    eventProcessor.sendManifest(1,1);
+                    DeltaList deltas = transmitter.sendManifest(transfer, snapshotFile);
+                    
+                    logger.debug("manifest sent");
+        
+                    /**
+                     * Parse the manifest file and transfer chunks over
+                     */
+                    
+                    // create a chunker and wire it up to the transmitter
+                    final ContentChunker chunker = new ContentChunkerImpl();
+                    final Long fRange = Long.valueOf(numberOfNodes); 
+                    chunker.setHandler(
+                            new ContentChunkProcessor(){
+                            private long counter = 0;
+                            public void processChunk(Set<ContentData> data)
+                            {
+                                logger.debug("send chunk to transmitter");
+                                for(ContentData file : data)
+                                {
+                                    counter++;
+                                    eventProcessor.sendContent(file, fRange, counter);
+                                }
+                                transmitter.sendContent(transfer, data);
+                            }
+                        }
+                    );
+                    
+               
+                    // create a manifest processor and wire it up to the chunker
+                    TransferManifestProcessor processor = new TransferManifestProcessor()
+                    {
+                        public void processTransferManifestNode(TransferManifestNormalNode node)
+                        {
+                            Set<ContentData> data = TransferManifestNodeHelper.getContentData(node);
+                            for(ContentData d : data)
+                            {
+                                logger.debug("add content to chunker");
+                                chunker.addContent(d);
+                            }
+                        }
+
+                        public void processTransferManifiestHeader(TransferManifestHeader header){/* NO-OP */ }
+                        public void startTransferManifest(){ /* NO-OP */ }
+                        public void endTransferManifest(){ /* NO-OP */ }
+                        public void processTransferManifestNode(TransferManifestDeletedNode node)
+                        { /* NO-OP */
+                        }
+                    };
+                    
+                    // wire up the manifest parser to a manifest processor
+                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                    SAXParser parser;
+                    parser = saxParserFactory.newSAXParser();                   
+                    XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
+
+                    // start the magic
+                    parser.parse(snapshotFile, reader);
+                        
+                    chunker.flush();
+                    
+                    logger.debug("content sending finished");
+                    
+                    /**
+                     * prepare
+                     */
+                    eventProcessor.prepare();
+                    transmitter.prepare(transfer);
+                    logger.debug("prepared");
+        
+                    /**
+                     * committing
+                     */
+                    eventProcessor.committing(100, 0);
+                    transmitter.commit(transfer);
+                    
+                    /**
+                     * need to poll for status
+                     */
+                    // transmitter.getCommitStatus(transfer);
+
+                    eventProcessor.committing(100, 50);
+                    eventProcessor.committing(100, 100);
+                    
+                    /**
+                     * committed
+                     */
+                    //eventProcessor.serverMessage("Committed");
+                    
+                    eventProcessor.success();
+                    
+                    prepared = true;
+                    
+                    logger.debug("committed");
+                    
+                    // Write the Successful transfer report if we get here 
+                    // in its own transaction so it cannot be rolled back
+                    final TransferTarget fTarget = target;
+                    reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+                                {
+                                    public NodeRef execute() throws Throwable
+                                    {
+                                        logger.debug("transfer report starting");
+                                        NodeRef reportNode = transferReporter.createTransferReport(transfer, fTarget, definition, transferReport);
+                                        logger.debug("transfer report done");
+                                        return reportNode;
+                                    }
+                                });
+                }
+                finally
+                {
+                    if(!prepared)
+                    {
+                        logger.debug("abort incomplete transfer");
+                        transmitter.abort(transfer);
+                    }
+                }
+            }
+        }
+        catch (TransferException t)
+        {
+            eventProcessor.error(t);
+            
+            /**
+             * Write the transfer report.  This is an error report so needs to be out 
+             */
+            if(target != null && reportNode!= null)
+            {
+//                reportNode = transferReporter.createTransferReport(target, definition, transferReport);
+            }
+            throw t;
+        }
+        catch (Exception t)
+        {
+            // Wrap any other exception as a transfer exception
+            logger.debug("unable to transfer", t);
+            eventProcessor.error(t);
+            
+            /**
+             * Write the transfer report.  This is an error report so needs to be out 
+             */
+            if(target != null && reportNode!= null)
+            {
+//                reportNode = transferReporter.createTransferReport(target, definition, transferReport);
+            }
+            throw new TransferException("unable to transfer:" + t.toString(), t);
+        }
+        finally
+        {
+            /**
+             * clean up
+             */
+            if(snapshotFile != null)
+            {
+                snapshotFile.delete();
+            }
+        }
+        
+        return reportNode;
+    } // end of transferImpl
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    public SearchService getSearchService()
+    {
+        return searchService;
+    }
+
+    public void setTransferSpaceQuery(String transferSpaceQuery)
+    {
+        this.transferSpaceQuery = transferSpaceQuery;
+    }
+
+    public String getTransferSpaceQuery()
+    {
+        return transferSpaceQuery;
+    }
+    
+    public void setDefaultTransferGroup(String defaultGroup)
+    {
+        this.defaultTransferGroup = defaultGroup;
+    }
+
+    public String getDefaultTransferGroup()
+    {
+        return defaultTransferGroup;
+    }
+    
+    public TransferTransmitter getTransmitter()
+    {
+        return transmitter;
+    }
+
+    public void setTransmitter(TransferTransmitter transmitter)
+    {
+        this.transmitter = transmitter;
+    }
+
+    private NodeRef transferHome;
+    protected NodeRef getTransferHome()
+    {
+        if(transferHome == null)
+        {
+            String query = transferSpaceQuery;
+    
+            ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 
+                    SearchService.LANGUAGE_XPATH, query);
+    
+            if(result.length() == 0)
+            {
+                // No transfer home.
+                throw new TransferException(MSG_NO_HOME, new Object[]{query});
+            }
+            if (result.getNodeRefs().size() != 0)
+            {
+                transferHome = result.getNodeRef(0);
+            }
+        }
+        return transferHome;
+    }
+    
+    private char[] encrypt(char[] text)
+    {
+        // placeholder dummy implementation - add an 'E' to the start
+//        String dummy = new String("E" + text);
+//        String dummy = new String(text);
+//        return dummy.toCharArray();
+        return text;
+    }
+    
+    private char[] decrypt(char[] text)
+    {
+        // placeholder dummy implementation - strips off leading 'E'
+//        String dummy = new String(text);
+        return text;
+        //return dummy.substring(1).toCharArray();
+    }
+    
+    /**
+     * 
+     * @param name
+     * @return
+     */
+    private NodeRef lookupTransferTarget(String name)
+    {
+        String query = "+TYPE:\"trx:transferTarget\" +@cm\\:name:\"" +name + "\"";
+        
+        ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 
+                SearchService.LANGUAGE_LUCENE, query);
+        
+        if(result.length() == 1)
+        {
+            return result.getNodeRef(0);
+        }        
+        return null;
+    }
+    
+    private void mapTransferTarget(NodeRef nodeRef, TransferTargetImpl def)
+    {
+        def.setNodeRef(nodeRef);
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        def.setEndpointPath((String)properties.get(TransferModel.PROP_ENDPOINT_PATH));
+        def.setEndpointProtocol((String)properties.get(TransferModel.PROP_ENDPOINT_PROTOCOL));
+        def.setEndpointHost((String)properties.get(TransferModel.PROP_ENDPOINT_HOST));
+        def.setEndpointPort((Integer)properties.get(TransferModel.PROP_ENDPOINT_PORT));
+        Serializable passwordVal = properties.get(TransferModel.PROP_PASSWORD);
+        
+        if(passwordVal.getClass().isArray())
+        {
+            def.setPassword(decrypt((char[])passwordVal));
+        }
+        if(passwordVal instanceof String)
+        {
+            String password = (String)passwordVal;
+            def.setPassword(decrypt(password.toCharArray()));
+        }
+        
+        
+        def.setUsername((String)properties.get(TransferModel.PROP_USERNAME));
+        def.setName((String)properties.get(ContentModel.PROP_NAME));
+        def.setTitle((String)properties.get(ContentModel.PROP_TITLE));
+        def.setDescription((String)properties.get(ContentModel.PROP_DESCRIPTION));    
+        
+        if(nodeService.hasAspect(nodeRef, TransferModel.ASPECT_ENABLEABLE))
+        {
+            def.setEnabled((Boolean)properties.get(TransferModel.PROP_ENABLED));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.transfer.TransferService#verify(org.alfresco.service.cmr.transfer.TransferTarget)
+     */
+    public void verify(TransferTarget target) throws TransferException
+    {
+        transmitter.verifyTarget(target);
+    }
+    
+    /**
+     * Utility to dump the contents of a file to the console
+     * @param file
+     */
+    private static void outputFile(File file) throws Exception
+    {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String s = reader.readLine();
+        while(s != null)
+        {
+            System.out.println(s);
+            s = reader.readLine();
+        }
+    }
+    
+    public void setTransferManifestNodeFactory(TransferManifestNodeFactory transferManifestNodeFactory)
+    {
+        this.transferManifestNodeFactory = transferManifestNodeFactory;
+    }
+
+    public TransferManifestNodeFactory getTransferManifestNodeFactory()
+    {
+        return transferManifestNodeFactory;
+    }
+
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
+    }
+
+    public ActionService getActionService()
+    {
+        return actionService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public TransactionService getTransactionService()
+    {
+        return transactionService;
+    }
+
+    public void setTransferReporter(TransferReporter transferReporter)
+    {
+        this.transferReporter = transferReporter;
+    }
+
+    public TransferReporter getTransferReporter()
+    {
+        return transferReporter;
+    }
+}

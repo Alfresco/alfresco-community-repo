@@ -348,6 +348,11 @@
                 <prop key="spaces.templates.email.invite1.childname">${spaces.templates.email.invite1.childname}</prop>
                 <prop key="spaces.templates.email.notify.childname">${spaces.templates.email.notify.childname}</prop>
                 <prop key="spaces.imapConfig.childname">${spaces.imapConfig.childname}</prop>
+                <prop key="spaces.transfers.childname">${spaces.transfers.childname}</prop>
+                <prop key="spaces.transfer_groups.childname">${spaces.transfer_groups.childname}</prop>
+                <prop key="spaces.transfer_temp.childname">${spaces.transfer_temp.childname}</prop>
+                <prop key="spaces.inbound_transfer_records.childname">${spaces.inbound_transfer_records.childname}</prop>
+                <prop key="spaces.outbound_transfer_records.childname">${spaces.outbound_transfer_records.childname}</prop>
                 <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
                 <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
                 <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>
@@ -553,7 +558,13 @@
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/imapSpaces.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-                </props>                
+                </props>      
+                
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/transferSpaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>       
+                </props>    
             </list>
         </property>
     </bean>

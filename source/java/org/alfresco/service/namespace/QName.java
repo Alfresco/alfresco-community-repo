@@ -58,8 +58,10 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     /**
      * Create a QName
      * 
+     * (With no prefix)
+     * 
      * @param namespaceURI  the qualifying namespace (maybe null or empty string)
-     * @param localName  the qualified name
+     * @param localName  the local name
      * @return the QName
      */
     public static QName createQName(String namespaceURI, String localName)
@@ -109,7 +111,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
 
 
     /**
-     * Create a QName
+     * Create a QName (from prefix format) <code>prefix:localName</code>
      * 
      * @param qname  qualified name of the following format <code>prefix:localName</code>
      * @param prefixResolver  lookup to resolve mappings between prefix and namespace

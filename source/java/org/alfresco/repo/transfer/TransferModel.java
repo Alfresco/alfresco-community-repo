@@ -1,0 +1,70 @@
+/*
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.repo.transfer;
+
+import org.alfresco.service.namespace.QName;
+
+/**
+ * Transfer Model Constants
+ * 
+ * @author Mark Rogers
+ */
+public interface TransferModel
+{
+    static final String TRANSFER_MODEL_1_0_URI = "http://www.alfresco.org/model/transfer/1.0";
+
+    static final QName ASPECT_ENABLEABLE = QName.createQName(TRANSFER_MODEL_1_0_URI, "enableable");
+//  static final QName ASSOC_IMAP_ATTACHMENTS_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "attachmentsFolder");
+    
+    /*
+     * Type : Transfer Group
+     */
+    static final QName TYPE_TRANSFER_GROUP = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferGroup");
+    
+    /*
+     * Type : Transfer Target
+     */
+    static final QName TYPE_TRANSFER_TARGET = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferTarget");
+    static final QName PROP_ENDPOINT_PROTOCOL = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointprotocol");
+    static final QName PROP_ENDPOINT_HOST = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointhost");
+    static final QName PROP_ENDPOINT_PORT = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointport");
+    static final QName PROP_ENDPOINT_PATH = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointpath");
+    static final QName PROP_USERNAME = QName.createQName(TRANSFER_MODEL_1_0_URI, "username");
+    static final QName PROP_PASSWORD = QName.createQName(TRANSFER_MODEL_1_0_URI, "password");
+    
+    static final QName PROP_ENABLED = QName.createQName(TRANSFER_MODEL_1_0_URI, "enabled");
+
+    /*
+     * Type : Transfer Lock
+     */
+    static final QName TYPE_TRANSFER_LOCK = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferLock");
+    static final QName PROP_TRANSFER_ID = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferId");
+    
+    /*
+     * Type : Transfer report
+     */
+    static final QName TYPE_TRANSFER_REPORT = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferReport");
+    
+}

@@ -26,6 +26,8 @@ package org.alfresco.util;
 
 import java.util.Arrays;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -82,10 +84,8 @@ public class ApplicationContextHelper
         // The config has changed so close the current context (if any)
         closeApplicationContext();
        
-        if(useLazyLoading) {
-           instance = new LazyClassPathXmlApplicationContext(configLocations);
-        } else if(noAutoStart) {
-           instance = new NoAutoStartClassPathXmlApplicationContext(configLocations);
+        if(useLazyLoading || noAutoStart) {
+           instance = new VariableFeatureClassPathXmlApplicationContext(configLocations); 
         } else {
            instance = new ClassPathXmlApplicationContext(configLocations);
         }
@@ -119,9 +119,6 @@ public class ApplicationContextHelper
      *  to reduce startup times when using a small, cut down context.
      */
     public static void setUseLazyLoading(boolean lazyLoading) {
-       if(lazyLoading && noAutoStart) {
-          throw new IllegalStateException("You must choose between LazyLoading and NoAutoStart");
-       }
        useLazyLoading = lazyLoading;
     }
     /**
@@ -142,13 +139,10 @@ public class ApplicationContextHelper
      *  you can use this to prevent the auto start.
      */
     public static void setNoAutoStart(boolean noAutoStart) {
-       if(useLazyLoading && noAutoStart) {
-          throw new IllegalStateException("You must choose between LazyLoading and NoAutoStart");
-       }
        ApplicationContextHelper.noAutoStart = noAutoStart;
     }
     /**
-     * Will subsystems with the autoStart=true property set
+     * Will Subsystems with the autoStart=true property set
      *  on them be allowed to auto start? The default is to
      *  honour the spring configuration and allow them to,
      *  but they can be prevented if required.
@@ -165,5 +159,28 @@ public class ApplicationContextHelper
             try { ctx.wait(10000L); } catch (Throwable e) {}
         }
         ctx.close();
+    }
+    
+   
+    /**
+     * A wrapper around {@link ClassPathXmlApplicationContext} which
+     *  allows us to enable lazy loading or prevent Subsystem 
+     *  autostart as requested.
+     */
+    protected static class VariableFeatureClassPathXmlApplicationContext extends ClassPathXmlApplicationContext {
+       protected VariableFeatureClassPathXmlApplicationContext(String[] configLocations) throws BeansException {
+          super(configLocations);
+       }
+       
+       protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+          super.initBeanDefinitionReader(reader);
+          
+          if(useLazyLoading) {
+             LazyClassPathXmlApplicationContext.postInitBeanDefinitionReader(reader);
+          }
+          if(noAutoStart) {
+             NoAutoStartClassPathXmlApplicationContext.postInitBeanDefinitionReader(reader);
+          }
+       }
     }
 }

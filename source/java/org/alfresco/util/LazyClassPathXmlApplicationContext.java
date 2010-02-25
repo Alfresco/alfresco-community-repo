@@ -52,6 +52,13 @@ public class LazyClassPathXmlApplicationContext extends
    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
       super.initBeanDefinitionReader(reader);
       
+      postInitBeanDefinitionReader(reader);
+   }
+    
+   /**
+    * Does the work of enabling Lazy Init on the xml bean reader
+    */
+   protected static void postInitBeanDefinitionReader(XmlBeanDefinitionReader reader) {
       reader.setDocumentReaderClass(AlwaysLazyInitBeanDefinitionDocumentReader.class);
    }
 

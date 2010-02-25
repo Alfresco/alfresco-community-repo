@@ -35,8 +35,8 @@ import org.w3c.dom.Element;
 
 /**
  * A wrapper around {@link ClassPathXmlApplicationContext} which 
- *  stops abstractPropertyBackedBean based beans from being
- *  AutoStarted by tweaking their property definitions.
+ *  stops Alfresco Subsystem (abstractPropertyBackedBean based)
+ *  beans from being AutoStarted by tweaking their property definitions.
  * You shouldn't do this in production, but it can be handy with
  *  unit tests, as it allows a quicker startup by preventing
  *  subsystems from starting up
@@ -54,6 +54,15 @@ public class NoAutoStartClassPathXmlApplicationContext extends
    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
       super.initBeanDefinitionReader(reader);
       
+      postInitBeanDefinitionReader(reader);
+   }
+   
+   /**
+    * Does the work of disabling the autostart of the
+    *  Subsystem (abstractPropertyBackedBean) beans
+    *  on the xml bean reader
+    */
+   protected static void postInitBeanDefinitionReader(XmlBeanDefinitionReader reader) {
       reader.setDocumentReaderClass(NoAutoStartBeanDefinitionDocumentReader.class);
    }
 
@@ -77,7 +86,8 @@ public class NoAutoStartClassPathXmlApplicationContext extends
          String propertyName = ele.getAttribute("name");
          if("autoStart".equals(propertyName)) {
             if("abstractPropertyBackedBean".equals(bd.getParentName())) {
-               System.out.println("Preventing the autostart of " + bd.getBeanClassName());
+               String id = ele.getParentNode().getAttributes().getNamedItem("id").getTextContent();
+               System.out.println("Preventing the autostart of Subsystem " + id);
                return;
             }
          }

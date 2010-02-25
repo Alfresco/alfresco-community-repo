@@ -66,7 +66,8 @@ import com.sun.star.io.IOException;
 public class ContextDependencyLister
 {
    public static final String[] DEFAULT_CONFIG_LOCATIONS = new String[] { 
-      "classpath:alfresco/application-context.xml" 
+        "classpath:alfresco/application-context.xml" 
+//      "classpath:alfresco/minimal-context.xml" 
 //      "classpath:test/alfresco/fake-context/application-context.xml" 
    };
    private String[] configLocations;

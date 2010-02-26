@@ -60,6 +60,7 @@ import org.alfresco.cmis.mapping.DirectProperty;
 import org.alfresco.cmis.mapping.ObjectIdProperty;
 import org.alfresco.cmis.mapping.ObjectTypeIdProperty;
 import org.alfresco.cmis.mapping.ParentProperty;
+import org.alfresco.cmis.mapping.VersionLabelProperty;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
@@ -1240,52 +1241,30 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // Serializable sValue = row.getValue("cmis:versionLabel");
-            // String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            // could be anything
-            // assertNotNull(value);
-            // assertEquals(Boolean.TRUE, value);
-            CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionLabel");
-            assertNotNull(column);
-            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
-        }
-        rs.close();
-
-        options = new CMISQueryOptions("SELECT * FROM cmis:document WHERE cmis:versionLabel = 'label'", rootNodeRef.getStoreRef());
-        options.setDefaultFTSConnective(Connective.OR);
-        options.setDefaultFTSFieldConnective(Connective.OR);
-        rs = cmisQueryService.query(options);
-        assertEquals(1, rs.length());
-        for (CMISResultSetRow row : rs)
-        {
+            // NOt queryable
             Serializable sValue = row.getValue("cmis:versionLabel");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNotNull(value);
-            assertEquals("label", value);
+            assertNull(value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionLabel");
-            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
+            assertNull(column);
         }
         rs.close();
 
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel =  'company'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <> 'company'", 10, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <  'company'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <= 'company'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel >  'company'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel >= 'company'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel =  'company'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <> 'company'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <  'company'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <= 'company'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel >  'company'", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel >= 'company'", 1, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IN     ('company')", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT IN ('company')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IN     ('company')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT IN ('company')", 10, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel     LIKE 'company'", 0, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT LIKE 'company'", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel     LIKE 'company'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel NOT LIKE 'company'", 10, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS NOT NULL", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS     NULL", 9, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS NOT NULL", 1, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel IS     NULL", 9, false, "cmis:objectId", new String(), true);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' =  ANY cmis:versionLabel", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE 'company' <> ANY cmis:versionLabel", 10, false, "cmis:objectId", new String(), true);

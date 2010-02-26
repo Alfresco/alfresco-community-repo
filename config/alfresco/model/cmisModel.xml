@@ -202,9 +202,7 @@
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
           <multiple>false</multiple>
-          <index enabled="true">
-            <tokenised>true</tokenised>
-          </index>
+          <index enabled="false"/>
         </property>
         <property name="cmis:versionSeriesId">
           <title>Version series id</title>

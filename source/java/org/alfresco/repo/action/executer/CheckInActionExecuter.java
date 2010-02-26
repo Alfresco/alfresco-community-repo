@@ -118,6 +118,7 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESCRIPTION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_DESCRIPTION)));
+		paramList.add(new ParameterDefinitionImpl(PARAM_MINOR_CHANGE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_MINOR_CHANGE)));
 	}
 
 }

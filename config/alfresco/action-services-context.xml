@@ -286,7 +286,7 @@
    
    <bean id="create-version" class="org.alfresco.repo.action.executer.CreateVersionActionExecuter" parent="action-executer">
       <property name="publicAction">
-         <value>true</value>
+         <value>false</value>
       </property>
       <property name="nodeService">
          <ref bean="nodeService"/>

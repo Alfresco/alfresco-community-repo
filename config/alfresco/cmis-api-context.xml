@@ -123,7 +123,6 @@
 
     <bean id="CMISChangeLogDataExtractor" class="org.alfresco.cmis.changelog.CMISChangeLogDataExtractor">        
         <property name="cmisService" ref="CMISService" />
-        <property name="fileFolderService" ref="FileFolderService" />
         <property name="registry" ref="auditModel.extractorRegistry" />        
     </bean>
     

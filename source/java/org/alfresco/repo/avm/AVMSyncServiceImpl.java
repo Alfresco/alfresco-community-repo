@@ -1100,15 +1100,22 @@ public class AVMSyncServiceImpl implements AVMSyncService
         
         if (srcSet.size() == dstSet.size())
         {
+            same = true;
             for (AccessPermission srcPerm : srcSet)
             {
+                boolean found = false;
                 for (AccessPermission dstPerm : dstSet)
                 {
                     if (compareAccessPermission(srcPerm, dstPerm))
                     {
-                        same = true;
+                        found = true;
                         break;
                     }
+                }
+                if (! found)
+                {
+                    same = false;
+                    break;
                 }
             }
         }

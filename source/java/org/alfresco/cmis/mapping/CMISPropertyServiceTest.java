@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
@@ -96,7 +97,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -129,7 +130,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -180,7 +181,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -197,13 +198,13 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 
@@ -225,7 +226,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -259,7 +260,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -276,10 +277,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -300,10 +301,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_NAME), "BaseContent (Working Copy)");
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -334,7 +335,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -351,10 +352,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -375,10 +376,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_NAME), "BaseContent (Working Copy)");
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -409,7 +410,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -443,7 +444,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -474,7 +475,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -491,10 +492,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -515,10 +516,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_NAME), "BaseContent (Working Copy)");
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -549,7 +550,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
@@ -566,10 +567,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -590,10 +591,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_NAME), "BaseContent (Working Copy)");
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -612,7 +613,6 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
         properties = cmisService.getProperties(content);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+";1.0");
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
@@ -625,14 +625,13 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL), "1.0");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL), "current");
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), "Meep");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
@@ -644,15 +643,14 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL), "1.0");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL), "current");
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), "Meep");
 
         properties = cmisService.getProperties(pwc);
 
@@ -668,10 +666,10 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_NAME), "BaseContent (Working Copy)");
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
+        assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
@@ -690,7 +688,6 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
         properties = cmisService.getProperties(content);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+";1.1");
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_BASE_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
@@ -705,12 +702,11 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL), "1.1");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL), "current");
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), "Woof");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
@@ -751,7 +747,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
             cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_ID);
             fail("Failed to catch invalid property on type folder");
         }
-        catch(AlfrescoRuntimeException e)
+        catch(CMISInvalidArgumentException e)
         {
             // NOTE: Invalid property
         }

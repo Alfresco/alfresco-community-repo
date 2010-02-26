@@ -31,16 +31,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+
 import org.alfresco.cmis.CMISCapabilityChanges;
 import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.cmis.CMISChangeLog;
 import org.alfresco.cmis.CMISChangeLogService;
 import org.alfresco.cmis.CMISChangeType;
 import org.alfresco.cmis.CMISInvalidArgumentException;
-import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,6 +57,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.Pair;
@@ -58,7 +67,7 @@ import org.springframework.extensions.surf.util.Pair;
  * 
  * @author Dmitry Velichkevich
  */
-public class CMISChangeLogServiceTest extends BaseCMISTest
+public class CMISChangeLogServiceTest extends TestCase
 {
     private static final String CMIS_AUTHORITY = "cmis";
     private static final String CHANGE_PREFIX = "Changed";
@@ -79,6 +88,13 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
 
     private AuditModelRegistryImpl auditSubsystem;
     private CMISChangeLogService changeLogService;
+    private NodeService nodeService;
+    private FileFolderService fileFolderService;
+    private PermissionService permissionService;
+    private TransactionService transactionService;
+    private AuthenticationComponent authenticationComponent;
+    private RetryingTransactionHelper retryingTransactionHelper;
+    private UserTransaction testTX;
 
     private int actualCount = 0;
     private Map<CMISChangeType, Integer> actualAmounts = new HashMap<CMISChangeType, Integer>();
@@ -402,20 +418,47 @@ public class CMISChangeLogServiceTest extends BaseCMISTest
     @Override
     public void setUp() throws Exception
     {
-        super.setUp();
         ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
         changeLogService = (CMISChangeLogService) applicationContext.getBean("CMISChangeLogService");
         nodeService = (NodeService) applicationContext.getBean("NodeService");
         permissionService = (PermissionService) applicationContext.getBean("PermissionService");
         fileFolderService = (FileFolderService) applicationContext.getBean("FileFolderService");
+        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
+        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         auditSubsystem = (AuditModelRegistryImpl) applicationContext.getBean("Audit");
+        
+        // initialise audit subsystem
+        RetryingTransactionCallback<Void> initAudit = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Exception
+            {
+                auditSubsystem.stop();
+                auditSubsystem.setProperty("audit.enabled", "true");
+                auditSubsystem.setProperty("audit.cmischangelog.enabled", "true");
+                auditSubsystem.start();
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(initAudit, false, true); 
+
+        // start test transaction
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        this.authenticationComponent.setSystemUserAsCurrentUser();
     }
 
     @Override
     protected void tearDown() throws Exception
     {
         deleteTestData();
-        super.tearDown();
+        
+        if (testTX.getStatus() == Status.STATUS_ACTIVE)
+        {
+            testTX.rollback();
+        }
+        AuthenticationUtil.clearCurrentSecurityContext();
+        
         auditSubsystem.destroy();
     }
 }

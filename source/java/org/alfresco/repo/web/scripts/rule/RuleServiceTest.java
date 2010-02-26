@@ -28,8 +28,10 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.rule.LinkRules;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -281,7 +283,8 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertEquals(before.has("url"), after.has("url"));
     }
 
-    private void checkRuleset(JSONObject result, int rulesCount, String[] ruleIds, int inhRulesCount, String[] parentRuleIds) throws Exception
+    private void checkRuleset(JSONObject result, int rulesCount, String[] ruleIds, int inhRulesCount, String[] parentRuleIds,
+                                boolean isLinkedFrom, boolean isLinkedTo) throws Exception
     {
         assertNotNull("Response is null.", result);
 
@@ -332,6 +335,10 @@ public class RuleServiceTest extends BaseWebScriptTest
                 assertTrue(ruleSum.has("url"));
             }
         }
+
+        assertEquals(isLinkedTo, data.has("linkedToRuleSet"));
+        
+        assertEquals(isLinkedFrom, data.has("linkedFromRuleSets"));
 
         assertTrue(data.has("url"));
     }
@@ -610,10 +617,19 @@ public class RuleServiceTest extends BaseWebScriptTest
         JSONObject jsonRule = createRule(testNodeRef);
         String[] ruleIds = new String[] { jsonRule.getJSONObject("data").getString("id") };
 
-        Response response = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef)), 200);
-        JSONObject result = new JSONObject(response.getContentAsString());
+        Action linkRulesAction = actionService.createAction(LinkRules.NAME);
+        linkRulesAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, testNodeRef);
+        actionService.executeAction(linkRulesAction, testNodeRef2);
 
-        checkRuleset(result, 1, ruleIds, 1, parentRuleIds);
+        Response linkedFromResponse = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef)), 200);
+        JSONObject linkedFromResult = new JSONObject(linkedFromResponse.getContentAsString());
+        
+        checkRuleset(linkedFromResult, 1, ruleIds, 1, parentRuleIds, true, false);
+
+        Response linkedToResponse = sendRequest(new GetRequest(formatRulesetUrl(testNodeRef2)), 200);
+        JSONObject linkedToResult = new JSONObject(linkedToResponse.getContentAsString());
+        
+        checkRuleset(linkedToResult, 1, ruleIds, 1, parentRuleIds, false, true);
     }
 
     public void testGetRuleDetails() throws Exception

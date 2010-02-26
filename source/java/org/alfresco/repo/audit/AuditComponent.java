@@ -95,6 +95,13 @@ public interface AuditComponent
      */
 
     /**
+     * Determines whether audit is globally enabled or disabled.
+     * 
+     * @return <code>true</code>, if audit is enabled
+     */
+    public boolean isAuditEnabled();
+
+    /**
      * Determines whether the given source path is mapped to any audit applications. Allows optimizations to be made in
      * calling components.
      * 

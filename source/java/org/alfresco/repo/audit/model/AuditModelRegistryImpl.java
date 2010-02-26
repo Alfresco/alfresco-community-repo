@@ -153,6 +153,15 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     }
     
     /**
+     * {@inheritDoc}
+     */
+    public boolean isAuditEnabled()
+    {
+        String value = getProperty(PROPERTY_AUDIT_ENABLED);
+        return value != null && value.equalsIgnoreCase("true");
+    }
+
+    /**
      * Enables audit and registers an audit model at a given URL. Does not register across the cluster and should only
      * be used for unit test purposes.
      * 

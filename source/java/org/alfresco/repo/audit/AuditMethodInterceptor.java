@@ -102,7 +102,6 @@ public class AuditMethodInterceptor implements MethodInterceptor
     private boolean useNewConfig = false;
     
     private final ThreadLocal<Boolean> inAudit = new ThreadLocal<Boolean>();
-    private final ThreadLocal<Boolean> auditEnabled = new ThreadLocal<Boolean>();
     
     public AuditMethodInterceptor()
     {
@@ -136,44 +135,16 @@ public class AuditMethodInterceptor implements MethodInterceptor
 
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        // Cache the enabled flag at the top of the stack
-        Boolean wasEnabled = auditEnabled.get();
-        try
+        if(!auditComponent.isAuditEnabled())
         {
-            boolean enabled;
-            if (wasEnabled == null)
-            {
-                // There hasn't been an invocation in this thread yet, so check whether we are currently enabled in the
-                // audit subsystem
-                enabled = this.auditComponent.isSourcePathMapped(AUDIT_PATH_API_ROOT);
-                auditEnabled.set(enabled);
-            }
-            else
-            {
-                enabled = wasEnabled;
-            }
-
-            if(!enabled)
-            {
-                // No auditing
-                return mi.proceed();
-            }
-            else if (useNewConfig)
-            {
-                // New configuration to be used
-                return proceed(mi);
-            }
-            else
-            {
-                // Use previous configuration
-                return auditComponent.audit(mi);
-            }
+            // No auditing
+            return mi.proceed();
         }
-        finally
+        else
         {
-            auditEnabled.set(wasEnabled);
+            // New configuration will be used and optionally old configuration if useNewConfig=false
+            return proceed(mi);
         }
-                
     }
     
     /**
@@ -188,41 +159,50 @@ public class AuditMethodInterceptor implements MethodInterceptor
      */
     private Object proceed(MethodInvocation mi) throws Throwable
     {
-        Auditable auditableDef = mi.getMethod().getAnnotation(Auditable.class);
-        if (auditableDef == null)
-        {
-            // No annotation, so just continue as normal
-            return mi.proceed();
-        }
-        
-        // First get the argument map, if present
-        Object[] args = mi.getArguments();
-        Map<String, Serializable> namedArguments = getInvocationArguments(auditableDef, args);
-        // Get the service name
-        String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
-        if (serviceName == null)
-        {
-            // Not a public service
-            return mi.proceed();
-        }
-        String methodName = mi.getMethod().getName();
-        
-        // Are we in a nested audit
+        // Are we in a nested audit?
         Boolean wasInAudit = inAudit.get();
-        // TODO: Need to make this configurable for the interceptor or a conditional mapping for audit
-        if (wasInAudit != null)
-        {
-            return mi.proceed();
-        }
-        // Record that we have entered an audit method
-        inAudit.set(Boolean.TRUE);
         try
         {
+            // If we are already in a nested audit call, there is nothing to do
+            if (wasInAudit != null)
+            {
+                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+            }
+
+            // If there are no mapped paths, there is nothing to do
+            if (!this.auditComponent.isSourcePathMapped(AUDIT_PATH_API_ROOT))
+            {
+                // We can ignore the rest of the stack too
+                inAudit.set(Boolean.TRUE);
+                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+            }
+
+            Auditable auditableDef = mi.getMethod().getAnnotation(Auditable.class);
+            if (auditableDef == null)
+            {
+                // No annotation, so just continue as normal
+                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+            }
+            
+            // First get the argument map, if present
+            Object[] args = mi.getArguments();
+            Map<String, Serializable> namedArguments = getInvocationArguments(auditableDef, args);
+            // Get the service name
+            String serviceName = publicServiceIdentifier.getPublicServiceName(mi);
+            if (serviceName == null)
+            {
+                // Not a public service
+                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+            }
+            String methodName = mi.getMethod().getName();
+            
+            // Record that we have entered an audit method
+            inAudit.set(Boolean.TRUE);
             return proceedWithAudit(mi, auditableDef, serviceName, methodName, namedArguments);
         }
         finally
         {
-            inAudit.set(wasInAudit);
+            inAudit.set(wasInAudit);                       
         }
     }
     
@@ -251,7 +231,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         Throwable thrown = null;
         try
         {
-            ret = mi.proceed();
+            ret = useNewConfig ? mi.proceed() : auditComponent.audit(mi);
         }
         catch (Throwable e)
         {

@@ -959,9 +959,18 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * @since 3.2
      */
+    public boolean isAuditEnabled()
+    {
+        return auditModelRegistry.isAuditEnabled();                
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     */
     public boolean isSourcePathMapped(String sourcePath)
     {
-        return !auditModelRegistry.getAuditPathMapper().isEmpty();                
+        return isAuditEnabled() && !auditModelRegistry.getAuditPathMapper().isEmpty();                
     }
     
     /**

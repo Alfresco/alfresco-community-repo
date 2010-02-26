@@ -24,8 +24,6 @@
  */
 package org.alfresco.repo.audit.model;
 
-import java.net.URL;
-
 import org.alfresco.util.PathMapper;
 
 /**
@@ -41,13 +39,19 @@ public interface AuditModelRegistry
 
     /**
      * Method to load audit models into memory.  This method is also responsible for persisting
-     * the audit models for later retrieval.  Models are loaded from the locations given by the
-     * {@link #registerModel(URL) register} methods.
+     * the audit models for later retrieval.
      * <p/>
      * Note, the models are loaded in a new transaction, so this method can be called by any code
      * at any time.
      */
     public void loadAuditModels();
+
+    /**
+     * Determines whether audit is globally enabled or disabled.
+     * 
+     * @return <code>true</code>, if audit is enabled
+     */
+    public boolean isAuditEnabled();
 
     /**
      * Get the application model for the given root key (as defined on the application)

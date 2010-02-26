@@ -28,9 +28,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISServices;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -43,7 +44,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class CMISChangeLogDataExtractor extends AbstractDataExtractor
 {
     private CMISServices cmisService;
-    private FileFolderService fileFolderService;
     
     public static final String KEY_NODE_REF = "nodeRef";
     public static final String KEY_OBJECT_ID = "objectId";
@@ -69,28 +69,23 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
      */
     public boolean isSupported(Serializable data)
     {
-        boolean result = false;
         if (data != null)
         {
             NodeRef nodeRef = getNodeRef(data);
             if (nodeRef != null)
             {
-                if (!fileFolderService.exists(nodeRef))
+                try
                 {
-                    result = true;
+                    CMISTypeId typeId = cmisService.getTypeDefinition(nodeRef).getBaseType().getTypeId();
+                    return typeId.equals(CMISDictionaryModel.DOCUMENT_TYPE_ID) || typeId.equals(CMISDictionaryModel.FOLDER_TYPE_ID);
                 }
-                // Does the node represent a file or folder
-                else if (fileFolderService.getFileInfo(nodeRef) != null)
+                catch (CMISInvalidArgumentException e)
                 {
-                    // Is the node located within CMIS defaultRootStore
-                    if (cmisService.getDefaultRootStoreRef().equals(nodeRef.getStoreRef()))
-                    {
-                        result = true;
-                    }
+                    // Ignore and return false
                 }
             }
         }
-        return result;
+        return false;
     }
 
     /**
@@ -122,15 +117,4 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
     {
         this.cmisService = cmisService;
     }
-
-    /**
-     * Set the FileFolder service
-     * 
-     * @param fileFolderService FileFolder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-
 }

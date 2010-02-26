@@ -47,6 +47,7 @@ import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -1284,9 +1285,9 @@ public class AuditComponentImpl implements AuditComponent
      * @return                      Returns all values as audited
      */
     private Map<String, Serializable> audit(
-            AuditApplication application,
+            final AuditApplication application,
             Set<String> disabledPaths,
-            Map<String, Serializable> values)
+            final Map<String, Serializable> values)
     {
         // Get the model ID for the application
         Long applicationId = application.getApplicationId();
@@ -1327,7 +1328,13 @@ public class AuditComponentImpl implements AuditComponent
         Map<String, Serializable> auditData = generateData(generators);
         
         // Now extract values
-        Map<String, Serializable> extractedData = extractData(application, values);
+        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(new RunAsWork<Map<String, Serializable>>()
+        {
+            public Map<String, Serializable> doWork() throws Exception
+            {
+                return extractData(application, values);
+            }
+        }, AuthenticationUtil.getSystemUserName());
         
         // Combine extracted and generated values (extracted data takes precedence)
         auditData.putAll(extractedData);

@@ -24,6 +24,7 @@
  */
 package org.alfresco.cmis.mapping;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -182,7 +183,16 @@ public class CMISMapping implements InitializingBean
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER));
         registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_CHANGE_TOKEN, null));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_NAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_NAME,
+                ContentModel.PROP_NAME)
+        {
+            @Override
+            public Serializable getValue(AssociationRef assocRef)
+            {
+                // Let's use the association ref as the name
+                return assocRef.toString();
+            }
+        });
         registerPropertyAccessor(new IsImmutableProperty(serviceRegistry));
         registerPropertyAccessor(new IsLatestVersionProperty(serviceRegistry));
         registerPropertyAccessor(new IsMajorVersionProperty(serviceRegistry));

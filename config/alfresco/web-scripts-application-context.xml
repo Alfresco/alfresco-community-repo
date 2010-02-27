@@ -138,6 +138,8 @@
            <entry key="cmisproperty">
               <bean class="org.alfresco.repo.cmis.rest.CMISPropertyValueMethod">
                  <constructor-arg><ref bean="CMISService"/></constructor-arg>
+                 <constructor-arg><ref bean="webscripts.repo.templateprocessor"/></constructor-arg>
+                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>
               </bean>
            </entry>
            <entry key="cmisresultset">

@@ -54,6 +54,16 @@
 <link rel="${cmisconstants.REL_VERSION_HISTORY}" href="${absurl(url.serviceContext)}[@nodeuri node/]/versions"/>
 [/#macro]
 
+[#-- Link to current node version --]
+[#macro linkcurrentversion node]
+<link rel="${cmisconstants.REL_CURRENT_VERSION}" href="${absurl(url.serviceContext)}[@nodeuri node/]?returnVersion=latest"/>
+[/#macro]
+
+[#-- Link to working copy node --]
+[#macro linkpwc pwc]
+<link rel="${cmisconstants.REL_WORKING_COPY}" href="${absurl(url.serviceContext)}[@pwcuri pwc/]"/>
+[/#macro]
+
 [#-- Link to source node --]
 [#macro linktosource node]
 <link rel="${cmisconstants.REL_ASSOC_SOURCE}" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
@@ -95,7 +105,7 @@
 [/#macro]
 
 [#macro linknodeself node]
-<link rel="self" href="${absurl(url.serviceContext)}[@nodeuri node/]"/>
+<link rel="self" href="${absurl(url.serviceContext)}[#if node.isWorkingCopy][@pwcuri node/][#else][@nodeuri node/][/#if]"/>
 [/#macro]
 
 [#macro linkassocself assoc]
@@ -156,6 +166,9 @@
 
 [#-- Helper to render Alfresco Node uri --]
 [#macro nodeuri node]/cmis/[@noderef node/][/#macro]
+
+[#-- Helper to render Alfresco PWC uri --]
+[#macro pwcuri node]/cmis/pwc/[@noderef node/][/#macro]
 
 [#-- Helper to render Alfresco Assoc uri --]
 [#macro assocuri assoc]/cmis/rel/${assoc.associationRef.id}[/#macro]

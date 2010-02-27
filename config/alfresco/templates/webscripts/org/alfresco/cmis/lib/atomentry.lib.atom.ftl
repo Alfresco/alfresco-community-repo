@@ -56,6 +56,13 @@
 [@linksLib.linkacl node/]
 [@linksLib.linkparents node/]
 [@linksLib.linkversions node/]
+[#if node.isWorkingCopy]
+  [#local nodeuri][@linksLib.nodeuri cmisproperty(node, cmisconstants.PROP_VERSION_SERIES_ID, true)/][/#local]
+  [@linksLib.linkvia href="${nodeuri}"/]
+[#else]
+  [@linksLib.linkcurrentversion node/]
+  [#if cmisproperty(node, cmisconstants.PROP_IS_VERSION_SERIES_CHECKED_OUT)][@linksLib.linkpwc cmisproperty(node, cmisconstants.PROP_VERSION_SERIES_CHECKED_OUT_ID, true)/][/#if]
+[/#if]
 [@linksLib.linktype node/]
 [@linksLib.linkservice/]
 [#local nodeMap=cmisrenditions(node, renditionfilter)/]
@@ -88,37 +95,6 @@
 </cmisra:object>
 [/@entry]
 [/#macro]
-
-
-[#--                                     --]
-[#-- ATOM Entry for Private Working Copy --]
-[#--                                     --]
-
-[#macro pwc node renditionfilter="cmis:none" propfilter="*" includeallowableactions=false includerelationships="none" ns=""]
-[@entry ns]
-<author><name>${node.properties.creator!""}</name></author>
-[@contentstream node/]
-<id>urn:uuid:${node.id}</id>
-[#assign pwcuri]/cmis/pwc/[@linksLib.noderef node/][/#assign]
-[@linksLib.linkself href="${pwcuri}"/]
-[@linksLib.linkstream node "enclosure"/]
-[@linksLib.linknodeedit node/]
-[@linksLib.linkstream node "edit-media"/]
-[@documentCMISLinks node=node renditionfilter=renditionfilter/]
-<published>${xmldate(node.properties.created)}</published>
-<summary>[@contentsummary node/]</summary>
-<title>${node.name?xml}</title>
-<updated>${xmldate(node.properties.modified)}</updated>
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
-<cmisra:object>
-[@objectCMISProps node propfilter/]
-[#if includeallowableactions][@allowableactions node/][/#if]
-</cmisra:object>
-<cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
-[/@entry]
-[/#macro]
-
 
 [#--                       --]
 [#-- ATOM Entry for Folder --]

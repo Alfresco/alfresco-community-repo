@@ -8,5 +8,6 @@
   
   <format default="html"/>
   <authentication>none</authentication>
+  <transaction>required</transaction>
   <family>CMIS</family>
 </webscript>

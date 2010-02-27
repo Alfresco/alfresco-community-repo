@@ -88,14 +88,14 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         }
     }
 
-    private CmisObjectListType createResult(PropertyFilter filter, boolean includeAllowableActions, Object[] sourceArray, BigInteger skipCount, BigInteger maxItems)
+    private CmisObjectListType createResult(PropertyFilter filter, Boolean includeAllowableActions, Object[] sourceArray, BigInteger skipCount, BigInteger maxItems)
             throws CmisException
     {
         Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
         CmisObjectListType result = new CmisObjectListType();
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
-            result.getObjects().add(createCmisObject(sourceArray[i], filter, includeAllowableActions, null));
+            result.getObjects().add(createCmisObject(sourceArray[i], filter, null, includeAllowableActions, null));
         }
         result.setHasMoreItems(cursor.getEndRow() < sourceArray.length);
         result.setNumItems(BigInteger.valueOf(cursor.getPageSize()));

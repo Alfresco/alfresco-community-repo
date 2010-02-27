@@ -17,7 +17,9 @@
 [/@feedLib.generic]
 
 [#list nodes as version]
-  [@entryLib.version version/]
+  [#if node.isDocument]  
+    [@entryLib.document node=version propfilter=filter includeallowableactions=includeAllowableActions/]
+  [/#if]
 [/#list]
 
 </feed>

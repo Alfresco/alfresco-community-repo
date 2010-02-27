@@ -40,4 +40,11 @@ script:
     // include allowable actions
     var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
     model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
+
+    // include relationships
+    model.includeRelationships = args[cmis.ARG_INCLUDE_RELATIONSHIPS];
+    if (model.includeRelationships == null || model.includeRelationships.length == 0)
+    {
+        model.includeRelationships = "none";
+    }    
 }

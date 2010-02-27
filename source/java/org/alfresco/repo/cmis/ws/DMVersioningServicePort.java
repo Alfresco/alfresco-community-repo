@@ -162,15 +162,11 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         checkRepositoryId(repositoryId);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
         List<CmisObjectType> objects = new LinkedList<CmisObjectType>();
-        if (includeAllowableActions == null)
-        {
-            includeAllowableActions = false;
-        }
         try
         {
             for (NodeRef nodeRef : cmisService.getAllVersions(objectId))
             {
-                objects.add(createCmisObject(nodeRef, propertyFilter, includeAllowableActions, null));
+                objects.add(createCmisObject(nodeRef, propertyFilter, null, includeAllowableActions, null));
             }
         }
         catch (CMISServiceException e)
@@ -215,10 +211,10 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         try
         {
             NodeRef latestVersionNodeRef = cmisService.getLatestVersion(objectId, major != null && major);
-            // TODO: includeRelationships
             // TODO: includePolicyIds
             PropertyFilter propertyFilter = createPropertyFilter(filter);
-            CmisObjectType result = createCmisObject(latestVersionNodeRef, propertyFilter, includeAllowableActions, renditionFilter);
+            CmisObjectType result = createCmisObject(latestVersionNodeRef, propertyFilter, includeRelationships,
+                    includeAllowableActions, renditionFilter);
             if (includeACL)
             {
                 appendWithAce(cmisService.getVersionSeries(objectId, NodeRef.class, false), result);

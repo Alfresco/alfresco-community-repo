@@ -26,8 +26,8 @@ PropertyCollection includes changeToken (if applicable to repository)<br>
 ]]>
   </description>
   
-  <url>/cmis/pwc/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/cmis/pwc/s/{store}/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/pwc/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/pwc/s/{store}/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
   
   <authentication>user</authentication>
   <transaction allow="readonly"/>

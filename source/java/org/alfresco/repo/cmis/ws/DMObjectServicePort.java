@@ -431,8 +431,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         {
             NodeRef object = cmisService.getReadableObject(objectId, NodeRef.class);
             PropertyFilter propertyFilter = createPropertyFilter(filter);
-            boolean includeActions = (null != includeAllowableActions) ? (includeAllowableActions.booleanValue()) : (false);
-            CmisObjectType cmisObject = createCmisObject(object, propertyFilter, includeActions, renditionFilter);
+            CmisObjectType cmisObject = createCmisObject(object, propertyFilter, includeRelationships,
+                    includeAllowableActions, renditionFilter);
 
             // TODO: process relationships
             // TODO: process policyIds
@@ -471,7 +471,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             throw ExceptionUtil.createCmisException("Path to Folder was not specified or Folder Path is invalid", EnumServiceException.INVALID_ARGUMENT);
         }
         PropertyFilter propertyFilter = createPropertyFilter(filter);
-        CmisObjectType object = createCmisObject(objectNodeRef, propertyFilter, includeAllowableActions, renditionFilter);
+        CmisObjectType object = createCmisObject(objectNodeRef, propertyFilter, includeRelationships,
+                includeAllowableActions, renditionFilter);
         boolean includeAcl = (null != includeACL) ? (includeACL.booleanValue()) : (false);
         if (includeAcl)
         {

@@ -14,6 +14,11 @@
 <link rel="${cmisconstants.REL_ALLOWABLE_ACTIONS}" href="${absurl(url.serviceContext)}[@nodeuri node/]/allowableactions"/>
 [/#macro]
 
+[#-- Link to node allowable actions --]
+[#macro linkassocallowableactions assoc]
+<link rel="${cmisconstants.REL_ALLOWABLE_ACTIONS}" href="${absurl(url.serviceContext)}[@assocuri assoc/]/allowableactions"/>
+[/#macro]
+
 [#-- Link to node relationships --]
 [#macro linkrelationships node]
 <link rel="${cmisconstants.REL_RELATIONSHIPS}" href="${absurl(url.serviceContext)}[@nodeuri node/]/rels"/>

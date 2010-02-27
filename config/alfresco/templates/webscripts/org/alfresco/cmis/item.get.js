@@ -36,4 +36,11 @@ script:
 
     // include allowable actions
     model.includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS] == "true";
+    
+    // include relationships
+    model.includeRelationships = args[cmis.ARG_INCLUDE_RELATIONSHIPS];
+    if (model.includeRelationships == null || model.includeRelationships.length == 0)
+    {
+        model.includeRelationships = "none";
+    }    
 }

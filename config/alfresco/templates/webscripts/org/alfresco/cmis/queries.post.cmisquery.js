@@ -47,6 +47,13 @@ script:
     var includeAllowableActions = cmisQuery.includeAllowableActions.toString();
     model.includeAllowableActions = (includeAllowableActions == null || includeAllowableActions == "true" ? true : false);
     
+    // include relationships
+    model.includeRelationships = cmisQuery.includeRelationships.toString();
+    if (model.includeRelationships == null || model.includeRelationships.length == 0)
+    {
+        model.includeRelationships = "none";
+    }
+
     // rendition filter
     var renditionFilter = cmisQuery.renditionFilter.toString();
     model.renditionFilter = renditionFilter != null && renditionFilter.length > 0 ? renditionFilter : "cmis:none";

@@ -20,7 +20,7 @@
 
 [#assign rs = cmisresultset(resultset)]
 [#list rs.rows as row]
-[@entryLib.row row=row renditionfilter=renditionFilter includeallowableactions=includeAllowableActions/]
+[@entryLib.row row=row renditionfilter=renditionFilter includeallowableactions=includeAllowableActions includerelationships=includeRelationships/]
 [/#list]
 
 </feed>

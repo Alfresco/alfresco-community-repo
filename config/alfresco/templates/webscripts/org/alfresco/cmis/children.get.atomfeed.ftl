@@ -26,9 +26,9 @@
 
 [#list results as child]
   [#if child.isDocument]
-    [@entryLib.document node=child renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions/]
+    [@entryLib.document node=child renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships=includeRelationships/]
   [#else]
-    [@entryLib.folder node=child renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions/]
+    [@entryLib.folder node=child renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships=includeRelationships/]
   [/#if]
 [/#list]
 

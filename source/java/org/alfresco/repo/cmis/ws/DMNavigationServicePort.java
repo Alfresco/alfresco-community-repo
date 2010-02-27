@@ -84,13 +84,10 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
             for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
             {
-                resultListing.add(createCmisObject(nodeRefs[index], propertyFilter, includeAllowableActions,
-                        renditionFilter));
+                resultListing.add(createCmisObject(nodeRefs[index], propertyFilter, includeRelationships,
+                        includeAllowableActions, renditionFilter));
             }
             result.setHasMoreItems(new Boolean(cursor.getEndRow() < (nodeRefs.length - 1)));
-
-            // TODO: includeAllowableActions, includeRelationships, renditions
-
             return result;
         }
         catch (CMISServiceException e)
@@ -128,8 +125,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
 
             for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
             {
-                CmisObjectType cmisObject = createCmisObject(listing[index], propertyFilter, includeAllowableActions,
-                        renditionFilter);
+                CmisObjectType cmisObject = createCmisObject(listing[index], propertyFilter, includeRelationships,
+                        includeAllowableActions, renditionFilter);
                 CmisObjectInFolderType cmisObjectInFolder = new CmisObjectInFolderType();
                 cmisObjectInFolder.setObject(cmisObject);
                 if (includePathSegments != null && includePathSegments)
@@ -220,7 +217,7 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
             throw ExceptionUtil.createCmisException(e);
         }
         
-        CmisObjectType result = createCmisObject(parentRef, propertyFilter, false, null);
+        CmisObjectType result = createCmisObject(parentRef, propertyFilter, null, false, null);
         return result;
     }
 
@@ -253,8 +250,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         String relativePathSegment = propertiesUtil.getProperty(childNode, CMISDictionaryModel.PROP_NAME, "");
         for (NodeRef objectNodeRef : parents)
         {
-            CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeAllowableActions, renditionFilter);
-            // TODO: includeRelationship, renditions
+            CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeRelationships,
+                    includeAllowableActions, renditionFilter);
             CmisObjectParentsType cmisObjectParentsType = new CmisObjectParentsType();
             cmisObjectParentsType.setObject(cmisObject);
             if (includeRelativePathSegment != null && includeRelativePathSegment)
@@ -262,7 +259,6 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
                 cmisObjectParentsType.setRelativePathSegment(relativePathSegment);
             }
             result.add(cmisObjectParentsType);
-
         }
         return result;
     }
@@ -319,9 +315,8 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
     private CmisObjectInFolderContainerType createObjectInFolderContainer(NodeRef nodeRef, PropertyFilter filter, Boolean includeAllowableActions,
             EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includePathSegments) throws CmisException
     {
-        includeAllowableActions = includeAllowableActions == null ? Boolean.FALSE : includeAllowableActions;
-        CmisObjectType cmisObject = createCmisObject(nodeRef, filter, includeAllowableActions, renditionFilter);
-        // TODO: add relationships and renditions
+        CmisObjectType cmisObject = createCmisObject(nodeRef, filter, includeRelationships, includeAllowableActions,
+                renditionFilter);
 
         CmisObjectInFolderType objectInFolderType = new CmisObjectInFolderType();
         objectInFolderType.setObject(cmisObject);

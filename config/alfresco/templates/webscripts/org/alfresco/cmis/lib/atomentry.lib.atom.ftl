@@ -44,6 +44,7 @@
 <cmisra:object>
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
+[@relationships node includerelationships includeallowableactions propfilter/]
 [#if includeacl][@aclreport node/][/#if]
 </cmisra:object>
 <cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
@@ -71,31 +72,6 @@
 [/#list]
 [/#macro]
 
-
-[#--                        --]
-[#-- ATOM Entry for Version --]
-[#--                        --]
-
-[#macro version node propfilter="*" ns=""]
-[@entry ns]
-<author><name>${node.properties.creator!""}</name></author>
-[@contentstream node/]
-<id>urn:uuid:${node.id}</id>
-[@linksLib.linknodeself node/]
-[@linksLib.linkstream node "enclosure"/]
-[@documentCMISLinks node=node/]
-<published>${xmldate(node.properties.created)}</published>
-<summary>[@contentsummary node/]</summary>
-<title>${node.name?xml}</title>
-<updated>${xmldate(node.properties.modified)}</updated>
-<app:edited>${xmldate(node.properties.modified)}</app:edited>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
-<cmisra:object>
-[@objectCMISProps node propfilter/]
-</cmisra:object>
-[/@entry]
-[/#macro]
-
 [#--                       --]
 [#-- ATOM Entry for Folder --]
 [#--                       --]
@@ -121,6 +97,7 @@
 <cmisra:object>
 [@objectCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
+[@relationships node includerelationships includeallowableactions propfilter/]
 [#if includeacl][@aclreport node/][/#if]
 </cmisra:object>
 <cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
@@ -171,26 +148,24 @@
 
 [#macro assoc assoc propfilter="*" includeallowableactions=false ns=""]
 [@entry ns]
-<author><name>${xmldate(date)}</name></author>  [#-- TODO: [@namedvalue cmisconstants.PROP_CREATED_BY assoc cmisconstants.DATATYPE_STRING/] --]
-<content>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</content>  [#-- TODO: spec id, how to map? --]
+<author><name>${assoc.source.properties.creator!""}</name></author>
+<content>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</content>
 <id>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</id>   [#-- TODO: id compliant --]
 [@linksLib.linkassocself assoc/]
 [@linksLib.linkassocedit assoc/]
 [@assocCMISLinks assoc=assoc/]
-<published>${xmldate(date)}</published>  [#-- TODO: [@namedvalue cmisconstants.PROP_CREATION_DATE assoc cmisconstants.DATATYPE_DATETIME/] --]
-<summary>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</summary>  [#-- TODO: spec id, how to map? --]
-<title>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</title>  [#-- TODO: spec id, how to map? --]
+<title>[@namedvalue cmisconstants.PROP_NAME assoc cmisconstants.DATATYPE_STRING/]</title>
 <updated>${xmldate(date)}</updated>  [#-- TODO: [@namedvalue cmisconstants.PROP_LAST_MODIFICATION_DATE assoc cmisconstants.DATATYPE_DATETIME/] --]
 <app:edited>${xmldate(date)}</app:edited>  [#-- TODO: [@namedvalue cmisconstants.PROP_LAST_MODIFICATION_DATE assoc cmisconstants.DATATYPE_DATETIME/] --]
 <cmisra:object>
 [@objectCMISProps assoc propfilter/]
-[#-- TODO: [#if includeallowableactions][@allowableactions node/][/#if] --]
+[#if includeallowableactions][@assocallowableactions assoc/][/#if]
 </cmisra:object>
 [/@entry]
 [/#macro]
 
 [#macro assocCMISLinks assoc]
-[#-- TODO: <link rel="allowableactions" href="${absurl(url.serviceContext)}/cmis/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/> --]
+[@linksLib.linkassocallowableactions assoc/]
 [@linksLib.linktype assoc/]
 [@linksLib.linktosource assoc.source/]
 [@linksLib.linktotarget assoc.target/]
@@ -203,7 +178,7 @@
 [#--                          --]
 
 [#-- TODO: spec issue 47 --]
-[#macro row row renditionfilter="cmis:none" includeallowableactions=false]
+[#macro row row renditionfilter="cmis:none" includeallowableactions=false includerelationships="none"]
 [@entry]
 [#-- TODO: calculate multiNodeResultSet from result set --]
 [#if row.nodes?? && row.nodes?size == 1][#assign node = row.nodes?first/][/#if]
@@ -255,7 +230,10 @@
   [/#if]
 [/#list]
 </cmis:properties>
-[#if node?? && includeallowableactions][@allowableactions node/][/#if]
+[#if node??]
+[#if includeallowableactions][@allowableactions node/][/#if]
+[@relationships node includerelationships includeallowableactions/]
+[/#if]
 </cmisra:object>
 [/@entry]
 [/#macro]
@@ -391,6 +369,20 @@
 [#macro urivalue value]${value?xml}[/#macro]
 [#macro idvalue value]${value?xml}[/#macro]
 
+[#--                    --]
+[#-- CMIS Relationships --]
+[#--                    --]
+
+[#macro relationships node includerelationships="none" includeallowableactions=false propfilter="*"]
+[#if includerelationships != "none"]
+[#list cmisassocs(node, includerelationships) as assoc]
+  <cmis:relationship>
+    [@objectCMISProps assoc propfilter/]
+    [#if includeallowableactions][@assocallowableactions assoc/][/#if]
+  </cmis:relationship>
+[/#list]
+[/#if]
+[/#macro]
 
 [#--                        --]
 [#-- CMIS Allowable Actions --]
@@ -408,6 +400,20 @@
 
 [#macro allowableaction node actionevaluator]
 <cmis:${actionevaluator.action.label}>${actionevaluator.isAllowed(node.nodeRef)?string}</cmis:${actionevaluator.action.label}>
+[/#macro]
+
+[#macro assocallowableactions assoc ns=""]
+<cmis:allowableActions[#if ns != ""] ${ns}[/#if]>
+[#nested]
+[#assign typedef = cmistype(assoc)]
+[#list typedef.actionEvaluators?values as actionevaluator]
+  [@assocallowableaction assoc actionevaluator/]
+[/#list]
+</cmis:allowableActions>
+[/#macro]
+
+[#macro assocallowableaction assoc actionevaluator]
+<cmis:${actionevaluator.action.label}>${actionevaluator.isAllowed(assoc.associationRef)?string}</cmis:${actionevaluator.action.label}>
 [/#macro]
 
 [#--                           --]

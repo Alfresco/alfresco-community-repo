@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Retrieve Allowable Actions</shortname>
+  <description>Retrieve Allowable Actions</description>
+  <url>/cmis/rel/{assoc_id}/allowableactions</url>
+  <authentication>guest</authentication>
+  <transaction allow="readonly"/>
+  <format default="cmisallowableactions">argument</format>
+  <family>CMIS</family>
+</webscript>

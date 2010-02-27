@@ -25,14 +25,14 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
   </description>
   
   <!-- by object id -->
-  <url>/cmis/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/cmis/s/{store}/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
   <!-- by path -->
-  <url>/cmis/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/cmis/s/{store}/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/s/{store}/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
   <!-- alfresco style -->
-  <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
   
   <authentication>guest</authentication>
   <transaction allow="readonly"/>

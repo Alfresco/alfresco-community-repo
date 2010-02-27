@@ -32,7 +32,7 @@ script:
     model.assoc = assoc;
     // TODO: set Content-Location
     status.code = 201;
-    // TODO: complete url mapping
-    status.location = url.server + url.serviceContext + "/cmis/rel/" + model.source.nodeRef.storeRef.protocol + "/" + model.source.nodeRef.storeRef.identifier + "/" + model.source.nodeRef.id;
+
+    status.location = url.server + url.serviceContext + "/cmis/rel/" + assoc.associationRef.id;
     status.redirect = true;
 }

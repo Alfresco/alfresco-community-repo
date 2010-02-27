@@ -28,8 +28,8 @@ public class CMISObjectNotFoundException extends CMISServiceException
 {
     private static final long serialVersionUID = 1726826685938651586L;
 
-    public CMISObjectNotFoundException(String objectId)
+    public CMISObjectNotFoundException(String message)
     {
-        super("Unable to find Object " + objectId, "objectNotFound", 404);
+        super(message, "objectNotFound", 404);
     }
 }

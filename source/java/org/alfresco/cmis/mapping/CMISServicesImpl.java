@@ -977,12 +977,12 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                     NodeRef nodeRef = new NodeRef(nodeRefString);
                     if (!nodeService.exists(nodeRef))
                     {
-                        throw new CMISObjectNotFoundException(objectId);
+                        throw new CMISObjectNotFoundException("Unable to find object " + objectId);
                     }
                     VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
                     if (versionHistory == null)
                     {
-                        throw new CMISObjectNotFoundException(objectId);
+                        throw new CMISObjectNotFoundException("Unable to find object " + objectId);
                     }
                     try
                     {
@@ -994,7 +994,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                     }
                     catch (VersionDoesNotExistException e)
                     {
-                        throw new CMISObjectNotFoundException(objectId);
+                        throw new CMISObjectNotFoundException("Unable to find object " + objectId);
                     }
                 }
                 else if (requiredType.isAssignableFrom(NodeRef.class))
@@ -1011,7 +1011,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                     NodeRef nodeRef = new NodeRef(objectId);
                     if (!nodeService.exists(nodeRef))
                     {
-                        throw new CMISObjectNotFoundException(objectId);
+                        throw new CMISObjectNotFoundException("Unable to find object " + objectId);
                     }
                     if (isVersionable)
                     {
@@ -1192,7 +1192,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         VersionHistory versionHistory = versionService.getVersionHistory(versionSeries);
         if (versionHistory == null)
         {
-            throw new CMISObjectNotFoundException(objectId);
+            throw new CMISObjectNotFoundException(objectId + " has no major version");
         }
         Version current = versionService.getCurrentVersion(versionSeries);
         while (current != null && current.getVersionType() != VersionType.MAJOR)
@@ -1201,7 +1201,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         }
         if (current == null)
         {
-            throw new CMISObjectNotFoundException(objectId);
+            throw new CMISObjectNotFoundException(objectId + " has no major version");
         }
         return current.getFrozenStateNodeRef();
     }

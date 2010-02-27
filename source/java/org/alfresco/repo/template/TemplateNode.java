@@ -173,6 +173,14 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return this.services.getNodeService().exists(this.nodeRef);
     }
+    
+    /**
+     * @return <code>true</code> if this node is a working copy
+     */
+    public boolean getIsWorkingCopy()
+    {
+        return this.services.getNodeService().hasAspect(this.nodeRef, ContentModel.ASPECT_WORKING_COPY);
+    }
 
     /**
      * @return Returns the type.

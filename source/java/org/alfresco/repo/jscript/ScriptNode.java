@@ -1261,8 +1261,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     private Object[] retrieveAllSetPermissions(boolean direct, boolean full)
     {
         Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
-        Object[] permissions = new Object[acls.size()];
-        int count = 0;
+        List<Object> permissions = new ArrayList<Object>(acls.size());
         for (AccessPermission permission : acls)
         {
             if (!direct || permission.isSetDirectly())
@@ -1277,10 +1276,20 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                 {
                     buf.append(';').append(permission.isSetDirectly() ? "DIRECT" : "INHERITED");
                 }
-                permissions[count++] = buf.toString();
+                permissions.add(buf.toString());
             }
         }
-        return permissions;
+        return (Object[])permissions.toArray(new Object[permissions.size()]);
+    }
+    
+    /**
+     * @return Array of settable permissions for this Node
+     */
+    public Scriptable getSettablePermissions()
+    {
+        Set<String> permissions = this.services.getPermissionService().getSettablePermissions(getNodeRef());
+        Object[] result = permissions.toArray(new Object[0]);
+        return Context.getCurrentContext().newArray(this.scope, result);
     }
     
     /**

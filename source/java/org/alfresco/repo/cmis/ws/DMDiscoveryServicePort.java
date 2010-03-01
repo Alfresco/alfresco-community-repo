@@ -45,6 +45,7 @@ import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Port for Discovery service.
@@ -121,7 +122,8 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             Object identifier;
             try
             {
-                identifier = cmisService.getReadableObject((String) values.get(CMISDictionaryModel.PROP_OBJECT_ID), Object.class);
+                NodeRef nodeRef = row.getNodeRef();
+                identifier = cmisService.getReadableObject((String) nodeRef.toString(), Object.class);
             }
             catch (CMISServiceException e)
             {

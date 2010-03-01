@@ -27,7 +27,7 @@ package org.alfresco.service.cmr.transfer;
 import org.alfresco.repo.transfer.TransferEventImpl;
 
 /**
- * 
+ * Event for sending the transfer manifest.
  *
  */
 public class TransferEventSendingManifest extends TransferEventImpl implements RangedTransferEvent

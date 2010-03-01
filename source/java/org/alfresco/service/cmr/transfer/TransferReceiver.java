@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author brian
- *
+ * The server side Transfer Receiver.
  */
 public interface TransferReceiver
 {

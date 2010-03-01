@@ -20,6 +20,11 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+/**
+ * Writes the Client Side Transfer Report out as XML.
+ *
+ * @author Mark Rogers
+ */
 public class XMLTransferReportWriter
 {
     public XMLTransferReportWriter()

@@ -33,6 +33,12 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
+/**
+ * Factory to build TransferManifestNodes given their repository NodeRef.
+ * Extracts values from the nodeService and instantiates TransferManifestNode.
+ *
+ * @author Mark Rogers
+ */
 public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFactory
 {
     private NodeService nodeService;

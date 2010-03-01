@@ -67,6 +67,10 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.surf.util.PropertyCheck;
 import org.xml.sax.SAXException;
 
+/**
+ * Implementation of TransferReporter
+ *
+ */
 public class TransferReporterImpl implements TransferReporter
 {
     private NodeService nodeService;

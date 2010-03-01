@@ -31,6 +31,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author brian
  *
+ * Examines the supplied node and indicates whether it has been accepted by the filter.
+ * <p>
+ * The NodeCrawler will first initialise this filter by calling the 
+ * setServiceRegistry and init methods. Then the accept method will be called to either accept or 
+ * reject the node.
  */
 public interface NodeFilter
 {
@@ -44,7 +49,14 @@ public interface NodeFilter
      */
     boolean accept(NodeRef thisNode);
     
+    /**
+     * 
+     */
     void init();
     
+    /**
+     * 
+     * @param serviceRegistry
+     */
     void setServiceRegistry(ServiceRegistry serviceRegistry);
 }

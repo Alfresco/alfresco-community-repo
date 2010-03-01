@@ -3,7 +3,7 @@ package org.alfresco.service.cmr.transfer;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Transfer Target.
+ * Transfer Target.    Definition of a remote target to transfer to, contains details such as its name and address.
  *
  * @author Mark Rogers
  */

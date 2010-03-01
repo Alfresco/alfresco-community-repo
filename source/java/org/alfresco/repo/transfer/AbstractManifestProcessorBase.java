@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
  * This abstract class handles the progress monitoring functionality as well as providing
  * some utility methods for sub-classes.
  * @author Brian
- *
  */
 public abstract class AbstractManifestProcessorBase implements TransferManifestProcessor
 {

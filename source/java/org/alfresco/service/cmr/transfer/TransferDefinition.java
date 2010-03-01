@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Definition of a transfer.
  * 
- *  Specifies which node to transfer
+ * Specifies which node to transfer
  *
  */
 public class TransferDefinition implements Serializable

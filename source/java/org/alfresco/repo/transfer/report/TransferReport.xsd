@@ -8,10 +8,16 @@
 
    <!-- XML Schema for the client side transferReport -->
    
+   <element name="transferReport" type="report:transferReport" >
+   <annotation>
+   <documentation>This is an Alfresco client side transfer report</documentation>
+   </annotation>
+   </element>
+   
    <complexType name="transferReport">
       <annotation>
          <documentation>
-            This is an alfresco client side transfer report
+         The Alfresco client side transfer report
          </documentation>
       </annotation>
       <sequence>

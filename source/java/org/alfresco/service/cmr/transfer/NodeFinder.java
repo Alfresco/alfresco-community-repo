@@ -32,7 +32,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author brian
- *
+ * 
+ * NodeFinders find nodes related to the current node.
+ * The NodeCrawler will first initialise this filter by calling the 
+ * setServiceRegistry and init methods.  Then the findFrom method will be called to find 
+ * other nodes.
+ * 
+ * @see org.alfresco.repo.transfer.ChildAssociatedNodeFinder
  */
 public interface NodeFinder
 {
@@ -44,7 +50,14 @@ public interface NodeFinder
      */
     Set<NodeRef> findFrom(NodeRef thisNode);
 
+    /**
+     * called by the node crawler to initialise this class.
+     */
     void init();
 
+    /**
+     * 
+     * @param serviceRegistry
+     */
     void setServiceRegistry(ServiceRegistry serviceRegistry);
 }

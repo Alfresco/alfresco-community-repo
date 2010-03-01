@@ -33,6 +33,9 @@ import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 
+/**
+ * Provides methods to create transfer report.
+ */
 public interface TransferReporter
 {
     /**

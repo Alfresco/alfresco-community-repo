@@ -55,6 +55,9 @@ import org.alfresco.util.TempFileProvider;
 
 import junit.framework.TestCase;
 
+/**
+ * Unit test for the transfer manifest
+ */
 public class TransferManifestTest extends TestCase 
 {
     /**

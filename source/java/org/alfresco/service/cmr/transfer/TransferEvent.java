@@ -3,6 +3,13 @@ package org.alfresco.service.cmr.transfer;
 import java.util.Date;
 
 /**
+ * TransferEvents are produced by the Transfer service during an in flight 
+ * transfer.
+ * 
+ * <p>
+ * The TransferCallback presents TransferEvents for processing. 
+ * 
+ * @see TransferCallback
  * @author Mark Rogers
  */
 public interface TransferEvent

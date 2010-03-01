@@ -31,6 +31,7 @@ package org.alfresco.cmis;
  */
 public enum CMISRelationshipDirectionEnum implements EnumLabel
 {
+    NONE("none"),
     SOURCE("source"),
     TARGET("target"),
     BOTH("both");
@@ -56,5 +57,5 @@ public enum CMISRelationshipDirectionEnum implements EnumLabel
         return label;
     }
 
-    public static EnumFactory<CMISRelationshipDirectionEnum> FACTORY = new EnumFactory<CMISRelationshipDirectionEnum>(CMISRelationshipDirectionEnum.class, BOTH); 
+    public static EnumFactory<CMISRelationshipDirectionEnum> FACTORY = new EnumFactory<CMISRelationshipDirectionEnum>(CMISRelationshipDirectionEnum.class, NONE); 
 }

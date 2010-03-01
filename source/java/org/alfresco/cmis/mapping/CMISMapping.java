@@ -224,7 +224,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, true));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));
+        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
         // Is CAN_MOVE correct mapping?
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_CONTENT_STREAM, PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT));
@@ -250,8 +250,8 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_TREE, PermissionService.READ_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, true));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, true));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_PARENT, true));
+        registerEvaluator(CMISScope.FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
+        registerEvaluator(CMISScope.FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_PARENT, PermissionService.READ_PERMISSIONS)));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_DESCENDANTS, PermissionService.READ_CHILDREN));
         // Is CAN_MOVE_OBJECT correct mapping?
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));

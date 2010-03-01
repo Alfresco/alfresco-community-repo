@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.apache.commons.logging.Log;
@@ -69,7 +68,7 @@ public class ContentChunkerImpl implements ContentChunker
         /**
          * work out whether the buffer has filled up and needs to be flushed
          */
-        Iterator iter = buffer.iterator();
+        Iterator<ContentData> iter = buffer.iterator();      
         long totalContentSize = 0;
         
         while (iter.hasNext())

@@ -83,7 +83,7 @@ public class ContentChunkerImplTest extends TestCase
         processedContent.clear();
         for(int i = 0; i < 11 ; i++)
         {
-            chunker.addContent(new ContentData(null, null, 1, null));
+            chunker.addContent(new ContentData("url" + i, null, 1, null));
         }
         assertEquals("size 10 not buffered", processedContent.size(), 10);
         
@@ -100,7 +100,7 @@ public class ContentChunkerImplTest extends TestCase
         processedContent.clear();
         for(int i = 0; i < 100 ; i++)
         {
-            chunker.addContent(new ContentData(null, null, 3, null));
+            chunker.addContent(new ContentData("url" + i, null, 3, null));
         }
         chunker.flush();
         assertEquals("size 100 not written", processedContent.size(), 100);

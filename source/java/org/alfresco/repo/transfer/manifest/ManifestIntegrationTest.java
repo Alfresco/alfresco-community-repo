@@ -25,11 +25,9 @@
 package org.alfresco.repo.transfer.manifest;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +52,6 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.QName;
@@ -70,7 +67,6 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
 {
     private TransferService transferService;
     private ContentService contentService;
-    private SearchService searchService;
     
     /**
      * Called during the transaction setup
@@ -82,7 +78,6 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
-        this.searchService = (SearchService)this.applicationContext.getBean("SearchService");
     }
     
     public void testSnapshot() throws Exception
@@ -137,12 +132,19 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         
             Set<NodeRef> nodes = new HashSet<NodeRef>();
             
+            /**
+             * Write three nodes
+             * a: the root node of the workspace store
+             * b: the target node
+             * c: child of the target node
+             */
             nodes.add(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE));
             nodes.add(target.getNodeRef());
             nodes.add(childNodeRef);
             
             TransferManifestWriter formatter = new XMLTransferManifestWriter();
             TransferManifestHeader header = new TransferManifestHeader();
+            header.setNodeCount(nodes.size());
             header.setCreatedDate(new Date());
             formatter.startTransferManifest(snapshotWriter);
             formatter.writeTransferManifestHeader(header);
@@ -230,7 +232,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
                     assertEquals("parent q name", readNode.getParentAssocs().get(0).getQName(), QName.createQName(CONTENT_ASSOC_NAME));
                     assertEquals("parent type q name", readNode.getParentAssocs().get(0).getTypeQName(), ContentModel.ASSOC_CONTAINS);
                     assertEquals("child node ref", readNode.getParentAssocs().get(0).getChildRef(), childNodeRef);
-                    assertEquals("parent node ref", readNode.getParentAssocs().get(0).getParentRef(), readNode.getPrimaryParentAssoc());
+                    assertEquals("parent node ref", readNode.getParentAssocs().get(0).getParentRef(), target.getNodeRef());
                     assertTrue("zero child assoc", readNode.getChildAssocs().size() == 0);   
                     
                     /**
@@ -242,8 +244,6 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
                     assertEquals("content not found", content.size(), 1);
                 }
             }
-        
-        
         }
         finally
         {

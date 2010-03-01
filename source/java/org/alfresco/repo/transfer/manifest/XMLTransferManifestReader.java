@@ -204,6 +204,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOCS))
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
+                ArrayList<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>();
+                node.setParentAssocs(parentAssocs);
+                // To receive the primary parent assoc.
+                props.put("parentAssocs", parentAssocs);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CHILD_ASSOCS))
             {
@@ -230,7 +234,6 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 props.put("from", from);
                 props.put("type", type);
                 props.put("isPrimary", isPrimary);
-                
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_TARGET_ASSOCS))
             {
@@ -245,7 +248,6 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 List<AssociationRef> assocs = new ArrayList<AssociationRef>();
                 node.setSourceAssocs(assocs);    
                 props.put("assocs", assocs);
-    
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASSOC))
             {
@@ -260,6 +262,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PARENT))
             {
                 buffer = new StringBuffer();   
+                
+                ArrayList<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>();
+                // Synthetic element - To receive the primary parent assoc.
+                props.put("parentAssocs", parentAssocs);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUES))
             {
@@ -406,24 +412,9 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 QName type = (QName) props.get("type");
                 Boolean isPrimary = (Boolean)props.get("isPrimary");
                 TransferManifestNode node = (TransferManifestNode)props.get("node");
-                
+                List<ChildAssociationRef> parentAssocs =    (List<ChildAssociationRef>)props.get("parentAssocs");              
                 ChildAssociationRef childAssociationRef = new ChildAssociationRef(type, from, name, node.getNodeRef(), isPrimary, -1);
-                
-                if (TransferManifestNormalNode.class.isAssignableFrom(node.getClass())) 
-                {
-                    TransferManifestNormalNode normalNode = (TransferManifestNormalNode)node;
-                    List<ChildAssociationRef> parents = normalNode.getParentAssocs();
-                    if (parents == null) 
-                    {
-                        parents = new ArrayList<ChildAssociationRef>();
-                        normalNode.setParentAssocs(parents);
-                    }
-                    parents.add(childAssociationRef);
-                }
-                if (isPrimary) 
-                {
-                    node.setPrimaryParentAssoc(childAssociationRef);
-                }
+                parentAssocs.add(childAssociationRef);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_TARGET_ASSOCS))
             {
@@ -444,6 +435,17 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 AssociationRef assoc = new AssociationRef(null, source, type, target);
                 assocs.add(assoc);
                 props.put("assoc", new AssociationRef(null, source, type, target));
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PARENT))
+            {
+                TransferManifestNode node = (TransferManifestNode)props.get("node");
+                List<ChildAssociationRef> parentAssocs =    (List<ChildAssociationRef>)props.get("parentAssocs");
+                if(parentAssocs != null)
+                {
+                    // Size should allways be 1.
+                    assert(parentAssocs.size() == 1);
+                    node.setPrimaryParentAssoc(parentAssocs.get(0));
+                }
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PATH))
             {

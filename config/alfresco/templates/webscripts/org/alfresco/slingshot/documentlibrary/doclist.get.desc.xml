@@ -1,7 +1,6 @@
 <webscript>
   <shortname>doclist</shortname>
   <description>Document List Component - doclist data webscript</description>
-  <url>/slingshot/doclib/doclist/node/{store_type}/{store_id}/{id}</url>
   <url>/slingshot/doclib/doclist/{type}/site/{site}/{container}/{path}</url>
   <url>/slingshot/doclib/doclist/{type}/site/{site}/{container}</url>
   <url>/slingshot/doclib/doclist/{type}/node/{store_type}/{store_id}/{id}/{path}</url>

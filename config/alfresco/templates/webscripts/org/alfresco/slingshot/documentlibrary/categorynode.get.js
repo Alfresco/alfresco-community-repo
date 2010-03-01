@@ -51,7 +51,7 @@ function getCategoryNode()
    
       return (
       {
-         "items": items
+         items: items
       });
    }
    catch(e)

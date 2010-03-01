@@ -1,13 +1,22 @@
 var Filters =
 {
+   /**
+    * Type map to filter required types
+    */
    TYPE_MAP:
    {
-      "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink" OR TYPE:"{http://www.alfresco.org/model/content/1.0}folder")',
-      "folders": '+TYPE:"{http://www.alfresco.org/model/content/1.0}folder"',
+      "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink")',
+      "folders": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}folder" OR TYPE:"{http://www.alfresco.org/model/application/1.0}folderlink")',
       "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
    },
 
-   /* Encode a path with ISO9075 encoding */
+   /**
+    * Encode a path with ISO9075 encoding
+    *
+    * @method iso9075EncodePath
+    * @param path {string} Path to be encoded
+    * @return {string} Encoded path
+    */
    iso9075EncodePath: function Filter_iso9075EncodePath(path)
    {
       var parts = path.split("/");
@@ -18,11 +27,20 @@ var Filters =
       return parts.join("/");
    },
 
+   /**
+    * Create filter parameters based on input parameters
+    *
+    * @method getFilterParams
+    * @param filter {string} Required filter
+    * @param parsedArgs {object} Parsed arguments object literal
+    * @param optional {object} Optional arguments depending on filter type
+    * @return {object} Object literal containing parameters to be used in Lucene search
+    */
    getFilterParams: function Filter_getFilterParams(filter, parsedArgs, optional)
    {
       var filterParams =
       {
-         query: "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"",
+         query: "+PATH:\"" + parsedArgs.pathNode.qnamePath + "/*\"",
          limitResults: null,
          sort: [
          {
@@ -150,6 +168,7 @@ var Filters =
             break;
 
          case "node":
+            parsedArgs.pathNode = parsedArgs.rootNode.parent;
             filterParams.variablePath = false;
             filterParams.query = "+ID:\"" + parsedArgs.rootNode.nodeRef + "\"";
             break;
@@ -172,9 +191,9 @@ var Filters =
             filterParams.query = "+PATH:\"/cm:generalclassifiable" + Filters.iso9075EncodePath(filterData) + "/member\"";
             break;
 
-         default:
+         default: // "path"
             filterParams.variablePath = false;
-            filterQuery = "+PATH:\"" + parsedArgs.parentNode.qnamePath + "/*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.pathNode.qnamePath + "/*\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
       }

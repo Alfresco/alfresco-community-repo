@@ -1,4 +1,5 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/common.lib.js">
 
 /**
  * Document List Component: treenode
@@ -27,8 +28,8 @@ function getTreeNode()
          return;
       }
 
-      // Look for folders in the parentNode
-      for each (item in parsedArgs.parentNode.children)
+      // Look for folders in the pathNode
+      for each (item in parsedArgs.pathNode.children)
       {
          if (item.isSubType("cm:folder") && !(item.type in ignoredTypes))
          {
@@ -49,8 +50,8 @@ function getTreeNode()
    
       return (
       {
-         "parentNode": parsedArgs.parentNode,
-         "items": items
+         parent: parsedArgs.pathNode,
+         items: items
       });
    }
    catch(e)

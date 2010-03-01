@@ -1,8 +1,6 @@
 <#import "item.lib.ftl" as itemLib />
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "totalRecords": ${doclist.paging.totalRecords?c},
-   "startIndex": ${doclist.paging.startIndex?c},
    "metadata":
    {
       "parent":
@@ -23,20 +21,11 @@
          }
       </#if>
       },
-      "onlineEditing": ${doclist.onlineEditing?string},
-      "itemCounts":
-      {
-         "folders": ${(doclist.itemCount.folders!0)?c},
-         "documents": ${(doclist.itemCount.documents!0)?c}
-      }
+      "onlineEditing": ${doclist.onlineEditing?string}
    },
-   "items":
-   [
-      <#list doclist.items as item>
-      {
-         <@itemLib.itemJSON item=item />
-      }<#if item_has_next>,</#if>
-      </#list>
-   ]
+   "item":
+   {
+      <#if doclist.items??><@itemLib.itemJSON item=doclist.items[0] /></#if>
+   }
 }
 </#escape>

@@ -1,58 +1,58 @@
 var Evaluator =
 {
    /**
-    * Asset Type evaluator
+    * Node Type evaluator
     */
-   getAssetType: function Evaluator_getAssetType(asset)
+   getNodeType: function Evaluator_getNodeType(node)
    {
-      var assetType = "";
-      if (asset.isContainer)
+      var nodeType = "";
+      if (node.isContainer)
       {
-         assetType = "folder";
+         nodeType = "folder";
       }
-      else if (asset.typeShort == "app:folderlink")
+      else if (node.typeShort == "app:folderlink")
       {
-         assetType = "folderlink";
+         nodeType = "folderlink";
       }
-      else if (asset.typeShort == "app:filelink")
+      else if (node.typeShort == "app:filelink")
       {
-         assetType = "filelink";
+         nodeType = "filelink";
       }
       else
       {
-         assetType = "document";
+         nodeType = "document";
       }
-      return assetType;
+      return nodeType;
    },
    
    /**
     * Document and Folder common evaluators
     */
-   documentAndFolder: function Evaluator_documentAndFolder(asset, permissions, status, actionLabels)
+   documentAndFolder: function Evaluator_documentAndFolder(node, permissions, status, actionLabels)
    {
       /* Simple Workflow */
-      if (asset.hasAspect("app:simpleworkflow"))
+      if (node.hasAspect("app:simpleworkflow"))
       {
          status["simple-workflow"] = true;
-         if (asset.properties["app:approveStep"] != null)
+         if (node.properties["app:approveStep"] != null)
          {
             permissions["simple-approve"] = true;
-            actionLabels["onActionSimpleApprove"] = asset.properties["app:approveStep"];
+            actionLabels["onActionSimpleApprove"] = node.properties["app:approveStep"];
          }
-         if (asset.properties["app:rejectStep"] != null)
+         if (node.properties["app:rejectStep"] != null)
          {
             permissions["simple-reject"] = true;
-            actionLabels["onActionSimpleReject"] = asset.properties["app:rejectStep"];
+            actionLabels["onActionSimpleReject"] = node.properties["app:rejectStep"];
          }
       }
    },
    
    /**
-    * Asset Evaluator - main entrypoint
+    * Node Evaluator - main entrypoint
     */
-   run: function Evaluator_run(asset)
+   run: function Evaluator_run(node)
    {
-      var assetType = Evaluator.getAssetType(asset),
+      var nodeType = Evaluator.getNodeType(node),
          actions = {},
          actionSet = "empty",
          permissions = {},
@@ -60,10 +60,10 @@ var Evaluator =
          custom = {},
          actionLabels = {},
          activeWorkflows = [],
-         createdBy = getPerson(asset.properties["cm:creator"]),
-         modifiedBy = getPerson(asset.properties["cm:modifier"]),
+         createdBy = Common.getPerson(node.properties["cm:creator"]),
+         modifiedBy = Common.getPerson(node.properties["cm:modifier"]),
          isLink = false,
-         linkAsset = null,
+         linkNode = null,
          lockedBy = null,
          lockOwnerUser = "";
 
@@ -72,15 +72,15 @@ var Evaluator =
        */
       permissions =
       {
-         "create": asset.hasPermission("CreateChildren"),
-         "edit": asset.hasPermission("Write"),
-         "delete": asset.hasPermission("Delete"),
-         "permissions": asset.hasPermission("ChangePermissions"),
-         "cancel-checkout": asset.hasPermission("CancelCheckOut")
+         "create": node.hasPermission("CreateChildren"),
+         "edit": node.hasPermission("Write"),
+         "delete": node.hasPermission("Delete"),
+         "permissions": node.hasPermission("ChangePermissions"),
+         "cancel-checkout": node.hasPermission("CancelCheckOut")
       };
 
       // Get relevant actions set
-      switch (assetType)
+      switch (nodeType)
       {
          /**
           * SPECIFIC TO: LINK
@@ -90,13 +90,13 @@ var Evaluator =
             actionSet = "link";
             isLink = true;
             /**
-             * NOTE: After this point, the "asset" object will be changed to a link's destination node
+             * NOTE: After this point, the "node" object will be changed to a link's destination node
              *       if the original node was a filelink type.
              */
-            linkAsset = asset;
-            asset = linkAsset.properties.destination;
-            // Re-evaluate the assetType based on the link's destination node
-            assetType = Evaluator.getAssetType(asset);
+            linkNode = node;
+            node = linkNode.properties.destination;
+            // Re-evaluate the nodeType based on the link's destination node
+            nodeType = Evaluator.getNodeType(node);
             break;
          
          /**
@@ -106,7 +106,7 @@ var Evaluator =
             actionSet = "folder";
 
             /* Document Folder common evaluator */
-            Evaluator.documentAndFolder(asset, permissions, status, actionLabels);
+            Evaluator.documentAndFolder(node, permissions, status, actionLabels);
             break;
 
          /**
@@ -116,12 +116,12 @@ var Evaluator =
             actionSet = "document";
 
             /* Document Folder common evaluator */
-            Evaluator.documentAndFolder(asset, permissions, status, actionLabels);
+            Evaluator.documentAndFolder(node, permissions, status, actionLabels);
             
             // Working Copy?
-            if (asset.hasAspect("cm:workingcopy"))
+            if (node.hasAspect("cm:workingcopy"))
             {
-               lockedBy = getPerson(asset.properties["cm:workingCopyOwner"]);
+               lockedBy = Common.getPerson(node.properties["cm:workingCopyOwner"]);
                lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
@@ -133,7 +133,7 @@ var Evaluator =
                   status["locked " + lockedBy.displayName + "|" + lockedBy.userName] = true;
                   actionSet = "locked";
                }
-               var wcNode = asset.properties["source"];
+               var wcNode = node.properties["source"];
                custom["isWorkingCopy"] = true;
                custom["workingCopyOriginal"] = wcNode.nodeRef;
                if (wcNode.hasAspect("cm:versionable") && wcNode.versionHistory.length > 0)
@@ -143,9 +143,9 @@ var Evaluator =
                permissions["view-original"] = true;
             }
             // Locked?
-            else if (asset.isLocked)
+            else if (node.isLocked)
             {
-               lockedBy = getPerson(asset.properties["cm:lockOwner"]);
+               lockedBy = Common.getPerson(node.properties["cm:lockOwner"]);
                lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
@@ -159,7 +159,7 @@ var Evaluator =
                }
                var srcNodes = search.query(
                {
-                  query: "+@cm\\:source:\"" + asset.nodeRef + "\" +ISNOTNULL:cm\\:workingCopyOwner",
+                  query: "+@cm\\:source:\"" + node.nodeRef + "\" +ISNOTNULL:cm\\:workingCopyOwner",
                   language: "lucene",
                   page:
                   {
@@ -175,7 +175,7 @@ var Evaluator =
             }
             
             // Inline editable aspect?
-            if (asset.hasAspect("app:inlineeditable"))
+            if (node.hasAspect("app:inlineeditable"))
             {
                permissions["inline-edit"] = true;
             }
@@ -183,16 +183,16 @@ var Evaluator =
       }
       
       // Part of an active workflow?
-      for each (activeWorkflow in asset.activeWorkflows)
+      for each (activeWorkflow in node.activeWorkflows)
       {
          activeWorkflows.push(activeWorkflow.id);
       }
 
       return(
       {
-         asset: asset,
-         type: assetType,
-         linkAsset: linkAsset,
+         node: node,
+         type: nodeType,
+         linkNode: linkNode,
          isLink: isLink,
          status: status,
          actionSet: actionSet,
@@ -200,7 +200,7 @@ var Evaluator =
          createdBy: createdBy,
          modifiedBy: modifiedBy,
          lockedBy: lockedBy,
-         tags: asset.tags,
+         tags: node.tags,
          activeWorkflows: activeWorkflows,
          custom: jsonUtils.toJSONString(custom),
          actionLabels: actionLabels

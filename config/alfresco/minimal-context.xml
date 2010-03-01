@@ -5,12 +5,17 @@
 <!-- Many parts of the application are missing though, so don't expect -->
 <!--  to be able to do much more than run core unit tests with it -->
 <beans>
+
     <!--
          Import the core parts of the context. They are required
          for anything to work
     -->
     <import resource="classpath:alfresco/application-context-core.xml" />
 
+    <!-- TODO The linkvalidation context has been added below as an interim fix for
+              some test failures in RepositoryStartStopTest. -->
+    <import resource="classpath:alfresco/linkvalidation-service-context.xml"/>
+    
     <!--
          Import all modules and related components.
     -->
@@ -20,4 +25,6 @@
          Import of the minimal extensions and bean overrides.
     -->
     <import resource="classpath*:alfresco/extension/dev-context.xml" />
+    
+    
 </beans>

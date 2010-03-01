@@ -43,6 +43,5 @@
     <import resource="classpath:alfresco/site-services-context.xml"/>
     <import resource="classpath:alfresco/tagging-services-context.xml"/>
     <import resource="classpath:alfresco/invitation-service-context.xml"/>
-    <import resource="classpath:alfresco/linkvalidation-service-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />
 </beans>

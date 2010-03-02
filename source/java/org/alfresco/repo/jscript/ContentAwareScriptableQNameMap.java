@@ -76,14 +76,17 @@ public class ContentAwareScriptableQNameMap<K,V> extends ScriptableQNameMap<K,V>
            {
                // found a valid cm:content property that is not initialised
                String mimetype = null;
-               String fileName = (String)get("cm:name");
-               if (fileName != null)
+               if (qname.equals(ContentModel.PROP_CONTENT)) 
                {
-                   mimetype = this.services.getMimetypeService().guessMimetype(fileName);
+                   String fileName = (String)get("cm:name");
+                   if (fileName != null)
+                   {
+                       mimetype = this.services.getMimetypeService().guessMimetype(fileName);
+                   }
                }
                ContentData cdata = new ContentData(null, mimetype, 0L, "UTF-8");
                // create the JavaScript API object we need
-               value = factory.new ScriptContentData(cdata, ContentModel.PROP_CONTENT);
+               value = factory.new ScriptContentData(cdata, qname);
                // and store it so it is available to the API user
                put(name, value);
            }

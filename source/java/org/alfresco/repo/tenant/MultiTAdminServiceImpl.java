@@ -252,7 +252,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "WorkflowService", workflowService);
         PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
-        PropertyCheck.mandatory(this, "moduleService", moduleService);
         PropertyCheck.mandatory(this, "siteAVMBootstrap", siteAVMBootstrap);
     }
     

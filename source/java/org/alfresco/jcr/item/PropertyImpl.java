@@ -108,7 +108,14 @@ public class PropertyImpl extends ItemImpl implements Property
      */
     public void remove() throws VersionException, LockException, ConstraintViolationException, RepositoryException
     {
-        setValue((Value)null);
+        if (getDefinition().isMultiple()) 
+        {
+            setValue((Value[])null);
+        } 
+        else 
+        {
+            setValue((Value)null);
+        }
     }
     
     /* (non-Javadoc)

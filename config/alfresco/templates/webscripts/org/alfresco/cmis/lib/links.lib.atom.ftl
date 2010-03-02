@@ -176,7 +176,7 @@
 [#macro pwcuri node]/cmis/pwc/[@noderef node/][/#macro]
 
 [#-- Helper to render Alfresco Assoc uri --]
-[#macro assocuri assoc]/cmis/rel/${assoc.associationRef.id}[/#macro]
+[#macro assocuri assoc]/cmis/rel/${assoc.associationRef.id?c}[/#macro]
 
 [#-- Helper to render Alfresco Type uri --]
 [#macro typeuri typedef]/cmis/type/${typedef.typeId.id}[/#macro]

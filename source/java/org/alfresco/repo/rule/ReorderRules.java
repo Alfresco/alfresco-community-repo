@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,35 +21,38 @@ package org.alfresco.repo.rule;
 
 import java.util.List;
 
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 
 /**
- * Action implementation to unlink the rules from one folder to another
+ * Action implementation to reorder rules
  * 
  * @author Roy Wetherall
  */
-public class UnlinkRules extends ActionExecuterAbstractBase
+public class ReorderRules extends ActionExecuterAbstractBase
 {
     /** Constants */
-    public static final String NAME = "unlink-rules";
+    public static final String NAME = "reorder-rules";
+    public static final String PARAM_RULES = "rules";
     
     /** Node service */
     private NodeService nodeService;
     
-    /** Runtime rule service */
-    private RuntimeRuleService ruleService;
+    /** Rule service */
+    private RuleService ruleService;
     
     /**
      * Set rule service
      * 
      * @param ruleService   rule service
      */
-    public void setRuleService(RuntimeRuleService ruleService)
+    public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
@@ -67,6 +70,7 @@ public class UnlinkRules extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
+    @SuppressWarnings("unchecked")
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
@@ -75,13 +79,13 @@ public class UnlinkRules extends ActionExecuterAbstractBase
             // Check that the actioned upon node has the rules aspect applied
             if (nodeService.hasAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES) == true)
             {                 
-                // Get the rule node the actioned upon node is linked to
-                NodeRef linkedToNode = ((RuleService)ruleService).getLinkedToRuleNode(actionedUponNodeRef);
-                if (linkedToNode != null)
+                List<NodeRef> rules = (List<NodeRef>)action.getParameterValue(PARAM_RULES);
+                
+                int index = 0;
+                for (NodeRef rule : rules)
                 {
-                    NodeRef ruleFolder = ruleService.getSavedRuleFolderAssoc(linkedToNode).getChildRef();
-                    nodeService.removeChild(actionedUponNodeRef, ruleFolder);
-                    nodeService.removeAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES);
+                    ruleService.setRulePosition(actionedUponNodeRef, rule, index);
+                    index++;
                 }
             }
         }
@@ -93,5 +97,11 @@ public class UnlinkRules extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
+        paramList.add(new ParameterDefinitionImpl(
+                PARAM_RULES,
+                DataTypeDefinition.NODE_REF, 
+                true,
+                getParamDisplayLabel(PARAM_RULES),
+                true));
     }
 }

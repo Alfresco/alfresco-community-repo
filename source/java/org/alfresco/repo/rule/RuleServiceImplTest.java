@@ -20,6 +20,7 @@ package org.alfresco.repo.rule;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -269,7 +270,26 @@ public class RuleServiceImplTest extends BaseRuleTest
             {
                 System.out.println(" - Assoc index = " + ruleChildAssocRef.getNthSibling() + ", name = " + 
                         nodeService.getProperty(ruleChildAssocRef.getChildRef(), ContentModel.PROP_TITLE));
-}
+            }
+        }
+        
+        List<NodeRef> ruleNodeRefs = new ArrayList<NodeRef>(rules.size());
+        for (Rule tempRule : rules)
+        {
+            ruleNodeRefs.add(0, tempRule.getNodeRef());            
+        }        
+        
+        Action action = actionService.createAction(ReorderRules.NAME);
+        action.setParameterValue(ReorderRules.PARAM_RULES, (Serializable)ruleNodeRefs);
+        
+        actionService.executeAction(action, nodeRef);
+        
+        List<ChildAssociationRef> ruleChildAssocRefs = nodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+        System.out.println("After execution of action ...");
+        for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
+        {
+            System.out.println(" - Assoc index = " + ruleChildAssocRef.getNthSibling() + ", name = " + 
+                    nodeService.getProperty(ruleChildAssocRef.getChildRef(), ContentModel.PROP_TITLE));
         }
     }
     

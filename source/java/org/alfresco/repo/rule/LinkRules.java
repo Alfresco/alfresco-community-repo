@@ -62,25 +62,28 @@ public class LinkRules extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        // The actioned upon node is the rule folder we are interested in
-           // this should not already have rules associated with it
-        if (nodeService.hasAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES) == true)
+        if (nodeService.exists(actionedUponNodeRef) == true)
         {
-            throw new AlfrescoRuntimeException("The link to node already has rules.");
+            // The actioned upon node is the rule folder we are interested in
+               // this should not already have rules associated with it
+            if (nodeService.hasAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES) == true)
+            {
+                throw new AlfrescoRuntimeException("The link to node already has rules.");
+            }
+            
+            // Link to folder is passed as a parameter
+              // this should have rules already specified
+            NodeRef linkedFromNodeRef = (NodeRef)action.getParameterValue(PARAM_LINK_FROM_NODE);
+            if (nodeService.hasAspect(linkedFromNodeRef, RuleModel.ASPECT_RULES) == false)
+            {
+                throw new AlfrescoRuntimeException("The link from node has no rules to link.");
+            }
+            
+            // Create the destination folder as a secondary child of the first
+            NodeRef ruleSetNodeRef = ruleService.getSavedRuleFolderAssoc(linkedFromNodeRef).getChildRef();
+            nodeService.addChild(actionedUponNodeRef, ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+            nodeService.addAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES, null);
         }
-        
-        // Link to folder is passed as a parameter
-          // this should have rules already specified
-        NodeRef linkedFromNodeRef = (NodeRef)action.getParameterValue(PARAM_LINK_FROM_NODE);
-        if (nodeService.hasAspect(linkedFromNodeRef, RuleModel.ASPECT_RULES) == false)
-        {
-            throw new AlfrescoRuntimeException("The link from node has no rules to link.");
-        }
-        
-        // Create the destination folder as a secondary child of the first
-        NodeRef ruleSetNodeRef = ruleService.getSavedRuleFolderAssoc(linkedFromNodeRef).getChildRef();
-        nodeService.addChild(actionedUponNodeRef, ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
-        nodeService.addAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES, null);
     }
 
     /**

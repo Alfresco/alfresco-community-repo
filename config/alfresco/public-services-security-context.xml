@@ -378,6 +378,7 @@
                org.alfresco.service.cmr.repository.NodeService.removeAssociation=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getTargetAssocs=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getSourceAssocs=ACL_ALLOW
+               org.alfresco.service.cmr.repository.NodeService.getAssoc=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getPath=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getPaths=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getStoreArchiveNode=ACL_NODE.0.sys:base.Read

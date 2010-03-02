@@ -1129,7 +1129,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         }
 
         Object object = getReadableObject(objectId, Object.class);
-        NodeRef result;
+        Object result;
         // Map version nodes back to their source node
         if (object instanceof Version)
         {
@@ -1148,14 +1148,22 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             {
                 result = nodeRef;
             }
+            if (isVersionable)
+            {
+                validateVersionable((NodeRef)result);
+            }
+        }
+        else if (requiredType.isAssignableFrom(object.getClass()))
+        {
+            if (isVersionable)
+            {
+                throw new CMISConstraintException(objectId + " is not versionable");
+            }
+            result = object;
         }
         else
         {
-            throw new CMISConstraintException("Object " + objectId + " is not of required type");            
-        }
-        if (isVersionable)
-        {
-            validateVersionable(result);
+            throw new CMISConstraintException("Object " + objectId + " is not of required type");
         }
         return (T)result;
     }

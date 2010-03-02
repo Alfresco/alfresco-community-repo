@@ -334,7 +334,7 @@
     <type name="cmis:relationship">
       <title>Relationship</title>
       <description>Relationship Type</description>
-      <parent>cmis:object</parent>
+      <parent>cmis:filesystemobject</parent>
       <properties>
         <property name="cmis:sourceId">
           <title>Source Id</title>

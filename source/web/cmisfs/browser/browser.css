@@ -53,6 +53,13 @@ table.servicetable {
 	border-collapse: collapse;
 }
 
+table.servicetable th{
+	font-size: 10pt;
+	font-weight: bold;	
+	padding: 5px;
+	text-align: left;
+}
+
 table.servicetable td {
 	font-size: 10pt; 
 	padding: 5px;
@@ -73,6 +80,12 @@ table.servicetable td {
 
 table.feedtable {
 	border-collapse: collapse;
+}
+
+table.feedtable th {
+	font-size: 10pt;
+	font-weight: bold;	
+	text-align: left;
 }
 
 .tdinfo {
@@ -166,6 +179,12 @@ a.actionlink:active {
 
 table.entrytable {
 	border-collapse: collapse;
+}
+
+table.entrytable th {
+	font-size: 10pt;
+	font-weight: bold;	
+	text-align: left;
 }
 
 table.entrytable td {

@@ -436,7 +436,7 @@
 
    <servlet>
       <servlet-name>CMISFileShareServlet</servlet-name>
-      <servlet-class>de.fmui.cmis.fileshare.info.BrowseServlet</servlet-class>
+      <servlet-class>org.apache.opencmis.browser.BrowseServlet</servlet-class>
       <init-param>
          <param-name>auxroot</param-name>
          <param-value>cmisfs/browser/</param-value>

@@ -40,14 +40,6 @@
       <p>OASIS CMIS (Content Management Interoperability Services) v1.0 has now completed its second Public Review. Preparations are taking place for submitting the specification for approval as an OASIS standard.</p>
       <p>This site hosts a <a href="#repo">CMIS Repository</a> and <a href="#testatompub">CMIS AtomPub TCK</a> to assist the development of the specification and promote interoperability between up-and-coming implementations. Feel free to use them for building and testing your own CMIS clients and servers.</p>
       <p>Frequent updates are made to both the Repository and TCK as issues are resolved or new capabilities added. Currently, <strong class="highlight">${cmisSpecTitle}</strong> of the CMIS specification is supported.</p>
-      <p>Recent updates:
-         <ul>
-           <li>Added support for Renditions</li>
-           <li>Added support for ACLs</li>
-           <li>Added support for Change Log</li>
-           <li>Full sweep of Query language to ensure spec compliance</li>
-         </ul>
-      </p>
       
       <a name="repo"></a>
       <h3>Alfresco CMIS Repository</h3>
@@ -92,10 +84,8 @@
       <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">CMIS FileShare browser</a>.</p>
 
       <a name="testatompub"></a>
-      <h3>CMIS AtomPub TCK</h3>
+      <h3>Apache Chemistry CMIS AtomPub TCK</h3>
       <p>Point the TCK (Test Compatibility Kit) at your CMIS Repository AtomPub Service Document. Provide credentials (or leave blank, if authentication not required) and adjust options as necessary. Hit the '<strong>Start TCK</strong>' button for a test report.</p>
-      <p><em>Tip: Enable the 'Trace Reqs/Responses' option for examples of conversations with a CMIS Repository via AtomPub.</em></p>
-      <p><em>Note: This TCK is now contributed to <a href="http://incubator.apache.org/chemistry/">Apache Chemistry</a>.</em></p>
 
       <form action="${url.serviceContext}/cmis/test" method="post" class="hform">
       <fieldset>
@@ -105,16 +95,21 @@
         <p><label>Password</label><input type="text" name="chemistry.tck.password" value="admin"></p>
       </fieldset>
       <fieldset>
+        <legend>Test Suite</legend>
+        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">[+]</span> Tests (${tckTests?size})</label><input name="chemistry.tck.tests" value="RepositoryServiceTest.testRepository"></p>
+        <span id="availtests_body" style="display: none;"><p><label>&nbsp;</label><table>
+        <tr><td><i>Note: Use wildcard * to execute multiple tests e.g. *.*, TypeDefinition.*</i></td></tr>
+        [#list tckTests as test]<tr><td>${test}</td></tr>[/#list]
+        </table></p></span>
+      </fieldset>
+      <fieldset>
         <legend>Options</legend>
         <p class="checkbox"><label>Validate Responses</label><input type="checkbox" name="chemistry.tck.validate" value="true"[#if tckOptions.validate] checked="checked"[/#if]></p>
         <p class="checkbox"><label>Fail on Validation Error</label><input type="checkbox" name="chemistry.tck.failOnValidationError" value="true"[#if tckOptions.failOnValidationError] checked="checked"[/#if]></p>
         <p class="checkbox"><label>Trace Reqs/Responses</label><input type="checkbox" name="chemistry.tck.traceRequests" value="true"[#if tckOptions.traceRequests] checked="checked"[/#if]><p>
-        <p><label>Tests</label><input name="chemistry.tck.tests" value="RepositoryServiceTest.testRepository"></p>
-        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">[+]</span> Available Tests (${tckTests?size})</label>
-        <table id="availtests_body" style="display: none;">
-        <tr><td>Note: Use wildcard * to execute multiple tests</td></tr>
-        [#list tckTests as test]<tr><td>${test}</td></tr>[/#list]
-        </table></p>
+        <p><label>Folder Type</label><input type="text" name="chemistry.tck.type.folder" value="cmis:folder"></p>
+        <p><label>Document Type</label><input type="text" name="chemistry.tck.type.document" value="D:cmiscustom:document"></p>
+        <p><label>Relationship Type</label><input type="text" name="chemistry.tck.type.relationship" value="R:cmiscustom:assoc"></p>
       </fieldset>
       <p><input type="submit" name="submit" value="Start TCK" class="button"></p>
       </form>
@@ -146,9 +141,6 @@
         <li><a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis">Restful Binding Reference</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
-        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v1.0cd04_to_v1.0cd06.txt">Changes: v1.0 cd04 to cd06</li>
-        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.7_to_1.0cd04.txt">Changes: v0.7 to v1.0 cd04</li>
-        <li><a href="http://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root/design/changes_v0.62f_to_v0.7.txt">Changes: v0.62 to v0.7</li>
       </ul>
       <h3>Apache Chemistry</h3>
       <ul>

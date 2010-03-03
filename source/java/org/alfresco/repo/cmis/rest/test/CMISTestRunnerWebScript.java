@@ -47,8 +47,6 @@ public class CMISTestRunnerWebScript extends AbstractWebScript
         properties.put(TCKRunnerOptions.PROP_VALIDATE, "false");
         properties.put(TCKRunnerOptions.PROP_FAIL_ON_VALIDATION_ERROR, "false");
         properties.put(TCKRunnerOptions.PROP_TRACE_REQUESTS, "false");
-        properties.put(TCKRunnerOptions.PROP_TYPE_DOCUMENT, "D:cmiscustom:document");
-        properties.put(TCKRunnerOptions.PROP_TYPE_RELATIONSHIP, "R:cmiscustom:assoc");
 
         // apply form provided values
         TCKRunnerOptions options = new TCKRunnerOptions(properties);

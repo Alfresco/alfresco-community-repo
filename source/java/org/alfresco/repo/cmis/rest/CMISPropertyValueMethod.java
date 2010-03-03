@@ -114,8 +114,8 @@ public class CMISPropertyValueMethod implements TemplateMethodModelEx
             Object result = null;
             if (wrapped != null && wrapped instanceof TemplateNode)
             {
-                // retrieve property value from node
-                result = cmisService.getProperty(((TemplateNode) wrapped).getNodeRef(), propertyName);
+                // retrieve property value from node, allowing aspect properties
+                result = cmisService.getProperty(((TemplateNode) wrapped).getNodeRef(), null, propertyName);
             }
             else if (wrapped != null && wrapped instanceof TemplateAssociation)
             {

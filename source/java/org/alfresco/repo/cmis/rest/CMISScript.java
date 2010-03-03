@@ -563,6 +563,30 @@ public class CMISScript extends BaseScopableProcessorExtension
         return cmisDictionaryService.findProperty(propertyName, null);
     }
     
+    /**
+     * Sets the aspects on a node (Alfresco extension).
+     * 
+     * @param node
+     *            the node
+     * @param aspectsToRemove
+     *            the aspects to remove
+     * @param aspectsToAdd
+     *            the aspects to add
+     * @throws WebScriptException
+     *             if an argument is invalid
+     */
+    public void setAspects(ScriptNode node, Iterable<String> aspectsToRemove, Iterable<String> aspectsToAdd)
+    {
+        try
+        {
+            cmisService.setAspects(node.getNodeRef(), aspectsToRemove, aspectsToAdd);
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }        
+    }
+
     //
     // SQL Query
     // 

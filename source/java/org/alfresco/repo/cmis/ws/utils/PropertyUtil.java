@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -37,9 +38,9 @@ import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.CmisPropertiesType;
@@ -53,13 +54,13 @@ import org.alfresco.repo.cmis.ws.CmisPropertyInteger;
 import org.alfresco.repo.cmis.ws.CmisPropertyString;
 import org.alfresco.repo.cmis.ws.CmisPropertyUri;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
+import org.alfresco.repo.cmis.ws.GetAspects;
+import org.alfresco.repo.cmis.ws.SetAspects;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -89,7 +90,6 @@ public class PropertyUtil
 
     private static final String BASE_TYPE_PROPERTY_NAME = "BaseType";
 
-    private NodeService nodeService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private CMISServices cmisService;
@@ -97,11 +97,6 @@ public class PropertyUtil
 
     public PropertyUtil()
     {
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -348,59 +343,71 @@ public class PropertyUtil
     /**
      * Sets and checks all properties' fields for specified node
      * 
-     * @param nodeRef - <b>NodeRef</b> for node for those properties must be setted
-     * @param properties - <b>CmisPropertiesType</b> instance that contains all the necessary properties' fields
-     * @param ignoringPropertiesFilter - <b>PropertyFilter</b> instance. This filter determines which properties should be ignored and not setted without exception. If this
-     *        parameter is <b>null</b> all properties will be processed in common flow
+     * @param nodeRef
+     *            - <b>NodeRef</b> for node for those properties must be setted
+     * @param properties
+     *            - <b>CmisPropertiesType</b> instance that contains all the necessary properties' fields
+     * @param ignoringPropertiesFilter
+     *            - <b>PropertyFilter</b> instance. This filter determines which properties should be ignored and not
+     *            setted without exception. If this parameter is <b>null</b> all properties will be processed in common
+     *            flow
      */
-    public void setProperties(NodeRef nodeRef, CmisPropertiesType properties, PropertyFilter ignoringPropertiesFilter) throws CmisException
+    public void setProperties(NodeRef nodeRef, CmisPropertiesType properties, PropertyFilter ignoringPropertiesFilter)
+            throws CmisException
     {
-        // TODO: WARINING!!! This is WRONG behavior!!! Each CMIS object type and each property MUST be described in appropriate to CMIS manner
-        if ((null == nodeRef) || (null == properties) || (null == properties.getProperty()))
+        if (nodeRef == null || properties == null)
         {
             return;
         }
 
-        String typeId = getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, null);
-        boolean checkedOut = getProperty(nodeRef, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, false);
-        CMISTypeDefinition cmisObjectType = cmisDictionaryService.findType(typeId);
-
-        TypeDefinition nativeObjectType = dictionaryService.getType(nodeService.getType(nodeRef));
-
-        if ((null == cmisObjectType) && (null == nativeObjectType))
+        try
         {
-            throw ExceptionUtil.createCmisException(("Can't find type definition for current object with \"" + typeId + "\" type Id"), EnumServiceException.INVALID_ARGUMENT);
+
+            for (CmisProperty property : properties.getProperty())
+            {
+                String propertyName = getPropertyName(property);
+                if ((null == propertyName)
+                        || ((null != ignoringPropertiesFilter) && ignoringPropertiesFilter.allow(propertyName)))
+                {
+                    continue;
+                }
+                Object value = getValue(property);
+                cmisService.setProperty(nodeRef, propertyName, (Serializable) value);
+            }
+
+            // Process Alfresco aspect-setting extension
+            for (Object extensionObj : properties.getAny())
+            {
+                if (!(extensionObj instanceof SetAspects))
+                {
+                    continue;
+                }
+                SetAspects setAspects = (SetAspects) extensionObj;
+                cmisService.setAspects(nodeRef, setAspects.getAspectsToRemove(), setAspects.getAspectsToAdd());
+                CmisPropertiesType extensionProperties = setAspects.getProperties();
+                if (extensionProperties == null)
+                {
+                    continue;
+                }
+
+                for (CmisProperty property : extensionProperties.getProperty())
+                {
+                    String propertyName = getPropertyName(property);
+                    if ((null == propertyName)
+                            || ((null != ignoringPropertiesFilter) && ignoringPropertiesFilter.allow(propertyName)))
+                    {
+                        continue;
+                    }
+                    Object value = getValue(property);
+
+                    // This time, call setProperty without constraining the owning type
+                    cmisService.setProperty(nodeRef, null, propertyName, (Serializable) value);
+                }
+            }
         }
-
-        for (CmisProperty property : properties.getProperty())
+        catch (CMISServiceException e)
         {
-            String propertyName = getPropertyName(property);
-            if ((null == propertyName) || ((null != ignoringPropertiesFilter) && ignoringPropertiesFilter.allow(propertyName)))
-            {
-                continue;
-            }
-
-            Object value = getValue(property);
-            QName alfrescoPropertyName = null;
-            switch (checkProperty(nativeObjectType, cmisObjectType, propertyName, value, checkedOut))
-            {
-            case PROPERTY_CHECKED:
-            {
-                alfrescoPropertyName = cmisDictionaryService.findProperty(propertyName, cmisObjectType).getPropertyAccessor().getMappedProperty();
-                break;
-            }
-            case PROPERTY_NATIVE:
-            {
-                alfrescoPropertyName = createQName(propertyName);
-                break;
-            }
-            case PROPERTY_NOT_UPDATABLE:
-            {
-                throw ExceptionUtil.createCmisException(("\"" + propertyName + "\" property is not updatable by repository for specified Object id"),
-                        EnumServiceException.CONSTRAINT);
-            }
-            }
-            nodeService.setProperty(nodeRef, alfrescoPropertyName, (Serializable) value);
+            throw ExceptionUtil.createCmisException(e);
         }
     }
 
@@ -433,82 +440,6 @@ public class PropertyUtil
     }
 
     /**
-     * Checks any CMIS property on constraints conforming
-     * 
-     * @param type - <b>CMISTypeDefinition</b> instance. This value must not be <b>null</b>
-     * @param propertyName - <b>String</b> instance that represents name of the property
-     * @param value - instance of a <b>Serializable</b> object that represents value of the property
-     * @return <b>true</b> if property was checked and <b>false</b> if property can't be checked
-     * @throws <b>CmisException</b> if some constraint is not satisfied
-     */
-    public PropertyCheckingStateEnum checkProperty(TypeDefinition nativeObjectType, CMISTypeDefinition cmisObjectType, String propertyName, Object value, boolean checkedOut)
-            throws CmisException
-    {
-        CMISPropertyDefinition propertyDefinition = cmisDictionaryService.findProperty(propertyName, cmisObjectType);
-
-        if (null == propertyDefinition)
-        {
-            // TODO: WARINING!!! This is WRONG behavior!!! Each CMIS object type and each property MUST be described in appropriate CMIS manner
-            QName qualifiedName = createQName(propertyName);
-            Map<QName, PropertyDefinition> properties = (null != nativeObjectType) ? (nativeObjectType.getProperties()) : (null);
-            if ((null == qualifiedName) || (null == properties) || properties.containsKey(qualifiedName))
-            {
-                return PropertyCheckingStateEnum.PROPERTY_NOT_UPDATABLE;
-            }
-            return PropertyCheckingStateEnum.PROPERTY_NATIVE;
-        }
-
-        // [FIXED BUG] condition and first calculating value were swapped
-        boolean updatable = ((CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT == propertyDefinition.getUpdatability()) ? (checkedOut)
-                : (CMISUpdatabilityEnum.READ_AND_WRITE == propertyDefinition.getUpdatability()));
-
-        if (!updatable)
-        {
-            return PropertyCheckingStateEnum.PROPERTY_NOT_UPDATABLE;
-        }
-
-        if (propertyDefinition.isRequired() && (null == value))
-        {
-            throw ExceptionUtil.createCmisException((propertyName + " property required"), EnumServiceException.CONSTRAINT);
-        }
-
-        switch (propertyDefinition.getDataType())
-        {
-        case STRING:
-        {
-            checkStringProperty(propertyDefinition, propertyName, (String) value);
-            break;
-        }
-        case INTEGER:
-        case DECIMAL:
-        {
-            checkNumberProperty(propertyDefinition, propertyName, (Number) value);
-            break;
-        }
-        }
-
-        return PropertyCheckingStateEnum.PROPERTY_CHECKED;
-    }
-
-    public enum PropertyCheckingStateEnum
-    {
-        PROPERTY_CHECKED, PROPERTY_NATIVE, PROPERTY_NOT_UPDATABLE;
-    }
-
-    private void checkNumberProperty(CMISPropertyDefinition propertyDefinition, String propertyName, Number value)
-    {
-        // TODO: if max and min value properties will be added to CMISPropertyDefinition
-    }
-
-    private void checkStringProperty(CMISPropertyDefinition propertyDefinition, String propertyName, String value) throws CmisException
-    {
-        if (value != null && (propertyDefinition.getMaximumLength() > 0) && (value.length() > propertyDefinition.getMaximumLength()))
-        {
-            throw ExceptionUtil.createCmisException((propertyName + " property value is too long"), EnumServiceException.CONSTRAINT);
-        }
-    }
-
-    /**
      * Get CMIS properties for object
      * 
      * @param nodeRef node reference
@@ -517,24 +448,37 @@ public class PropertyUtil
      */
     public CmisPropertiesType getProperties(Object object, PropertyFilter filter) throws CmisException
     {
+        if (object instanceof Version)
+        {
+            object = ((Version) object).getFrozenStateNodeRef();
+        }
         try
         {
+            CmisPropertiesType result = new CmisPropertiesType();
             Map<String, Serializable> properties;
             if (object instanceof NodeRef)
             {
                 properties = cmisService.getProperties((NodeRef) object);
-            }
-            else if (object instanceof Version)
-            {
-                properties = cmisService.getProperties(((Version) object).getFrozenStateNodeRef());
+                
+                // Handle fetching of aspects and their properties with Alfresco extension
+                GetAspects extension = new GetAspects();
+                result.getAny().add(extension);
+                List<String> aspects = extension.getAppliedAspects();
+                Map<String, Serializable> aspectProperties = new HashMap<String, Serializable>(97);
+                for (CMISTypeDefinition typeDef : cmisService.getAspects((NodeRef)object))
+                {
+                    aspects.add(typeDef.getTypeId().getId());
+                    aspectProperties.putAll(cmisService.getProperties((NodeRef)object, typeDef));
+                }
+                CmisPropertiesType aspectResult = new CmisPropertiesType();
+                convertToCmisProperties(aspectProperties, filter, aspectResult);
+                extension.setProperties(aspectResult);
             }
             else
             {
                 properties = createBaseRelationshipProperties((AssociationRef) object);
             }
-
-            CmisPropertiesType result = new CmisPropertiesType();
-            convertToCmisProperties(properties, filter, result);
+            convertToCmisProperties(properties, filter, result);                       
             return result;
         }
         catch (CMISInvalidArgumentException e)
@@ -542,7 +486,7 @@ public class PropertyUtil
             throw ExceptionUtil.createCmisException(e.getMessage(), EnumServiceException.INVALID_ARGUMENT, e);
         }
     }
-
+    
     private Map<String, Serializable> createBaseRelationshipProperties(AssociationRef association)
     {
         Map<String, Serializable> result = new HashMap<String, Serializable>();

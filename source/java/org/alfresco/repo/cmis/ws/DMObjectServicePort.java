@@ -45,7 +45,6 @@ import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -213,14 +212,16 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             Map<String, Object> propertiesMap = propertiesUtil.getPropertiesMap(properties);
             String typeId = extractAndAssertTypeId(propertiesMap);
             CMISTypeDefinition type = cmisService.getTypeDefinition(typeId);
-            TypeDefinition nativeType = dictionaryService.getType(nodeService.getType(folderNodeRef));
             if (type == null || type.getTypeId() == null || type.getTypeId().getScope() != CMISScope.FOLDER)
             {
                 throw ExceptionUtil.createCmisException("The typeID is not an Object-Type whose baseType is 'Folder': " + typeId, EnumServiceException.CONSTRAINT);
             }
 
             String name = propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_NAME, null);
-            propertiesUtil.checkProperty(nativeType, type, CMISDictionaryModel.PROP_NAME, name, false);
+            if (null == name)
+            {
+                throw ExceptionUtil.createCmisException("Name property not found", EnumServiceException.INVALID_ARGUMENT);
+            }
 
             try
             {
@@ -819,8 +820,6 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         {
             throw ExceptionUtil.createCmisException("Name property not found", EnumServiceException.INVALID_ARGUMENT);
         }
-        propertiesUtil.checkProperty(null, typeDef, CMISDictionaryModel.PROP_NAME, result, (EnumVersioningState.CHECKEDOUT == versioningState));
-
         return result;
     }
 

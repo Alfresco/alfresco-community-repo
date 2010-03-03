@@ -313,7 +313,6 @@
     <bean id="propertiesUtils" class="org.alfresco.repo.cmis.ws.utils.PropertyUtil">
         <property name="cmisDictionaryService" ref="CMISDictionaryService" />
         <property name="cmisService" ref="CMISService" />
-        <property name="nodeService" ref="NodeService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="namespaceService" ref="NamespaceService" />
     </bean>

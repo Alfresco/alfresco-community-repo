@@ -10,14 +10,33 @@
 </entry>
 [/#macro]
 
+[#macro nodeCMISProps node propfilter]
+<cmis:properties>
+  [@typeCMISProps node cmistype(node) propfilter/]
+  [#-- Nest the Alfresco extension for aspects and their properties --]
+  <alf:getAspects>
+    [#list cmisaspects(node) as aspectdef]
+      <alf:appliedAspects>${aspectdef.typeId.id}</alf:appliedAspects>
+    [/#list]
+    <alf:properties>
+      [#list cmisaspects(node) as aspectdef]
+        [@typeCMISProps node aspectdef propfilter/]
+      [/#list]
+    </alf:properties>
+  </alf:getAspects>
+</cmis:properties>
+[/#macro]
+
 [#macro objectCMISProps object propfilter]
 <cmis:properties>
-  [#assign typedef = cmistype(object)]
-  
+  [@typeCMISProps object cmistype(object) propfilter/]
+</cmis:properties>
+[/#macro]
+
+[#macro typeCMISProps object typedef propfilter]
   [#list typedef.propertyDefinitions?values as propdef]
     [@filter propfilter propdef.queryName][@prop object propdef/][/@filter]
   [/#list]
-</cmis:properties>
 [/#macro]
 
 
@@ -42,7 +61,7 @@
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmisra:object>
-[@objectCMISProps node propfilter/]
+[@nodeCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 [@relationships node includerelationships includeallowableactions propfilter/]
 [#if includeacl][@aclreport node/][/#if]
@@ -95,7 +114,7 @@
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
 <cmisra:object>
-[@objectCMISProps node propfilter/]
+[@nodeCMISProps node propfilter/]
 [#if includeallowableactions][@allowableactions node/][/#if]
 [@relationships node includerelationships includeallowableactions propfilter/]
 [#if includeacl][@aclreport node/][/#if]

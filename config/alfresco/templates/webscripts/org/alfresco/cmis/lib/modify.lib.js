@@ -89,76 +89,30 @@ function updateNode(node, entry, exclude, validator)
     
     var updated = false;
     var object = entry.getExtension(atom.names.cmisra_object);
-    var props = (object == null) ? null : object.properties;
     var vals = new Object();
-
-    // calculate list of properties to update
-    // TODO: consider array form of properties.names
-    var updateProps = (props == null) ? new Array() : props.ids.toArray().filter(function(element, index, array) {return true;});
-    updateProps.push(PROP_NAME);   // mapped to entry.title
     var exclude = (exclude == null) ? new Array() : exclude;
     exclude.push(PROP_BASE_TYPE_ID);
-    updateProps = updateProps.filter(includeProperty, exclude);
-    
-    // build values to update
-    if (updateProps.length > 0)
+    var typeDef = cmis.queryType(node);
+
+    // Apply the provided properties of the node type
+    unpackProperties(node, typeDef, object == null ? null : object.properties, exclude, validator, vals);
+
+    // NOTE: special case name: entry.title overrides cmis:name
+    var propDef = typeDef.propertyDefinitions[PROP_NAME];
+    vals[propDef.propertyAccessor.mappedProperty.toString()] = entry.title;
+
+    // Handle Alfresco aspects extension
+    if (object != null)
     {
-        var typeDef = cmis.queryType(node);
-        var propDefs = typeDef.propertyDefinitions;
-        for each (propName in updateProps)
+        var extension = object.properties.getExtension(atom.names.alf_setAspects);
+
+        if (extension != null)
         {
-            // is this a valid property?
-            var propDef = propDefs[propName];
-            if (propDef == null)
-            {
-                status.code = 400;
-                status.message = "Property " + propName + " is not a known property for type " + typeDef.typeId;
-                status.redirect = true;
-                return null;
-            }
+            // Add and remove aspects
+            cmis.setAspects(node, extension.aspectsToAdd, extension.aspectsToRemove);
 
-            // validate property update
-            var valid = validator(propDef);
-            if (valid == null)
-            {
-                // error, abort update
-                return null;
-            }
-            if (valid == false)
-            {
-                // ignore property
-                continue;
-            }
-
-            // extract value
-            var val = null;
-            var prop = (props == null) ? null : props.find(propName);
-            if (prop != null && !prop.isNull())
-            {
-                if (prop.isMultiValued())
-                {
-                    if (propDef.updatability === CMISCardinalityEnum.MULTI_VALUED)
-                    {
-                        status.code = 500;
-                        status.message = "Property " + propName + " is single valued."
-                        status.redirect = true;
-                        return null;
-                    }
-                    val = prop.nativeValues;
-                }
-                else
-                {
-                    val = prop.nativeValue;
-                }
-            }
-            
-            // NOTE: special case name: entry.title overrides cmis:name
-            if (propName === PROP_NAME)
-            {
-                val = entry.title;
-            }
-            
-            vals[propDef.propertyAccessor.mappedProperty.toString()] = val;
+            // Apply the provided properties of the aspects
+            unpackProperties(node, null, extension.properties, exclude, validator, vals);
         }
     }
 
@@ -235,7 +189,81 @@ function updateNode(node, entry, exclude, validator)
     return updated;
 }
 
+function unpackProperties(node, typeDef, props, exclude, validator, vals)
+{
+   // calculate list of properties to update
+   // TODO: consider array form of properties.names
+   var updateProps = (props == null) ? new Array() : props.ids.toArray().filter(function(element, index, array) {return true;});
+   updateProps = updateProps.filter(includeProperty, exclude);
+   
+   // build values to update
+   if (updateProps.length > 0)
+   {
+       for each (propName in updateProps)
+       {
+           // is this a valid property?
+           var propDef = typeDef == null ? cmis.queryProperty(propName) : typeDef.propertyDefinitions[propName];
+           if (propDef == null)
+           {
+               status.code = 400;
+               if (typeDef == null)
+               {
+                   status.message = "Property " + propName + " is not a known property";
+               }
+               else
+               {
+                  status.message = "Property " + propName + " is not a known property for type " + typeDef.typeId;
+               }
+               status.redirect = true;
+               return null;
+           }
 
+           // validate property update
+           var valid = validator(propDef);
+           if (valid == null)
+           {
+               // error, abort update
+               return null;
+           }
+           if (valid == false)
+           {
+               // ignore property
+               continue;
+           }
+
+           // extract value
+           var val = null;
+           var prop = (props == null) ? null : props.find(propName);
+           if (prop != null && !prop.isNull())
+           {
+               if (prop.isMultiValued())
+               {
+                   if (propDef.updatability === CMISCardinalityEnum.MULTI_VALUED)
+                   {
+                       status.code = 500;
+                       status.message = "Property " + propName + " is single valued."
+                       status.redirect = true;
+                       return null;
+                   }
+                   val = prop.nativeValues;
+               }
+               else
+               {
+                   val = prop.nativeValue;
+               }
+           }
+           
+           // NOTE: special case name: entry.title overrides cmis:name
+           if (propName === PROP_NAME)
+           {
+               val = entry.title;
+           }
+           
+           vals[propDef.propertyAccessor.mappedProperty.toString()] = val;
+       }
+   }
+   
+}
 //
 // Create Alfresco Association from Atom Entry
 //

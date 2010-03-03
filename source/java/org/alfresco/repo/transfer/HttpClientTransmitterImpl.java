@@ -491,64 +491,6 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             postContentRequest.releaseConnection();
         }
     } // end of sendContent
-
-
-    /**
-     * 
-     */
-    public Set<TransferMessage> getMessages(Transfer transfer)
-    {
-        // TODO How to signal last message ?   return null rather than empty
-        Set<TransferMessage> messages = new HashSet<TransferMessage>();
-        
-        TransferTarget target = transfer.getTransferTarget();
-        HttpMethod messagesRequest = new GetMethod();
-        try
-        {
-            HostConfiguration hostConfig = getHostConfig(target);
-            HttpState httpState = getHttpState(target);
-            
-            messagesRequest.setPath(target.getEndpointPath() + "/messages");
-            //Put the transferId on the query string
-            messagesRequest.setQueryString(
-                    new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
-            
-            try
-            {
-                int responseStatus = httpClient.executeMethod(hostConfig, messagesRequest, httpState);
-                checkResponseStatus("getMessages", responseStatus, messagesRequest);
-                //If we get here then we've received a 200 response
-                //We're expecting the transfer id encoded in a JSON object...
-                
-                JSONObject lookupResult = new JSONObject(messagesRequest.getResponseBodyAsString());
-                JSONArray data = lookupResult.getJSONArray("data");  
-                
-                for(int i = 0; i < data.length(); i++)
-                {
-                    JSONObject obj = data.getJSONObject(i);
-                    String message = obj.getString("message");
-                    //TODO Need some sort of TransferMessage impl
-//                    messages.add(new TransferMessageImpl());
-                }
-
-                return messages;
-            } 
-            catch (RuntimeException e)
-            {
-                throw e;
-            } 
-            catch (Exception e)
-            {
-                String error = "Failed to execute HTTP request to target";
-                log.debug(error, e);
-                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[]{"getMessages", target.toString(), e.toString()}, e);
-            }
-        } 
-        finally
-        {
-            messagesRequest.releaseConnection();
-        }
-    }
     
     /**
      * 

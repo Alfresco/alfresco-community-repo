@@ -38,15 +38,7 @@ public interface TransferTarget
      * @return
      */
     public String getName();
-    
-    /**
-     * Set the name of this transfer target.   Please note that you can't update the name of a 
-     * transfer target.
-     * 
-     * @param name
-     */
-    public void setName(String name);
-    
+        
     /**
      * Get the description for this transfer target
      * @return

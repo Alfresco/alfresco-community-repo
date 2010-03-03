@@ -100,11 +100,6 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
         }, false, true);
     }
 
-    public Set<TransferMessage> getMessages(Transfer transfer)
-    {
-        String transferId = transfer.getTransferId();
-        return null;
-    }
 
     public void prepare(Transfer transfer) throws TransferException
     {

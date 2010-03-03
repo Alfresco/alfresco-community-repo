@@ -33,15 +33,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.alfresco.repo.transfer.PathHelper;
+import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Base64;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -53,7 +57,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * SAX XML Content Handler to read a transfer manifest XML Stream and 
- * delegate processing to the specified TransferManifestProcessor
+ * delegate processing of the manifest to the specified TransferManifestProcessor
  *
  * @author Mark Rogers
  */
@@ -61,15 +65,17 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
 {
     private  TransferManifestProcessor processor;
     
+    private static Log logger = LogFactory.getLog(XMLTransferManifestReader.class);
+    private static final String MSG_NO_ENCODING = "transfer_service.no_encoding";
+    private static final String MSG_UNABLE_DESERIALIZE = "transfer_service.unable_to_deserialise";
+    
     /**
      * These are the namespaces used within the document - there may be a different mapping to 
      * the namespaces of the Data Dictionary.
-     */
-//    Map<String, String> documentNamespaces = new HashMap<String, String>();
-    
+     */ 
+    LinkedList<HashMap<String, String>> namespaces = new LinkedList<HashMap<String, String>>();
     final String TRANSFER_URI = ManifestModel.TRANSFER_MODEL_1_0_URI;
     final String XMLNS_URI = "http://www.w3.org/XML/1998/namespace"; 
-    LinkedList<HashMap<String, String>> namespaces = new LinkedList<HashMap<String, String>>();
    
     public XMLTransferManifestReader(TransferManifestProcessor snapshotProcessor)
     {
@@ -275,6 +281,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED))
             {
+                props.put("encoding", atts.getValue("", "encoding"));
                 buffer = new StringBuffer();   
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_MLVALUE))
@@ -482,34 +489,41 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED))
             {
                 Collection<Serializable> values =  (Collection<Serializable>)props.get("values");
+                String encoding = (String)props.get("encoding");
                 
                 String strValue = buffer.toString();
                 Object value = null;
                 
-                // TODO assumes "base64/ObjectOutputStream" - should check
-                try
+                if(encoding.equalsIgnoreCase("base64/ObjectOutputStream"))
                 {
-                    byte[] data = Base64.decode(strValue.getBytes("UTF-8"));             
-                    ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-                    value = ois.readObject();    
+                    try
+                    {
+                        byte[] data = Base64.decode(strValue.getBytes("UTF-8"));             
+                        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+                        value = ois.readObject();    
+                    }
+                    catch (IOException error)
+                    {
+                        throw new TransferException(MSG_UNABLE_DESERIALIZE, error);
+                    }
+                    catch (ClassNotFoundException error)
+                    {
+                        throw new TransferException(MSG_UNABLE_DESERIALIZE, error);
+                    }
                 }
-                catch (IOException error)
+                else
                 {
-                    //TODO Error handler - should this fail the transfer ?
-                    error.printStackTrace();
-                }
-                catch (ClassNotFoundException error)
-                {
-                    //TODO Error handler - should this fail the transfer ?
-                    error.printStackTrace();
+                    throw new TransferException(MSG_NO_ENCODING, new Object[]{encoding});
                 }
                 
                 if(values != null)
                 {
+                    // This is a values array
                     values.add((Serializable)value);   
                 }
                 else
                 {
+                    // This is a single value
                     props.put("value", value);
                 }
             }            

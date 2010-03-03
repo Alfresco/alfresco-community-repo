@@ -354,7 +354,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             target.setEndpointPath(endpointPath2);
             target.setEndpointPort(endpointPort2);
             target.setEndpointProtocol(endpointProtocol2);
-            target.setName(updateMe); 
             target.setPassword(password2);
             target.setUsername(username2);
             

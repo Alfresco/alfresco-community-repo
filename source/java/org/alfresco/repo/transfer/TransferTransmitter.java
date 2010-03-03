@@ -93,10 +93,4 @@ public interface TransferTransmitter
      */
     TransferProgress getStatus(Transfer transfer) throws TransferException;
     
-    /**
-     * Get Async Messages for a transfer.
-     * Server Side Messages.
-     * @return messages
-     */
-    Set<TransferMessage> getMessages(Transfer transfer);
 }

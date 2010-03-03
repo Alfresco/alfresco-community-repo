@@ -18,8 +18,6 @@
  */
 package org.alfresco.service.cmr.transfer;
 
-import java.io.Serializable;
-
 /**
  * The transfer callback is called during a transfer, it allows the real-time feedback of 
  * an in progress transfer.  It can be used to populate a deployment report or to display 
@@ -27,7 +25,7 @@ import java.io.Serializable;
  *
  * @author Mark Rogers
  */
-public interface TransferCallback extends Serializable
+public interface TransferCallback 
 {
    /**
      * processEvent

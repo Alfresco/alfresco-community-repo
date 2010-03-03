@@ -24,7 +24,7 @@ import org.alfresco.service.cmr.transfer.TransferEvent;
 
 /**
  * An abstract implementation of TransferEvent.
- * Also implements RangedTransferEvent.
+ * Also implements the operations required by RangedTransferEvent.
  * @see TransferEvent
  * @see RangedTransferEvent
  */
@@ -105,23 +105,31 @@ public abstract class TransferEventImpl implements TransferEvent
         return range;
     }
     
+    /**
+     * A simple human readable summary of this event, the format of this string is 
+     * not guaranteed and is liable to change.
+     */
     public String toString()
     {
-        return "TransferEventImpl : " + this.getTime() + ", " + this.getTransferState();
+        return this.getClass().getSimpleName() + ", " + this.getTime() + ", " + this.getTransferState();
     }
     
     public boolean equals(Object obj)
     {
-        if(obj instanceof TransferEventImpl)
+        if(obj != null)
         {
-            TransferEventImpl other = (TransferEventImpl)obj;
-            if(other.getTransferState().equals(this.getTransferState()) && 
-               other.getPosition() == this.getPosition() &&
-               other.getTime().equals(this.getTime()))
+            if(this.getClass().equals(obj.getClass()))
             {
-                return true;
+                TransferEventImpl other = (TransferEventImpl)obj;
+                if(other.getTransferState().equals(this.getTransferState()) && 
+                   other.getPosition() == this.getPosition() &&
+                   other.getTime().equals(this.getTime()))
+                {
+                        return true;
+                }
             }
         }
+        // not a match
         return false;
     }
     

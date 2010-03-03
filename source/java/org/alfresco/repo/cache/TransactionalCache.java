@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
@@ -92,9 +91,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     
     /** a unique string identifying this instance when binding resources */
     private String resourceKeyTxnData;
-    
-    /** Keep track of what transactions have been up to before */
-    private ThreadLocal<Set<TransactionData>> threadTxnData;
 
     /**
      * Public constructor.
@@ -103,7 +99,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
         logger = LogFactory.getLog(TransactionalCache.class);
         isDebugEnabled = logger.isDebugEnabled();
-        threadTxnData = new ThreadLocal<Set<TransactionData>>();
     }
     
     /**
@@ -207,7 +202,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         if (data == null)
         {
             String txnId = AlfrescoTransactionSupport.getTransactionId();
-            data = new TransactionData(txnId);
+            data = new TransactionData();
             // create and initialize caches
             data.updatedItemsCache = new Cache(
                     name + "_"+ txnId + "_updates",
@@ -215,7 +210,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             data.removedItemsCache = new Cache(
                     name + "_" + txnId + "_removes",
                     maxCacheSize, false, true, 0, 0);
-            
             try
             {
                 cacheManager.addCache(data.updatedItemsCache);
@@ -232,15 +226,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 AlfrescoTransactionSupport.bindListener(this);
             }
             AlfrescoTransactionSupport.bindResource(resourceKeyTxnData, data);
-            
-            // Put the data into the set for potential inner transaction usage
-            Set<TransactionData> threadSet = threadTxnData.get();
-            if (threadSet == null)
-            {
-                threadSet = new HashSet<TransactionData>(3);
-                threadTxnData.set(threadSet);
-            }
-            threadSet.add(data);        // NB: This is removed during commit or rollback
         }
         return data;
     }
@@ -700,15 +685,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         finally
         {
             removeCaches(txnData);
-            
-            // Remove our txnData entry from the thread
-            Set<TransactionData> threadSet = threadTxnData.get();
-            threadSet.remove(txnData);
-            // We pessimistically kill all new data cached by other transactions
-            for (TransactionData outerTxnData : threadSet)
-            {
-                outerTxnData.removeUpdates();
-            }
         }
     }
 
@@ -720,10 +696,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         TransactionData txnData = getTransactionData();
         // drop caches from cachemanager
         removeCaches(txnData);
-        
-        // Remove our txnData entry from the thread
-        Set<TransactionData> threadSet = threadTxnData.get();
-        threadSet.remove(txnData);
     }
     
     /**
@@ -880,57 +852,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /** Data holder to bind data to the transaction */
     private class TransactionData
     {
-        /** A thread-locally unique ID */
-        private String id;
-        
         private Cache updatedItemsCache;
         private Cache removedItemsCache;
         private boolean haveIssuedFullWarning;
         private boolean isClearOn;
         private boolean isClosed;
-        
-        private TransactionData(String id)
-        {
-            this.id = id;
-        }
-
-        @Override
-        public String toString()
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.append("TransactionData [id=").append(id).append("]");
-            return builder.toString();
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return id.hashCode();
-        }
-
-        /**
-         * Controlled implementation of equals i.e. we don't check all conditions; the containing
-         * class needs to ensure types don't get mixed in sets, etc.
-         */
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj)
-            {
-                return true;
-            }
-            TransactionData other = (TransactionData) obj;
-            return id.equals(other.id);
-        }
-        
-        /**
-         * Pessimistic method that removes all updates and additions from the local
-         * transactional data.  This method is used when inner transactions are started
-         * that modify the cache.
-         */
-        private void removeUpdates()
-        {
-            updatedItemsCache.removeAll();
-        }
     }
 }

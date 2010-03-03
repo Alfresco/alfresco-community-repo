@@ -157,41 +157,6 @@ public class CacheTest extends TestCase
         txnHelper.doInTransaction(callback);
     }
     
-    /**
-     * Make sure that an outer transaction gets to see cached data modified by an inner transaction.
-     */
-    public void testOuterTransactionStaleDataAvoidance() throws Throwable
-    {
-        final TransactionService transactionService = serviceRegistry.getTransactionService();
-        
-        RetryingTransactionCallback<Void> outer = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                // Put a value in the cache
-                transactionalCache.put("A", "OUTER");
-                assertNotNull("Expected to get a value before inner txn.", transactionalCache.get("A"));
-                
-                RetryingTransactionCallback<Void> inner = new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute() throws Throwable
-                    {
-                        // Just update the cache
-                        transactionalCache.put("A", "INNER");
-                        return null;
-                    }
-                };
-                // Do it in a nested txn
-                transactionService.getRetryingTransactionHelper().doInTransaction(inner, false, true);
-                
-                assertNull("Expected to *not* get a value after inner txn.", transactionalCache.get("A"));
-                
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(outer);
-    }
-    
     public void testTransactionalCacheWithSingleTxn() throws Throwable
     {
         String newGlobalOne = "new_global_one";
@@ -374,7 +339,7 @@ public class CacheTest extends TestCase
     }
     
     /**
-     * Tests a straight Ehcache adapter against a transactional cache both in and outprojects/repository/source/java/org/alfresco/repo/cache/TransactionalCache.java
+     * Tests a straight Ehcache adapter against a transactional cache both in and out
      * of a transaction.  This is done repeatedly, pushing the count up.
      */
     public void testPerformance() throws Exception

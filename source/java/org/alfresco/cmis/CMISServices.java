@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -151,7 +152,7 @@ public interface CMISServices
     public AssociationRef[] getRelationships(NodeRef node, CMISTypeDefinition relDef, boolean includeSubTypes, CMISRelationshipDirectionEnum direction) throws CMISInvalidArgumentException;
     
     /**
-     * Get a single property for a node.
+     * Get a single property belonging to the node's type.
      * 
      * @param nodeRef
      *            the node
@@ -162,6 +163,22 @@ public interface CMISServices
      *             if an argument is invalid
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName) throws CMISInvalidArgumentException;
+
+    /**
+     * Get a single property, optionally constrained to a given node type or aspect
+     * 
+     * @param nodeRef
+     *            the node
+     * @param typeDef
+     *            the node type or aspect or <code>null</code> if any property can be returned
+     * @param propertyName
+     *            the property name
+     * @return value
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    public Serializable getProperty(NodeRef nodeRef, CMISTypeDefinition typeDef, String propertyName)
+            throws CMISInvalidArgumentException;
 
     /**
      * Get a single property for an association.
@@ -175,7 +192,7 @@ public interface CMISServices
     public Serializable getProperty(AssociationRef assocRef, String propertyName);
     
     /**
-     * Get all properties.
+     * Get all properties of a node's type.
      * 
      * @param nodeRef
      *            the node ref
@@ -186,7 +203,32 @@ public interface CMISServices
     public Map<String, Serializable> getProperties(NodeRef nodeRef) throws CMISInvalidArgumentException;
     
     /**
-     * Set a single property.
+     * Get all of a node's values for the properties in the given type or aspect.
+     * 
+     * @param nodeRef
+     *            the node ref
+     * @param typeDef
+     *            the type or aspect definition
+     * @return the properties
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    public Map<String, Serializable> getProperties(NodeRef nodeRef, CMISTypeDefinition typeDef)
+            throws CMISInvalidArgumentException;
+
+    /**
+     * Gets the aspects applied to a node.
+     * 
+     * @param nodeRef
+     *            the node ref
+     * @return the aspect definitions
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    public Set<CMISTypeDefinition> getAspects(NodeRef nodeRef);
+
+    /**
+     * Set a single property belonging to the node's type.
      * 
      * @param nodeRef
      *            the node ref
@@ -196,9 +238,47 @@ public interface CMISServices
      *            the value
      * @throws CMISInvalidArgumentException
      *             if an argument is invalid
+     * @throws CMISConstraintException
+     *             if the property cannot be set
      */
-    public void setProperty(NodeRef nodeRef, String propertyName, Serializable value) throws CMISInvalidArgumentException;
-    
+    public void setProperty(NodeRef nodeRef, String propertyName, Serializable value)
+            throws CMISInvalidArgumentException, CMISConstraintException;
+
+    /**
+     * Set a single property, optionally constrained to a given node type or aspect
+     * 
+     * @param nodeRef
+     *            the node ref
+     * @param typeDef
+     *            the node type or aspect or <code>null</code> if any valid property should be set (corresponding aspect
+     *            added automatically).
+     * @param propertyName
+     *            the property name
+     * @param value
+     *            the value
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     * @throws CMISConstraintException
+     *             if the property cannot be set
+     */
+    public void setProperty(NodeRef nodeRef, CMISTypeDefinition typeDef, String propertyName, Serializable value)
+            throws CMISInvalidArgumentException, CMISConstraintException;
+
+    /**
+     * Sets the aspects on a node (Alfresco extension).
+     * 
+     * @param node
+     *            the node
+     * @param aspectsToRemove
+     *            the aspects to remove
+     * @param aspectsToAdd
+     *            the aspects to add
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    public void setAspects(NodeRef node, Iterable<String> aspectsToRemove, Iterable<String> aspectsToAdd)
+            throws CMISInvalidArgumentException;
+
     /**
      * Applies a versioning state to a new node, potentially resulting in a new node.
      * 

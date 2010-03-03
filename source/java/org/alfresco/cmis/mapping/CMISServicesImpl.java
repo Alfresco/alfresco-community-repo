@@ -26,9 +26,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,7 @@ import java.util.regex.Pattern;
 import org.alfresco.cmis.CMISConstraintException;
 import org.alfresco.cmis.CMISContentAlreadyExistsException;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISFilterNotValidException;
@@ -54,6 +57,7 @@ import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISStreamNotSupportedException;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
+import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.CMISVersioningException;
 import org.alfresco.cmis.CMISVersioningStateEnum;
 import org.alfresco.cmis.dictionary.CMISFolderTypeDefinition;
@@ -74,10 +78,12 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -699,12 +705,24 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName) throws CMISInvalidArgumentException
     {
-        CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
+        return getProperty(nodeRef, getTypeDefinition(nodeRef), propertyName);
+    }
+
+    public Serializable getProperty(NodeRef nodeRef, CMISTypeDefinition typeDef, String propertyName)
+            throws CMISInvalidArgumentException
+    {
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
         if (propDef == null)
         {
-            throw new CMISInvalidArgumentException("Property " + propertyName + " not found for type "
-                    + typeDef.getTypeId() + " in CMIS Dictionary");
+            if (typeDef == null)
+            {
+                throw new CMISInvalidArgumentException("Property " + propertyName + " not found in CMIS Dictionary");
+            }
+            else
+            {
+                throw new CMISInvalidArgumentException("Property " + propertyName + " not found for type "
+                        + typeDef.getTypeId() + " in CMIS Dictionary");
+            }
         }
         return propDef.getPropertyAccessor().getValue(nodeRef);
     }
@@ -796,14 +814,43 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      */
     public Map<String, Serializable> getProperties(NodeRef nodeRef) throws CMISInvalidArgumentException
     {
-        CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
+        return getProperties(nodeRef, getTypeDefinition(nodeRef));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getProperties(org.alfresco.service.cmr.repository.NodeRef,
+     * org.alfresco.cmis.CMISTypeDefinition)
+     */
+    public Map<String, Serializable> getProperties(NodeRef nodeRef, CMISTypeDefinition typeDef)
+            throws CMISInvalidArgumentException
+    {
         Map<String, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
-        Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size());
+        Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size() * 2);
         for (CMISPropertyDefinition propDef : propDefs.values())
         {
             values.put(propDef.getPropertyId().getId(), propDef.getPropertyAccessor().getValue(nodeRef));
         }
         return values;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getAspects(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public Set<CMISTypeDefinition> getAspects(NodeRef nodeRef)
+    {
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        Set<CMISTypeDefinition> result = new HashSet<CMISTypeDefinition>(aspects.size() * 2);
+        for (QName aspect : aspects)
+        {
+            CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(aspect, CMISScope.POLICY);
+            if (typeDef != null)
+            {
+                result.add(typeDef);
+            }
+        }
+        return result;
     }
 
     /*
@@ -811,16 +858,99 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
      * @see org.alfresco.cmis.CMISServices#setProperty(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.io.Serializable)
      */
     public void setProperty(NodeRef nodeRef, String propertyName, Serializable value)
-            throws CMISInvalidArgumentException
+            throws CMISInvalidArgumentException, CMISConstraintException
     {
-        CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
+        setProperty(nodeRef, getTypeDefinition(nodeRef), propertyName, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#setProperty(org.alfresco.service.cmr.repository.NodeRef,
+     * org.alfresco.cmis.CMISTypeDefinition, java.lang.String, java.io.Serializable)
+     */
+    public void setProperty(NodeRef nodeRef, CMISTypeDefinition typeDef, String propertyName, Serializable value)
+            throws CMISInvalidArgumentException, CMISConstraintException
+    {
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
         if (propDef == null)
         {
-            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for type "
-                    + typeDef.getTypeId() + " in CMIS Dictionary");
+            if (typeDef == null)
+            {
+                throw new CMISInvalidArgumentException("Property " + propertyName + " not found in CMIS Dictionary");
+            }
+            else
+            {
+                throw new CMISInvalidArgumentException("Property " + propertyName + " not found for type "
+                        + typeDef.getTypeId() + " in CMIS Dictionary");
+            }
         }
-        propDef.getPropertyAccessor().setValue(nodeRef, value);
+
+        CMISUpdatabilityEnum updatability = propDef.getUpdatability();
+        if (updatability == CMISUpdatabilityEnum.READ_ONLY
+                || updatability == CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT
+                && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            throw new CMISConstraintException("Unable to update read-only property" + propertyName);
+        }
+
+        if (propDef.isRequired() && value == null)
+        {
+            throw new CMISConstraintException("Property " + propertyName + " is required");
+        }
+
+        if (propDef.getDataType() == CMISDataTypeEnum.STRING && propDef.getMaximumLength() > 0 && value != null
+                && value.toString().length() > propDef.getMaximumLength())
+        {
+            throw new CMISConstraintException("Value is too long for property " + propertyName);
+        }
+
+        QName property = propDef.getPropertyAccessor().getMappedProperty();
+        if (property == null)
+        {
+            throw new CMISConstraintException("Unable to set property " + propertyName);
+        }
+        nodeService.setProperty(nodeRef, property, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#setAspects(org.alfresco.service.cmr.repository.NodeRef, java.lang.Iterable,
+     * java.lang.Iterable)
+     */
+    public void setAspects(NodeRef node, Iterable<String> aspectsToRemove, Iterable<String> aspectsToAdd)
+            throws CMISInvalidArgumentException
+    {
+        for (String aspectType : aspectsToRemove)
+        {
+            try
+            {
+                nodeService.removeAspect(node, getTypeDefinition(aspectType).getTypeId().getQName());
+            }
+            catch (InvalidAspectException e)
+            {
+                throw new CMISInvalidArgumentException("Invalid aspect " + aspectType);
+            }
+            catch (InvalidNodeRefException e)
+            {
+                throw new CMISInvalidArgumentException("Invalid node " + node);
+            }
+        }
+        for (String aspectType : aspectsToAdd)
+        {
+            try
+            {
+                nodeService.addAspect(node, getTypeDefinition(aspectType).getTypeId().getQName(), Collections
+                        .<QName, Serializable> emptyMap());
+            }
+            catch (InvalidAspectException e)
+            {
+                throw new CMISInvalidArgumentException("Invalid aspect " + aspectType);
+            }
+            catch (InvalidNodeRefException e)
+            {
+                throw new CMISInvalidArgumentException("Invalid node " + node);
+            }
+        }
     }
 
     /*

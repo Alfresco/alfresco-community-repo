@@ -235,8 +235,16 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
             {
                 validatePropertyDef(result.getJSONObject(i));
             }
-            //System.out.println(result.getJSONObject(i).get("name"));
+            
+//            String title = "";
+//            if (result.getJSONObject(i).has("title") == true)
+//            {
+//                title = result.getJSONObject(i).getString("title");
+//            }
+//            System.out.println(title + " - " + result.getJSONObject(i).getString("name"));
         }
+        
+//        System.out.println("/n/n");
         
         // test /api/properties?name=cm:name&name=cm:title&name=cm:description
         req = new GetRequest(URL_PROPERTIES + "?name=cm:name&name=cm:title&name=cm:description");
@@ -244,14 +252,15 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
         assertEquals(200, response.getStatus());        
         result = new JSONArray(response.getContentAsString());
         assertEquals(3, result.length());
-        //for (int i = 0; i < result.length(); i++)
-        //{
-            //if(result.getJSONObject(i).get("name").equals("cm:created")) 
-            //{
-            //    validatePropertyDef(result.getJSONObject(i));
-            //}
-          //  System.out.println(result.getJSONObject(i).get("name"));
-        //}
+//        for (int i = 0; i < result.length(); i++)
+//        {
+//            String title = "";
+//            if (result.getJSONObject(i).has("title") == true)
+//            {
+//                title = result.getJSONObject(i).getString("title");
+//            }
+//            System.out.println(title + " - " + result.getJSONObject(i).getString("name"));
+//        }
 		
 		
 	}

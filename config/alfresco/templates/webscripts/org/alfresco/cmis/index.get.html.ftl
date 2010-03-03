@@ -81,7 +81,7 @@
         <tr><td>PermissionPropagation</td><td>${aclPropagation}</td></tr>
       </table>
 
-      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">CMIS FileShare browser</a>.</p>
+      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.serviceContext)}/cmis">OpenCMIS Browser</a>.</p>
 
       <a name="testatompub"></a>
       <h3>Apache Chemistry CMIS AtomPub TCK</h3>
@@ -146,10 +146,7 @@
       <ul>
         <li><a href="http://incubator.apache.org/chemistry/">Home Page</a></li>
         <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/trunk/chemistry/chemistry-tck-atompub/">Source Code</a> for TCK</li>
-      </ul>
-      <h3>CMIS FileShare</h3>
-      <ul>
-        <li><a href="http://cmisfs.fmui.de/">Home Page</a></li>
+        <li><a href="http://svn.apache.org/viewvc/incubator/chemistry/trunk/opencmis/opencmis-test/">Source Code</a> for Browser</li>
       </ul>
       <h3>Provide Feedback</h3>
       <ul>

@@ -176,26 +176,31 @@ var Common =
          qnamePaths = node.qnamePath.split("/"),
          displayPaths = node.displayPath.split("/");
 
-      if (node.isContainer)
-      {
-         // We want the path to include the parent folder name
-         displayPaths = displayPaths.concat([node.name]);
-      }
-
       if (libraryRoot)
       {
+         if (node.isContainer && String(node.nodeRef) != String(libraryRoot.nodeRef))
+         {
+            // We want the path to include the parent folder name
+            displayPaths = displayPaths.concat([node.name]);
+         }
+
          // Generate the path from the supplied library root
          location =
          {
             site: null,
             siteTitle: null,
             container: null,
-            path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/"),
-            file: node.name
+            path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/")
          };
       }
       else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
       {
+         if (node.isContainer)
+         {
+            // We want the path to include the parent folder name
+            displayPaths = displayPaths.concat([node.name]);
+         }
+
          var siteId = displayPaths[3],
             siteNode = Common.getSite(siteId),
             containerId = qnamePaths[4].substr(3);
@@ -221,8 +226,7 @@ var Common =
             site: null,
             siteTitle: null,
             container: null,
-            path: "/" + displayPaths.slice(2, displayPaths.length).join("/"),
-            file: node.name
+            path: "/" + displayPaths.slice(2, displayPaths.length).join("/")
          };
       }
       

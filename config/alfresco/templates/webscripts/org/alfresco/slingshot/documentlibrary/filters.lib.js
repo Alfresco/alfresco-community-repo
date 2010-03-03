@@ -168,9 +168,8 @@ var Filters =
             break;
 
          case "node":
-            parsedArgs.pathNode = parsedArgs.rootNode.parent;
             filterParams.variablePath = false;
-            filterParams.query = "+ID:\"" + parsedArgs.rootNode.nodeRef + "\"";
+            filterParams.query = "+ID:\"" + parsedArgs.nodeRef + "\"";
             break;
 
          case "tag":

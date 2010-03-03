@@ -84,8 +84,7 @@ function getDoclist()
    nodes = nodes.slice(startIndex, pagePos * pageSize);
 
    // Common or variable parent container?
-   var parent = null,
-      defaultLocation = {};
+   var parent = null;
    
    if (!filterParams.variablePath)
    {
@@ -95,9 +94,6 @@ function getDoclist()
          node: parsedArgs.pathNode,
          userAccess: Evaluator.run(parsedArgs.pathNode).actionPermissions
       };
-      
-      // Store a default location to save repeated calculations
-      defaultLocation = Common.getLocation(parsedArgs.pathNode, parsedArgs.libraryRoot);
    }
 
    var isThumbnailNameRegistered = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME),
@@ -122,10 +118,10 @@ function getDoclist()
       {
          location =
          {
-            site: defaultLocation.site,
-            siteTitle: defaultLocation.siteTitle,
-            container: defaultLocation.container,
-            path: defaultLocation.path,
+            site: parsedArgs.location.site,
+            siteTitle: parsedArgs.location.siteTitle,
+            container: parsedArgs.location.container,
+            path: parsedArgs.location.path,
             file: node.name
          };
       }

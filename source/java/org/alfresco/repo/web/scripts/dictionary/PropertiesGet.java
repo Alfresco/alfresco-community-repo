@@ -19,11 +19,13 @@
 package org.alfresco.repo.web.scripts.dictionary;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -41,36 +43,67 @@ public class PropertiesGet extends DictionaryWebServiceBase
 {
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
+	private static final String PARAM_NAME = "name";
 	private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
-    
+	
 	/**
      * @Override  method from DeclarativeWebScript 
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        QName classQName = null;
         String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        if (className == null || className.length() == 0)
-        {
-            // Error
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
-            
-        }
-        QName classQName = createClassQName(className);
-        if (classQName == null)
-        {
-            // Error 
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
+        if (className != null && className.length() != 0)
+        {            
+            classQName = createClassQName(className);
+            if (classQName == null)
+            {
+                // Error 
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
+            }
         }
         
-        String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
+        String[] names = req.getParameterValues(PARAM_NAME);
         
+        String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);        
         String namespaceURI = null;
         if (namespacePrefix != null)
         {
             namespaceURI = this.namespaceService.getNamespaceURI(namespacePrefix);
         }
         
-        Map<QName, PropertyDefinition> propMap = dictionaryservice.getClass(classQName).getProperties();
+        Map<QName, PropertyDefinition> propMap = null;
+        if (classQName == null)
+        {
+            if (names != null)
+            {
+                propMap = new HashMap<QName, PropertyDefinition>(names.length);
+                for (String name : names)
+                {
+                    QName propQName = QName.createQName(name, namespaceService);
+                    PropertyDefinition propDef = dictionaryservice.getProperty(propQName);
+                    if (propDef != null)
+                    {
+                        propMap.put(propQName, propDef);
+                    }
+                }
+            }
+            else
+            {
+                Collection<QName> propQNames = dictionaryservice.getAllProperties(null);
+                propMap = new HashMap<QName, PropertyDefinition>(propQNames.size());
+                for (QName propQName : propQNames)
+                {
+                    propMap.put(propQName, dictionaryservice.getProperty(propQName));
+                }
+            }
+            
+        }
+        else
+        {
+            propMap = dictionaryservice.getClass(classQName).getProperties();            
+        }
+        
         List<PropertyDefinition> props = new ArrayList<PropertyDefinition>(propMap.size());
         for (Map.Entry<QName, PropertyDefinition> entry : propMap.entrySet())
         {

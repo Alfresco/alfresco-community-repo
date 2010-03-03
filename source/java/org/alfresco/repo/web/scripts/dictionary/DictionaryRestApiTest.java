@@ -35,6 +35,7 @@ import org.json.JSONArray;
 public class DictionaryRestApiTest extends BaseWebScriptTest
 {
 	private static final String URL_SITES = "/api/classes";
+	private static final String URL_PROPERTIES = "/api/properties";
 	
 	@Override
 	protected void setUp() throws Exception 
@@ -60,7 +61,7 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(true, result.get("protected"));
 		assertEquals(true, result.get("indexed"));
 		assertEquals(true, result.get("indexedAtomically"));
-		assertEquals("/api/classes/cm_auditable/property/cm_created", result.get("url"));
+		assertEquals("/api/property/cm_created", result.get("url"));
 		
 	}
 	
@@ -200,13 +201,9 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		GetRequest req = new GetRequest(URL_SITES + "/cm_auditable/properties");
 		Map< String, String > arguments = new HashMap< String, String >();
 		arguments.put("nsp", "cm");
-		arguments.put("n", "created");
 		req.setArgs(arguments);
 		Response response = sendRequest(req, 200);
 		assertEquals(200,response.getStatus());
-		
-		//JSONObject resultSet = new JSONObject(response.getContentAsString());
-		//validatePropertyDef(resultSet);
 		
 		JSONArray result = new JSONArray(response.getContentAsString());
         assertEquals(200,response.getStatus());
@@ -225,6 +222,37 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 				validatePropertyDef(result.getJSONObject(i));
 			}
 		}
+		
+		// test /api/properties
+		req = new GetRequest(URL_PROPERTIES);
+		response = sendRequest(req, 200);
+		assertEquals(200, response.getStatus());		
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(result.length()>0, true);
+        for (int i = 0; i < result.length(); i++)
+        {
+            if(result.getJSONObject(i).get("name").equals("cm:created")) 
+            {
+                validatePropertyDef(result.getJSONObject(i));
+            }
+            //System.out.println(result.getJSONObject(i).get("name"));
+        }
+        
+        // test /api/properties?name=cm:name&name=cm:title&name=cm:description
+        req = new GetRequest(URL_PROPERTIES + "?name=cm:name&name=cm:title&name=cm:description");
+        response = sendRequest(req, 200);
+        assertEquals(200, response.getStatus());        
+        result = new JSONArray(response.getContentAsString());
+        assertEquals(3, result.length());
+        //for (int i = 0; i < result.length(); i++)
+        //{
+            //if(result.getJSONObject(i).get("name").equals("cm:created")) 
+            //{
+            //    validatePropertyDef(result.getJSONObject(i));
+            //}
+          //  System.out.println(result.getJSONObject(i).get("name"));
+        //}
+		
 		
 	}
 	

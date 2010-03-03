@@ -40,7 +40,7 @@
 			</#list>
 		</#if>-->
 		],
-		"url" : "${"/api/classes/" +  url.templateArgs.classname + "/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
+		"url" : "${"/api/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
 	}
 	</#escape>
 </#macro>

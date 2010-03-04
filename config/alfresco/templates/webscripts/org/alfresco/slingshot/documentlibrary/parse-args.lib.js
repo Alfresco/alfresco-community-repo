@@ -176,6 +176,11 @@ var Common =
          qnamePaths = node.qnamePath.split("/"),
          displayPaths = node.displayPath.split("/");
 
+      if (libraryRoot == undefined && qnamePaths[2] != TYPE_SITES)
+      {
+         libraryRoot = companyhome;
+      }
+
       if (libraryRoot)
       {
          if (node.isContainer && String(node.nodeRef) != String(libraryRoot.nodeRef))

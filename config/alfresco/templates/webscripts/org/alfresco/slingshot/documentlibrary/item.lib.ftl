@@ -33,7 +33,7 @@
    "isFolder": ${node.isContainer?string},
 <#if item.isLink??>
    "isLink": ${item.isLink?string},
-   "fileName": "<#if item.isLink>${item.linkAsset.name}<#else>${node.name}</#if>",
+   "fileName": "<#if item.isLink>${item.linkNode.name}<#else>${node.name}</#if>",
 </#if>
    "displayName": "${node.name?replace(workingCopyLabel, "")}",
    "status": "<#list item.status?keys as s><#if item.status[s]?is_boolean && item.status[s] == true>${s}<#if s_has_next>,</#if></#if></#list>",

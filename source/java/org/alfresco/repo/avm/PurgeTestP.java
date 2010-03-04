@@ -18,6 +18,7 @@
 
 package org.alfresco.repo.avm;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.util.BulkLoader;
 
 /**
@@ -47,20 +48,8 @@ public class PurgeTestP extends AVMServiceTestBase
             fService.createSnapshot("main", null, null);
             System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
             fService.purgeVersion(2, "main");
-            fReaper.activate();
-            while (fReaper.isActive())
-            {
-                try
-                {
-                    System.out.print(".");
-                    Thread.sleep(2000);
-                }
-                catch (InterruptedException e)
-                {
-                    // Do nothing.
-                }
-            }
-            System.out.println("\nReaper finished");
+            
+            runOrphanReaper();
         }
         catch (Exception e)
         {
@@ -97,20 +86,8 @@ public class PurgeTestP extends AVMServiceTestBase
             
             fService.createSnapshot("main", null, null);
             fService.purgeVersion(2, "main");
-            fReaper.activate();
-            while (fReaper.isActive())
-            {
-                try
-                {
-                    System.out.print(".");
-                    Thread.sleep(2000);
-                }
-                catch (InterruptedException e)
-                {
-                    // Do nothing.
-                }
-            }
-            System.out.println("\nReaper finished");
+            
+            runOrphanReaper();
         }
         catch (Exception e)
         {
@@ -151,25 +128,43 @@ public class PurgeTestP extends AVMServiceTestBase
             
             fService.createSnapshot("main", null, null);
             fService.purgeStore("main");
-            fReaper.activate();
-            while (fReaper.isActive())
-            {
-                try
-                {
-                    System.out.print(".");
-                    Thread.sleep(2000);
-                }
-                catch (InterruptedException e)
-                {
-                    // Do nothing.
-                }
-            }
-            System.out.println("\nReaper finished");
+            
+            runOrphanReaper();
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
             throw e;
         }
+    }
+    
+    private void runOrphanReaper()
+    {
+        fReaper.activate();
+        
+        final int maxCycles = 50;
+        
+        int cycles = 0;
+        while (fReaper.isActive() && (cycles <= maxCycles))
+        {
+            try
+            {
+                System.out.print(".");
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e)
+            {
+                // Do nothing.
+            }
+            
+            cycles++;
+        }
+        
+        if (cycles > maxCycles)
+        {
+            throw new AlfrescoRuntimeException("Orphan reaper still active - failed to clean orphans in "+cycles+" cycles (max "+maxCycles+")");
+        }
+        
+        System.out.println("\nReaper finished (in "+cycles+" cycles)");
     }
 }

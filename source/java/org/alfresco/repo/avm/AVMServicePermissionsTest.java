@@ -52,7 +52,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -1112,8 +1111,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1215,8 +1215,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1309,8 +1310,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1410,8 +1412,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1510,8 +1513,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1658,8 +1662,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1834,8 +1839,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {
@@ -1990,8 +1996,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         runAs(AuthenticationUtil.getAdminUserName());
         
-        String baseStore = "main";
-        String layeredStore = "layer";
+        String prefix = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
+        String baseStore = prefix+"-main";
+        String layeredStore = prefix+"-layer";
         
         try
         {

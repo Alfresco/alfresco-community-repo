@@ -2441,7 +2441,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     }
     
-    public void testAclInsertionPerformanceShared()
+    public void xtestAclInsertionPerformanceShared()
     {
         NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         for(int i = 0; i < 10000; i++)
@@ -2455,7 +2455,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
     }
     
-    public void testAclInsertionPerformanceDefining()
+    public void xtestAclInsertionPerformanceDefining()
     {
         NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         for(int i = 0; i < 10000; i++)
@@ -2470,7 +2470,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
     }
 
-    public void testAclInsertionPerformanceMixed()
+    public void xtestAclInsertionPerformanceMixed()
     {
         NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         for(int i = 0; i < 10000; i++)

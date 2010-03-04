@@ -12,10 +12,6 @@
     -->
     <import resource="classpath:alfresco/application-context-core.xml" />
 
-    <!-- TODO The linkvalidation context has been added below as an interim fix for
-              some test failures in RepositoryStartStopTest. -->
-    <import resource="classpath:alfresco/linkvalidation-service-context.xml"/>
-    
     <!--
          Import all modules and related components.
     -->

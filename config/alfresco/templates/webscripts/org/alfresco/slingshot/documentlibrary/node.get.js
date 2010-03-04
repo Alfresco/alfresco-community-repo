@@ -44,7 +44,7 @@ function getDoclist()
    
    // Special case for container and libraryRoot nodes
    if ((parsedArgs.location.containerNode && String(parsedArgs.location.containerNode.nodeRef) == String(node.nodeRef)) ||
-      (String(parsedArgs.libraryRoot.nodeRef) == String(node.nodeRef)))
+      (parsedArgs.libraryRoot && String(parsedArgs.libraryRoot.nodeRef) == String(node.nodeRef)))
    {
       item.location.file = "";
    }

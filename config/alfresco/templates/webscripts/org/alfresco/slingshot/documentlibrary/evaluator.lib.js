@@ -107,6 +107,12 @@ var Evaluator =
 
             /* Document Folder common evaluator */
             Evaluator.documentAndFolder(node, permissions, status, actionLabels);
+            
+            /* Rules applied? */
+            if (node.hasAspect("rule:rules"))
+            {
+               status["rules"] = true;
+            }
             break;
 
          /**

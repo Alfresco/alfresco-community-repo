@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
@@ -57,7 +58,6 @@ public class RuleLinkTest extends BaseSpringTest
     protected static final String CONDITION_DEF_NAME = ComparePropertyValueEvaluator.NAME;
     protected static final String COND_PROP_NAME_1 = ComparePropertyValueEvaluator.PARAM_VALUE;
     protected static final String COND_PROP_VALUE_1 = ".doc";
-
     
     private NodeService nodeService;
     private RuleService ruleService;
@@ -69,6 +69,7 @@ public class RuleLinkTest extends BaseSpringTest
     private NodeRef rootNodeRef;
     private NodeRef folderOne;
     private NodeRef folderTwo;
+    private NodeRef folderThree;
     
     @SuppressWarnings("deprecation")
     @Override
@@ -100,6 +101,7 @@ public class RuleLinkTest extends BaseSpringTest
         
         folderOne = fileFolderService.create(folder, "folderOne", ContentModel.TYPE_FOLDER).getNodeRef();
         folderTwo = fileFolderService.create(folder, "folderTwo", ContentModel.TYPE_FOLDER).getNodeRef();
+        folderThree = fileFolderService.create(folder, "folderThree", ContentModel.TYPE_FOLDER).getNodeRef();
     }
 
     public void testLinkRule()
@@ -175,8 +177,7 @@ public class RuleLinkTest extends BaseSpringTest
         assertEquals(folderTwo, linkedFrom.get(0));
         
         // Unlink
-        Action unlinkAction = actionService.createAction(UnlinkRules.NAME);
-        actionService.executeAction(unlinkAction, folderTwo);
+        unlink(folderTwo);
         
         assertTrue(this.ruleService.hasRules(folderOne));
         assertEquals(2, ruleService.getRules(folderOne, false).size());
@@ -186,6 +187,71 @@ public class RuleLinkTest extends BaseSpringTest
         assertEquals(0, ruleService.getRules(folderTwo, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderTwo));
         
+    }
+    
+    private void link(NodeRef folderFrom, NodeRef folderTo)
+    {
+        Action linkAction = actionService.createAction(LinkRules.NAME);
+        linkAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, folderFrom);        
+        actionService.executeAction(linkAction, folderTo);
+    }
+    
+    private void unlink(NodeRef folder)
+    {
+        Action unlinkAction = actionService.createAction(UnlinkRules.NAME);
+        actionService.executeAction(unlinkAction, folder);
+    }   
+    
+    public void testRelink()
+    {
+        // Setup test data
+        Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        rule = createTestRule(false, "chewy");
+        this.ruleService.saveRule(folderTwo, rule);
+        rule = createTestRule(false, "han");
+        this.ruleService.saveRule(folderTwo, rule);
+        
+        List<Rule> rules = ruleService.getRules(folderThree);
+        assertNotNull(rules);
+        assertTrue(rules.isEmpty());
+        
+        link(folderOne, folderThree);
+        
+        rules = ruleService.getRules(folderThree);
+        assertNotNull(rules);
+        assertFalse(rules.isEmpty());
+        assertEquals(1, rules.size());
+        
+        link(folderTwo, folderThree);
+        
+        rules = ruleService.getRules(folderThree);
+        assertNotNull(rules);
+        assertFalse(rules.isEmpty());
+        assertEquals(2, rules.size());
+        
+        try
+        {
+            link(folderTwo, folderOne);
+            fail("Shouldn't be able to link a folder that already has rules that it owns.");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // excepted
+        }
+        
+        unlink(folderThree);
+        
+        rules = ruleService.getRules(folderThree);
+        assertNotNull(rules);
+        assertTrue(rules.isEmpty());
+        
+        link(folderTwo, folderThree);
+        
+        rules = ruleService.getRules(folderThree);
+        assertNotNull(rules);
+        assertFalse(rules.isEmpty());
+        assertEquals(2, rules.size());
     }
     
     protected Rule createTestRule(boolean isAppliedToChildren, String title)

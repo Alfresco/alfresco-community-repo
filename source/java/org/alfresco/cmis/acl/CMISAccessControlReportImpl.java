@@ -50,7 +50,7 @@ public class CMISAccessControlReportImpl implements CMISAccessControlReport
     /* (non-Javadoc)
      * @see org.alfresco.cmis.CMISAccessControlReport#isExtract()
      */
-    public boolean isExtract()
+    public boolean isExact()
     {
        return extract;
     }

@@ -2440,6 +2440,53 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(0, permissionService.getAllSetPermissions(rootNodeRef).size());
 
     }
+    
+    public void testAclInsertionPerformanceShared()
+    {
+        NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        for(int i = 0; i < 10000; i++)
+        {
+            nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
+        }
+        long start = System.nanoTime();
+        permissionService.setPermission(new SimplePermissionEntry(parent, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
+        long end = System.nanoTime();
+        
+        assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+    
+    public void testAclInsertionPerformanceDefining()
+    {
+        NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        for(int i = 0; i < 10000; i++)
+        {
+            NodeRef created = nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
+            permissionService.setPermission(new SimplePermissionEntry(created, getPermission(PermissionService.CONSUMER), "bob", AccessStatus.ALLOWED));
+        }
+        long start = System.nanoTime();
+        permissionService.setPermission(new SimplePermissionEntry(parent, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
+        long end = System.nanoTime();
+
+        assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+
+    public void testAclInsertionPerformanceMixed()
+    {
+        NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        for(int i = 0; i < 10000; i++)
+        {
+            NodeRef created = nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
+            if(i % 2 == 0)
+            {
+                permissionService.setPermission(new SimplePermissionEntry(created, getPermission(PermissionService.CONSUMER), "bob", AccessStatus.ALLOWED));
+            }
+        }
+        long start = System.nanoTime();
+        permissionService.setPermission(new SimplePermissionEntry(parent, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
+        long end = System.nanoTime();
+
+        assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
 
     public void testGetAllSetPermissionsFromAllNodes()
     {

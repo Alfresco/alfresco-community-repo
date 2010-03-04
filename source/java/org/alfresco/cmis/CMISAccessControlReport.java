@@ -37,17 +37,19 @@ public interface CMISAccessControlReport
     public List<? extends CMISAccessControlEntry> getAccessControlEntries();
     
     /**
-     * Is this report incomplete?
-     * If so there are other other security constraints that apply
+     * Is this report exact?
+     * If <code>false</code> then there are other other security constraints that apply.
+     * This will always be false as we have global permission and deny entries that are not reported.
+     * We do not explicitly check these cases - and return false - as we have global permission defined by default. 
      * 
-     * @return <code>false</code> means the report fully describes security access, <code>true</code> means other
-     * security constraints apply but are not reported. 
+     * @return <code>true</code> means the report fully describes security access, <code>false</code> means other
+     * security constraints <i>may</i> apply but are not reported. 
      */
-    public boolean isExtract();
+    public boolean isExact();
     
     /**
      * Get ACEs grouped by principal id
-     * @return
+     * @return ACEs grouped by principal id
      * @throws CMISConstraintException 
      */
     public List<? extends CMISAccessControlEntriesGroupedByPrincipalId> getAccessControlEntriesGroupedByPrincipalId() throws CMISConstraintException;

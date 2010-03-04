@@ -35,8 +35,8 @@ import javax.xml.bind.annotation.XmlType;
     "appliedAspects",
     "properties"
 })
-@XmlRootElement(name = "getAspects", namespace = "http://www.alfresco.org")
-public class GetAspects {
+@XmlRootElement(name = "aspects", namespace = "http://www.alfresco.org")
+public class Aspects {
 
     @XmlElement(namespace = "http://www.alfresco.org")
     protected List<String> appliedAspects;

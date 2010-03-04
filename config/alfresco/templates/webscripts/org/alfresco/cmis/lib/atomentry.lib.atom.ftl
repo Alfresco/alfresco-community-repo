@@ -14,7 +14,7 @@
 <cmis:properties>
   [@typeCMISProps node cmistype(node) propfilter/]
   [#-- Nest the Alfresco extension for aspects and their properties --]
-  <alf:getAspects>
+  <alf:aspects>
     [#list cmisaspects(node) as aspectdef]
       <alf:appliedAspects>${aspectdef.typeId.id}</alf:appliedAspects>
     [/#list]
@@ -23,7 +23,7 @@
         [@typeCMISProps node aspectdef propfilter/]
       [/#list]
     </alf:properties>
-  </alf:getAspects>
+  </alf:aspects>
 </cmis:properties>
 [/#macro]
 

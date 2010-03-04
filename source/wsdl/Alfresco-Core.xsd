@@ -16,7 +16,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="getAspects">
+    <xs:element name="aspects">
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" name="appliedAspects" type="xs:string" />

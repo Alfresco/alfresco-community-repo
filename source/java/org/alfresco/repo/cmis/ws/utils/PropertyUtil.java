@@ -54,7 +54,7 @@ import org.alfresco.repo.cmis.ws.CmisPropertyInteger;
 import org.alfresco.repo.cmis.ws.CmisPropertyString;
 import org.alfresco.repo.cmis.ws.CmisPropertyUri;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
-import org.alfresco.repo.cmis.ws.GetAspects;
+import org.alfresco.repo.cmis.ws.Aspects;
 import org.alfresco.repo.cmis.ws.SetAspects;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -461,7 +461,7 @@ public class PropertyUtil
                 properties = cmisService.getProperties((NodeRef) object);
                 
                 // Handle fetching of aspects and their properties with Alfresco extension
-                GetAspects extension = new GetAspects();
+                Aspects extension = new Aspects();
                 result.getAny().add(extension);
                 List<String> aspects = extension.getAppliedAspects();
                 Map<String, Serializable> aspectProperties = new HashMap<String, Serializable>(97);

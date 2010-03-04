@@ -380,7 +380,7 @@ public class DMAbstractServicePort
     {
         CMISAccessControlReport aclReport = cmisAclService.getAcl(identifierInstance, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         object.setAcl(convertAclReportToCmisAclType(aclReport).getACL());
-        object.setExactACL(!aclReport.isExtract());
+        object.setExactACL(aclReport.isExact());
     }
 
     protected CmisACLType applyAclCarefully(NodeRef object, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation)
@@ -443,7 +443,7 @@ public class DMAbstractServicePort
             entry.setPrincipal(principal);
             aceList.getPermission().add(entry);
         }
-        result.setExact(!aclReport.isExtract());
+        result.setExact(aclReport.isExact());
         return result;
     }
 

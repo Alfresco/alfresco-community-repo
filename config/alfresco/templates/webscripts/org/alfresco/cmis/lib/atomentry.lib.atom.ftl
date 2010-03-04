@@ -447,7 +447,7 @@
 [/#list]
 </cmis:acl>
 [#if ns == ""]
-<cmis:exactACL>${(!report.extract)?string}</cmis:exactACL>
+<cmis:exactACL>${(report.exact)?string}</cmis:exactACL>
 [/#if]
 [/#macro]
 

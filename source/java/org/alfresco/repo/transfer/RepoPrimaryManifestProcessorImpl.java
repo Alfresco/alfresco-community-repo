@@ -131,6 +131,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 }
                 logProgress("Deleting local node: " + resolvedNodes.resolvedChild);
                 nodeService.deleteNode(resolvedNodes.resolvedChild);
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Deleted local node: " + resolvedNodes.resolvedChild);
+                }
             }
             else
             {

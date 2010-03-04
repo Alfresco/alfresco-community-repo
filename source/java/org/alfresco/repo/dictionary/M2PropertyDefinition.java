@@ -356,7 +356,14 @@ import org.alfresco.util.EqualsHelper;
      */
     public boolean isIndexed()
     {
-        return m2Property.isIndexed();
+        if(m2Property.isIndexed() == null)
+        {
+            return true;
+        }
+        else
+        {
+            return m2Property.isIndexed();
+        }
     }
     
 
@@ -365,7 +372,14 @@ import org.alfresco.util.EqualsHelper;
      */
     public boolean isStoredInIndex()
     {
-        return m2Property.isStoredInIndex();
+        if(m2Property.isStoredInIndex() == null)
+        {
+            return false;
+        }
+        else
+        {
+            return m2Property.isStoredInIndex();
+        }
     }
     
 
@@ -374,7 +388,14 @@ import org.alfresco.util.EqualsHelper;
      */
     public boolean isIndexedAtomically()
     {
-        return m2Property.isIndexedAtomically();
+        if(m2Property.isIndexedAtomically() == null)
+        {
+            return true;
+        }
+        else
+        {
+            return m2Property.isIndexedAtomically();
+        }
     }
     
 
@@ -383,7 +404,14 @@ import org.alfresco.util.EqualsHelper;
      */
     public IndexTokenisationMode getIndexTokenisationMode()
     {
-        return m2Property.getIndexTokenisationMode();
+        if(m2Property.getIndexTokenisationMode() == null)
+        {
+            return IndexTokenisationMode.TRUE;
+        }
+        else
+        {
+            return m2Property.getIndexTokenisationMode();
+        }
     }
 
     

@@ -41,10 +41,10 @@ public class M2Property
     private boolean isMandatoryEnforced = false;
     private boolean isMultiValued = false;
     private String defaultValue = null;
-    private boolean isIndexed = true;
-    private boolean isIndexedAtomically = true;
-    private boolean isStoredInIndex = false;
-    private IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
+    private Boolean isIndexed = null;
+    private Boolean isIndexedAtomically = null;
+    private Boolean isStoredInIndex = null;
+    private IndexTokenisationMode indexTokenisationMode = null;
     private List<M2Constraint> constraints = new ArrayList<M2Constraint>();
 
     /*package*/ M2Property()
@@ -171,7 +171,7 @@ public class M2Property
     }
     
     
-    public boolean isIndexed()
+    public Boolean isIndexed()
     {
         return isIndexed;
     }
@@ -179,11 +179,11 @@ public class M2Property
     
     public void setIndexed(boolean isIndexed)
     {
-        this.isIndexed = isIndexed;
+        this.isIndexed = Boolean.valueOf(isIndexed);
     }
     
     
-    public boolean isStoredInIndex()
+    public Boolean isStoredInIndex()
     {
         return isStoredInIndex;
     }
@@ -191,11 +191,11 @@ public class M2Property
     
     public void setStoredInIndex(boolean isStoredInIndex)
     {
-        this.isStoredInIndex = isStoredInIndex;
+        this.isStoredInIndex = Boolean.valueOf(isStoredInIndex);
     }
 
     
-    public boolean isIndexedAtomically()
+    public Boolean isIndexedAtomically()
     {
         return isIndexedAtomically;
     }
@@ -203,7 +203,7 @@ public class M2Property
     
     public void setIndexedAtomically(boolean isIndexedAtomically)
     {
-        this.isIndexedAtomically = isIndexedAtomically;
+        this.isIndexedAtomically = Boolean.valueOf(isIndexedAtomically);
     }
     
 

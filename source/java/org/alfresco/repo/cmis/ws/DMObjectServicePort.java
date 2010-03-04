@@ -167,7 +167,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         {
             NodeRef folderNodeRef = cmisService.getFolder(folderId);
             NodeRef sourceNodeRef = cmisService.getReadableObject(sourceId, NodeRef.class);
-            String name = propertiesUtil.getProperty(sourceNodeRef, CMISDictionaryModel.PROP_NAME, null);
+            String name = propertiesUtil.getCmisPropertyValue(properties, CMISDictionaryModel.PROP_NAME, null);
+            if (name == null)
+            {
+                name = propertiesUtil.getProperty(sourceNodeRef, CMISDictionaryModel.PROP_NAME, null);
+            }
             NodeRef newDocumentNodeRef;
             try
             {

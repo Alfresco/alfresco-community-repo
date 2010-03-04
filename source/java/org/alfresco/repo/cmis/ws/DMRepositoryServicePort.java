@@ -70,9 +70,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     private static final Map<CMISAclSupportedPermissionEnum, EnumSupportedPermissions> ACL_SUPPORTED_PERMISSION_ENUM_MAPPING;
     private static final Map<CMISAclPropagationEnum, EnumACLPropagation> ACL_PROPAGATION_ENUM_MAPPGIN;
 
-    // FIXME: Hard-coded! should be retrieved using standard mechanism
-    private String repositoryUri = "http://localhost:8080/alfresco/cmis";
-
     static
     {
         JOIN_ENUM_MAPPING = new HashMap<CMISJoinEnum, EnumCapabilityJoin>();
@@ -480,8 +477,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));
         repositoryInfoType.setLatestChangeLogToken(cmisChangeLogService.getLastChangeLogToken());
         // TODO: cmisVersionSupported is different in stubs and specification
-        repositoryInfoType.setCmisVersionSupported("1.0 cd06");
-        repositoryInfoType.setThinClientURI(repositoryUri);
+        repositoryInfoType.setCmisVersionSupported("1.0");
         repositoryInfoType.setChangesIncomplete(cmisChangeLogService.getChangesIncomplete());
         // TODO: getFolderTree capability
         List<CMISBaseObjectTypeIds> changesOnTypeCapability = cmisChangeLogService.getChangesOnTypeCapability();

@@ -1,5 +1,4 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/common.lib.js">
 
 /**
  * Main entry point: Retrieve permissions and associated metadata for given node

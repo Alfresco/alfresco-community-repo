@@ -41,7 +41,7 @@ public class M2Property
     private boolean isMandatoryEnforced = false;
     private boolean isMultiValued = false;
     private String defaultValue = null;
-    private Boolean isIndexed = null;
+    private Boolean isIndexed = Boolean.TRUE;
     private Boolean isIndexedAtomically = null;
     private Boolean isStoredInIndex = null;
     private IndexTokenisationMode indexTokenisationMode = null;

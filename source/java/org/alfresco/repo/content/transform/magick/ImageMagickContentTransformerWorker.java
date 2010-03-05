@@ -149,8 +149,13 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         if (options instanceof ImageTransformationOptions)
         {
             ImageTransformationOptions imageOptions = (ImageTransformationOptions)options;
+            ImageCropOptions cropOptions = imageOptions.getCropOptions();
             ImageResizeOptions resizeOptions = imageOptions.getResizeOptions();
             String commandOptions = imageOptions.getCommandOptions();
+            if (cropOptions != null)
+            {
+                commandOptions = commandOptions + " " + getImageCropCommandOptions(cropOptions);
+            }
             if (resizeOptions != null)
             {
                 commandOptions = commandOptions + " " + getImageResizeCommandOptions(resizeOptions);
@@ -173,6 +178,59 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         }
     }
     
+    /**
+     * Gets the imagemagick command string for the image crop options provided
+     * 
+     * @param imageResizeOptions    image resize options
+     * @return String               the imagemagick command options
+     */
+    private String getImageCropCommandOptions(ImageCropOptions cropOptions)
+    {
+        StringBuilder builder = new StringBuilder(32);
+        String gravity = cropOptions.getGravity();
+        if(gravity!=null)
+        {
+            builder.append("-gravity ");
+            builder.append(gravity);
+            builder.append(" ");
+        }
+        builder.append("-crop ");
+        int width = cropOptions.getWidth();
+        if (width > -1)
+        {
+            builder.append(width);
+        }
+        
+        int height = cropOptions.getHeight();
+        if (height > -1)
+        {
+            builder.append("x");
+            builder.append(height);
+        }
+        
+        if (cropOptions.isPercentageCrop())
+        {
+            builder.append("%");
+        }
+        appendOffset(builder, cropOptions.getXOffset());
+        appendOffset(builder, cropOptions.getYOffset());
+        builder.append(" +repage");
+        return builder.toString();
+    }
+
+    /**
+     * @param builder
+     * @param xOffset
+     */
+    private void appendOffset(StringBuilder builder, int xOffset)
+    {
+        if(xOffset>=0)
+        {
+            builder.append("+");
+        }
+        builder.append(xOffset);
+    }
+
     /**
      * Gets the imagemagick command string for the image resize options provided
      * 

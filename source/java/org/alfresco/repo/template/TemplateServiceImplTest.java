@@ -44,6 +44,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class TemplateServiceImplTest extends TestCase
 {
+    private static final String TEMPLATE_1 = "org/alfresco/repo/template/test_template1.ftl";
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private TemplateService templateService;
@@ -127,5 +128,4 @@ public class TemplateServiceImplTest extends TestCase
             });
     }
     
-    private static final String TEMPLATE_1 = "org/alfresco/repo/template/test_template1.ftl";
 }

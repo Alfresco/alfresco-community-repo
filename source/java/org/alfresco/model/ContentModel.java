@@ -264,7 +264,7 @@ public interface ContentModel
     static final QName ASSOC_MULTILINGUAL_CHILD = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlChild");
     static final QName ASPECT_MULTILINGUAL_DOCUMENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlDocument");
     static final QName ASPECT_MULTILINGUAL_EMPTY_TRANSLATION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlEmptyTranslation");
-    
+
     // Thumbnail Type
     static final QName TYPE_THUMBNAIL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnail");
     static final QName PROP_THUMBNAIL_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnailName");

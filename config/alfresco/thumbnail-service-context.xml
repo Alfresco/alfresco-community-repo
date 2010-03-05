@@ -36,11 +36,12 @@
     <!-- Thumbnail service security bean -->
     <bean id="ThumbnailService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
-    <!-- Thumbnail service implemenation bean -->
+    <!-- Thumbnail service implementation bean -->
     <bean id="thumbnailService" class="org.alfresco.repo.thumbnail.ThumbnailServiceImpl">
     	<property name="nodeService" ref="nodeService"/>
     	<property name="contentService" ref="contentService"/>
     	<property name="mimetypeMap" ref="mimetypeService"/>
+        <property name="renditionService" ref="renditionService" />
     	<property name="behaviourFilter" ref="policyBehaviourFilter" />
     	<property name="thumbnailRegistry" ref="thumbnailRegistry" />
     </bean>
@@ -48,96 +49,15 @@
     <!-- Thumbnail Register -->
     <bean id="thumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry">
     	<property name="contentService" ref="ContentService"/>
-    	<property name="thumbnailDefinitions">
-    		<list>
-    		
-    		   <!-- Small image thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-					<property name="name" value="medium" />
-					<property name="mimetype" value="image/jpeg"/>
-					<property name="transformationOptions">
-	    				<bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-	    					<property name="resizeOptions">
-	    						<bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-	    							<property name="width" value="100"/>
-	    							<property name="height" value="100"/>
-	    							<property name="maintainAspectRatio" value="true"/>
-	    							<property name="resizeToThumbnail" value="true" />
-	    						</bean>	
-	    					</property>
-	    				</bean>
-					</property>
-					<property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_medium.jpg" />
-				</bean>
-
-            <!-- Slingshot Document Library image thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-					<property name="name" value="doclib" />
-					<property name="mimetype" value="image/png"/>
-					<property name="transformationOptions">
-	    				<bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-	    					<property name="resizeOptions">
-	    						<bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-	    							<property name="width" value="100"/>
-	    							<property name="height" value="100"/>
-	    							<property name="maintainAspectRatio" value="true"/>
-	    							<property name="resizeToThumbnail" value="true" />
-	    						</bean>	
-	    					</property>
-	    				</bean>
-					</property>
-					<property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib.png" />
-				</bean>
-    			
-    			<!-- Web Preview thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-				   <property name="name" value="webpreview" />
-					<property name="mimetype" value="application/x-shockwave-flash"/>    					
-					<property name="transformationOptions">
-	    				<bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
-	    					<property name="flashVersion" value="9"/>
-	    				</bean>
-	    			</property>
-	    		</bean>
-    		
-             <!-- Image preview thumbnail options -->
-             <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                <property name="name" value="imgpreview" />
-                <property name="mimetype" value="image/png"/>
-                <property name="transformationOptions">
-                   <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                      <property name="resizeOptions">
-                         <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                            <property name="width" value="480"/>
-                            <property name="height" value="480"/>
-                            <property name="maintainAspectRatio" value="true"/>
-                            <property name="resizeToThumbnail" value="true" />
-                         </bean>
-                      </property>
-                   </bean>
-                </property>
-                <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
-             </bean>
-
-				<!-- User avatar image thumbnail options -->
-				<bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-					<property name="name" value="avatar" />
-					<property name="mimetype" value="image/png"/>
-					<property name="transformationOptions">
-	    				<bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-	    					<property name="resizeOptions">
-	    						<bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-	    							<property name="width" value="64"/>
-	    							<property name="height" value="64"/>
-	    							<property name="maintainAspectRatio" value="true"/>
-	    							<property name="resizeToThumbnail" value="true" />
-	    						</bean>	
-	    					</property>
-	    				</bean>
-					</property>
-					<property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar.png" />
-				</bean>
-    		</list>
+        <property name="renditionService" ref="renditionService" />
+    	<property name="thumbnails">
+    	   <list>
+              <value>medium</value>
+              <value>doclib</value>
+              <value>webpreview</value>
+              <value>imgpreview</value>
+              <value>avatar</value>
+    	   </list>
     	</property>
     </bean>    
     
@@ -156,25 +76,19 @@
     
     <!-- Update Thumbnail Action -->
     <bean id="update-thumbnail" class="org.alfresco.repo.thumbnail.UpdateThumbnailActionExecuter" parent="action-executer">
-      <property name="publicAction">
-         <value>false</value>
-      </property>
+        <property name="publicAction">
+           <value>false</value>
+        </property>
         <property name="nodeService">
             <ref bean="NodeService" />
+        </property>
+        <property name="renditionService">
+            <ref bean="RenditionService" />
         </property>
         <property name="thumbnailService">
             <ref bean="ThumbnailService" />
         </property>
     </bean> 
-    
-    <!-- Thumbnailed aspect -->
-    <bean id="thumbnailedAspect" class="org.alfresco.repo.thumbnail.ThumbnailedAspect" init-method="init">
-    	<property name="nodeService" ref="NodeService"/>
-    	<property name="dictionaryService" ref="DictionaryService"/>
-    	<property name="policyComponent" ref="policyComponent"/>
-    	<property name="actionService" ref="ActionService"/>
-    	<property name="thumbnailService" ref="ThumbnailService"/>
-    </bean>
     
     <!-- Thumbnail service script API -->    
     <bean id="thumbnailServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.thumbnail.script.ScriptThumbnailService">

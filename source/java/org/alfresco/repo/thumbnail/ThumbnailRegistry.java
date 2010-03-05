@@ -19,30 +19,43 @@
 package org.alfresco.repo.thumbnail;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Registry of all the thumbnail details available
  * 
  * @author Roy Wetherall
+ * @author Neil McErlean
  */
 public class ThumbnailRegistry
 {   
     /** Content service */
     private ContentService contentService;
     
-    /** Map of thumbnail defintion */
-    private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>(7);
+    /** Rendition service */
+    private RenditionService renditionService;
+    
+    private List<String> thumbnails;
+    
+    /** This flag indicates whether the thumbnail definitions have been lazily loaded or not. */
+    private boolean thumbnailDefinitionsInited = false;
+    
+    /** Map of thumbnail definition */
+    private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>();
     
     /** Cache to store mimetype to thumbnailDefinition mapping */
     private Map<String, List<ThumbnailDefinition>> mimetypeMap = new HashMap<String, List<ThumbnailDefinition>>(17);
-     
+    
     /**
      * Content service
      * 
@@ -54,36 +67,63 @@ public class ThumbnailRegistry
     }
     
     /**
-     * Add a number of thumbnail defintions
+     * Rendition service
      * 
-     * @param thumbnailDefinitions  list of thumbnail details
+     * @param renditionService    rendition service
      */
-    public void setThumbnailDefinitions(List<ThumbnailDefinition> thumbnailDefinitions)
+    public void setRenditionService(RenditionService renditionService)
     {
-        for (ThumbnailDefinition value : thumbnailDefinitions)
-        {
-            addThumbnailDefinition(value);
-        }
+        this.renditionService = renditionService;
+    }
+
+    public void setThumbnails(final List<String> thumbnails)
+    {
+    	this.thumbnails = thumbnails;
+        
+        // We'll not populate the data fields in the ThumbnailRegistry here, instead preferring
+        // to do it lazily later.
     }
     
     /**
-     * Get a list of all the thumbnail defintions
+     * Get a list of all the thumbnail definitions
      * 
-     * @return Collection<ThumbnailDefinition>  colleciton of thumbnail defintions
+     * @return Collection<ThumbnailDefinition>  collection of thumbnail definitions
      */
     public List<ThumbnailDefinition> getThumbnailDefinitions()
     {
+        if (thumbnailDefinitionsInited == false)
+        {
+            this.initThumbnailDefinitions();
+            thumbnailDefinitionsInited = true;
+        }
         return new ArrayList<ThumbnailDefinition>(this.thumbnailDefinitions.values());
     }
     
-    /**
-     * 
-     * @param mimetype
-     * @return
-     */
-    public List<ThumbnailDefinition> getThumnailDefintions(String mimetype)
+    private void initThumbnailDefinitions()
     {
-        List<ThumbnailDefinition> result = this.mimetypeMap.get(mimetype);;
+        ThumbnailRenditionConvertor thumbnailRenditionConvertor = new ThumbnailRenditionConvertor();
+        
+        for (String thumbnailDefinitionName : this.thumbnails)
+        {
+            QName qName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailDefinitionName);
+            RenditionDefinition rAction = renditionService
+                    .loadRenditionDefinition(qName);
+            
+            ThumbnailDefinition thDefn = thumbnailRenditionConvertor.convert(rAction);
+            
+            thumbnailDefinitions.put(thumbnailDefinitionName, thDefn);
+        }
+    }
+    
+    public List<ThumbnailDefinition> getThumbnailDefinitions(String mimetype)
+    {
+        if (thumbnailDefinitionsInited == false)
+        {
+            this.initThumbnailDefinitions();
+            thumbnailDefinitionsInited = true;
+        }
+
+        List<ThumbnailDefinition> result = this.mimetypeMap.get(mimetype);
         
         if (result == null)
         {
@@ -107,12 +147,28 @@ public class ThumbnailRegistry
     }
     
     /**
-     * Add a thumnail details
+     * 
+     * @param mimetype
+     * @return
+     * @deprecated Use {@link #getThumbnailDefinitions(String)} instead.
+     */
+    public List<ThumbnailDefinition> getThumnailDefintions(String mimetype)
+    {
+        return this.getThumbnailDefinitions(mimetype);
+    }
+    
+    /**
+     * Add a thumbnail details
      * 
      * @param thumbnailDetails  thumbnail details
      */
     public void addThumbnailDefinition(ThumbnailDefinition thumbnailDetails)
     {
+        if (thumbnailDefinitionsInited == false)
+        {
+            this.initThumbnailDefinitions();
+            thumbnailDefinitionsInited = true;
+        }
         String thumbnailName = thumbnailDetails.getName();
         if (thumbnailName == null)
         {
@@ -130,6 +186,11 @@ public class ThumbnailRegistry
      */
     public ThumbnailDefinition getThumbnailDefinition(String thumbnailName)
     {
+        if (thumbnailDefinitionsInited == false)
+        {
+            this.initThumbnailDefinitions();
+            thumbnailDefinitionsInited = true;
+        }
         return this.thumbnailDefinitions.get(thumbnailName);
     }
 }

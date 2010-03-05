@@ -98,7 +98,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
 	{
 		if (this.actionDefinition == null)
 		{
-			this.actionDefinition = new ActionDefinitionImpl(this.name);
+			this.actionDefinition = createActionDefinition(this.name);
 			((ActionDefinitionImpl)this.actionDefinition).setTitleKey(getTitleKey());
 			((ActionDefinitionImpl)this.actionDefinition).setDescriptionKey(getDescriptionKey());
 			((ActionDefinitionImpl)this.actionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
@@ -107,6 +107,18 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
             ((ActionDefinitionImpl)this.actionDefinition).setApplicableTypes(this.applicableTypes);
 		}
 		return this.actionDefinition;
+	}
+	
+	/**
+	 * This method returns an instance of an ActionDefinition implementation class. By default
+	 * this will be an {@link ActionDefinitionImpl}, but this could be overridden.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	protected ActionDefinition createActionDefinition(String name)
+	{
+	    return new ActionDefinitionImpl(name);
 	}
 	
 	/**

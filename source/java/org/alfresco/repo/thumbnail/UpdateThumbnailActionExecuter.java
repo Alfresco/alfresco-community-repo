@@ -27,20 +27,31 @@ import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Update thumbnail action executer.
  * 
- * NOTE:  This action is used to facilitate the async update of thumbnails.  It is not intended for genereral usage.
+ * NOTE:  This action is used to facilitate the async update of thumbnails.  It is not intended for general usage.
  * 
  * @author Roy Wetherall
+ * @author Neil McErlean
  */
 public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(UpdateThumbnailActionExecuter.class);
+
+    /** Rendition Service */
+    private RenditionService renditionService;
+    
     /** Thumbnail Service */
     private ThumbnailService thumbnailService;
     
@@ -52,6 +63,16 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
     public static final String PARAM_THUMBNAIL_NODE = "thumbnail-node";
     
+    /**
+     * Injects the rendition service.
+     * 
+     * @param renditionService the rendition service.
+     */
+    public void setRenditionService(RenditionService renditionService) 
+    {
+        this.renditionService = renditionService;
+    }
+
     /**
      * Set the thumbnail service
      * 
@@ -86,17 +107,17 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
         }
         
         if (this.nodeService.exists(thumbnailNodeRef) == true &&
-            ContentModel.TYPE_THUMBNAIL.equals(this.nodeService.getType(thumbnailNodeRef)) == true)
+                renditionService.isRendition(thumbnailNodeRef))
         {            
             // Get the thumbnail Name
-            String thumbnailName = (String)this.nodeService.getProperty(thumbnailNodeRef, ContentModel.PROP_THUMBNAIL_NAME);
+            ChildAssociationRef parent = renditionService.getSourceNode(thumbnailNodeRef);
+            String thumbnailName = parent.getQName().getLocalName();
             
             // Get the details of the thumbnail
             ThumbnailRegistry registry = this.thumbnailService.getThumbnailRegistry();
             ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
             if (details == null)
             {
-                // Throw exception 
                 throw new AlfrescoRuntimeException("The thumbnail name '" + thumbnailName + "' is not registered");
             }
             
@@ -121,5 +142,4 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));
         paramList.add(new ParameterDefinitionImpl(PARAM_THUMBNAIL_NODE, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_THUMBNAIL_NODE)));
     }
-
 }

@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Rendition Service -->
+
+   <bean id="RenditionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.rendition.RenditionService</value>
+      </property>
+      <property name="target">
+         <ref bean="renditionService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="RenditionService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref local="RenditionService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Rendition service transaction bean -->
+   <bean id="RenditionService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Rendition service security bean -->
+   <bean id="RenditionService_security"
+      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+   <!-- Rendition Service base bean -->
+	<bean id="renditionService" class="org.alfresco.repo.rendition.RenditionServiceImpl" >
+        <property name="actionService" ref="ActionService"/>
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="dictionaryService" ref="dictionaryService" />
+        <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
+	</bean>
+
+    <bean id="perform-rendition" class="org.alfresco.repo.rendition.PerformRenditionActionExecuter" parent="action-executer">
+       <property name="publicAction">
+          <value>false</value>
+       </property>
+       <property name="nodeService" ref="NodeService" />
+       <property name="actionService" ref="ActionService"/>
+       <property name="renditionService" ref="RenditionService" />
+       <property name="renditionLocationResolver" ref="renditionLocationResolver" />
+    </bean>
+
+    <bean id="renditionDefinitionPersister" class="org.alfresco.repo.rendition.RenditionDefinitionPersisterImpl" >
+        <property name="runtimeActionService" ref="actionService" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+	<bean id="renditionLocationResolver" class="org.alfresco.repo.rendition.StandardRenditionLocationResolverImpl" >
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+	</bean>
+
+
+   <!-- i18n -->
+
+   <bean id="renderingActionResourceBundles"
+      class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <!-- <value>alfresco.messages.rendition-service</value> -->
+            <value>alfresco.messages.rendition-config</value>
+         </list>
+      </property>
+   </bean>
+
+
+   <!-- Rendering Action executor beans -->
+
+   <bean id="baseRenderingAction" abstract="true" parent="action-executer"
+      class="org.alfresco.repo.rendition.executer.AbstractRenderingEngine">
+      <property name="defaultRenditionContentProp"
+         value="{http://www.alfresco.org/model/content/1.0}content" />
+      <property name="defaultRenditionNodeType"
+         value="{http://www.alfresco.org/model/content/1.0}content" />
+      <property name="mimetypeMap" ref="mimetypeService" />
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="contentService">
+         <ref bean="ContentService" />
+      </property>
+      <property name="applicableTypes">
+         <list>
+            <value>{http://www.alfresco.org/model/content/1.0}content</value>
+         </list>
+      </property>
+   </bean>
+
+   <!--  Rendering Engines -->
+   <bean id="reformat"
+      class="org.alfresco.repo.rendition.executer.ReformatRenderingEngine"
+      parent="baseRenderingAction">
+   </bean>
+
+   <bean id="imageRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.ImageRenderingEngine"
+      parent="baseRenderingAction">
+   </bean>
+
+   <bean id="templatingRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.TemplatingRenderingEngine"
+      parent="baseRenderingAction">
+      <property name="templateService">
+         <ref bean="templateService" />
+      </property>
+      <property name="repositoryHelper">
+         <ref bean="repositoryHelper" />
+      </property>
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry" />
+      </property>
+   </bean>
+
+   <bean id="compositeRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.CompositeRenderingEngine"
+      parent="baseRenderingAction">
+      <property name="actionService">
+         <ref bean="actionService" />
+      </property>
+   </bean>
+   
+   
+   <!-- Behaviours and policies for Renditions -->
+   
+   <bean id="renditionedAspect" class="org.alfresco.repo.rendition.RenditionedAspect" init-method="init">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="dictionaryService" ref="DictionaryService"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="renditionService" ref="RenditionService"/>
+   </bean>
+</beans>

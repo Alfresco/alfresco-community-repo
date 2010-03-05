@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.action.ParameterizedItem;
  * 
  * @author Roy Wetherall
  */
+@SuppressWarnings("serial")
 public abstract class ParameterizedItemImpl implements ParameterizedItem, Serializable
 {
 	/**

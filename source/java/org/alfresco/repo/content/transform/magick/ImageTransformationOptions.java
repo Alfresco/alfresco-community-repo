@@ -33,6 +33,9 @@ public class ImageTransformationOptions extends TransformationOptions
     /** Image resize options */
     private ImageResizeOptions resizeOptions;
     
+    /** Image crop options */
+    private ImageCropOptions cropOptions;
+    
     /**
      * Set the command string options
      * 
@@ -83,5 +86,21 @@ public class ImageTransformationOptions extends TransformationOptions
     	    .append("]");
     	
     	return msg.toString();
+    }
+    
+    /**
+     * @param cropOptions the cropOptions to set
+     */
+    public void setCropOptions(ImageCropOptions cropOptions)
+    {
+        this.cropOptions = cropOptions;
+    }
+    
+    /**
+     * @return the cropOptions
+     */
+    public ImageCropOptions getCropOptions()
+    {
+        return this.cropOptions;
     }
 }

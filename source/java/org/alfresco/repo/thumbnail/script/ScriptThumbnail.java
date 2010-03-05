@@ -18,19 +18,30 @@
  */
 package org.alfresco.repo.thumbnail.script;
 
-import org.alfresco.model.ContentModel;
+import java.util.List;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Scriptable;
 
 /**
  * @author Roy Wetherall
+ * @author Neil McErlean
  */
 public class ScriptThumbnail extends ScriptNode
 {
     private static final long serialVersionUID = 7854749986083635678L;
+
+    /** Logger */
+    private static Log logger = LogFactory.getLog(ScriptThumbnail.class);
 
     /**
      * Constructor
@@ -49,7 +60,25 @@ public class ScriptThumbnail extends ScriptNode
      */
     public void update()
     {
-        String name = (String)services.getNodeService().getProperty(nodeRef, ContentModel.PROP_THUMBNAIL_NAME);
+        List<ChildAssociationRef> parentRefs = services.getNodeService().getParentAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
+        // There should in fact only ever be one parent association of type rendition on any rendition node.
+        if (parentRefs.size() != 1)
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Node ")
+                .append(nodeRef)
+                .append(" has ")
+                .append(parentRefs.size())
+                .append(" rendition parents. Unable to update.");
+            if (logger.isWarnEnabled())
+            {
+                logger.warn(msg.toString());
+            }
+            throw new AlfrescoRuntimeException(msg.toString());
+        }
+        
+        String name = parentRefs.get(0).getQName().getLocalName();
+        
         ThumbnailDefinition def = services.getThumbnailService().getThumbnailRegistry().getThumbnailDefinition(name);
         services.getThumbnailService().updateThumbnail(this.nodeRef, def.getTransformationOptions());
     }

@@ -16,13 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.action;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionList;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -33,96 +34,106 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CompositeActionImpl extends ActionImpl implements CompositeAction
 {
-	/**
-	 * Serial version UID
-	 */
-	private static final long serialVersionUID = -5348203599304776812L;
-	
-	/**
-	 * The action list
-	 */
-	private List<Action> actions = new ArrayList<Action>();
-	
-	/**
-	 * Constructor
-	 * 
-	 * @param id  the action id
-	 */
-	public CompositeActionImpl(NodeRef nodeRef, String id)
-	{
-		super(nodeRef, id, CompositeActionExecuter.NAME);
-	}
+    /**
+     * Serial version UID
+     */
+    private static final long serialVersionUID = -5348203599304776812L;
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#hasActions()
-	 */
-	public boolean hasActions()
-	{
-		return (this.actions.isEmpty() == false);
-	}
+    private final ActionList<Action> actions = new ActionListImpl<Action>();
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#addAction(org.alfresco.service.cmr.action.Action)
-	 */
-	public void addAction(Action action)
-	{
-		this.actions.add(action);
-	}
+    /**
+     * Constructor
+     * 
+     * @param id the action id
+     */
+    public CompositeActionImpl(NodeRef nodeRef, String id)
+    {
+        super(nodeRef, id, CompositeActionExecuter.NAME);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#addAction(int, org.alfresco.service.cmr.action.Action)
-	 */
-	public void addAction(int index, Action action)
-	{
-		this.actions.add(index, action);
-	}
+    /**
+     * @param action
+     * @see org.alfresco.service.cmr.action.ActionList#addAction(org.alfresco.service.cmr.action.Action)
+     */
+    public void addAction(Action action)
+    {
+        this.actions.addAction(action);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#setAction(int, org.alfresco.service.cmr.action.Action)
-	 */
-	public void setAction(int index, Action action)
-	{
-		this.actions.set(index, action);
-	}
+    /**
+     * @param index
+     * @param action
+     * @see org.alfresco.service.cmr.action.ActionList#addAction(int,
+     *      org.alfresco.service.cmr.action.Action)
+     */
+    public void addAction(int index, Action action)
+    {
+        this.actions.addAction(index, action);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#indexOfAction(org.alfresco.service.cmr.action.Action)
-	 */
-	public int indexOfAction(Action action)
-	{
-		return this.actions.indexOf(action);
-	}
+    /**
+     * @param index
+     * @return
+     * @see org.alfresco.service.cmr.action.ActionList#getAction(int)
+     */
+    public Action getAction(int index)
+    {
+        return this.actions.getAction(index);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#getActions()
-	 */
-	public List<Action> getActions()
-	{
-		return this.actions;
-	}
+    /**
+     * @return
+     * @see org.alfresco.service.cmr.action.ActionList#getActions()
+     */
+    public List<Action> getActions()
+    {
+        return this.actions.getActions();
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#getAction(int)
-	 */
-	public Action getAction(int index)
-	{
-		return this.actions.get(index);
-	}
+    /**
+     * @return
+     * @see org.alfresco.service.cmr.action.ActionList#hasActions()
+     */
+    public boolean hasActions()
+    {
+        return this.actions.hasActions();
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#removeAction(org.alfresco.service.cmr.action.Action)
-	 */
-	public void removeAction(Action action)
-	{
-		this.actions.remove(action);
-	}
+    /**
+     * @param action
+     * @return
+     * @see org.alfresco.service.cmr.action.ActionList#indexOfAction(org.alfresco.service.cmr.action.Action)
+     */
+    public int indexOfAction(Action action)
+    {
+        return this.actions.indexOfAction(action);
+    }
 
-	/**
-	 * @see org.alfresco.service.cmr.action.CompositeAction#removeAllActions()
-	 */
-	public void removeAllActions()
-	{
-		this.actions.clear();
-	}
+    /**
+     * @param action
+     * @see org.alfresco.service.cmr.action.ActionList#removeAction(org.alfresco.service.cmr.action.Action)
+     */
+    public void removeAction(Action action)
+    {
+        this.actions.removeAction(action);
+    }
 
+    /**
+     * @see org.alfresco.service.cmr.action.ActionList#removeAllActions()
+     */
+    public void removeAllActions()
+    {
+        this.actions.removeAllActions();
+    }
+
+    /**
+     * @param index
+     * @param action
+     * @see org.alfresco.service.cmr.action.ActionList#setAction(int,
+     *      org.alfresco.service.cmr.action.Action)
+     */
+    public void setAction(int index, Action action)
+    {
+        this.actions.setAction(index, action);
+    }
 }

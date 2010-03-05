@@ -19,21 +19,24 @@
 package org.alfresco.repo.thumbnail;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
+import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -42,14 +45,14 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * @author Roy Wetherall
+ * @author Neil McErlean
  */
 public class ThumbnailServiceImpl implements ThumbnailService
 {
@@ -79,6 +82,19 @@ public class ThumbnailServiceImpl implements ThumbnailService
     /** Thumbnail registry */
     private ThumbnailRegistry thumbnailRegistry;
     
+    /** Rendition service */
+    private RenditionService renditionService;
+    
+    /**
+     * Set the rendition service.
+     * 
+     * @param renditionService
+     */
+    public void setRenditionService(RenditionService renditionService)
+    {
+        this.renditionService = renditionService;
+    }
+
     /**
      * Set the node service
      * 
@@ -168,118 +184,89 @@ public class ThumbnailServiceImpl implements ThumbnailService
                 logger.debug("Creating thumbnail: There is already a thumbnail with the name '" + thumbnailName + "' (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
             }
             
-            // We can't continue because there is already an thumbnail with the given name for that content property
+            // We can't continue because there is already a thumbnail with the given name for that content property
             throw new ThumbnailException(ERR_DUPLICATE_NAME);
         }
         
-        NodeRef thumbnail = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+        ChildAssociationRef thumbnailRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<ChildAssociationRef>()
         {
-            public NodeRef doWork() throws Exception
+            public ChildAssociationRef doWork() throws Exception
             {
-                NodeRef thumbnail;
-                
-                // Apply the thumbnailed aspect to the node if it doesn't already have it
-                if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == false)
-                {
-                    // Ensure we do not update the 'modifier' due to thumbnail addition
-                    behaviourFilter.disableBehaviour(node, ContentModel.ASPECT_AUDITABLE);
-                    try
-                    {
-                        nodeService.addAspect(node, ContentModel.ASPECT_THUMBNAILED, null);
-                    }
-                    finally
-                    {
-                        behaviourFilter.enableBehaviour(node, ContentModel.ASPECT_AUDITABLE);
-                    }
-                }
-                
+                // Need a variable scoped to this inner class in order to assign a new value to it.
+                String localThumbnailName = thumbnailName;
                 // Get the name of the thumbnail and add to properties map
-                String thumbName = thumbnailName;
-                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(4);
-                if (thumbName == null || thumbName.length() == 0)
+                if (localThumbnailName == null || localThumbnailName.length() == 0)
                 {
-                    thumbName = GUID.generate();
+                    localThumbnailName = GUID.generate();
                 }
-                else
-                {
-                    String thumbnailFileName = generateThumbnailFileName(thumbName, mimetype);
-                    properties.put(ContentModel.PROP_NAME, thumbnailFileName);
-                }
-                properties.put(ContentModel.PROP_THUMBNAIL_NAME, thumbName);
                 
-                // Add the name of the content property
-                properties.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, contentProperty);
-                
-                // See if parent association details have been specified for the thumbnail
-                if (assocDetails == null)
-                {
-                    // Create the thumbnail using the thumbnails child association
-                    thumbnail = nodeService.createNode(
-                            node, 
-                            ContentModel.ASSOC_THUMBNAILS,
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbName), 
-                            ContentModel.TYPE_THUMBNAIL, 
-                            properties).getChildRef();
-                }
-                else
-                {
-                    // Create the thumbnail using the specified parent assoc details
-                    thumbnail = nodeService.createNode(
-                            assocDetails.getParent(),
-                            assocDetails.getAssociationType(),
-                            assocDetails.getAssociationName(),
-                            ContentModel.TYPE_THUMBNAIL,
-                            properties).getChildRef();
+                // We're prepending the cm namespace here.
+                QName thumbnailQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, localThumbnailName);
 
-                    // Associate the new thumbnail to the source
-                    nodeService.addChild(
-                            node, 
-                            thumbnail, 
-                            ContentModel.ASSOC_THUMBNAILS, 
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbName));
-                }
-                
-                // Get the content reader and writer for content nodes
-                ContentReader reader = contentService.getReader(node, contentProperty);
-                ContentWriter writer = contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(mimetype);
-                writer.setEncoding(reader.getEncoding());
-                
-                // Catch the failure to create the thumbnail
-                if (contentService.isTransformable(reader, writer, transformationOptions) == false)
+                RenditionDefinition renderingAction = renditionService.loadRenditionDefinition(thumbnailQName);
+                if (renderingAction == null)
                 {
-                    if (logger.isDebugEnabled() == true)
-                    {
-                        logger.debug("Creating thumbnail: There is no transformer to generate the thumbnail required (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
-                    }
+                    // If the provided thumbnailName does not map to a built-in rendition definition
+                    // then we must create a dynamic rendition definition for this thumbnail.
+                    // To do this we must have a renderingEngineName.
+                    //
+                    // The transformation will either be a imageRenderingEngine or a reformat (pdf2swf)
+                    String renderingEngineName = getRenderingEngineNameFor(transformationOptions);
 
-                    // Throw exception indicating that the thumbnail could not be created
-                    throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
+                    renderingAction = renditionService.createRenditionDefinition(thumbnailQName, renderingEngineName);
                 }
-                else
+                Map<String, Serializable> params = new ThumbnailRenditionConvertor().convert(transformationOptions, assocDetails);
+                for (String key : params.keySet())
                 {
-                    // Do the thumbnail transformation
-                    contentService.transform(reader, writer, transformationOptions);
+                    renderingAction.setParameterValue(key, params.get(key));
                 }
+
                 
-                return thumbnail;
+                ChildAssociationRef chAssRef = null;
+                try
+                {
+                    chAssRef = renditionService.render(node, renderingAction);
+                } catch (RenditionServiceException rsx)
+                {
+                    throw new ThumbnailException(rsx.getMessage(), rsx);
+                }
+
+                return chAssRef;
             }
         }, AuthenticationUtil.getSystemUserName());
         
         // Return the created thumbnail
-        return thumbnail;
+        return getThumbnailNode(thumbnailRef);
+    }
+    
+    private String getRenderingEngineNameFor(TransformationOptions options)
+    {
+        if (options instanceof ImageTransformationOptions)
+        {
+            return ImageRenderingEngine.NAME;
+        }
+        else if (options instanceof SWFTransformationOptions)
+        {
+            return ReformatRenderingEngine.NAME;
+        }
+        else
+        {
+            // TODO What can we do here? Can we treat this as an error?
+            // Isn't this a 'standard' TransformationOptions?
+            return "";
+        }
     }
 
     /**
-     * Generates the thumbnail name from the name and destination mimertype
+     * This method returns the NodeRef for the thumbnail, using the ChildAssociationRef
+     * that links the sourceNode to its associated Thumbnail node.
      * 
-     * @param  thumbnailName         the thumbnail name
-     * @param  destinationMimetype   the destination name 
-     * @return String                the thumbnail file name
+     * @param thumbnailRef the ChildAssociationRef containing the child NodeRef.
+     * @return the NodeRef of the thumbnail itself.
      */
-    private String generateThumbnailFileName(String thumbnailName, String destinationMimetype)
+    public NodeRef getThumbnailNode(ChildAssociationRef thumbnailRef)
     {
-        return thumbnailName + "." + this.mimetypeMap.getExtension(destinationMimetype);
+        return thumbnailRef.getChildRef();
     }
 
     /**
@@ -287,75 +274,61 @@ public class ThumbnailServiceImpl implements ThumbnailService
      */
     public void updateThumbnail(final NodeRef thumbnail, final TransformationOptions transformationOptions)
     {
+        // Seeing as how this always gives its own options, maybe this should be a delete and recreate?
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Updating thumbnail (thumbnail=" + thumbnail.toString() + ")");
         }
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        // First check that we are dealing with a rendition object
+        if (renditionService.isRendition(thumbnail))
         {
-            public Object doWork() throws Exception
+            // Get the node that is the source of the thumbnail
+            ChildAssociationRef parentAssoc = renditionService.getSourceNode(thumbnail);
+            
+            if (parentAssoc == null)
             {
-                // First check that we are dealing with a thumbnail
-                if (ContentModel.TYPE_THUMBNAIL.equals(nodeService.getType(thumbnail)) == true)
+                if (logger.isDebugEnabled() == true)
                 {
-                    // Get the node that is the source of the thumbnail
-                    NodeRef node = null;
-                    List<ChildAssociationRef> parents = nodeService.getParentAssocs(thumbnail, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
-                    if (parents.size() == 0)
-                    {
-                        if (logger.isDebugEnabled() == true)
-                        {
-                            logger.debug("Updating thumbnail: The thumbnails parent cannot be found (thumbnail=" + thumbnail.toString() + ")");
-                        }
-
-                        throw new ThumbnailException(ERR_NO_PARENT);
-                    }
-                    else
-                    {
-                        node = parents.get(0).getParentRef();
-                    }
-                    
-                    // Get the content property
-                    QName contentProperty = (QName)nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT_PROPERTY_NAME);
-                    
-                    // Get the reader and writer            
-                    ContentReader reader = contentService.getReader(node, contentProperty);
-                    ContentWriter writer = contentService.getWriter(thumbnail, ContentModel.PROP_CONTENT, true);
-                    
-                    // Set the basic detail of the transformation options
-                    transformationOptions.setSourceNodeRef(node);
-                    transformationOptions.setSourceContentProperty(contentProperty);
-                    transformationOptions.setTargetNodeRef(thumbnail);
-                    transformationOptions.setTargetContentProperty(ContentModel.PROP_CONTENT);
-                    
-                    // Catch the failure to create the thumbnail
-                    if (contentService.isTransformable(reader, writer, transformationOptions) == false)
-                    {
-                        if (logger.isDebugEnabled() == true)
-                        {
-                            logger.debug("Updating thumbnail: there is not transformer to update the thumbnail with (thumbnail=" + thumbnail.toString() + ")");
-                        }
-
-                        // Throw exception indicating that the thumbnail could not be created
-                        throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
-                    }
-                    else
-                    {
-                        // Do the thumbnail transformation
-                        contentService.transform(reader, writer, transformationOptions);
-                    }
+                    logger.debug("Updating thumbnail: The thumbnails parent cannot be found (thumbnail=" + thumbnail.toString() + ")");
                 }
-                else
-                {
-                    if (logger.isDebugEnabled() == true)
-                    {
-                        logger.debug("Updating thumbnail: cannot update a thumbnail node that isn't the correct thumbnail type (thumbnail=" + thumbnail.toString() + ")");
-                    }
-                }
-                return null;
+                throw new ThumbnailException(ERR_NO_PARENT);
             }
-        }, AuthenticationUtil.getSystemUserName());
+            
+            final QName renditionAssociationName = parentAssoc.getQName();
+            NodeRef sourceNode = parentAssoc.getParentRef();
+
+            // Get the content property
+            QName contentProperty = (QName)nodeService.getProperty(thumbnail, ContentModel.PROP_CONTENT_PROPERTY_NAME);
+
+            // Set the basic detail of the transformation options
+            transformationOptions.setSourceNodeRef(sourceNode);
+            transformationOptions.setSourceContentProperty(contentProperty);
+            transformationOptions.setTargetContentProperty(ContentModel.PROP_CONTENT);
+
+            // Do the thumbnail transformation
+            RenditionDefinition rendDefn = renditionService.loadRenditionDefinition(renditionAssociationName);
+            if (rendDefn == null)
+            {
+                String renderingEngineName = getRenderingEngineNameFor(transformationOptions);
+
+                rendDefn = renditionService.createRenditionDefinition(parentAssoc.getQName(), renderingEngineName);
+            }
+            Map<String, Serializable> params = new ThumbnailRenditionConvertor().convert(transformationOptions, null);
+            for (String key : params.keySet())
+            {
+                rendDefn.setParameterValue(key, params.get(key));
+            }
+            
+            renditionService.render(sourceNode, rendDefn);
+        }
+        else
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Updating thumbnail: cannot update a thumbnail node that isn't the correct thumbnail type (thumbnail=" + thumbnail.toString() + ")");
+            }
+        }
     }
 
     /**
@@ -363,8 +336,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
      */
     public NodeRef getThumbnailByName(NodeRef node, QName contentProperty, String thumbnailName)
     {
-        NodeRef thumbnail = null;
-        
         //
         // NOTE:
         //
@@ -377,21 +348,21 @@ public class ThumbnailServiceImpl implements ThumbnailService
             logger.debug("Getting thumbnail by name (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; thumbnailName=" + thumbnailName + ")");
         }
         
-        // Check that the node has the thumbnailed aspect applied
-        if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)
+        // Thumbnails have a cm: prefix.
+        QName namespacedThumbnailName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailName);
+        
+        ChildAssociationRef existingRendition = renditionService.getRenditionByName(node, namespacedThumbnailName);
+        NodeRef thumbnail = null;
+        
+        // Check the child to see if it matches the content property we are concerned about.
+        // We can assume there will only ever be one per content property since createThumbnail enforces this.
+        if (existingRendition != null)
         {
-            // Get all the thumbnails that match the thumbnail name
-            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(node, ContentModel.ASSOC_THUMBNAILS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailName));
-            for (ChildAssociationRef assoc : assocs)
+            NodeRef child = existingRendition.getChildRef();
+            Serializable contentPropertyName = this.nodeService.getProperty(child, ContentModel.PROP_CONTENT_PROPERTY_NAME);
+            if (contentProperty.equals(contentPropertyName) == true)
             {
-                // Check the child to see if it matches the content property we are concerned about.
-                // We can assume there will only ever be one per content property since createThumbnail enforces this.
-                NodeRef child = assoc.getChildRef();
-                if (contentProperty.equals(this.nodeService.getProperty(child, ContentModel.PROP_CONTENT_PROPERTY_NAME)) == true)
-                {
-                    thumbnail = child;
-                    break;
-                }
+                thumbnail = child;
             }
         }
         
@@ -417,24 +388,21 @@ public class ThumbnailServiceImpl implements ThumbnailService
             logger.debug("Getting thumbnails (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
         }
         
-        // Check that the node has the thumbnailed aspect applied
-        if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)
+        List<ChildAssociationRef> renditions = this.renditionService.getRenditions(node);
+        
+        for (ChildAssociationRef assoc : renditions)
         {
-            // Get all the thumbnails that match the thumbnail name
-            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(node, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
+            // Check the child to see if it matches the content property we are concerned about.
+            // We can assume there will only ever be one per content property since createThumbnail enforces this.
+            NodeRef child = assoc.getChildRef();
+            if (contentProperty.equals(this.nodeService.getProperty(child, ContentModel.PROP_CONTENT_PROPERTY_NAME)) == true &&
+                matchMimetypeOptions(child, mimetype, options) == true)
             {
-                // Check the child to see if it matches the content property we are concerned about.
-                // We can assume there will only ever be one per content property since createThumbnail enforces this.
-                NodeRef child = assoc.getChildRef();
-                if (contentProperty.equals(this.nodeService.getProperty(child, ContentModel.PROP_CONTENT_PROPERTY_NAME)) == true &&
-                    matchMimetypeOptions(child, mimetype, options) == true)
-                {
-                    thumbnails.add(child);
-                }
+                thumbnails.add(child);
             }
         }
         
+        //TODO Ensure this doesn't return non-thumbnail renditions.
         return thumbnails;
     }
     

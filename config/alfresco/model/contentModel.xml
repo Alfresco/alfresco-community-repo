@@ -417,27 +417,7 @@
             <aspect>sys:localized</aspect>
          </mandatory-aspects>
       </type>
-      
-      <!-- Thumbnail content type -->
-      <type name="cm:thumbnail">
-	     <title>Thumbnail</title>
-		 <parent>cm:content</parent>
-		 <archive>true</archive>
-		 <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
-		 <properties>     
-		    <property name="cm:thumbnailName">
-		        <title>Thumbnail Name</title>
-			    <type>d:text</type>
-			    <mandatory>false</mandatory>
-		    </property>     
-		    <property name="cm:contentPropertyName">
-		        <title>Thumbnailed Content Property Name</title>
-			    <type>d:qname</type>
-			    <mandatory>true</mandatory>
-		    </property>   		       
-		 </properties>
-		 </type>
-            
+
    </types>
    
    
@@ -1008,32 +988,6 @@
          </mandatory-aspects>
       </aspect>
       
-      <!-- Thumbnailed aspect relates a content node to it's thumbnails -->
-      <aspect name="cm:thumbnailed">
-         <title>Thumbnailed</title>
-         <properties>         	   
-            <property name="cm:automaticUpdate">
-               <title>Automatic Update</title>
-               <type>d:boolean</type>
-               <mandatory>true</mandatory>
-               <default>true</default>
-            </property> 
-         </properties>
-         <associations>
-             <child-association name="cm:thumbnails">
-                 <source>
-	                <mandatory>false</mandatory>
-	                <many>true</many>
-                 </source>
-                 <target>
-	                <class>cm:thumbnail</class>
-	                <mandatory>false</mandatory>
-	                <many>true</many>
-                 </target>
-             </child-association>
-         </associations>
-      </aspect>
-
       <aspect name="cm:storeSelector">
          <title>ContentStore Selector</title>
          <properties>
@@ -1093,7 +1047,6 @@
             </property>
          </properties>
       </aspect>
-      
    </aspects>
 
 </model>

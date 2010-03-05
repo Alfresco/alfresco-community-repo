@@ -88,6 +88,9 @@ public interface NamespaceService extends NamespacePrefixResolver
     /** Alfresco Forums Prefix */
     static final String FORUMS_MODEL_PREFIX = "fm";
     
+    /** Rendition Model URI */
+    static final String RENDITION_MODEL_1_0_URI = "http://www.alfresco.org/model/rendition/1.0";
+
     /** Alfresco View Namespace URI */
     static final String REPOSITORY_VIEW_1_0_URI = "http://www.alfresco.org/view/repository/1.0";
     

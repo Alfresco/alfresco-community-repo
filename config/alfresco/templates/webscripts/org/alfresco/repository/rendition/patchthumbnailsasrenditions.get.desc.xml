@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>Thumbnail to Rendition Service optional patch.</shortname>
+   <description><![CDATA[This webscript applies a patch which brings pre-3.3 thumbnail content up to date
+   with the RenditionService in Alfresco 3.3. It searches for all nodes of type cm:thumbnail and
+   applies the appropriate rendition aspect (rn:hiddenRendition or rn:visibleRendition) if not already there.
+   If this patch is not applied, thumbnails should continue to work as before but searches
+   for nodes which are subclasses of rn:rendition will not return thumbnails created against
+   a 3.2 server.
+  ]]></description>
+   <url>/renditions/patchthumbnailsasrenditions</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

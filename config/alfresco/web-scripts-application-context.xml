@@ -435,6 +435,14 @@
       <property name="authenticationService" ref="authenticationService"/>
    </bean>
    
+   <!-- Patch webscript for RenditionService -->
+   <bean id="webscript.org.alfresco.repository.rendition.patchthumbnailsasrenditions.get"
+         class="org.alfresco.repo.web.scripts.rendition.patch.PatchThumbnailsAsRenditionsGet" parent="webscript">
+      <property name="nodeService" ref="NodeService" />
+      <property name="renditionService" ref="RenditionService" />
+      <property name="searchService" ref="SearchService" />
+   </bean>
+   
    
    <!--                            -->
    <!-- Activity Feed Web Scripts  -->

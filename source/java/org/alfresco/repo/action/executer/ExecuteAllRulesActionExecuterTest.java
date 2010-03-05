@@ -21,6 +21,10 @@ package org.alfresco.repo.action.executer;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,6 +53,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     /** The action service */
     private ActionService actionService;
     
+    private RetryingTransactionHelper transactionHelper;
+    
     /** The store reference */
     private StoreRef testStoreRef;
     
@@ -70,6 +76,7 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         this.ruleService = (RuleService)this.applicationContext.getBean("ruleService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
+        transactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
@@ -90,21 +97,32 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     public void testExecution()
     {      
         // Create a folder and put a couple of documents in it
-        NodeRef folder = this.nodeService.createNode(
+        final NodeRef folder = this.nodeService.createNode(
             this.rootNodeRef,
             ContentModel.ASSOC_CHILDREN,
             QName.createQName("{test}folderOne"),
             ContentModel.TYPE_FOLDER).getChildRef();
-        NodeRef doc1 = this.nodeService.createNode(
+        final NodeRef doc1 = this.nodeService.createNode(
                 folder,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CONTAINS,
                 QName.createQName("{test}docOne"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        NodeRef doc2 = this.nodeService.createNode(
+        final NodeRef doc2 = this.nodeService.createNode(
                 folder,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CONTAINS,
                 QName.createQName("{test}docTwo"),
                 ContentModel.TYPE_CONTENT).getChildRef();
+        final NodeRef folder2 = this.nodeService.createNode(
+                folder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}folderTwo"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        final NodeRef doc3 = this.nodeService.createNode(
+                folder2,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}docThree"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        
         
         // Add a couple of rules to the folder
         Rule rule1 = new Rule();
@@ -121,11 +139,23 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         rule2.setAction(action2);
         this.ruleService.saveRule(folder, rule2);
         
+        Rule rule3 = new Rule();
+        rule3.setRuleType(RuleType.INBOUND);
+        Action action3 = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action3.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_TITLED);
+        rule3.setAction(action3);
+        this.ruleService.saveRule(folder2, rule3);
+        
         // Check the the docs don't have the aspects yet
         assertFalse(this.nodeService.hasAspect(doc1, ContentModel.ASPECT_VERSIONABLE));
         assertFalse(this.nodeService.hasAspect(doc1, ContentModel.ASPECT_CLASSIFIABLE));
+        assertFalse(this.nodeService.hasAspect(doc1, ContentModel.ASPECT_TITLED));
         assertFalse(this.nodeService.hasAspect(doc2, ContentModel.ASPECT_VERSIONABLE));
         assertFalse(this.nodeService.hasAspect(doc2, ContentModel.ASPECT_CLASSIFIABLE));
+        assertFalse(this.nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
+        assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_VERSIONABLE));
+        assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_CLASSIFIABLE));
+        assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_TITLED));
         
         assertTrue(this.nodeService.exists(folder));
         
@@ -133,9 +163,81 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
         this.executer.execute(action, folder);
         
-        assertTrue(this.nodeService.hasAspect(doc1, ContentModel.ASPECT_VERSIONABLE));
-        assertTrue(this.nodeService.hasAspect(doc1, ContentModel.ASPECT_CLASSIFIABLE));
-        assertTrue(this.nodeService.hasAspect(doc2, ContentModel.ASPECT_VERSIONABLE));
-        assertTrue(this.nodeService.hasAspect(doc2, ContentModel.ASPECT_CLASSIFIABLE));
+        setComplete();
+        endTransaction();
+        
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                assertTrue(nodeService.hasAspect(doc1, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue(nodeService.hasAspect(doc1, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
+                assertTrue(nodeService.hasAspect(doc2, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue(nodeService.hasAspect(doc2, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_VERSIONABLE));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_TITLED));
+                
+                clearAspects(doc1);
+                clearAspects(doc2);
+                clearAspects(doc3);
+                
+                return null;
+            }                 
+        });   
+        
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                assertFalse(nodeService.hasAspect(doc1, ContentModel.ASPECT_VERSIONABLE));
+                assertFalse(nodeService.hasAspect(doc1, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc1, ContentModel.ASPECT_TITLED));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_VERSIONABLE));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_VERSIONABLE));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_TITLED));
+                                
+                // Execute the action
+                ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
+                action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, Boolean.TRUE);
+                executer.execute(action, folder);
+                
+                return null;
+            }                 
+        });
+        
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                assertTrue(nodeService.hasAspect(doc1, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue(nodeService.hasAspect(doc1, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
+                assertTrue(nodeService.hasAspect(doc2, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue(nodeService.hasAspect(doc2, ContentModel.ASPECT_CLASSIFIABLE));
+                assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_VERSIONABLE));
+                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_CLASSIFIABLE));
+                assertTrue(nodeService.hasAspect(doc3, ContentModel.ASPECT_TITLED));
+                
+                clearAspects(doc1);
+                clearAspects(doc2);
+                clearAspects(doc3);
+                
+                return null;
+            }                 
+        }); 
+    }
+    
+    private void clearAspects(NodeRef nodeRef)
+    {
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE);
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TITLED);
     }
 }

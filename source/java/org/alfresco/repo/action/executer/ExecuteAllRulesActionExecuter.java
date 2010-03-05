@@ -24,7 +24,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -33,6 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This action executes all rules present on the actioned upon node 
@@ -46,6 +46,7 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
      */
 	public static final String NAME = "execute-all-rules";
     public static final String PARAM_EXECUTE_INHERITED_RULES = "execute-inherited-rules";
+    public static final String PARAM_RUN_ALL_RULES_ON_CHILDREN = "run-all-rules-on-children";
 	
 	/**
 	 * The node service
@@ -61,11 +62,6 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
      * The runtime rule service
      */
     private RuntimeRuleService runtimeRuleService;
-    
-    /**
-     * The action service
-     */
-    private ActionService actionService;
     
     /** The dictionary Service */
     private DictionaryService dictionaryService;
@@ -99,16 +95,6 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     {
        this.runtimeRuleService = runtimeRuleService;
     }
-    
-    /**
-     * Set the action service
-     * 
-     * @param actionService     the action service
-     */
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
 
     /**
      * Sets the dictionary service
@@ -135,34 +121,49 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                 includeInherited = includeInheritedValue.booleanValue();
             }
             
-		      // Get the rules
-            List<Rule> rules = this.ruleService.getRules(actionedUponNodeRef, includeInherited);
+            boolean runAllChildren = false;
+            Boolean runAllChildrenValue = (Boolean)ruleAction.getParameterValue(PARAM_RUN_ALL_RULES_ON_CHILDREN);
+            if (runAllChildrenValue != null)
+            {
+                runAllChildren = runAllChildrenValue.booleanValue();
+            }
+            
+		    // Get the rules
+            List<Rule> rules = ruleService.getRules(actionedUponNodeRef, includeInherited);
             if (rules != null && rules.isEmpty() == false)
             {
                 // Get the child nodes for the actioned upon node
-                List<ChildAssociationRef> children = this.nodeService.getChildAssocs(actionedUponNodeRef);
+                List<ChildAssociationRef> children = nodeService.getChildAssocs(actionedUponNodeRef);
                 for (ChildAssociationRef childAssoc : children)
                 {
                     // Get the child node reference
                     NodeRef child = childAssoc.getChildRef();
                     
                     // Only execute rules on non-system folders
-                    if (this.dictionaryService.isSubClass(this.nodeService.getType(child), ContentModel.TYPE_SYSTEM_FOLDER) == false)
+                    QName childType = nodeService.getType(child);
+                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                     {
                         for (Rule rule : rules)
                         {       
-                           // Only reapply rules that are enabled
+                           // Only re-apply rules that are enabled
                            if (rule.getRuleDisabled() == false)
                            {
                                Action action = rule.getAction();
                                if (action != null)
                                {
-                                   //this.actionService.executeAction(action, child);
-                                  this.runtimeRuleService.addRulePendingExecution(actionedUponNodeRef, child, rule);
+                                  runtimeRuleService.addRulePendingExecution(actionedUponNodeRef, child, rule);
                                }
                            }
                         }
-                    }
+                        
+                        // If the child is a folder and we have asked to run rules on children
+                        if (runAllChildren == true &&
+                            dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
+                        {
+                            // Recurse with the child folder
+                            executeImpl(ruleAction, child);
+                        }
+                    }                    
                 }
             }
 		}
@@ -175,5 +176,6 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_EXECUTE_INHERITED_RULES, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_EXECUTE_INHERITED_RULES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_RUN_ALL_RULES_ON_CHILDREN, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_RUN_ALL_RULES_ON_CHILDREN)));
     }
 }

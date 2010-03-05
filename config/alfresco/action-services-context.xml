@@ -554,9 +554,6 @@
         <property name="nodeService">
             <ref bean="NodeService" />
         </property>
-        <property name="actionService">
-            <ref bean="ActionService" />
-        </property>
         <property name="ruleService">
             <ref bean="RuleService" />
         </property>

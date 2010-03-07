@@ -46,19 +46,24 @@
     	<property name="thumbnailRegistry" ref="thumbnailRegistry" />
     </bean>
     
+    <!-- This bean is responsible for the conversion of thumbnail definitions to
+     rendition definitions and vice versa -->
+    <bean id ="thumbnailRenditionConvertor" class="org.alfresco.repo.thumbnail.ThumbnailRenditionConvertor" />
+    
     <!-- Thumbnail Register -->
     <bean id="thumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry">
-    	<property name="contentService" ref="ContentService"/>
+        <property name="contentService" ref="ContentService"/>
         <property name="renditionService" ref="renditionService" />
     	<property name="thumbnails">
-    	   <list>
+            <list>
               <value>medium</value>
               <value>doclib</value>
               <value>webpreview</value>
               <value>imgpreview</value>
               <value>avatar</value>
-    	   </list>
-    	</property>
+            </list>
+        </property>
+        <property name="thumbnailRenditionConvertor" ref="thumbnailRenditionConvertor" />
     </bean>    
     
     <!-- Create Thumbnail Action -->

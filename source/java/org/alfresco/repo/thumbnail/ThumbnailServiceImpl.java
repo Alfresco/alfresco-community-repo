@@ -215,7 +215,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
 
                     renderingAction = renditionService.createRenditionDefinition(thumbnailQName, renderingEngineName);
                 }
-                Map<String, Serializable> params = new ThumbnailRenditionConvertor().convert(transformationOptions, assocDetails);
+                Map<String, Serializable> params = thumbnailRegistry.getThumbnailRenditionConvertor().convert(transformationOptions, assocDetails);
                 for (String key : params.keySet())
                 {
                     renderingAction.setParameterValue(key, params.get(key));
@@ -314,7 +314,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
 
                 rendDefn = renditionService.createRenditionDefinition(parentAssoc.getQName(), renderingEngineName);
             }
-            Map<String, Serializable> params = new ThumbnailRenditionConvertor().convert(transformationOptions, null);
+            Map<String, Serializable> params = thumbnailRegistry.getThumbnailRenditionConvertor().convert(transformationOptions, null);
             for (String key : params.keySet())
             {
                 rendDefn.setParameterValue(key, params.get(key));

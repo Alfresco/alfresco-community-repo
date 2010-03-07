@@ -55,6 +55,19 @@ public class ThumbnailRegistry
     
     /** Cache to store mimetype to thumbnailDefinition mapping */
     private Map<String, List<ThumbnailDefinition>> mimetypeMap = new HashMap<String, List<ThumbnailDefinition>>(17);
+
+    private ThumbnailRenditionConvertor thumbnailRenditionConvertor;
+    
+    public void setThumbnailRenditionConvertor(
+            ThumbnailRenditionConvertor thumbnailRenditionConvertor)
+    {
+        this.thumbnailRenditionConvertor = thumbnailRenditionConvertor;
+    }
+
+    public ThumbnailRenditionConvertor getThumbnailRenditionConvertor()
+    {
+        return thumbnailRenditionConvertor;
+    }
     
     /**
      * Content service
@@ -79,7 +92,7 @@ public class ThumbnailRegistry
     public void setThumbnails(final List<String> thumbnails)
     {
     	this.thumbnails = thumbnails;
-        
+            
         // We'll not populate the data fields in the ThumbnailRegistry here, instead preferring
         // to do it lazily later.
     }
@@ -101,8 +114,6 @@ public class ThumbnailRegistry
     
     private void initThumbnailDefinitions()
     {
-        ThumbnailRenditionConvertor thumbnailRenditionConvertor = new ThumbnailRenditionConvertor();
-        
         for (String thumbnailDefinitionName : this.thumbnails)
         {
             QName qName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailDefinitionName);

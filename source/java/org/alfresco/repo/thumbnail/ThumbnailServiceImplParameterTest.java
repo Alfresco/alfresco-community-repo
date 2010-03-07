@@ -114,6 +114,13 @@ public class ThumbnailServiceImplParameterTest
             }
         };
         thumbs.setRenditionService(renditionService);
+        thumbs.setThumbnailRegistry(new ThumbnailRegistry() {
+            @Override
+            public ThumbnailRenditionConvertor getThumbnailRenditionConvertor()
+            {
+                return new ThumbnailRenditionConvertor();
+            }
+        });
         thumbnailService = thumbs;
     }
 

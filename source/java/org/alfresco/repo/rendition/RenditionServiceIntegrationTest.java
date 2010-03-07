@@ -473,13 +473,13 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                             // The rendition node should have no other
                             // parent-associations - in this case
                             assertEquals("Wrong value for rendition node parent count.", 1, nodeService
-                                        .getParentAssocs(renditionNode).size());
+                                        .getParentAssocs(renditionAssoc.getChildRef()).size());
 
                             // Now the source content node should have the
                             // renditioned aspect
                             assertTrue("Source node is missing renditioned aspect.", nodeService.hasAspect(
                                         nodeWithDocContent, RenditionModel.ASPECT_RENDITIONED));
-                            return renditionNode;
+                            return renditionAssoc.getChildRef();
                         }
                     });
 

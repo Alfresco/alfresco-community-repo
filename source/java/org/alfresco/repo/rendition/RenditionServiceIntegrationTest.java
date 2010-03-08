@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -331,7 +332,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 });
         // Sleep to let the asynchronous action queue perform the updates to the renditions.
         // TODO Is there a better way?
-        Thread.sleep(20000);
+        Thread.sleep(30000);
         
         // Get the renditions and check their content for the new title
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
@@ -1612,24 +1613,27 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
     /**
      * This test method ensures that all the 'built-in' renditionDefinitions are
-     * available after startup.
+     * available after startup and that their configuration is correct.
      * 
      * @throws Exception
      */
-    public void testEnsureBuiltinRenditionDefinitionsAvailable() throws Exception
+    public void testBuiltinRenditionDefinitions() throws Exception
     {
-        final List<String> renditionLocalNames = Arrays.asList(new String[] { "medium", "doclib", "imgpreview",
-                    "webpreview", "avatar" });
-        for (String renditionLocalName : renditionLocalNames)
-        {
-            validateRenditionDefinition(renditionLocalName);
-        }
+        final RenditionDefinition mediumRenditionDef = loadAndValidateRenditionDefinition("medium");
+        final RenditionDefinition doclibRenditionDef = loadAndValidateRenditionDefinition("doclib");
+        final RenditionDefinition imgpreviewRenditionDef = loadAndValidateRenditionDefinition("imgpreview");
+        final RenditionDefinition webpreviewRenditionDef = loadAndValidateRenditionDefinition("webpreview");
+        final RenditionDefinition avatarRenditionDef = loadAndValidateRenditionDefinition("avatar");
+
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_JPEG, mediumRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, doclibRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, imgpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
+        assertEquals(MimetypeMap.MIMETYPE_FLASH, webpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, avatarRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
     }
     
-    private void validateRenditionDefinition(String renditionLocalName)
+    private RenditionDefinition loadAndValidateRenditionDefinition(String renditionLocalName)
     {
-        System.out.println("Validating rendition definition: " + renditionLocalName);
-
         QName renditionQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, renditionLocalName);
         RenditionDefinition renditionDefinition = renditionService.loadRenditionDefinition(renditionQName);
         assertNotNull("'" + renditionLocalName + "' rendition definition was missing.", renditionDefinition);
@@ -1639,8 +1643,10 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertNotNull("'" + renditionLocalName + "' renditionDefinition had null renderingActionName parameter",
                     renditionDefinition.getParameterValue("renderingActionName"));
         
-        assertEquals("RunAs param was wrong for " + renditionLocalName, AuthenticationUtil.getSystemUserName(),
-        		renditionDefinition.getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS));
+        // All builtin renditions should be "runas" system
+        assertEquals(AuthenticationUtil.getSystemUserName(), renditionDefinition.getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS));
+
+        return renditionDefinition;
     }
 
     /**

@@ -569,7 +569,7 @@
                 
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/systemRenditionDefinitions.acp</prop>
+                    <prop key="location">alfresco/bootstrap/renderingActionSpace.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>                
             </list>

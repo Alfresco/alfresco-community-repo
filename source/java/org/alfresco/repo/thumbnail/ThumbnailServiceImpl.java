@@ -28,6 +28,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -202,20 +203,19 @@ public class ThumbnailServiceImpl implements ThumbnailService
                 
                 // We're prepending the cm namespace here.
                 QName thumbnailQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, localThumbnailName);
-
-                RenditionDefinition renderingAction = renditionService.loadRenditionDefinition(thumbnailQName);
-                if (renderingAction == null)
-                {
-                    // If the provided thumbnailName does not map to a built-in rendition definition
-                    // then we must create a dynamic rendition definition for this thumbnail.
-                    // To do this we must have a renderingEngineName.
-                    //
-                    // The transformation will either be a imageRenderingEngine or a reformat (pdf2swf)
-                    String renderingEngineName = getRenderingEngineNameFor(transformationOptions);
-
-                    renderingAction = renditionService.createRenditionDefinition(thumbnailQName, renderingEngineName);
-                }
+                
+                // Convert the TransformationOptions and ThumbnailParentAssocDetails to
+                // rendition-style parameters
                 Map<String, Serializable> params = thumbnailRegistry.getThumbnailRenditionConvertor().convert(transformationOptions, assocDetails);
+                // Add the other parameters given in this method signature.
+                params.put(AbstractRenderingEngine.PARAM_SOURCE_CONTENT_PROPERTY, contentProperty);
+                params.put(AbstractRenderingEngine.PARAM_MIME_TYPE, mimetype);
+
+                // Create the renditionDefinition
+                String renderingEngineName = getRenderingEngineNameFor(transformationOptions);
+                RenditionDefinition renderingAction = renditionService.createRenditionDefinition(thumbnailQName, renderingEngineName);
+
+                // Set the parameters
                 for (String key : params.keySet())
                 {
                     renderingAction.setParameterValue(key, params.get(key));

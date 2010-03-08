@@ -32,19 +32,104 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
- * A helper class to convert {@link TransformationOptions transformationOptions} (a thumbnail-specific
- * class) to rendition-specific parameters and vice versa.
+ * A helper class to convert {@link ThumbnailDefinition thumbnail definition} and
+ * {@link TransformationOptions transformationOptions} (thumbnail-specific
+ * classes) to rendition-specific parameters and vice versa.
+ * 
+ * The Thumbnail Service exposes parameters as simple data types on its various method
+ * signatures. See for example ThumbnailDefinition.createThumbnail(...) or updateThumbnail(...).
+ * The RenditionService replaces this approach with one based on the ActionService where
+ * parameters are added as a Map on the Action/RenditionDefinition object.
+ * 
+ * @see ThumbnailService#createThumbnail(org.alfresco.service.cmr.repository.NodeRef, QName, String, TransformationOptions, String)
+ * @see ThumbnailService#createThumbnail(org.alfresco.service.cmr.repository.NodeRef, QName, String, TransformationOptions, String, ThumbnailParentAssociationDetails)
+ * @see ThumbnailService#updateThumbnail(org.alfresco.service.cmr.repository.NodeRef, TransformationOptions)
+ * @see RenditionDefinition
  * 
  * @author Neil McErlean
  */
 public class ThumbnailRenditionConvertor
 {
+    private RenditionService renditionService;
+    
+    public void setRenditionService(RenditionService renditionService)
+    {
+        this.renditionService = renditionService;
+    }
+    
+    /** Given the specified {@link ThumbnailDefinition thumbnailDefinition} and
+     * {@link ThumbnailParentAssociationDetails assocDetails},
+     * create and return an equivalent {@link RenditionDefinition} object.
+     * 
+     * @param thumbnailDefinition
+     * @param assocDetails
+     * @return
+     */
+    public RenditionDefinition convert(ThumbnailDefinition thumbnailDefinition, ThumbnailParentAssociationDetails assocDetails)
+    {
+        // We must always have a valid name for a thumbnail definition
+        if (thumbnailDefinition == null || thumbnailDefinition.getName() == null
+                || thumbnailDefinition.getName().trim().length() == 0)
+        {
+            throw new IllegalArgumentException("Thumbnail Definition and Name must be non-null and non-empty.");
+        }
+        
+        TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
+        Map<String, Serializable> parameters = this.convert(transformationOptions, assocDetails);
+        
+        // Extract parameters defined directly within the ThumbnailDefinition object.
+        putParameterIfNotNull(AbstractRenderingEngine.PARAM_MIME_TYPE, thumbnailDefinition.getMimetype(), parameters);
+        putParameterIfNotNull(AbstractRenderingEngine.PARAM_PLACEHOLDER_RESOURCE_PATH, thumbnailDefinition.getPlaceHolderResourcePath(), parameters);
+        putParameterIfNotNull(AbstractRenderingEngine.PARAM_RUN_AS, thumbnailDefinition.getRunAs(), parameters);
+        
+        QName namespacedRenditionName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailDefinition.getName());
+        
+        // The built-in RenditionDefinitions are all non-composites.
+        // They are either "imageRenderingEngine" or "reformat"
+        boolean isImageThumbnail = isImageBasedRendition(thumbnailDefinition);
+        
+        String renderingEngineName = isImageThumbnail ? ImageRenderingEngine.NAME : ReformatRenderingEngine.NAME;
+        
+        RenditionDefinition renditionDef = renditionService.createRenditionDefinition(namespacedRenditionName, renderingEngineName);
+        for (String paramName : parameters.keySet())
+        {
+            renditionDef.setParameterValue(paramName, parameters.get(paramName));
+        }
+        
+        return renditionDef;
+    }
+    
+    /**
+     * This method examines the various data values on the thumbnail definition and
+     * works out if it is an 'image' rendition or a 'reformat' rendition
+     * @param thumbnailDefinition
+     * @return <code>true</code> for an image-based RenditionDefinition, else <code>false</code>
+     */
+    private boolean isImageBasedRendition(ThumbnailDefinition thumbnailDefinition)
+    {
+        final TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
+        
+        return transformationOptions != null && transformationOptions instanceof ImageTransformationOptions;
+    }
+    
+    /** Given the specified {@link TransformationOptions transformationOptions} and
+     * {@link ThumbnailParentAssociationDetails assocDetails},
+     * create and return a parameter Map which contains the equivalent {@link RenditionDefinition}
+     * configuration.
+     * 
+     * @param transformationOptions
+     * @param assocDetails
+     * @return
+     */
     public Map<String, Serializable> convert(TransformationOptions transformationOptions, ThumbnailParentAssociationDetails assocDetails)
     {
         Map<String, Serializable> parameters = new HashMap<String, Serializable>();
-
+        
         // parameters common to all transformations
         putParameterIfNotNull(AbstractRenderingEngine.PARAM_SOURCE_CONTENT_PROPERTY, transformationOptions.getSourceContentProperty(), parameters);
         putParameterIfNotNull(AbstractRenderingEngine.PARAM_TARGET_CONTENT_PROPERTY, transformationOptions.getTargetContentProperty(), parameters);
@@ -111,8 +196,6 @@ public class ThumbnailRenditionConvertor
             thDefn.setPlaceHolderResourcePath((String)placeHolderResourcePathParam);
         }
         
-        //TODO src/target contentProp & nodeRef
-        
         TransformationOptions transformationOptions = null;
         Serializable flashVersion = renditionDefinition.getParameterValue(ReformatRenderingEngine.PARAM_FLASH_VERSION);
         if (flashVersion != null)
@@ -132,7 +215,6 @@ public class ThumbnailRenditionConvertor
             Serializable xsize = renditionDefinition.getParameterValue(ImageRenderingEngine.PARAM_RESIZE_WIDTH);
             if (xsize != null)
             {
-                // Saved actions with int parameters seem to be coming back as Longs. TODO Investigate
                 resizeOptions.setWidth(((Long) xsize).intValue());
             }
             

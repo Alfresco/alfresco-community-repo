@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <cm:folder view:childName="${spaces.rendition.rendering_actions.childname}">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>rendering_actions_space</sys:node-uuid>
+         <cm:name>${spaces.rendition.rendering_actions.name}</cm:name>
+         <cm:title>${spaces.rendition.rendering_actions.name}</cm:title>
+         <cm:description>${spaces.rendition.rendering_actions.description}</cm:description>
+      </view:properties>
+   </cm:folder>
+
+</view:view>
+      

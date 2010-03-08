@@ -23,13 +23,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ApplicationContextEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Registry of all the thumbnail details available
@@ -37,18 +43,13 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @author Neil McErlean
  */
-public class ThumbnailRegistry
+public class ThumbnailRegistry implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>
 {   
     /** Content service */
     private ContentService contentService;
     
     /** Rendition service */
     private RenditionService renditionService;
-    
-    private List<String> thumbnails;
-    
-    /** This flag indicates whether the thumbnail definitions have been lazily loaded or not. */
-    private boolean thumbnailDefinitionsInited = false;
     
     /** Map of thumbnail definition */
     private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>();
@@ -57,6 +58,8 @@ public class ThumbnailRegistry
     private Map<String, List<ThumbnailDefinition>> mimetypeMap = new HashMap<String, List<ThumbnailDefinition>>(17);
 
     private ThumbnailRenditionConvertor thumbnailRenditionConvertor;
+    
+    private RegistryLifecycle lifecycle = new RegistryLifecycle();
     
     public void setThumbnailRenditionConvertor(
             ThumbnailRenditionConvertor thumbnailRenditionConvertor)
@@ -89,12 +92,47 @@ public class ThumbnailRegistry
         this.renditionService = renditionService;
     }
 
-    public void setThumbnails(final List<String> thumbnails)
+    /**
+     * This method is used to inject the thumbnail definitions.
+     * @param thumbnailDefinitions
+     */
+    public void setThumbnailDefinitions(final List<ThumbnailDefinition> thumbnailDefinitions)
     {
-    	this.thumbnails = thumbnails;
+        for (ThumbnailDefinition td : thumbnailDefinitions)
+        {
+            String thumbnailName = td.getName();
+            if (thumbnailName == null)
+            {
+                throw new ThumbnailException("When adding a thumbnail details object make sure the name is set.");
+            }
             
-        // We'll not populate the data fields in the ThumbnailRegistry here, instead preferring
-        // to do it lazily later.
+            this.thumbnailDefinitions.put(thumbnailName, td);
+        }
+    }
+    
+    /**
+     * Those thumbnail definitions that are injected by Spring are converted
+     * to rendition definitions and saved.
+     */
+    private void initThumbnailDefinitions()
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            public Void doWork() throws Exception
+            {
+                for (String thumbnailDefName : thumbnailDefinitions.keySet())
+                {
+                    final ThumbnailDefinition thumbnailDefinition = thumbnailDefinitions.get(thumbnailDefName);
+                    
+                    // Built-in thumbnailDefinitions do not provide any non-standard values
+                    // for the ThumbnailParentAssociationDetails object. Hence the null
+                    RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
+                    
+                    renditionService.saveRenditionDefinition(renditionDef);
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -104,36 +142,11 @@ public class ThumbnailRegistry
      */
     public List<ThumbnailDefinition> getThumbnailDefinitions()
     {
-        if (thumbnailDefinitionsInited == false)
-        {
-            this.initThumbnailDefinitions();
-            thumbnailDefinitionsInited = true;
-        }
         return new ArrayList<ThumbnailDefinition>(this.thumbnailDefinitions.values());
-    }
-    
-    private void initThumbnailDefinitions()
-    {
-        for (String thumbnailDefinitionName : this.thumbnails)
-        {
-            QName qName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailDefinitionName);
-            RenditionDefinition rAction = renditionService
-                    .loadRenditionDefinition(qName);
-            
-            ThumbnailDefinition thDefn = thumbnailRenditionConvertor.convert(rAction);
-            
-            thumbnailDefinitions.put(thumbnailDefinitionName, thDefn);
-        }
     }
     
     public List<ThumbnailDefinition> getThumbnailDefinitions(String mimetype)
     {
-        if (thumbnailDefinitionsInited == false)
-        {
-            this.initThumbnailDefinitions();
-            thumbnailDefinitionsInited = true;
-        }
-
         List<ThumbnailDefinition> result = this.mimetypeMap.get(mimetype);
         
         if (result == null)
@@ -163,6 +176,7 @@ public class ThumbnailRegistry
      * @return
      * @deprecated Use {@link #getThumbnailDefinitions(String)} instead.
      */
+    @Deprecated
     public List<ThumbnailDefinition> getThumnailDefintions(String mimetype)
     {
         return this.getThumbnailDefinitions(mimetype);
@@ -175,11 +189,6 @@ public class ThumbnailRegistry
      */
     public void addThumbnailDefinition(ThumbnailDefinition thumbnailDetails)
     {
-        if (thumbnailDefinitionsInited == false)
-        {
-            this.initThumbnailDefinitions();
-            thumbnailDefinitionsInited = true;
-        }
         String thumbnailName = thumbnailDetails.getName();
         if (thumbnailName == null)
         {
@@ -197,11 +206,48 @@ public class ThumbnailRegistry
      */
     public ThumbnailDefinition getThumbnailDefinition(String thumbnailName)
     {
-        if (thumbnailDefinitionsInited == false)
-        {
-            this.initThumbnailDefinitions();
-            thumbnailDefinitionsInited = true;
-        }
         return this.thumbnailDefinitions.get(thumbnailName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        lifecycle.setApplicationContext(applicationContext);
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationContextEvent event)
+    {
+        lifecycle.onApplicationEvent(event);
+    }
+    
+    /**
+     * This class hooks in to the spring application lifecycle and ensures that any
+     * ThumbnailDefinitions injected by spring are converted to RenditionDefinitions
+     * and saved.
+     */
+    private class RegistryLifecycle extends AbstractLifecycleBean
+    {
+        /* (non-Javadoc)
+         * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+         */
+        @Override
+        protected void onBootstrap(ApplicationEvent event)
+        {
+            initThumbnailDefinitions();
+        }
+    
+        /* (non-Javadoc)
+         * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+         */
+        @Override
+        protected void onShutdown(ApplicationEvent event)
+        {
+            // Intentionally empty
+        }
     }
 }

@@ -39,6 +39,9 @@ public class ThumbnailDefinition
     /** Path to placeholder thumbnail */
     private String placeHolderResourcePath;
     
+    /** Username to run the thumbnailrendition as */
+    private String runAs;
+    
     /**
      * Default constructor
      */
@@ -141,7 +144,17 @@ public class ThumbnailDefinition
     public String getName()
     {
         return name;
-    }    
+    }
+    
+    public void setRunAs(String runAs)
+    {
+        this.runAs = runAs;
+    }
+    
+    public String getRunAs()
+    {
+        return this.runAs;
+    }
     
     /**
      * 

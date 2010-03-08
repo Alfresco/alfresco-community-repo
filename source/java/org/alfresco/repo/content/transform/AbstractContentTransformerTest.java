@@ -28,6 +28,7 @@ import java.util.TreeSet;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -85,7 +86,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
     protected void setUp() throws Exception
     {
         // Grab a suitably configured context
-        ctx = TransformTestSuite.getContext();
+        ctx = ContentMinimalContextTestSuite.getContext();
 
         // Grab other useful beans
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);

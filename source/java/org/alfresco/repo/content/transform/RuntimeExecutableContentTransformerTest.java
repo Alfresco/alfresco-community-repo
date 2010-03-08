@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -44,7 +45,7 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
     @Override
     protected void setUpContext() {
        // We use a smaller context
-       ctx = TransformTestSuite.getContext();
+       ctx = ContentMinimalContextTestSuite.getContext();
     }
 
     @Override

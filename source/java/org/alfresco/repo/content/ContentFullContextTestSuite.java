@@ -32,15 +32,19 @@ import org.alfresco.repo.content.replication.ReplicatingContentStoreTest;
 /**
  * Suite for content-related tests.
  * 
+ * This includes all the tests that need a full context, the
+ *  rest are in {@link ContentMinimalContextTestSuite}
+ * 
  * @author Derek Hulley
  */
-public class ContentTestSuite extends TestSuite
+public class ContentFullContextTestSuite extends TestSuite
 {
     @SuppressWarnings("unchecked")
     public static Test suite() 
     {
         TestSuite suite = new TestSuite();
         
+        // These tests need a full context, at least for now
         suite.addTestSuite(ContentStoreCleanerTest.class);
         suite.addTestSuite(CharsetFinderTest.class);
         suite.addTestSuite(FileContentStoreTest.class);

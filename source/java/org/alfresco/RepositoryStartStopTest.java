@@ -54,28 +54,15 @@ public class RepositoryStartStopTest extends TestCase
     private TransactionService transactionService;
     private boolean writeTestWorked;
 
-    //TODO Turn this back on again
-    public void off_setUp() throws Exception
+    public void setUp() throws Exception
     {
         // Ensure there's nothing kicking about
         ApplicationContextHelper.closeApplicationContext();
     }
     
-    //TODO Turn this back on again
-    public void off_tearDown() throws Exception
+    public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
-    }
-    
-    /**
-     * This is a dummy test as the other tests in this class have all been temporarily
-     * disabled.
-     */
-    public void testDummyTest()
-    {
-        //TODO When the other tests are re-enabled, this test can be deleted.
-        
-        // Intentionally empty
     }
     
     /**
@@ -110,8 +97,7 @@ public class RepositoryStartStopTest extends TestCase
      * Tests that we can open a context, use
      *  it, and then close it again without error
      */
-    //TODO Turn this back on again
-    public void off_testOpenClose() throws Exception
+    public void testOpenClose() throws Exception
     {
        assertNoCachedApplicationContext();
        
@@ -131,8 +117,7 @@ public class RepositoryStartStopTest extends TestCase
      *  a context twice without error, using it
      *  when running. 
      */
-    //TODO Turn this back on again
-    public void off_testOpenCloseOpenCloseNoAutostart() throws Exception
+    public void testOpenCloseOpenCloseNoAutostart() throws Exception
     {
        assertNoCachedApplicationContext();
 

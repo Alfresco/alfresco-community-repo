@@ -34,10 +34,10 @@ import java.util.Map.Entry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.tck.atompub.utils.ISO8601DateFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * @author Nick Smith

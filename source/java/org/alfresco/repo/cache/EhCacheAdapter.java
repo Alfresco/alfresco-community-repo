@@ -88,6 +88,13 @@ public class EhCacheAdapter<K extends Serializable, V extends Object>
                 return null;
             }
         }
+        catch (IllegalStateException ie)
+        {
+           throw new AlfrescoRuntimeException("Failed to get from EhCache as state invalid: \n" +
+                 "  state: " + cache.getStatus() + "\n" +
+                 "   key: " + key,
+                 ie);
+        }
         catch (CacheException e)
         {
             throw new AlfrescoRuntimeException("Failed to get from EhCache: \n" +

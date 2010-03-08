@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -127,8 +128,8 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         makeNode(node13, ContentModel.TYPE_CONTENT);
         NodeRef node15 = makeNode(node13, ContentModel.TYPE_THUMBNAIL);
 
-        nodeService.addAspect(node8, ContentModel.ASPECT_THUMBNAILED, null);
-        nodeService.addChild(node8, node15, ContentModel.ASSOC_THUMBNAILS, QName.createQName(
+        nodeService.addAspect(node8, RenditionModel.ASPECT_RENDITIONED, null);
+        nodeService.addChild(node8, node15, RenditionModel.ASSOC_RENDITION, QName.createQName(
                 NamespaceService.APP_MODEL_1_0_URI, "temp"));
 
         ChildAssociatedNodeFinder nodeFinder = new ChildAssociatedNodeFinder(serviceRegistry);
@@ -137,7 +138,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         Set<NodeRef> results = nodeFinder.findFrom(node8);
         assertEquals(2, results.size());
 
-        nodeFinder.setAssociationTypes(ContentModel.ASSOC_THUMBNAILS);
+        nodeFinder.setAssociationTypes(RenditionModel.ASSOC_RENDITION);
         results = nodeFinder.findFrom(node8);
         assertEquals(1, results.size());
         assertEquals(node15, new ArrayList<NodeRef>(results).get(0));
@@ -162,8 +163,8 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         makeNode(node13, ContentModel.TYPE_CONTENT);
         NodeRef node15 = makeNode(node13, ContentModel.TYPE_THUMBNAIL);
 
-        nodeService.addAspect(node8, ContentModel.ASPECT_THUMBNAILED, null);
-        nodeService.addChild(node8, node15, ContentModel.ASSOC_THUMBNAILS, QName.createQName(
+        nodeService.addAspect(node8, RenditionModel.ASPECT_RENDITIONED, null);
+        nodeService.addChild(node8, node15, RenditionModel.ASSOC_RENDITION, QName.createQName(
                 NamespaceService.APP_MODEL_1_0_URI, "temp"));
 
         NodeCrawler crawler = new StandardNodeCrawlerImpl(serviceRegistry);

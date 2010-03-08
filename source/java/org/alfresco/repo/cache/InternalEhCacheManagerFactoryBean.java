@@ -61,7 +61,7 @@ import org.springframework.util.ResourceUtils;
  * 
  * @author Derek Hulley
  */
-public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProvider
+public class InternalEhCacheManagerFactoryBean implements FactoryBean<CacheManager>, CacheProvider
 {
     public static final String CUSTOM_CONFIGURATION_FILE = "classpath:alfresco/extension/ehcache-custom.xml";
     public static final String DEFAULT_CONFIGURATION_FILE = "classpath:alfresco/ehcache-default.xml";
@@ -192,6 +192,13 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
     {
         synchronized (getClass())
         {
+            if(logger.isDebugEnabled()) {
+               String[] caches = InternalEhCacheManagerFactoryBean.getInstance().getCacheNames();
+               for(String regionName : caches) {
+                  logger.debug("Stopped EHCache region: " + regionName);
+               }
+            }
+            
             InternalEhCacheManagerFactoryBean.getInstance().shutdown();
             initialized = false;
         }
@@ -202,7 +209,7 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
      * 
      * @see #initCacheManager()
      */
-    public Object getObject() throws Exception
+    public CacheManager getObject() throws Exception
     {
         return InternalEhCacheManagerFactoryBean.getInstance();
     }
@@ -210,7 +217,7 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
     /**
      * @return Returns the singleton cache manager type
      */
-    public Class getObjectType()
+    public Class<CacheManager> getObjectType()
     {
         return CacheManager.class;
     }

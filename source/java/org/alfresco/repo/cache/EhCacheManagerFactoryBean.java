@@ -93,6 +93,12 @@ public class EhCacheManagerFactoryBean implements FactoryBean, InitializingBean,
     public void destroy()
     {
         logger.info("Shutting down EHCache CacheManager");
+        if(logger.isDebugEnabled()) {
+           String[] caches = this.cacheManager.getCacheNames();
+           for(String cache : caches) {
+              logger.debug("Shutting down EHCache instance " + cache);
+           }
+        }
         this.cacheManager.shutdown();
     }
 }

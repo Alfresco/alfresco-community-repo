@@ -33,13 +33,16 @@ import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISRenditionService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Rendition Service Implementation
@@ -127,7 +130,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
         CMISRendition result = null;
 
         NodeRef thumbnailNode = thumbnailService.getThumbnailByName(node, ContentModel.PROP_CONTENT, thumbnailName);
-
+        
         if (thumbnailNode != null)
         {
             result = getRendition(thumbnailNode, node);
@@ -280,7 +283,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
     {
         CMISRenditionImpl rendition = null;
 
-        String thumbnailName = (String) nodeService.getProperty(thumbnailNode, ContentModel.PROP_THUMBNAIL_NAME);
+		String thumbnailName = getThumbnailName(thumbnailNode);
         CMISRenditionKind kind = thumbnailNamesToKind.get(thumbnailName);
         if (thumbnailName != null && kind != null)
         {
@@ -303,6 +306,19 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
         }
         return rendition;
     }
+
+	private String getThumbnailName(NodeRef thumbnailNode) {
+		String thumbnailName = null;
+		List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(
+				thumbnailNode, RenditionModel.ASSOC_RENDITION,
+				RegexQNamePattern.MATCH_ALL);
+		if (parentAssocs.size() == 1) 
+		{
+			ChildAssociationRef parentAssoc = parentAssocs.get(0);
+			thumbnailName = parentAssoc.getQName().getLocalName();
+		}
+		return thumbnailName;
+	}
 
     /**
      * Get custom renditions.
@@ -363,14 +379,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
         this.kindToThumbnailNames = renditionKinds;
         for (Entry<String, List<String>> entry : renditionKinds.entrySet())
         {
-            CMISRenditionKind kind = null;
-            for (CMISRenditionKind renditionKind : CMISRenditionKind.values())
-            {
-                if (renditionKind.getLabel().equals(entry.getKey()))
-                {
-                    kind = renditionKind;
-                }
-            }
+            CMISRenditionKind kind = CMISRenditionKind.valueOfLabel(entry.getKey());
             for (String thumbnailName : entry.getValue())
             {
                 thumbnailNamesToKind.put(thumbnailName, kind);

@@ -55,4 +55,15 @@ public enum CMISRenditionKind implements EnumLabel
 
     public static EnumFactory<CMISRenditionKind> FACTORY = new EnumFactory<CMISRenditionKind>(CMISRenditionKind.class);
     
+    public static CMISRenditionKind valueOfLabel(String label)
+    {
+    	for(CMISRenditionKind kind: CMISRenditionKind.values())
+    	{
+    		if(kind.getLabel().equals(label))
+    		{
+    			return kind;
+    		}
+    	}
+    	return null;
+    }
 }

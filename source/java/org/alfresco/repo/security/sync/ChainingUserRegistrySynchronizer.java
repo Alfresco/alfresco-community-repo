@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1152,10 +1153,23 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 // Filter out associations to unknown parent authorities
                 associations.retainAll(allAuthorities);
                 int insertIndex = authorityPath.size();
-                for (String parentAuthority : associations)
+                Iterator<String> i = associations.iterator();
+                while (i.hasNext())
                 {
+                    String parentAuthority = i.next();                    
+
                     // Prevent cyclic paths
-                    if (!authorityPath.contains(parentAuthority))
+                    if (authorityPath.contains(parentAuthority))
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                        {
+                            ChainingUserRegistrySynchronizer.logger.warn("Detected cyclic dependencies in group '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(parentAuthority)
+                                    + "'");
+                        }
+                        i.remove();
+                    }
+                    else
                     {
                         authorityPath.add(parentAuthority);
                         visitGroupAssociations(authorityPath, allAuthorities, associationsOld, associationsNew);

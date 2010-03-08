@@ -38,8 +38,6 @@ import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -336,13 +334,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         addMissingAspects(childNodePair, propertiesBefore, propertiesAfter);
         addMissingAspects(parentNodePair, assocTypeQName);
         
-        /**
-         * track new node ref so we can validate its path. 
-         * 
-         * it may be valid now, but who knows what will happen between 
-         * now and commit!
-         */ 
-        trackNewNodeRef(childAssocRef.getChildRef());
         untrackDeletedNodeRef(childAssocRef.getChildRef());       
         
         // Index
@@ -352,27 +343,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return childAssocRef;
     }
     
-    /**
-     * Track a new node ref so we can validate its path at commit time. 
-     * 
-     * It may have a valid path now, but who knows what will happen between 
-     * now and commit! 
-     * 
-     * @param newNodeRef the node to track
-     */
-    private void trackNewNodeRef(NodeRef newNodeRef)
-    {
-        // bind a pre-commit listener to validate any new node associations
-        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
-        if (newNodes.size() == 0)
-        {
-            PreCommitNewNodeListener listener = new PreCommitNewNodeListener();
-            AlfrescoTransactionSupport.bindListener(listener);
-        }
-        newNodes.add(newNodeRef);
-    }
-    
-
     
     /**
      * Track a deleted node
@@ -427,59 +397,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
     
-    private class PreCommitNewNodeListener extends TransactionListenerAdapter
-    {
-        public void afterCommit()
-        {
-            // NO-OP
-        }
-
-        public void afterRollback()
-        {
-            // NO-OP
-            
-        }
-
-        public void beforeCommit(boolean readOnly)
-        {
-            if (readOnly)
-            {
-                return;
-            }
-            Set<NodeRef> nodeRefs = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
-            for (NodeRef nodeRef : nodeRefs)
-            {
-                // Need to check for exists since the node may be created 
-                // and deleted within the same transaction
-                if(exists(nodeRef))
-                {
-                    try 
-                    {
-                        // Check that the primary path is valid for this node
-                        getPaths(nodeRef, false);
-                    } 
-                    catch (AlfrescoRuntimeException are)
-                    {
-                        throw new AlfrescoRuntimeException("Error while validating path:" + are.toString(), are);
-                    }
-                }
-            }
-            nodeRefs.clear();            
-        }
-
-        public void beforeCompletion()
-        {
-            // NO-OP
-            
-        }
-
-        public void flush()
-        {
-            // NO-OP
-        }
-    }
-    
-
     /**
      * Adds all the default aspects and properties required for the given type.
      * Existing values will not be overridden.
@@ -1042,6 +959,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(parentRefs.size());
         for (NodeRef parentRef : parentRefs)
         {
+            if (isDeletedNodeRef(parentRef))
+            {
+                throw new InvalidNodeRefException("The parent node has been deleted", parentRef);
+            }
             Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
             Long parentNodeId = parentNodePair.getFirst();
             parentNodePairs.add(parentNodePair);
@@ -2231,6 +2152,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             QName assocTypeQName,
             QName assocQName)
     {
+        if (isDeletedNodeRef(newParentRef))
+        {
+            throw new InvalidNodeRefException("The parent node has been deleted", newParentRef);
+        }
+
         Pair<Long, NodeRef> nodeToMovePair = getNodePairNotNull(nodeToMoveRef);
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(newParentRef);
         
@@ -2331,7 +2257,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 
         // Check that there is not a cyclic relationship
         getPaths(newNodeToMoveRef, false);
-        trackNewNodeRef(newNodeToMoveRef);
         
         // Call behaviours
         if (movingStore)

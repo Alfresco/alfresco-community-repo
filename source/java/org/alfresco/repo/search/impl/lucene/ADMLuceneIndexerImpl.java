@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -595,7 +596,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);
 
-        Collection<Path> directPaths = nodeService.getPaths(nodeRef, false);
+        Collection<Path> directPaths = new LinkedHashSet<Path>(nodeService.getPaths(nodeRef, false));
         Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(nodeRef, properties);
         Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
         for (Path path : directPaths)
@@ -625,6 +626,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
 
         boolean isRoot = nodeRef.equals(tenantService.getName(nodeService.getRootNode(nodeRef.getStoreRef())));
+        boolean mayHaveChildren = includeDirectoryDocuments && mayHaveChildren(nodeRef);
+        boolean isCategory = isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)));
 
         StringBuilder qNameBuffer = new StringBuilder(64);
         StringBuilder assocTypeQNameBuffer = new StringBuilder(64);
@@ -683,28 +686,25 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
                 // check for child associations
 
-                if (includeDirectoryDocuments)
+                if (mayHaveChildren)
                 {
-                    if (mayHaveChildren(nodeRef))
+                    if (directPaths.contains(pair.getFirst()))
                     {
-                        if (directPaths.contains(pair.getFirst()))
+                        Document directoryEntry = new Document();
+                        directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+                        directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+                        for (NodeRef parent : getParents(pair.getFirst()))
                         {
-                            Document directoryEntry = new Document();
-                            directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                            directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-                            for (NodeRef parent : getParents(pair.getFirst()))
-                            {
-                                directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                            }
-                            directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-
-                            if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
-                            {
-                                directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                            }
-
-                            docs.add(directoryEntry);
+                            directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
                         }
+                        directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+
+                        if (isCategory)
+                        {
+                            directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+                        }
+
+                        docs.add(directoryEntry);
                     }
                 }
             }

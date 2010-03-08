@@ -33,7 +33,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.apache.commons.logging.Log;
@@ -79,6 +81,9 @@ public class BatchProcessor<T> implements BatchMonitor
 
     /** The current entry id. */
     private String currentEntryId;
+    
+    /** The number of batches currently executing. */
+    private int executingCount;
 
     /** The last error. */
     private Throwable lastError;
@@ -420,7 +425,7 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * A callback that invokes a worker on a batch, optionally in a new transaction.
      */
-    class TxnCallback implements RetryingTransactionCallback<Object>, Runnable
+    class TxnCallback extends TransactionListenerAdapter implements RetryingTransactionCallback<Object>, Runnable
     {
 
         /**
@@ -463,6 +468,9 @@ public class BatchProcessor<T> implements BatchMonitor
 
         /** The last error entry id. */
         private String txnLastErrorEntryId;
+        
+        /** Has a retryable failure occurred ? */
+        private boolean hadRetryFailure;
 
         /*
          * (non-Javadoc)
@@ -471,13 +479,41 @@ public class BatchProcessor<T> implements BatchMonitor
         public Object execute() throws Throwable
         {
             reset();
+            if (this.batch.isEmpty())
+            {
+                return null;
+            }
+            
+            // Bind this instance to the transaction
+            AlfrescoTransactionSupport.bindListener(this);
+
+            synchronized (BatchProcessor.this)
+            {
+                // If we are retrying after failure, assume there are cross-dependencies and wait for other
+                // executing batches to complete
+                if (this.hadRetryFailure)
+                {
+                    while (BatchProcessor.this.executingCount > 0)
+                    {
+                        if (BatchProcessor.this.logger.isDebugEnabled())
+                        {
+                            BatchProcessor.this.logger.debug(Thread.currentThread().getName()
+                                    + " Recoverable failure: waiting for other batches to complete");
+                        }
+                        BatchProcessor.this.wait();
+                    }
+                    if (BatchProcessor.this.logger.isDebugEnabled())
+                    {
+                        BatchProcessor.this.logger.debug(Thread.currentThread().getName() + " ready to execute");
+                    }
+                }
+                BatchProcessor.this.currentEntryId = this.worker.getIdentifier(this.batch.get(0));
+                BatchProcessor.this.executingCount++;
+            }
+
             for (T entry : this.batch)
             {
-                this.txnEntryId = this.worker.getIdentifier(entry);
-                synchronized (BatchProcessor.this)
-                {
-                    BatchProcessor.this.currentEntryId = this.txnEntryId;
-                }
+                this.txnEntryId = this.worker.getIdentifier(entry);                
                 try
                 {
                     this.worker.process(entry);
@@ -498,6 +534,8 @@ public class BatchProcessor<T> implements BatchMonitor
                     }
                     else
                     {
+                        // Next time we retry, we will wait for other executing batches to complete
+                        this.hadRetryFailure = true;
                         throw t;
                     }
                 }
@@ -619,6 +657,28 @@ public class BatchProcessor<T> implements BatchMonitor
                 }
 
                 reset();
+            }
+        }
+
+        @Override
+        public void afterCommit()
+        {
+            // Wake up any waiting batches
+            synchronized (BatchProcessor.this)
+            {
+                BatchProcessor.this.executingCount--;
+                BatchProcessor.this.notifyAll();
+            }
+        }
+
+        @Override
+        public void afterRollback()
+        {
+            // Wake up any waiting batches
+            synchronized (BatchProcessor.this)
+            {
+                BatchProcessor.this.executingCount--;
+                BatchProcessor.this.notifyAll();
             }
         }
     }

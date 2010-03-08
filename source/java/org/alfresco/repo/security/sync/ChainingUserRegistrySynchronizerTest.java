@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -363,7 +364,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public void testVolume() throws Exception
     {
         List<NodeDescription> persons = new ArrayList<NodeDescription>(new RandomPersonCollection(100));
-        List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(100, persons));
+        List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(50, persons));
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", persons, groups));
         this.synchronizer.synchronize(true, true, true);
         tearDownTestUsersAndGroups();
@@ -777,6 +778,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     public class RandomGroupCollection extends AbstractCollection<NodeDescription>
     {
+        /** Use a fixed seed to give this class deterministic behaviour */
+        private Random generator = new Random(1628876500L);
 
         /** The collection size. */
         private final int size;
@@ -839,12 +842,16 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                     String[] authorityNames = new String[17];
                     for (int i = 0; i < authorityNames.length; i++)
                     {
+                        // Choose an authority at random from the list of known authorities
+                        int index = RandomGroupCollection.this.generator.nextInt(RandomGroupCollection.this.authorities
+                                .size());
                         authorityNames[i] = ChainingUserRegistrySynchronizerTest.this.authorityService
-                                .getShortName((String) RandomGroupCollection.this.authorities
-                                        .get((int) (Math.random() * (double) (RandomGroupCollection.this.authorities
-                                                .size() - 1))));
+                                .getShortName((String) RandomGroupCollection.this.authorities.get(index));
                     }
-                    return newGroup("G" + GUID.generate(), authorityNames);
+                    NodeDescription group = newGroup("G" + GUID.generate(), authorityNames);
+                    // Make this group a candidate for adding to other groups
+                    RandomGroupCollection.this.authorities.add((String) group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
+                    return group;
                 }
 
                 public void remove()

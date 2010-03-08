@@ -48,14 +48,14 @@ public interface ThumbnailService
      * The mimetype and transformation options are used to determine the content transformer that
      * will be best suited to create the thumbnail.
      * 
-     * The thumbnail name is optional, but is usally set to provide an easy way to identify a perticular
+     * The thumbnail name is optional, but is usually set to provide an easy way to identify a particular
      * 'type' of thumbnail.
      * 
-     * Once created the source node will have the 'tn:thumbnailed' aspect applied and an
-     * association to the thumbnail node (or type 'tn:thumbnail') will be created.
+     * Once created the source node will have the 'rn:renditioned' aspect applied and an
+     * association to the thumbnail node (of type 'rn:rendition') will be created.
      * 
-     * The returned node reference is to the 'tn:thumbnail' content node that contains
-     * the thumnail content in the standard 'cm:content' property.
+     * The returned node reference is to the 'rn:rendition' content node that contains
+     * the thumbnail content in the standard 'cm:content' property.
      * 
      * @see org.alfresco.service.cmr.thumnail.ThumbnailDefinition
      * 
@@ -73,7 +73,7 @@ public interface ThumbnailService
      * @see ThumbnailService#createThumbnail(NodeRef, QName, String, TransformationOptions, String)
      * 
      * If parent association details are specified then the thumbnail is created as a child of the specified parent and linked
-     * via a non-primary association to the origional content node.
+     * via a non-primary association to the original content node.
      * 
      * @param node                      the source content node
      * @param contentProperty           the content property
@@ -89,12 +89,12 @@ public interface ThumbnailService
     /**
      * Updates the content of a thumbnail.
      * 
-     * The origional thumbnail content is updated from the source content using the transformation
+     * The original thumbnail content is updated from the source content using the transformation
      * options provided.  The mimetype and name of the thumbnail remain unchanged.
      * 
-     * To change the name or mimertpe of an updated thumbnail it should be deleted and recreated.
+     * To change the name or mimetype of an updated thumbnail it should be deleted and recreated.
      * 
-     * An error is raised if the original content no longer exisits.
+     * An error is raised if the original content no longer exists.
      * 
      * @param thumbnail             the thumbnail node
      * @param transformationOptions the transformation options used when updating the thumbnail
@@ -103,7 +103,7 @@ public interface ThumbnailService
     void updateThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions);
     
     /**
-     * Get's the thumbnail for a given content property with a given name.
+     * Gets the thumbnail for a given content property with a given name.
      * 
      * Returns null if no thumbnail with that name for that content property is found.
      * 
@@ -116,7 +116,7 @@ public interface ThumbnailService
     NodeRef getThumbnailByName(NodeRef node, QName contentProperty, String thumbnailName);
     
     /**
-     * Get's a list of thumbnail nodes for a given content property that match the provided mimetype and
+     * Gets a list of thumbnail nodes for a given content property that match the provided mimetype and
      * transformation options.
      * 
      * Both mimetype and transformation options are optional parameters.  If only one or other is specified the

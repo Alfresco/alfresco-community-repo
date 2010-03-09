@@ -272,8 +272,25 @@ public interface ContentModel
     static final QName PROP_AUTOMATIC_UPDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "automaticUpdate");
     
     // Thumbnailed Aspect
+    /**
+     * This aspect type has been deprecated.
+     * From Alfresco 3.3 the {@link RenditionModel#ASPECT_RENDITIONED rn:renditioned}
+     * (which is a child of cm:thumbnailed) should be used instead.
+     */
+    @Deprecated
     static final QName ASPECT_THUMBNAILED = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnailed");
-    static final QName ASSOC_THUMBNAILS = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbnails");
+    /**
+     * This association type has been deprecated.
+     * From Alfresco 3.3 this association no longer exists and has been replaced with
+     * {@link RenditionModel#ASSOC_RENDITION rn:rendition} association. From Alfresco
+     * 3.3 onwards {@link QNamePatch a patch} is executed at startup which renames
+     * the cm:thumbnails QName to rn:rendition in the database.
+     * <P/>
+     * This field has been updated to point to that association and references to this
+     * field should be updated to use the new field.
+     */
+    @Deprecated
+    static final QName ASSOC_THUMBNAILS = RenditionModel.ASSOC_RENDITION;
     
     // StoreSelector Aspect
     static final QName ASPECT_STORE_SELECTOR = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "storeSelector");

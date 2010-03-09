@@ -23,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 
 import javax.faces.context.FacesContext;
-import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -391,28 +390,18 @@ public final class AuthenticationHelper
    /**
     * For no previous authentication or forced Guest - attempt Guest access
     * 
-    * @param ctx        WebApplicationContext
-    * @param auth       AuthenticationService
+    * @param ctx
+    *           WebApplicationContext
+    * @param auth
+    *           AuthenticationService
     */
-   public static AuthenticationStatus portalGuestAuthenticate(WebApplicationContext ctx, PortletSession session, AuthenticationService auth)
+   public static User portalGuestAuthenticate(WebApplicationContext ctx, String sessionId, AuthenticationService auth)
    {
       try
       {
          auth.authenticateAsGuest();
-         
-         User user = createUser(ctx, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(session.getId()));
-         
-         // store the User object in the Session - the authentication servlet will then proceed
-         session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
-      
-         // Set the current locale
-         I18NUtil.setLocale(Application.getLanguage(session));
-         
-         // remove the session invalidated flag
-         session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
-         
-         // it is the responsibilty of the caller to handle the Guest return status
-         return AuthenticationStatus.Guest;
+
+         return createUser(ctx, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(sessionId));
       }
       catch (AuthenticationException guestError)
       {
@@ -421,8 +410,7 @@ public final class AuthenticationHelper
       catch (AccessDeniedException accessError)
       {
          // Guest is unable to access either properties on Person
-         AuthenticationService unprotAuthService = (AuthenticationService)ctx.getBean(UNPROTECTED_AUTH_SERVICE);
-         String sessionId = session.getId();
+         AuthenticationService unprotAuthService = (AuthenticationService) ctx.getBean(UNPROTECTED_AUTH_SERVICE);
          unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
          unprotAuthService.clearCurrentSecurityContext();
          logger.warn("Unable to login as Guest: " + accessError.getMessage());
@@ -430,14 +418,12 @@ public final class AuthenticationHelper
       catch (Throwable e)
       {
          // Some other kind of serious failure to report
-         AuthenticationService unprotAuthService = (AuthenticationService)ctx.getBean(UNPROTECTED_AUTH_SERVICE);
-         String sessionId = session.getId();
+         AuthenticationService unprotAuthService = (AuthenticationService) ctx.getBean(UNPROTECTED_AUTH_SERVICE);
          unprotAuthService.invalidateTicket(unprotAuthService.getCurrentTicket(sessionId), sessionId);
          unprotAuthService.clearCurrentSecurityContext();
          throw new AlfrescoRuntimeException("Failed to authenticate as Guest user.", e);
       }
-      
-      return AuthenticationStatus.Failure;
+      return null;
    }
    
    /**

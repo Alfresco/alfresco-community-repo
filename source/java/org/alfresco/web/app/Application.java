@@ -26,17 +26,12 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
-import javax.portlet.PortletContext;
-import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigService;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
@@ -53,6 +48,10 @@ import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.LanguagesConfigElement;
 import org.apache.commons.logging.Log;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -239,30 +238,7 @@ public class Application
    {
       return getErrorPage(WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext));
    }
-   
-   /**
-    * Retrieves the configured error page for the application
-    * 
-    * @param portletContext The portlet context
-    * @return The error page
-    */
-   public static String getErrorPage(PortletContext portletContext)
-   {
-      return getErrorPage((WebApplicationContext)portletContext.getAttribute(
-            WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE));
-   }
-   
-   /**
-    * Retrieves the configured login page for the application
-    * 
-    * @param facesContext The faces context
-    * @return The configured login page or null if the configuration is missing
-    */
-   public static String getLoginPage(FacesContext facesContext)
-   {
-      return getLoginPage(FacesContextUtils.getRequiredWebApplicationContext(facesContext));
-   }
-   
+      
    /**
     * Retrieves the configured login page for the application
     * 
@@ -273,19 +249,7 @@ public class Application
    {
       return getLoginPage(WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext));
    }
-   
-   /**
-    * Retrieves the configured login page for the application
-    * 
-    * @param portletContext The portlet context
-    * @return The login page
-    */
-   public static String getLoginPage(PortletContext portletContext)
-   {
-      return getLoginPage((WebApplicationContext)portletContext.getAttribute(
-            WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE));
-   }
-   
+      
    /**
     * @return Returns the User object representing the currently logged in user
     */
@@ -728,19 +692,7 @@ public class Application
          else
          {
             // else get from web-client config - the first item in the configured list of languages
-            Config config = Application.getConfigService(session.getServletContext()).getConfig("Languages");
-            LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
-                  LanguagesConfigElement.CONFIG_ELEMENT_ID);
-            List<String> languages = langConfig.getLanguages();
-            if (languages != null && languages.size() != 0)
-            {
-               locale = I18NUtil.parseLocale(languages.get(0));
-            }
-            else
-            {
-               // failing that, use the server default locale
-               locale = Locale.getDefault();
-            }
+            locale = getLanguage(WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext()));
          }
          // save in user session
          session.setAttribute(LOCALE, locale);
@@ -749,37 +701,28 @@ public class Application
    }
    
    /**
-    * Return the language Locale for the current user PortletSession.
+    * Return the configured language Locale for the application context
     * 
-    * @param session        PortletSession for the current user
-    * 
+    * @param ctx
+    *           the application context
     * @return Current language Locale set or the VM default if none set - never null
     */
-   public static Locale getLanguage(PortletSession session)
+   public static Locale getLanguage(ApplicationContext ctx)
    {
-      Locale locale = (Locale)session.getAttribute(LOCALE);
-      if (locale == null)
+      // get from web-client config - the first item in the configured list of languages
+      Config config = ((ConfigService) ctx.getBean(Application.BEAN_CONFIG_SERVICE)).getConfig("Languages");
+      LanguagesConfigElement langConfig = (LanguagesConfigElement) config
+            .getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
+      List<String> languages = langConfig.getLanguages();
+      if (languages != null && languages.size() != 0)
       {
-         // get from web-client config - the first item in the configured list of languages
-         WebApplicationContext ctx = (WebApplicationContext)session.getPortletContext().getAttribute(
-            WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-         Config config = ((ConfigService)ctx.getBean(Application.BEAN_CONFIG_SERVICE)).getConfig("Languages");
-         LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
-               LanguagesConfigElement.CONFIG_ELEMENT_ID);
-         List<String> languages = langConfig.getLanguages();
-         if (languages != null && languages.size() != 0)
-         {
-            locale = I18NUtil.parseLocale(languages.get(0));
-         }
-         else
-         {
-            // failing that, use the server default locale
-            locale = Locale.getDefault();
-         }
-         // save in user session
-         session.setAttribute(LOCALE, locale);
+         return I18NUtil.parseLocale(languages.get(0));
       }
-      return locale;
+      else
+      {
+         // failing that, use the server default locale
+         return Locale.getDefault();
+      }
    }
    
    /**
@@ -1213,7 +1156,7 @@ public class Application
     * @param context The Spring context
     * @return The configured error page or null if the configuration is missing
     */
-   private static String getErrorPage(WebApplicationContext context)
+   public static String getErrorPage(ApplicationContext context)
    {
       String errorPage = null;
       
@@ -1235,7 +1178,7 @@ public class Application
     * @param context The Spring contexr
     * @return The configured login page or null if the configuration is missing
     */
-   private static String getLoginPage(WebApplicationContext context)
+   public static String getLoginPage(ApplicationContext context)
    {
       String loginPage = null;
       

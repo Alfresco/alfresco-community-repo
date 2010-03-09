@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.faces.application.ViewHandler;
 import javax.faces.component.UIViewRoot;
@@ -29,21 +31,21 @@ import javax.faces.context.FacesContext;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSession;
+import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.UnavailableException;
+import javax.servlet.ServletRequest;
 
-import org.springframework.extensions.config.ConfigService;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
-import org.alfresco.web.app.servlet.AuthenticationStatus;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.FileUploadBean;
@@ -58,6 +60,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.myfaces.portlet.MyFacesGenericPortlet;
 import org.apache.myfaces.portlet.PortletUtil;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -69,10 +74,10 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
 {
+   private static final String ATTRIBUTE_LOCALE = "locale";
    private static final String PREF_ALF_USERNAME = "_alfUserName";
    private static final String SESSION_LAST_VIEW_ID = "_alfLastViewId";
    
-   private static final String ERROR_PAGE_PARAM = "error-page";
    private static final String ERROR_OCCURRED = "error-occurred";
    
    private static Log logger = LogFactory.getLog(AlfrescoFacesPortlet.class);
@@ -88,9 +93,9 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       throws PortletException, IOException 
    {
       Application.setInPortalServer(true);
-      
+
       // Set the current locale
-      I18NUtil.setLocale(Application.getLanguage(request.getPortletSession()));
+      I18NUtil.setLocale(getLanguage(request.getPortletSession()));
       
       boolean isMultipart = PortletFileUpload.isMultipartContent(request);
       
@@ -239,11 +244,11 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       Application.setInPortalServer(true);
       
       // Set the current locale
-      I18NUtil.setLocale(Application.getLanguage(request.getPortletSession()));
+      I18NUtil.setLocale(getLanguage(request.getPortletSession()));
       
       if (request.getParameter(ERROR_OCCURRED) != null)
       {
-         String errorPage = Application.getErrorPage(getPortletContext());
+         String errorPage = getErrorPage();
          
          if (logger.isDebugEnabled())
             logger.debug("An error has occurred, redirecting to error page: " + errorPage);
@@ -268,7 +273,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          User user = sessionUser instanceof User ? (User)sessionUser : null;
          if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
          {
-            if (AuthenticationHelper.portalGuestAuthenticate(ctx, session, auth) == AuthenticationStatus.Guest)
+            if (portalGuestAuthenticate(ctx, session, auth) != null)
             {
                if (logger.isDebugEnabled())
                   logger.debug("Guest access successful.");
@@ -393,6 +398,65 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
    }
    
    /**
+    * Gets the error bean from a request
+    * 
+    * @param request
+    *           the request
+    * @return the error bean
+    */
+   public static ErrorBean getErrorBean(ServletRequest request)
+   {
+      PortletRequest portletReq  = (PortletRequest) request.getAttribute("javax.portlet.request");
+      if (portletReq != null)
+      {
+         PortletSession session = portletReq.getPortletSession();
+         return (ErrorBean)session.getAttribute(ErrorBean.ERROR_BEAN_NAME);
+      }
+      return null;      
+   }
+
+   /**
+    * Creates a render URL from the given request and parameters
+    * 
+    * @param request
+    *           the request
+    * @param parameters
+    *           the parameters
+    * @return the render url
+    */
+   public static String getRenderURL(ServletRequest request, Map<String, String[]> parameters)
+   {
+      RenderResponse renderResp = (RenderResponse) request.getAttribute("javax.portlet.response");
+      if (renderResp == null)
+      {
+         throw new IllegalStateException("RenderResponse object is null");
+      }
+
+      PortletURL url = renderResp.createRenderURL();
+      url.setParameters(parameters);
+      return url.toString();
+   }
+   
+   /**
+    * Creates an action url from the given request.
+    * 
+    * @param request
+    *           the request
+    * @return the action url
+    */
+   public static String getActionURL(ServletRequest request)
+   {
+      RenderResponse renderResp = (RenderResponse) request.getAttribute("javax.portlet.response");
+      if (renderResp == null)
+      {
+         throw new IllegalStateException(
+               "RenderResponse object is null. The web application is not executing within a portal server!");
+      }
+      return renderResp.createActionURL().toString();
+
+   }
+   
+   /**
     * Handles errors that occur during a render request
     */
    private void handleError(RenderRequest request, RenderResponse response, Throwable error)
@@ -446,13 +510,59 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
    }
 
    /**
+    * For no previous authentication or forced Guest - attempt Guest access
+    * 
+    * @param ctx        WebApplicationContext
+    * @param auth       AuthenticationService
+    */
+   private static User portalGuestAuthenticate(WebApplicationContext ctx, PortletSession session, AuthenticationService auth)
+   {
+      User user = AuthenticationHelper.portalGuestAuthenticate(ctx, session.getId(), auth);
+      
+      if (user != null)
+      {
+         // store the User object in the Session - the authentication servlet will then proceed
+         session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+      
+         // Set the current locale
+         I18NUtil.setLocale(getLanguage(session));
+         
+         // remove the session invalidated flag
+         session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+      }
+      return user;
+   }
+   
+   /**
+    * Return the language Locale for the current user Session.
+    * 
+    * @param session        PortletSession for the current user
+    * 
+    * @return Current language Locale set or the VM default if none set - never null
+    */
+   private static Locale getLanguage(PortletSession session)
+   {
+      Locale locale = (Locale)session.getAttribute(ATTRIBUTE_LOCALE);
+      if (locale == null)
+      {
+         locale = Application.getLanguage((ApplicationContext)session.getPortletContext().getAttribute(
+               WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE));
+
+         // save in user session
+         session.setAttribute(ATTRIBUTE_LOCALE, locale);
+      }
+      return locale;
+   }
+
+   /**
     * @return Retrieves the configured login page
     */
    private String getLoginPage()
    {
       if (this.loginPage == null)
       {
-         this.loginPage = Application.getLoginPage(getPortletContext());
+         this.loginPage = Application.getLoginPage((ApplicationContext)getPortletContext().getAttribute(
+               WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE));
       }
       
       return this.loginPage;
@@ -465,7 +575,8 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
    {
       if (this.errorPage == null)
       {
-         this.errorPage = Application.getErrorPage(getPortletContext());
+         this.errorPage = Application.getErrorPage((ApplicationContext)getPortletContext().getAttribute(
+               WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE));
       }
       
       return this.errorPage;

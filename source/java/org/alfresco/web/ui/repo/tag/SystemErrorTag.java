@@ -20,17 +20,15 @@ package org.alfresco.web.ui.repo.tag;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
-import javax.portlet.PortletSession;
-import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
 import org.alfresco.web.bean.ErrorBean;
 
@@ -113,12 +111,9 @@ public class SystemErrorTag extends TagSupport
       // get the error details from the bean, this may be in a portlet
       // session or a normal servlet session.
       ErrorBean errorBean = null;
-      RenderRequest renderReq  = (RenderRequest)pageContext.getRequest().
-                                   getAttribute("javax.portlet.request");
-      if (renderReq != null)
+      if (Application.inPortalServer())
       {
-         PortletSession session = renderReq.getPortletSession();
-         errorBean = (ErrorBean)session.getAttribute(ErrorBean.ERROR_BEAN_NAME);
+         errorBean = AlfrescoFacesPortlet.getErrorBean(pageContext.getRequest());
       }
       else
       {
@@ -222,17 +217,13 @@ public class SystemErrorTag extends TagSupport
       
          if (Application.inPortalServer())
          {
-            RenderResponse renderResp  = (RenderResponse)pageContext.getRequest().getAttribute(
-                  "javax.portlet.response");
-            if (renderResp == null)
-            {
-               throw new IllegalStateException("RenderResponse object is null");
-            }
-            
-            PortletURL url = renderResp.createRenderURL();
             // NOTE: we don't have to specify the page for the portlet, just the VIEW_ID parameter
             //       being present will cause the current JSF view to be re-displayed
-            url.setParameter("org.apache.myfaces.portlet.MyFacesGenericPortlet.VIEW_ID", "current-view");
+            String url = AlfrescoFacesPortlet.getRenderURL(pageContext.getRequest(), Collections.singletonMap(
+                  "org.apache.myfaces.portlet.MyFacesGenericPortlet.VIEW_ID", new String[]
+                  {
+                     "current-view"
+                  }));
             out.write(url.toString());
          }
          else

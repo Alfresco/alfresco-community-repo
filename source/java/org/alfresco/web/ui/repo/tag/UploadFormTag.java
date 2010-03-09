@@ -21,12 +21,12 @@ package org.alfresco.web.ui.repo.tag;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,14 +56,7 @@ public class UploadFormTag extends TagSupport
          
          if (Application.inPortalServer())
          {
-            RenderResponse renderResp  = (RenderResponse)pageContext.getRequest().
-                                   getAttribute("javax.portlet.response");
-            if (renderResp == null)
-            {
-               throw new IllegalStateException("RenderResponse object is null. The web application is not executing within a portal server!");
-            }
-            
-            out.write(renderResp.createActionURL().toString());
+            out.write(AlfrescoFacesPortlet.getActionURL(pageContext.getRequest()));
             out.write("'>");
          }
          else

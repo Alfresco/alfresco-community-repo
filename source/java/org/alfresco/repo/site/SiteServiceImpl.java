@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -71,13 +70,13 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.ParameterCheck;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
@@ -113,7 +112,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private static final String MSG_CAN_NOT_UPDATE = "site_service.can_not_update";
     private static final String MSG_CAN_NOT_DELETE = "site_service.can_not_delete";
     private static final String MSG_SITE_NO_EXIST = "site_service.site_no_exist";
-    private static final String MSG_DO_NOT_REMOVE_MGR = "site_service.do_not_remove_manager";
     private static final String MSG_CAN_NOT_REMOVE_MSHIP = "site_service.can_not_reomve_memebership";
     private static final String MSG_DO_NOT_CHANGE_MGR = "site_service.do_not_change_manager";
     private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_memebership";
@@ -339,6 +337,10 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
         // Get the site parent node reference
         NodeRef siteParent = getSiteParent(shortName);
+        if (siteParent == null)
+        {
+            throw new SiteServiceException("No root sites folder exists");
+        }
 
         // Create the site node
         PropertyMap properties = new PropertyMap(4);
@@ -541,7 +543,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
                     {
                         public NodeRef execute() throws Exception
-                        {                   
+                        {    
+                            NodeRef result = null;
+                            
                             // Get the root 'sites' folder
                             NodeRef rootNodeRef = nodeService.getRootNode(SITE_STORE);
                             List<NodeRef> results = searchService.selectNodes(
@@ -551,18 +555,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
                                     namespaceService,
                                     false,
                                     SearchService.LANGUAGE_XPATH);
-                            if (results.size() == 0)
+                            if (results.size() != 0)
                             {
-                                // No root site folder exists
-                                throw new SiteServiceException("No root sites folder exists");
-                            }
-                            else if (results.size() != 1)
-                            {
-                                // More than one root site folder exits
-                                logger.warn("More than one root sites folder exists: \n" + results);
+                                result = results.get(0);
                             }
                             
-                            return results.get(0);
+                            return result;
                         }
                     }, true);
                 }
@@ -591,80 +589,87 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // TODO: take into consideration the sitePresetFilter
         
         NodeRef siteRoot = getSiteRoot();
-        if (nameFilter != null && nameFilter.length() != 0)
+        if (siteRoot == null)
         {
-            String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
-            // Perform a Lucene search under the Site parent node using *name*, title and description search query
-            final QueryParameterDefinition[] params = new QueryParameterDefinition[3];
-            params[0] = new QueryParameterDefImpl(
-                    ContentModel.PROP_NAME,
-                    dictionaryService.getDataType(
-                            DataTypeDefinition.TEXT),
-                            true,
-                            escNameFilter);
-            
-            params[1] = new QueryParameterDefImpl(
-                    ContentModel.PROP_TITLE,
-                    dictionaryService.getDataType(
-                            DataTypeDefinition.TEXT),
-                            true,
-                            escNameFilter);
-            
-            params[2] = new QueryParameterDefImpl(
-                    ContentModel.PROP_DESCRIPTION,
-                    dictionaryService.getDataType(
-                            DataTypeDefinition.TEXT),
-                            true,
-                            escNameFilter);
-            
-            // get the sites that match the specified names
-            StringBuilder query = new StringBuilder(128);
-            query.append("+PARENT:\"").append(siteRoot.toString())
-                 .append("\" +(@cm\\:name:\"*${cm:name}*\"")
-                 .append(" @cm\\:title:\"${cm:title}\"")
-                 .append(" @cm\\:description:\"${cm:description}\")");
-            ResultSet results = this.searchService.query(
-                    siteRoot.getStoreRef(),
-                    SearchService.LANGUAGE_LUCENE,
-                    query.toString(),
-                    params);                        
-            try
+            result = new ArrayList<SiteInfo>(0);
+        }
+        else
+        {
+            if (nameFilter != null && nameFilter.length() != 0)
             {
-                result = new ArrayList<SiteInfo>(results.length());
-                for (NodeRef site : results.getNodeRefs())
+                String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
+                // Perform a Lucene search under the Site parent node using *name*, title and description search query
+                final QueryParameterDefinition[] params = new QueryParameterDefinition[3];
+                params[0] = new QueryParameterDefImpl(
+                        ContentModel.PROP_NAME,
+                        dictionaryService.getDataType(
+                                DataTypeDefinition.TEXT),
+                                true,
+                                escNameFilter);
+                
+                params[1] = new QueryParameterDefImpl(
+                        ContentModel.PROP_TITLE,
+                        dictionaryService.getDataType(
+                                DataTypeDefinition.TEXT),
+                                true,
+                                escNameFilter);
+                
+                params[2] = new QueryParameterDefImpl(
+                        ContentModel.PROP_DESCRIPTION,
+                        dictionaryService.getDataType(
+                                DataTypeDefinition.TEXT),
+                                true,
+                                escNameFilter);
+                
+                // get the sites that match the specified names
+                StringBuilder query = new StringBuilder(128);
+                query.append("+PARENT:\"").append(siteRoot.toString())
+                     .append("\" +(@cm\\:name:\"*${cm:name}*\"")
+                     .append(" @cm\\:title:\"${cm:title}\"")
+                     .append(" @cm\\:description:\"${cm:description}\")");
+                ResultSet results = this.searchService.query(
+                        siteRoot.getStoreRef(),
+                        SearchService.LANGUAGE_LUCENE,
+                        query.toString(),
+                        params);                        
+                try
+                {
+                    result = new ArrayList<SiteInfo>(results.length());
+                    for (NodeRef site : results.getNodeRefs())
+                    {
+                        // Ignore any node type that is not a "site"
+                        QName siteClassName = this.nodeService.getType(site);
+                        if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
+                        {
+                            result.add(createSiteInfo(site));
+                            // break on max size limit reached
+                            if (result.size() == size) break;
+                        }
+                    }
+                }
+                finally
+                {
+                    results.close();
+                }
+            }
+            else
+            {
+                // Get ALL sites - this may be a very slow operation if there are many sites...
+                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
+                        siteRoot, ContentModel.ASSOC_CONTAINS,
+                        RegexQNamePattern.MATCH_ALL);
+                result = new ArrayList<SiteInfo>(assocs.size());
+                for (ChildAssociationRef assoc : assocs)
                 {
                     // Ignore any node type that is not a "site"
+                    NodeRef site = assoc.getChildRef();
                     QName siteClassName = this.nodeService.getType(site);
                     if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
-                    {
+                    {            
                         result.add(createSiteInfo(site));
                         // break on max size limit reached
                         if (result.size() == size) break;
                     }
-                }
-            }
-            finally
-            {
-                results.close();
-            }
-        }
-        else
-        {
-            // Get ALL sites - this may be a very slow operation if there are many sites...
-            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
-                    siteRoot, ContentModel.ASSOC_CONTAINS,
-                    RegexQNamePattern.MATCH_ALL);
-            result = new ArrayList<SiteInfo>(assocs.size());
-            for (ChildAssociationRef assoc : assocs)
-            {
-                // Ignore any node type that is not a "site"
-                NodeRef site = assoc.getChildRef();
-                QName siteClassName = this.nodeService.getType(site);
-                if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
-                {            
-                    result.add(createSiteInfo(site));
-                    // break on max size limit reached
-                    if (result.size() == size) break;
                 }
             }
         }
@@ -676,7 +681,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String)
      */
     public List<SiteInfo> listSites(String userName)
-    {
+    {        
+        List<SiteInfo> result = null;
+        
         // get the Groups this user is contained within (at any level)
         Set<String> groups = this.authorityService.getContainingAuthorities(null, userName, false);
         Set<String> siteNames = new HashSet<String>(groups.size());
@@ -702,25 +709,32 @@ public class SiteServiceImpl implements SiteService, SiteModel
         
         // retrieve the site nodes based on the list from the containing site groups
         NodeRef siteRoot = getSiteRoot();
-        List<String> siteList = new ArrayList<String>(siteNames);
-        // ensure we do not trip over the getChildrenByName() 1000 item API limit!
-        if (siteList.size() > 1000)
+        if (siteRoot == null)
         {
-            siteList = siteList.subList(0, 1000);
+            result = new ArrayList<SiteInfo>(0);
         }
-        List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
-                siteRoot,
-                ContentModel.ASSOC_CONTAINS,
-                siteList);
-        List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
-        for (ChildAssociationRef assoc : assocs)
+        else
         {
-            // Ignore any node that is not a "site" type
-            NodeRef site = assoc.getChildRef();
-            QName siteClassName = this.nodeService.getType(site);
-            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
+            List<String> siteList = new ArrayList<String>(siteNames);
+            // ensure we do not trip over the getChildrenByName() 1000 item API limit!
+            if (siteList.size() > 1000)
             {
-                result.add(createSiteInfo(site));
+                siteList = siteList.subList(0, 1000);
+            }
+            List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
+                    siteRoot,
+                    ContentModel.ASSOC_CONTAINS,
+                    siteList);
+            result = new ArrayList<SiteInfo>(assocs.size());
+            for (ChildAssociationRef assoc : assocs)
+            {
+                // Ignore any node that is not a "site" type
+                NodeRef site = assoc.getChildRef();
+                QName siteClassName = this.nodeService.getType(site);
+                if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
+                {
+                    result.add(createSiteInfo(site));
+                }
             }
         }
         

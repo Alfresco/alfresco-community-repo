@@ -235,6 +235,35 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         });
     }
     
+    public void testRenderFreeMarkerTemplateOneTransaction() throws Exception
+    {
+        this.setComplete();
+        this.endTransaction();
+        final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
+                    TemplatingRenderingEngine.NAME);
+
+        this.renditionNode = transactionHelper
+                    .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+                    {
+                        public NodeRef execute() throws Throwable
+                        {
+                            // create test model
+                            RenditionDefinition definition = renditionService.createRenditionDefinition(renditionName,
+                                        TemplatingRenderingEngine.NAME);
+                            definition.setParameterValue(TemplatingRenderingEngine.PARAM_TEMPLATE_NODE,
+                                        nodeWithFreeMarkerContent);
+                            ChildAssociationRef renditionAssoc = renditionService
+                                        .render(nodeWithDocContent, definition);
+                            assertNotNull("The rendition association was null", renditionAssoc);
+                            String output = readTextContent(renditionAssoc.getChildRef());
+                            assertNotNull("The rendition content was null.", output);
+                            // check the output contains root node Id as expected.
+                            assertTrue(output.contains(nodeWithDocContent.getId()));
+                            return null;
+                        }
+                    });
+    }
+    
     public void testRenderFreemarkerTemplatePath() throws Exception
     {
         //TODO displayName paths.

@@ -135,6 +135,23 @@
       </property>
    </bean>
    
+   <bean id="xsltRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.XSLTRenderingEngine"
+      parent="baseRenderingAction">
+      <property name="templateService" ref="TemplateService" />
+      <property name="xsltFunctions" ref="xsltFunctions" />
+      <property name="namespacePrefixResolver" ref="NamespaceService" />
+      <property name="fileFolderService" ref="FileFolderService" />
+      <property name="searchService" ref="SearchService" />
+   </bean>
+   
+   <bean id="xsltFunctions" class="org.alfresco.repo.rendition.executer.XSLTFunctions">
+      <property name="fileService" ref="FileFolderService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+   </bean>
    
    <!-- Behaviours and policies for Renditions -->
    

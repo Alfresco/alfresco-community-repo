@@ -26,13 +26,11 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.ApplicationContextHelper;
 
 import freemarker.cache.TemplateLoader;
 
@@ -85,8 +83,14 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
         }
         else
         {
-            URL url = this.getClass().getClassLoader().getResource(name);
-            return url == null ? null : new ClassPathTemplateSource(url, encoding);
+            //Fix a common problem: classpath resource paths should not start with "/"
+            if (name.startsWith("/"))
+            {
+                name = name.substring(1);
+            }
+            ClassLoader classLoader = getClass().getClassLoader();
+            URL url = classLoader.getResource(name);
+            return url == null ? null : new ClassPathTemplateSource(classLoader, name, encoding);
         }
     }
     
@@ -116,13 +120,20 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
     /**
      * Class used as a base for custom Template Source objects
      */
-    abstract class BaseTemplateSource
+    abstract class BaseTemplateSource implements TemplateSource
     {
         public abstract Reader getReader(String encoding) throws IOException;
         
         public abstract void close() throws IOException;
         
         public abstract long lastModified();
+        
+        public InputStream getResource(String name)
+        {
+            return getRelativeResource(name);
+        }
+        
+        protected abstract InputStream getRelativeResource(String name);
     }
     
     
@@ -135,10 +146,14 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
         private URLConnection conn;
         private InputStream inputStream;
         private String encoding;
+        private ClassLoader classLoader;
+        private String resourceName;
         
-        ClassPathTemplateSource(URL url, String encoding) throws IOException
+        ClassPathTemplateSource(ClassLoader classLoader, String name, String encoding) throws IOException
         {
-            this.url = url;
+            this.classLoader = classLoader;
+            this.resourceName = name;
+            this.url = classLoader.getResource(name);
             this.conn = url.openConnection();
             this.encoding = encoding;
         }
@@ -196,6 +211,32 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
             {
                 inputStream = null;
                 conn = null;
+            }
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.template.ClassPathRepoTemplateLoader.BaseTemplateSource#getRelativeResource(java.lang.String)
+         */
+        @Override
+        protected InputStream getRelativeResource(String name)
+        {
+            String newResourceName = name;
+            if (!name.startsWith("/"))
+            {
+                int lastSlash = resourceName.lastIndexOf('/');
+                if (lastSlash != -1)
+                {
+                    newResourceName = name.substring(0, lastSlash) + "/" + name; 
+                }
+            }
+            URL url = classLoader.getResource(newResourceName);
+            try
+            {
+                return (url == null) ? null : url.openConnection().getInputStream();
+            } 
+            catch (IOException e)
+            {
+                return null;
             }
         }
     }
@@ -262,6 +303,26 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
                 inputStream = null;
                 conn = null;
             }
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.template.ClassPathRepoTemplateLoader.BaseTemplateSource#getRelativeResource(java.lang.String)
+         */
+        @Override
+        protected InputStream getRelativeResource(String name)
+        {
+            InputStream stream = null;
+            NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+            NodeRef child = nodeService.getChildByName(parentRef, ContentModel.ASSOC_CONTAINS, name);
+            if (child != null)
+            {
+                ContentReader contentReader = contentService.getReader(child, ContentModel.PROP_CONTENT);
+                if (contentReader.exists())
+                {
+                    stream = contentReader.getContentInputStream();
+                }
+            }
+            return stream;
         }
     }
 }

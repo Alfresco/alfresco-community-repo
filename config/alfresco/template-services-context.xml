@@ -31,6 +31,15 @@
         </property>
     </bean>
     
+    <bean id="xsltProcessor" parent="baseTemplateProcessor" class="org.alfresco.repo.template.XSLTProcessor">
+        <property name="name">
+            <value>xslt</value>
+        </property>
+        <property name="extension">
+            <value>xsl</value>
+        </property>
+    </bean>
+    
     <!-- base config implementation that template extension beans extend from - for auto registration
          as a global template helper with the TemplateService -->
     <bean id="baseTemplateImplementation" abstract="true" init-method="register">

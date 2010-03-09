@@ -53,7 +53,8 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * The implementation of the model DAO Reads and stores the top level model information Encapsulates access to this
@@ -61,7 +62,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author andyh
  */
-public class PermissionModel implements ModelDAO, InitializingBean
+public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 {
     // IOC
 
@@ -166,15 +167,21 @@ public class PermissionModel implements ModelDAO, InitializingBean
         this.nodeService = nodeService;
     }
 
-    /*
-     * Initialise from file (non-Javadoc)
-     * 
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
 
-    public void afterPropertiesSet()
+    /**
+     * Adds the {@link #setModel(String) model}.
+     */
+    protected void onBootstrap(ApplicationEvent event)
     {
         addPermissionModel(this.model);
+    }
+
+    /**
+     * No-op
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
 
     /**
@@ -213,10 +220,10 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
         // Namespaces
 
-        for (Iterator nsit = root.elementIterator(NAMESPACES); nsit.hasNext(); /**/)
+        for (Iterator<?> nsit = root.elementIterator(NAMESPACES); nsit.hasNext(); /**/)
         {
             Element namespacesElement = (Element) nsit.next();
-            for (Iterator it = namespacesElement.elementIterator(NAMESPACE); it.hasNext(); /**/)
+            for (Iterator<?> it = namespacesElement.elementIterator(NAMESPACE); it.hasNext(); /**/)
             {
                 Element nameSpaceElement = (Element) it.next();
                 nspr.registerNamespace(nameSpaceElement.attributeValue(NAMESPACE_PREFIX), nameSpaceElement.attributeValue(NAMESPACE_URI));
@@ -225,7 +232,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
         // Permission Sets
 
-        for (Iterator psit = root.elementIterator(PERMISSION_SET); psit.hasNext(); /**/)
+        for (Iterator<?> psit = root.elementIterator(PERMISSION_SET); psit.hasNext(); /**/)
         {
             Element permissionSetElement = (Element) psit.next();
             PermissionSet permissionSet = new PermissionSet();
@@ -238,7 +245,7 @@ public class PermissionModel implements ModelDAO, InitializingBean
 
         // NodePermissions
 
-        for (Iterator npit = root.elementIterator(GLOBAL_PERMISSION); npit.hasNext(); /**/)
+        for (Iterator<?> npit = root.elementIterator(GLOBAL_PERMISSION); npit.hasNext(); /**/)
         {
             Element globalPermissionElement = (Element) npit.next();
             GlobalPermissionEntry globalPermission = new GlobalPermissionEntry();

@@ -65,7 +65,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions
@@ -73,10 +75,10 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author andyh
  */
-public class PermissionServiceImpl implements PermissionServiceSPI, InitializingBean
+public class PermissionServiceImpl extends AbstractLifecycleBean implements PermissionServiceSPI
 {
-
-    static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(QName.createQName("", PermissionService.ALL_PERMISSIONS),
+    static SimplePermissionReference OLD_ALL_PERMISSIONS_REFERENCE = new SimplePermissionReference(
+            QName.createQName("", PermissionService.ALL_PERMISSIONS),
             PermissionService.ALL_PERMISSIONS);
 
     private static Log log = LogFactory.getLog(PermissionServiceImpl.class);
@@ -247,49 +249,32 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         accessCache.clear();
     }
 
-    public void afterPropertiesSet() throws Exception
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        if (dictionaryService == null)
-        {
-            throw new IllegalArgumentException("Property 'dictionaryService' has not been set");
-        }
-        if (modelDAO == null)
-        {
-            throw new IllegalArgumentException("Property 'modelDAO' has not been set");
-        }
-        if (nodeService == null)
-        {
-            throw new IllegalArgumentException("Property 'nodeService' has not been set");
-        }
-        if (permissionsDaoComponent == null)
-        {
-            throw new IllegalArgumentException("Property 'permissionsDAO' has not been set");
-        }
-        if (authorityService == null)
-        {
-            throw new IllegalArgumentException("Property 'authorityService' has not been set");
-        }
-        if (accessCache == null)
-        {
-            throw new IllegalArgumentException("Property 'accessCache' has not been set");
-        }
-        if (policyComponent == null)
-        {
-            throw new IllegalArgumentException("Property 'policyComponent' has not been set");
-        }
-        if (aclDaoComponent == null)
-        {
-            throw new IllegalArgumentException("Property 'aclDaoComponent' has not been set");
-        }
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "modelDAO", modelDAO);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "permissionsDaoComponent", permissionsDaoComponent);
+        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "accessCache", accessCache);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "aclDaoComponent", aclDaoComponent);
 
         allPermissionReference = getPermissionReference(ALL_PERMISSIONS);
-        
+    }
+
+    /**
+     * No-op
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
     
     public void init()
     {
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
-
     }
 
     //

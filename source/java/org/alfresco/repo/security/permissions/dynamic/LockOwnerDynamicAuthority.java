@@ -35,12 +35,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * LockOwnerDynamicAuthority
  */
-public class LockOwnerDynamicAuthority implements DynamicAuthority, InitializingBean
+public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements DynamicAuthority
 {
     private LockService lockService;
     
@@ -94,23 +96,14 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
         return PermissionService.LOCK_OWNER_AUTHORITY;
     }
 
-    public void afterPropertiesSet() throws Exception
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
-        if(lockService == null)
-        {
-            throw new IllegalStateException("The LockService must be set");
-        }
-        if(nodeService == null)
-        {
-            throw new IllegalStateException("The NodeService service must be set");
-        }
-        if(modelDAO == null)
-        {
-            throw new IllegalStateException("The ModelDAO service must be set");
-        }
-        
-        // buld the permission set
-        
+        PropertyCheck.mandatory(this, "lockService", lockService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "modelDAO", modelDAO);
+
+        // Build the permission set
         if(requiredFor != null)
         {
             whenRequired = new HashSet<PermissionReference>();
@@ -121,6 +114,14 @@ public class LockOwnerDynamicAuthority implements DynamicAuthority, Initializing
                 whenRequired.addAll(modelDAO.getGrantingPermissions(permissionReference));
             }
         }
+    }
+
+    /**
+     * No-op
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
 
     /**

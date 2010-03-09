@@ -14,6 +14,22 @@
 <beans>
 
 
+    <!-- ===================== -->
+    <!-- Permissions Model DAO -->
+    <!-- ===================== -->
+
+    <bean id='permissionsModelDAO' class="org.alfresco.repo.security.permissions.impl.model.PermissionModel">
+        <property name="model">
+            <value>alfresco/model/permissionDefinitions.xml</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+    
     <!-- ======================= -->
     <!-- Support for permissions -->
     <!-- ========================-->
@@ -109,22 +125,6 @@
 		</property>
     </bean>
 
-    <!-- ===================== -->
-    <!-- Permissions Model DAO -->
-    <!-- ===================== -->
-
-    <bean id='permissionsModelDAO' class="org.alfresco.repo.security.permissions.impl.model.PermissionModel">
-        <property name="model">
-            <value>alfresco/model/permissionDefinitions.xml</value>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-    </bean>
-    
     <!-- =========================== -->
     <!-- Permissions Model Bootstrap -->
     <!-- =========================== -->

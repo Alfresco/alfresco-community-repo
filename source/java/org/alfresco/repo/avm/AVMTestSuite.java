@@ -22,6 +22,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.alfresco.repo.avm.locking.AVMLockingServiceTest;
+import org.alfresco.repo.avm.util.VersionPathTest;
+import org.alfresco.util.ApplicationContextHelper;
 
 /**
  * AVM test suite
@@ -36,6 +38,11 @@ public class AVMTestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
+        
+        // Ensure that the default context is available
+        ApplicationContextHelper.getApplicationContext();
+        
+        // Add the tests to be run
         
         suite.addTestSuite(AVMNodeConverterTest.class);
         suite.addTestSuite(AVMExpiredContentTest.class);
@@ -58,6 +65,13 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(SimultaneousLoadTest.class);
         suite.addTestSuite(AVMDiffPerformanceTest.class);
         suite.addTestSuite(AVMChildNamePatternMatchPerformanceTest.class);
+        
+        suite.addTestSuite(VersionPathTest.class);
+        suite.addTestSuite(WCMInheritPermissionsTest.class);
+
+        // This should go last, as its uses a different
+        //  context to the other tests
+        suite.addTestSuite(AVMServiceRemoteSystemTest.class);
         
         return suite;
     }

@@ -63,19 +63,19 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * The AVMRemote - can be local (AVMRemoteLocal) or remote (AVMRemote)
      */
-    protected static AVMRemote fService;
+    protected AVMRemote fService;
 
     /**
      * The AVMSyncService - can be local (AVMSyncService) or remote (AVMSyncServiceRemote)
      */
-    protected static AVMSyncService fSyncService;
+    protected AVMSyncService fSyncService;
     
     /**
      * The application context.
      */
-    protected static ApplicationContext fContext;
+    protected ApplicationContext fContext;
 
-    protected static NameMatcher excluder;
+    protected NameMatcher excluder;
     
     
     protected void setUp() throws Exception

@@ -17,5 +17,4 @@
     <import resource="classpath:alfresco/cmis-api-context.xml" />
     <import resource="classpath:alfresco/period-type-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
-    <import resource="classpath*:alfresco/linkvalidation-service-context.xml"/>
 </beans>

@@ -167,9 +167,6 @@ public class RepositoryStartStopTest extends TestCase
      *  Test that we can bring up and close down
      *  a context twice without error, using it
      *  when running. 
-     *  
-     *  - the full context breaks
-     *  when you close and re-open it!
      */
     public void testOpenCloseOpenCloseFull() throws Exception
     {
@@ -209,9 +206,6 @@ public class RepositoryStartStopTest extends TestCase
      * Does this by opening and closing contexts
      *  4 different times, sometimes full ones,
      *  sometimes minimal ones with no autostart.
-     *  
-     *  - the full context breaks
-     *  when you close and re-open it!
      */
     public void testOpenCloseRepeatedly() throws Exception {
        assertNoCachedApplicationContext();

@@ -37,6 +37,7 @@ import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServiceException;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISVersioningStateEnum;
 import org.alfresco.repo.cmis.PropertyFilter;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
@@ -320,8 +322,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
                 {
                     throw ExceptionUtil.createCmisException("Target object type isn't allowed as target type", EnumServiceException.CONSTRAINT);
                 }
-                String createdId = nodeService.createAssociation(sourceNodeRef, targetNodeRef, relationshipTypeQName).toString();
-                objectId.value = createdId;
+                AssociationRef assocRef = nodeService.createAssociation(sourceNodeRef, targetNodeRef, relationshipTypeQName);
+                objectId.value = CMISServices.ASSOC_ID_PREFIX + assocRef.getId();
             }
             else
             {
@@ -428,7 +430,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
 
         try
         {
-            NodeRef object = cmisService.getReadableObject(objectId, NodeRef.class);
+            Object object = cmisService.getReadableObject(objectId, Object.class);
             PropertyFilter propertyFilter = createPropertyFilter(filter);
             CmisObjectType cmisObject = createCmisObject(object, propertyFilter, includeRelationships,
                     includeAllowableActions, renditionFilter);

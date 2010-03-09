@@ -35,7 +35,7 @@ public class TransferTestUtil
         TransferTarget target;
         if (!transferService.targetExists(TEST_TARGET_NAME))
         {
-            target = transferService.createTransferTarget(TEST_TARGET_NAME, "Test Target", "Test Target", "http",
+            target = transferService.createAndSaveTransferTarget(TEST_TARGET_NAME, "Test Target", "Test Target", "http",
                     "localhost", 8090, "/alfresco/service/api/transfer", "admin", "admin".toCharArray());
         }
         else

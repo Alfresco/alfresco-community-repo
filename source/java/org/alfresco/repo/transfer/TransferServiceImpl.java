@@ -122,56 +122,93 @@ public class TransferServiceImpl implements TransferService
     private long commitPollDelay = 2000;
     
     /**
-     * create transfer target
+     * Create a new in memory transfer target
      */
-    public TransferTarget createTransferTarget(String name, String title, String description, String endpointProtocol, String endpointHost, int endpointPort, String endpointPath, String username, char[] password)
-    { 
-        /**
-         * Check whether name is already used
-         */
+    public TransferTarget createTransferTarget(String name)
+    {
         NodeRef dummy = lookupTransferTarget(name);
         if(dummy != null)
         {
             throw new TransferException(MSG_TARGET_EXISTS, new Object[]{name} );
         }
         
+        TransferTargetImpl newTarget = new TransferTargetImpl();
+        newTarget.setName(name);
+        return newTarget;
+    }
+    
+    /**
+     * create transfer target
+     */
+    public TransferTarget createAndSaveTransferTarget(String name, String title, String description, String endpointProtocol, String endpointHost, int endpointPort, String endpointPath, String username, char[] password)
+    {
+        TransferTargetImpl newTarget = new TransferTargetImpl();
+        newTarget.setName(name);
+        newTarget.setTitle(title);
+        newTarget.setDescription(description);
+        newTarget.setEndpointProtocol(endpointProtocol);
+        newTarget.setEndpointHost(endpointHost);
+        newTarget.setEndpointPort(endpointPort);
+        newTarget.setEndpointPath(endpointPath);
+        newTarget.setUsername(username);
+        newTarget.setPassword(password);
+        return createTransferTarget(newTarget);
+        
+    }
+    
+    /**
+     * create transfer target
+     */
+    private TransferTarget createTransferTarget(TransferTarget newTarget)
+    {
+        /**
+         * Check whether name is already used
+         */
+        NodeRef dummy = lookupTransferTarget(newTarget.getName());
+        if (dummy != null) { throw new TransferException(MSG_TARGET_EXISTS,
+                    new Object[] { newTarget.getName() }); }
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        
+
         // type properties
-        properties.put(TransferModel.PROP_ENDPOINT_HOST, endpointHost);
-        properties.put(TransferModel.PROP_ENDPOINT_PORT, endpointPort);
-        properties.put(TransferModel.PROP_ENDPOINT_PROTOCOL, endpointProtocol);
-        properties.put(TransferModel.PROP_ENDPOINT_PATH, endpointPath);
-        properties.put(TransferModel.PROP_USERNAME, username);
-        properties.put(TransferModel.PROP_PASSWORD, encrypt(password));
-        
+        properties.put(TransferModel.PROP_ENDPOINT_HOST, newTarget.getEndpointHost());
+        properties.put(TransferModel.PROP_ENDPOINT_PORT, newTarget.getEndpointPort());
+        properties.put(TransferModel.PROP_ENDPOINT_PROTOCOL, newTarget.getEndpointProtocol());
+        properties.put(TransferModel.PROP_ENDPOINT_PATH, newTarget.getEndpointPath());
+        properties.put(TransferModel.PROP_USERNAME, newTarget.getUsername());
+        properties.put(TransferModel.PROP_PASSWORD, encrypt(newTarget.getPassword()));
+
         // titled aspect
-        properties.put(ContentModel.PROP_TITLE, title);
-        properties.put(ContentModel.PROP_NAME, name);
-        properties.put(ContentModel.PROP_DESCRIPTION, description);
-        
+        properties.put(ContentModel.PROP_TITLE, newTarget.getTitle());
+        properties.put(ContentModel.PROP_NAME, newTarget.getName());
+        properties.put(ContentModel.PROP_DESCRIPTION, newTarget.getDescription());
+
         // enableable aspect
         properties.put(TransferModel.PROP_ENABLED, Boolean.TRUE);
-        
+
         NodeRef home = getTransferHome();
-        
+
         /**
-         * Work out which group the transfer target is for, in this case the default group.
+         * Work out which group the transfer target is for, in this case the
+         * default group.
          */
-        NodeRef defaultGroup = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS, defaultTransferGroup);
-        
+        NodeRef defaultGroup = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS,
+                    defaultTransferGroup);
+
         /**
          * Go ahead and create the new node
          */
-        ChildAssociationRef ref = nodeService.createNode(defaultGroup, ContentModel.ASSOC_CONTAINS, QName.createQName(TransferModel.TRANSFER_MODEL_1_0_URI, name), TransferModel.TYPE_TRANSFER_TARGET, properties);
-        
+        ChildAssociationRef ref = nodeService.createNode(defaultGroup, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(TransferModel.TRANSFER_MODEL_1_0_URI, newTarget.getName()),
+                    TransferModel.TYPE_TRANSFER_TARGET, properties);
+
         /**
          * Now create a new TransferTarget object to return to the caller.
          */
-        TransferTargetImpl newTarget = new TransferTargetImpl();
-        mapTransferTarget(ref.getChildRef(), newTarget);
+        TransferTargetImpl retVal = new TransferTargetImpl();
+        mapTransferTarget(ref.getChildRef(), retVal);
 
-        return newTarget;
+        return retVal;
     }
 
     /**
@@ -289,10 +326,16 @@ public class TransferServiceImpl implements TransferService
     }
 
     /**
-     * 
+     * create or update a transfer target.
      */
-    public TransferTarget updateTransferTarget(TransferTarget update)
-    {       
+    public TransferTarget saveTransferTarget(TransferTarget update)
+    {  
+        if(update.getNodeRef() == null)
+        {
+            // This is a save for the first time
+            return createTransferTarget(update);
+        }
+        
         NodeRef nodeRef = lookupTransferTarget(update.getName());
         if(nodeRef == null)
         {
@@ -1066,4 +1109,6 @@ public class TransferServiceImpl implements TransferService
         String transferId;
         boolean cancelMe = false;
     }
+
+
 }

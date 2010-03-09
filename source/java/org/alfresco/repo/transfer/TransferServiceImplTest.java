@@ -148,7 +148,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Now go ahead and create our first transfer target
              */
-            TransferTarget ret = transferService.createTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            TransferTarget ret = transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
             assertNotNull("return value is null", ret);
             assertNotNull("node ref is null", ret.getNodeRef());
             
@@ -181,7 +181,88 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Negative test - try to create a transfer target with a name that's already used.
              */
-            transferService.createTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            fail("duplicate name not detected");
+        }
+        catch (TransferException e)
+        {
+            // expect to go here
+        }
+        finally
+        {
+            endTransaction();
+        }
+    }
+    
+    /**
+     * Test create target via in memory data object.
+     * 
+     * @throws Exception
+     */
+    public void testCreateTargetSyntax2() throws Exception
+    {
+        String name = "nameSyntax2";
+        String title = "title";
+        String description = "description";
+        String endpointProtocol = "http";
+        String endpointHost = "localhost";
+        int endpointPort = 8080;
+        String endpointPath = "rhubarb";
+        String username = "admin";
+        char[] password = "password".toCharArray();
+        
+        
+        startNewTransaction();
+        try 
+        {
+            /**
+             * Now go ahead and create our first transfer target
+             */
+            TransferTarget newValue = transferService.createTransferTarget(name);
+            newValue.setDescription(description);
+            newValue.setEndpointHost(endpointHost);
+            newValue.setEndpointPort(endpointPort);
+            newValue.setEndpointPath(endpointPath);
+            newValue.setEndpointProtocol(endpointProtocol);
+            newValue.setPassword(password);
+            newValue.setTitle(title);
+            newValue.setUsername(username);
+            
+            TransferTarget ret = transferService.saveTransferTarget(newValue);
+            
+            assertNotNull("return value is null", ret);
+            assertNotNull("node ref is null", ret.getNodeRef());
+            
+            //titled aspect
+            assertEquals("name not equal", ret.getName(), name);
+            assertEquals("title not equal", ret.getTitle(), title);
+            assertEquals("description not equal", ret.getDescription(), description);
+            
+            // endpoint 
+            assertEquals("endpointProtocol not equal", ret.getEndpointProtocol(), endpointProtocol);
+            assertEquals("endpointHost not equal", ret.getEndpointHost(), endpointHost);
+            assertEquals("endpointPort not equal", ret.getEndpointPort(), endpointPort);
+            assertEquals("endpointPath not equal", ret.getEndpointPath(), endpointPath);
+            
+            // authentication
+            assertEquals("username not equal", ret.getUsername(), username);
+            char[] password2 = ret.getPassword();
+            
+            assertEquals(password.length, password2.length);
+            
+            for(int i = 0; i < password.length; i++)
+            {
+                if(password[i] != password2[i])
+                {
+                    fail("password not equal:" + new String(password) + new String(password2));
+                }
+            }
+
+            
+            /**
+             * Negative test - try to create a transfer target with a name that's already used.
+             */
+            transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
             fail("duplicate name not detected");
         }
         catch (TransferException e)
@@ -218,8 +299,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Now go ahead and create our first transfer target
              */
-            TransferTarget targetA = transferService.createTransferTarget(nameA, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
-            TransferTarget targetB = transferService.createTransferTarget(nameB, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            TransferTarget targetA = transferService.createAndSaveTransferTarget(nameA, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            TransferTarget targetB = transferService.createAndSaveTransferTarget(nameB, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
             
             Set<TransferTarget> targets = transferService.getTransferTargets();
             assertTrue("targets is empty", targets.size() > 0);
@@ -258,7 +339,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Now go ahead and create our first transfer target
              */
-            transferService.createTransferTarget(getMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            transferService.createAndSaveTransferTarget(getMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
             
             Set<TransferTarget> targets = transferService.getTransferTargets("Default Group");
             assertTrue("targets is empty", targets.size() > 0);     
@@ -301,12 +382,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Create our transfer target
              */
-            TransferTarget target = transferService.createTransferTarget(updateMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            TransferTarget target = transferService.createAndSaveTransferTarget(updateMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
             
             /*
              * Now update with exactly the same values.
              */
-            TransferTarget update1 = transferService.updateTransferTarget(target);
+            TransferTarget update1 = transferService.saveTransferTarget(target);
             
             assertNotNull("return value is null", update1);
             assertNotNull("node ref is null", update1.getNodeRef());
@@ -357,7 +438,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             target.setPassword(password2);
             target.setUsername(username2);
             
-            TransferTarget update2 = transferService.updateTransferTarget(target);
+            TransferTarget update2 = transferService.saveTransferTarget(target);
             assertNotNull("return value is null", update2);
             assertNotNull("node ref is null", update2.getNodeRef());
             
@@ -413,7 +494,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             /**
              * Now go ahead and create our first transfer target
              */
-            transferService.createTransferTarget(deleteMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+            transferService.createAndSaveTransferTarget(deleteMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
                             
             transferService.deleteTransferTarget(deleteMe);
             
@@ -1808,7 +1889,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         /**
          * Now go ahead and create our first transfer target
          */
-        TransferTarget target = transferService.createTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+        TransferTarget target = transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
         return target;
     }
 

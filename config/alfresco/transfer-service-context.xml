@@ -221,4 +221,12 @@
 		</property>
 		<property name="serviceRegistry" ref="ServiceRegistry" />
 	</bean>
+   
+   <bean id="transferServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.transfer.script.ScriptTransferService">
+        <property name="extensionName">
+            <value>transfer</value>
+        </property>
+        <property name="transferService" ref="TransferService"/>
+   </bean>
+   
 </beans>

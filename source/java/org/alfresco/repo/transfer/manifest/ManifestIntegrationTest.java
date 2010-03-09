@@ -101,7 +101,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         /**
          * Create our transfer target
          */
-        TransferTarget target = transferService.createTransferTarget(snapshotMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+        TransferTarget target = transferService.createAndSaveTransferTarget(snapshotMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
                 
         File snapshotFile = null;
         

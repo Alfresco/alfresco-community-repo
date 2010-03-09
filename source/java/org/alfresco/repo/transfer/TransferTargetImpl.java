@@ -139,7 +139,14 @@ public class TransferTargetImpl implements TransferTarget
             return false;
         }
         TransferTargetImpl that = (TransferTargetImpl) obj;
-        return (this.getNodeRef().equals(that.getNodeRef()));
+        if(this.getNodeRef() == null)
+        {
+            return (this.getName().equals(that.getName()));
+        }
+        else
+        {
+            return (this.getNodeRef().equals(that.getNodeRef()));
+        }
     }
 
     /**
@@ -148,6 +155,10 @@ public class TransferTargetImpl implements TransferTarget
      */
     public int hashCode()
     {
+        if(nodeRef == null)
+        {
+            return 0;
+        }
         return getNodeRef().hashCode();
     }
     

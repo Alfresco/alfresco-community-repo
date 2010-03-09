@@ -106,16 +106,17 @@ public interface TransferService
    * 
    * @throws TransferException
    */       
-  public void transferAsync(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
+   public void transferAsync(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
 
-    /**
-      * Verify a target is available and that the configured credentials correctly identify an admin user.     
-      * @throws TransferException  
-      */
-    public void verify(TransferTarget target) throws TransferException;
+   /**
+    * Verify a target is available and that the configured credentials correctly identify an admin user.     
+    * @throws TransferException  
+    */
+   public void verify(TransferTarget target) throws TransferException;
     
     /**
-     * crate a new transfer target 
+     * Create and save a new transfer target.  Creates and saves a new transfer target with a single, but long, method call.
+     *  
      * @param name, the name of this transfer target, which must be unique
      * @param title, the display name of this transfer target
      * @param description,
@@ -125,8 +126,26 @@ public interface TransferService
      * @param endpointPath, 
      * @param username, 
      * @param password,
+     * @return the newly create transfer target.
      */
-    public TransferTarget createTransferTarget(String name, String title, String description, String endpointProtocol, String endpointHost, int endpointPort, String endpointPath, String username, char[] password) throws TransferException;
+    public TransferTarget createAndSaveTransferTarget(String name, String title, String description, String endpointProtocol, String endpointHost, int endpointPort, String endpointPath, String username, char[] password) throws TransferException;
+    
+    /**
+     * Creates an in memory transfer target.  Before it is used it must be populated with the following values and
+     * saved with the saveTransferTarget method.   The name of the transfer target must be unique.
+     * <ul>
+     * <li>title</li>
+     * <li>description</li>
+     * <li>endpointProtocol</li> 
+     * <li>endpointHost</li>
+     * <li>endpointPort</li>
+     * <li>endpointPath</li>
+     * <li>username</li>
+     * <li>password</li>
+     * </ul>
+     * @return an in memory transfer target
+     */
+    public TransferTarget createTransferTarget(String name);
 
     /**
       * Get all the transfer targets
@@ -160,7 +179,8 @@ public interface TransferService
     public void deleteTransferTarget(String name) throws TransferException;
     
     /**
-     * Update TransferTarget
+     * Save TransferTarget, will create a transfer target if it does not already exist or update an existing transfer target.
+     * 
      * The following properties may be updated:
      *    endpointHost,
      *    endpointPort,
@@ -177,7 +197,7 @@ public interface TransferService
      *    
      *    @param update
      */
-    public TransferTarget updateTransferTarget(TransferTarget update) throws TransferException;
+    public TransferTarget saveTransferTarget(TransferTarget update) throws TransferException;
     
     /**
      * Enables/Disables the named transfer target

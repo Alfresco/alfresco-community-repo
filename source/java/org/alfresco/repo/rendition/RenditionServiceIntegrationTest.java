@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +40,9 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.repo.rendition.executer.FreemarkerRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
-import org.alfresco.repo.rendition.executer.TemplatingRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.Action;
@@ -59,7 +58,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -203,7 +201,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.setComplete();
         this.endTransaction();
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
-                    TemplatingRenderingEngine.NAME);
+                    FreemarkerRenderingEngine.NAME);
 
         this.renditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
@@ -212,8 +210,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                         {
                             // create test model
                             RenditionDefinition definition = renditionService.createRenditionDefinition(renditionName,
-                                        TemplatingRenderingEngine.NAME);
-                            definition.setParameterValue(TemplatingRenderingEngine.PARAM_TEMPLATE_NODE,
+                                        FreemarkerRenderingEngine.NAME);
+                            definition.setParameterValue(FreemarkerRenderingEngine.PARAM_TEMPLATE_NODE,
                                         nodeWithFreeMarkerContent);
                             ChildAssociationRef renditionAssoc = renditionService
                                         .render(nodeWithDocContent, definition);
@@ -240,7 +238,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.setComplete();
         this.endTransaction();
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
-                    TemplatingRenderingEngine.NAME);
+                    FreemarkerRenderingEngine.NAME);
 
         this.renditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
@@ -249,8 +247,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                         {
                             // create test model
                             RenditionDefinition definition = renditionService.createRenditionDefinition(renditionName,
-                                        TemplatingRenderingEngine.NAME);
-                            definition.setParameterValue(TemplatingRenderingEngine.PARAM_TEMPLATE_NODE,
+                                        FreemarkerRenderingEngine.NAME);
+                            definition.setParameterValue(FreemarkerRenderingEngine.PARAM_TEMPLATE_NODE,
                                         nodeWithFreeMarkerContent);
                             ChildAssociationRef renditionAssoc = renditionService
                                         .render(nodeWithDocContent, definition);
@@ -270,9 +268,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.setComplete();
         this.endTransaction();
         final QName renditionName1 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
-                TemplatingRenderingEngine.NAME + "_UpdateOnAnyPropChange");
+                FreemarkerRenderingEngine.NAME + "_UpdateOnAnyPropChange");
         final QName renditionName2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
-                TemplatingRenderingEngine.NAME + "_UpdateOnContentPropChange");
+                FreemarkerRenderingEngine.NAME + "_UpdateOnContentPropChange");
         
         final Pair<NodeRef, NodeRef> renditions = transactionHelper
             .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
@@ -285,15 +283,15 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
                 // create test model 1 - rendition to update on any property change
                 RenditionDefinition definition1 = renditionService.createRenditionDefinition(renditionName1,
-                            TemplatingRenderingEngine.NAME);
-                definition1.setParameterValue(TemplatingRenderingEngine.PARAM_TEMPLATE_PATH,
+                            FreemarkerRenderingEngine.NAME);
+                definition1.setParameterValue(FreemarkerRenderingEngine.PARAM_TEMPLATE_PATH,
                             templatePath);
                 definition1.setParameterValue(AbstractRenderingEngine.PARAM_UPDATE_RENDITIONS_ON_ANY_PROPERTY_CHANGE, Boolean.TRUE);
 
                 // create test model 2 - rendition to update on content property change
                 RenditionDefinition definition2 = renditionService.createRenditionDefinition(renditionName2,
-                            TemplatingRenderingEngine.NAME);
-                definition2.setParameterValue(TemplatingRenderingEngine.PARAM_TEMPLATE_PATH,
+                            FreemarkerRenderingEngine.NAME);
+                definition2.setParameterValue(FreemarkerRenderingEngine.PARAM_TEMPLATE_PATH,
                             templatePath);
                 definition2.setParameterValue(AbstractRenderingEngine.PARAM_UPDATE_RENDITIONS_ON_ANY_PROPERTY_CHANGE, Boolean.FALSE);
                 

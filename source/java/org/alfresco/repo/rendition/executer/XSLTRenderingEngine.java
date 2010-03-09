@@ -1,57 +1,40 @@
 /*
  * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
- * As a special exception to the terms and conditions of version 2.0 of 
- * the GPL, you may redistribute this Program in connection with Free/Libre 
- * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
- * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing"
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.alfresco.repo.rendition.executer;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.template.TemplateProcessorMethod;
 import org.alfresco.repo.template.XSLTProcessor;
 import org.alfresco.repo.template.XSLTemplateModel;
-import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -67,99 +50,18 @@ import org.xml.sax.SAXException;
  * @author Brian Remmington
  * @since 3.3
  */
-public class XSLTRenderingEngine extends AbstractRenderingEngine
+public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
 {
     private static final Log log = LogFactory.getLog(XSLTRenderingEngine.class);
 
-    public static final String NAME = "xsltRenderingEngine";
-    public static final String PARAM_MODEL = "model";
-    public static final String PARAM_TEMPLATE = "template_string";
-    public static final String PARAM_TEMPLATE_NODE = "template_node";
-    public static final String PARAM_TEMPLATE_PATH = "template_path";
-
-    private TemplateService templateService;
     private XSLTFunctions xsltFunctions;
     private NamespacePrefixResolver namespacePrefixResolver;
     private FileFolderService fileFolderService;
-    private SearchService searchService;
 
-    /*
-     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#render(org
-     * .alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rendition.RenditionDefinition,
-     * org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    protected void render(RenderingContext context)
+    @SuppressWarnings({ "serial", "unchecked" })
+    protected Object buildModel(RenderingContext context)
     {
-        NodeRef templateNode = getTemplateNode(context);
-        Map<String, Serializable> paramMap = context.getCheckedParam(PARAM_MODEL, Map.class);
-        try
-        {
-            XSLTemplateModel model = buildModel(context, paramMap);
-            ContentWriter contentWriter = context.makeContentWriter();
-            Writer writer = new OutputStreamWriter(contentWriter.getContentOutputStream());
-            processTemplate(context, templateNode, model, writer);
-            writer.flush();
-            writer.close();
-        }
-        catch (Exception ex)
-        {
-            log.warn("Unexpected error while rendering through XSLT rendering engine.", ex);
-        }
-    }
-
-    private void processTemplate(RenderingContext context, NodeRef templateNode, XSLTemplateModel model, Writer out)
-    {
-        String template = context.getCheckedParam(PARAM_TEMPLATE, String.class);
-        if (template != null)
-        {
-            templateService.processTemplateString("xslt", (String) template, model, out);
-        }
-        else if (templateNode != null)
-        {
-            templateService.processTemplate("xslt", templateNode.toString(), model, out);
-        }
-        else
-        {
-            throwTemplateParamsNotFoundException();
-        }
-    }
-
-    private void throwTemplateParamsNotFoundException()
-    {
-        StringBuilder msg = new StringBuilder("This action requires that either the ");
-        msg.append(PARAM_TEMPLATE);
-        msg.append(" parameter or the ");
-        msg.append(PARAM_TEMPLATE_NODE);
-        msg.append(" parameter be specified. ");
-        throw new RenditionServiceException(msg.toString());
-    }
-
-    private NodeRef getTemplateNode(RenderingContext context)
-    {
-        NodeRef node = context.getCheckedParam(PARAM_TEMPLATE_NODE, NodeRef.class);
-        if (node == null)
-        {
-            String path = context.getCheckedParam(PARAM_TEMPLATE_PATH, String.class);
-            if (path != null && path.length() > 0)
-            {
-                StoreRef storeRef = context.getDestinationNode().getStoreRef();
-                ResultSet result = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, path);
-                if (result.length() != 1)
-                {
-                    throw new RenditionServiceException("Could not find template node for path: " + path);
-                }
-                node = result.getNodeRef(0);
-            }
-        }
-        return node;
-    }
-
-    @SuppressWarnings("serial")
-    protected XSLTemplateModel buildModel(RenderingContext context, Map<String, Serializable> suppliedParams)
-            throws IOException, SAXException
-    {
+        Map<String, Serializable> suppliedParams = context.getCheckedParam(PARAM_MODEL, Map.class);
         final NodeRef sourceNode = context.getSourceNode();
         final NodeRef parentNode = nodeService.getPrimaryParent(context.getSourceNode()).getParentRef();
         final String sourcePath = getPath(sourceNode);
@@ -316,8 +218,25 @@ public class XSLTRenderingEngine extends AbstractRenderingEngine
         }
 
         // add the xml document
-        model.put(XSLTProcessor.ROOT_NAMESPACE, XMLUtil.parse(sourceNode, contentService));
+        try
+        {
+            model.put(XSLTProcessor.ROOT_NAMESPACE, XMLUtil.parse(sourceNode, contentService));
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (Exception ex)
+        {
+            throw new RenditionServiceException("Failed to parse XML from source node.", ex);
+        }
         return model;
+    }
+
+    @Override
+    protected String getTemplateType()
+    {
+        return "xslt";
     }
 
     /**
@@ -345,37 +264,6 @@ public class XSLTRenderingEngine extends AbstractRenderingEngine
         return path;
     }
 
-    /*
-     * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine# getParameterDefinitions()
-     */
-    @Override
-    protected Collection<ParameterDefinition> getParameterDefinitions()
-    {
-        Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
-        ParameterDefinitionImpl modelParamDef = new ParameterDefinitionImpl(PARAM_MODEL, DataTypeDefinition.ANY, false,
-                getParamDisplayLabel(PARAM_MODEL));
-        ParameterDefinitionImpl templateParamDef = new ParameterDefinitionImpl(//
-                PARAM_TEMPLATE, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TEMPLATE));
-        ParameterDefinitionImpl templateNodeParamDef = new ParameterDefinitionImpl(PARAM_TEMPLATE_NODE,
-                DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_TEMPLATE_NODE));
-        ParameterDefinitionImpl templatePathParamDef = new ParameterDefinitionImpl(PARAM_TEMPLATE_PATH,
-                DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TEMPLATE_PATH));
-        paramList.add(modelParamDef);
-        paramList.add(templateParamDef);
-        paramList.add(templateNodeParamDef);
-        paramList.add(templatePathParamDef);
-        return paramList;
-    }
-
-    /**
-     * @param templateService
-     *            the templateService to set
-     */
-    public void setTemplateService(TemplateService templateService)
-    {
-        this.templateService = templateService;
-    }
-
     /**
      * @param xsltFunctions
      *            the xsltFunctions to set
@@ -401,14 +289,5 @@ public class XSLTRenderingEngine extends AbstractRenderingEngine
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
-    }
-
-    /**
-     * @param searchService
-     *            the searchService to set
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
     }
 }

@@ -102,6 +102,12 @@
       </property>
    </bean>
 
+   <bean id="baseTemplateRenderingAction" abstract="true" parent="baseRenderingAction"
+      class="org.alfresco.repo.rendition.executer.AbstractRenderingEngine">
+      <property name="templateService" ref="templateService" />
+      <property name="searchService" ref="searchService" />
+   </bean>
+
    <!--  Rendering Engines -->
    <bean id="reformat"
       class="org.alfresco.repo.rendition.executer.ReformatRenderingEngine"
@@ -113,12 +119,9 @@
       parent="baseRenderingAction">
    </bean>
 
-   <bean id="templatingRenderingEngine"
-      class="org.alfresco.repo.rendition.executer.TemplatingRenderingEngine"
-      parent="baseRenderingAction">
-      <property name="templateService">
-         <ref bean="templateService" />
-      </property>
+   <bean id="freemarkerRenderingEngine"
+      class="org.alfresco.repo.rendition.executer.FreemarkerRenderingEngine"
+      parent="baseTemplateRenderingAction">
       <property name="repositoryHelper">
          <ref bean="repositoryHelper" />
       </property>
@@ -137,12 +140,10 @@
    
    <bean id="xsltRenderingEngine"
       class="org.alfresco.repo.rendition.executer.XSLTRenderingEngine"
-      parent="baseRenderingAction">
-      <property name="templateService" ref="TemplateService" />
+      parent="baseTemplateRenderingAction">
       <property name="xsltFunctions" ref="xsltFunctions" />
       <property name="namespacePrefixResolver" ref="NamespaceService" />
       <property name="fileFolderService" ref="FileFolderService" />
-      <property name="searchService" ref="SearchService" />
    </bean>
    
    <bean id="xsltFunctions" class="org.alfresco.repo.rendition.executer.XSLTFunctions">

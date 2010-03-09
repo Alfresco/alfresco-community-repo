@@ -376,7 +376,10 @@ public class AVMNodeDescriptor implements Serializable
 
     /**
      * Get the path that this node was looked up by.
-     * @return The path by which this was looked up.
+     * 
+     * The format is the full store reference.  Consisting of the store + ":" + path
+     * e.g. 79170e-675e-4b35-b1b1-3aee463c170b:/avm/ibatis/.svn/tmp/text-base
+     * @return The full path of this AVM node.
      */
     public String getPath()
     {

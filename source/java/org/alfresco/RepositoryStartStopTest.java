@@ -168,10 +168,10 @@ public class RepositoryStartStopTest extends TestCase
      *  a context twice without error, using it
      *  when running. 
      *  
-     * DISABLED - the full context breaks
+     *  - the full context breaks
      *  when you close and re-open it!
      */
-    public void DISABLEDtestOpenCloseOpenCloseFull() throws Exception
+    public void testOpenCloseOpenCloseFull() throws Exception
     {
        assertNoCachedApplicationContext();
 
@@ -210,10 +210,10 @@ public class RepositoryStartStopTest extends TestCase
      *  4 different times, sometimes full ones,
      *  sometimes minimal ones with no autostart.
      *  
-     * DISABLED - the full context breaks
+     *  - the full context breaks
      *  when you close and re-open it!
      */
-    public void DISABLEDtestOpenCloseRepeatedly() throws Exception {
+    public void testOpenCloseRepeatedly() throws Exception {
        assertNoCachedApplicationContext();
 
        // Open the minimal one and test

@@ -190,6 +190,14 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean<CacheManag
      */
     public void stop()
     {
+        // TODO: Does this port over different Locales?
+        // Better to override DbPersistenceServiceFactory#close to put a marker on the thread.
+        if (Thread.currentThread().getName().contains("Finalizer"))
+        {
+            // Probably JBPM's finalizer code ... we rely on Spring context calls rather
+            return;
+        }
+        
         synchronized (getClass())
         {
             if(logger.isDebugEnabled()) {
@@ -199,8 +207,11 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean<CacheManag
                }
             }
             
-            InternalEhCacheManagerFactoryBean.getInstance().shutdown();
-            initialized = false;
+            if (initialized)            // Avoid re-initialization if it has already been shut down
+            {
+                InternalEhCacheManagerFactoryBean.getInstance().shutdown();
+                initialized = false;
+            }
         }
     }
 

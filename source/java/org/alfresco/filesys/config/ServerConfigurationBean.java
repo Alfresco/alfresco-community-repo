@@ -1793,6 +1793,11 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
         CoreServerConfigSection coreConfig = new CoreServerConfigSection(this);
 
+    	// Check if the CIFS server is not enabled, do not create the thread/memory pools
+    	
+    	if ( cifsConfigBean == null || cifsConfigBean.getServerEnabled() == false)
+    		return;
+    	
         // Check if the server core element has been specified
 
         if (coreServerConfigBean == null)

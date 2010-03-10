@@ -393,6 +393,22 @@
       <property name="mimetypeService" ref="MimetypeService" />
    </bean>
    
+   <bean id="webscript.org.alfresco.repository.content.stream" class="org.alfresco.repo.web.scripts.content.StreamContent" parent="webscript" scope="prototype">
+      <property name="permissionService" ref="PermissionService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+   </bean>
+   
+   <!--  Content Write -->
+   <bean id="webscript.org.alfresco.repository.store.content.put" class="org.alfresco.repo.web.scripts.content.ContentSet" parent="webscript">
+      <property name="repository" ref="repositoryHelper" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+   </bean>
+   
    <!--  Remote Store service - AVM -->
    <bean id="webscript.org.alfresco.repository.store.remoteavm.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />

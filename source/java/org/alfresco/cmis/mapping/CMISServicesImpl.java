@@ -890,7 +890,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 || updatability == CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT
                 && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            throw new CMISConstraintException("Unable to update read-only property" + propertyName);
+            throw new CMISConstraintException("Unable to update read-only property " + propertyName);
         }
 
         if (propDef.isRequired() && value == null)

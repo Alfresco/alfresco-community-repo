@@ -121,7 +121,7 @@ public class FileImporterTest extends TestCase
     public void testLoadRootNonRecursive1()
     {
         FileImporter fileImporter = createFileImporter(false);
-        URL url = this.getClass().getClassLoader().getResource("");
+        URL url = this.getClass().getClassLoader().getResource("quick");
         File rootFile = new File(url.getFile());
         int count = fileImporter.loadFile(rootNodeRef, rootFile);
         assertEquals("Expected to load a single file", 1, count);
@@ -130,7 +130,7 @@ public class FileImporterTest extends TestCase
     public void testLoadRootNonRecursive2()
     {
         FileImporter fileImporter = createFileImporter(false);
-        URL url = this.getClass().getClassLoader().getResource("");
+        URL url = this.getClass().getClassLoader().getResource("quick");
         File root = new File(url.getFile());
         int count = fileImporter.loadFile(rootNodeRef, root, null, false);
         assertEquals("Expected to load a single file", 1, count);
@@ -139,7 +139,7 @@ public class FileImporterTest extends TestCase
     public void testLoadXMLFiles()
     {
         FileImporter fileImporter = createFileImporter(false);
-        URL url = this.getClass().getClassLoader().getResource("");
+        URL url = this.getClass().getClassLoader().getResource("quick");
         FileFilter filter = new XMLFileFilter();
         fileImporter.loadFile(rootNodeRef, new File(url.getFile()), filter, true);
     }

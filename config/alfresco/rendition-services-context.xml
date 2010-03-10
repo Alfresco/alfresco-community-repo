@@ -162,4 +162,14 @@
        <property name="policyComponent" ref="policyComponent"/>
        <property name="renditionService" ref="RenditionService"/>
    </bean>
+   
+   <!-- JavaScript API support -->
+   <bean id="renditionServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.rendition.script.ScriptRenditionService">
+        <property name="extensionName">
+            <value>renditionService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+   
 </beans>

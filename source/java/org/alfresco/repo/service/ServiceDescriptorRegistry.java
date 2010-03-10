@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
@@ -512,6 +513,15 @@ public class ServiceDescriptorRegistry
         return (FormService)getService(FORM_SERVICE);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getRenditionService()
+     */
+    public RenditionService getRenditionService() 
+    {
+        return (RenditionService)getService(RENDITION_SERVICE);
+    }
+    
+
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getInvitationService()
      */

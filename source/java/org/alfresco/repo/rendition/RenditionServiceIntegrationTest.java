@@ -38,6 +38,7 @@ import org.alfresco.repo.action.executer.ExporterActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.FreemarkerRenderingEngine;
@@ -57,6 +58,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -86,18 +89,20 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
     private NodeRef renditionNode = null;
 
+    private NamespaceService namespaceService;
     private RenditionService renditionService;
     private Repository repositoryHelper;
+    private ScriptService scriptService;
     private RetryingTransactionHelper transactionHelper;
-    private NamespaceService namespaceService;
     
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+        this.namespaceService= (NamespaceService) this.applicationContext.getBean("namespaceService");
         this.renditionService = (RenditionService) this.applicationContext.getBean("renditionService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
-        this.namespaceService= (NamespaceService) this.applicationContext.getBean("namespaceService");
+        this.scriptService = (ScriptService) this.applicationContext.getBean("scriptService");
         this.transactionHelper = (RetryingTransactionHelper) this.applicationContext
                     .getBean("retryingTransactionHelper");
 
@@ -1783,4 +1788,14 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         compositeDefinition.addAction(rescaleImageDefinition);
         return compositeDefinition;
     }
+    
+    public void testJavascriptAPI() throws Exception
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("testSourceNode", this.nodeWithImageContent);
+        
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/rendition/script/test_renditionService.js");
+        this.scriptService.executeScript(location, model);
+    }
+
 }

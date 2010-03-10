@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
@@ -303,6 +304,13 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     
     
     public FormService getFormService()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    
+    public RenditionService getRenditionService()
     {
         // TODO Auto-generated method stub
         return null;

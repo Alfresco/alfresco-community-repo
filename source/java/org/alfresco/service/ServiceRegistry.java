@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
@@ -130,6 +131,7 @@ public interface ServiceRegistry
     static final QName FORM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FormService");
     static final QName INVITATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "InvitationService");
     static final QName PREFERENCE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PreferenceService");
+    static final QName RENDITION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RenditionService");
     
     // WCM / AVM
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
@@ -487,6 +489,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     FormService getFormService();
+
+    /**
+     * Get the rendition service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    RenditionService getRenditionService();
     
     /**
      * Get the invitation service (or null if one is not provided)

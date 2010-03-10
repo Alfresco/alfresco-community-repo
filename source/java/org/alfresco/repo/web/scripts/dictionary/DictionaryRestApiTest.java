@@ -163,7 +163,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(true , result.get("isAspect"));
 		assertEquals("Thumbnailed", result.get("title"));
 		assertEquals("", result.get("description"));
-		assertEquals(0, result.getJSONObject("parent").length());
 		assertEquals(0, result.getJSONObject("defaultAspects").length());
 		
 		assertEquals("cm:automaticUpdate", result.getJSONObject("properties").getJSONObject("cm:automaticUpdate").get("name"));
@@ -171,10 +170,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals("/api/classes/cm_thumbnailed/property/cm_automaticUpdate", result.getJSONObject("properties").getJSONObject("cm:automaticUpdate").get("url"));
 		
 		assertEquals(0, result.getJSONObject("associations").length());
-		
-		assertEquals("cm:thumbnails", result.getJSONObject("childassociations").getJSONObject("cm:thumbnails").get("name"));
-		assertEquals("/api/classes/cm_thumbnailed/association/cm_thumbnails", result.getJSONObject("childassociations").getJSONObject("cm:thumbnails").get("url"));
-		
 	}
 
 	public void testGetPropertyDef() throws Exception

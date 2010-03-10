@@ -90,7 +90,7 @@ public class PermissionModelTest extends AbstractPermissionTest
 
         // NB This has gone from 59 to 63, I believe, because of the for new WCM roles.
         // 63-97 from AVM permission fix up
-        assertEquals(99, grantees.size());
+        assertEquals(103, grantees.size());
     }
 
     public void testIncludePermissionGroups6()

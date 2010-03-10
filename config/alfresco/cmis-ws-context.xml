@@ -285,13 +285,14 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="dmAbstractServiceTx" />
                 <idref local="exceptionPointcutAdvisor" />
+                <idref local="dmTransactionWrappingInterceptor" />
             </list>
         </property>
     </bean>
 
-    <bean id="dmAbstractServiceTx" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="dmTransactionWrappingInterceptor" class="org.alfresco.repo.cmis.ws.DMTransactionWrappingInterceptor">
+        <property name="transactionService" ref="TransactionService" />
         <property name="transactionManager">
             <ref bean="transactionManager" />
         </property>

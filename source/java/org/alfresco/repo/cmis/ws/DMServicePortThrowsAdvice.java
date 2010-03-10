@@ -40,18 +40,21 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
         {
             LOGGER.error(e.toString(), e);
         }
-
         throw ExceptionUtil.createCmisException(("Access denied. Message: " + e.toString()), e);
     }
 
     public void afterThrowing(java.lang.RuntimeException e) throws CmisException
     {
+        Throwable result = e;
+        if (null != e.getCause())
+        {
+            result = e.getCause();
+        }
         if (LOGGER.isErrorEnabled())
         {
-            LOGGER.error(e.toString(), e);
+            LOGGER.error(result.toString(), result);
         }
-
-        throw ExceptionUtil.createCmisException(("Runtime error. Message: " + e.toString()), e);
+        throw (result instanceof CmisException) ? ((CmisException) result) : (ExceptionUtil.createCmisException(("Runtime error. Message: " + result.toString()), result));
     }
 
     public void afterThrowing(java.lang.Exception e) throws CmisException
@@ -60,7 +63,6 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
         {
             LOGGER.error(e.toString(), e);
         }
-
         if (!(e instanceof CmisException))
         {
             throw ExceptionUtil.createCmisException(("Some error occured during last service invokation. Message: " + e.toString()), e);

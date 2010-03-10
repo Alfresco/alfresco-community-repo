@@ -271,6 +271,12 @@ public class OrphanReaper
                         return null;
                     }
                     AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(fPurgeQueue.removeFirst());
+                    if (node == null)
+                    {
+                        // eg. cluster, multiple reapers
+                        continue;
+                    }
+                    
                     // Save away the ancestor and merged from fields from this node.
                     HistoryLink hlink = AVMDAOs.Instance().fHistoryLinkDAO.getByDescendent(node);
                     AVMNode ancestor = null;

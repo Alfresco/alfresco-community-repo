@@ -51,39 +51,35 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 * Search the root groups, those without a parent group.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] searchRootGroupsInZone(String shortNamePattern, String zone)
-	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
-		Set<String> authorities = authorityService.findAuthoritiesByShortNameInZone(AuthorityType.GROUP, shortNamePattern, zone);
-		for (String authority : authorities)
-		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			if (group.isRootGroup())
-			{
-				groups.add(group);
-			}
-		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
-	}
+	public ScriptGroup[] searchRootGroupsInZone(String displayNamePattern, String zone)
+    {
+        Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+        Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, true, displayNamePattern,
+                zone);
+        for (String authority : authorities)
+        {
+            ScriptGroup group = new ScriptGroup(authority, authorityService);
+            groups.add(group);
+        }
+        return groups.toArray(new ScriptGroup[groups.size()]);
+    }
 	
 	/**
 	 * Search the root groups, those without a parent group.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] searchRootGroups(String shortNamePattern)
-	{
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, shortNamePattern);
-		for (String authority : authorities)
-		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			if (group.isRootGroup())
-			{
-				groups.add(group);
-			}
-		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
-	}
+	public ScriptGroup[] searchRootGroups(String displayNamePattern)
+    {
+        Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+        Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, true, displayNamePattern,
+                null);
+        for (String authority : authorities)
+        {
+            ScriptGroup group = new ScriptGroup(authority, authorityService);
+            groups.add(group);
+        }
+        return groups.toArray(new ScriptGroup[groups.size()]);
+    }
 	
 	/**
 	 * Search the root groups, those without a parent group.   Searches in all zones.
@@ -182,7 +178,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		}
 		
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, filter);
+		Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, false, filter, null);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);
@@ -211,7 +207,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 		}
 		
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		Set<String> authorities = authorityService.findAuthoritiesByShortNameInZone(AuthorityType.GROUP, filter, zone);
+		Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, null, false, filter, zone);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);

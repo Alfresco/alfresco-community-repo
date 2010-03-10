@@ -187,14 +187,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         }
         return authorities;
     }
-
     
-    
-    public Set<String> findAuthorities(AuthorityType type, String namePattern)
-    {
-       return Collections.<String>emptySet();
-    }
-
     public void addAuthority(String parentName, String childName)
     {
         
@@ -304,13 +297,6 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         
     }
 
-	public Set<String> findAuthoritiesByShortName(AuthorityType type,
-			String shortNamePattern) 
-	{
-    	String fullNamePattern = getName(type, shortNamePattern);
-    	return findAuthorities(type, fullNamePattern);
-	}
-
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type)
     {
         return Collections.<String>emptySet();
@@ -351,18 +337,14 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         
     }
 
-    public Set<String> findAuthoritiesByShortNameInZone(AuthorityType type, String shortNamePattern, String zone)
-    {
-        return Collections.<String>emptySet();
-    }
-
-    public Set<String> findAuthoritiesInZone(AuthorityType type, String namePattern, String zone)
-    {
-        return Collections.<String>emptySet();
-    }
-
     public NodeRef getZone(String zoneName)
     {
         return null;
     }
+
+    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
+            String displayNamePattern, String zoneName)
+    {
+        return Collections.emptySet();
+    }        
 }

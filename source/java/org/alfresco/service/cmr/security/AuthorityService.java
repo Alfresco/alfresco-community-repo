@@ -134,27 +134,7 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"type"})
     public Set<String> getAllAuthorities(AuthorityType type);
-    
-    
-    /**
-     * Find authorities by pattern matching (* and ?) against the authority name.   
-     * @param type - the authority type
-     * @param namePattern - the pattern which will be matched against the shortName.   
-     * @return the names of the authorities matching the pattern and type.
-     */
-    @Auditable(parameters = {"type"})
-    public Set<String> findAuthoritiesByShortName(AuthorityType type,  String shortNamePattern);
-    
-    /**
-     * Find authorities by pattern matching (* and ?) against the full authority name.   
-     * @param type - the authority type
-     * @param namePattern - the pattern which will be matched against the full authority name.   
-     * @return the names of the authorities matching the pattern and type.
-     */
-    @Auditable(parameters = {"type"})
-    public Set<String> findAuthorities(AuthorityType type,  String namePattern);
-    
-
+            
     /**
      * Get all root authorities by type. Root authorities are ones that were
      * created without an authority as the parent authority;
@@ -420,22 +400,15 @@ public interface AuthorityService
     
 
     /**
-     * Find authorities by pattern matching (* and ?) against the full authority name in a particular zone 
-     * @param type - the authority type
-     * @param namePattern - the pattern which will be matched against the full authority name.   
-     * @param zone - the zone
-     * @return the names of the authorities matching the pattern and type.
-     */
-    @Auditable(parameters = {"type"})
-    public Set<String> findAuthoritiesInZone(AuthorityType type,  String namePattern, String zone);
-    
-    /**
      * Find authorities by pattern matching (* and ?) against the authority name.   
-     * @param type - the authority type
-     * @param shortNamePattern - the pattern which will be matched against the shortName.   
-     * @param zone 
-     * @return the names of the authorities matching the pattern and type.
+     * @param type
+     * @param parentAuthority if non-null, will look only for authorities who are a child of the named parent
+     * @param immediate if <code>true</code> then only search root groups if parentAuthority is null, or immediate children of parentAuthority if it is non-null.
+     * @param displayNamePattern
+     * @param zoneName - may be null to indicate all zones
+     * @return
      */
     @Auditable(parameters = {"type"})
-    public Set<String> findAuthoritiesByShortNameInZone(AuthorityType type,  String shortNamePattern, String zone);
+    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
+               String displayNamePattern, String zoneName);
 }

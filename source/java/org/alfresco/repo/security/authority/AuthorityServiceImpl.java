@@ -296,21 +296,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         return authorities;
     }
-
-    
-    
-    public Set<String> findAuthorities(AuthorityType type, String namePattern)
-    {
-        return findAuthoritiesInZone(type, namePattern, null);
-    }
-    
-    
-    public Set<String> findAuthoritiesByShortName(AuthorityType type, String shortNamePattern)
-    {
-    	String fullNamePattern = getName(type, shortNamePattern);
-    	return findAuthorities(type, fullNamePattern);
-    }
-
+            
     public void addAuthority(String parentName, String childName)
     {
         addAuthority(Collections.singleton(parentName), childName);
@@ -391,7 +377,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public Set<String> getAllRootAuthorities(AuthorityType type)
     {
-        return authorityDAO.getAllRootAuthorities(type);
+        return authorityDAO.findAuthorities(type, null, true, null, null);
     }
 
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate)
@@ -402,40 +388,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
         return authorityDAO.getContainingAuthorities(type, name, immediate);
-    }
-
-    public String getName(AuthorityType type, String shortName)
-    {
-        if (type.isFixedString())
-        {
-            return type.getFixedString();
-        }
-        else if (type.isPrefixed())
-        {
-            return type.getPrefixString() + shortName;
-        }
-        else
-        {
-            return shortName;
-        }
-    }
-
-    public String getShortName(String name)
-    {
-        AuthorityType type = AuthorityType.getAuthorityType(name);
-        if (type.isFixedString())
-        {
-            return "";
-        }
-        else if (type.isPrefixed())
-        {
-            return name.substring(type.getPrefixString().length());
-        }
-        else
-        {
-            return name;
-        }
-
     }
 
     public void removeAuthority(String parentName, String childName)
@@ -512,40 +464,35 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type)
     {
-        return authorityDAO.getAllRootAuthoritiesInZone(zoneName, type);
+        return authorityDAO.findAuthorities(type, null, true, null, zoneName);
     }
 
-    public Set<String> findAuthoritiesByShortNameInZone(AuthorityType type, String shortNamePattern, String zone)
+    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
+            String displayNamePattern, String zoneName)
     {
-        String fullNamePattern = getName(type, shortNamePattern);
-        return findAuthoritiesInZone(type, fullNamePattern, zone);
-    }
-
-    public Set<String> findAuthoritiesInZone(AuthorityType type, String namePattern, String zone)
-    {
-        Set<String> authorities = new HashSet<String>();
-        switch (type)
+        if (type == null || type == AuthorityType.GROUP || type == AuthorityType.USER)
         {
-        case ADMIN:
-        case EVERYONE:
-        case GUEST:
-            throw new UnsupportedOperationException();
-        case GROUP:          
-            Set<String> zones = null;
-            if(zone != null)
-            {
-                zones = Collections.singleton(zone);
-            }
-            authorities.addAll(authorityDAO.findAuthorities(type, namePattern, zones));
-            break;
-        case OWNER:
-        case ROLE:
-            throw new UnsupportedOperationException();
-        case USER:
-            throw new UnsupportedOperationException();
-        default:
-            break;
+            return authorityDAO.findAuthorities(type, parentAuthority, immediate, displayNamePattern, zoneName);
         }
-        return authorities;
+        else
+        {
+            throw new UnsupportedOperationException();
+        }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.AuthorityService#getName(org.alfresco.service.cmr.security.AuthorityType, java.lang.String)
+     */
+    public String getName(AuthorityType type, String shortName)
+    {
+        return authorityDAO.getName(type, shortName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.AuthorityService#getShortName(java.lang.String)
+     */
+    public String getShortName(String name)
+    {
+        return authorityDAO.getShortName(name);
+    }        
 }

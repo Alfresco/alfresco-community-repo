@@ -51,14 +51,6 @@ public interface AuthorityDAO
     void deleteAuthority(String name);
 
     /**
-     * Get all root authorities.
-     * 
-     * @param type
-     * @return
-     */
-    Set<String> getAllRootAuthorities(AuthorityType type);
-
-    /**
      * Get contained authorities.
      * 
      * @param type
@@ -135,14 +127,35 @@ public interface AuthorityDAO
     void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
     /**
-     * Find authorities by pattern.
+     * Find authorities by display name pattern.
      * 
      * @param type
-     * @param namePattern
-     * @param zones - may be null to indicate all zones
+     * @param parentAuthority if non-null, will look only for authorities who are a child of the named parent
+     * @param immediate if <code>true</code> then only search root groups if parentAuthority is null, or immediate children of parentAuthority if it is non-null.
+     * @param displayNamePattern
+     * @param zoneName - may be null to indicate all zones
      * @return
      */
-    public Set<String> findAuthorities(AuthorityType type, String namePattern, Set<String> zones);
+    public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate,
+            String displayNamePattern, String zoneName);
+
+    /**
+     * Extract the short name of an authority from its full identifier.
+     * 
+     * @param name
+     * @return
+     */
+    public String getShortName(String name);
+
+    /**
+     * Create the full identifier for an authority given its short name and
+     * type.
+     * 
+     * @param type
+     * @param shortName
+     * @return
+     */
+    public String getName(AuthorityType type, String shortName);
 
     /**
      * Gets or creates an authority zone node with the specified name
@@ -195,13 +208,5 @@ public interface AuthorityDAO
      * @param authorityName
      * @param zones
      */
-    public void removeAuthorityFromZones(String authorityName, Set<String> zones);
-    
-    /**
-     * Get all root authorities in a zone
-     * @param zoneName
-     * @param type (optional)
-     * @return the set of authority names
-     */
-    public Set<String> getAllRootAuthoritiesInZone(String zoneName, AuthorityType type);
+    public void removeAuthorityFromZones(String authorityName, Set<String> zones);    
 }

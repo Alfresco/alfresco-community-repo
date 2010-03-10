@@ -268,25 +268,25 @@ public class AuthorityServiceTest extends TestCase
         }
         int size = end - 'a' + 1;
         before = System.nanoTime();
-        Set<String> matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__a*");
+        Set<String> matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__a*", null);
         after = System.nanoTime();
         System.out.println("GROUP___a* in " + ((after - before) / 1000000000.0f));
         assertEquals(size * size * zones.length, matches.size());
 
         before = System.nanoTime();
-        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__aa*");
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__aa*", null);
         after = System.nanoTime();
         System.out.println("GROUP___aa* in " + ((after - before) / 1000000000.0f));
         assertEquals(size * zones.length, matches.size());
 
         before = System.nanoTime();
-        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__*aa");
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__*aa", null);
         after = System.nanoTime();
         System.out.println("GROUP___*aa in " + ((after - before) / 1000000000.0f));
         assertEquals(size * zones.length, matches.size());
         before = System.nanoTime();
 
-        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*__*a");
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__*a", null);
         after = System.nanoTime();
         System.out.println("GROUP___*a in " + ((after - before) / 1000000000.0f));
         assertEquals(size * size * zones.length, matches.size());
@@ -298,25 +298,25 @@ public class AuthorityServiceTest extends TestCase
             if (zone != null)
             {
                 before = System.nanoTime();
-                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__a*", zone);
+                matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__a*", zone);
                 after = System.nanoTime();
                 System.out.println("GROUP___a* in " + ((after - before) / 1000000000.0f));
                 assertEquals(size * size, matches.size());
 
                 before = System.nanoTime();
-                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__aa*", zone);
+                matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__aa*", zone);
                 after = System.nanoTime();
                 System.out.println("GROUP___aa* in " + ((after - before) / 1000000000.0f));
                 assertEquals(size, matches.size());
 
                 before = System.nanoTime();
-                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__*aa", zone);
+                matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__*aa", zone);
                 after = System.nanoTime();
                 System.out.println("GROUP___*aa in " + ((after - before) / 1000000000.0f));
                 assertEquals(size, matches.size());
                 before = System.nanoTime();
 
-                matches = pubAuthorityService.findAuthoritiesInZone(AuthorityType.GROUP, "GROUP___*__*a", zone);
+                matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, false, "__*__*a", zone);
                 after = System.nanoTime();
                 System.out.println("GROUP___*a in " + ((after - before) / 1000000000.0f));
                 assertEquals(size * size, matches.size());

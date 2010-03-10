@@ -27,12 +27,16 @@ import java.io.InputStream;
  */
 public interface AuditConfiguration
 {
-
    /**
     * Get the XML content for the configuration as a stream.
     * 
     * @return
     */ 
-    public abstract InputStream getInputStream();
-
+    InputStream getInputStream();
+    
+    /**
+     * Return path of the XML
+     * @return path
+     */
+    String getPath();
 }

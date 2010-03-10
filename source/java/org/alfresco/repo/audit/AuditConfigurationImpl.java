@@ -18,17 +18,21 @@
  */
 package org.alfresco.repo.audit;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import org.springframework.beans.factory.InitializingBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A class to read the audit configuration from the class path
  * 
  * @author Andy Hind
  */
-public class AuditConfigurationImpl implements InitializingBean, AuditConfiguration
+public class AuditConfigurationImpl implements AuditConfiguration
 {
+    private static Log logger = LogFactory.getLog(AuditConfigurationImpl.class);
 
     private String config;
     
@@ -51,20 +55,25 @@ public class AuditConfigurationImpl implements InitializingBean, AuditConfigurat
         this.config = config;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.audit.AuditConfiguration#getInputStream()
-     */
     public InputStream getInputStream()
     {
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream(config);
+        InputStream is = null;
+        try
+        {
+            is = new FileInputStream(getPath());
+        }
+        catch (FileNotFoundException e)
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("File not found: " + getPath());
+            }
+        }
         return is;
     }
-
-    public void afterPropertiesSet() throws Exception
-    {
-        // Read and set up the audit configuration
-        
-    }
     
+    public String getPath()
+    {
+        return this.getClass().getClassLoader().getResource(config).getPath();
+    }
 }

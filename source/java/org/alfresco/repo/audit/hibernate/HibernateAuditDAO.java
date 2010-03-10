@@ -19,7 +19,7 @@
 package org.alfresco.repo.audit.hibernate;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
@@ -33,10 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.audit.AuditState;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalDao;
@@ -44,18 +44,17 @@ import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.mapping.Column;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -361,71 +360,24 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
         else
         {
-            InputStream current = null;
-            InputStream last = null;
-            try
+            if (contentStore instanceof FileContentStore)
             {
-                current = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
-                ContentReader reader = contentStore.getReader(auditConfig.getConfigURL());
-                reader.setMimetype(MimetypeMap.MIMETYPE_XML);
-                reader.setEncoding("UTF-8");
-                last = new BufferedInputStream(reader.getContentInputStream());
-                int currentValue = -2;
-                int lastValue = -2;
-                try
-                {
-                    while ((currentValue != -1) && (lastValue != -1) && (currentValue == lastValue))
-                    {
-                        currentValue = current.read();
-                        lastValue = last.read();
-
-                    }
-                }
-                catch (IOException e)
-                {
-                    throw new AlfrescoRuntimeException("Failed to read and validate current audit configuration against the last", e);
-                }
-                if (currentValue != lastValue)
+                File currFile = new File(auditInfo.getAuditConfiguration().getPath());
+                long currTimestamp = currFile.lastModified();
+                long timestamp = ((FileContentStore)contentStore).getReader(auditConfig.getConfigURL()).getLastModified();
+                if (timestamp < currTimestamp)
                 {
                     // Files are different - require a new entry
                     auditConfig = createNewAuditConfigImpl(auditInfo);
                 }
-                else
-                {
-                    // No change
-                }
             }
-            finally
+            else
             {
-                if (current != null)
-                {
-                    try
-                    {
-                        current.close();
-                    }
-                    catch (IOException e)
-                    {
-                        s_logger.warn(e);
-                    }
-                }
-
-                if (last != null)
-                {
-                    try
-                    {
-                        last.close();
-                    }
-                    catch (IOException e)
-                    {
-                        s_logger.warn(e);
-                    }
-                }
-
+                auditConfig = createNewAuditConfigImpl(auditInfo);
             }
         }
 
         return auditConfig;
-
     }
 
     private AuditConfig createNewAuditConfigImpl(final AuditState auditInfo)

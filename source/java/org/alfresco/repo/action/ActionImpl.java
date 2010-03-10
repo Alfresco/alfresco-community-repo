@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall
  */
-public class ActionImpl extends ParameterizedItemImpl implements Serializable, Action
+public class ActionImpl extends ParameterizedItemImpl implements Action
 {
     /**
      * Serial version UID
@@ -432,4 +432,10 @@ public class ActionImpl extends ParameterizedItemImpl implements Serializable, A
     {
         this.nodeRef = nodeRef;
     }
+    
+    public void addParameterValues(Map<String, Serializable> values)
+    {
+        getParameterValues().putAll(values);
+    }
+
 }

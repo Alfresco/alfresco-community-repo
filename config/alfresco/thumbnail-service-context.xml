@@ -39,10 +39,7 @@
     <!-- Thumbnail service implementation bean -->
     <bean id="thumbnailService" class="org.alfresco.repo.thumbnail.ThumbnailServiceImpl">
     	<property name="nodeService" ref="nodeService"/>
-    	<property name="contentService" ref="contentService"/>
-    	<property name="mimetypeMap" ref="mimetypeService"/>
         <property name="renditionService" ref="renditionService" />
-    	<property name="behaviourFilter" ref="policyBehaviourFilter" />
     	<property name="thumbnailRegistry" ref="thumbnailRegistry" />
     </bean>
     

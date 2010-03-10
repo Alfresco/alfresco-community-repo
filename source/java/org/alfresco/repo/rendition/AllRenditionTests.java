@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.rendition;
 
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngineTest;
 import org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest;
 import org.alfresco.repo.thumbnail.ThumbnailServiceImplTest;
 import org.junit.runner.RunWith;
@@ -33,6 +34,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         RenditionServiceImplTest.class,
+        AbstractRenderingEngineTest.class,
         ThumbnailServiceImplParameterTest.class,
         ThumbnailServiceImplTest.class,
         StandardRenditionLocationResolverTest.class,

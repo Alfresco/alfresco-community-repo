@@ -18,8 +18,10 @@
  */
 package org.alfresco.service.cmr.action;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -200,4 +202,10 @@ public interface Action extends ParameterizedItem
 	 * Removes all action conditions 
 	 */
 	void removeAllActionConditions();
+	
+    /**
+     * Adds a {@link Map} of parameter values to the {@link Action}
+     * @param values A map of values to be added
+     */
+    void addParameterValues(Map<String, Serializable> values);
 }

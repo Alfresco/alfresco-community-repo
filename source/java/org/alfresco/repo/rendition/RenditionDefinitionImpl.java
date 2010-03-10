@@ -19,6 +19,9 @@
 
 package org.alfresco.repo.rendition;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rendition.RenderCallback;
@@ -33,7 +36,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefinition
 {
-
     /**
      * Serial version UID
      */
@@ -45,9 +47,12 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
     private RenderCallback renderCallback;
 
     /**
-     * @param id the action id
-     * @param renditionName a unique name for the rendering action.
-     * @param renderingEngineName the name of the rendering action definition
+     * @param id
+     *            the action id
+     * @param renditionName
+     *            a unique name for the rendering action.
+     * @param renderingEngineName
+     *            the name of the rendering action definition
      */
     public RenditionDefinitionImpl(String id, QName renditionName, String renderingEngineName)
     {
@@ -114,7 +119,10 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org.alfresco.service.cmr.rendition.RenderCallback)
+     * 
+     * @see
+     * org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org
+     * .alfresco.service.cmr.rendition.RenderCallback)
      */
     public void setCallback(RenderCallback callback)
     {
@@ -123,7 +131,10 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org.alfresco.service.cmr.rendition.RenderCallback)
+     * 
+     * @see
+     * org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org
+     * .alfresco.service.cmr.rendition.RenderCallback)
      */
     public RenderCallback getCallback()
     {

@@ -41,7 +41,7 @@ public interface RenditionDefinition extends Action, Serializable
     /**
      * @return the name which uniquely identifies this rendering action.
      */
-    public QName getRenditionName();
+    QName getRenditionName();
 
     /**
      * Returns the node to which the rendition is linked when it is first
@@ -51,7 +51,7 @@ public interface RenditionDefinition extends Action, Serializable
      * 
      * @return the renditionParent
      */
-    public NodeRef getRenditionParent();
+    NodeRef getRenditionParent();
 
     /**
      * Sets the node to which the rendition is linked when it is first created.
@@ -61,7 +61,7 @@ public interface RenditionDefinition extends Action, Serializable
      * 
      * @param renditionParent the renditionParent to set
      */
-    public void setRenditionParent(NodeRef renditionParent);
+    void setRenditionParent(NodeRef renditionParent);
 
     /**
      * Returns the association type used to link the rendition to its parent
@@ -71,7 +71,7 @@ public interface RenditionDefinition extends Action, Serializable
      * 
      * @return the renditionAssociationType
      */
-    public QName getRenditionAssociationType();
+    QName getRenditionAssociationType();
 
     /**
      * Sets the association type used to link the rendition to its parent node
@@ -81,7 +81,7 @@ public interface RenditionDefinition extends Action, Serializable
      * 
      * @param renditionAssociationType the renditionAssociationType to set
      */
-    public void setRenditionAssociationType(QName renditionAssociationType);
+    void setRenditionAssociationType(QName renditionAssociationType);
     
     /**
      * This method sets a callback object for use in asynchronous renditions. It is
@@ -90,7 +90,7 @@ public interface RenditionDefinition extends Action, Serializable
      * 
      * @param callback a callback object, which may be null.
      */
-    public void setCallback(RenderCallback callback);
+    void setCallback(RenderCallback callback);
     
     /**
      * This method gets the registered callback object for use with asynchronous
@@ -98,5 +98,5 @@ public interface RenditionDefinition extends Action, Serializable
      * 
      * @return the callback object
      */
-    public RenderCallback getCallback();
+    RenderCallback getCallback();
 }

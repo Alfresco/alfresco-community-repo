@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.rendition.executer;
 
 import static org.alfresco.service.cmr.rendition.RenditionService.*;
@@ -326,7 +325,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * @param renditionDefinition
      * @return
      */
-    public QName getRenditionNodeType(RenditionDefinition renditionDefinition)
+    private QName getRenditionNodeType(RenditionDefinition renditionDefinition)
     {
         return getParamWithDefault(PARAM_RENDITION_NODETYPE, defaultRenditionNodeType, renditionDefinition);
     }
@@ -378,13 +377,18 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // The ThumbnailService puts a cm:name property on its thumbnail nodes.
         Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>();
         nodeProps.put(ContentModel.PROP_NAME, renditionName.getLocalName());
-        nodeProps.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, getDefaultRenditionContentProp());
+        nodeProps.put(ContentModel.PROP_CONTENT_PROPERTY_NAME, getRenditionContentProp(renditionDefinition));
         QName assocName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, GUID.generate());
         NodeRef parentNode = renditionDefinition.getRenditionParent();
         QName assocType = renditionDefinition.getRenditionAssociationType();
         QName nodeType = getRenditionNodeType(renditionDefinition);
         ChildAssociationRef childAssoc = nodeService.createNode(parentNode, assocType, assocName, nodeType, nodeProps);
         return childAssoc;
+    }
+
+    private Serializable getRenditionContentProp(RenditionDefinition renditionDefinition)
+    {
+        return getParamWithDefault(PARAM_TARGET_CONTENT_PROPERTY, getDefaultRenditionContentProp(), renditionDefinition);
     }
 
     /**

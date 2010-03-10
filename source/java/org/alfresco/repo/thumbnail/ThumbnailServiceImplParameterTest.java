@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -121,6 +122,7 @@ public class ThumbnailServiceImplParameterTest
                 return new ThumbnailRenditionConvertor();
             }
         });
+        thumbs.setNodeService(mock(NodeService.class));
         thumbnailService = thumbs;
     }
 

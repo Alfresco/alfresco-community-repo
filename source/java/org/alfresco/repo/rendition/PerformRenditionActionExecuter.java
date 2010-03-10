@@ -492,6 +492,8 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
             log.debug(msg.toString());
         }
 
+        QName type = nodeService.getType(sourceNode);
+        nodeService.setType(targetNode, type);
         Map<QName, Serializable> newProps = nodeService.getProperties(sourceNode);
         for (QName propKey : unchangedProperties)
         {

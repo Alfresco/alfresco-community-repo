@@ -323,6 +323,13 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         // Check the content property value
         assertEquals(ContentModel.PROP_CONTENT, this.nodeService.getProperty(thumbnail,
                     ContentModel.PROP_CONTENT_PROPERTY_NAME));
+        
+        // Check the thumbnail is of type cm:thumbnail.
+        assertEquals("The thumbnail node should be of type cm:thumbnail!",
+                    ContentModel.TYPE_THUMBNAIL, nodeService.getType(thumbnail));
+        
+        // Check the thumbnail name property is correctly set on thumbnail.
+        assertEquals( thumbnailName, nodeService.getProperty(thumbnail, ContentModel.PROP_THUMBNAIL_NAME));
     }
 
     private void outputThumbnailTempContentLocation(NodeRef thumbnail, String ext, String message) throws IOException

@@ -18,16 +18,14 @@
  */
 package org.alfresco.repo.rendition.script;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.jscript.ChildAssociation;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.jscript.ValueConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,8 +41,6 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
     
     /** The Services registry */
     private ServiceRegistry serviceRegistry;
-
-    private final ValueConverter valueConverter = new ValueConverter();
 
     /**
      * Set the service registry
@@ -68,10 +64,10 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      * rendition definition.
      * @param sourceNode the source node to be rendered.
      * @param renditionDefshortQName the rendition definition to be used e.g. cm:doclib
-     * @return the parent association of the rendition node.
+     * @return the rendition scriptnode.
      * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, RenditionDefinition)
      */
-    public ChildAssociation render(ScriptNode sourceNode, String renditionDefshortQName)
+    public ScriptNode render(ScriptNode sourceNode, String renditionDefshortQName)
     {
         if (logger.isDebugEnabled())
         {
@@ -85,31 +81,36 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
         
         RenditionDefinition rendDef = loadRenditionDefinitionImpl(renditionDefshortQName);
         ChildAssociationRef result = this.serviceRegistry.getRenditionService().render(sourceNode.getNodeRef(), rendDef);
+        NodeRef renditionNode = result.getChildRef();
         
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
-            msg.append("Rendition: ").append(result);
+            msg.append("Rendition: ").append(renditionNode);
             logger.debug(msg.toString());
         }
         
-        return (ChildAssociation)valueConverter.convertValueForScript(serviceRegistry, this.getScope(), null, result);
+        return new ScriptNode(renditionNode, serviceRegistry);
     }
 
     /**
      * This method gets all the renditions of the specified node.
      * 
      * @param node the source node
-     * @return a list of parent associations for the renditions.
+     * @return an array of the renditions.
      * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditions(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public ChildAssociation[] getRenditions(ScriptNode node)
+    public ScriptNode[] getRenditions(ScriptNode node)
     {
         List<ChildAssociationRef> renditions = this.serviceRegistry.getRenditionService().getRenditions(node.getNodeRef());
 
-        ChildAssociation[] result = convertChildAssRefs(renditions);
-
-        return result;
+        ScriptNode[] results = new ScriptNode[renditions.size()];
+        for (int i = 0; i < renditions.size(); i++)
+        {
+            results[i] = new ScriptNode(renditions.get(i).getChildRef(), serviceRegistry);
+        }
+        
+        return results;
     }
 
     /**
@@ -120,37 +121,20 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      * @param node the source node for the renditions
      * @param mimeTypePrefix a prefix to check against the rendition MIME-types.
      *            This must not be null and must not be an empty String
-     * @return a list of parent associations for the filtered renditions.
+     * @return an array of the filtered renditions.
      * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditions(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public ChildAssociation[] getRenditions(ScriptNode node, String mimeTypePrefix)
+    public ScriptNode[] getRenditions(ScriptNode node, String mimeTypePrefix)
     {
         List<ChildAssociationRef> renditions = this.serviceRegistry.getRenditionService().getRenditions(node.getNodeRef(), mimeTypePrefix);
 
-        ChildAssociation[] result = convertChildAssRefs(renditions);
-        
-        return result;
-    }
-
-    /**
-     * This method converts a list of (Java-ish) ChildAssociationRefs to an array
-     * of (JavaScript-ish) ChildAssociations.
-     * @param renditions
-     * @return
-     */
-    private ChildAssociation[] convertChildAssRefs(
-            List<ChildAssociationRef> renditions)
-    {
-        List<ChildAssociation> childAssocs = new ArrayList<ChildAssociation>(renditions.size());
-
-        for (ChildAssociationRef chAssRef : renditions)
+        ScriptNode[] results = new ScriptNode[renditions.size()];
+        for (int i = 0; i < renditions.size(); i++)
         {
-            ChildAssociation chAss = (ChildAssociation)valueConverter.convertValueForScript(serviceRegistry, getScope(), null, chAssRef);
-            childAssocs.add(chAss);
+            results[i] = new ScriptNode(renditions.get(i).getChildRef(), serviceRegistry);
         }
-
-        ChildAssociation[] result = childAssocs.toArray(new ChildAssociation[0]);
-        return result;
+        
+        return results;
     }
 
     /**
@@ -162,11 +146,11 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      * @return the parent association for the rendition or <code>null</code> if there is no such rendition.
      * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditionByName(org.alfresco.service.cmr.repository.NodeRef, QName)
      */
-    public ChildAssociation getRenditionByName(ScriptNode node, String renditionName)
+    public ScriptNode getRenditionByName(ScriptNode node, String renditionName)
     {
         QName qname = QName.createQName(renditionName, serviceRegistry.getNamespaceService());
         ChildAssociationRef result = this.serviceRegistry.getRenditionService().getRenditionByName(node.getNodeRef(), qname);
         
-        return (ChildAssociation) valueConverter.convertValueForScript(serviceRegistry, getScope(), null, result);
+        return result == null ? null : new ScriptNode(result.getChildRef(), serviceRegistry);
     }
 }

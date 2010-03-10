@@ -63,7 +63,6 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -563,9 +562,10 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    protected Set<String> getGroups(String search)
    {
        // groups - text search match on supplied name
-       String term = PermissionService.GROUP_PREFIX + "*" + search + "*";
+       String term = "*" + search + "*";
        Set<String> groups;
-       groups = getAuthorityService().findAuthoritiesInZone(AuthorityType.GROUP, term, AuthorityService.ZONE_APP_DEFAULT);
+       groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, null, false, term,
+                AuthorityService.ZONE_APP_DEFAULT);
        groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
        return groups;
    }

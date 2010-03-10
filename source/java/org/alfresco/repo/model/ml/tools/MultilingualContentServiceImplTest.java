@@ -26,6 +26,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -197,27 +198,79 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         NodeRef koreanContentNodeRef = createContent("Document_ko.txt");
         multilingualContentService.addTranslation(koreanContentNodeRef, chineseContentNodeRef, Locale.KOREAN);
+        
+        
+        // The pivot translation (base language) is Chinese
+        // (It won't matter which language we query to check this)
+        assertEquals(
+              "The wrong language was set as the pivot translation",
+              chineseContentNodeRef,
+              multilingualContentService.getPivotTranslation(chineseContentNodeRef)
+        );
+        assertEquals(
+              "The wrong language was set as the pivot translation",
+              chineseContentNodeRef,
+              multilingualContentService.getPivotTranslation(koreanContentNodeRef)
+        );
+        
+        
         // Create with a null name, and off a non-pivot just to be sure
+        // The locale will be added to the pivot's file name to create a unique one 
         NodeRef nullNameNodeRef = multilingualContentService.addEmptyTranslation(
                 koreanContentNodeRef,
                 null,
                 Locale.CANADA);
         String nullName = fileFolderService.getFileInfo(nullNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document_en_CA.txt", nullName);
-        // Create with the same name
+        
+        // This will be referencing the same pivot still
+        assertEquals(
+              "The wrong language was set as the pivot translation",
+              chineseContentNodeRef,
+              multilingualContentService.getPivotTranslation(nullNameNodeRef)
+        );
+        
+        
+        // Create with the same name as the document we're the translation of
+        // The locale will be added to the supplied file name to create a unique one 
         NodeRef sameNameNodeRef = multilingualContentService.addEmptyTranslation(
                 chineseContentNodeRef,
                 "Document.txt",
                 Locale.CANADA_FRENCH);
         String sameName = fileFolderService.getFileInfo(sameNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document_fr_CA.txt", sameName);
+        
+        // Still correctly referencing the pivot
+        assertEquals(
+              "The wrong language was set as the pivot translation",
+              chineseContentNodeRef,
+              multilingualContentService.getPivotTranslation(sameNameNodeRef)
+        );
+        
+        
         // Create with a different name
+        // As there's no clash, the locale won't be added
         NodeRef differentNameNodeRef = multilingualContentService.addEmptyTranslation(
                 chineseContentNodeRef,
                 "Document2.txt",
                 Locale.JAPANESE);
         String differentName = fileFolderService.getFileInfo(differentNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document2.txt", differentName);
+        
+        // If we tried to add a 2nd language with the different name,
+        //  it would fail as the name isn't used
+        // (The automatic appending of the locale to avoid duplicates only
+        //  works on the Pivot version's name, it isn't allowed for
+        //  the names of non-pivot versions)
+        try {
+           multilingualContentService.addEmptyTranslation(
+                 chineseContentNodeRef,
+                 "Document2.txt",
+                 Locale.FRENCH);
+           fail("A duplicate translation filename was created");
+        } catch(FileExistsException e) {
+           // Good, this was spotted
+        }
     }
 
     public void testGetTranslationContainerPermissions() throws Exception

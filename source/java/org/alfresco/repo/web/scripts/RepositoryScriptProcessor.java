@@ -101,14 +101,14 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     {
         return scriptService.executeScript("javascript", new RepositoryScriptLocation(content), model);        
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.ScriptProcessor#unwrapValue(java.lang.Object)
      */
-	public Object unwrapValue(Object value)
-	{
+    public Object unwrapValue(Object value)
+    {
         return valueConverter.convertValueForJava(value);
-	}
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.ScriptProcessor#reset()

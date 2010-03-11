@@ -86,6 +86,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /** Pre initialized non secure scope object. */
     private Scriptable nonSecureScope;
     
+    /** Flag to enable or disable runtime script compliation */
+    private boolean compile = true;
+    
     /** Cache of runtime compiled script instances */
     private final Map<String, Script> scriptCache = new ConcurrentHashMap<String, Script>(256);
     
@@ -109,6 +112,14 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     }
     
     /**
+     * @param compile   the compile flag to set
+     */
+    public void setCompile(boolean compile)
+    {
+        this.compile = compile;
+    }
+    
+    /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#reset()
      */
     public void reset()
@@ -126,7 +137,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // test the cache for a pre-compiled script matching our path
             Script script = null;
             String path = location.getPath();
-            if (location.isCachable())
+            if (this.compile && location.isCachable())
             {
                 script = this.scriptCache.get(path);
             }
@@ -154,7 +165,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                     // rely on the ConcurrentHashMap impl to deal both with ensuring the safety of the
                     // underlying structure with asynchronous get/put operations and for fast
                     // multi-threaded access to the common cache.
-                    if (location.isCachable())
+                    if (this.compile && location.isCachable())
                     {
                         this.scriptCache.put(path, script);
                     }

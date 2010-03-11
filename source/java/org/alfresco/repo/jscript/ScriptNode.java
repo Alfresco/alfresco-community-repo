@@ -894,7 +894,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     public Scriptable getAspects()
     {
         Set<QName> aspects = getAspectsSet();
-        String[] result = new String[aspects.size()];
+        Object[] result = new Object[aspects.size()];
         int count = 0;
         for (QName qname : aspects)
         {

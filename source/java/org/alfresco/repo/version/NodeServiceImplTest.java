@@ -235,20 +235,11 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
         {
         	// V2 version store (eg. workspace://version2Store)
-            try
-            {
-                this.lightWeightVersionStoreNodeService.getTargetAssocs(
-                        dummyNodeRef,
-                        RegexQNamePattern.MATCH_ALL);
-                fail("This operation is not supported.");
-            }
-            catch (UnsupportedOperationException exception)
-            {
-                if (exception.getMessage() != MSG_ERR)
-                {
-                    fail("Unexpected exception raised during method excution: " + exception.getMessage());
-                }
-            }
+            // See ETHREEOH-3632: method now doesn't blow up.
+            List<AssociationRef> assocs = this.lightWeightVersionStoreNodeService.getTargetAssocs(
+                    dummyNodeRef,
+                    RegexQNamePattern.MATCH_ALL);
+            assertEquals("Currently the assocs will be empty", 0, assocs.size());
         }
         else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
         {

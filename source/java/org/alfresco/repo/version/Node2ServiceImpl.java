@@ -188,7 +188,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     }
 
     /**
-     * @throws UnsupportedOperationException always
+     * @return          an empty list - ALWAYS.
      */
     @Override
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
@@ -197,8 +197,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         {
             return super.getTargetAssocs(sourceRef, qnamePattern);
         }
-        
-        // This operation is not supported for a version2 store
-        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+        // TODO: Persist these so they are retrievable
+        return Collections.emptyList();
     }
 }

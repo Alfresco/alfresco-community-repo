@@ -1165,8 +1165,7 @@ public class HibernateNodeDaoServiceImpl
         // Update the node
         updateNode(nodeId, storeRef, null, null);
         NodeRef nodeRef = node.getNodeRef();
-        this.parentAssocsCache.remove(nodeId);
-        
+
         return new Pair<Long, NodeRef>(node.getId(), nodeRef);
     }
 
@@ -1297,6 +1296,9 @@ public class HibernateNodeDaoServiceImpl
                 DirtySessionMethodInterceptor.flushSession(getSession(), true);
                 // The cache entry will be overwritten so we don't need to do it here
             }
+            // ETHREEOH-4031: ParentAssocsCache gets out of date when parent NodeRefs are modified
+            parentAssocsCache.remove(nodeId);
+            removeParentAssocCacheEntriesForParent(nodeId);
             
             // Change the store
             node.setStore(storeAfter);
@@ -1784,6 +1786,48 @@ public class HibernateNodeDaoServiceImpl
             getHibernateTemplate().delete(node);
         }
     }
+    
+    /**
+     * Ensures that parent association entries are removed for all children of a given node
+     */
+    private void removeParentAssocCacheEntriesForParent(final Long parentNodeId)
+    {
+        HibernateCallback getChildNodeIdsCallback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_NODE_IDS)
+                    .setLong("parentId", parentNodeId);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults results = null;
+        try
+        {
+            results = (ScrollableResults) getHibernateTemplate().execute(getChildNodeIdsCallback);
+        
+            while (results.next())
+            {
+                Long childNodeId = results.getLong(0);
+                parentAssocsCache.remove(childNodeId);
+                if (isDebugParentAssocCacheEnabled)
+                {
+                    loggerParentAssocsCache.debug(
+                            "Parent associations cache - Removing entry: \n" +
+                            "   Node:   " + childNodeId);
+                }
+            }
+        }
+        finally
+        {
+            if(results != null)
+            {
+                results.close();
+            }
+        }
+    }
 
     private static final String QUERY_DELETE_PARENT_ASSOCS = "node.DeleteParentAssocs";
     private static final String QUERY_DELETE_CHILD_ASSOCS = "node.DeleteChildAssocs";
@@ -1808,39 +1852,9 @@ public class HibernateNodeDaoServiceImpl
         {
             logger.debug("Deleting child assocs of node " + nodeId);
         }
-        HibernateCallback getChildNodeIdsCallback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_NODE_IDS)
-                    .setLong("parentId", nodeId);
-                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.scroll(ScrollMode.FORWARD_ONLY);
-            }
-        };
-        ScrollableResults childNodeIds = null;
-        try
-        {
-            childNodeIds = (ScrollableResults) getHibernateTemplate().execute(getChildNodeIdsCallback);
+        // Make sure that the cache is updated
+        removeParentAssocCacheEntriesForParent(nodeId);
         
-            while (childNodeIds.next())
-            {
-                Long childNodeId = childNodeIds.getLong(0);
-                parentAssocsCache.remove(childNodeId);
-                if (isDebugParentAssocCacheEnabled)
-                {
-                    loggerParentAssocsCache.debug("\n" + "Parent associations cache - Removing entry: \n" + "   Node:   " + childNodeId);
-                }
-            }
-        }
-        finally
-        {
-            if(childNodeIds != null)
-            {
-                childNodeIds.close();
-            }
-        }
         HibernateCallback deleteParentAssocsCallback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)

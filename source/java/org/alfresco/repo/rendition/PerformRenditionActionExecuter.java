@@ -298,8 +298,9 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
                         "    renditionDefinition.name: ").append(renditionQName);
             log.debug(msg.toString());
         }
-        ChildAssociationRef primaryAssoc = findOrCreatePrimaryRenditionAssociation(sourceNode, renditionDefinition,
-                    location);
+        NodeRef oldRendition=getOldRenditionIfExists(sourceNode, renditionDefinition);
+        RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, oldRendition, location, renditionDefinition, nodeService);
+        ChildAssociationRef primaryAssoc = renditionNodeManager.findOrCreateRenditionNode();
 
         // Copy relevant properties from the temporary node to the new rendition
         // node.
@@ -324,6 +325,16 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
             throw new RenditionServiceException(msg);
         }
         return renditionAssoc;
+    }
+
+    private NodeRef getOldRenditionIfExists(NodeRef sourceNode, RenditionDefinition renditionDefinition)
+    {
+        QName renditionName=renditionDefinition.getRenditionName();
+        ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionName);
+        if(renditionAssoc ==null)
+            return null;
+        else
+            return renditionAssoc.getChildRef();
     }
 
     private void manageRenditionAspects(NodeRef sourceNode, ChildAssociationRef renditionParentAssoc)
@@ -368,121 +379,6 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         return renditionDefinition.getRenditionName().getLocalName();
     }
 
-    private ChildAssociationRef findOrCreatePrimaryRenditionAssociation(NodeRef sourceNode,
-                RenditionDefinition renditionDefinition, RenditionLocation location)
-    {
-        // Get old Rendition if exists.
-        QName renditionName = renditionDefinition.getRenditionName();
-        ChildAssociationRef oldRenditionAssoc = renditionService.getRenditionByName(sourceNode, renditionName);
-        // If no rendition already exists create anew rendition node and
-        // association.
-        if (oldRenditionAssoc == null)
-        {
-            return getSpecifiedRenditionOrCreateNewRendition(sourceNode, location, renditionName);
-        }
-        // If a rendition exists and is already in the correct location then
-        // return that renditions primary parent association
-        NodeRef oldRendition = oldRenditionAssoc.getChildRef();
-        if (renditionLocationMatches(oldRendition, location))
-        {
-            return nodeService.getPrimaryParent(oldRendition);
-        }
-        // If the old rendition is in the wrong location and the 'orphan
-        // existing rendition' param is set to true or the RenditionLocation
-        // specifies a destination NodeRef then ldelete the old
-        // rendition association and create a new rendition node.
-        if (orphanExistingRendition(renditionDefinition, location))
-        {
-            orphanRendition(oldRenditionAssoc);
-            return getSpecifiedRenditionOrCreateNewRendition(sourceNode, location, renditionName);
-        }
-        // If the old rendition is in the wrong place and the 'orphan existing
-        // rendition' param is not set to true then move the existing rendition
-        // to the correct location.
-        return moveRendition(oldRendition, location, renditionName);
-    }
-
-    private ChildAssociationRef moveRendition(NodeRef renditionNode, RenditionLocation location, QName associationName)
-    {
-        ChildAssociationRef assoc = nodeService.moveNode(renditionNode, location.getParentRef(),
-                    ContentModel.ASSOC_CONTAINS, associationName);
-        return assoc;
-    }
-
-    private void orphanRendition(ChildAssociationRef oldRenditionAssoc)
-    {
-        NodeRef oldRendition = oldRenditionAssoc.getChildRef();
-        nodeService.removeAspect(oldRendition, RenditionModel.ASPECT_HIDDEN_RENDITION);
-        nodeService.removeAspect(oldRendition, RenditionModel.ASPECT_VISIBLE_RENDITION);
-        nodeService.removeChildAssociation(oldRenditionAssoc);
-    }
-
-    private boolean orphanExistingRendition(RenditionDefinition renditionDefinition, RenditionLocation location)
-    {
-        if (location.getChildRef() != null)
-            return true;
-        else
-            return AbstractRenderingEngine.getParamWithDefault(RenditionService.PARAM_ORPHAN_EXISTING_RENDITION,
-                        Boolean.FALSE, renditionDefinition);
-    }
-
-    private boolean renditionLocationMatches(NodeRef oldRendition, RenditionLocation location)
-    {
-        NodeRef destination = location.getChildRef();
-        if (destination != null)
-        {
-            return destination.equals(oldRendition);
-        }
-        ChildAssociationRef oldParentAssoc = nodeService.getPrimaryParent(oldRendition);
-        NodeRef oldParent = oldParentAssoc.getParentRef();
-        if (oldParent.equals(location.getParentRef()))
-        {
-            String childName = location.getChildName();
-            if (childName == null)
-                return true;
-            else
-            {
-                Serializable oldName = nodeService.getProperty(oldRendition, ContentModel.PROP_NAME);
-                return childName.equals(oldName);
-            }
-        }
-        return false;
-    }
-
-    private ChildAssociationRef getSpecifiedRenditionOrCreateNewRendition(NodeRef sourceNode,
-                RenditionLocation location, QName renditionName)
-    {
-        NodeRef destination = location.getChildRef();
-        if (destination != null)
-            return nodeService.getPrimaryParent(destination);
-        else
-            return createNewRendition(sourceNode, location, renditionName);
-    }
-
-    private ChildAssociationRef createNewRendition(NodeRef sourceNode, RenditionLocation location, QName renditionName)
-    {
-        NodeRef parentRef = location.getParentRef();
-        boolean parentIsSource = parentRef.equals(sourceNode);
-        QName renditionType = RenditionModel.ASSOC_RENDITION;
-        QName assocTypeQName = parentIsSource ? renditionType : ContentModel.ASSOC_CONTAINS;
-        QName nodeTypeQName = ContentModel.TYPE_CONTENT;
-        ChildAssociationRef primaryAssoc = nodeService.createNode(parentRef, assocTypeQName, renditionName,
-                    nodeTypeQName);
-
-        // If the new rendition is not directly under the source node then add
-        // the rendition association.
-        if (parentIsSource == false)
-        {
-            NodeRef rendition = primaryAssoc.getChildRef();
-            nodeService.addChild(sourceNode, rendition, renditionType, renditionName);
-        }
-        return primaryAssoc;
-    }
-
-    /**
-     * @param sourceNode
-     * @param targetNode
-     */
     private void transferNodeProperties(NodeRef sourceNode, NodeRef targetNode)
     {
         if (log.isDebugEnabled())

@@ -232,7 +232,7 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_OBJECT_FROM_FOLDER, true)));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CONTENT_STREAM, PermissionService.READ_CONTENT));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_POLICY, false));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, false));
+        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, true));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, true));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RENDITIONS, true));
@@ -250,7 +250,7 @@ public class CMISMapping implements InitializingBean
         // Is CAN_MOVE_OBJECT correct mapping?
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_POLICY, false));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, false));
+        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, true));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CHILDREN, PermissionService.READ_CHILDREN));
         registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_DOCUMENT, PermissionService.CREATE_CHILDREN));

@@ -60,6 +60,7 @@ import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.CMISVersioningException;
 import org.alfresco.cmis.CMISVersioningStateEnum;
+import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.cmis.dictionary.CMISFolderTypeDefinition;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -780,6 +781,27 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
 
     /*
      * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getTypeDefinition(java.lang.Object)
+     */
+    public CMISTypeDefinition getTypeDefinition(Object object) throws CMISInvalidArgumentException
+    {
+        if (object instanceof Version)
+        {
+            return getTypeDefinition(((Version) object).getFrozenStateNodeRef());
+        }
+        else if (object instanceof NodeRef)
+        {
+            return getTypeDefinition((NodeRef) object);
+        }
+        else if (object instanceof AssociationRef)
+        {
+            return getTypeDefinition((AssociationRef) object);
+        }
+        throw new CMISInvalidArgumentException("Invalid type " + object.getClass());
+    }
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getBaseTypes()
      */
     public Collection<CMISTypeDefinition> getBaseTypes()
@@ -789,16 +811,12 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getProperty(org.alfresco.service.cmr.repository.AssociationRef, java.lang.String)
+     * @see org.alfresco.cmis.CMISServices#getProperty(org.alfresco.service.cmr.repository.AssociationRef,
+     * java.lang.String)
      */
-    public Serializable getProperty(AssociationRef assocRef, String propertyName)
+    public Serializable getProperty(AssociationRef assocRef, String propertyName) throws CMISInvalidArgumentException
     {
-        QName typeQName = assocRef.getTypeQName();
-        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
-        if (typeDef == null)
-        {
-            throw new AlfrescoRuntimeException("Relationship Type " + typeQName + " not found in CMIS Dictionary");
-        }
+        CMISTypeDefinition typeDef = getTypeDefinition(assocRef);
         CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
         if (propDef == null)
         {
@@ -815,6 +833,22 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     public Map<String, Serializable> getProperties(NodeRef nodeRef) throws CMISInvalidArgumentException
     {
         return getProperties(nodeRef, getTypeDefinition(nodeRef));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getProperties(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public Map<String, Serializable> getProperties(AssociationRef assocRef) throws CMISInvalidArgumentException
+    {
+        CMISTypeDefinition typeDef = getTypeDefinition(assocRef);
+        Map<String, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
+        Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size() * 2);
+        for (CMISPropertyDefinition propDef : propDefs.values())
+        {
+            values.put(propDef.getPropertyId().getId(), propDef.getPropertyAccessor().getValue(assocRef));
+        }
+        return values;
     }
 
     /*
@@ -1192,6 +1226,10 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                     }
                     return (T) associationRef;
                 }
+            }
+            else
+            {
+                throw new CMISInvalidArgumentException(objectId + " is not an object ID");
             }
         }
         catch (AccessDeniedException e)
@@ -1726,6 +1764,81 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         {
             throw new CMISPermissionDeniedException(e.getMessage(), e);
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#createPolicy(java.util.Map, java.lang.String, java.util.List)
+     */
+    public String createPolicy(Map<String, Serializable> properties, String folderId, List<String> policies)
+            throws CMISConstraintException, CMISRuntimeException, CMISInvalidArgumentException
+    {
+        String typeId = (String) properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        if (typeId == null)
+        {
+            throw new CMISConstraintException("Policy type ID not specified");
+        }
+        CMISTypeDefinition typeDefinition = getTypeDefinition(typeId);
+        if (typeDefinition.getBaseType().getTypeId() != CMISDictionaryModel.POLICY_TYPE_ID)
+        {
+            throw new CMISConstraintException(typeId + " is not a policy type");
+        }
+        if (!typeDefinition.isCreatable())
+        {
+            throw new CMISConstraintException(typeId + " is not a creatable type");
+        }
+        // Should never get here, as currently no policy types are creatable
+        throw new CMISRuntimeException("Internal error");
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#applyPolicy(java.lang.String, java.lang.String)
+     */
+    public void applyPolicy(String policyId, String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        CMISTypeDefinition typeDef = getTypeDefinition(getReadableObject(objectId, Object.class));
+        if (!typeDef.isControllablePolicy())
+        {
+            throw new CMISConstraintException("Type " + typeDef.getTypeId().getId() + " does not allow policies to be applied");
+        }
+        getReadableObject(policyId, CMISTypeDefinition.class);
+        // Expect exception to be throw by now
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getAppliedPolicies(java.lang.String, java.lang.String)
+     */
+    public List<CMISTypeDefinition> getAppliedPolicies(String objectId, String filter) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException, CMISFilterNotValidException
+    {
+        // Get the object
+        getReadableObject(objectId, Object.class);
+        
+        // Parse the filter
+        new PropertyFilter(filter);
+        
+        // Nothing else to do
+        return Collections.emptyList();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#removePolicy(java.lang.String, java.lang.String)
+     */
+    public void removePolicy(String policyId, String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException
+    {
+        CMISTypeDefinition typeDef = getTypeDefinition(getReadableObject(objectId, Object.class));
+        if (!typeDef.isControllablePolicy())
+        {
+            throw new CMISConstraintException("Type " + typeDef.getTypeId().getId() + " does not allow policies to be applied");
+        }
+        getReadableObject(policyId, CMISTypeDefinition.class);
+        // Expect exception to be throw by now
     }
 
     /**

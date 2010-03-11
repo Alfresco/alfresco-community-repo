@@ -188,8 +188,10 @@ public interface CMISServices
      * @param propertyName
      *            the property name
      * @return value
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
      */
-    public Serializable getProperty(AssociationRef assocRef, String propertyName);
+    public Serializable getProperty(AssociationRef assocRef, String propertyName) throws CMISInvalidArgumentException;
     
     /**
      * Get all properties of a node's type.
@@ -202,6 +204,17 @@ public interface CMISServices
      */
     public Map<String, Serializable> getProperties(NodeRef nodeRef) throws CMISInvalidArgumentException;
     
+    /**
+     * Get all properties of an association's type.
+     * 
+     * @param assocRef
+     *            the association
+     * @return the properties
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    public Map<String, Serializable> getProperties(AssociationRef assocRef) throws CMISInvalidArgumentException;
+
     /**
      * Get all of a node's values for the properties in the given type or aspect.
      * 
@@ -448,6 +461,17 @@ public interface CMISServices
      *             if an argument is invalid
      */
     public CMISTypeDefinition getTypeDefinition(String typeId) throws CMISInvalidArgumentException;
+
+    /**
+     * Gets the type definition for a given object.
+     * 
+     * @param object
+     *            the object
+     * @return the type definition
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     */
+    public CMISTypeDefinition getTypeDefinition(Object object) throws CMISInvalidArgumentException;
 
     /**
      * Gets the CMIS base types.
@@ -754,4 +778,94 @@ public interface CMISServices
             InputStream contentStream, String mimeType) throws CMISConstraintException, CMISVersioningException,
             CMISObjectNotFoundException, CMISContentAlreadyExistsException, CMISStreamNotSupportedException,
             CMISInvalidArgumentException, CMISPermissionDeniedException;
+    
+    /**
+     * Creates a policy object of the specified type, and optionally adds the policy to a folder. Currently no policy
+     * types can be created in Alfresco.
+     * 
+     * @param properties
+     *            CMIS properties
+     * @param folderId
+     *            parent folder for this new policy
+     * @param policies
+     *            the policies
+     * @return Id of the created policy object
+     * @throws CMISConstraintException
+     *             if there is a problem with the supplied properties
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     * @throws CMISRuntimeException
+     *             on other exceptions
+     */
+    public String createPolicy(Map<String, Serializable> properties, String folderId, List<String> policies)
+            throws CMISConstraintException, CMISRuntimeException, CMISInvalidArgumentException;
+    
+    /**
+     * Applies a policy object to a target object.
+     * 
+     * @param policyId
+     *            policy Id
+     * @param objectId
+     *            target object Id
+     * @throws CMISConstraintException
+     *             if an object isn't of the right type
+     * @throws CMISVersioningException
+     *             if an object's versioning state isn't as expected
+     * @throws CMISObjectNotFoundException
+     *             if an object does not exist
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     * @throws CMISPermissionDeniedException
+     *             if access to an object is denied
+     */
+    public void applyPolicy(String policyId, String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException;
+    
+    /**
+     * Gets the list of policy objects currently applied to a target object.
+     * 
+     * @param objectId
+     *            the object id
+     * @param filter
+     *            property filter
+     * @return the applied policies
+     * @throws CMISConstraintException
+     *             if an object isn't of the right type
+     * @throws CMISVersioningException
+     *             if an object's versioning state isn't as expected
+     * @throws CMISObjectNotFoundException
+     *             if an object does not exist
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     * @throws CMISPermissionDeniedException
+     *             if access to an object is denied
+     * @throws CMISFilterNotValidException
+     *             if the property filter is invalid
+     */
+    public List<CMISTypeDefinition> getAppliedPolicies(String objectId, String filter) throws CMISConstraintException,
+            CMISVersioningException, CMISObjectNotFoundException, CMISInvalidArgumentException,
+            CMISPermissionDeniedException, CMISFilterNotValidException;
+    
+    /**
+     * Removes a previously applied policy from a target object. The policy object is not deleted, and may still be
+     * applied to other objects.
+     * 
+     * @param policyId
+     *            policy Id
+     * @param objectId
+     *            target object Id.
+     * @throws CMISConstraintException
+     *             if an object isn't of the right type
+     * @throws CMISVersioningException
+     *             if an object's versioning state isn't as expected
+     * @throws CMISObjectNotFoundException
+     *             if an object does not exist
+     * @throws CMISInvalidArgumentException
+     *             if an argument is invalid
+     * @throws CMISPermissionDeniedException
+     *             if access to an object is denied
+     */
+    public void removePolicy(String policyId, String objectId) throws CMISConstraintException, CMISVersioningException,
+            CMISObjectNotFoundException, CMISInvalidArgumentException, CMISPermissionDeniedException;
+    
 }

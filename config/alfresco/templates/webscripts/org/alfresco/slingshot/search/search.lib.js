@@ -435,6 +435,7 @@ function getItem(siteId, containerId, restOfPath, node)
 function splitQNamePath(node)
 {
    var path = node.qnamePath;
+   var displayPath = node.displayPath.split("/");
    
    if (path.match("^"+SITES_SPACE_QNAME_PATH) != SITES_SPACE_QNAME_PATH)
    {
@@ -448,8 +449,8 @@ function splitQNamePath(node)
       return null;
    }
    
-   var siteId = tmp.substring(0, pos);
-   siteId = siteId.substring(siteId.indexOf(":") + 1);
+   // site id is the cm:name for the site - we cannot use the encoded QName version
+   var siteId = displayPath[3];
    tmp = tmp.substring(pos + 1);
    pos = tmp.indexOf('/');
    if (pos < 1)

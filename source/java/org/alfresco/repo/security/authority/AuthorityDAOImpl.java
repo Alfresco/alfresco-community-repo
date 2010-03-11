@@ -279,12 +279,25 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         Pattern pattern = displayNamePattern == null ? null : Pattern.compile(SearchLanguageConversion.convert(
                 SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, displayNamePattern),
                 Pattern.CASE_INSENSITIVE);
+
         // Use SQL to determine root authorities
+        Set<String> rootAuthorities = null;
         if (parentAuthority == null && immediate)
         {
-            return getRootAuthoritiesUnderContainer(zoneName == null ? getAuthorityContainer() : getZone(zoneName),
-                    type, pattern);
+            NodeRef container = zoneName == null ? getAuthorityContainer() : getZone(zoneName);
+            if (container == null)
+            {
+                // The zone doesn't even exist so there are no root authorities
+                return Collections.emptySet();
+            }
+            rootAuthorities = getRootAuthoritiesUnderContainer(container, type, pattern);
+            if (pattern == null)
+            {
+                return rootAuthorities;
+            }
         }
+
+        // Use a Lucene search for other criteria
         Set<String> authorities = new TreeSet<String>();
         SearchParameters sp = new SearchParameters();
         sp.addStore(this.storeRef);
@@ -357,6 +370,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                         : ContentModel.PROP_USERNAME;
                 addAuthorityNameIfMatches(authorities, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService
                         .getProperty(nodeRef, idProp)), type, pattern);
+            }
+
+            // If we asked for root authorities, we must do an intersection with the set of root authorities
+            if (rootAuthorities != null)
+            {
+                authorities.retainAll(rootAuthorities);
             }
             return authorities;
         }

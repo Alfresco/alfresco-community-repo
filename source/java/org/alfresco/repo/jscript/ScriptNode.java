@@ -99,7 +99,7 @@ import org.mozilla.javascript.UniqueTag;
 import org.mozilla.javascript.Wrapper;
 
 /**
- * Node class implementation, specific for use by ScriptService as part of the object model.
+ * Script Node class implementation, specific for use by ScriptService as part of the object model.
  * <p>
  * The class exposes Node properties, children and assocs as dynamically populated maps and lists. The various collection classes are mirrored as JavaScript properties. So can be
  * accessed using standard JavaScript property syntax, such as <code>node.children[0].properties.name</code>.
@@ -180,7 +180,6 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * 
      * @param nodeRef   The NodeRef this Node wrapper represents
      * @param services  The ServiceRegistry the Node can use to access services
-     * @param resolver  Image resolver to use to retrieve icons
      */
     public ScriptNode(NodeRef nodeRef, ServiceRegistry services)
     {
@@ -192,7 +191,6 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * 
      * @param nodeRef   The NodeRef this Node wrapper represents
      * @param services  The ServiceRegistry the Node can use to access services
-     * @param resolver  Image resolver to use to retrieve icons
      * @param scope     Root scope for this Node
      */
     public ScriptNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)

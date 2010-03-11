@@ -83,6 +83,7 @@ public class TransferServiceImpl implements TransferService
     private static final String MSG_NO_HOME = "transfer_service.unable_to_find_transfer_home";
     private static final String MSG_NO_GROUP = "transfer_service.unable_to_find_transfer_group";
     private static final String MSG_NO_TARGET = "transfer_service.unable_to_find_transfer_target";
+    private static final String MSG_ERR_TRANSFER_ASYNC = "transfer_service.unable_to_transfer_async";
     private static final String MSG_TARGET_EXISTS = "transfer_service.target_exists";
     private static final String MSG_CANCELLED = "transfer_service.cancelled";
     private static final String MSG_NO_NODES = "transfer_service.no_nodes";
@@ -438,7 +439,7 @@ public class TransferServiceImpl implements TransferService
        catch (Exception error)
        {
            logger.error("unexpected exception", error);
-           throw new AlfrescoRuntimeException("unable to transfer async", error);
+           throw new AlfrescoRuntimeException(MSG_ERR_TRANSFER_ASYNC, error);
        }
        finally
        {

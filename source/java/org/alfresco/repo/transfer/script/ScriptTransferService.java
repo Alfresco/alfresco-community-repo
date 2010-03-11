@@ -1,8 +1,35 @@
+/*
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.transfer.script;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.jscript.ValueConverter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 
@@ -15,6 +42,10 @@ import org.mozilla.javascript.Scriptable;
 public class ScriptTransferService extends BaseScopableProcessorExtension
 {
     private TransferService transferService;
+    
+    private ServiceRegistry serviceRegistry;
+    
+    ValueConverter valueConverter = new ValueConverter();
 
     /**
      * @param transferService
@@ -38,15 +69,107 @@ public class ScriptTransferService extends BaseScopableProcessorExtension
      */
     
     /**
-     * Transfer a set of nodes, with no callback
-     * @param targetName 
-     * @param nodes
-     * 
-     * @return node ref of transfer report.  
+     * Get the transfer targets for the specified group
      */
-    public NodeRef transfer(String targetName, Scriptable nodes)
+    public ScriptTransferTarget[] getTransferTargetsByGroup(String groupName)
     {
+        
+        Set<TransferTarget> values = transferService.getTransferTargets(groupName);
+        
+        ScriptTransferTarget[] retVal = new ScriptTransferTarget[values.size()];
+        
+        int i = 0;
+        for(TransferTarget value : values)
+        {
+            retVal[i++] = new ScriptTransferTarget(value);
+        }
+        return retVal;
+    }
+    
+    public ScriptTransferTarget[] getAllTransferTargets()
+    {
+        Set<TransferTarget> values = transferService.getTransferTargets();
+        
+        ScriptTransferTarget[] retVal = new ScriptTransferTarget[values.size()];
+        
+        int i = 0;
+        for(TransferTarget value : values)
+        {
+            retVal[i++] = new ScriptTransferTarget(value);
+        }
+        
+        return retVal;
+    }
+    
+    public ScriptTransferTarget getTransferTarget(String name)
+    {
+        TransferTarget value = transferService.getTransferTarget(name);
+        
+        if(value != null)
+        {
+            return new ScriptTransferTarget(value);
+        }
         return null;
     }
     
+    /**
+     * Transfer a set of nodes, with no callback
+     * @param targetName the name of the target to transfer to
+     * @param nodes the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String 
+     * @return node ref of transfer report.  
+     */
+    public NodeRef transfer(String targetName, Object nodesToTransfer)
+    {
+        Object nodesObject = valueConverter.convertValueForJava(nodesToTransfer);
+        
+        TransferDefinition toTransfer = new TransferDefinition();
+        Collection<NodeRef> nodeCollection = new ArrayList<NodeRef>();
+        
+        if(nodesObject instanceof Collection)
+        {
+            for(Object value : (Collection)nodesObject)
+            {
+                if(value instanceof NodeRef)
+                {
+                    nodeCollection.add((NodeRef)value);
+                }
+                else if (value instanceof String)
+                {
+                    nodeCollection.add(new NodeRef((String)value));
+                }
+                else
+                {        
+                    throw new IllegalArgumentException("transfer: unknown type in collection: " + value.getClass().getName());
+                } 
+            }
+           
+        }
+        else if(nodesObject instanceof NodeRef)
+        {
+            nodeCollection.add((NodeRef)nodesObject);
+        }
+        else if (nodesObject instanceof String)
+        {
+            nodeCollection.add(new NodeRef((String)nodesObject));
+        }
+        else
+        {   
+            throw new IllegalArgumentException("transfer: unexpected type for nodes :" + nodesObject.getClass().getName());
+        }
+        
+        toTransfer.setNodes(nodeCollection);
+        NodeRef retVal = transferService.transfer(targetName, toTransfer);
+        
+        return retVal;
+    }
+
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    public ServiceRegistry getServiceRegistry()
+    {
+        return serviceRegistry;
+    }
 }

@@ -197,6 +197,9 @@
             <value>transfer</value>
         </property>
         <property name="transferService" ref="TransferService"/>
+        <property name="serviceRegistry">
+         <ref bean="ServiceRegistry" />
+      </property>
    </bean>
 
 	<bean id="NodeCrawlerFactory" class="org.alfresco.repo.transfer.StandardNodeCrawlerFactoryImpl">

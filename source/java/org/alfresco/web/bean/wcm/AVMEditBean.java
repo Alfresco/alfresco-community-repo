@@ -285,7 +285,7 @@ public class AVMEditBean extends BaseDialogBean
    public String getContainerTitle()
    {
        FacesContext fc = FacesContext.getCurrentInstance();
-       return Application.getMessage(fc, MSG_APPLY_RSS_FEED) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getAvmNode().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
+       return Application.getMessage(fc, MSG_UPDATE) + " " + Application.getMessage(fc, MSG_LEFT_QUOTE) + getAvmNode().getName() + Application.getMessage(fc, MSG_RIGHT_QUOTE);
    }
    
    @Override

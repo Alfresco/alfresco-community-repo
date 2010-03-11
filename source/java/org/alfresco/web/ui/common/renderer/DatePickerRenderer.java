@@ -397,7 +397,7 @@ public class DatePickerRenderer extends BaseRenderer
             outputAttribute(out, component.getAttributes().get("disabled"), "disabled");
          }
          outputAttribute(out, clientId, "id");
-         out.write(" onkeyup=\"checkOkButtonState();\" onchange=\"checkOkButtonState();\""); 
+         out.write(" onkeyup=\"checkButtonState();\" onchange=\"checkButtonState();\""); 
       }
       else
       {

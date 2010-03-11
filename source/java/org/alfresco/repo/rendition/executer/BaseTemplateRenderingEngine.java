@@ -21,8 +21,10 @@ package org.alfresco.repo.rendition.executer;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -38,8 +40,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * This abstract class forms a basis for all rendering engines that are built around
- * the Template Service.
+ * This abstract class forms a basis for all rendering engines that are built
+ * around the Template Service.<br>
+ * A template must be specified either as a {@link String} using the
+ * PARAM_TEMPLATE parameter, as a {@link NodeRef} using the PARAM_TEMPLATE_NODE
+ * parameter or as a file path location using the PARAM_TEMPLATE_PATH parameter.
+ * The RenderingEngine reads from these parameters with the following priority:
+ * PARAM_TEMPLATE > PARAM_TEMPLATE_NODE > PARAM_TEMPLATE_PATH.
+ * 
  * @author Brian Remmington
  * @since 3.3
  */
@@ -48,9 +56,39 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
     private static final Log log = LogFactory.getLog(BaseTemplateRenderingEngine.class);
 
     public static final String NAME = "xsltRenderingEngine";
+
+    /**
+     * This optional {@link Map}<{@link String}, {@link Serializable}> parameter
+     * can be used to pass additional arguments to the templating engine when processing a
+     * template. 
+     */
     public static final String PARAM_MODEL = "model";
+
+    /**
+     * This optional {@link String} parameter specifies the template in a simple
+     * {@link String} format.<br>
+     * If this parameter is set the Rendering Engine will
+     * use it in preference to templates specified by either the
+     * PARAM_TEMPLATE_NODE or the PARAM_TEMPLATE_PATH parameters.
+     */
     public static final String PARAM_TEMPLATE = "template_string";
+
+    /**
+     * This optional {@link NodeRef} parameter specifies a node containing the
+     * template to be processed.<br>
+     * If a value is specified for PARAM_TEMPLATE then this parameter will be
+     * ignored.<br>
+     * If a value is specified for this parameter it will be used in preference
+     * to values specified for the PARAM_TEMPLATE_PATH parameter.
+     */
     public static final String PARAM_TEMPLATE_NODE = "template_node";
+
+    /**
+     * This optional {@link String} parameter specifies a file path location for
+     * the template to be processed.<br>
+     * If a value is specified for PARAM_TEMPLATE or PARAM_TEMPLATE_NODE then this parameter will be
+     * ignored.<br>
+     */
     public static final String PARAM_TEMPLATE_PATH = "template_path";
 
     private TemplateService templateService;
@@ -104,7 +142,7 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
         String template = context.getCheckedParam(PARAM_TEMPLATE, String.class);
         if (template != null)
         {
-            templateService.processTemplateString(templateType, (String)template, model, out);
+            templateService.processTemplateString(templateType, template, model, out);
         }
         else if (templateNode != null)
         {

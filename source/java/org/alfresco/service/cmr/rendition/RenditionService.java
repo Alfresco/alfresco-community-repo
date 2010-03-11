@@ -32,9 +32,40 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RenditionService extends RenditionDefinitionPersister
 {
+    /**
+     * This optional {@link NodeRef} parameter specifies an existing {@link NodeRef} to use
+     * as the rendition node. Properties on this node (including the content
+     * property cm:content) will be updated as required but the location and
+     * name of the node will not change. This parameter takes precedence over
+     * PARAM_DESTINATION_PATH_TEMPLATE.
+     */
     public static final String PARAM_DESTINATION_NODE = "rendition-destination-node";
+
+    /**
+     * This optional {@link String} parameter indicates where the rendition will be
+     * created. The parameter may specify either the actual file path to the
+     * rendition or it may specify a Freemarker template which can be resolved
+     * to a file path. In either case the path is relative to the root node of
+     * the store in which the source node exists. If the parameter
+     * PARAM_DESTINATION_NODE has been set then this parameter will be ignored.
+     */
     public static final String PARAM_DESTINATION_PATH_TEMPLATE = "destination-path-template";
+
+    /**
+     * This optional {@link QName} parameter specifies what the node type of the created rendition will
+     * be. If no type is specified then this defaults to cm:content.
+     */
     public static final String PARAM_RENDITION_NODETYPE = "rendition-nodetype";
+
+    /**
+     * This optional {@link Boolean} flag parameter determines whether an
+     * existing rendition is moved or orphaned. If the source node already has a
+     * rendition and this parameter is <code>false</code> the old rendition will
+     * be moved to the new destination location and updated appropriately. If
+     * this parameter is set to <code>true</code> then the old rendition will be
+     * left in its current location and the rold rendition association from the
+     * source node to the old rendition will be deleted.
+     */
     public static final String PARAM_ORPHAN_EXISTING_RENDITION = "orphan-existing-rendition";
     
     /**

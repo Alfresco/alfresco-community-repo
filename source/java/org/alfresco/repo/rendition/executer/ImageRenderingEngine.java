@@ -49,20 +49,178 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
     public static final String NAME = "imageRenderingEngine";
 
     // Resize params
+    /**
+     * This optional {@link Integer} or {@link Float} parameter specifies the
+     * width of the image after resizing. This may be expressed as pixels or it
+     * may represent a percentage of the original image width, depending on the
+     * value of the PARAM_IS_PERCENT_RESIZE parameter. <br>
+     * If no value is specified for this parameter then the width of the image
+     * will be unchanged. <br>
+     * If an image is being cropped and resized then the cropping happens first,
+     * followed by resizing of the cropped image.
+     */
     public static final String PARAM_RESIZE_WIDTH = "xsize";
+
+    /**
+     * This optional {@link Integer} or {@link Float} parameter specifies the
+     * height of the image after resizing. This may be expressed as pixels or it
+     * may represent a percentage of the original image width, depending on the
+     * value of the PARAM_IS_PERCENT_RESIZE parameter. <br>
+     * If no value is specified for this parameter then the height of the image
+     * will be unchanged.<br>
+     * If an image is being cropped and resized then the cropping happens
+     * first, followed by resizing of the cropped image.
+     */
     public static final String PARAM_RESIZE_HEIGHT = "ysize";
+
+    /**
+     * This optional {@link Boolean} flag parameter specifies how the
+     * PARAM_RESIZE_HEIGHT and PARAM_RESIZE_WIDTH parameters are interpreted. If
+     * this parameter is set to <code>true</code> then the rendition height and
+     * width are represented as a percentage of the original image height and
+     * width. If this parameter is set to <code>false</code> then the rendition
+     * height and width are represented as pixels. This parameter defaults to
+     * <code>false</code>.
+     */
     public static final String PARAM_IS_PERCENT_RESIZE = "isAbsolute";
+
+    /**
+     * This optional {@link Boolean} flag parameter determines whether the
+     * rendered image maintains its original aspect ratio or is stretched to fit
+     * the specified height and width. <br>
+     * If this parameter is <code>true</code> then the rendered image will
+     * always maintain its aspect ratio and will be resized to best fit within
+     * the given width and height. For example if an image starts at 100x200
+     * pixels and it is resized to 50x50 pixels then the rendered image will
+     * actually be 25x50 pixels. <br>
+     * If this parameter is <code>false</code> then the image will be stretched
+     * or compressed to fit the given height and width, regardless of the
+     * original aspect ratio. <br>
+     * This parameter defaults to <code>true</code>
+     */
     public static final String PARAM_MAINTAIN_ASPECT_RATIO = "maintainAspectRatio";
+
+    /**
+     * This optional {@link Boolean} flag parameter specifies a mode for
+     * dramatically shrinking large images in a performant way.<br>
+     * If set to <code>true</code> the rendering process will be more performant
+     * for large images but the rendered image will be of lower quality. <br>
+     * If set to <code>false</code> the rendering process will take longer but
+     * the resulting image will usually be of better quality.
+     */
     public static final String PARAM_RESIZE_TO_THUMBNAIL = "resizeToThumbnail";
 
     // Crop params
+    /**
+     * This optional {@link Integer} or {@link Float} parameter specifies the
+     * width of the image after cropping. This may be expressed as pixels or it
+     * may represent a percentage of the original image width, depending on the
+     * value of the PARAM_IS_PERCENT_CROP parameter. <br>
+     * If no value is specified for this parameter then the width of the image
+     * will be unchanged. <br>
+     * If an image is being cropped and resized then the cropping happens first,
+     * followed by resizing of the cropped image.
+     */
     public static final String PARAM_CROP_WIDTH = "crop_width";
+    
+    /**
+     * This optional {@link Integer} or {@link Float} parameter specifies the
+     * height of the image after cropping. This may be expressed as pixels or it
+     * may represent a percentage of the original image width, depending on the
+     * value of the PARAM_IS_PERCENT_CROP parameter. <br>
+     * If no value is specified for this parameter then the width of the image
+     * will be unchanged. <br>
+     * If an image is being cropped and resized then the cropping happens first,
+     * followed by resizing of the cropped image.
+     */
     public static final String PARAM_CROP_HEIGHT = "crop_height";
+
+    /**
+     * This optional {@link Integer} parameter specifies the horizontal position
+     * of the start point of the area to be cropped. By default this parameter
+     * sets the distance, in pixels, from the left-hand edge of the image to the
+     * start position of the crop area. By default a positive value will shift
+     * the start-position to the right, while a negative value will shift the
+     * start position to the left. Setting the PARAM_CROP_GRAVITY parameter may
+     * change this, however.<br>
+     * If this parameter is not set it is assumed to be 0.
+     */
     public static final String PARAM_CROP_X_OFFSET = "crop_x";
+
+    /**
+     * This optional {@link Integer} parameter specifies the vertical position
+     * of the start point of the area to be cropped. By default this parameter
+     * sets the distance, in pixels, from the top edge of the image to the start
+     * position of the crop area. By default a positive value will shift the
+     * start-position downwards, while a negative value will shift the start
+     * position upwards. Setting the PARAM_CROP_GRAVITY parameter may change
+     * this, however.<br>
+     * If this parameter is not set it is assumed to be 0.
+     */
     public static final String PARAM_CROP_Y_OFFSET = "crop_y";
+
+    /**
+     * This optional {@link String} parameter determines the 'zero' position
+     * from which offsets are measured and also determines the direction of
+     * offsets. The allowed values of gravity are the four cardinal points
+     * (North, East, etc.), the four ordinal points (NorhtWest, SouthEast, etc)
+     * and Center. By default NorthWest gravity is used.
+     * <p>
+     * 
+     * If an ordinal gravity is set then the point from which offsets originate
+     * will be the appropriate corner. For example, NorthWest gravity would
+     * originate at teh top-left corner while SouthWest origin would originate
+     * at the bottom-left corner. Cardinal gravity sets the origin at the center
+     * of the appropriate edge. Center origin sets the origin at the center of
+     * the image.
+     * <p>
+     * 
+     * Gravity also affects the direction of offsets and how the offset position
+     * relates to the cropped image. For example, NorthWest gravity sets
+     * positive horizontal offset direction to right, positive vertical
+     * direction to down and sets the cropped image origin to the top-left
+     * corner. Northerly gavities set the positive vertical direction to down.
+     * Southerly gavities set teh positive vertical direction to up. Easterly
+     * gavities set teh positive horizontal positive direction to left. Westerly
+     * gavities set teh positive horizontal positive direction to right.
+     * <p>
+     * Some gravity values do not specify a horizontal or a vertical direction
+     * explicitly. For example North does not specify a horizontal direction,
+     * while Center does not specify either horizontal or vertical direction. In
+     * thse cases the positive horizontal offset direction is always right and
+     * the positive vertical offset direction is always down.
+     * <p>
+     * 
+     * The gravity also affects how the cropped image relates to the offset
+     * position. For example, NorthWest gravity causes the top-left corner of
+     * the cropped area to be the offset position, while NorthEast gravity would
+     * set the top-right corner of the cropped are to the offset position. When
+     * a direction is not explicitly specified then the center of the cropped
+     * area is placed at the offset position. For example, with North gravity
+     * the horizontal position is unspecified so the cropped area would be
+     * horizontally centered on the offset position, but the top edge of the
+     * cropped area would be at the offset position. For Center gravity the
+     * cropped area will be centered over the offset position both horizontally
+     * and vertically.
+     */
     public static final String PARAM_CROP_GRAVITY = "crop_gravity";
+    
+    /**
+     * This optional {@link Boolean} flag parameter specifies how the
+     * PARAM_CROP_HEIGHT and PARAM_CROP_WIDTH parameters are interpreted. If
+     * this parameter is set to <code>true</code> then the cropped image height and
+     * width are represented as a percentage of the original image height and
+     * width. If this parameter is set to <code>false</code> then the rendition
+     * height and width are represented as pixels. This parameter defaults to
+     * <code>false</code>.
+     */
     public static final String PARAM_IS_PERCENT_CROP = "percent_crop";
 
+    /**
+     * This optional {@link String} parameter specifies any additional
+     * ImageMagick commands, that the user wishes to add. These commands are
+     * appended after the various crop and resize options.
+     */
     public static final String PARAM_COMMAND_OPTIONS = "commandOptions";
 
     /*

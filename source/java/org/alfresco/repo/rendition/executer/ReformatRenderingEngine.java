@@ -51,7 +51,9 @@ public class ReformatRenderingEngine extends AbstractTransformationRenderingEngi
     private static Log logger = LogFactory.getLog(ReformatRenderingEngine.class);
 
     /**
-     * This parameter is only necessary when converting from pdf to flash.
+     * This optional {@link String} parameter is only necessary when converting
+     * from pdf to Flash and is used to specify which Flash version to convert
+     * to.
      */
     public static final String PARAM_FLASH_VERSION = "flashVersion";
 

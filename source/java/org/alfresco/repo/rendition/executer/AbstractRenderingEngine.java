@@ -117,17 +117,57 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /* Parameter names common to all Rendering Actions */
     //TODO javadoc these
+    /**
+     * This optional {@link String} parameter specifies the location of a
+     * classpath resource which can be used as a placeholder while a rendition
+     * is being generated. For example, this might be a simple icon to indicate
+     * a rendition is not yet available. This is intended to be used in
+     * conjunction with asynchronous generation of renditions.
+     */
     public static final String PARAM_PLACEHOLDER_RESOURCE_PATH = "placeHolderResourcePath";
+
+    /**
+     * This optional {@link QName} parameter specifies which property the
+     * Rendering Engine uses to read content from the source node in order to
+     * create a rendition. By default this property will be cm:content.
+     */
     public static final String PARAM_SOURCE_CONTENT_PROPERTY = "sourceContentProperty";
+
+    /**
+     * This optional {@link QName} parameter specifies which property the
+     * Rendering Engine uses to write content to the rendition node. By default
+     * the property used is cm:content.
+     */
     public static final String PARAM_TARGET_CONTENT_PROPERTY = "targetContentProperty";
+
+    /**
+     * This optional {@link Boolean} flag property specifies whether a rendition
+     * should be updated automatically if the source node changes. If set to
+     * <code>true</code> then the rendition will be re-rendered any time any
+     * property changes occur on the source node. This parameter defaults to
+     * <code>false</code>.
+     */
     public static final String PARAM_UPDATE_RENDITIONS_ON_ANY_PROPERTY_CHANGE = "update-renditions-on-any-property-change";
+
+    /**
+     * This optional {@link String} parameter specifies what user permissions
+     * are used when creating a rendition. By default the system user is used.
+     */
     public static final String PARAM_RUN_AS = "runAs";
 
-    /*
-     * mime-type is not a common parameter on all Rendering Actions, but it is
-     * common to many and is used in some common handling code in this class.
+    // mime-type is not a common parameter on all Rendering Actions, but it is
+    // common to many and is used in some common handling code in this class.
+    /**
+     * This optional {@link String} parameter specifies the mime type of the
+     * rendition content. This defaults to the mime type of the source node
+     * content.
      */
     public static final String PARAM_MIME_TYPE = "mime-type";
+
+    /**
+     * This optional {@link String} paramter specifies the encoding used to
+     * create the rendition content. The derfault encoding is UTF-8.
+     */
     public static final String PARAM_ENCODING = "encoding";
 
     /**

@@ -91,6 +91,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private TenantAdminService tenantAdminService;
     private ObjectFactory registryFactory;
     private SimpleCache<String, Registry> webScriptsRegistryCache;
+    private boolean initialized;
 
     /**
      * @param webScriptsRegistryCache
@@ -457,7 +458,11 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         if (registry == null)
         {
             registry = (Registry)registryFactory.getObject();
-            registry.reset();
+            // We only need to reset the registry if the superclass thinks its already initialized
+            if (initialized)
+            {
+                registry.reset();
+            }
             webScriptsRegistryCache.put(tenantDomain, registry);
         }
         return registry;
@@ -552,6 +557,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         tenantAdminService.register(this);
         
         super.reset();
+        
+        initialized = true;
     }
     
     /* (non-Javadoc)
@@ -560,6 +567,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     public void destroy()
     {
         webScriptsRegistryCache.remove(tenantAdminService.getCurrentUserDomain());
+
+        initialized = false;
     }
     
     

@@ -97,6 +97,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     {
         super.tearDown();
 
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     public void testCreateThumbnail() throws Exception

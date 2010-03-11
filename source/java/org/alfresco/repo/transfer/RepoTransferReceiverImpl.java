@@ -372,7 +372,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         }
         if (transferId == null)
         {
-            throw new IllegalArgumentException("transferId = " + transferId);
+            throw new IllegalArgumentException("transferId = null");
         }
 
         try
@@ -392,13 +392,27 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                                     throw new TransferException(MSG_NOT_LOCK_OWNER, new Object[] { transferId });
                                 }
                                 // Delete the lock node.
-                                log.debug("delete lock node :" + lockId);
+                                log.debug("Deleting lock node :" + lockId);
                                 nodeService.deleteNode(lockId);
-                                log.debug("lock deleted :" + lockId);
+                                log.debug("Lock deleted :" + lockId);
                             }
                             return null;
                         }
                     }, false, true);
+            
+            NodeRef tempStoreNode = null;
+            try
+            {
+                log.debug("Deleting temporary store node...");
+                tempStoreNode = getTempFolder(transferId);
+                nodeService.deleteNode(tempStoreNode);
+                log.debug("Deleted temporary store node.");
+            }
+            catch (Exception ex)
+            {
+                log.warn("Failed to delete temp store node for transfer id " + transferId + "\nTemp store noderef = " + tempStoreNode);
+            }
+            
             log.debug("delete staging folder " + transferId);
             // Delete the staging folder.
             File stagingFolder = getStagingFolder(transferId);
@@ -411,7 +425,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         }
         catch (Exception ex)
         {
-            throw new TransferException(MSG_ERROR_WHILE_ENDING_TRANSFER, ex);
+            throw new TransferException(MSG_ERROR_WHILE_ENDING_TRANSFER, new Object[] {transferId}, ex);
         }
     }
 
@@ -529,7 +543,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         }
         catch (Exception ex)
         {
-            throw new TransferException(MSG_ERROR_WHILE_STAGING_SNAPSHOT, ex);
+            throw new TransferException(MSG_ERROR_WHILE_STAGING_SNAPSHOT, new Object[]{transferId}, ex);
         }
     }
 
@@ -553,7 +567,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         }
         catch (Exception ex)
         {
-            throw new TransferException(MSG_ERROR_WHILE_STAGING_CONTENT, ex);
+            throw new TransferException(MSG_ERROR_WHILE_STAGING_CONTENT, new Object[]{transferId, contentFileId}, ex);
         }
     }
 
@@ -622,7 +636,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                     else
                     {
                         progressMonitor.log(transferId, "Unable to start commit. No snapshot file received",
-                                new TransferException(MSG_NO_SNAPSHOT_RECEIVED));
+                                new TransferException(MSG_NO_SNAPSHOT_RECEIVED, new Object[]{transferId}));
                     }
                     return null;
                 }
@@ -639,7 +653,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                 }
                 else
                 {
-                    throw new TransferException(MSG_ERROR_WHILE_COMMITTING_TRANSFER, error);
+                    throw new TransferException(MSG_ERROR_WHILE_COMMITTING_TRANSFER, new Object[]{transferId}, error);
                 }
             }
 
@@ -669,9 +683,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
              */
             try
             {
-                log.debug("calling end");
                 end(transferId);
-                log.debug("called end");
             }
             catch (Exception ex)
             {

@@ -22,9 +22,6 @@ package org.alfresco.repo.transfer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -95,15 +92,7 @@ public class ContentDataPart extends PartBase
     {
 
         // Get the content from the content URL and write it to out
-        
-        // Can't use the following code since it closes 'out', which needs to remain open.
-        // AbstractContentReader.
-        // contentService.getRawReader(data.getContentUrl()).getContent(out);
-        
         InputStream is = contentService.getRawReader(data.getContentUrl()).getContentInputStream();
-        
-//        ReadableByteChannel rbc = Channels.newChannel(is);
-//        WritableByteChannel wbc = Channels.newChannel(out);   
         
         try 
         {

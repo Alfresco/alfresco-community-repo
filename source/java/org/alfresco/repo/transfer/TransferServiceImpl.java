@@ -605,7 +605,7 @@ public class TransferServiceImpl implements TransferService
                      * send Manifest
                      */
                     eventProcessor.sendManifest(1,1);
-                    DeltaList deltas = transmitter.sendManifest(transfer, snapshotFile);
+                    transmitter.sendManifest(transfer, snapshotFile);
                     
                     logger.debug("manifest sent");
         

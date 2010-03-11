@@ -129,13 +129,19 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
     {
         for (NodeFinder nodeFinder : this.nodeFinders)
         {
-            nodeFinder.setServiceRegistry(serviceRegistry);
-            nodeFinder.init();
+            if (nodeFinder instanceof AbstractNodeFinder)
+            {
+                ((AbstractNodeFinder)nodeFinder).setServiceRegistry(serviceRegistry);
+                ((AbstractNodeFinder)nodeFinder).init();
+            }
         }
         for (NodeFilter nodeFilter : this.nodeFilters)
         {
-            nodeFilter.setServiceRegistry(serviceRegistry);
-            nodeFilter.init();
+            if (nodeFilter instanceof AbstractNodeFilter)
+            {
+                ((AbstractNodeFilter)nodeFilter).setServiceRegistry(serviceRegistry);
+                ((AbstractNodeFilter)nodeFilter).init();
+            }
         }
     }
 

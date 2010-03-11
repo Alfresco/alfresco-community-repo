@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.alfresco.repo.transfer.PathHelper;
-import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -44,8 +43,6 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Base64;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -65,7 +62,6 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
 {
     private  TransferManifestProcessor processor;
     
-    private static Log logger = LogFactory.getLog(XMLTransferManifestReader.class);
     private static final String MSG_NO_ENCODING = "transfer_service.no_encoding";
     private static final String MSG_UNABLE_DESERIALIZE = "transfer_service.unable_to_deserialise";
     
@@ -538,7 +534,6 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CONTENT_HEADER))
             {
-                TransferManifestNode node = (TransferManifestNode)props.get("node");
                 ContentData data = (ContentData)props.get("contentHeader");
                 props.put("value", data);
             }

@@ -19,11 +19,7 @@
 package org.alfresco.repo.transfer.manifest;
 
 import java.io.Writer;
-import java.util.Set;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.xml.sax.SAXException;
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,22 +19,7 @@
 
 package org.alfresco.service.cmr.transfer;
 
-import java.util.Set;
-
-import org.alfresco.service.cmr.repository.NodeRef;
-
-/**
- * @author brian
- * 
- * NodeFinders find nodes related to the current node.
- */
-public interface NodeFinder
+public interface NodeCrawlerFactory
 {
-
-    /**
-     * @param thisNode The node to use as the base from which to find other nodes.
-     * @return The found nodes
-     */
-    Set<NodeRef> findFrom(NodeRef thisNode);
-
+    NodeCrawler getNodeCrawler();
 }

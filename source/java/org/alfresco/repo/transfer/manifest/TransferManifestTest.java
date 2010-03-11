@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +35,8 @@ import java.util.Set;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import junit.framework.TestCase;
+
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -46,8 +46,6 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
-
-import junit.framework.TestCase;
 
 /**
  * Unit test for the transfer manifest
@@ -123,7 +121,7 @@ public class TransferManifestTest extends TestCase
         /**
          * Put an ArrayList type
          */
-        ArrayList a1 = new ArrayList();
+        ArrayList<String> a1 = new ArrayList<String>();
         a1.add("Rhubarb");
         a1.add("Custard");
         properties.put(QName.createQName("{gsxhjsx}", "trx:arrayList"), a1);
@@ -131,7 +129,7 @@ public class TransferManifestTest extends TestCase
         /**
          * Put a HashMap type
          */
-        HashMap m1 = new HashMap();
+        HashMap<String,String> m1 = new HashMap<String,String>();
         m1.put("Rhubarb", "Rhubarb");
         m1.put("Custard", "Custard");
         properties.put(QName.createQName("{gsxhjsx}", "trx:hashMap"), m1);
@@ -274,7 +272,7 @@ public class TransferManifestTest extends TestCase
         
         Map<QName, Serializable> rxNodeAProps = rxNodeA.getProperties();
         System.out.println(rxNodeAProps.get(QName.createQName("{gsxhjsx}", "trx:password")));
-        for(Map.Entry value : rxNodeAProps.entrySet())
+        for(Map.Entry<QName, Serializable> value : rxNodeAProps.entrySet())
         {
             System.out.println("key = " + value.getKey() + " value =" + value.getValue());
             if(value.getValue() != null)
@@ -316,9 +314,6 @@ public class TransferManifestTest extends TestCase
          */
         private static final long serialVersionUID = 1053132227110567282L;
         private String a;
-        private String b;
-        
-        
     }
     
 }

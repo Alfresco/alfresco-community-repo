@@ -19,7 +19,6 @@
 package org.alfresco.repo.transfer.report;
 
 import org.alfresco.repo.transfer.TransferModel;
-import org.alfresco.service.namespace.QName;
 
 /**
  * The transfer report model - extended for XML Manifest Model

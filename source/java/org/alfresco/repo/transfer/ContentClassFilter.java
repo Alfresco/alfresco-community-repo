@@ -24,20 +24,17 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * @author brian
  * 
  */
-public class ContentClassFilter implements NodeFilter
+public class ContentClassFilter extends AbstractNodeFilter
 {
     private Set<QName> contentClasses = new HashSet<QName>();
     private Set<QName> aspects = new HashSet<QName>();
@@ -45,7 +42,6 @@ public class ContentClassFilter implements NodeFilter
     private boolean initialised = false;
     private boolean exclude = false;
     private boolean directOnly = false;
-    private ServiceRegistry serviceRegistry;
 
     public ContentClassFilter()
     {
@@ -53,18 +49,6 @@ public class ContentClassFilter implements NodeFilter
 
     public ContentClassFilter(QName... contentClasses)
     {
-        setContentClasses(contentClasses);
-    }
-
-    public ContentClassFilter(ServiceRegistry serviceRegistry)
-    {
-        this();
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public ContentClassFilter(ServiceRegistry serviceRegistry, QName... contentClasses)
-    {
-        this(serviceRegistry);
         setContentClasses(contentClasses);
     }
 
@@ -100,19 +84,10 @@ public class ContentClassFilter implements NodeFilter
 
     /**
      * @param serviceRegistry
-     *            the serviceRegistry to set
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    /**
-     * @param serviceRegistry
      */
     public void init()
     {
-        ParameterCheck.mandatory("serviceRegistry", serviceRegistry);
+        super.init();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         aspects.clear();
         types.clear();

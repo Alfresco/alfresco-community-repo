@@ -19,12 +19,10 @@
 package org.alfresco.repo.transfer.report;
 
 import java.io.Writer;
-import java.util.Date;
 import java.util.List;
 
 import org.alfresco.repo.transfer.TransferModel;
 import org.alfresco.repo.transfer.manifest.ManifestModel;
-import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.Path;

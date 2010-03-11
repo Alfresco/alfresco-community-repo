@@ -254,6 +254,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                                 + ManifestModel.LOCALNAME_ELEMENT_PROPERTIES);
     }
 
+    @SuppressWarnings("unchecked")
     private void writeProperty(QName name, Serializable value) throws SAXException
     {
         {

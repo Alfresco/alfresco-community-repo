@@ -26,28 +26,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * @author brian
+ * This class can be used to find nodes that are associated with peer associations 
+ * (as opposed to child associations).
  * 
+ * @author brian
+ * @since 3.3
  */
-public class PeerAssociatedNodeFinder implements NodeFinder
+public class PeerAssociatedNodeFinder extends AbstractNodeFinder
 {
     private Set<QName> suppliedAssociationTypes = new HashSet<QName>();
     private boolean exclude = false;
     private boolean initialised = false;
     private List<QName> peerAssociationTypes = new ArrayList<QName>();
-    private ServiceRegistry serviceRegistry;
 
     public PeerAssociatedNodeFinder()
     {
@@ -65,30 +64,6 @@ public class PeerAssociatedNodeFinder implements NodeFinder
 
     public PeerAssociatedNodeFinder(Collection<QName> associationTypeNames, boolean exclude)
     {
-        setAssociationTypes(associationTypeNames);
-        this.exclude = exclude;
-    }
-
-    public PeerAssociatedNodeFinder(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    public PeerAssociatedNodeFinder(ServiceRegistry serviceRegistry, Collection<QName> associationTypeNames)
-    {
-        this(serviceRegistry);
-        setAssociationTypes(associationTypeNames);
-    }
-
-    public PeerAssociatedNodeFinder(ServiceRegistry serviceRegistry, QName... associationTypeNames)
-    {
-        this(serviceRegistry);
-        setAssociationTypes(associationTypeNames);
-    }
-
-    public PeerAssociatedNodeFinder(ServiceRegistry serviceRegistry, Collection<QName> associationTypeNames, boolean exclude)
-    {
-        this(serviceRegistry);
         setAssociationTypes(associationTypeNames);
         this.exclude = exclude;
     }
@@ -176,7 +151,7 @@ public class PeerAssociatedNodeFinder implements NodeFinder
 
     public void init()
     {
-        ParameterCheck.mandatory("serviceRegistry", serviceRegistry);
+        super.init();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         peerAssociationTypes.clear();
         for (QName associationType : suppliedAssociationTypes)
@@ -189,14 +164,4 @@ public class PeerAssociatedNodeFinder implements NodeFinder
         }
         initialised = true;
     }
-
-    /**
-     * @param serviceRegistry
-     *            the serviceRegistry to set
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
 }

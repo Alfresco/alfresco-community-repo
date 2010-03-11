@@ -34,13 +34,14 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.NodeCrawler;
+import org.alfresco.service.cmr.transfer.NodeCrawlerFactory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 
 /**
- * Unit test for RepoTransferReceiverImpl
+ * Unit test for classes related to the {@link NodeCrawler} interface
  * 
  * @author Brian Remmington
  */
@@ -48,6 +49,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
 {
     private ServiceRegistry serviceRegistry;
     private NodeRef companyHome;
+    private NodeCrawlerFactory nodeCrawlerFactory;
 
     /**
      * Called during the transaction setup
@@ -60,6 +62,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.nodeService = (NodeService) this.getApplicationContext().getBean("NodeService");
         this.serviceRegistry = (ServiceRegistry) this.getApplicationContext().getBean("ServiceRegistry");
+        this.nodeCrawlerFactory = (NodeCrawlerFactory) this.getApplicationContext().getBean("NodeCrawlerFactory");
         ResultSet rs = serviceRegistry.getSearchService().query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
                 SearchService.LANGUAGE_XPATH, "/app:company_home");
         if (rs.length() == 0)
@@ -79,7 +82,8 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
 
         nodeService.addAspect(node4, ContentModel.ASPECT_REFERENCEABLE, null);
 
-        ContentClassFilter contentFilter = new ContentClassFilter(serviceRegistry);
+        ContentClassFilter contentFilter = new ContentClassFilter();
+        contentFilter.setServiceRegistry(serviceRegistry);
         contentFilter.setContentClasses(ContentModel.TYPE_BASE);
 
         assertTrue(contentFilter.accept(node1));
@@ -132,7 +136,8 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         nodeService.addChild(node8, node15, RenditionModel.ASSOC_RENDITION, QName.createQName(
                 NamespaceService.APP_MODEL_1_0_URI, "temp"));
 
-        ChildAssociatedNodeFinder nodeFinder = new ChildAssociatedNodeFinder(serviceRegistry);
+        ChildAssociatedNodeFinder nodeFinder = new ChildAssociatedNodeFinder();
+        nodeFinder.setServiceRegistry(serviceRegistry);
         nodeFinder.setAssociationTypes(ContentModel.ASSOC_CONTAINS);
 
         Set<NodeRef> results = nodeFinder.findFrom(node8);
@@ -167,7 +172,7 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         nodeService.addChild(node8, node15, RenditionModel.ASSOC_RENDITION, QName.createQName(
                 NamespaceService.APP_MODEL_1_0_URI, "temp"));
 
-        NodeCrawler crawler = new StandardNodeCrawlerImpl(serviceRegistry);
+        NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler();
         crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
 
         Set<NodeRef> crawledNodes = crawler.crawl(node8);

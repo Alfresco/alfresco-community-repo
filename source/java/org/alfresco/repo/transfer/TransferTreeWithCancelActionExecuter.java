@@ -64,7 +64,6 @@ public class TransferTreeWithCancelActionExecuter extends ActionExecuterAbstract
     /* (non-Javadoc)
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
-    @SuppressWarnings("serial")
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {

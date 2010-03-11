@@ -21,10 +21,7 @@ package org.alfresco.repo.transfer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Set;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -156,11 +153,6 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
     public TransferReceiver getReceiver()
     {
         return receiver;
-    }
-
-    private void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
     }
 
     private ContentService getContentService()

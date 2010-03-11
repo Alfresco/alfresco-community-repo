@@ -122,7 +122,6 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
                         }
                         try
                         {
-                            ByteBuffer.wrap(text.getBytes("UTF-8"));
                             writer.write(ByteBuffer.wrap(text.getBytes("UTF-8")));
                         }
                         catch (Exception ex)

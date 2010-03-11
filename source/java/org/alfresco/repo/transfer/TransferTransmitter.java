@@ -20,7 +20,6 @@
 package org.alfresco.repo.transfer;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentData;

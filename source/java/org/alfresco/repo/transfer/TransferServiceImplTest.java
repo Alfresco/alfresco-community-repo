@@ -61,8 +61,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Pair;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -308,7 +306,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertTrue("didn't find target B", targets.contains(targetB));
             for(TransferTarget target : targets)
             {
-                System.out.println("found target");
+                System.out.println("found target: " + target.getName());
             }
         }
         finally
@@ -586,7 +584,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         String CONTENT_TITLE = "ContentTitle";
         String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        String CONTENT_NAME = "Demo Node 1";
         Locale CONTENT_LOCALE = Locale.GERMAN; 
         String CONTENT_STRING = "Hello";
 
@@ -614,9 +611,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try
         {
-            ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, COMPANY_HOME_XPATH_QUERY);
-            NodeRef companyHome = result.getNodeRef(0);
-    
             /**
               * Get guest home
               */
@@ -783,10 +777,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try
         {
-            ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, COMPANY_HOME_XPATH_QUERY);
-            NodeRef companyHome = result.getNodeRef(0);
-            
-    
             /**
               * Get guest home
               */
@@ -1061,8 +1051,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
        startNewTransaction();
         try
         {
-            ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, COMPANY_HOME_XPATH_QUERY);
-            NodeRef companyHome = result.getNodeRef(0);
             /**
               * Get guest home
               */
@@ -1183,9 +1171,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     {
         int MAX_SLEEPS = 5;
        
-        ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, COMPANY_HOME_XPATH_QUERY);
-        NodeRef companyHome = result.getNodeRef(0);
-        
         /**
           * Get guest home
           */
@@ -1393,9 +1378,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     public void testAsyncCancel() throws Exception
     {
         int MAX_SLEEPS = 5;
-       
-        ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, COMPANY_HOME_XPATH_QUERY);
-        NodeRef companyHome = result.getNodeRef(0);
         
         /**
           * Get guest home
@@ -1628,9 +1610,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     public void testTransferReport() throws Exception
     {
         setDefaultRollback(false);
-       
-        ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, COMPANY_HOME_XPATH_QUERY);
-        NodeRef companyHome = result.getNodeRef(0);
         
         /**
           * Get guest home
@@ -1665,7 +1644,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         NodeRef nodeRefA = null;
         NodeRef nodeRefB = null;
-        TransferTarget transferMe = null; 
         String targetName = "testTransferReport";
      
         startNewTransaction();
@@ -1707,12 +1685,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
              */
             if(!transferService.targetExists(targetName))
             {
-                transferMe = createTransferTarget(targetName);
+                createTransferTarget(targetName);
             }
-            else
-            {
-                transferMe = transferService.getTransferTarget(targetName);
-            }   
         }
         finally
         {

@@ -19,9 +19,7 @@
 package org.alfresco.repo.transfer.manifest;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 

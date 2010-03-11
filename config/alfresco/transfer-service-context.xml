@@ -192,41 +192,15 @@
 		</property>
 	</bean>
 
-	<bean id="transfer-this-node" class="org.alfresco.repo.transfer.TransferOneNodeActionExecuter"
-		parent="action-executer">
-		<property name="transferService">
-			<ref bean="TransferService" />
-		</property>
-	</bean>
-
-	<bean id="create-transfer-target" class="org.alfresco.repo.transfer.CreateTransferTargetActionExecuter"
-		parent="action-executer">
-		<property name="transferService">
-			<ref bean="TransferService" />
-		</property>
-	</bean>
-
-	<bean id="transfer-this-tree" class="org.alfresco.repo.transfer.TransferTreeActionExecuter"
-		parent="action-executer">
-		<property name="transferService">
-			<ref bean="TransferService" />
-		</property>
-		<property name="serviceRegistry" ref="ServiceRegistry" />
-	</bean>
-
-	<bean id="transfer-tree-with-cancel" class="org.alfresco.repo.transfer.TransferTreeWithCancelActionExecuter"
-		parent="action-executer">
-		<property name="transferService">
-			<ref bean="TransferService" />
-		</property>
-		<property name="serviceRegistry" ref="ServiceRegistry" />
-	</bean>
-   
    <bean id="transferServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.transfer.script.ScriptTransferService">
         <property name="extensionName">
             <value>transfer</value>
         </property>
         <property name="transferService" ref="TransferService"/>
    </bean>
+
+	<bean id="NodeCrawlerFactory" class="org.alfresco.repo.transfer.StandardNodeCrawlerFactoryImpl">
+        <constructor-arg ref="ServiceRegistry" />
+    </bean>
    
 </beans>

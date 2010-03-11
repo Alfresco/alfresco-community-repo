@@ -19,17 +19,12 @@
 
 package org.alfresco.service.cmr.transfer;
 
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author brian
  *
  * Examines the supplied node and indicates whether it has been accepted by the filter.
- * <p>
- * The NodeCrawler will first initialise this filter by calling the 
- * setServiceRegistry and init methods. Then the accept method will be called to either accept or 
- * reject the node.
  */
 public interface NodeFilter
 {
@@ -37,20 +32,8 @@ public interface NodeFilter
     /**
      * Examines the supplied node and indicates whether it has been accepted by the filter.
      * @param thisNode
-     * @param serviceRegistry 
      * @return true if the supplied node matches the criteria specified on this filter, and false
      * otherwise.
      */
     boolean accept(NodeRef thisNode);
-    
-    /**
-     * 
-     */
-    void init();
-    
-    /**
-     * 
-     * @param serviceRegistry
-     */
-    void setServiceRegistry(ServiceRegistry serviceRegistry);
 }

@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @see org.alfresco.repo.transfer.StandardNodeCrawlerImpl
  *
  * @author Brian 
+ * @since 3.3
  */
 public interface NodeCrawler
 {

@@ -568,7 +568,7 @@ public class GroupsTest extends BaseWebScriptTest
         	String myNewGroup = "GROUP_BUFFY";
     		{
     			// Delete incase it already exists from a previous test run
-        		sendRequest(new DeleteRequest(URL_ROOTGROUPS + "/" + myNewGroup), 0);
+        		sendRequest(new DeleteRequest(URL_ROOTGROUPS + "/BUFFY"), 0);
         		
     			JSONObject newGroupJSON = new JSONObject();
     			Response response = sendRequest(new PostRequest(URL_GROUPS + "/" + myRootGroup +"/children/" + myNewGroup, newGroupJSON.toString(), "application/json" ), Status.STATUS_CREATED);

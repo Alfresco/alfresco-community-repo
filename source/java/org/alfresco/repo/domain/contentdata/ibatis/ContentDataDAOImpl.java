@@ -26,6 +26,8 @@ import java.util.Set;
 import org.alfresco.repo.domain.contentdata.AbstractContentDataDAOImpl;
 import org.alfresco.repo.domain.contentdata.ContentDataEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import com.ibatis.sqlmap.client.event.RowHandler;
@@ -202,17 +204,19 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     protected int deleteContentDataEntity(Long id)
     {
         // Get the content urls
-        ContentDataEntity contentDataEntity = getContentDataEntity(id);
-        // This might be null as there is no constraint ensuring that the node points to a valid ContentData entity
-        if (contentDataEntity != null)
+        try
         {
-            // Register the content URL for a later orphan-check
-            String contentUrl = contentDataEntity.getContentUrl();
+            ContentData contentData = getContentData(id).getSecond();
+            String contentUrl = contentData.getContentUrl();
             if (contentUrl != null)
             {
                 // It has been dereferenced and may be orphaned - we'll check later
                 registerDereferencedContentUrl(contentUrl);
             }
+        }
+        catch (DataIntegrityViolationException e)
+        {
+            // Doesn't exist.  The node doesn't enforce a FK constraint, so we protect against this.
         }
         // Issue the delete statement
         Map<String, Object> params = new HashMap<String, Object>(11);

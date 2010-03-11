@@ -25,14 +25,22 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.util.HrefBearingRequestPathNameMatcher;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
@@ -56,6 +64,8 @@ public class IncompleteNodeTaggerTest extends TestCase
     private PropertyMap properties;
     private UserTransaction txn;
     private AuthenticationComponent authenticationComponent;
+    private MutableAuthenticationService authenticationService;
+    private PermissionService permissionService;
     
     public void setUp() throws Exception
     {
@@ -71,9 +81,17 @@ public class IncompleteNodeTaggerTest extends TestCase
 
         serviceRegistry = (ServiceRegistry) IntegrityTest.ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
+        authenticationService = serviceRegistry.getAuthenticationService();
+        permissionService = serviceRegistry.getPermissionService();
         this.authenticationComponent = (AuthenticationComponent)IntegrityTest.ctx.getBean("authenticationComponent");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        String user = getName();
+        if (!authenticationService.authenticationExists(user))
+        {
+            authenticationService.createAuthentication(user, user.toCharArray());
+        }
         
         // begin a transaction
         TransactionService transactionService = serviceRegistry.getTransactionService();
@@ -83,11 +101,20 @@ public class IncompleteNodeTaggerTest extends TestCase
         if (!nodeService.exists(storeRef))
         {
             nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
+            rootNodeRef = nodeService.getRootNode(storeRef);
+            // Make sure our user can do everything
+            permissionService.setPermission(rootNodeRef, user, PermissionService.ALL_PERMISSIONS, true);
         }
-        rootNodeRef = nodeService.getRootNode(storeRef);
+        else
+        {
+            rootNodeRef = nodeService.getRootNode(storeRef);
+        }
         
         properties = new PropertyMap();
         properties.put(IntegrityTest.TEST_PROP_TEXT_C, "abc");
+        
+        // Authenticate as a test-specific user
+        authenticationComponent.setCurrentUser(user);
     }
     
     public void tearDown() throws Exception
@@ -115,10 +142,18 @@ public class IncompleteNodeTaggerTest extends TestCase
         assertNotNull("IncompleteNodeTagger not created", tagger);
     }
     
-    private void checkTagging(NodeRef nodeRef, boolean mustBeTagged)
+    private void checkTagging(final NodeRef nodeRef, final boolean mustBeTagged)
     {
         tagger.beforeCommit(false);
-        assertEquals(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE), mustBeTagged);
+        RunAsWork<Void> checkWork = new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                assertEquals(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE), mustBeTagged);
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(checkWork, AuthenticationUtil.getSystemUserName());
     }
 
     public void testCreateWithoutProperties() throws Exception
@@ -149,5 +184,38 @@ public class IncompleteNodeTaggerTest extends TestCase
                 null
                 );        
         checkTagging(nodeRef, false);
+    }
+
+    /**
+     * <a href="http://issues.alfresco.com/jira/browse/ETHREEOH-3983">ETHREEOH-3983</a>
+     */
+    public void testIncompleteLockedNode() throws Exception
+    {
+        LockService lockService = serviceRegistry.getLockService();
+        
+        NodeRef nodeRef = createNode("abc", IntegrityTest.TEST_TYPE_WITH_PROPERTIES, null);
+        checkTagging(nodeRef, true);
+        // Now remove the aspect, lock the node and check again
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE);
+        lockService.lock(nodeRef, LockType.READ_ONLY_LOCK);
+        
+        // Authenticate as someone else - someone not able to do anything
+        final String user = "someuser";
+        RunAsWork<Void> createUserWork = new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                if (!authenticationService.authenticationExists(user))
+                {
+                    authenticationService.createAuthentication(user, user.toCharArray());
+                }
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(createUserWork, AuthenticationUtil.getSystemUserName());
+        authenticationComponent.setCurrentUser(user);
+        
+        // Tag
+        checkTagging(nodeRef, true);
     }
 }

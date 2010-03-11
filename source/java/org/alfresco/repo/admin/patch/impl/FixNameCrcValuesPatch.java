@@ -181,7 +181,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
         {
             // get the association types to check
             BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(logger, transactionService
-                    .getRetryingTransactionHelper(), ruleService, applicationEventPublisher, findMismatchedCrcs(),
+                    .getRetryingTransactionHelper(), ruleService, tenantAdminService, applicationEventPublisher, findMismatchedCrcs(),
                     "FixNameCrcValuesPatch", 1000, 2, 20);
 
             // Precautionary flush and clear so that we have an empty session

@@ -36,7 +36,9 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -180,17 +182,35 @@ public class AuthorityMigrationPatch extends AbstractPatch implements Applicatio
                 parents.add(parentAuthority);
                 assocCount++;
             }
-
+            
             // loop over properties
             Collection<String> members = DefaultTypeConverter.INSTANCE.getCollection(String.class, this.nodeService
                     .getProperty(current, AuthorityMigrationPatch.PROP_MEMBERS));
             if (members != null)
             {
+                String tenantDomain = null;
+                if (tenantAdminService.isEnabled())
+                {
+                    tenantDomain = tenantAdminService.getCurrentUserDomain();
+                }
+                
                 for (String user : members)
                 {
                     // Believe it or not, some old authorities have null members in them!
                     if (user != null)
                     {
+                        if ((tenantDomain != null) && (! (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))))
+                        {
+                            if (tenantAdminService.getUserDomain(user).equals(TenantService.DEFAULT_DOMAIN))
+                            {
+                                if (user.equals(tenantAdminService.getBaseNameUser(AuthenticationUtil.getAdminUserName())))
+                                {
+                                    // MT: workaround for CHK-11393 (eg. EMAIL_CONTRIBUTORS with member "admin" instead of "admin@tenant")
+                                    user = tenantAdminService.getDomainUser(user, tenantDomain);
+                                }
+                            }
+                        }
+                        
                         Set<String> propParents = parentAssocs.get(user);
                         if (propParents == null)
                         {
@@ -271,7 +291,7 @@ public class AuthorityMigrationPatch extends AbstractPatch implements Applicatio
         };
         // Migrate using 2 threads, 20 authorities per transaction. Log every 100 entries.
         new BatchProcessor<Map.Entry<String, Set<String>>>(AuthorityMigrationPatch.progress_logger,
-                this.transactionService.getRetryingTransactionHelper(), this.ruleService,
+                this.transactionService.getRetryingTransactionHelper(), this.ruleService, this.tenantAdminService,
                 this.applicationEventPublisher, parentAssocs.entrySet(), I18NUtil
                         .getMessage(AuthorityMigrationPatch.MSG_PROCESS_NAME), 100, 2, 20).process(worker, true);
     }

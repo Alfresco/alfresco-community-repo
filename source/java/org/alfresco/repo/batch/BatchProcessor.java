@@ -34,6 +34,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUserService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -63,6 +67,11 @@ public class BatchProcessor<T> implements BatchMonitor
 
     /** The rule service. */
     private final RuleService ruleService;
+    
+    /** The tenant user service. */
+    private final TenantUserService tenantUserService;
+    
+    private final String tenantDomain;
 
     /** The collection. */
     private final Collection<T> collection;
@@ -125,18 +134,61 @@ public class BatchProcessor<T> implements BatchMonitor
      * @param batchSize
      *            the number of entries we process at a time in a transaction
      */
-    public BatchProcessor(Log logger, RetryingTransactionHelper retryingTransactionHelper, RuleService ruleService,
+    public BatchProcessor(Log logger, RetryingTransactionHelper retryingTransactionHelper, RuleService ruleService, 
             ApplicationEventPublisher applicationEventPublisher, Collection<T> collection, String processName,
+            int loggingInterval, int workerThreads, int batchSize)
+    {
+        this(logger, retryingTransactionHelper, ruleService, null, applicationEventPublisher, collection, processName,
+             loggingInterval, workerThreads, batchSize);
+    }
+    
+    /**
+     * Instantiates a new batch processor.
+     * 
+     * @param logger
+     *            the logger to use
+     * @param retryingTransactionHelper
+     *            the retrying transaction helper
+     * @param ruleService
+     *            the rule service
+     * @param tenantUserService
+     *            the tenant user service
+     * @param collection
+     *            the collection
+     * @param processName
+     *            the process name
+     * @param loggingInterval
+     *            the number of entries to process before reporting progress
+     * @param applicationEventPublisher
+     *            the application event publisher
+     * @param workerThreads
+     *            the number of worker threads
+     * @param batchSize
+     *            the number of entries we process at a time in a transaction
+     */
+    public BatchProcessor(Log logger, RetryingTransactionHelper retryingTransactionHelper, RuleService ruleService, 
+            TenantUserService tenantUserService, ApplicationEventPublisher applicationEventPublisher, Collection<T> collection, String processName,
             int loggingInterval, int workerThreads, int batchSize)
     {
         this.logger = logger;
         this.retryingTransactionHelper = retryingTransactionHelper;
         this.ruleService = ruleService;
+        this.tenantUserService = tenantUserService;
         this.collection = collection;
         this.processName = processName;
         this.loggingInterval = loggingInterval;
         this.workerThreads = workerThreads;
         this.batchSize = batchSize;
+        
+        if (tenantUserService != null)
+        {
+            this.tenantDomain = tenantUserService.getUserDomain(AuthenticationUtil.getRunAsUser());
+        }
+        else
+        {
+            this.tenantDomain = TenantService.DEFAULT_DOMAIN;
+        }
+        
         // Let the (enterprise) monitoring side know of our presence
         applicationEventPublisher.publishEvent(new BatchMonitorEvent(this));
     }
@@ -313,6 +365,7 @@ public class BatchProcessor<T> implements BatchMonitor
                     {
                         batch = new ArrayList<T>(this.batchSize);
                     }
+                    
                     if (executorService == null)
                     {
                         callback.run();
@@ -551,9 +604,24 @@ public class BatchProcessor<T> implements BatchMonitor
         {
             // Disable rules for this thread
             BatchProcessor.this.ruleService.disableRules();
+            
+            final BatchProcessor<T>.TxnCallback callback = this;
             try
             {
-                BatchProcessor.this.retryingTransactionHelper.doInTransaction(this, false, this.splitTxns);
+                String systemUser = AuthenticationUtil.getSystemUserName();
+                if (tenantUserService != null)
+                {
+                    systemUser = tenantUserService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
+                }
+                
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        BatchProcessor.this.retryingTransactionHelper.doInTransaction(callback, false, splitTxns);
+                        return null;
+                    }
+                }, systemUser);
             }
             catch (Throwable t)
             {

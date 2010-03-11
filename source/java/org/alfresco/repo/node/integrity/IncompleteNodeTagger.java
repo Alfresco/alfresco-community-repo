@@ -32,6 +32,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -359,26 +361,42 @@ public class IncompleteNodeTagger
     @Override
     public void beforeCommit(boolean readOnly)
     {
-        Map<NodeRef, Set<QName>> nodes = getNodes();
+        final Map<NodeRef, Set<QName>> nodes = getNodes();
+        if (readOnly || nodes == null)
+        {
+            // Nothing was touched
+            return;
+        }
         // clear the set out of the transaction
         // there may be processes that react to the addition/removal of the aspect,
         //    and these will, in turn, lead to further events
         AlfrescoTransactionSupport.unbindResource(KEY_NODES);
-        // process each node
-        for (Map.Entry<NodeRef, Set<QName>> entry : nodes.entrySet())
+        
+        // Tag/untag the nodes as 'system' to prevent cm:lockable-related issues (ETHREEOH-3983)
+        RunAsWork<Void> processNodesWork = new RunAsWork<Void>()
         {
-            if (nodeService.exists(entry.getKey()))
+            public Void doWork() throws Exception
             {
-                processNode(entry.getKey(), entry.getValue());
+                // process each node
+                for (Map.Entry<NodeRef, Set<QName>> entry : nodes.entrySet())
+                {
+                    if (nodeService.exists(entry.getKey()))
+                    {
+                        processNode(entry.getKey(), entry.getValue());
+                    }
+                }
+                return null;
             }
-        }
+        };
+        AuthenticationUtil.runAs(processNodesWork, AuthenticationUtil.getSystemUserName());
     }
 
     private void processNode(NodeRef nodeRef, Set<QName> assocTypes)
     {
-        // ignore the node if the marker aspect is already present
-        boolean isTagged = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE);
-        
+        // get the node aspects
+        Set<QName> aspectTypeQNames = nodeService.getAspects(nodeRef);
+        boolean isTagged = aspectTypeQNames.contains(ContentModel.ASPECT_INCOMPLETE);
+
         // get the node properties
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
         // get the node type
@@ -401,8 +419,6 @@ public class IncompleteNodeTagger
             return;
         }
         
-        // get the node aspects
-        Set<QName> aspectTypeQNames = nodeService.getAspects(nodeRef);
         for (QName aspectTypeQName : aspectTypeQNames)
         {
             // get property definitions for the aspect

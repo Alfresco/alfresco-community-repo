@@ -1,0 +1,20 @@
+<webscript>
+  <shortname>Create policy (createPolicy)</shortname>
+  <description>
+  </description>
+  
+  <!-- by object id -->
+  <url>/cmis/i/{id}/pols</url>
+  <url>/cmis/s/{store}/i/{id}/pols</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/pols</url>
+  <url>/cmis/s/{store}/p{path}/pols</url>
+  
+  <!-- alfresco style -->
+  <url>/api/node/{store_type}/{store_id}/{id}/pols</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/pols</url>
+  
+  <authentication>guest</authentication>
+  <format default="atomentry">argument</format>
+  <family>CMIS</family>
+</webscript>

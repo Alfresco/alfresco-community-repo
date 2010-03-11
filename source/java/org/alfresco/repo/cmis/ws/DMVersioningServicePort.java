@@ -27,7 +27,7 @@ import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.repo.cmis.PropertyFilter;
+import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -108,8 +108,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
             propertiesUtil.setProperties(workingCopyNodeRef, properties, null);
             NodeRef nodeRef = cmisService.checkIn(objectId.value, checkinComment, major == null || major);
 
-            // TODO: applyPolicies
-            applyAclCarefully(nodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
+            applyAclCarefully(nodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE, policies);
             objectId.value = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID, objectId.value);
         }
         catch (CMISServiceException e)

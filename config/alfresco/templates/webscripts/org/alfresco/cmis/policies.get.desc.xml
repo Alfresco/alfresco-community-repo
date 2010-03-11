@@ -1,0 +1,19 @@
+<webscript>
+  <shortname>Retrieve list of applied policies (getAppliedPolicies)</shortname>
+  <description>
+  </description>
+
+  <!-- by object id -->
+  <url>/cmis/i/{id}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/cmis/s/{store}/i/{id}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <!-- by path -->
+  <url>/cmis/p{path}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/cmis/s/{store}/p{path}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  
+  <!-- alfresco style -->
+  <url>/api/node/{store_type}/{store_id}/{id}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/pols?filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <authentication>guest</authentication>
+  <format default="atomfeed">argument</format>
+  <family>CMIS</family>
+</webscript>

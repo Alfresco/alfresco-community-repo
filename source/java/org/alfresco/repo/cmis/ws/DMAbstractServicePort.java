@@ -40,18 +40,19 @@ import org.alfresco.cmis.CMISAclPropagationEnum;
 import org.alfresco.cmis.CMISActionEvaluator;
 import org.alfresco.cmis.CMISAllowedActionEnum;
 import org.alfresco.cmis.CMISChangeLogService;
-import org.alfresco.cmis.CMISConstraintException;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISFilterNotValidException;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISRendition;
 import org.alfresco.cmis.CMISRenditionService;
+import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.cmis.acl.CMISAccessControlEntryImpl;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -188,7 +189,14 @@ public class DMAbstractServicePort
 
     protected PropertyFilter createPropertyFilter(String filter) throws CmisException
     {
-        return (filter == null) ? (new PropertyFilter()) : (new PropertyFilter(filter));
+        try
+        {
+            return new PropertyFilter(filter);
+        }
+        catch (CMISFilterNotValidException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
     }
 
     protected PropertyFilter createPropertyFilter(JAXBElement<String> element) throws CmisException
@@ -383,7 +391,26 @@ public class DMAbstractServicePort
         object.setExactACL(aclReport.isExact());
     }
 
-    protected CmisACLType applyAclCarefully(NodeRef object, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation)
+    protected void applyPolicies(String objectId, List<String> policies) throws CmisException
+    {
+        // Process any provided policy IDs (they will be rejected!)
+        if (policies != null)
+        {
+            for (String policyId : policies)
+            {
+                try
+                {
+                    cmisService.applyPolicy(policyId, objectId);
+                }
+                catch (CMISServiceException e)
+                {
+                    throw ExceptionUtil.createCmisException(e);
+                }
+            }
+        }        
+    }
+
+    protected CmisACLType applyAclCarefully(NodeRef object, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation, List<String> policies)
             throws CmisException
     {
         if (addACEs == null && removeACEs == null)
@@ -397,10 +424,17 @@ public class DMAbstractServicePort
             List<CMISAccessControlEntry> acesToRemove = (null == removeACEs) ? (null) : (convertToAlfrescoAceEntriesList(removeACEs.getPermission()));
             CMISAccessControlReport aclReport = null;
             aclReport = cmisAclService.applyAcl(object, acesToRemove, acesToAdd, propagation, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
+
+            // Process any provided policy IDs (they will be rejected!)
+            if (policies != null)
+            {
+                String objectId = (String) cmisService.getProperty(object, CMISDictionaryModel.PROP_OBJECT_ID);
+                applyPolicies(objectId, policies);
+            }
             CmisACLType result = convertAclReportToCmisAclType(aclReport);
             return result;
         }
-        catch (CMISConstraintException e)
+        catch (CMISServiceException e)
         {
             throw ExceptionUtil.createCmisException(e);
         }

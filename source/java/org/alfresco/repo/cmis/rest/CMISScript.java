@@ -21,6 +21,7 @@ package org.alfresco.repo.cmis.rest;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1160,6 +1161,108 @@ public class CMISScript extends BaseScopableProcessorExtension
             cmisService.moveObject((String) cmisService.getProperty(child.getNodeRef(),
                     CMISDictionaryModel.PROP_OBJECT_ID), (String) cmisService.getProperty(targetFolder.getNodeRef(),
                     CMISDictionaryModel.PROP_OBJECT_ID), sourceFolderId);
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Creates a policy object of the specified type, and optionally adds the policy to a folder. Currently no policy
+     * types can be created in Alfresco.
+     * 
+     * @param typeId
+     *            the policy type
+     * @param parent
+     *            parent folder for this new policy
+     * @return the created policy object
+     * @throws WebScriptException on error
+     */
+    public ScriptNode createPolicy(String typeId, ScriptNode parent)
+    {
+        try
+        {
+            cmisService.createPolicy(Collections.<String, Serializable> singletonMap(
+                    CMISDictionaryModel.PROP_OBJECT_TYPE_ID, typeId), (String) cmisService.getProperty(parent
+                    .getNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID), Collections.<String> emptyList());
+            return null;
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Applies a policy object to a target object.
+     * 
+     * @param policyId
+     *            policy Id
+     * @param target
+     *            target node
+     * @throws WebScriptException on error
+     */
+    public void applyPolicy(String policyId, ScriptNode target)
+    {
+        try
+        {
+            cmisService.applyPolicy(policyId, (String) cmisService.getProperty(target.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID));
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Gets the list of policy objects currently applied to a target object.
+     * 
+     * @param objectId
+     *            the object id
+     * @param filter
+     *            property filter
+     * @throws WebScriptException on error
+     */
+    public PagedResults getAppliedPolicies(String objectId, String filter, Page page)
+    {
+        List<CMISTypeDefinition> policies;
+        try
+        {
+            policies = cmisService.getAppliedPolicies(objectId, filter);
+        }
+        catch (CMISServiceException e)
+        {
+            throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
+        }
+        Cursor cursor = paging.createCursor(policies.size(), page);
+        Object[] policyArr = new Object[cursor.getRowCount()];
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+        {
+            policyArr[i - cursor.getStartRow()] = Context.javaToJS(policies.get(i), getScope());
+        }
+
+        PagedResults results = paging.createPagedResults(policyArr, cursor);
+        return results;
+    }
+    
+    /**
+     * Removes a previously applied policy from a target object. The policy object is not deleted, and may still be
+     * applied to other objects.
+     * 
+     * @param policyId
+     *            policy Id
+     * @param objectId
+     *            target object Id.
+     * @throws WebScriptException
+     *             on error
+     */
+    public void removePolicy(String policyId, String objectId)
+    {
+        try
+        {
+            cmisService.removePolicy(policyId, objectId);
         }
         catch (CMISServiceException e)
         {

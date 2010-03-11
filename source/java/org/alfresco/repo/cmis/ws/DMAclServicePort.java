@@ -46,7 +46,7 @@ public class DMAclServicePort extends DMAbstractServicePort implements ACLServic
         {
             throw ExceptionUtil.createCmisException(e);
         }
-        return applyAclCarefully(object, addACEs, removeACEs, aclPropagation);
+        return applyAclCarefully(object, addACEs, removeACEs, aclPropagation, null);
     }
 
     /**

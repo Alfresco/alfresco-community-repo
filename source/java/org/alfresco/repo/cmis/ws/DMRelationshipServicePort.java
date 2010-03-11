@@ -25,7 +25,7 @@ import java.util.Map;
 import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.repo.cmis.PropertyFilter;
+import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.cmr.repository.AssociationRef;

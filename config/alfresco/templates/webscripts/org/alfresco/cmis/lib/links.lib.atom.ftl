@@ -24,6 +24,11 @@
 <link rel="${cmisconstants.REL_RELATIONSHIPS}" href="${absurl(url.serviceContext)}[@nodeuri node/]/rels"/>
 [/#macro]
 
+[#-- Link to node policies --]
+[#macro linkpolicies node]
+<link rel="${cmisconstants.REL_POLICIES}" href="${absurl(url.serviceContext)}[@nodeuri node/]/pols"/>
+[/#macro]
+
 [#-- Link to node acl --]
 [#macro linkacl node]
 <link rel="${cmisconstants.REL_ACL}" href="${absurl(url.serviceContext)}[@nodeuri node/]/acl"/>

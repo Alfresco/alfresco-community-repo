@@ -380,39 +380,18 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         {
         case DOCUMENT:
             CmisTypeDocumentDefinitionType documentDefinitionType = new CmisTypeDocumentDefinitionType();
-            setCmisTypeDefinitionProperties(documentDefinitionType, typeDef, includeProperties);
-            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
-            {
-                documentDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
-            }
-            documentDefinitionType.setVersionable(true); // FIXME: this attribute MUST be setted with typeDef.isVersionable()
+            documentDefinitionType.setVersionable(typeDef.isVersionable());
             documentDefinitionType.setContentStreamAllowed(CONTENT_STREAM_ALLOWED_ENUM_MAPPING.get(typeDef.getContentStreamAllowed()));
             result = documentDefinitionType;
             break;
         case FOLDER:
-            CmisTypeFolderDefinitionType folderDefinitionType = new CmisTypeFolderDefinitionType();
-            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
-            {
-                folderDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
-            }
-            setCmisTypeDefinitionProperties(folderDefinitionType, typeDef, includeProperties);
-            result = folderDefinitionType;
+            result = new CmisTypeFolderDefinitionType();
             break;
         case POLICY:
-            CmisTypePolicyDefinitionType policyDefinitionType = new CmisTypePolicyDefinitionType();
-            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
-            {
-                policyDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
-            }
-            setCmisTypeDefinitionProperties(policyDefinitionType, typeDef, includeProperties);
-            result = policyDefinitionType;
+            result = new CmisTypePolicyDefinitionType();
             break;
         case RELATIONSHIP:
             CmisTypeRelationshipDefinitionType relationshipDefinitionType = new CmisTypeRelationshipDefinitionType();
-            if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
-            {
-                relationshipDefinitionType.setParentId(typeDef.getParentType().getTypeId().getId());
-            }
             if (typeDef.getAllowedSourceTypes() != null)
             {
                 for (CMISTypeDefinition definition : typeDef.getAllowedSourceTypes())
@@ -427,12 +406,16 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
                     relationshipDefinitionType.getAllowedTargetTypes().add(definition.getTypeId().getId());
                 }
             }
-            setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDef, includeProperties);
             result = relationshipDefinitionType;
             break;
         case UNKNOWN:
             throw ExceptionUtil.createCmisException("Unknown CMIS Type", EnumServiceException.INVALID_ARGUMENT);
         }
+        if ((null != typeDef.getParentType()) && (null != typeDef.getParentType().getTypeId()))
+        {
+            result.setParentId(typeDef.getParentType().getTypeId().getId());
+        }
+        setCmisTypeDefinitionProperties(result, typeDef, includeProperties);        
 
         return result;
     }

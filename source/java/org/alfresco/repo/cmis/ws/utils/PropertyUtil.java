@@ -21,6 +21,7 @@ package org.alfresco.repo.cmis.ws.utils;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -33,15 +34,14 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.repo.cmis.PropertyFilter;
+import org.alfresco.cmis.PropertyFilter;
+import org.alfresco.repo.cmis.ws.Aspects;
 import org.alfresco.repo.cmis.ws.CmisException;
 import org.alfresco.repo.cmis.ws.CmisPropertiesType;
 import org.alfresco.repo.cmis.ws.CmisProperty;
@@ -54,9 +54,7 @@ import org.alfresco.repo.cmis.ws.CmisPropertyInteger;
 import org.alfresco.repo.cmis.ws.CmisPropertyString;
 import org.alfresco.repo.cmis.ws.CmisPropertyUri;
 import org.alfresco.repo.cmis.ws.EnumServiceException;
-import org.alfresco.repo.cmis.ws.Aspects;
 import org.alfresco.repo.cmis.ws.SetAspects;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -87,8 +85,6 @@ public class PropertyUtil
     }
 
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
-
-    private static final String BASE_TYPE_PROPERTY_NAME = "BaseType";
 
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
@@ -190,9 +186,9 @@ public class PropertyUtil
         }
     }
 
-    private Object getValue(CmisProperty cmisProperty) throws CmisException
+    private Serializable getValue(CmisProperty cmisProperty) throws CmisException
     {
-        Object value = null;
+        Serializable value = null;
         String propertyName = getPropertyName(cmisProperty);
         if ((null == cmisProperty) || (null == propertyName))
         {
@@ -239,11 +235,11 @@ public class PropertyUtil
         {
             if (isMultiValued(propertyName, multivaluedState, convertedValue))
             {
-                value = (convertedValue.size() > 0) ? (convertedValue) : (null);
+                value = (convertedValue.size() > 0) ? new ArrayList<Object>((convertedValue)) : (null);
             }
             else
             {
-                value = convertedValue.iterator().next();
+                value = (Serializable)convertedValue.iterator().next();
             }
         }
 
@@ -319,9 +315,9 @@ public class PropertyUtil
      * @return <b>Map</b>&lt;<b>String</b>, <b>Serializable</b>&gt; properties representation
      * @throws <b>CmisException</b>
      */
-    public Map<String, Object> getPropertiesMap(CmisPropertiesType cmisProperties) throws CmisException
+    public Map<String, Serializable> getPropertiesMap(CmisPropertiesType cmisProperties) throws CmisException
     {
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Serializable> properties = new HashMap<String, Serializable>();
 
         if (null == cmisProperties)
         {
@@ -471,14 +467,14 @@ public class PropertyUtil
                     aspectProperties.putAll(cmisService.getProperties((NodeRef)object, typeDef));
                 }
                 CmisPropertiesType aspectResult = new CmisPropertiesType();
-                convertToCmisProperties(object, aspectProperties, filter, aspectResult);
+                convertToCmisProperties(aspectProperties, filter, aspectResult);
                 extension.setProperties(aspectResult);
             }
             else
             {
-                properties = createBaseRelationshipProperties((AssociationRef) object);
+                properties = cmisService.getProperties((AssociationRef) object); 
             }
-            convertToCmisProperties(object, properties, filter, result);                       
+            convertToCmisProperties(    properties, filter, result);                       
             return result;
         }
         catch (CMISInvalidArgumentException e)
@@ -487,54 +483,11 @@ public class PropertyUtil
         }
     }
     
-    private Map<String, Serializable> createBaseRelationshipProperties(AssociationRef association)
+    private void convertToCmisProperties(Map<String, Serializable> properties, PropertyFilter filter, CmisPropertiesType cmisProperties) throws CmisException
     {
-        Map<String, Serializable> result = new HashMap<String, Serializable>();
-        result.put(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, cmisDictionaryService.findTypeForClass(association.getTypeQName(), CMISScope.RELATIONSHIP).getTypeId());
-        result.put(CMISDictionaryModel.PROP_OBJECT_ID, CMISServices.ASSOC_ID_PREFIX + association.getId());
-        result.put(BASE_TYPE_PROPERTY_NAME, CMISDictionaryModel.RELATIONSHIP_TYPE_ID.getId());
-        result.put(CMISDictionaryModel.PROP_CREATED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-        result.put(CMISDictionaryModel.PROP_CREATION_DATE, new Date());
-        result.put(CMISDictionaryModel.PROP_SOURCE_ID, association.getSourceRef());
-        result.put(CMISDictionaryModel.PROP_TARGET_ID, association.getTargetRef());
-        return result;
-    }
-
-    private void convertToCmisProperties(Object object, Map<String, Serializable> properties, PropertyFilter filter, CmisPropertiesType cmisProperties) throws CmisException
-    {
-        CMISTypeDefinition type = null;
-        if (object instanceof NodeRef)
-        {
-            try
-            {
-                type = cmisService.getTypeDefinition((NodeRef) object);
-            }
-            catch (CMISInvalidArgumentException e)
-            {
-                throw ExceptionUtil.createCmisException(e.getMessage(), EnumServiceException.INVALID_ARGUMENT);
-            }
-
-        }
-        else
-        {
-            try
-            {
-                type = cmisService.getTypeDefinition((AssociationRef) object);
-            }
-            catch (CMISInvalidArgumentException e)
-            {
-                throw ExceptionUtil.createCmisException(e.getMessage(), EnumServiceException.INVALID_ARGUMENT);
-            }
-        }
-
-        if (null == type)
-        {
-            throw ExceptionUtil.createCmisException(("Type for object " + object + " was not found"), EnumServiceException.RUNTIME);
-        }
-
         for (String propertyName : properties.keySet())
         {
-            CMISPropertyDefinition propertyTypeDef = cmisDictionaryService.findProperty(propertyName, type);
+            CMISPropertyDefinition propertyTypeDef = cmisDictionaryService.findProperty(propertyName, null);
             if ((null != propertyTypeDef) && filter.allow(propertyName))
             {
                 CmisProperty property = createProperty(propertyName, propertyTypeDef.getDataType(), properties.get(propertyName));

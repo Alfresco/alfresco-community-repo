@@ -20,6 +20,7 @@ package org.alfresco.repo.cmis.ws;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,10 +38,9 @@ import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServiceException;
-import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISVersioningStateEnum;
-import org.alfresco.repo.cmis.PropertyFilter;
+import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
@@ -105,7 +105,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         try
         {
             NodeRef parentNodeRef = cmisService.getFolder(folderId);
-            Map<String, Object> propertiesMap = propertiesUtil.getPropertiesMap(properties);
+            Map<String, Serializable> propertiesMap = propertiesUtil.getPropertiesMap(properties);
             String typeId = extractAndAssertTypeId(propertiesMap);
             CMISTypeDefinition typeDef = cmisService.getTypeDefinition(typeId);
             String documentName = checkConstraintsAndGetName(typeId, typeDef, parentNodeRef, contentStream, propertiesMap, versioningState);
@@ -209,13 +209,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public void createFolder(String repositoryId, CmisPropertiesType properties, String folderId, List<String> policies, CmisAccessControlListType addACEs,
             CmisAccessControlListType removeACEs, Holder<CmisExtensionType> extension, Holder<String> objectId) throws CmisException
     {
-        // TODO: process Policies
-
         checkRepositoryId(repositoryId);
         try
         {
             NodeRef folderNodeRef = cmisService.getFolder(folderId);
-            Map<String, Object> propertiesMap = propertiesUtil.getPropertiesMap(properties);
+            Map<String, Serializable> propertiesMap = propertiesUtil.getPropertiesMap(properties);
             String typeId = extractAndAssertTypeId(propertiesMap);
             CMISTypeDefinition type = cmisService.getTypeDefinition(typeId);
             if (type == null || type.getTypeId() == null || type.getTypeId().getScope() != CMISScope.FOLDER)
@@ -234,7 +232,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
                 NodeRef newFolderNodeRef = fileFolderService.create(folderNodeRef, name, type.getTypeId().getQName()).getNodeRef();
                 propertiesUtil.setProperties(newFolderNodeRef, properties, createPropertyFilter(createIgnoringFilter(new String[] { CMISDictionaryModel.PROP_NAME,
                         CMISDictionaryModel.PROP_OBJECT_TYPE_ID })));
-                applyAclCarefully(newFolderNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
+                applyAclCarefully(newFolderNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE, policies);
                 objectId.value = propertiesUtil.getProperty(newFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_ID, null);
             }
             catch (FileExistsException e)
@@ -260,7 +258,15 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     public void createPolicy(String repositoryId, CmisPropertiesType properties, String folderId, List<String> policies, CmisAccessControlListType addACEs,
             CmisAccessControlListType removeACEs, Holder<CmisExtensionType> extension, Holder<String> objectId) throws CmisException
     {
-        throw ExceptionUtil.createCmisException("Policy objects not supported", EnumServiceException.NOT_SUPPORTED);
+        checkRepositoryId(repositoryId);
+        try
+        {
+            objectId.value = cmisService.createPolicy(propertiesUtil.getPropertiesMap(properties), folderId, policies);
+        }
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
     }
 
     /**
@@ -279,7 +285,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     {
         // TODO: process Policies
 
-        Map<String, Object> propertiesMap = propertiesUtil.getPropertiesMap(properties);
+        Map<String, Serializable> propertiesMap = propertiesUtil.getPropertiesMap(properties);
         String sourceObjectId = (String) propertiesMap.get(CMISDictionaryModel.PROP_SOURCE_ID);
         String targetObjectId = (String) propertiesMap.get(CMISDictionaryModel.PROP_TARGET_ID);
 
@@ -322,8 +328,20 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
                 {
                     throw ExceptionUtil.createCmisException("Target object type isn't allowed as target type", EnumServiceException.CONSTRAINT);
                 }
+
+                // Check ACL arguments
+                if (addACEs != null && !addACEs.getPermission().isEmpty() || removeACEs != null && !removeACEs.getPermission().isEmpty())
+                {
+                    throw ExceptionUtil.createCmisException("ACLs are not supported for type: " + relationshipType.getDisplayName(), EnumServiceException.CONSTRAINT);
+                }
+                
                 AssociationRef assocRef = nodeService.createAssociation(sourceNodeRef, targetNodeRef, relationshipTypeQName);
-                objectId.value = CMISServices.ASSOC_ID_PREFIX + assocRef.getId();
+				String createdId = (String) cmisService.getProperty(assocRef, CMISDictionaryModel.PROP_OBJECT_ID);
+
+                // Try applying policies
+                applyPolicies(createdId, policies);
+
+                objectId.value = createdId;
             }
             else
             {
@@ -434,9 +452,6 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             PropertyFilter propertyFilter = createPropertyFilter(filter);
             CmisObjectType cmisObject = createCmisObject(object, propertyFilter, includeRelationships,
                     includeAllowableActions, renditionFilter);
-
-            // TODO: process relationships
-            // TODO: process policyIds
 
             Object versionSeries = cmisService.getVersionSeries(objectId, Object.class, false);
             boolean includeAcl = (null != includeACL) ? (includeACL.booleanValue()) : (false);
@@ -727,12 +742,10 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, Holder<String> objectId, PropertyFilter propertyFilter) throws CMISConstraintException,
             CmisException, CMISInvalidArgumentException
     {
-        // TODO: process Policies
-
         propertiesUtil.setProperties(targetDocumentNodeRef, properties, propertyFilter);
 
         // Apply the ACL before potentially creating a PWC
-        applyAclCarefully(targetDocumentNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE);
+        applyAclCarefully(targetDocumentNodeRef, addACEs, removeACEs, EnumACLPropagation.PROPAGATE, policies);
 
         if (versioningState == null)
         {
@@ -752,7 +765,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             if ((null != propertyName) && !propertyName.equals(""))
             {
                 filter.append(propertyName);
-                filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER);
+                filter.append(PropertyFilter.PROPERTY_NAME_TOKENS_DELIMITER);
             }
         }
 
@@ -764,7 +777,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         return filter.toString();
     }
 
-    private String extractAndAssertTypeId(Map<String, Object> propertiesMap) throws CmisException
+    private String extractAndAssertTypeId(Map<String, Serializable> propertiesMap) throws CmisException
     {
         String typeId = (String) propertiesMap.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
         if ((null == typeId) || "".equals(typeId))
@@ -775,7 +788,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
     }
 
     private String checkConstraintsAndGetName(String documentTypeId, CMISTypeDefinition typeDef, NodeRef parentNodeRef, CmisContentStreamType contentStream,
-            Map<String, Object> propertiesMap, EnumVersioningState versioningState) throws CmisException
+            Map<String, Serializable> propertiesMap, EnumVersioningState versioningState) throws CmisException
     {
         if ((null == typeDef) || (null == typeDef.getTypeId()))
         {

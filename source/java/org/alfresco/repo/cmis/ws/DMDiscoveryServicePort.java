@@ -37,7 +37,7 @@ import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.cmis.CMISServiceException;
-import org.alfresco.repo.cmis.PropertyFilter;
+import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -171,7 +171,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         {
             if ((null != filter) && !"".equals(filter) && !PropertyFilter.MATCH_ALL_FILTER.equals(filter) && !filter.contains(CMISDictionaryModel.PROP_OBJECT_ID))
             {
-                filter = CMISDictionaryModel.PROP_OBJECT_ID + PropertyFilter.PROPERTY_NAME_TOKENS_DELIMETER + filter;
+                filter = CMISDictionaryModel.PROP_OBJECT_ID + PropertyFilter.PROPERTY_NAME_TOKENS_DELIMITER + filter;
             }
         }
         else

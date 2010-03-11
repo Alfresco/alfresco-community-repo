@@ -291,7 +291,7 @@
         </property>
     </bean>
 
-    <bean id="dmTransactionWrappingInterceptor" class="org.alfresco.repo.cmis.ws.DMTransactionWrappingInterceptor">
+    <bean id="dmTransactionWrappingInterceptor" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
         <property name="transactionService" ref="TransactionService" />
         <property name="transactionManager">
             <ref bean="transactionManager" />

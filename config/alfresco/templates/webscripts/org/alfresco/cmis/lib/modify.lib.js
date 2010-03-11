@@ -38,6 +38,10 @@ function createNode(parent, entry, slug, versioningState)
     {
         node = parent.createFolder(name);
     }
+    else if (baseType == POLICY_TYPE_ID)
+    {
+        node = cmis.createPolicy(typeId, parent);
+    }
     else
     {
         status.code = 400;
@@ -312,6 +316,20 @@ function createAssociation(source, entry)
     // create association
     var assoc = source.createAssociation(target, type.typeId.QName.toString());
     return assoc;
+}
+
+//
+//Apply Policy from Atom Entry
+//
+//@param target  target node
+//@param entry  atom entry
+//@return  created policy (or null, in case of error)
+//
+function applyPolicy(target, entry)
+{
+    var object = entry.getExtension(atom.names.cmisra_object);
+    cmis.applyPolicy(object.objectId, target);
+    return null;
 }
 
 

@@ -27,6 +27,8 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -89,13 +91,26 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
     	boolean fail = false;
     	if (newContent == true)
     	{
-    		ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-    		if (contentReader == null || 
-    			contentReader.exists() == false || 
-    			isZeroLengthOfficeDoc(contentReader) == true)
-    		{
-				fail = true;
-    		}
+    	    Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
+            if (value != null)
+            {
+                boolean editInline = value.booleanValue();
+                if (editInline == true)
+                {
+                    fail = true;
+                }
+            }
+    	    
+            if (fail == false)
+            {
+        		ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+        		if (contentReader == null || 
+        			contentReader.exists() == false || 
+        			isZeroLengthOfficeDoc(contentReader) == true)
+        		{
+    				fail = true;
+        		}
+            }
     	}
     	
     	// Trigger the rules in the appropriate way

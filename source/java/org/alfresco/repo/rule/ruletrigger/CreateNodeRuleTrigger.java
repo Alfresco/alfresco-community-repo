@@ -20,6 +20,7 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -89,6 +90,37 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 					this, 
 					new JavaBehaviour(this, POLICY));
 		}
+		
+		// Register interest in the addition of the inline editable aspect at the end of the transaction
+		// NOTE: this work around is nessesary because we can't fire the rules directly since CIFS is not transactional
+		policyComponent.bindClassBehaviour(
+		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
+		        this, 
+		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.TRANSACTION_COMMIT));
+		
+	}
+	
+	// NOTE: this work around is nessesary because we can't fire the rules directly since CIFS is not transactional
+	public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+	{
+	    if (nodeService.exists(nodeRef) == true)
+	    {
+    	    // See if we have created the node in this transaction
+    	    if (AlfrescoTransactionSupport.getResource(nodeRef.toString()) != null)
+    	    {
+    	        Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
+    	        if (value != null)
+    	        {
+    	            boolean editInline = value.booleanValue();
+    	            if (editInline == true)
+    	            {
+    	                // Then we should be triggering the rules
+    	                NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+    	                triggerRulesImpl(parentNodeRef, nodeRef);
+    	            }
+    	        }
+    	    }
+	    }
 	}
     
     /**
@@ -98,50 +130,48 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     {
         // Only fire the rule if the node is question has no potential to contain content
         // TODO we need to find a better way to do this .. how can this be resolved in CIFS??
-        boolean triggerRule = false;
-        
+        boolean triggerRule = false;        
         NodeRef nodeRef = childAssocRef.getChildRef();
-        
-        // This is a "tempory" fix to identify object created via a web client and trigger the rule immediately 
-        Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
-        boolean editInline = false;
-        if (value != null)
+        QName type = this.nodeService.getType(nodeRef);
+        ClassDefinition classDefinition = this.dictionaryService.getClass(type);
+        if (classDefinition != null)
         {
-            editInline = value.booleanValue();
-        }
-        
-        if (editInline == false)
-        {
-            QName type = this.nodeService.getType(nodeRef);
-            ClassDefinition classDefinition = this.dictionaryService.getClass(type);
-            if (classDefinition != null)
+            for (PropertyDefinition propertyDefinition : classDefinition.getProperties().values())
             {
-                for (PropertyDefinition propertyDefinition : classDefinition.getProperties().values())
+                if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT) == true)
                 {
-                    if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT) == true)
-                    {
-                        triggerRule = true;
-                        break;
-                    }
+                    triggerRule = true;
+                    break;
                 }
             }
         }
         
         if (triggerRule == false)
         {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug(
-                        "Create node rule trigger fired for parent node " + 
-                        this.nodeService.getType(childAssocRef.getParentRef()).toString() + " " + childAssocRef.getParentRef() + 
-                        " and child node " +
-                        this.nodeService.getType(childAssocRef.getChildRef()).toString() + " " + childAssocRef.getChildRef());
-            }
-            
-            triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+            triggerRulesImpl(childAssocRef.getParentRef(), childAssocRef.getChildRef());
         }
         
         // Regardless of whether the rule is triggered, mark this transaction as having created this node
-        AlfrescoTransactionSupport.bindResource(childAssocRef.getChildRef().toString(), childAssocRef.getChildRef().toString());         
+        AlfrescoTransactionSupport.bindResource(childAssocRef.getChildRef().toString(), childAssocRef.getChildRef().toString());
+    }
+    
+    /**
+     * Trigger the rules with some log
+     * 
+     * @param parentNodeRef
+     * @param childNodeRef
+     */
+    private void triggerRulesImpl(NodeRef parentNodeRef, NodeRef childNodeRef)
+    {
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(
+                    "Create node rule trigger fired for parent node " + 
+                    this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
+                    " and child node " +
+                    this.nodeService.getType(childNodeRef).toString() + " " + childNodeRef);
+        }
+        
+        triggerRules(parentNodeRef, childNodeRef);
     }
 }

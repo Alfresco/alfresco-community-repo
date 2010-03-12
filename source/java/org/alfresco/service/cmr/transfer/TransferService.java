@@ -126,7 +126,7 @@ public interface TransferService
      * @param endpointPath, 
      * @param username, 
      * @param password,
-     * @return the newly create transfer target.
+     * @return the newly created transfer target.
      */
     public TransferTarget createAndSaveTransferTarget(String name, String title, String description, String endpointProtocol, 
             String endpointHost, int endpointPort, String endpointPath, String username, char[] password) throws TransferException;

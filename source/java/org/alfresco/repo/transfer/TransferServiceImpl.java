@@ -228,17 +228,7 @@ public class TransferServiceImpl implements TransferService
         for(ChildAssociationRef group : groups)
         {
             NodeRef groupNode = group.getChildRef();
-            List<ChildAssociationRef>children = nodeService.getChildAssocs(groupNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            
-            for(ChildAssociationRef child : children)
-            {
-                if(nodeService.getType(child.getChildRef()).equals(TransferModel.TYPE_TRANSFER_TARGET))
-                {
-                    TransferTargetImpl newTarget = new TransferTargetImpl();
-                    mapTransferTarget(child.getChildRef(), newTarget);
-                    ret.add(newTarget);
-                }
-            }
+            ret.addAll(getTransferTargets(groupNode));
         }
           
         return ret;
@@ -251,8 +241,6 @@ public class TransferServiceImpl implements TransferService
     {
         NodeRef home = getTransferHome();
         
-        Set<TransferTarget> ret = new HashSet<TransferTarget>();
-        
         // get group with assoc groupName
         NodeRef groupNode = nodeService.getChildByName(home, ContentModel.ASSOC_CONTAINS, groupName);
         
@@ -262,23 +250,31 @@ public class TransferServiceImpl implements TransferService
             throw new TransferException(MSG_NO_GROUP, new Object[]{groupName});
         }
         
-        /**
-         * Get children of groupNode
-         */
-        List<ChildAssociationRef>children = nodeService.getChildAssocs(groupNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            
-        for(ChildAssociationRef child : children)
-        {
-           if(nodeService.getType(child.getChildRef()).equals(TransferModel.TYPE_TRANSFER_TARGET))
-           {
-               TransferTargetImpl newTarget = new TransferTargetImpl();
-               mapTransferTarget(child.getChildRef(), newTarget);
-               ret.add(newTarget);
-           }
-        }  
-        return ret;
+        return getTransferTargets(groupNode);
     }
     
+    /**
+     * Given the noderef of a group of transfer targets, return all the contained transfer targets.
+     * @param groupNode
+     * @return
+     */
+    private Set<TransferTarget> getTransferTargets(NodeRef groupNode)
+    {
+        Set<TransferTarget> result = new HashSet<TransferTarget>();
+        List<ChildAssociationRef>children = nodeService.getChildAssocs(groupNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        
+        for(ChildAssociationRef child : children)
+        {
+            if(nodeService.getType(child.getChildRef()).equals(TransferModel.TYPE_TRANSFER_TARGET))
+            {
+                TransferTargetImpl newTarget = new TransferTargetImpl();
+                mapTransferTarget(child.getChildRef(), newTarget);
+                result.add(newTarget);
+            }
+        }
+        return result;
+    }
+
     /**
      * 
      */

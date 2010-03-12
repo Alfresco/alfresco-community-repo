@@ -49,8 +49,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Migrates authority information previously stored in the user store to the spaces store, using the new structure used
@@ -58,7 +56,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
  * 
  * @author dward
  */
-public class AuthorityMigrationPatch extends AbstractPatch implements ApplicationEventPublisherAware
+public class AuthorityMigrationPatch extends AbstractPatch
 {
     /** The title we give to the batch process in progress messages / JMX. */
     private static final String MSG_PROCESS_NAME = "patch.authorityMigration.process.name";
@@ -91,9 +89,6 @@ public class AuthorityMigrationPatch extends AbstractPatch implements Applicatio
     /** The user bootstrap. */
     private ImporterBootstrap userBootstrap;
 
-    /** The application event publisher. */
-    private ApplicationEventPublisher applicationEventPublisher;
-
     /**
      * Sets the authority service.
      * 
@@ -125,17 +120,6 @@ public class AuthorityMigrationPatch extends AbstractPatch implements Applicatio
     public void setUserBootstrap(ImporterBootstrap userBootstrap)
     {
         this.userBootstrap = userBootstrap;
-    }
-
-    /**
-     * Sets the application event publisher.
-     * 
-     * @param applicationEventPublisher
-     *            the application event publisher
-     */
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
-    {
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /**
@@ -238,12 +222,31 @@ public class AuthorityMigrationPatch extends AbstractPatch implements Applicatio
      */
     private void migrateAuthorities(final Map<String, String> authoritiesToCreate, Map<String, Set<String>> parentAssocs)
     {
-        BatchProcessor.Worker<Map.Entry<String, Set<String>>> worker = new BatchProcessor.Worker<Map.Entry<String, Set<String>>>()
-        {
+        final String tenantDomain = tenantAdminService.getCurrentUserDomain();
 
+        BatchProcessor.BatchProcessWorker<Map.Entry<String, Set<String>>> worker = new BatchProcessor.BatchProcessWorker<Map.Entry<String, Set<String>>>()
+        {
             public String getIdentifier(Entry<String, Set<String>> entry)
             {
                 return entry.getKey();
+            }
+
+            public void beforeProcess() throws Throwable
+            {
+                // Disable rules
+                ruleService.disableRules();
+                // Authentication
+                String systemUser = AuthenticationUtil.getSystemUserName();
+                systemUser = tenantAdminService.getDomainUser(systemUser, tenantDomain);
+                AuthenticationUtil.setRunAsUser(systemUser);
+            }
+
+            public void afterProcess() throws Throwable
+            {
+                // Enable rules
+                ruleService.enableRules();
+                // Clear authentication
+                AuthenticationUtil.clearCurrentSecurityContext();
             }
 
             public void process(Entry<String, Set<String>> authority) throws Throwable
@@ -290,10 +293,13 @@ public class AuthorityMigrationPatch extends AbstractPatch implements Applicatio
             }
         };
         // Migrate using 2 threads, 20 authorities per transaction. Log every 100 entries.
-        new BatchProcessor<Map.Entry<String, Set<String>>>(AuthorityMigrationPatch.progress_logger,
-                this.transactionService.getRetryingTransactionHelper(), this.ruleService, this.tenantAdminService,
-                this.applicationEventPublisher, parentAssocs.entrySet(), I18NUtil
-                        .getMessage(AuthorityMigrationPatch.MSG_PROCESS_NAME), 100, 2, 20).process(worker, true);
+        new BatchProcessor<Map.Entry<String, Set<String>>>(
+                I18NUtil.getMessage(AuthorityMigrationPatch.MSG_PROCESS_NAME),
+                this.transactionService.getRetryingTransactionHelper(),
+                parentAssocs.entrySet(),
+                2, 20,
+                AuthorityMigrationPatch.this.applicationEventPublisher,
+                AuthorityMigrationPatch.progress_logger, 100).process(worker, true);
     }
 
     /**

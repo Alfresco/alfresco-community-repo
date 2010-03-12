@@ -25,6 +25,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.springframework.extensions.surf.util.Pair;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * DAO services for <b>alf_content_data</b> table
@@ -50,6 +51,15 @@ public interface ContentDataDAO
      */
     void updateContentData(Long id, ContentData contentData);
 
+    /**
+     * Creates an immediately-orphaned content URL, if possible
+     * 
+     * @param contentUrl    the URL to create if it doesn't exist
+     * @return              Returns the ID-URL pair
+     * @throws DataIntegrityViolationException      if the URL already exists
+     */
+    Pair<Long, String> createContentUrlOrphaned(String contentUrl);
+    
     /**
      * @param id            the unique ID of the entity
      * @return              the ContentData pair (id, ContentData) or <tt>null</tt> if it doesn't exist

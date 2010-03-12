@@ -387,7 +387,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     }
 
     /**
-     * Caching method that creates an entity for <b>content_url_entity</b>.
+     * Method to create (or get an existing) content URL.  The URL will be unorphaned
+     * whether it has been created or is being re-used.
      */
     private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size)
     {
@@ -404,6 +405,12 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                         "Re-using Content URL, but size is mismatched: \n" +
                         "   Inbound: " + contentUrl + "\n" +
                         "   Existing: " + contentUrlEntity);
+            }
+            // Check orphan state
+            if (contentUrlEntity.getOrphanTime() != null)
+            {
+                Long id = contentUrlEntity.getId();
+                updateContentUrlOrphanTime(id, null);
             }
         }
         else
@@ -446,7 +453,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @param orphanTime    the time (ms since epoch) that the entity was orphaned
      * @return              Returns the number of rows updated
      */
-    protected abstract int updateContentUrlOrphanTime(Long id, long orphanTime);
+    protected abstract int updateContentUrlOrphanTime(Long id, Long orphanTime);
     
     /**
      * Create the row for the <b>alf_content_data<b>

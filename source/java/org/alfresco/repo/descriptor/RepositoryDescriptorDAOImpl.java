@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -201,17 +201,18 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
             this.nodeService.addProperties(currentDescriptorNodeRef, props);
 
-            // The version edition property may already have been overwritten with a license, so only set the property
-            // if it doesn't already contain ContentData
-            final Serializable value = this.nodeService.getProperty(currentDescriptorNodeRef,
+            // ALF-726: v3.1.x Content Cleaner Job needs to be ported to v3.2
+            // In order to migrate properly, this property needs to be d:content.  We will rewrite the property with the
+            // license update code.  There is no point attempting to rewrite the property here.
+            final Serializable value = this.nodeService.getProperty(
+                    currentDescriptorNodeRef,
                     ContentModel.PROP_SYS_VERSION_EDITION);
-            if (!(value instanceof Collection) || ((Collection<?>) value).isEmpty()
-                    || ((Collection<?>) value).iterator().next() instanceof String)
+            if (value == null)
             {
-                final Collection<String> editions = new ArrayList<String>();
-                editions.add(serverDescriptor.getEdition());
-                this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_EDITION,
-                        (Serializable) editions);
+                this.nodeService.setProperty(
+                        currentDescriptorNodeRef,
+                        ContentModel.PROP_SYS_VERSION_EDITION,
+                        new ContentData(null, null, 0L, null));
             }
 
             // done

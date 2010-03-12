@@ -38,7 +38,7 @@ import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.repo.attributes.LongAttributeValue;
 import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.batch.BatchProcessor;
-import org.alfresco.repo.batch.BatchProcessor.Worker;
+import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
@@ -538,10 +538,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         // First, analyze the group structure. Create maps of authorities to their parents for associations to create
         // and delete. Also deal with 'overlaps' with other zones in the authentication chain.
         final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
-                ChainingUserRegistrySynchronizer.logger, this.retryingTransactionHelper, this.ruleService,
-                this.applicationEventPublisher, userRegistry.getGroups(lastModified), zone + " Group Analysis",
-                this.loggingInterval, this.workerThreads, 20);
-        class Analyzer implements Worker<NodeDescription>
+                zone + " Group Analysis",
+                this.retryingTransactionHelper,
+                userRegistry.getGroups(lastModified),
+                this.workerThreads, 20,
+                this.applicationEventPublisher,
+                ChainingUserRegistrySynchronizer.logger,
+                this.loggingInterval);
+        class Analyzer implements BatchProcessWorker<NodeDescription>
         {
             private final Set<String> allZoneAuthorities = new TreeSet<String>();
             private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
@@ -579,19 +583,27 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 return this.groupAssocsToDelete;
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#getIdentifier(java.lang.Object)
-             */
             public String getIdentifier(NodeDescription entry)
             {
                 return entry.getSourceId();
             }
 
-            /*
-             * (non-Javadoc)
-             * @see org.alfresco.repo.security.sync.BatchProcessor.Worker#process(java.lang.Object)
-             */
+            public void beforeProcess() throws Throwable
+            {
+                // Disable rules
+                ruleService.disableRules();
+                // Authentication
+                AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+            }
+
+            public void afterProcess() throws Throwable
+            {
+                // Enable rules
+                ruleService.enableRules();
+                // Clear authentication
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
+
             public void process(NodeDescription group) throws Throwable
             {
                 PropertyMap groupProperties = group.getProperties();
@@ -801,15 +813,34 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 // Add the groups and their parent associations in depth-first order
                 final Map<String, String> groupsToCreate = groupAnalyzer.getGroupsToCreate();
                 BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
-                        ChainingUserRegistrySynchronizer.logger, this.retryingTransactionHelper, this.ruleService,
-                        this.applicationEventPublisher, sortedGroupAssociations.entrySet(), zone
-                                + " Group Creation and Association", this.loggingInterval, this.workerThreads, 20);
-                groupCreator.process(new Worker<Map.Entry<String, Set<String>>>()
+                        zone + " Group Creation and Association",
+                        this.retryingTransactionHelper,
+                        sortedGroupAssociations.entrySet(),
+                        this.workerThreads, 20,
+                        this.applicationEventPublisher,
+                        ChainingUserRegistrySynchronizer.logger,
+                        this.loggingInterval);
+                groupCreator.process(new BatchProcessWorker<Map.Entry<String, Set<String>>>()
                 {
-
                     public String getIdentifier(Map.Entry<String, Set<String>> entry)
                     {
                         return entry.getKey() + " " + entry.getValue();
+                    }
+
+                    public void beforeProcess() throws Throwable
+                    {
+                        // Disable rules
+                        ruleService.disableRules();
+                        // Authentication
+                        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+                    }
+
+                    public void afterProcess() throws Throwable
+                    {
+                        // Enable rules
+                        ruleService.enableRules();
+                        // Clear authentication
+                        AuthenticationUtil.clearCurrentSecurityContext();
                     }
 
                     public void process(Map.Entry<String, Set<String>> entry) throws Throwable
@@ -896,10 +927,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             }
         }
         final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(
-                ChainingUserRegistrySynchronizer.logger, this.retryingTransactionHelper, this.ruleService,
-                this.applicationEventPublisher, userRegistry.getPersons(lastModified), zone
-                        + " User Creation and Association", this.loggingInterval, this.workerThreads, 10);
-        class PersonWorker implements Worker<NodeDescription>
+                zone + " User Creation and Association",
+                this.retryingTransactionHelper,
+                userRegistry.getPersons(lastModified),
+                this.workerThreads, 10,
+                this.applicationEventPublisher,
+                ChainingUserRegistrySynchronizer.logger,
+                this.loggingInterval);
+        class PersonWorker implements BatchProcessWorker<NodeDescription>
         {
             private long latestTime;
 
@@ -916,6 +951,22 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             public String getIdentifier(NodeDescription entry)
             {
                 return entry.getSourceId();
+            }
+
+            public void beforeProcess() throws Throwable
+            {
+                // Disable rules
+                ruleService.disableRules();
+                // Authentication
+                AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+            }
+
+            public void afterProcess() throws Throwable
+            {
+                // Enable rules
+                ruleService.enableRules();
+                // Clear authentication
+                AuthenticationUtil.clearCurrentSecurityContext();
             }
 
             public void process(NodeDescription person) throws Throwable
@@ -1055,10 +1106,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         if (allowDeletions)
         {
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
-                    ChainingUserRegistrySynchronizer.logger, this.retryingTransactionHelper, this.ruleService,
-                    this.applicationEventPublisher, deletionCandidates, zone + " Authority Deletion",
-                    this.loggingInterval, this.workerThreads, 10);
-            class AuthorityDeleter implements Worker<String>
+                    zone + " Authority Deletion",
+                    this.retryingTransactionHelper,
+                    deletionCandidates,
+                    this.workerThreads, 10,
+                    this.applicationEventPublisher,
+                    ChainingUserRegistrySynchronizer.logger,
+                    this.loggingInterval);
+            class AuthorityDeleter implements BatchProcessWorker<String>
             {
                 private int personProcessedCount;
                 private int groupProcessedCount;
@@ -1076,6 +1131,22 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 public String getIdentifier(String entry)
                 {
                     return entry;
+                }
+
+                public void beforeProcess() throws Throwable
+                {
+                    // Disable rules
+                    ruleService.disableRules();
+                    // Authentication
+                    AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+                }
+
+                public void afterProcess() throws Throwable
+                {
+                    // Enable rules
+                    ruleService.enableRules();
+                    // Clear authentication
+                    AuthenticationUtil.clearCurrentSecurityContext();
                 }
 
                 public void process(String authority) throws Throwable

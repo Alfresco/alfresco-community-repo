@@ -15,6 +15,7 @@
     <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
     <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
     <typeAlias alias="ContentClean" type="org.alfresco.repo.domain.contentclean.ContentCleanEntity"/>
+    <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
 
     <!--                -->
     <!-- Result Maps    -->
@@ -191,7 +192,7 @@
         from
             alf_content_url cu
         where
-            cu.orphan_time <= #orphanTime#
+            cu.orphan_time <= #orphanTime# and cu.orphan_time is not null
         ]]>
     </select>
     
@@ -224,7 +225,7 @@
         from
             alf_content_url
         where
-            orphan_time <= #orphanTime#
+            orphan_time <= #orphanTime# and orphan_time is not null
         ]]>
     </delete>
 
@@ -247,16 +248,15 @@
     </select>
 
     <!-- Get the ContentData entity by Node and property QName -->
-    <select id="select_ContentDataByNodeAndQName" parameterMap="parameter_NodeAndQNameMap" resultClass="long">
+    <select id="select_ContentDataByNodeAndQName" parameterClass="Ids" resultClass="long">
         select
             np.long_value as id
         from
             alf_node_properties np
         where
-            np.node_id = ? and
-            np.qname_id = ? and
-            np.actual_type_n = 3 and
-            np.persisted_type_n = 3
+            np.node_id = #idOne# and
+            np.qname_id in <iterate property="ids" open="(" close=")" conjunction=",">#ids[]#</iterate> and
+            (np.actual_type_n = 3 or np.actual_type_n = 21)
     </select>
     
     <update id="update_ContentData" parameterClass="ContentData">

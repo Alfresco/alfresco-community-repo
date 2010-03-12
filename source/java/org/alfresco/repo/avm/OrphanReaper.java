@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -333,14 +334,17 @@ public class OrphanReaper
                     else if (node.getType() == AVMNodeType.PLAIN_FILE)
                     {
                         PlainFileNode file = (PlainFileNode)node;
-                        if (!file.isLegacyContentData())
+                        if (file.isLegacyContentData())
                         {
-                            Long contentDataId = file.getContentDataId();
-                            if (contentDataId != null)
-                            {
-                                // The ContentDataDAO will take care of dereferencing and cleanup
-                                AVMDAOs.Instance().contentDataDAO.deleteContentData(contentDataId);
-                            }
+                            // We quickly convert the old ContentData to the new storage
+                            ContentData contentData = file.getContentData();
+                            file.setContentData(contentData);
+                        }
+                        Long contentDataId = file.getContentDataId();
+                        if (contentDataId != null)
+                        {
+                            // The ContentDataDAO will take care of dereferencing and cleanup
+                            AVMDAOs.Instance().contentDataDAO.deleteContentData(contentDataId);
                         }
                     }
                     // Finally, delete it

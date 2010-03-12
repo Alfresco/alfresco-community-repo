@@ -56,8 +56,8 @@
                <default>0</default>
             </property>
             <property name="sys:versionEdition">
-               <type>d:any</type>
-               <multiple>true</multiple>
+               <type>d:content</type>
+               <multiple>false</multiple>
             </property>               
             <property name="sys:versionProperties">
                <type>d:content</type>

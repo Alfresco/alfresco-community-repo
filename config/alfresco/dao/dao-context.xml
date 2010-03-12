@@ -17,6 +17,7 @@
 
    <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
    </bean>
    
    <bean id="appliedPatchDAO" class="org.alfresco.repo.domain.patch.ibatis.AppliedPatchDAOImpl">

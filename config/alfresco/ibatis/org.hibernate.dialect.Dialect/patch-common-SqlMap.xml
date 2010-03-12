@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.patch">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap class="java.util.HashMap" id="result_admOldContentProp">
+        <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="listIndex" column="list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+    
+    <parameterMap class="map" id="parameter_admNewContentProp">
+        <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="listIndex" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <!--                -->
+    <!-- Selects        -->
+    <!--                -->
+
+    <select id="select_avmMaxNodeId" resultClass="java.lang.Long">
+        select max(id) from avm_nodes
+    </select>
+
+    <select id="select_admMaxNodeId" resultClass="java.lang.Long">
+        select max(id) from alf_node
+    </select>
+    
+    <select id="select_avmNodesWithOldContentProperties" parameterClass="Ids" resultClass="java.lang.Long">
+        <![CDATA[
+        select
+            id
+        from
+            avm_nodes
+        where
+            id >= #idOne#
+            and id < #idTwo#
+            and class_type = 'plainfile'
+            and content_url is not null
+            and content_url not like 'id:%'
+        order by
+            id ASC
+        ]]>
+    </select>
+
+    <select id="select_admOldContentProperties" parameterClass="Ids" resultMap="result_admOldContentProp">
+        <![CDATA[
+        select
+            node_id,
+            qname_id,
+            list_index,
+            locale_id,
+            string_value
+        from
+            alf_node_properties
+        where
+            node_id >= #idOne#
+            and node_id < #idTwo#
+            and actual_type_n = 11
+        order by
+            node_id ASC
+        ]]>
+    </select>
+
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <update id="update_admOldContentProperty" parameterMap="parameter_admNewContentProp">
+        update
+            alf_node_properties
+        set
+            actual_type_n = 21,
+            persisted_type_n = 3,
+            long_value = ?,
+            string_value = null
+        where
+            node_id = ?
+            and qname_id = ?
+            and list_index = ?
+            and locale_id = ?
+    </update>
+
+</sqlMap>

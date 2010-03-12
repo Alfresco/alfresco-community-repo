@@ -40,13 +40,15 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Base implementation of the patch. This class ensures that the patch is thread- and transaction-safe.
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractPatch implements Patch
+public abstract class AbstractPatch implements Patch,  ApplicationEventPublisherAware
 {
     /**
      * I18N message when properties not set.
@@ -92,7 +94,8 @@ public abstract class AbstractPatch implements Patch
     protected SearchService searchService;
     protected AuthenticationContext authenticationContext;
     protected TenantAdminService tenantAdminService;
-    
+    /** Publishes batch event notifications for JMX viewing */
+    protected ApplicationEventPublisher applicationEventPublisher;
 
     public AbstractPatch()
     {
@@ -159,6 +162,14 @@ public abstract class AbstractPatch implements Patch
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
+    }
+
+    /**
+     * Set automatically
+     */
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /**
@@ -358,6 +369,8 @@ public abstract class AbstractPatch implements Patch
         checkPropertyNotNull(nodeService, "nodeService");
         checkPropertyNotNull(searchService, "searchService");
         checkPropertyNotNull(authenticationContext, "authenticationContext");
+        checkPropertyNotNull(tenantAdminService, "tenantAdminService");
+        checkPropertyNotNull(applicationEventPublisher, "applicationEventPublisher");
         if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
             throw new AlfrescoRuntimeException(
@@ -541,7 +554,7 @@ public abstract class AbstractPatch implements Patch
                     {
                         Date end = new Date(currentTime + timeRemaining);
 
-                        String msg = I18NUtil.getMessage(MSG_PROGRESS, report, end);
+                        String msg = I18NUtil.getMessage(MSG_PROGRESS, getId(), report, end);
                         progress_logger.info(msg);
                     }
                 }

@@ -19,8 +19,12 @@
 package org.alfresco.repo.domain.patch;
 
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.ibatis.BatchingDAO;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.service.cmr.repository.ContentData;
 
 
 /**
@@ -31,8 +35,25 @@ import org.alfresco.repo.domain.avm.AVMNodeEntity;
  * @author janv
  * @since 3.2
  */
-public abstract class AbstractPatchDAOImpl implements PatchDAO
+public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
 {
+    private ContentDataDAO contentDataDAO;
+    
+    protected AbstractPatchDAOImpl()
+    {
+    }
+
+    /**
+     * Set the DAO that supplies {@link ContentData} IDs
+     */
+    public void setContentDataDAO(ContentDataDAO contentDataDAO)
+    {
+        this.contentDataDAO = contentDataDAO;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public Long getAVMNodesCountWhereNewInStore()
     {
         return getAVMNodeEntitiesCountWhereNewInStore();
@@ -63,4 +84,91 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO
     protected abstract List<AVMNodeEntity> getNullVersionLayeredDirectoryNodeEntities();
     
     protected abstract List<AVMNodeEntity> getNullVersionLayeredFileNodeEntities();
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * @see #getAdmOldContentProperties(Long, Long)
+     */
+    public void updateAdmV31ContentProperties(Long minNodeId, Long maxNodeId)
+    {
+        List<Map<String, Object>> props = getAdmOldContentProperties(minNodeId, maxNodeId);
+        
+        // Do a first pass to create the ContentData IDs
+        for (Map<String, Object> prop : props)
+        {
+            String stringValue = (String) prop.get("stringValue");
+            
+            try
+            {
+                ContentData contentData = ContentData.createContentProperty(stringValue);
+                Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
+                prop.put("contentDataId", contentDataId);
+            }
+            catch (Throwable e)
+            {
+                // We don't care about this too much as it'll just leak a binary
+            }
+        }
+        
+        // Now do the updates in the context of a batch
+        try
+        {
+            // Run using a batch
+            startBatch();
+            
+            for (Map<String, Object> prop : props)
+            {
+                Long nodeId = (Long) prop.get("nodeId");
+                Long qnameId = (Long) prop.get("qnameId");
+                Integer listIndex = (Integer) prop.get("listIndex");
+                Long localeId = (Long) prop.get("localeId");
+                Long contentDataId = (Long) prop.get("contentDataId");
+                if (contentDataId == null)
+                {
+                    // There was a problem with this
+                    continue;
+                }
+                // Update
+                updateAdmOldContentProperty(nodeId, qnameId, listIndex, localeId, contentDataId);
+            }
+        }
+        finally
+        {
+            executeBatch();
+        }
+    }
+    
+    /**
+     * Results are of the form:
+     * <pre>
+     *      nodeId: java.lang.Long
+     *      qnameId: java.lang.Long
+     *      listIndex: java.lang.Integer
+     *      localeId: java.lang.Long
+     *      stringValue: java.lang.String
+     * </pre>
+     * 
+     * 
+     * @param minNodeId         inclusive lower bound for Node ID
+     * @param maxNodeId         exclusive upper bound for Node ID
+     * @return                  Returns a map of query results
+     */
+    protected abstract List<Map<String, Object>> getAdmOldContentProperties(Long minNodeId, Long maxNodeId);
+    
+    /**
+     * 
+     * @param nodeId            part of the unique key
+     * @param qnameId           part of the unique key
+     * @param listIndex         part of the unique key
+     * @param localeId          part of the unique key
+     * @param longValue         the new ContentData ID
+     * @return                  Returns the row update count
+     */
+    protected abstract void updateAdmOldContentProperty(
+            Long nodeId,
+            Long qnameId,
+            Integer listIndex,
+            Long localeId,
+            Long longValue);
 }

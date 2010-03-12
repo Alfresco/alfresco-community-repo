@@ -414,7 +414,14 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
             Long contentDataId = getContentDataId();
             try
             {
-                return AVMDAOs.Instance().contentDataDAO.getContentData(contentDataId).getSecond();
+                if (contentDataId == null)
+                {
+                    return new ContentData(null, null, 0L, null);
+                }
+                else
+                {
+                    return AVMDAOs.Instance().contentDataDAO.getContentData(contentDataId).getSecond();
+                }
             }
             catch (Throwable e)
             {

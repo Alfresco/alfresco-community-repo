@@ -127,7 +127,18 @@ public class NodePropertyValue implements Cloneable, Serializable
             @Override
             Serializable convert(Serializable value)
             {
-                return DefaultTypeConverter.INSTANCE.convert(Long.class, value);
+                if (value == null)
+                {
+                    return null;
+                }
+                else if (value instanceof ContentDataId)
+                {
+                    return ((ContentDataId)value).getId();
+                }
+                else
+                {
+                    return DefaultTypeConverter.INSTANCE.convert(Long.class, value);
+                }
             }
         },
         FLOAT
@@ -467,6 +478,41 @@ public class NodePropertyValue implements Cloneable, Serializable
             {
                 return DefaultTypeConverter.INSTANCE.convert(Period.class, value);
             }
+        },
+        CONTENT_DATA_ID
+        {
+            @Override
+            public Integer getOrdinalNumber()
+            {
+                return Integer.valueOf(21);
+            }
+            
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                return ValueType.LONG;
+            }
+
+            @Override
+            Serializable convert(Serializable value)
+            {
+                if (value == null)
+                {
+                    return null;
+                }
+                else if (value instanceof Long)
+                {
+                    return value;
+                }
+                else if (value instanceof ContentDataId)
+                {
+                    return ((ContentDataId)value).getId();
+                }
+                else
+                {
+                    return DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+                }
+            }
         }
         ;
         
@@ -566,6 +612,10 @@ public class NodePropertyValue implements Cloneable, Serializable
         {
             return ValueType.PERIOD;
         }
+        else if (value instanceof ContentDataId)
+        {
+            return ValueType.CONTENT_DATA_ID;
+        }
         else
         {
             // type is not recognised as belonging to any particular slot
@@ -592,7 +642,7 @@ public class NodePropertyValue implements Cloneable, Serializable
         valueTypesByPropertyType.put(DataTypeDefinition.DATE, ValueType.DATE);
         valueTypesByPropertyType.put(DataTypeDefinition.DATETIME, ValueType.DATE);
         valueTypesByPropertyType.put(DataTypeDefinition.CATEGORY, ValueType.NODEREF);
-        valueTypesByPropertyType.put(DataTypeDefinition.CONTENT, ValueType.CONTENT);
+        valueTypesByPropertyType.put(DataTypeDefinition.CONTENT, ValueType.CONTENT_DATA_ID);
         valueTypesByPropertyType.put(DataTypeDefinition.TEXT, ValueType.STRING);
         valueTypesByPropertyType.put(DataTypeDefinition.MLTEXT, ValueType.MLTEXT);
         valueTypesByPropertyType.put(DataTypeDefinition.NODE_REF, ValueType.NODEREF);

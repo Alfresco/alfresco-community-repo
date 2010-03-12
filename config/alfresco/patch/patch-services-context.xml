@@ -1957,6 +1957,7 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>3006</value></property>
         <property name="targetSchema"><value>3007</value></property>
+        <property name="applyToTenants"><value>false</value></property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.uniqueChildName" />
@@ -1969,6 +1970,9 @@
         </property>
         <property name="nodeDaoService">
             <ref bean="nodeDaoService" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
         </property>
         <property name="ruleService">
             <ref bean="ruleService" />
@@ -2098,6 +2102,42 @@
                 <prop key="location">alfresco/bootstrap/transferSpaces.xml</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
+        </property>
+    </bean>
+
+    <bean id="patch.convertContentUrls" class="org.alfresco.repo.admin.patch.impl.ContentUrlConverterPatch" parent="basePatch">
+        <property name="id"><value>patch.convertContentUrls</value></property>
+        <property name="description"><value>patch.convertContentUrls.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>3499</value></property>
+        <property name="targetSchema"><value>3500</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="registryService">
+            <ref bean="registryService"/>
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService"/>
+        </property>
+        <property name="nodeDaoService">
+            <ref bean="nodeDaoService"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="contentDataDAO">
+            <ref bean="contentDataDAO"/>
+        </property>
+        <property name="contentStore">
+            <ref bean="fileContentStore"/>
+        </property>
+        <property name="threadCount">
+            <value>${system.content.contentUrlConverter.threadCount}</value>
+        </property>
+        <property name="batchSize">
+            <value>${system.content.contentUrlConverter.batchSize}</value>
+        </property>
+        <property name="runAsScheduledJob">
+            <value>${system.content.contentUrlConverter.runAsScheduledJob}</value>
         </property>
     </bean>
 

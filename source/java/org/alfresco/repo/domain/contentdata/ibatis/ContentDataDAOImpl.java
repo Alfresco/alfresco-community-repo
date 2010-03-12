@@ -18,16 +18,21 @@
  */
 package org.alfresco.repo.domain.contentdata.ibatis;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.repo.domain.contentdata.AbstractContentDataDAOImpl;
 import org.alfresco.repo.domain.contentdata.ContentDataEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.extensions.surf.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import com.ibatis.sqlmap.client.event.RowHandler;
@@ -58,6 +63,17 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
     {
         this.template = sqlMapClientTemplate;
+    }
+
+    public Pair<Long, String> createContentUrlOrphaned(String contentUrl)
+    {
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setContentUrl(contentUrl);
+        contentUrlEntity.setSize(0L);
+        contentUrlEntity.setOrphanTime(System.currentTimeMillis());
+        Long id = (Long) template.insert(INSERT_CONTENT_URL, contentUrlEntity);
+        // Done
+        return new Pair<Long, String>(id, contentUrl);
     }
 
     @Override
@@ -135,7 +151,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         }
     }
     
-    public int updateContentUrlOrphanTime(Long id, long orphanTime)
+    public int updateContentUrlOrphanTime(Long id, Long orphanTime)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setId(id);
@@ -178,7 +194,14 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         contentDataEntity.setMimetypeId(mimetypeId);
         contentDataEntity.setEncodingId(encodingId);
         contentDataEntity.setLocaleId(localeId);
-        template.insert(INSERT_CONTENT_DATA, contentDataEntity);
+        try
+        {
+            template.insert(INSERT_CONTENT_DATA, contentDataEntity);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException("Failed to insert ContentData: " + contentDataEntity, e);
+        }
         // Done
         return contentDataEntity;
     }
@@ -226,22 +249,29 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
 
     public void deleteContentDataForNode(Long nodeId, Set<Long> qnameIds)
     {
-        /*
-         * TODO: use IN clause in parameters
-         */
-        for (Long qnameId : qnameIds)
+        if (qnameIds.size() == 0)
         {
-            // Get the ContentData that matches (may be multiple due to collection properties)
-            Map<String, Object> params = new HashMap<String, Object>(11);
-            params.put("nodeId", nodeId);
-            params.put("qnameId", qnameId);
-            @SuppressWarnings("unchecked")
-            List<Long> ids = (List<Long>) template.queryForList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, params);
-            // Delete each one
-            for (Long id : ids)
+            // There will be no results
+            return;
+        }
+        IdsEntity idsEntity = new IdsEntity();
+        idsEntity.setIdOne(nodeId);
+        idsEntity.setIds(new ArrayList<Long>(qnameIds));
+        @SuppressWarnings("unchecked")
+        List<Long> ids = (List<Long>) template.queryForList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, idsEntity);
+        // Delete each one
+        for (Long id : ids)
+        {
+            try
             {
                 // Delete the ContentData entity
                 deleteContentData(id);
+            }
+            catch (ConcurrencyFailureException e)
+            {
+                // The DB may return results even though the row has just been
+                // deleted.  Since we are deleting the row, it doesn't matter
+                // if it is deleted here or not.
             }
         }
     }

@@ -37,7 +37,6 @@
       </constructor-arg>
    </bean>
    
-   <!-- Abstract bean definition defining base definition for content store cleaner -->
    <!-- Performs the content cleanup -->
    <bean id="contentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" init-method="init">
       <property name="protectDays" >

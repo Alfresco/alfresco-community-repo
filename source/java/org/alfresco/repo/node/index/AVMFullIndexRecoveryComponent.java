@@ -289,24 +289,22 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
                 logger.info("    Rebuilding index for " + store);
             }
             
-            if (!avmSnapShotTriggeredIndexingMethodInterceptor.hasIndexBeenCreated(store))
-            {
-                avmSnapShotTriggeredIndexingMethodInterceptor.createIndex(store);
-            }
-            
             final int latest = avmService.getLatestSnapshotID(store);
             if (latest <= 0)
             {
+                if (!avmSnapShotTriggeredIndexingMethodInterceptor.hasIndexBeenCreated(store))
+                {
+                    avmSnapShotTriggeredIndexingMethodInterceptor.createIndex(store);
+                }
                 return;
             }
-
+            
             final int latestIndexed = avmSnapShotTriggeredIndexingMethodInterceptor.getLastIndexedSnapshot(store);
 
             RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
             {
                 public Object execute() throws Exception
                 {
-
                     if (mode == RecoveryMode.AUTO)
                     {
                         logger.info("        Rebuilding index for snapshots " + latestIndexed +" to "+latest);

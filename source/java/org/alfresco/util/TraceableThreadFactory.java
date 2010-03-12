@@ -61,6 +61,9 @@ public class TraceableThreadFactory implements ThreadFactory
         
         this.namePrefix = "TraceableThread-" + factoryNumber.getAndIncrement() + "-thread-";
         this.threadNumber = new AtomicInteger(1);
+        
+        this.threadDaemon = true;
+        this.threadPriority = Thread.NORM_PRIORITY;
     }
 
     /**

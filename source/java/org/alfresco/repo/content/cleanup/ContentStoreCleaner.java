@@ -34,6 +34,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.VmShutdownListener;
+import org.alfresco.util.VmShutdownListener.VmShutdownException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Pair;
@@ -41,8 +42,6 @@ import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**
  * This component is responsible cleaning up orphaned content.
- * <p/>
- * <b>TODO: Fix up new comments</b>
  * 
  * Clean-up happens at two levels.<p/>
  * <u><b>Eager cleanup:</b></u> (since 3.2)<p/>
@@ -53,10 +52,9 @@ import org.springframework.extensions.surf.util.PropertyCheck;
  * procedures should be plugged in as listeners if this is required.
  * <p/>
  * <u><b>Lazy cleanup:</b></u><p/>
- * This is triggered by means of a {@link ContentStoreCleanupJob Quartz job}.  This is
- * a heavy-weight process that effectively compares the database metadata with the
- * content URLs controlled by the various stores.  Once again, the listeners are called
- * appropriately.
+ * This is triggered by means of a {@link ContentStoreCleanupJob Quartz job}.  This process
+ * gets content URLs that have been marked as orphaned and cleans up the various stores.
+ * Once again, the listeners are called appropriately.
  * <p/>
  * <u><b>How backup policies are affected:</b></u><p/>
  * When restoring the system from a backup, the type of restore required is dictated by
@@ -351,16 +349,5 @@ public class ContentStoreCleaner
         }
         // Done
         return size;
-    }
-
-    /**
-     * Message carrier to break out of loops using the callback.
-     * 
-     * @author Derek Hulley
-     * @since 2.1.3
-     */
-    private class VmShutdownException extends RuntimeException
-    {
-        private static final long serialVersionUID = -5876107469054587072L;
     }
 }

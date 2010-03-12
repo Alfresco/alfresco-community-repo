@@ -32,12 +32,13 @@ import java.util.zip.CRC32;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.batch.BatchProcessor;
-import org.alfresco.repo.batch.BatchProcessor.Worker;
+import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
@@ -48,8 +49,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.LongType;
 import org.hibernate.type.StringType;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -61,7 +60,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * @author Derek Hulley
  * @since V2.2SP4
  */
-public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationEventPublisherAware
+public class FixNameCrcValuesPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.fixNameCrcValues.result";
     private static final String MSG_REWRITTEN = "patch.fixNameCrcValues.fixed";
@@ -71,7 +70,6 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
     private NodeDaoService nodeDaoService;
     private QNameDAO qnameDAO;
     private RuleService ruleService;
-    private ApplicationEventPublisher applicationEventPublisher;
     
     public FixNameCrcValuesPatch()
     {
@@ -104,14 +102,6 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-     */
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
-    {
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Override
@@ -180,19 +170,32 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
         public String fixCrcValues() throws Exception
         {
             // get the association types to check
-            BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(logger, transactionService
-                    .getRetryingTransactionHelper(), ruleService, tenantAdminService, applicationEventPublisher, findMismatchedCrcs(),
-                    "FixNameCrcValuesPatch", 1000, 2, 20);
+            BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(
+                    "FixNameCrcValuesPatch",
+                    transactionService.getRetryingTransactionHelper(),
+                    findMismatchedCrcs(),
+                    2, 20,
+                    applicationEventPublisher,
+                    logger, 1000);
 
             // Precautionary flush and clear so that we have an empty session
             getSession().flush();
             getSession().clear();
 
-            int updated = batchProcessor.process(new Worker<Long>(){
-
+            int updated = batchProcessor.process(new BatchProcessWorker<Long>()
+            {
                 public String getIdentifier(Long entry)
                 {
                     return entry.toString();
+                }
+                
+                public void beforeProcess() throws Throwable
+                {
+                    // Switch rules off
+                    ruleService.disableRules();
+                    // Authenticate as system
+                    String systemUsername = AuthenticationUtil.getSystemUserName();
+                    AuthenticationUtil.setFullyAuthenticatedUser(systemUsername);
                 }
 
                 public void process(Long childAssocId) throws Throwable
@@ -247,7 +250,13 @@ public class FixNameCrcValuesPatch extends AbstractPatch implements ApplicationE
                     // Record
                     writeLine(I18NUtil.getMessage(MSG_REWRITTEN, childNode.getId(), childName, oldChildCrc, childCrc,
                             qname, oldQNameCrc, qnameCrc));
-                }}, true);
+                }
+                
+                public void afterProcess() throws Throwable
+                {
+                    ruleService.enableRules();
+                }
+            }, true);
 
             
             String msg = I18NUtil.getMessage(MSG_SUCCESS, updated, logFile);

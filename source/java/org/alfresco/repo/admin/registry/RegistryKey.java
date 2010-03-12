@@ -19,6 +19,7 @@
 package org.alfresco.repo.admin.registry;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Key for looking up registry metadata.
@@ -113,6 +114,46 @@ public class RegistryKey implements Serializable
           .append("[ ").append(RegistryKey.buildPathString(path)).append("/").append(property)
           .append(" ]");
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RegistryKey other = (RegistryKey) obj;
+        if (namespaceUri == null)
+        {
+            if (other.namespaceUri != null)
+                return false;
+        }
+        else if (!namespaceUri.equals(other.namespaceUri))
+            return false;
+        if (!Arrays.equals(path, other.path))
+            return false;
+        if (property == null)
+        {
+            if (other.property != null)
+                return false;
+        }
+        else if (!property.equals(other.property))
+            return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((namespaceUri == null) ? 0 : namespaceUri.hashCode());
+        result = prime * result + Arrays.hashCode(path);
+        result = prime * result + ((property == null) ? 0 : property.hashCode());
+        return result;
     }
 
     public String getNamespaceUri()

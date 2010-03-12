@@ -46,6 +46,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.AuditableProperties;
 import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.ContentDataId;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.LocaleDAO;
 import org.alfresco.repo.domain.Node;
@@ -4986,11 +4987,13 @@ public class HibernateNodeDaoServiceImpl
                         "   Value: " + value);
             }
             // Handle ContentData
-            if (value instanceof ContentData && propertyTypeQName.equals(DataTypeDefinition.CONTENT))
+            // We used to check the property type, but we now handle d:any ContentData as well
+            if (value instanceof ContentData)
             {
                 // Needs converting to an ID
                 ContentData contentData = (ContentData) value;
-                value = contentDataDAO.createContentData(contentData).getFirst();
+                Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
+                value = new ContentDataId(contentDataId);
             }
             // Handle MLText
             if (value instanceof MLText)
@@ -5374,8 +5377,24 @@ public class HibernateNodeDaoServiceImpl
         {
             Serializable value = propertyValue.getValue(propertyTypeQName);
             // Handle conversions to and from ContentData
-            if (propertyTypeQName.equals(DataTypeDefinition.CONTENT) && (value instanceof Long))
+            if (value instanceof ContentDataId)
             {
+                // ContentData used to be persisted 
+                Long contentDataId = ((ContentDataId) value).getId();
+                Pair<Long, ContentData> contentDataPair = contentDataDAO.getContentData(contentDataId);
+                if (contentDataPair == null)
+                {
+                    // It is invalid
+                    value = null;
+                }
+                else
+                {
+                    value = contentDataPair.getSecond();
+                }
+            }
+            else if (propertyTypeQName.equals(DataTypeDefinition.CONTENT) && (value instanceof Long))
+            {
+                // ContentData used to be persisted 
                 Pair<Long, ContentData> contentDataPair = contentDataDAO.getContentData((Long)value);
                 if (contentDataPair == null)
                 {

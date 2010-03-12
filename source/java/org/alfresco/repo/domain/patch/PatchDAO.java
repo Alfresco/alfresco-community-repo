@@ -21,12 +21,14 @@ package org.alfresco.repo.domain.patch;
 import java.util.List;
 
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
-
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.service.cmr.repository.ContentData;
 
 /**
  * Additional DAO services for patches
  *
  * @author janv
+ * @author Derek Hulley
  * @since 3.2
  */
 public interface PatchDAO
@@ -40,4 +42,21 @@ public interface PatchDAO
     public List<AVMNodeEntity> getNullVersionLayeredDirectories(int count);
     
     public List<AVMNodeEntity> getNullVersionLayeredFiles(int count);
+    
+    public Long getMaxAvmNodeID();
+    
+    public List<Long> getAvmNodesWithOldContentProperties(Long minNodeId, Long maxNodeId);
+    
+    // DM-related
+    
+    public Long getMaxAdmNodeID();
+    
+    /**
+     * Migrates DM content properties from the old V3.1 format (String-based {@link ContentData#toString()})
+     * to the new V3.2 format (ID based storage using {@link ContentDataDAO}).
+     * 
+     * @param minNodeId         the inclusive node ID to limit the updates to
+     * @param maxNodeId         the exclusive node ID to limit the updates to
+     */
+    public void updateAdmV31ContentProperties(Long minNodeId, Long maxNodeId);
 }

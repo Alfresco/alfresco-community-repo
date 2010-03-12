@@ -288,8 +288,8 @@ public class EmailServiceImpl implements EmailService
             for (int i = 0; i < resultSet.length(); i++)
             {
                 NodeRef resRef = resultSet.getNodeRef(i);
-                Object alias = nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
-                if (parts[0].equals(alias))
+                String alias = (String)nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
+                if (parts[0].equalsIgnoreCase(alias))
                 {
                     return resRef;
                 }

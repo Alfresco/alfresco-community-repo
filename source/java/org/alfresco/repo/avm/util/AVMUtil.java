@@ -62,9 +62,11 @@ public class AVMUtil
     }
     
     /**
-     * Split a path into its parent path and its base name.
+     * Split a path into its parent path and its base name. If the store root path is passed, then return [null, ""].
+     * 
      * @param path The initial AVM path.
-     * @return An array of 2 Strings containing the parent path and the base
+     * 
+     * @return An array of 2 Strings containing the parent AVM path (or null) and the base
      * name.
      */
     public static String[] splitBase(String path)

@@ -23,16 +23,14 @@ import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.template.BaseContentNode.TemplateContentData;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -41,7 +39,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -53,7 +50,6 @@ import org.springframework.extensions.surf.util.Pair;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 import org.xml.sax.InputSource;
 
 import freemarker.ext.dom.NodeModel;
@@ -316,13 +312,17 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
     // TemplateProperties API
     
     /**
-     * @return the immediate parent in the node path
+     * @return the immediate parent in the node path (null if root of store)
      */
     public TemplateProperties getParent()
     {
         if (this.parent == null)
         {
-            this.parent = new AVMTemplateNode(this.getParentPath(), this.version, this.services, this.imageResolver);
+            String parentPath = this.getParentPath();
+            if (parentPath != null)
+            {
+                this.parent = new AVMTemplateNode(parentPath, this.version, this.services, this.imageResolver);
+            }
         }
         return this.parent;
     }
@@ -498,6 +498,10 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
      */
     public String getMimetype()
     {
+        if (getIsContainer())
+        {
+            return null;
+        }
         return this.services.getAVMService().getContentDataForRead(this.avmRef).getMimetype();
     }
     
@@ -507,6 +511,10 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
      */
     public String getDisplayMimetype()
     {
+        if (getIsContainer())
+        {
+            return null;
+        }
         final String mimetype = this.services.getAVMService().getContentDataForRead(this.avmRef).getMimetype();
         return services.getMimetypeService().getDisplaysByMimetype().get(mimetype);
     }
@@ -517,6 +525,10 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
      */
     public String getEncoding()
     {
+        if (getIsContainer())
+        {
+            return null;
+        }
         return this.services.getAVMService().getContentDataForRead(this.avmRef).getEncoding();
     }
     
@@ -526,6 +538,10 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
      */
     public long getSize()
     {
+        if (getIsContainer())
+        {
+            return -1;
+        }
         return this.services.getAVMService().getContentDataForRead(this.avmRef).getSize();
     }
     

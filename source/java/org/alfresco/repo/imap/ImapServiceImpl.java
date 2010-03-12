@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -76,6 +77,7 @@ public class ImapServiceImpl implements ImapService
     private static final String ERROR_MAILBOX_NAME_IS_MANDATORY = "imap.server.error.mailbox_name_is_mandatory";
     private static final String ERROR_CANNOT_GET_A_FOLDER = "imap.server.error.cannot_get_a_folder";
 
+    private SysAdminParams sysAdminParams;
     private FileFolderService fileFolderService;
     private NodeService nodeService;
     private ServiceRegistry serviceRegistry;
@@ -88,7 +90,6 @@ public class ImapServiceImpl implements ImapService
     private Set<NodeRef> ignoreExtractionFolders;
 
     private String defaultFromAddress;
-    private String webApplicationContextUrl = "http://localhost:8080/alfresco";
     private String repositoryTemplatePath;
     private boolean extractAttachmentsEnabled = true;
 
@@ -154,6 +155,11 @@ public class ImapServiceImpl implements ImapService
         }
     }
 
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+
     public FileFolderService getFileFolderService()
     {
         return fileFolderService;
@@ -201,12 +207,7 @@ public class ImapServiceImpl implements ImapService
 
     public String getWebApplicationContextUrl()
     {
-        return webApplicationContextUrl;
-    }
-
-    public void setWebApplicationContextUrl(String webApplicationContextUrl)
-    {
-        this.webApplicationContextUrl = webApplicationContextUrl;
+        return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext();
     }
 
     public String getRepositoryTemplatePath()

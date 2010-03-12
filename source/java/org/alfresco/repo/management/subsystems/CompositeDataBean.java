@@ -87,7 +87,7 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         setApplicationContext(parent);
         setRegistry(registry);
         setPropertyDefaults(propertyDefaults);
-        setBeanName(category);
+        setCategory(category);
         setInstancePath(instancePath);
         this.owner = owner;
         this.type = type;

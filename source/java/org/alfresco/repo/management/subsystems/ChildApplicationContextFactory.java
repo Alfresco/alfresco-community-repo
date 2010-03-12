@@ -178,7 +178,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         setApplicationContext(parent);
         setRegistry(registry);
         setPropertyDefaults(propertyDefaults);
-        setBeanName(category);
+        setCategory(category);
         setTypeName(typeName);
         setInstancePath(instancePath);
 

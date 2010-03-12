@@ -13,6 +13,31 @@
       <property name="allowWrite">
          <value>${server.transaction.allow-writes}</value>
       </property>
+      <property name="alfrescoContext">
+         <value>${alfresco.context}</value>
+      </property>
+      <property name="alfrescoHost">
+         <value>${alfresco.host}</value>
+      </property>
+      <property name="alfrescoPort">
+         <value>${alfresco.port}</value>
+      </property>
+      <property name="alfrescoProtocol">
+         <value>${alfresco.protocol}</value>
+      </property>
+	  
+      <property name="shareContext">
+         <value>${share.context}</value>
+      </property>
+      <property name="shareHost">
+         <value>${share.host}</value>
+      </property>
+      <property name="sharePort">
+         <value>${share.port}</value>
+      </property>
+      <property name="shareProtocol">
+         <value>${share.protocol}</value>
+      </property>
    </bean>
 
 </beans>

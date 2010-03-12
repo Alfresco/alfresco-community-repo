@@ -59,6 +59,7 @@
       <property name="permissionService"><ref bean="permissionService"/></property>
       <property name="authenticationContext"><ref bean="authenticationContext"/></property>
 	  <property name="authenticationService"><ref bean="authenticationService"/></property>
+      <property name="sysAdminParams"><ref bean="sysAdminParams"/></property>
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
 	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
       <property name="stateReaper"><ref bean="fileStateReaper"/></property>

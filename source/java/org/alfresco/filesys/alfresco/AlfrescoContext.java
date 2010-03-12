@@ -18,7 +18,6 @@
  */
 package org.alfresco.filesys.alfresco;
 
-import java.net.InetAddress;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -32,7 +31,7 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
-
+import org.alfresco.repo.admin.SysAdminParams;
 
 /**
  * Alfresco Filesystem Context Class
@@ -43,9 +42,7 @@ import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
  */
 public abstract class AlfrescoContext extends DiskDeviceContext
 {
-    // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
-
-    private static final String TokenLocalName = "${localname}";
+    private SysAdminParams sysAdminParams;
 
 	// Debug levels
 	
@@ -68,7 +65,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     
     // URL pseudo file web path prefix (server/port/webapp) and link file name
     
-    private String m_urlPathPrefix;
     private String m_urlFileName;
     
     // Pseudo file interface
@@ -103,6 +99,15 @@ public abstract class AlfrescoContext extends DiskDeviceContext
                 FileSystem.CaseSensitiveSearch);        
     }
     
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+    
+    public SysAdminParams getSysAdminParams()
+    {
+        return sysAdminParams;
+    }
 
     public void setDisableChangeNotification(boolean disableChangeNotification)
     {
@@ -303,7 +308,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      */
     public final boolean hasURLFile()
     {
-        if ( m_urlPathPrefix != null && m_urlFileName != null)
+        if (m_urlFileName != null)
             return true;
         return false;
     }
@@ -315,9 +320,9 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      */
     public final String getURLPrefix()
     {
-        return m_urlPathPrefix;
+        return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext() + "/";
     }
-    
+
     /**
      * Return the URL pseudo file name
      * 
@@ -326,58 +331,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public final String getURLFileName()
     {
         return m_urlFileName;
-    }
-    
-    /**
-     * Set the URL path prefix
-     * 
-     * @param urlPrefix String
-     */
-    public final void setURLPrefix(String urlPrefix)
-    {
-        m_urlPathPrefix = urlPrefix;
-
-        if ( urlPrefix != null)
-        {
-            // Make sure the web prefix has a trailing slash
-            
-            if ( !urlPrefix.endsWith("/"))
-                urlPrefix = urlPrefix + "/";
-            
-            // Check if the URL path name contains the local name token
-    
-            int pos = urlPrefix.indexOf(TokenLocalName);
-            if (pos != -1)
-            {
-    
-                // Get the local server name
-    
-                String srvName = "localhost";
-                
-                try
-                {
-                    srvName = InetAddress.getLocalHost().getHostName();
-                }
-                catch ( Exception ex)
-                {
-                }
-    
-                // Rebuild the host name substituting the token with the local server name
-    
-                StringBuilder hostStr = new StringBuilder();
-    
-                hostStr.append( urlPrefix.substring(0, pos));
-                hostStr.append(srvName);
-    
-                pos += TokenLocalName.length();
-                if (pos < urlPrefix.length())
-                    hostStr.append( urlPrefix.substring(pos));
-    
-                m_urlPathPrefix = hostStr.toString();
-            }
-        
-        	enabledPseudoFileInterface();
-        }
     }
     
     /**

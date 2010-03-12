@@ -134,6 +134,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     private String repoRemoteUrl = null;
     
+    private boolean sendTestMessage = false;
+    private String testMessageTo = null;
+    private String testMessageSubject = "Test message";
+    private String testMessageText = "This is a test message.";
+
     /**
      * Test mode prevents email messages from being sent.
      * It is used when unit testing when we don't actually want to send out email messages.
@@ -224,6 +229,43 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         this.repoRemoteUrl = repoRemoteUrl;
     }
     
+    public void setTestMessageTo(String testMessageTo)
+    {
+        this.testMessageTo = testMessageTo;
+    }
+    
+    public void setTestMessageSubject(String testMessageSubject)
+    {
+        this.testMessageSubject = testMessageSubject;
+    }
+    
+    public void setTestMessageText(String testMessageText)
+    {
+        this.testMessageText = testMessageText;
+    }
+
+    public void setSendTestMessage(boolean sendTestMessage)
+    {
+        this.sendTestMessage = sendTestMessage;
+    }
+
+    
+    @Override
+    public void init()
+    {
+        super.init();
+        if (sendTestMessage)
+        {
+            Map<String, Serializable> params = new HashMap<String, Serializable>();
+            params.put(PARAM_TO, testMessageTo);
+            params.put(PARAM_SUBJECT, testMessageSubject);
+            params.put(PARAM_TEXT, testMessageText);
+            
+            Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
+            executeImpl(ruleAction, null);
+        }
+    }
+
     /**
      * Initialise bean
      */
@@ -363,7 +405,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 // set the from address
                 NodeRef person = personService.getPerson(authService.getCurrentUserName());
-                String fromActualUser = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                
+                String fromActualUser = null;
+                if (person != null)
+                {
+                    fromActualUser = (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                }
                 if( fromActualUser != null && fromActualUser.length() != 0)
                 {
                     message.setFrom(fromActualUser);

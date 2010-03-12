@@ -21,17 +21,17 @@ package org.alfresco.filesys.alfresco;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.pseudo.LocalPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.util.ResourceFinder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Desktop Action Class
@@ -86,10 +86,6 @@ public abstract class DesktopAction {
     public static final int StsCommandLine		= 8;
     public static final int StsAuthTicket		= 9;
     
-    // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
-
-    private static final String TokenLocalName = "${localname}";
-
     // Action name
 	
 	private String m_name;
@@ -443,44 +439,19 @@ public abstract class DesktopAction {
         
         // Check if the webapp URL has been specified
         
+        SysAdminParams sysAdminParams = m_filesysContext.getSysAdminParams();
         if (m_webappURL == null || m_webappURL.length() == 0)
         {
-            m_webappURL = m_filesysContext.getGlobalDesktopActionConfig().getWebpath();
+            m_webappURL = m_filesysContext.getURLPrefix();
         }
-        if ( m_webappURL != null && m_webappURL.length() > 0)
+        else
         {
             // Check if the path name contains the local name token
+            m_webappURL = sysAdminParams.subsituteHost(m_webappURL);
+
             if ( !m_webappURL.endsWith("/"))
-                m_webappURL = m_webappURL + "/";
-            
-            int pos = m_webappURL.indexOf(TokenLocalName);
-            if (pos != -1)
             {
-
-                // Get the local server name
-
-                String srvName = "localhost";
-                
-                try
-                {
-                    srvName = InetAddress.getLocalHost().getHostName();
-                }
-                catch ( Exception ex)
-                {
-                }
-
-                // Rebuild the host name substituting the token with the local server name
-
-                StringBuilder hostStr = new StringBuilder();
-
-                hostStr.append(m_webappURL.substring(0, pos));
-                hostStr.append(srvName);
-
-                pos += TokenLocalName.length();
-                if (pos < m_webappURL.length())
-                    hostStr.append(m_webappURL.substring(pos));
-
-                m_webappURL = hostStr.toString();
+                m_webappURL = m_webappURL + "/";
             }
         }
         

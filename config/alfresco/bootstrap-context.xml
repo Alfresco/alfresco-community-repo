@@ -469,6 +469,42 @@
         </property>
     </bean>
 
+    <!-- Outbound Email subsystem -->
+    <bean id="OutboundSMTP" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="category">
+            <value>email</value>
+        </property>
+        <property name="typeName">
+            <value>OutboundSMTP</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>outbound</value>
+            </list>
+        </property>
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <!-- Inbound Email subsystem -->
+    <bean id="InboundSMTP" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="category">
+            <value>email</value>
+        </property>
+        <property name="typeName">
+            <value>InboundSMTP</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>inbound</value>
+            </list>
+        </property>
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
+    
     <!-- Start the quartz scheduler -->
 
     <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >
@@ -527,28 +563,6 @@
     <!-- Workflow Scheduler -->
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">
        <property name="JBPMTemplate" ref="jbpm_template" />
-    </bean>
-
-    <!-- Email Server -->
-    <bean id="emailServer" class="org.alfresco.email.server.impl.subetha.SubethaEmailServer">
-        <property name="enabled">
-            <value>${email.server.enabled}</value>
-        </property>
-        <property name="domain">
-            <value>${email.server.domain}</value>
-        </property>
-        <property name="port">
-            <value>${email.server.port}</value>
-        </property>
-        <property name="blockedSenders">
-            <value>${email.server.blocked.senders}</value>
-        </property>
-        <property name="allowedSenders">
-            <value>${email.server.allowed.senders}</value>
-        </property>
-        <property name="emailService">
-            <ref bean="EmailService" />
-        </property>
     </bean>
 
     <!--  Start Auditing -->

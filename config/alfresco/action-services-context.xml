@@ -414,37 +414,15 @@
         </property>
     </bean>
 
-    <bean id="mail" class="org.alfresco.repo.action.executer.MailActionExecuter" parent="action-executer">
-        <property name="mailService">
-            <ref bean="mailService"></ref>
+    <!-- Import mail action executor from the OutboundSMTP subsystem -->
+    <bean id="mail" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="OutboundSMTP" />
         </property>
-        <property name="templateService">
-            <ref bean="templateService"></ref>
-        </property>
-        <property name="personService">
-            <ref bean="personService"></ref>
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService"></ref>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"></ref>
-        </property>
-        <property name="authorityService">
-            <ref bean="authorityService"></ref>
-        </property>
-        <!-- The service registry is needed as TemplateNodes are used -->
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry"></ref>
-        </property>
-        <property name="headerEncoding">
-            <value>${mail.header}</value>
-        </property>
-        <property name="fromAddress">
-            <value>${mail.from.default}</value>
-        </property>
-        <property name="repoRemoteUrl">
-            <value>${repo.remote.url}</value>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.action.executer.ActionExecuter</value>
+            </list>
         </property>
     </bean>
     

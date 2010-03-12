@@ -13,16 +13,28 @@
         </property>
    </bean>
    
-    <bean id="emailServerConfigurationProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
+     <!-- Email Server -->
+    <bean id="emailServer" class="org.alfresco.email.server.impl.subetha.SubethaEmailServer">
+        <property name="enabled">
+            <value>${email.server.enabled}</value>
         </property>
-        <property name="locations">
-            <list>
-                <value>classpath:alfresco/emailserver/email-server.properties</value>
-            </list>
+        <property name="domain">
+            <value>${email.server.domain}</value>
+        </property>
+        <property name="port">
+            <value>${email.server.port}</value>
+        </property>
+        <property name="blockedSenders">
+            <value>${email.server.blocked.senders}</value>
+        </property>
+        <property name="allowedSenders">
+            <value>${email.server.allowed.senders}</value>
+        </property>
+        <property name="emailService">
+            <ref bean="EmailService" />
         </property>
     </bean>
+
    
 	<bean class="org.springframework.remoting.rmi.RmiServiceExporter">
         <property name="service">

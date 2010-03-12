@@ -298,6 +298,9 @@
          <list>
             <!-- Alfresco repository access shared filesystem -->
             <bean class="org.alfresco.filesys.repo.ContentContext">
+               <property name="sysAdminParams">
+                  <ref bean="sysAdminParams" />
+               </property>
                <property name="deviceName">
                   <value>${filesystem.name}</value>
                </property>
@@ -310,9 +313,6 @@
                <!-- Add a URL file to each folder that links back to the web client -->
                <property name="URLFileName">
                   <value>__Alfresco.url</value>
-               </property>
-               <property name="URLPrefix">
-                  <value>${cifs.urlfile.prefix}</value>
                </property>
                <!-- Mark locked files as offline -->
                <property name="offlineFiles">
@@ -332,9 +332,6 @@
                   <bean class="org.alfresco.filesys.config.GlobalDesktopActionConfigBean">
                      <property name="path">
                         <value>alfresco/desktop/Alfresco.exe</value>
-                     </property>
-                     <property name="webpath">
-                        <value>${cifs.urlfile.prefix}</value>
                      </property>
                   </bean>
                </property>

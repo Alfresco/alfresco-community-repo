@@ -26,7 +26,6 @@ import java.util.List;
 
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
@@ -66,12 +65,12 @@ import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -87,6 +86,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Content repository filesystem driver class
@@ -121,6 +121,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
     private AuthenticationContext authContext;
     private AuthenticationService authService;
+    private SysAdminParams sysAdminParams;
 
     // Node monitor factory
     
@@ -296,6 +297,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
     	this.authService = authService;
     }
+    
+    /**
+     * Sets the sys admin params.
+     * 
+     * @param sysAdminParams
+     *            the sys admin params
+     */
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
 
     /**
      * Set the file folder service
@@ -375,6 +387,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             context.setDeviceName(shareName);
             context.setStoreName(storeValue);
             context.setRootPath(rootPath);
+            context.setSysAdminParams(this.sysAdminParams);
 
             // Check if a relative path has been specified
             
@@ -403,12 +416,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the pseudo file name and web prefix path
             
             ConfigElement pseudoName = urlFileElem.getChild( "filename");
-            ConfigElement webPath    = urlFileElem.getChild( "webpath");
             
-            if ( pseudoName != null && webPath != null)
+            if ( pseudoName != null)
             {
                 context.setURLFileName(pseudoName.getValue());
-                context.setURLPrefix(webPath.getValue());
             }
         }
         

@@ -18,6 +18,7 @@
  */
 package org.alfresco.filesys.config;
 
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class GlobalDesktopActionConfigBean.
@@ -26,12 +27,8 @@ package org.alfresco.filesys.config;
  */
 public class GlobalDesktopActionConfigBean
 {
-
     /** The no confirm. */
     private boolean noConfirm;
-
-    /** The webpath. */
-    private String webpath;
 
     /** The path. */
     private String path;
@@ -58,27 +55,6 @@ public class GlobalDesktopActionConfigBean
     public void setNoConfirm(boolean noConfirm)
     {
         this.noConfirm = noConfirm;
-    }
-
-    /**
-     * Gets the webpath.
-     * 
-     * @return the webpath
-     */
-    public String getWebpath()
-    {
-        return webpath;
-    }
-
-    /**
-     * Sets the webpath.
-     * 
-     * @param webpath
-     *            the new webpath
-     */
-    public void setWebpath(String webpath)
-    {
-        this.webpath = webpath;
     }
 
     /**

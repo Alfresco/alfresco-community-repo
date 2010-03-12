@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!--                        -->
+    <!-- MAIL SERVICE           -->
+    <!--                        -->
+
+    <bean id="mailService" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host">
+            <value>${mail.host}</value>
+        </property>
+        <property name="port">
+            <value>${mail.port}</value>
+        </property>
+		<property name="protocol">
+        <value>${mail.protocol}</value>
+    </property>
+
+        <property name="username">
+            <value>${mail.username}</value>
+        </property>
+        <property name="password">
+            <value>${mail.password}</value>
+        </property>
+        <property name="defaultEncoding">
+            <value>${mail.encoding}</value>
+        </property>
+		<property name="javaMailProperties">
+        <props>
+            <prop key="mail.smtps.auth">${mail.smtps.auth}</prop>
+            <prop key="mail.smtps.starttls.enable">${mail.smtps.starttls.enable}</prop>
+        </props>
+    </property>
+
+    </bean>
+
+
+
+	<bean id="mail"	class="org.alfresco.repo.action.executer.MailActionExecuter" parent="action-executer">
+		<property name="mailService">
+			<ref bean="mailService"></ref>
+		</property>
+		<property name="templateService">
+			<ref bean="templateService"></ref>
+		</property>
+		<property name="personService">
+			<ref bean="personService"></ref>
+		</property>
+		<property name="authenticationService">
+			<ref bean="authenticationService"></ref>
+		</property>
+		<property name="nodeService">
+			<ref bean="nodeService"></ref>
+		</property>
+		<property name="authorityService">
+			<ref bean="authorityService"></ref>
+		</property>
+		<property name="serviceRegistry">
+			<ref bean="ServiceRegistry"></ref>
+		</property>
+		<property name="headerEncoding">
+			<value>${mail.header}</value>
+		</property>
+		<property name="fromAddress">
+			<value>${mail.from.default}</value>
+		</property>
+		<property name="repoRemoteUrl">
+			<value>${repo.remote.url}</value>
+		</property>
+        <property name="sendTestMessage">
+            <value>${mail.testmessage.send}</value>
+        </property>
+        <property name="testMessageTo">
+            <value>${mail.testmessage.to}</value>
+        </property>
+        <property name="testMessageSubject">
+            <value>${mail.testmessage.subject}</value>
+        </property>
+        <property name="testMessageText">
+            <value>${mail.testmessage.text}</value>
+        </property>
+	</bean>
+</beans>

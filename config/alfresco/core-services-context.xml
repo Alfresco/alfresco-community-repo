@@ -433,34 +433,6 @@
 
 
     <!--                        -->
-    <!-- MAIL SERVICE           -->
-    <!--                        -->
-
-    <bean id="mailService" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-        <property name="host">
-            <value>${mail.host}</value>
-        </property>
-        <property name="port">
-            <value>${mail.port}</value>
-        </property>
-        <property name="username">
-            <value>${mail.username}</value>
-        </property>
-        <property name="password">
-            <value>${mail.password}</value>
-        </property>
-        <property name="defaultEncoding">
-            <value>${mail.encoding}</value>
-        </property>
-		<property name="javaMailProperties">
-			<props>
-				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
-				<prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
-			</props>
-		</property>
-    </bean>
-
-    <!--                         -->
     <!-- Property Component      -->
     <!--                         -->
     

@@ -61,6 +61,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** The category (first part of the ID). */
     private String category;
+    
+    /** The bean name if we have been initialized by Spring. */
+    private String beanName;
 
     /** The hierarchical instance path within the category (second part of the ID). */
     private List<String> instancePath = Collections.singletonList(AbstractPropertyBackedBean.DEFAULT_INSTANCE_NAME);
@@ -120,7 +123,18 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     public void setBeanName(String name)
     {
-        this.category = name;
+        this.beanName = name;
+    }
+    
+    /**
+     * Sets the category (first part of the ID).
+     * 
+     * @param category
+     *            the category
+     */
+    public void setCategory(String category)
+    {
+        this.category = category;
     }
 
     /**
@@ -214,10 +228,20 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     public void afterPropertiesSet() throws Exception
     {
+        // Default the category to the bean name
+        if (this.category == null)
+        {
+            if (this.beanName == null)
+            {
+                throw new IllegalStateException("Category not provided");
+            }
+            this.category = this.beanName;
+        }
+
         // Derive the unique ID from the category and instance path
         List<String> path = getInstancePath();
         this.id = new ArrayList<String>(path.size() + 1);
-        this.id.add(getCategory());
+        this.id.add(this.category);
         this.id.addAll(getInstancePath());
 
         init();

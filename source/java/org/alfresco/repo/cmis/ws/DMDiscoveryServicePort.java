@@ -33,6 +33,7 @@ import org.alfresco.cmis.CMISChangeType;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetRow;
@@ -95,6 +96,9 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         QueryResponse response = new QueryResponse();
         response.setObjects(new CmisObjectListType());
 
+        EnumIncludeRelationships cmisDirection = (null != parameters.getIncludeRelationships()) ? (parameters.getIncludeRelationships().getValue()) : (null);
+        CMISRelationshipDirectionEnum includeRelationships = INCLUDE_RELATIONSHIPS_ENUM_MAPPING.get(cmisDirection);
+
         // for each row...
         for (CMISResultSetRow row : resultSet)
         {
@@ -114,9 +118,10 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             CmisObjectType object = new CmisObjectType();
             object.setProperties(properties);
             Object identifier;
+            NodeRef nodeRef;
             try
             {
-                NodeRef nodeRef = row.getNodeRef();
+                nodeRef = row.getNodeRef();
                 identifier = cmisService.getReadableObject((String) nodeRef.toString(), Object.class);
             }
             catch (CMISServiceException e)
@@ -126,6 +131,10 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             if (includeAllowableActions)
             {
                 object.setAllowableActions(determineObjectAllowableActions(identifier));
+            }
+            if (null != includeRelationships)
+            {
+                appendWithRelationships(nodeRef, createPropertyFilter((String) null), includeRelationships, includeAllowableActions, renditionFilter, object);
             }
             if (renditionFilter != null)
             {
@@ -137,7 +146,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             }
             response.getObjects().getObjects().add(object);
         }
-        // TODO: response.getObjects().setNumItems(value);
+        response.getObjects().setNumItems(BigInteger.valueOf(response.getObjects().getObjects().size()));
         response.getObjects().setHasMoreItems(resultSet.hasMore());
         return response;
     }
@@ -226,7 +235,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             if (nodeService.exists(event.getChangedNode()) && includeAce)
             {
                 appendWithAce(event.getChangedNode(), object);
-            }            
+            }
             CmisChangeEventType changeInfo = new CmisChangeEventType();
             XMLGregorianCalendar modificationDate = propertiesUtil.convert(event.getChangeTime());
             changeInfo.setChangeType(changesTypeMapping.get(event.getChangeType()));
@@ -235,5 +244,4 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             result.add(object);
         }
     }
-
 }

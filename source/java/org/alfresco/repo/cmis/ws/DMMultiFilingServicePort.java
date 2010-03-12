@@ -20,8 +20,11 @@ package org.alfresco.repo.cmis.ws;
 
 import javax.xml.ws.Holder;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISServiceException;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Port for Multi-Filing service.
@@ -64,6 +67,8 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
     public void removeObjectFromFolder(String repositoryId, String objectId, String folderId, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
+        checkConstraints(objectId, folderId);
+
         try
         {
             cmisService.removeObjectFromFolder(objectId, folderId);
@@ -72,5 +77,35 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
         {
             throw ExceptionUtil.createCmisException(e);
         }
+
     }
+    
+    private void checkConstraints(String objectId, String folderId) throws CmisException
+    {
+        NodeRef objectNodeRef = null;
+        NodeRef folderNodeRef = null;
+        CMISTypeDefinition objectTypeDef = null;
+
+        try
+        {
+            objectNodeRef = cmisService.getObject(objectId, NodeRef.class, true, false, false);
+            folderNodeRef = cmisService.getFolder(folderId);
+            objectTypeDef = cmisService.getTypeDefinition(objectNodeRef);
+        }
+        catch (CMISServiceException e)
+        {
+            throw ExceptionUtil.createCmisException(e.getMessage(), EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        if (!objectTypeDef.getTypeId().getBaseTypeId().equals(CMISDictionaryModel.DOCUMENT_TYPE_ID))
+        {
+            throw ExceptionUtil.createCmisException("Object " + objectId + " is not a document", EnumServiceException.INVALID_ARGUMENT);
+        }
+
+        if (!isObjectInFolder(objectNodeRef, folderNodeRef))
+        {
+            throw ExceptionUtil.createCmisException("Folder doesn't contain specified object", EnumServiceException.OBJECT_NOT_FOUND);
+        }
+    }
+   
 }

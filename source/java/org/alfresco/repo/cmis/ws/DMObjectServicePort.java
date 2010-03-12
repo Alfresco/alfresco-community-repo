@@ -813,8 +813,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             }
         }
 
-        // FIXME: change condition below to "!typeDef.isVersionable() && (null != versioningState)" when dictionary problem will be fixed
-        if (false)
+        if (!typeDef.isVersionable() && (null != versioningState))
         {
             throw ExceptionUtil.createCmisException(("Verioning for \"" + documentTypeId + "\" document type is not allowed"), EnumServiceException.CONSTRAINT);
         }

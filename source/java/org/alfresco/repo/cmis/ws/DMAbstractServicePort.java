@@ -53,6 +53,7 @@ import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.cmis.acl.CMISAccessControlEntryImpl;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.cmis.ws.utils.PropertyUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -83,7 +84,7 @@ public class DMAbstractServicePort
     private static final String INVALID_REPOSITORY_ID_MESSAGE = "Invalid repository id";
 
     private static final Map<EnumACLPropagation, CMISAclPropagationEnum> ACL_PROPAGATION_ENUM_MAPPGIN;
-    private static final Map<EnumIncludeRelationships, CMISRelationshipDirectionEnum> INCLUDE_RELATIONSHIPS_ENUM_MAPPING;
+    protected static final Map<EnumIncludeRelationships, CMISRelationshipDirectionEnum> INCLUDE_RELATIONSHIPS_ENUM_MAPPING;
     private static final Map<CMISAllowedActionEnum, PropertyDescriptor> ALLOWED_ACTION_ENUM_MAPPING;
     static
     {
@@ -96,7 +97,7 @@ public class DMAbstractServicePort
         INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.SOURCE, CMISRelationshipDirectionEnum.SOURCE);
         INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.TARGET, CMISRelationshipDirectionEnum.TARGET);
         INCLUDE_RELATIONSHIPS_ENUM_MAPPING.put(EnumIncludeRelationships.BOTH, CMISRelationshipDirectionEnum.BOTH);
-        
+
         try
         {
             ALLOWED_ACTION_ENUM_MAPPING = new HashMap<CMISAllowedActionEnum, PropertyDescriptor>(97);
@@ -216,72 +217,67 @@ public class DMAbstractServicePort
     }
 
     /**
+     * Returns true if folder contains object
+     * 
+     * @param object object NodeRef
+     * @param folder folder NodeRef
+     * @return returns true if folder contains object
+     */
+    protected boolean isObjectInFolder(NodeRef object, NodeRef folder)
+    {
+        NodeRef searchedObjectNodeRef = fileFolderService.searchSimple(folder, (String) nodeService.getProperty(object, ContentModel.PROP_NAME));
+        return (null != searchedObjectNodeRef) && (searchedObjectNodeRef.equals(object));
+    }
+
+    /**
      * This method converts Alfresco's <b>NodeRef</b>'s to CMIS objects those will be stored in <b>resultList</b>-parameter. Properties for returning filtering also performs
      * 
      * @param filter properties filter value for filtering objects returning properties
-     * @param includeRelationships
-     *            what relationships to include
+     * @param includeRelationships what relationships to include
      * @param sourceList the list that contains all returning Node References
      * @param resultList the list of <b>CmisObjectType</b> values for end response result collecting
      * @throws CmisException
      */
-    protected void createCmisObjectList(PropertyFilter filter, CMISRelationshipDirectionEnum includeRelationships,
-            boolean includeAllowableActions, String renditionFilter, List<NodeRef> sourceList,
-            List<CmisObjectType> resultList) throws CmisException
+    protected void createCmisObjectList(PropertyFilter filter, CMISRelationshipDirectionEnum includeRelationships, boolean includeAllowableActions, String renditionFilter,
+            List<NodeRef> sourceList, List<CmisObjectType> resultList) throws CmisException
     {
         for (NodeRef objectNodeRef : sourceList)
         {
-            resultList.add(createCmisObject(objectNodeRef, filter, includeRelationships, includeAllowableActions,
-                    renditionFilter));
+            resultList.add(createCmisObject(objectNodeRef, filter, includeRelationships, includeAllowableActions, renditionFilter));
         }
     }
 
     /**
      * This method creates and configures CMIS object against appropriate Alfresco object (NodeRef or AssociationRef).
      * 
-     * @param object
-     *            the Alfresco object
-     * @param filter
-     *            accepted properties filter
-     * @param includeRelationships
-     *            what relationships to include
-     * @param includeAllowableActions
-     *            should we include allowable actions?
-     * @param renditionFilter
-     *            the rendition filter
+     * @param object the Alfresco object
+     * @param filter accepted properties filter
+     * @param includeRelationships what relationships to include
+     * @param includeAllowableActions should we include allowable actions?
+     * @param renditionFilter the rendition filter
      * @return the converted CMIS object
-     * @throws CmisException
-     *             on error
+     * @throws CmisException on error
      */
-    protected CmisObjectType createCmisObject(Object object, PropertyFilter filter,
-            EnumIncludeRelationships includeRelationships, Boolean includeAllowableActions, String renditionFilter)
-            throws CmisException
+    protected CmisObjectType createCmisObject(Object object, PropertyFilter filter, EnumIncludeRelationships includeRelationships, Boolean includeAllowableActions,
+            String renditionFilter) throws CmisException
     {
-        return createCmisObject(object, filter, includeRelationships == null ? null
-                : INCLUDE_RELATIONSHIPS_ENUM_MAPPING.get(includeRelationships), includeAllowableActions != null
+        return createCmisObject(object, filter, includeRelationships == null ? null : INCLUDE_RELATIONSHIPS_ENUM_MAPPING.get(includeRelationships), includeAllowableActions != null
                 && includeAllowableActions, renditionFilter);
     }
 
     /**
      * This method creates and configures CMIS object against appropriate Alfresco object (NodeRef or AssociationRef).
      * 
-     * @param object
-     *            the Alfresco object
-     * @param filter
-     *            accepted properties filter
-     * @param includeRelationships
-     *            what relationships to include
-     * @param includeAllowableActions
-     *            should we include allowable actions?
-     * @param renditionFilter
-     *            the rendition filter
+     * @param object the Alfresco object
+     * @param filter accepted properties filter
+     * @param includeRelationships what relationships to include
+     * @param includeAllowableActions should we include allowable actions?
+     * @param renditionFilter the rendition filter
      * @return the converted CMIS object
-     * @throws CmisException
-     *             on error
+     * @throws CmisException on error
      */
-    protected CmisObjectType createCmisObject(Object object, PropertyFilter filter,
-            CMISRelationshipDirectionEnum includeRelationships, boolean includeAllowableActions, String renditionFilter)
-            throws CmisException
+    protected CmisObjectType createCmisObject(Object object, PropertyFilter filter, CMISRelationshipDirectionEnum includeRelationships, boolean includeAllowableActions,
+            String renditionFilter) throws CmisException
     {
         // Get a NodeRef if we can
         if (object instanceof Version)
@@ -292,18 +288,7 @@ public class DMAbstractServicePort
         result.setProperties(propertiesUtil.getProperties(object, filter));
         if (object instanceof NodeRef && includeRelationships != null)
         {
-            List<CmisObjectType> relationships = result.getRelationship();
-            try
-            {
-                for (AssociationRef assoc : cmisService.getRelationships((NodeRef)object, null, true, includeRelationships))
-                {
-                    relationships.add(createCmisObject(assoc, filter, includeRelationships, includeAllowableActions, renditionFilter));
-                }
-            }
-            catch (CMISInvalidArgumentException e)
-            {
-                throw ExceptionUtil.createCmisException(e);
-            }
+            appendWithRelationships((NodeRef) object, filter, includeRelationships, includeAllowableActions, renditionFilter, result);
         }
         if (includeAllowableActions)
         {
@@ -318,6 +303,23 @@ public class DMAbstractServicePort
             }
         }
         return result;
+    }
+
+    protected void appendWithRelationships(NodeRef object, PropertyFilter filter, CMISRelationshipDirectionEnum includeRelationships, boolean includeAllowableActions,
+            String renditionFilter, CmisObjectType result) throws CmisException
+    {
+        List<CmisObjectType> relationships = result.getRelationship();
+        try
+        {
+            for (AssociationRef assoc : cmisService.getRelationships(object, null, true, includeRelationships))
+            {
+                relationships.add(createCmisObject(assoc, filter, includeRelationships, includeAllowableActions, renditionFilter));
+            }
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
     }
 
     /**
@@ -407,11 +409,11 @@ public class DMAbstractServicePort
                     throw ExceptionUtil.createCmisException(e);
                 }
             }
-        }        
+        }
     }
 
-    protected CmisACLType applyAclCarefully(NodeRef object, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation, List<String> policies)
-            throws CmisException
+    protected CmisACLType applyAclCarefully(NodeRef object, CmisAccessControlListType addACEs, CmisAccessControlListType removeACEs, EnumACLPropagation aclPropagation,
+            List<String> policies) throws CmisException
     {
         if (addACEs == null && removeACEs == null)
         {

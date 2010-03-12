@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
-import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.repo.transfer.TransferTargetImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -50,19 +49,16 @@ public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest
 //    String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
     
     private ScriptService scriptService;
-    private TransferService transferService;
-    private TransferService transferServiceImpl;
     private ScriptTransferService scriptTransferService;
    
     
+    @SuppressWarnings("deprecation")
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
         
         // Get the required services
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
-        this.transferService = (TransferService)this.applicationContext.getBean("TransferService");  
-        this.transferServiceImpl = (TransferServiceImpl)this.applicationContext.getBean("transferService");
         this.scriptTransferService = (ScriptTransferService)this.applicationContext.getBean("transferServiceScript");
      
     }   
@@ -71,8 +67,6 @@ public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest
   
   public void testJSAPI() throws Exception
   {
-      String name = "testTransferJSAPI";
-      
       /**
        * Prepare some dummy data for tests
        */

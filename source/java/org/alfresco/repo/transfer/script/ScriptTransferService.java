@@ -30,8 +30,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
-import org.mozilla.javascript.NativeArray;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Java Script Transfer Service.   Adapts the Java Transfer Service to
@@ -118,7 +116,8 @@ public class ScriptTransferService extends BaseScopableProcessorExtension
      * @param nodes the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String 
      * @return node ref of transfer report.  
      */
-    public NodeRef transfer(String targetName, Object nodesToTransfer)
+    @SuppressWarnings("unchecked")
+    public ScriptNode transfer(String targetName, Object nodesToTransfer)
     {
         Object nodesObject = valueConverter.convertValueForJava(nodesToTransfer);
         
@@ -158,9 +157,9 @@ public class ScriptTransferService extends BaseScopableProcessorExtension
         }
         
         toTransfer.setNodes(nodeCollection);
-        NodeRef retVal = transferService.transfer(targetName, toTransfer);
+        NodeRef reportNode = transferService.transfer(targetName, toTransfer);
         
-        return retVal;
+        return new ScriptNode(reportNode, serviceRegistry, getScope());
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)

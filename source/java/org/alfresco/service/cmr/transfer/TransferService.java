@@ -109,7 +109,7 @@ public interface TransferService
    public void transferAsync(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
 
    /**
-    * Verify a target is available and that the configured credentials correctly identify an admin user.     
+    * Verify a target is available and that the configured credentials are valid.     
     * @throws TransferException  
     */
    public void verify(TransferTarget target) throws TransferException;
@@ -128,7 +128,8 @@ public interface TransferService
      * @param password,
      * @return the newly create transfer target.
      */
-    public TransferTarget createAndSaveTransferTarget(String name, String title, String description, String endpointProtocol, String endpointHost, int endpointPort, String endpointPath, String username, char[] password) throws TransferException;
+    public TransferTarget createAndSaveTransferTarget(String name, String title, String description, String endpointProtocol, 
+            String endpointHost, int endpointPort, String endpointPath, String username, char[] password) throws TransferException;
     
     /**
      * Creates an in memory transfer target.  Before it is used it must be populated with the following values and
@@ -217,9 +218,10 @@ public interface TransferService
      * Calling this method for a transfer that does not exist, possibly because it has already finished, has no 
      * effect and will not throw an exception.
      * 
-     * The transfer handle is returned by a TransferEventBegin event callback.
+     * The transfer identifier can be obtained from the TransferEventBegin event that is passed to registered callbacks when
+     * transfer starts.
      * 
-     * @param transferId the unique identifier for the instance of the transfer to cancel.
+     * @param transferId the unique identifier of the transfer to cancel.
      * 
      * @see TransferEventBegin;
      */

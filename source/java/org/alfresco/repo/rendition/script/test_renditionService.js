@@ -1,8 +1,9 @@
 function testRenderNodeUsingRenditionDefinitionNames()
 {
 	// Produce two different renditions of the same source node
+	// One with a long-form qname and one with a short-form qname
     var renditionDefName1 = "cm:doclib";
-    var renditionDefName2 = "cm:imgpreview";
+    var renditionDefName2 = "{http://www.alfresco.org/model/content/1.0}imgpreview";
     var rendition1 = renditionService.render(testSourceNode, renditionDefName1);
     var rendition2 = renditionService.render(testSourceNode, renditionDefName2);
     
@@ -25,7 +26,7 @@ function testGetRenditions()
     var doclibRendition = renditionService.getRenditionByName(testSourceNode, "cm:doclib");
     test.assertNotNull(doclibRendition, "doclibRendition returned null.");
 
-    var noSuchRendition = renditionService.getRenditionByName(testSourceNode, "cm:nonsense");
+    var noSuchRendition = renditionService.getRenditionByName(testSourceNode, "{http://www.alfresco.org/model/content/1.0}nonsense");
     test.assertNull(noSuchRendition, "noSuchRendition should have been null.");
     
     
@@ -39,6 +40,38 @@ function testGetRenditions()
     test.assertEquals(0, swfRenditions.length);
 }
 
+function testCreateRenditionDefinitionAndRender()
+{
+	// Create a simple (non-composite) rendition definition.
+	
+	// As long as we don't save this renditionDefinition, there should be no need to
+	// give it a name which is unique across multiple test executions.
+	var renditionDefName = "cm:adHocRenditionDef";
+	var renderingEngineName = "imageRenderingEngine";
+
+	var renditionDef = renditionService.createRenditionDefinition(renditionDefName, renderingEngineName);
+
+	test.assertNotNull(renditionDef, "ad hoc rendition definition was null.");
+	test.assertEquals(renditionDefName, renditionDef.renditionName);
+	test.assertEquals(renderingEngineName, renditionDef.renderingEngineName);
+
+	
+	// Set some parameters.
+	renditionDef.parameters['rendition-nodetype'] = "cm:content";
+	renditionDef.parameters['xsize'] = 99;
+	
+	// Read them back to check
+	test.assertEquals("cm:content", renditionDef.parameters['rendition-nodetype']);
+	test.assertEquals(99, renditionDef.parameters['xsize']);
+	
+	// Now execute this rendition definition
+    var rendition = renditionService.render(testSourceNode, renditionDef);
+    
+    test.assertNotNull(rendition, "rendition was null.");
+    test.assertTrue(rendition.hasAspect("rn:hiddenRendition"));
+}
+
 // Execute tests
 testRenderNodeUsingRenditionDefinitionNames();
 testGetRenditions();
+testCreateRenditionDefinitionAndRender();

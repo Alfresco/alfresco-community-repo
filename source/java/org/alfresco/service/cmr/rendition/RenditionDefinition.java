@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
 public interface RenditionDefinition extends Action, Serializable
 {
     /**
-     * @return the name which uniquely identifies this rendering action.
+     * @return the name which uniquely identifies this rendition definition.
      */
     QName getRenditionName();
 

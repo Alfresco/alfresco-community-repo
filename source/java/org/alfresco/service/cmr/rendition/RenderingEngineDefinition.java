@@ -29,5 +29,5 @@ import org.alfresco.service.cmr.action.ActionDefinition;
  */
 public interface RenderingEngineDefinition extends ActionDefinition
 {
-
+    // Intentionally empty
 }

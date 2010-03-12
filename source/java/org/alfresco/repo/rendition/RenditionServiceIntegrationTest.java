@@ -1672,8 +1672,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals("'" + renditionLocalName + "' renditionDefinition had wrong renditionName", renditionQName,
                     renditionDefinition.getRenditionName());
 
-        assertNotNull("'" + renditionLocalName + "' renditionDefinition had null renderingActionName parameter",
-                    renditionDefinition.getParameterValue("renderingActionName"));
+        assertNotNull("'" + renditionLocalName + "' renditionDefinition had null " +
+                RenditionDefinitionImpl.RENDITION_DEFINITION_NAME + " parameter",
+                    renditionDefinition.getParameterValue(RenditionDefinitionImpl.RENDITION_DEFINITION_NAME));
         
         // All builtin renditions should be "runas" system
         assertEquals(AuthenticationUtil.getSystemUserName(), renditionDefinition.getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS));

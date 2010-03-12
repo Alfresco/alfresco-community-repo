@@ -141,18 +141,18 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      * org.alfresco.service.cmr.rendition.RenditionService#createRenditionDefinition
      * (org.alfresco.service.namespace.QName, java.lang.String)
      */
-    public RenditionDefinition createRenditionDefinition(QName renderingActionName, String actionDefinitionName)
+    public RenditionDefinition createRenditionDefinition(QName renditionDefinitionName, String renderingEngineName)
     {
         if (log.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Creating rendition definition ")
-                .append(renderingActionName)
+                .append(renditionDefinitionName)
                 .append(" ")
-                .append(actionDefinitionName);
+                .append(renderingEngineName);
             log.debug(msg.toString());
         }
-        return new RenditionDefinitionImpl(GUID.generate(), renderingActionName, actionDefinitionName);
+        return new RenditionDefinitionImpl(GUID.generate(), renditionDefinitionName, renderingEngineName);
     }
 
     /*
@@ -238,9 +238,9 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      * org.alfresco.service.cmr.rendition.RenditionService#loadRenderingAction
      * (org.alfresco.service.namespace.QName)
      */
-    public RenditionDefinition loadRenditionDefinition(QName renderingActionName)
+    public RenditionDefinition loadRenditionDefinition(QName renditionDefinitionName)
     {
-        return this.renditionDefinitionPersister.loadRenditionDefinition(renderingActionName);
+        return this.renditionDefinitionPersister.loadRenditionDefinition(renditionDefinitionName);
     }
 
     /*

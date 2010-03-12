@@ -118,9 +118,9 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
     }
 
 
-    public RenditionDefinition loadRenditionDefinition(QName renderingActionName)
+    public RenditionDefinition loadRenditionDefinition(QName renditionDefinitionName)
     {
-        NodeRef actionNode = findActionNode(renderingActionName);
+        NodeRef actionNode = findActionNode(renditionDefinitionName);
         if (actionNode != null)
         {
             Action action = runtimeActionService.createAction(actionNode);
@@ -149,13 +149,13 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         runtimeActionService.saveActionImpl(actionNodeRef, renderingAction);
     }
     
-    private NodeRef findActionNode(QName renderingActionName)
+    private NodeRef findActionNode(QName renditionDefinitionName)
     {
         checkRenderingActionRootNodeExists();
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(//
                     RENDERING_ACTION_ROOT_NODE_REF,//
                     ContentModel.ASSOC_CONTAINS,//
-                    renderingActionName);
+                    renditionDefinitionName);
         if (childAssocs.isEmpty())
         {
             return null;
@@ -163,9 +163,9 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         else
         {
             if (childAssocs.size() > 1)
-            {//
-                throw new RenditionServiceException("Multiple rendering actions with the name: " + renderingActionName
-                            + " exist!");
+            {
+                throw new RenditionServiceException("Multiple rendition definitions with the name: "
+                        + renditionDefinitionName + " exist!");
             }
             return childAssocs.get(0).getChildRef();
         }

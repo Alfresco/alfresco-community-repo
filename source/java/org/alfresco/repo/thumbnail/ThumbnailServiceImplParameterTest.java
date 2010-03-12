@@ -87,7 +87,7 @@ public class ThumbnailServiceImplParameterTest
         renditionService = new RenditionServiceImpl()
         {
             @Override
-            public RenditionDefinition loadRenditionDefinition(QName renderingActionName)
+            public RenditionDefinition loadRenditionDefinition(QName renditionDefinitionName)
             {
                 // We're intentionally returning null for this test.
                 return null;

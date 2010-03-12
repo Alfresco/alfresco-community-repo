@@ -23,12 +23,16 @@ import java.util.List;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Script object representing the rendition service.
@@ -41,6 +45,7 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
     
     /** The Services registry */
     private ServiceRegistry serviceRegistry;
+    private RenditionService renditionService;
 
     /**
      * Set the service registry
@@ -50,37 +55,60 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+        this.renditionService = serviceRegistry.getRenditionService();
     }
     
-    private RenditionDefinition loadRenditionDefinitionImpl(String shortFormQName)
+    private RenditionDefinition loadRenditionDefinitionImpl(String shortOrLongFormQName)
     {
-        QName renditionName = QName.createQName(shortFormQName, serviceRegistry.getNamespaceService());
-        RenditionDefinition rendDef = serviceRegistry.getRenditionService().loadRenditionDefinition(renditionName);
+        QName renditionName = createQName(shortOrLongFormQName);
+        RenditionDefinition rendDef = renditionService.loadRenditionDefinition(renditionName);
         return rendDef;
+    }
+
+    /**
+     * Creates a new {@link ScriptRenditionDefinition} and sets the rendition name and
+     * the rendering engine name to the specified values.
+     * 
+     * @param renditionName A unique identifier used to specify the created
+     *            {@link ScriptRenditionDefinition}.
+     * @param renderingEngineName The name of the rendering engine associated
+     *            with this {@link ScriptRenditionDefinition}.
+     * @return the created {@link ScriptRenditionDefinition}.
+     * @see org.alfresco.service.cmr.rendition.RenditionService#createRenditionDefinition(QName, String)
+     */
+    public ScriptRenditionDefinition createRenditionDefinition(String renditionName, String renderingEngineName)
+    {
+        QName renditionQName = createQName(renditionName);
+
+        RenderingEngineDefinition engineDefinition = renditionService.getRenderingEngineDefinition(renderingEngineName);
+        RenditionDefinition rendDef = renditionService.createRenditionDefinition(renditionQName, renderingEngineName);
+        
+        return new ScriptRenditionDefinition(serviceRegistry, this.getScope(), engineDefinition, rendDef);
     }
 
     /**
      * This method renders the specified source node using the specified saved
      * rendition definition.
      * @param sourceNode the source node to be rendered.
-     * @param renditionDefshortQName the rendition definition to be used e.g. cm:doclib
+     * @param renditionDefQName the rendition definition to be used e.g. "cm:doclib" or
+     *                          "{http://www.alfresco.org/model/content/1.0}imgpreview"
      * @return the rendition scriptnode.
      * @see org.alfresco.service.cmr.rendition.RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, RenditionDefinition)
      */
-    public ScriptNode render(ScriptNode sourceNode, String renditionDefshortQName)
+    public ScriptNode render(ScriptNode sourceNode, String renditionDefQName)
     {
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Rendering source node '")
                 .append(sourceNode)
-                .append("' with renditionDef '").append(renditionDefshortQName)
+                .append("' with renditionDef '").append(renditionDefQName)
                 .append("'");
             logger.debug(msg.toString());
         }
         
-        RenditionDefinition rendDef = loadRenditionDefinitionImpl(renditionDefshortQName);
-        ChildAssociationRef result = this.serviceRegistry.getRenditionService().render(sourceNode.getNodeRef(), rendDef);
+        RenditionDefinition rendDef = loadRenditionDefinitionImpl(renditionDefQName);
+        ChildAssociationRef result = this.renditionService.render(sourceNode.getNodeRef(), rendDef);
         NodeRef renditionNode = result.getChildRef();
         
         if (logger.isDebugEnabled())
@@ -92,6 +120,14 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
         
         return new ScriptNode(renditionNode, serviceRegistry);
     }
+    
+    public ScriptNode render(ScriptNode sourceNode, ScriptRenditionDefinition renditionDefQName)
+    {
+        ChildAssociationRef chAssRef = this.renditionService.render(sourceNode.getNodeRef(),
+                renditionDefQName.getRenditionDefinition());
+        return new ScriptNode(chAssRef.getChildRef(), serviceRegistry);
+    }
+
 
     /**
      * This method gets all the renditions of the specified node.
@@ -102,15 +138,15 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      */
     public ScriptNode[] getRenditions(ScriptNode node)
     {
-        List<ChildAssociationRef> renditions = this.serviceRegistry.getRenditionService().getRenditions(node.getNodeRef());
+        List<ChildAssociationRef> renditions = this.renditionService.getRenditions(node.getNodeRef());
 
-        ScriptNode[] results = new ScriptNode[renditions.size()];
+        ScriptNode[] renditionObjs = new ScriptNode[renditions.size()];
         for (int i = 0; i < renditions.size(); i++)
         {
-            results[i] = new ScriptNode(renditions.get(i).getChildRef(), serviceRegistry);
+            renditionObjs[i] = new ScriptNode(renditions.get(i).getChildRef(), serviceRegistry);
         }
         
-        return results;
+        return renditionObjs;
     }
 
     /**
@@ -126,7 +162,7 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      */
     public ScriptNode[] getRenditions(ScriptNode node, String mimeTypePrefix)
     {
-        List<ChildAssociationRef> renditions = this.serviceRegistry.getRenditionService().getRenditions(node.getNodeRef(), mimeTypePrefix);
+        List<ChildAssociationRef> renditions = this.renditionService.getRenditions(node.getNodeRef(), mimeTypePrefix);
 
         ScriptNode[] results = new ScriptNode[renditions.size()];
         for (int i = 0; i < renditions.size(); i++)
@@ -142,15 +178,39 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      * the provided rendition name.
      * 
      * @param node the source node for the renditions
-     * @param renditionName the renditionName used to identify a rendition. e.g. cm:doclib
+     * @param renditionName the renditionName used to identify a rendition. e.g. cm:doclib or
+     *                          "{http://www.alfresco.org/model/content/1.0}imgpreview"
      * @return the parent association for the rendition or <code>null</code> if there is no such rendition.
      * @see org.alfresco.service.cmr.rendition.RenditionService#getRenditionByName(org.alfresco.service.cmr.repository.NodeRef, QName)
      */
     public ScriptNode getRenditionByName(ScriptNode node, String renditionName)
     {
-        QName qname = QName.createQName(renditionName, serviceRegistry.getNamespaceService());
-        ChildAssociationRef result = this.serviceRegistry.getRenditionService().getRenditionByName(node.getNodeRef(), qname);
+        QName qname = createQName(renditionName);
+        ChildAssociationRef result = this.renditionService.getRenditionByName(node.getNodeRef(), qname);
         
         return result == null ? null : new ScriptNode(result.getChildRef(), serviceRegistry);
     }
+    
+    /**
+     * This method takes a string representing a QName and converts it to a QName
+     * object.
+     * @param qnameString the string can be either a short or long form qname.
+     * @return a QName object
+     */
+    private QName createQName(String qnameString)
+    {
+        QName result;
+        if (qnameString.startsWith(Character.toString(QName.NAMESPACE_BEGIN)))
+        {
+            // It's a long-form qname string
+            result = QName.createQName(qnameString);
+        }
+        else
+        {
+            // It's a short-form qname string
+            result = QName.createQName(qnameString, serviceRegistry.getNamespaceService());
+        }
+        return result;
+    }
+
 }

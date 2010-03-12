@@ -42,10 +42,6 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
 {
-    // TODO This rendering engine should only take input of MIME type image/*
-    // However, we'll defer the addition of an EngineInputFilter until after
-    // Sprint 3.
-
     public static final String NAME = "imageRenderingEngine";
 
     // Resize params

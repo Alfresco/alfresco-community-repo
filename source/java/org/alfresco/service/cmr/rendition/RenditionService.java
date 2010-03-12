@@ -159,7 +159,6 @@ public interface RenditionService extends RenditionDefinitionPersister
      */
     ChildAssociationRef getSourceNode(NodeRef renditionNode);
     
-    //TODO The result should be the link to the primary parent.
     /**
      * This method synchronously renders content as specified by the given
      * {@link RenditionDefinition}. The content to be rendered is provided by

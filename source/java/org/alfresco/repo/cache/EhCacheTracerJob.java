@@ -29,6 +29,7 @@ import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.Status;
+import net.sf.ehcache.statistics.LiveCacheStatistics;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -188,10 +189,11 @@ public class EhCacheTracerJob implements Job
             size = count > 0 ? (long) ((double)size * ((double)keys.size()/(double)count)) : 0L;
             
             sizeMB = (double)size/1024.0/1024.0;
-            maxSize = cache.getMaxElementsInMemory();
+            LiveCacheStatistics statistics = cache.getLiveCacheStatistics();
+            maxSize = cache.getCacheConfiguration().getMaxElementsInMemory();
             currentSize = cache.getMemoryStoreSize();
-            hitCount = cache.getHitCount();
-            missCount = cache.getMissCountNotFound();
+            hitCount = statistics.getCacheHitCount();
+            missCount = statistics.getCacheMissCount();
             percentageFull = (double)currentSize / (double)maxSize * 100.0;
             estMaxSize = size / (double) currentSize * (double) maxSize;
         }
@@ -220,10 +222,11 @@ public class EhCacheTracerJob implements Job
         public String toString()
         {
             double sizeMB = (double)getSize()/1024.0/1024.0;
-            long maxSize = cache.getMaxElementsInMemory();
+            LiveCacheStatistics statistics = cache.getLiveCacheStatistics();
+            long maxSize = cache.getCacheConfiguration().getMaxElementsInMemory();
             long currentSize = cache.getMemoryStoreSize();
-            long hitCount = cache.getHitCount();
-            long totalMissCount = cache.getMissCountNotFound() + cache.getMissCountExpired();
+            long hitCount = statistics.getCacheHitCount();
+            long totalMissCount = statistics.getCacheMissCount() + statistics.getCacheMissCountExpired();
             double hitRatio = (double)hitCount / (double)(totalMissCount + hitCount) * 100.0;
             double percentageFull = (double)currentSize / (double)maxSize * 100.0;
             double estMaxSize = sizeMB / (double) currentSize * (double) maxSize;

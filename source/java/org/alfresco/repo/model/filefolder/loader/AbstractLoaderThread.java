@@ -62,7 +62,7 @@ public abstract class AbstractLoaderThread extends Thread
     {
         System.setProperty(CacheManager.ENABLE_SHUTDOWN_HOOK_PROPERTY, "TRUE");
         URL url = LoaderUploadThread.class.getResource("/org/alfresco/repo/model/filefolder/loader/loader-ehcache.xml");
-        CacheManager cacheManager = new CacheManager(url);
+        CacheManager cacheManager = CacheManager.create(url);
         Cache cache = cacheManager.getCache("org.alfresco.LoaderUploadThread.PathCache");
 
         pathCache = new EhCacheAdapter<String, NodeRef>();

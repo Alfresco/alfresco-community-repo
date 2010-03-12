@@ -20,6 +20,33 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator"%>
+
+<f:verbatim>
+<script type="text/javascript">
+
+   window.onload = pageLoaded;
+   
+   function pageLoaded()
+   {
+      document.getElementById("dialog:dialog-body:search-groups-text").focus();
+      updateGroupsButtonState();
+   }
+   
+   function updateGroupsButtonState()
+   {
+      if (document.getElementById("dialog:dialog-body:search-groups-text").value.length == 0)
+      {
+         document.getElementById("dialog:dialog-body:search-groups-btn").disabled = true;
+      }
+      else
+      {
+         document.getElementById("dialog:dialog-body:search-groups-btn").disabled = false;
+      }
+   }
+
+</script>
+</f:verbatim>
          
 <h:outputText value="<div style='padding-left: 8px; padding-top: 4px; padding-bottom: 4px'>" escape="false" />
 
@@ -31,7 +58,30 @@
    <%-- Groups List --%>
    <a:panel id="groups-panel" border="innerwhite" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.groups}">
 
-      <a:richList id="groups-list" binding="#{DialogManager.bean.groupsRichList}" viewMode="#{DialogManager.bean.viewMode}" pageSize="12"
+   <%-- Groups Search Panel --%>
+   <h:panelGroup rendered="#{DialogManager.bean.allowSearchGroups}">
+      <f:verbatim>
+         <%
+             PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc");
+         %>
+         <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+               <td valign=top style="padding-top: 2px" width=20></f:verbatim><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16" /><f:verbatim></td>
+               <td class="mainSubText"></f:verbatim><h:outputText value="#{msg.group_search_info}" /><f:verbatim></td>
+            </tr>
+         </table>
+         <%
+             PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner");
+         %>
+      </f:verbatim>
+      <h:outputText value="</div><div style='padding: 8px;'>" escape="false" />
+      <h:inputText id="search-groups-text" value="#{DialogManager.bean.groupsSearchCriteria}" size="35" maxlength="1024" onkeyup="updateGroupsButtonState();" onchange="updateButtonState();" />&nbsp;
+         <h:commandButton id="search-groups-btn" value="#{msg.search}" action="#{DialogManager.bean.searchGroups}" disabled="true" />&nbsp;
+         <h:commandButton value="#{msg.show_all}" action="#{DialogManager.bean.showAllGroups}" />
+      <h:outputText value="</div><div style='padding: 4px;'>" escape="false" />
+   </h:panelGroup>
+
+   <a:richList id="groups-list" binding="#{DialogManager.bean.groupsRichList}" viewMode="#{DialogManager.bean.viewMode}" pageSize="12"
             styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
             value="#{DialogManager.bean.groups}" var="r" initialSortColumn="name" initialSortDescending="true">
          
@@ -78,8 +128,8 @@
 
    <%-- Users in Group list --%>
    <a:panel id="users-panel" border="innerwhite" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.users}">
-   
-      <a:richList id="users-list" binding="#{DialogManager.bean.usersRichList}" viewMode="#{DialogManager.bean.viewMode}" pageSize="12"
+
+	<a:richList id="users-list" binding="#{DialogManager.bean.usersRichList}" viewMode="#{DialogManager.bean.viewMode}" pageSize="12"
             styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
             value="#{DialogManager.bean.users}" var="r" initialSortColumn="name" initialSortDescending="true">
          

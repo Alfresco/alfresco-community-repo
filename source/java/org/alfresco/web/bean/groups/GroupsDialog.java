@@ -77,6 +77,9 @@ public class GroupsDialog extends BaseDialogBean
    protected UIRichList groupsRichList;
    protected UIRichList usersRichList;
 
+   /** Groups */
+   protected List<Map<String,String>> groups = Collections.<Map<String,String>> emptyList();
+   
    /** Currently visible Group Authority */
    protected String group = null;
    protected String groupName = null;
@@ -105,6 +108,9 @@ public class GroupsDialog extends BaseDialogBean
    
    private static Log logger = LogFactory.getLog(GroupsDialog.class);
    
+    /** Groups search criteria */
+    private String groupsSearchCriteria = null;
+
    // ------------------------------------------------------------------------------
    // Construction 
    
@@ -327,131 +333,192 @@ public class GroupsDialog extends BaseDialogBean
       return this.location;
    }
    
-   /**
-    * @return The list of group objects to display. Returns the list of root groups or the
-    *         list of sub-groups for the current group if set.
-    */
-   public List<Map> getGroups()
-   {
-      List<Map> groups;
-      
-      UserTransaction tx = null;
-      try
-      {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context);
-         tx.begin();
-         
-         Set<String> authorities;
-         boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-         if (this.group == null)
-         {
-            // root groups
-            if (immediate == true)
+    /**
+     * @return true if user is in the root group
+     */
+    public boolean isAllowSearchGroups()
+    {
+        return this.group == null;
+    }
+
+    /**
+     * @return The list of group objects to display. Returns the list of root groups or the list of sub-groups for the current group if set.
+     */
+    public List<Map<String,String>> getGroups()
+    {
+       if (this.group == null)
+       {
+          if (this.groups == null)
+          {
+             searchGroups();
+          }
+       }
+       else
+       {
+          if (this.groups == null)
+          {
+             showAllGroups();
+          }
+       }
+       return this.groups;
+    }
+   
+    /**
+     * @return Returns the groups search criteria
+     */
+    public String getGroupsSearchCriteria()
+    {
+       return groupsSearchCriteria;
+    }
+
+    /**
+     * Event handler called when the user wishes to search for a group
+     * 
+     * @return The outcome
+     */
+    public String searchGroups()
+    {
+       searchGroups(false);
+       // return null to stay on the same page
+       return null;
+    }
+
+    /**
+     * Action handler to show all the sub-groups in the group
+     * 
+     * @return The outcome
+     */
+    public String showAllGroups()
+    {
+       searchGroups(true);
+       // return null to stay on the same page
+       return null;
+    }
+
+    /**
+     * Searches groups
+     * 
+     * @param all if true searches all groups and doesn't take account of search term
+     */
+    private void searchGroups(boolean all)
+    {
+        groupsRichList.setValue(null);
+        String search = null;
+
+        // Use the search criteria if we are not searching for everything
+        if (!all)
+        {
+            if (this.groupsSearchCriteria == null)
             {
-               authorities = this.getAuthorityService().getAllRootAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
+                search = null;
             }
             else
             {
-               authorities = this.getAuthorityService().getAllAuthoritiesInZone(AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP);
+                search = groupsSearchCriteria.trim();
+                if (search.length() == 0)
+                {   
+                    search = null;
+                }
+                else
+                {
+                    // Let's make it search on the short name/display name prefix
+                    search = search + "*";
+                }
             }
-         }
-         else
-         {
-            // sub-group of an existing group
-            authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.GROUP, this.group, immediate);
-         }
-         groups = new ArrayList<Map>(authorities.size());
-         for (String authority : authorities)
-         {
-            Map<String, String> authMap = new HashMap<String, String>(3, 1.0f);
+        }
 
-            String name = this.getAuthorityService().getShortName(authority);
-            authMap.put("name", name);
-            authMap.put("id", authority);
-            authMap.put("group", authority);
-            authMap.put("groupName", name);
-            
-            groups.add(authMap);
-         }
-         
-         // commit the transaction
-         tx.commit();
-      }
-      catch (Throwable err)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         groups = Collections.<Map>emptyList();
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-      
-      return groups;
-   }
-   
-   /**
-    * @return The list of user objects to display. Returns the list of user for the current group.
-    */
-   public List<Map> getUsers()
-   {
-      List<Map> users;
-      
-      UserTransaction tx = null;
-      try
-      {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, true);
-         tx.begin();
-         
-         Set<String> authorities;
-         if (this.group == null)
-         {
-            authorities = Collections.<String>emptySet();
-         }
-         else
-         {
-            // users of an existing group
+        if (!all && search == null)
+        {
+            // Do not allow empty searches
+            this.groups = Collections.<Map<String,String>> emptyList();
+        }
+        else
+        {
             boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-            authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, this.group, immediate);
-         }
-         users = new ArrayList<Map>(authorities.size());
-         for (String authority : authorities)
-         {
-            Map<String, String> authMap = new HashMap<String, String>(3, 1.0f);
-            
-            String userName = this.getAuthorityService().getShortName(authority);
-            authMap.put("userName", userName);
-            authMap.put("id", authority);
-            
-            // get Person details for this Authority
-            NodeRef ref = this.getPersonService().getPerson(authority);
-            String firstName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
-            String lastName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
-            
-            // build a sensible label for display
-            StringBuilder label = new StringBuilder(48);
-            label.append(firstName)
-                 .append(' ')
-                 .append(lastName != null ? lastName : "");
-            authMap.put("name", label.toString());
-            
-            users.add(authMap);
-         }
-         
-         // commit the transaction
-         tx.commit();
-      }
-      catch (Throwable err)
-      {
-         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-         users = Collections.<Map>emptyList();
-         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
-      
-      return users;
-   }
-   
+            Set<String> authorities = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
+            groups = new ArrayList<Map<String,String>>(authorities.size());
+            for (String authority : authorities)
+            {
+               Map<String, String> authMap = new HashMap<String, String>(11);
+
+               String name = this.authService.getAuthorityDisplayName(authority);
+               if (name == null)
+               {
+                   name = this.authService.getShortName(name);
+               }
+               authMap.put("name", name);
+               authMap.put("id", authority);
+               authMap.put("group", authority);
+               authMap.put("groupName", name);
+               
+               groups.add(authMap);
+            }
+        }
+    }
+
+    /**
+     * @return The list of user objects to display. Returns the list of user for the current group.
+     */
+    public List<Map<String,String>> getUsers()
+    {
+       List<Map<String,String>> users;
+       
+       UserTransaction tx = null;
+       try
+       {
+          FacesContext context = FacesContext.getCurrentInstance();
+          tx = Repository.getUserTransaction(context, true);
+          tx.begin();
+          
+          Set<String> authorities;
+          if (this.group == null)
+          {
+             authorities = Collections.<String>emptySet();
+          }
+          else
+          {
+             // users of an existing group
+             boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+             authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, this.group, immediate);
+          }
+          users = new ArrayList<Map<String,String>>(authorities.size());
+          for (String authority : authorities)
+          {
+             Map<String, String> authMap = new HashMap<String, String>(5);
+
+             String userName = this.getAuthorityService().getShortName(authority);
+             authMap.put("userName", userName);
+             authMap.put("id", authority);
+
+             // get Person details for this Authority
+             NodeRef ref = this.getPersonService().getPerson(authority);
+             String firstName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
+             String lastName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
+
+             // build a sensible label for display
+             StringBuilder label = new StringBuilder(48);
+             label.append(firstName)
+                  .append(' ')
+                  .append(lastName != null ? lastName : "");
+             authMap.put("name", label.toString());
+             
+             users.add(authMap);
+          }
+          
+          // commit the transaction
+          tx.commit();
+       }
+       catch (Throwable err)
+       {
+          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+          users = Collections.<Map<String,String>>emptyList();
+          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+       }
+       
+       return users;
+    }
+
    /**
     * Set the current Group Authority.
     * <p>
@@ -472,6 +539,7 @@ public class GroupsDialog extends BaseDialogBean
       contextUpdated();
    }
    
+   
    // ------------------------------------------------------------------------------
    // Action handlers 
    
@@ -488,10 +556,21 @@ public class GroupsDialog extends BaseDialogBean
       {
          // refresh UI based on node selection
          updateUILocation(group);
+         setGroupsSearchCriteria(null);
       }
    }
-   
+
    /**
+     * Simple setter
+     * 
+     * @param groupsSearchCriteria
+     */
+    public void setGroupsSearchCriteria(String groupsSearchCriteria)
+    {
+        this.groupsSearchCriteria = groupsSearchCriteria;
+    }
+
+    /**
     * Remove specified user from the current group
     */
    public void removeUser(ActionEvent event)
@@ -525,9 +604,6 @@ public class GroupsDialog extends BaseDialogBean
       }
    }
    
-   // ------------------------------------------------------------------------------
-   // Helpers 
-   
    /**
     * Update the breadcrumb with the clicked Group location
     */
@@ -558,6 +634,7 @@ public class GroupsDialog extends BaseDialogBean
       }
    }
    
+   
    // ------------------------------------------------------------------------------
    // IContextListener implementation 
    
@@ -573,6 +650,7 @@ public class GroupsDialog extends BaseDialogBean
       if (this.groupsRichList != null)
       {
          this.groupsRichList.setValue(null);
+         this.groups = null;
       }
       
       if (this.usersRichList != null)
@@ -596,6 +674,7 @@ public class GroupsDialog extends BaseDialogBean
    {
       // nothing to do
    }
+   
    
    // ------------------------------------------------------------------------------
    // Inner classes

@@ -290,7 +290,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 // The zone doesn't even exist so there are no root authorities
                 return Collections.emptySet();
             }
-            rootAuthorities = getRootAuthoritiesUnderContainer(container, type, pattern);
+            rootAuthorities = getRootAuthoritiesUnderContainer(container, type);
             if (pattern == null)
             {
                 return rootAuthorities;
@@ -309,10 +309,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             {
                 query.append("((");
             }
-            query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND @").append(
-                    LuceneQueryParser.escape("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
-                            + ISO9075.encode(ContentModel.PROP_USERNAME.getLocalName()))).append(":\"").append(
-                                  displayNamePattern).append("\"");
+            query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\"");
+            if (displayNamePattern != null)
+            {
+                query.append(" AND @").append(
+                        LuceneQueryParser.escape("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
+                                + ISO9075.encode(ContentModel.PROP_USERNAME.getLocalName()))).append(":\"").append(
+                        displayNamePattern).append("\"");
+
+            }
             if (type == null)
             {
                 query.append(") OR (");
@@ -320,22 +325,26 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         if (type != AuthorityType.USER)
         {
-            query.append("TYPE:\"").append(ContentModel.TYPE_AUTHORITY_CONTAINER).append("\" AND (@").append(
-                    LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
-                            + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
-            // Allow for the appropriate type prefix in the authority name
-            if (type == null && !displayNamePattern.startsWith("*"))
+            query.append("TYPE:\"").append(ContentModel.TYPE_AUTHORITY_CONTAINER).append("\"");
+            if (displayNamePattern != null)
             {
-                query.append("*").append(displayNamePattern);
+                query.append(" AND (@").append(
+                        LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
+                                + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
+                // Allow for the appropriate type prefix in the authority name
+                if (type == null && !displayNamePattern.startsWith("*"))
+                {
+                    query.append("*").append(displayNamePattern);
+                }
+                else
+                {
+                    query.append(getName(type, displayNamePattern));
+                }
+                query.append("\" OR @").append(
+                        LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
+                                + ISO9075.encode(ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getLocalName()))).append(
+                        ":\"").append(displayNamePattern).append("\")");
             }
-            else
-            {
-                query.append(getName(type, displayNamePattern));
-            }
-            query.append("\" OR @").append(
-            LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
-                    + ISO9075.encode(ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getLocalName()))).append(":\"").append(
-                          displayNamePattern).append("\")");
             if (type == null)
             {
                 query.append("))");
@@ -852,7 +861,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
         
-    private Set<String> getRootAuthoritiesUnderContainer(NodeRef container, AuthorityType type, Pattern pattern)
+    private Set<String> getRootAuthoritiesUnderContainer(NodeRef container, AuthorityType type)
     {
         if (type != null && type.equals(AuthorityType.USER))
         {
@@ -862,7 +871,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         Set<String> authorities = new TreeSet<String>();
         for (ChildAssociationRef childRef : childRefs)
         {
-            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, pattern);
+            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type, null);
         }
         return authorities;        
     }

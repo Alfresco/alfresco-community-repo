@@ -21,16 +21,12 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
-import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -53,34 +49,22 @@ public class InviteResponse extends DeclarativeWebScript
     
     // request parameter names
     private static final String PARAM_INVITEE_USER_NAME = "inviteeUserName";
-
+    
     // properties for services
-    private WorkflowService workflowService;
     private InvitationService invitationService;
     private TenantService tenantService;
-
-    /**
-     * Sets the workflow service property
-     * 
-     * @param workflowService
-     *            the workflow service instance assign to the property
-     */
-    public void setWorkflowService(WorkflowService workflowService)
+    
+    
+    public void setInvitationService(InvitationService invitationService)
     {
-        this.workflowService = workflowService;
+        this.invitationService = invitationService;
     }
     
-    /**
-     * Sets the tenant service property
-     * 
-     * @param tenantService
-     *            the tenant service instance assign to the property
-     */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -92,32 +76,25 @@ public class InviteResponse extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status)
     {
+        String tenantDomain = TenantService.DEFAULT_DOMAIN;
+        
         if (tenantService.isEnabled())
         {
-            final String tenantDomain;
-            
             String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
             if (inviteeUserName != null)
             {
                 tenantDomain = tenantService.getUserDomain(inviteeUserName);
             }
-            else
-            {
-                tenantDomain = "";
-            }
-                
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, Object>>()
-            {
-                public Map<String, Object> doWork() throws Exception
-                {
-                    return execute(req, status);
-                }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
-        else
+        
+        // run as system user
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, Object>>()
         {
-            return execute(req, status);
-        }
+            public Map<String, Object> doWork() throws Exception
+            {
+                return execute(req, status);
+            }
+        }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
     }
     
     private Map<String, Object> execute(WebScriptRequest req, Status status)
@@ -175,15 +152,7 @@ public class InviteResponse extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "action " + action + " is not supported by this webscript.");
         }
-
+        
         return model;
     }
-
-	public void setInvitationService(InvitationService invitationService) {
-		this.invitationService = invitationService;
-	}
-
-	public InvitationService getInvitationService() {
-		return invitationService;
-	}    
 }

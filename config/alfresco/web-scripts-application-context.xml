@@ -519,26 +519,16 @@
          class="org.alfresco.repo.web.scripts.invite.Invite"
          parent="webscript">
       <property name="workflowService" ref="WorkflowService"/>
-      <property name="personService" ref="PersonService"/>
-      <property name="permissionService" ref="PermissionService"/>
-      <property name="invitationService" ref="InvitationService"/>   
-      <property name="authenticationService" ref="AuthenticationService"/>
-      <property name="mutableAuthenticationDao" ref="authenticationDao"/>
-      <property name="siteService" ref="SiteService"/>
-      <property name="nodeService" ref="NodeService"/>
-      <property name="namespaceService" ref="NamespaceService"/>
-      <property name="userNameGenerator" ref="userNameGenerator"/>
-      <property name="passwordGenerator" ref="passwordGenerator"/>
+      <property name="invitationService" ref="InvitationService"/>
    </bean>
    
    <!--                                                                                                       -->
-   <!-- Invite Accept/Reject Web Script - accepts or rejects a pending invite                                                   -->
+   <!-- Invite Accept/Reject Web Script - accepts or rejects a pending invite                                 -->
    <!--                                                                                                       -->
    
    <bean id="webscript.org.alfresco.repository.invite.inviteresponse.put"
          class="org.alfresco.repo.web.scripts.invite.InviteResponse"
          parent="webscript">
-      <property name="workflowService" ref="WorkflowService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="invitationService" ref="InvitationService"/>
    </bean>
@@ -566,10 +556,10 @@
    <bean id="webscript.org.alfresco.repository.invite.invite-by-ticket.get"
          class="org.alfresco.repo.web.scripts.invite.InviteByTicket"
          parent="webscript">
-      <property name="workflowService" ref="WorkflowService"/>
       <property name="serviceRegistry" ref="ServiceRegistry"/>
       <property name="siteService" ref="SiteService"/>
       <property name="invitationService" ref="InvitationService"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
 
 

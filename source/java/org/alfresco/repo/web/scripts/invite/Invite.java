@@ -18,43 +18,18 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteHelper;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.security.authentication.PasswordGenerator;
-import org.alfresco.repo.security.authentication.UserNameGenerator;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.invitation.Invitation;
-import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -73,11 +48,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class Invite extends DeclarativeWebScript
 {
-    private static final Log logger = LogFactory.getLog(Invite.class);
-    
     private static final String ACTION_START = "start";
     private static final String ACTION_CANCEL = "cancel";
-
+    
     private static final String MODEL_PROP_KEY_ACTION = "action";
     private static final String MODEL_PROP_KEY_INVITE_ID = "inviteId";
     private static final String MODEL_PROP_KEY_INVITE_TICKET = "inviteTicket";
@@ -101,129 +74,18 @@ public class Invite extends DeclarativeWebScript
     
     // services
     private WorkflowService workflowService;
-    private PersonService personService;
-    private AuthenticationService authenticationService;
-    private PermissionService permissionService;
-    private MutableAuthenticationDao mutableAuthenticationDao;
-    private SiteService siteService;
-    private NodeService nodeService;
-    private NamespaceService namespaceService;
-
-    // user name and password generation beans
-    private UserNameGenerator usernameGenerator;
-    private PasswordGenerator passwordGenerator;
     private InvitationService invitationService;
-       
-    /**
-     * Sets the workflowService property
-     * 
-     * @param workflowService
-     *            the workflow service to set
-     */
+    
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
     }
-
-    /**
-     * Set the personService property
-     * 
-     * @param personService
-     *            the person service to set
-     */
-    public void setPersonService(PersonService personService)
+    
+    public void setInvitationService(InvitationService invitationService)
     {
-        this.personService = personService;
-    }
-
-    /**
-     * Set the authenticationService property
-     * 
-     * @param authenticationService
-     *            the authentication service to set
-     */
-    public void setAuthenticationService(
-            AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-
-    /**
-     * Set the mutable authentication DAO
-     * 
-     * @param mutableAuthenticationDao
-     *            Mutable Authentication DAO
-     */
-    public void setMutableAuthenticationDao(
-            MutableAuthenticationDao mutableAuthenticationDao)
-    {
-        this.mutableAuthenticationDao = mutableAuthenticationDao;
+        this.invitationService = invitationService;
     }
     
-    /**
-     * Set the user name generator service
-     * 
-     * @param userNameGenerator
-     *            the user name generator
-     */
-    public void setUserNameGenerator(UserNameGenerator userNameGenerator)
-    {
-        this.usernameGenerator = userNameGenerator;
-    }
-
-    /**
-     * Set the password generator service
-     * 
-     * @param passwordGenerator
-     *            the password generator
-     */
-    public void setPasswordGenerator(PasswordGenerator passwordGenerator)
-    {
-        this.passwordGenerator = passwordGenerator;
-    }
-    
-    /**
-     * Set the site service property
-     * 
-     * @param siteService
-     *          the site service to set
-     */
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
-    
-    /**
-     * Set the node service property
-     * 
-     * @param nodeService
-     *          the node service to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    /**
-     * Set the namespace service property
-     * 
-     * @param namespaceService
-     *          the namespace service to set
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-    
-    /**
-     * Set the permission service
-     * 
-     * @param permissionService   the permission service
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
     
     /*
      * (non-Javadoc)
@@ -491,12 +353,4 @@ public class Invite extends DeclarativeWebScript
         model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
         model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
     }
-
-	public void setInvitationService(InvitationService invitationService) {
-		this.invitationService = invitationService;
-	}
-
-	public InvitationService getInvitationService() {
-		return invitationService;
-	}
 }

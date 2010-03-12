@@ -94,9 +94,9 @@ public class NamespaceDAOImpl implements NamespaceDAO
         
         removeNamespaceRegistry(tenantDomain);
         
-        if (logger.isDebugEnabled()) 
+        if (logger.isTraceEnabled()) 
         {
-            logger.debug("Namespaces destroyed");
+            logger.trace("Namespaces destroyed");
         }
     }
     
@@ -111,18 +111,18 @@ public class NamespaceDAOImpl implements NamespaceDAO
             throw new AlfrescoRuntimeException("Dictionary should be registered in order to perform reset");
         }
         
-        if (logger.isDebugEnabled()) 
+        if (logger.isTraceEnabled()) 
         {
-            logger.debug("Resetting namespaces ...");
+            logger.trace("Resetting namespaces ...");
         }
         
         dictionaryDAO.init();
         
         NamespaceRegistry namespaceRegistry = getNamespaceRegistry(tenantDomain);
         
-        if (logger.isDebugEnabled()) 
+        if (logger.isTraceEnabled()) 
         {
-            logger.debug("... resetting namespaces completed");
+            logger.trace("... resetting namespaces completed");
         }
         
         return namespaceRegistry;
@@ -176,9 +176,9 @@ public class NamespaceDAOImpl implements NamespaceDAO
         getNamespaceRegistry(tenantDomain).setUrisCache(new ArrayList<String>());
         getNamespaceRegistry(tenantDomain).setPrefixesCache(new HashMap<String, String>());
         
-        if (logger.isDebugEnabled()) 
+        if (logger.isTraceEnabled()) 
         {
-            logger.debug("Empty namespaces initialised");
+            logger.trace("Empty namespaces initialised");
         }
         
         return getNamespaceRegistryLocal(tenantDomain);

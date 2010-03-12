@@ -997,30 +997,35 @@ public class DiffModelTest extends TestCase
             System.out.println(M2ModelDiff.toString());
         }   
         
-        assertEquals(8, modelDiffs.size());
+        assertEquals(16, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(0, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_DELETED));
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED));
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(0, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED));
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
+        
+        assertEquals(0, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
+        assertEquals(6, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
     }
     
     public void testIncUpdatePropertiesAdded()
     {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL2_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
-        QName modelName = dictionaryDAO.putModel(model);  
+        QName modelName = dictionaryDAO.putModel(model);
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL2_EXTRA_PROPERTIES_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -1029,10 +1034,12 @@ public class DiffModelTest extends TestCase
             System.out.println(modelDiff.toString());
         }   
         
-        assertEquals(2, modelDiffs.size());
+        assertEquals(8, modelDiffs.size());
         
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED_INC));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED_INC));  
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
     }
 
     public void testIncUpdateTypesAndAspectsAdded()
@@ -1045,7 +1052,7 @@ public class DiffModelTest extends TestCase
         byteArrayInputStream = new ByteArrayInputStream(MODEL3_EXTRA_TYPES_AND_ASPECTS_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -1054,49 +1061,53 @@ public class DiffModelTest extends TestCase
             System.out.println(modelDiff.toString());
         }   
         
-        assertEquals(4, modelDiffs.size());
+        assertEquals(8, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));  
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_CREATED));
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
+        
+        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
     }
     
     public void testIncUpdateAssociationsAdded()
     {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL5_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
-        QName modelName = dictionaryDAO.putModel(model);  
+        QName modelName = dictionaryDAO.putModel(model);
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL5_EXTRA_ASSOCIATIONS_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
         for (M2ModelDiff modelDiff : modelDiffs)
         {
             System.out.println(modelDiff.toString());
-        }   
+        }
         
-        assertEquals(4, modelDiffs.size());
+        assertEquals(12, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED_INC));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED_INC));  
-
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));  
-
+        
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        
+        assertEquals(6, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+        
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_CREATED));
     }
     
     public void testIncUpdateTitleDescription()
     {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL6_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
-        QName modelName = dictionaryDAO.putModel(model);  
+        QName modelName = dictionaryDAO.putModel(model);
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL6_UPDATE1_XML.getBytes());
@@ -1109,12 +1120,13 @@ public class DiffModelTest extends TestCase
         for (M2ModelDiff modelDiff : modelDiffs)
         {
             System.out.println(modelDiff.toString());
-        }   
+        }
         
-        assertEquals(2, modelDiffs.size());
+        assertEquals(4, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED_INC));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED_INC));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED_INC));
     }
     
     public void testNonIncUpdatePropertiesRemoved()
@@ -1127,7 +1139,7 @@ public class DiffModelTest extends TestCase
         byteArrayInputStream = new ByteArrayInputStream(MODEL2_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
@@ -1136,91 +1148,99 @@ public class DiffModelTest extends TestCase
             System.out.println(modelDiff.toString());
         }   
         
-        assertEquals(2, modelDiffs.size());
+        assertEquals(8, modelDiffs.size());
         
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
     }
     
     public void testNonIncUpdateTypesAndAspectsRemoved()
     {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL3_EXTRA_TYPES_AND_ASPECTS_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
-        QName modelName = dictionaryDAO.putModel(model);  
+        QName modelName = dictionaryDAO.putModel(model);
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL3_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
         for (M2ModelDiff modelDiff : modelDiffs)
         {
             System.out.println(modelDiff.toString());
-        }   
+        }
         
-        assertEquals(4, modelDiffs.size());
+        assertEquals(8, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));  
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_DELETED));
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
+        
+        assertEquals(4, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
     }
     
     public void testNonIncUpdateDefaultAspectAdded()
     {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL4_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
-        QName modelName = dictionaryDAO.putModel(model);  
+        QName modelName = dictionaryDAO.putModel(model);
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL4_EXTRA_DEFAULT_ASPECT_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
         for (M2ModelDiff modelDiff : modelDiffs)
         {
             System.out.println(modelDiff.toString());
-        }   
+        }
         
-        assertEquals(2, modelDiffs.size());
+        assertEquals(4, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));  
+        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
     }
     
     public void testNonIncUpdateAssociationsRemoved()
     {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(MODEL5_EXTRA_ASSOCIATIONS_XML.getBytes());
         M2Model model = M2Model.createModel(byteArrayInputStream);
-        QName modelName = dictionaryDAO.putModel(model);  
+        QName modelName = dictionaryDAO.putModel(model);
         CompiledModel previousVersion = dictionaryDAO.getCompiledModel(modelName);
         
         byteArrayInputStream = new ByteArrayInputStream(MODEL5_XML.getBytes());
         model = M2Model.createModel(byteArrayInputStream);
         modelName = dictionaryDAO.putModel(model);
-        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);       
+        CompiledModel newVersion = dictionaryDAO.getCompiledModel(modelName);
         
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(previousVersion, newVersion);
         
         for (M2ModelDiff modelDiff : modelDiffs)
         {
             System.out.println(modelDiff.toString());
-        }   
+        }
         
-        assertEquals(4, modelDiffs.size());
+        assertEquals(12, modelDiffs.size());
         
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UPDATED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UPDATED));
-        
         assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_TYPE, M2ModelDiff.DIFF_UNCHANGED));
-        assertEquals(1, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED)); 
+        
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_UNCHANGED));
+        
+        assertEquals(6, countDiffs(modelDiffs, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED));
+        
+        assertEquals(2, countDiffs(modelDiffs, M2ModelDiff.TYPE_ASSOCIATION, M2ModelDiff.DIFF_DELETED));
     }
     
     private int countDiffs(List<M2ModelDiff> M2ModelDiffs, String elementType, String diffType)

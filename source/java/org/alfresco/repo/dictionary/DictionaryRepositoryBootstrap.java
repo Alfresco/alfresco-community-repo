@@ -19,6 +19,7 @@
 package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.alfresco.repo.i18n.MessageDeployer;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -42,10 +45,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.Pair;
 
 /**
  * Bootstrap the dictionary from specified locations within the repository
@@ -55,8 +59,7 @@ import org.springframework.context.ApplicationEvent;
 public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean implements TenantDeployer, DictionaryListener, MessageDeployer
 {
     // Logging support
-    private static Log logger = LogFactory
-            .getLog("org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap");
+    private static Log logger = LogFactory.getLog(DictionaryRepositoryBootstrap.class);
 
     /** Locations in the repository from which models should be loaded */
     private List<RepositoryLocation> repositoryModelsLocations = new ArrayList<RepositoryLocation>();
@@ -206,9 +209,16 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      */
     public void onDictionaryInit()
     {
+        long startTime = System.currentTimeMillis();
+        
+        Collection<QName> modelsBefore = dictionaryDAO.getModels();
+        int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
+        
+        List<String> loadedModels = new ArrayList<String>();
+        
         if (this.repositoryModelsLocations != null)
         {
-            Map<String, M2Model> modelMap = new HashMap<String, M2Model>();
+            Map<String, Pair<RepositoryLocation, M2Model>> modelMap = new HashMap<String, Pair<RepositoryLocation, M2Model>>();
             
             // Register the models found in the repository
             
@@ -249,7 +259,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                                         
                                         for (M2Namespace namespace : model.getNamespaces())
                                         {
-                                            modelMap.put(namespace.getUri(), model);
+                                            modelMap.put(namespace.getUri(), new Pair<RepositoryLocation, M2Model>(repositoryLocation, model));
                                         }
                                     }
                                 }
@@ -264,10 +274,29 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             }
             
             // Load the models ensuring that they are loaded in the correct order
-            List<String> loadedModels = new ArrayList<String>();
-            for (Map.Entry<String, M2Model> entry : modelMap.entrySet())
+            for (Map.Entry<String, Pair<RepositoryLocation, M2Model>> entry : modelMap.entrySet())
             {
-                loadModel(modelMap, loadedModels, entry.getValue());
+                RepositoryLocation importedLocation = entry.getValue().getFirst();
+                M2Model importedModel = entry.getValue().getSecond();
+                
+                loadModel(modelMap, loadedModels, importedModel, importedLocation);
+            }
+        }
+        
+        Collection<QName> modelsAfter = dictionaryDAO.getModels();
+        int modelsAfterCnt = (modelsAfter != null ? modelsAfter.size() : 0);
+        
+        if (modelsAfterCnt != (modelsBeforeCnt + loadedModels.size()))
+        {
+            String tenantDomain = tenantAdminService.getCurrentUserDomain();
+            logger.warn("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" ["+AlfrescoTransactionSupport.getTransactionId()+"] in "+(System.currentTimeMillis()-startTime)+" msecs "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                String tenantDomain = tenantAdminService.getCurrentUserDomain();
+                logger.debug("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" ["+AlfrescoTransactionSupport.getTransactionId()+"] in "+(System.currentTimeMillis()-startTime)+" msecs "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
             }
         }
     }
@@ -371,18 +400,21 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      * @param loadedModels      the list of models already loaded
      * @param model             the model to try and load
      */
-    private void loadModel(Map<String, M2Model> modelMap, List<String> loadedModels, M2Model model)
+    private void loadModel(Map<String, Pair<RepositoryLocation, M2Model>> modelMap, List<String> loadedModels, M2Model model, RepositoryLocation modelLocation)
     {
         String modelName = model.getName();
         if (loadedModels.contains(modelName) == false)
         {
             for (M2Namespace importNamespace : model.getImports())
             {
-                M2Model importedModel = modelMap.get(importNamespace.getUri());
-                if (importedModel != null)
+                Pair<RepositoryLocation, M2Model> entry = modelMap.get(importNamespace.getUri());
+                if (entry != null)
                 {
+                    RepositoryLocation importedLocation = entry.getFirst();
+                    M2Model importedModel = entry.getSecond();
+                    
                     // Ensure that the imported model is loaded first
-                    loadModel(modelMap, loadedModels, importedModel);
+                    loadModel(modelMap, loadedModels, importedModel, importedLocation);
                 }
                 // else we can assume that the imported model is already loaded, if this not the case then
                 //      an error will be raised during compilation
@@ -390,6 +422,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             
             try
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Loading model: " + modelName + " (from ["+ modelLocation.getStoreRef() + "]"+ modelLocation.getPath() + ")");
+                }
+                
                 dictionaryDAO.putModel(model);
                 loadedModels.add(modelName);
             }
@@ -398,7 +435,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 // note: skip with warning - to allow server to start, and hence allow the possibility of fixing the broken model(s)
                 logger.warn("Failed to load model '" + modelName + "' : " + e);
             }
-        }        
+        }
     }
 
     /**
@@ -446,11 +483,12 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
      */
     public void register()
     {
-        dictionaryDAO.destroy(); // deployer - force reload on next get
+    	// deployer - force reload on next get (eg. bootstrap "rmc:rmcustom")
+        dictionaryDAO.destroy();
         
-    	// register with Dictionary Service to allow (re-)init
-    	dictionaryDAO.register(this);
-    	
+        // register with Dictionary Service to allow (re-)init
+        dictionaryDAO.register(this);
+        
         // register with Message Service to allow (re-)init
         messageService.register(this);
         

@@ -20,11 +20,13 @@ package org.alfresco.repo.dictionary;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -32,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Bootstrap Dictionary DAO with pre-defined models & message resources (from classpath)
  * 
- * @author David Caruana
+ * @author David Caruana, janv
  *
  */
 public class DictionaryBootstrap implements DictionaryListener
@@ -50,7 +52,7 @@ public class DictionaryBootstrap implements DictionaryListener
     private TenantService tenantService;
 
     // Logger
-    private static Log logger = LogFactory.getLog(DictionaryDAO.class);
+    private static Log logger = LogFactory.getLog(DictionaryBootstrap.class);
     
     
     /**
@@ -110,8 +112,7 @@ public class DictionaryBootstrap implements DictionaryListener
      */
     public void register()
     {
-        dictionaryDAO.destroy(); // deployer - force reload on next get
-    	dictionaryDAO.register(this);
+        dictionaryDAO.register(this);
     }
 
     /*
@@ -120,6 +121,11 @@ public class DictionaryBootstrap implements DictionaryListener
      */
     public void onDictionaryInit()
     {
+        long startTime = System.currentTimeMillis();
+        
+        Collection<QName> modelsBefore = dictionaryDAO.getModels(); // note: on first bootstrap will init empty dictionary
+        int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
+        
         if ((tenantService == null) || (! tenantService.isTenantUser()))
         {
             // register models
@@ -132,18 +138,27 @@ public class DictionaryBootstrap implements DictionaryListener
                 }
                 try
                 {
+                    M2Model model = M2Model.createModel(modelStream);
+                    
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Loading model from " + bootstrapModel);
+                        logger.debug("Loading model: "+model.getName()+" (from "+bootstrapModel+")");
                     }
                     
-                    M2Model model = M2Model.createModel(modelStream);
                     dictionaryDAO.putModel(model);
                 }
                 catch(DictionaryException e)
                 {
                     throw new DictionaryException("Could not import bootstrap model " + bootstrapModel, e);
                 }
+            }
+            
+            Collection<QName> modelsAfter = dictionaryDAO.getModels();
+            int modelsAfterCnt = (modelsAfter != null ? modelsAfter.size() : 0);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Model count: before="+modelsBeforeCnt+", load="+models.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs");
             }
         }
     }

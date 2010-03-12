@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
@@ -31,6 +33,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
@@ -39,7 +42,7 @@ import org.springframework.beans.PropertyAccessException;
 /**
  * Compiled Property Constraint
  * 
- * @author Derek Hulley
+ * @author Derek Hulley. janv
  */
 /* package */class M2ConstraintDefinition implements ConstraintDefinition
 {
@@ -319,7 +322,18 @@ import org.springframework.beans.PropertyAccessException;
     {
         return constraint;
     }
-
+    
+    public QName getRef()
+    {
+        QName refQName = null;
+        String ref = m2Constraint.getRef();
+        if (ref != null)
+        {
+            refQName = QName.createQName(ref, prefixResolver);
+        }
+        return refQName;
+    }
+    
     /**
      * Well-known constraint types
      */
@@ -365,10 +379,106 @@ import org.springframework.beans.PropertyAccessException;
                 return new ListOfValuesConstraint();
             }
         };
-
+        
         /**
          * @return Returns the constraint implementation
          */
         protected abstract Constraint newInstance();
+    }
+    
+    /* package */ M2ModelDiff diffConstraint(ConstraintDefinition conDef)
+    {
+        M2ModelDiff modelDiff = null;
+        boolean isUpdated = false;
+        boolean isUpdatedIncrementally = false;
+        
+        if (this == conDef)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UNCHANGED);
+            return modelDiff;
+        }
+        
+        // check name - cannot be null
+        if (! name.equals(conDef.getName()))
+        { 
+            isUpdated = true;
+        }
+        
+        // check title
+        if (! EqualsHelper.nullSafeEquals(getTitle(), conDef.getTitle(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check description
+        if (! EqualsHelper.nullSafeEquals(getDescription(), conDef.getDescription(), false))
+        { 
+            isUpdatedIncrementally = true;
+        }
+        
+        // check type string
+        if (! EqualsHelper.nullSafeEquals(getConstraint().getType(), conDef.getConstraint().getType()))
+        { 
+            isUpdated = true;
+        }
+        
+        if (isUpdated)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UPDATED);
+        }
+        else if (isUpdatedIncrementally)
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UPDATED_INC);
+        }
+        else
+        {
+            modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_UNCHANGED);
+        }
+        
+        return modelDiff;
+    }
+    
+    /*package*/ static Collection<M2ModelDiff> diffConstraintLists(Collection<ConstraintDefinition> previousConstraints, Collection<ConstraintDefinition> newConstraints)
+    {
+        List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
+        
+        for (ConstraintDefinition previousConstraint : previousConstraints)
+        {
+            boolean found = false;
+            for (ConstraintDefinition newConstraint : newConstraints)
+            {
+                if (newConstraint.getName().equals(previousConstraint.getName()))
+                {
+                    modelDiffs.add(((M2ConstraintDefinition)previousConstraint).diffConstraint(previousConstraint));
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                modelDiffs.add(new M2ModelDiff(previousConstraint.getName(), M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_DELETED));
+            }
+        }
+        
+        for (ConstraintDefinition newConstraint : newConstraints)
+        {
+            boolean found = false;
+            for (ConstraintDefinition previousConstraint : previousConstraints)
+            {
+                if (newConstraint.getName().equals(previousConstraint.getName()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                modelDiffs.add(new M2ModelDiff(newConstraint.getName(), M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_CREATED));
+            }
+        }
+        
+        return modelDiffs;
     }
 }

@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -54,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Default implementation of the Dictionary.
  *  
- * @author David Caruana
+ * @author David Caruana, janv
  *
  */
 public class DictionaryDAOImpl implements DictionaryDAO
@@ -190,7 +189,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
                         DictionaryRegistry dictionaryRegistry = initDictionaryRegistry(tenantDomain);
                         
                         if (dictionaryRegistry == null)
-                        {     
+                        {
                             // unexpected
                             throw new AlfrescoRuntimeException("Failed to init dictionaryRegistry " + tenantDomain);
                         }
@@ -298,13 +297,13 @@ public class DictionaryDAOImpl implements DictionaryDAO
         
         // Publish new Model Definition
         getCompiledModels(tenantDomain).put(modelName, compiledModel);
-
-        if (logger.isDebugEnabled())
+        
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Registered model " + modelName.toPrefixString(namespaceDAO));
+            logger.trace("Registered model: " + modelName.toPrefixString(namespaceDAO));
             for (M2Namespace namespace : model.getNamespaces())
             {
-                logger.debug("Registered namespace '" + namespace.getUri() + "' (prefix '" + namespace.getPrefix() + "')");
+                logger.trace("Registered namespace: '" + namespace.getUri() + "' (prefix '" + namespace.getPrefix() + "')");
             }
         }
         
@@ -942,8 +941,35 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public Collection<ConstraintDefinition> getConstraints(QName modelName)
     {
+        return getConstraints(modelName, false);
+    }
+    
+    public Collection<ConstraintDefinition> getConstraints(QName modelName, boolean referenceableDefsOnly)
+    {
         CompiledModel model = getCompiledModel(modelName);
-        return model.getConstraints();
+        if (referenceableDefsOnly)
+        {
+            return getReferenceableConstraintDefs(model);
+        }
+        else
+        {
+            return model.getConstraints();
+        }
+    }
+    
+    private Collection<ConstraintDefinition> getReferenceableConstraintDefs(CompiledModel model)
+    {
+        Collection<ConstraintDefinition> conDefs = model.getConstraints();
+        Collection<PropertyDefinition> propDefs = model.getProperties();
+        for (PropertyDefinition propDef : propDefs)
+        {
+            for (ConstraintDefinition conDef : propDef.getConstraints())
+            {
+                conDefs.remove(conDef);
+            }
+        }
+        
+        return conDefs;
     }
     
     // re-entrant (eg. via reset)
@@ -974,9 +1000,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
             readLock.unlock();
         }
         
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("getDictionaryRegistry: not in cache (or threadlocal) - re-init ["+Thread.currentThread().getId()+", "+AlfrescoTransactionSupport.getTransactionId()+"]"+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+            logger.trace("getDictionaryRegistry: not in cache (or threadlocal) - re-init ["+Thread.currentThread().getId()+", "+AlfrescoTransactionSupport.getTransactionId()+"]"+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
         
         // reset caches - may have been invalidated (e.g. in a cluster)
@@ -1088,13 +1114,12 @@ public class DictionaryDAOImpl implements DictionaryDAO
     /**
      * Return diffs between input model and model in the Dictionary.
      * 
-     * If the input model does not exist in the Dictionary or is equivalent to the one in the Dictionary
-     * then no diffs will be returned.
+     * If the input model does not exist in the Dictionary then no diffs will be returned.
      * 
      * @param model
      * @return model diffs (if any)
      */
-    private List<M2ModelDiff> diffModel(M2Model model)
+    public List<M2ModelDiff> diffModel(M2Model model)
     {
         // Compile model definition
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
@@ -1140,7 +1165,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
         { 
             Collection<TypeDefinition> previousTypes = previousVersion.getTypes();
             Collection<AspectDefinition> previousAspects = previousVersion.getAspects();
-           
+            Collection<ConstraintDefinition> previousConDefs = getReferenceableConstraintDefs(previousVersion);
+            
             if (model == null)
             {
                 // delete model
@@ -1151,13 +1177,18 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 for (AspectDefinition previousAspect : previousAspects)
                 {
                     M2ModelDiffs.add(new M2ModelDiff(previousAspect.getName(), M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_DELETED));
-                }              
+                }
+                for (ConstraintDefinition previousConDef : previousConDefs)
+                {
+                    M2ModelDiffs.add(new M2ModelDiff(previousConDef.getName(), M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_DELETED));
+                }
             }
             else
             {
                 // update model
                 Collection<TypeDefinition> types = model.getTypes();
                 Collection<AspectDefinition> aspects = model.getAspects();
+                Collection<ConstraintDefinition> conDefs = getReferenceableConstraintDefs(model);
                 
                 if (previousTypes.size() != 0)
                 {
@@ -1180,6 +1211,18 @@ public class DictionaryDAOImpl implements DictionaryDAO
                     for (AspectDefinition aspect : aspects)
                     {
                         M2ModelDiffs.add(new M2ModelDiff(aspect.getName(), M2ModelDiff.TYPE_ASPECT, M2ModelDiff.DIFF_CREATED));
+                    }
+                }
+                
+                if (previousConDefs.size() != 0)
+                {
+                    M2ModelDiffs.addAll(M2ConstraintDefinition.diffConstraintLists(new ArrayList<ConstraintDefinition>(previousConDefs), new ArrayList<ConstraintDefinition>(conDefs)));
+                }
+                else
+                {
+                    for (ConstraintDefinition conDef : conDefs)
+                    {
+                        M2ModelDiffs.add(new M2ModelDiff(conDef.getName(), M2ModelDiff.TYPE_CONSTRAINT, M2ModelDiff.DIFF_CREATED));
                     }
                 }
             }
@@ -1209,41 +1252,6 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         
         return M2ModelDiffs;
-    }
-    
-    /**
-     * validate against dictionary
-     * 
-     * if new model 
-     * then nothing to validate
-     * 
-     * else if an existing model 
-     * then could be updated (or unchanged) so validate to currently only allow incremental updates
-     *   - addition of new types, aspects (except default aspects), properties, associations
-     *   - no deletion of types, aspects or properties or associations
-     *   - no addition, update or deletion of default/mandatory aspects
-     * 
-     * @param newOrUpdatedModel
-     */
-    public void validateModel(M2Model newOrUpdatedModel)
-    {
-        // Check that all the passed values are not null        
-        ParameterCheck.mandatory("newOrUpdatedModel", newOrUpdatedModel);
-        
-        List<M2ModelDiff> modelDiffs = diffModel(newOrUpdatedModel);
-        
-        for (M2ModelDiff modelDiff : modelDiffs)
-        {
-            if (modelDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
-            {
-                throw new AlfrescoRuntimeException("Failed to validate model update - found deleted " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
-            }
-            
-            if (modelDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
-            {
-                throw new AlfrescoRuntimeException("Failed to validate model update - found non-incrementally updated " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
-            }
-        } 
     }
     
     /* package */ class DictionaryRegistry

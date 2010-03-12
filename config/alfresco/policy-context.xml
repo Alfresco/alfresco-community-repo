@@ -64,7 +64,8 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="tenantAdminService" ref="tenantAdminService"/>
-        
+      <property name="transactionService" ref="TransactionService"/>
+      
       <property name="storeUrls">
             <list>
                 <value>${spaces.store}</value>

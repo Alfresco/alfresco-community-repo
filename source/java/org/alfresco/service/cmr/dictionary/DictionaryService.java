@@ -19,7 +19,6 @@
 package org.alfresco.service.cmr.dictionary;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.NotAuditable;
@@ -258,12 +257,36 @@ public interface DictionaryService
     Collection<QName> getAllAssociations();
     
     /**
+     * Gets the definition of the constraint
+     * 
+     * @param constraintName the constraint name
+     * @return the constraint definition (or null, if it doesn't exist)
+     * 
+     * @since 3.2.1
+     */
+    @NotAuditable
+    public ConstraintDefinition getConstraint(QName constraintQName);
+    
+    /**
      * Get constraints for the specified model
      * 
      * @param model
      * @return
      */
     public Collection<ConstraintDefinition> getConstraints(QName model);
+    
+    /**
+     * Get constraints for the specified model
+     
+     * Optionally return referenceable (ie. non-property specific) constraints only
+     * 
+     * @param model
+     * @param referenceableDefsOnly
+     * @return
+     *
+     * @since 3.2R
+     */
+    Collection<ConstraintDefinition> getConstraints(QName model, boolean referenceableDefsOnly);
     
     // TODO: Behaviour definitions
     

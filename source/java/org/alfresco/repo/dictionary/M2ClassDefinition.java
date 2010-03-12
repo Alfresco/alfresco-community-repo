@@ -570,38 +570,12 @@ import org.alfresco.util.EqualsHelper;
         // check all properties (including inherited properties)
         Collection<M2ModelDiff> propertyDiffs = M2PropertyDefinition.diffPropertyLists(getProperties().values(), classDef.getProperties().values());
         
-        for (M2ModelDiff propertyDiff : propertyDiffs)
-        {
-            // note: incremental property updates not supported yet, added for completeness
-            if (propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED) || propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
-            {     
-                isUpdatedIncrementally = true;
-            }
-            
-            if (propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED) || propertyDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
-            {
-                isUpdated = true;
-                break;
-            }
-        }
+        modelDiffs.addAll(propertyDiffs);
         
         // check all associations (including inherited associations, child associations and inherited child associations)
         Collection<M2ModelDiff> assocDiffs = M2AssociationDefinition.diffAssocLists(getAssociations().values(), classDef.getAssociations().values());
         
-        for (M2ModelDiff assocDiff : assocDiffs)
-        {
-            // note: incremental association updates not supported yet, added for completeness
-            if (assocDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED) || assocDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED_INC))
-            {
-                isUpdatedIncrementally = true;
-            }
-            
-            if (assocDiff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED) || assocDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
-            {
-                isUpdated = true;
-                break;
-            }
-        }
+        modelDiffs.addAll(assocDiffs);
         
         // check default/mandatory aspects (including inherited default aspects)
         Collection<M2ModelDiff> defaultAspectsDiffs = M2ClassDefinition.diffClassLists(new ArrayList<ClassDefinition>(getDefaultAspects()), new ArrayList<ClassDefinition>(classDef.getDefaultAspects()), M2ModelDiff.TYPE_DEFAULT_ASPECT);
@@ -676,16 +650,9 @@ import org.alfresco.util.EqualsHelper;
         }
         else
         {
-            for (M2ModelDiff modelDiff : modelDiffs)
-            {
-                if (! modelDiff.getDiffType().equals(M2ModelDiff.DIFF_UNCHANGED))
-                {
-                    throw new DictionaryException("Unexpected: diff found although '" + name + "' not marked as updated");
-                }
-            }
             modelDiffs.add(new M2ModelDiff(name, modelDiffType, M2ModelDiff.DIFF_UNCHANGED));
         }
-
+        
         return modelDiffs;
     }
     

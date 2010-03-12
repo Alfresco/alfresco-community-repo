@@ -211,7 +211,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
         
-        bootstrap.register();
+        bootstrap.bootstrap();
     }
     
     /**

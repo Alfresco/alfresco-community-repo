@@ -45,8 +45,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class DictionaryComponent implements DictionaryService, TenantDeployer
 {
     private DictionaryDAO dictionaryDAO;
-
-
+    
     // TODO: Check passed arguments are valid
     
     /**
@@ -58,7 +57,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         this.dictionaryDAO = dictionaryDAO;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAllModels()
@@ -67,7 +65,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getModels();
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getModel(org.alfresco.repo.ref.QName)
@@ -76,7 +73,7 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getModel(model);
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAllPropertyTypes()
      */
@@ -89,7 +86,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return propertyTypes;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getPropertyTypes(org.alfresco.repo.ref.QName)
@@ -104,7 +100,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return qnames;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAllTypes()
@@ -128,7 +123,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     	return dictionaryDAO.getSubTypes(superType, follow);
     }
     
-    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getTypes(org.alfresco.repo.ref.QName)
      */
@@ -142,7 +136,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return qnames;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAllAspects()
@@ -169,7 +162,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return associations;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.dictionary.DictionaryService#getSubAspects(org.alfresco.service.namespace.QName, boolean)
@@ -207,8 +199,7 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return qnames;
     }
-
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#isSubClass(org.alfresco.repo.ref.QName, org.alfresco.repo.ref.QName)
      */
@@ -247,7 +238,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }        
         return subClassOf;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getPropertyType(org.alfresco.repo.ref.QName)
@@ -256,7 +246,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getDataType(name);
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.dictionary.DictionaryService#getDataType(java.lang.Class)
@@ -265,8 +254,7 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getDataType(javaClass);
     }
-
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getType(org.alfresco.repo.ref.QName)
      */
@@ -274,7 +262,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getType(name);
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAspect(org.alfresco.repo.ref.QName)
@@ -283,7 +270,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getAspect(name);
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getClass(org.alfresco.repo.ref.QName)
@@ -330,7 +316,6 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return null;
     }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getProperty(org.alfresco.repo.ref.QName)
@@ -339,7 +324,7 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getProperty(propertyName);
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryService#getAssociation(org.alfresco.repo.ref.QName)
      */
@@ -347,8 +332,7 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
     {
         return dictionaryDAO.getAssociation(associationName);
     }
-
-
+    
    /*
     * (non-Javadoc)
     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getAllProperties(org.alfresco.service.namespace.QName)
@@ -362,8 +346,7 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         }
         return aspects;
     }
-
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.dictionary.DictionaryService#getAllProperties(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
@@ -379,8 +362,10 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         return props;
         
     }
-
-
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getProperties(org.alfresco.service.namespace.QName)
+     */
     public Collection<QName> getProperties(QName model)
     {
         Collection<PropertyDefinition> propDefs = dictionaryDAO.getProperties(model);
@@ -392,9 +377,28 @@ public class DictionaryComponent implements DictionaryService, TenantDeployer
         return props;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getConstraint(org.alfresco.service.namespace.QName)
+     */
+    public ConstraintDefinition getConstraint(QName constraintQName)
+    {
+        return dictionaryDAO.getConstraint(constraintQName);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getConstraints(org.alfresco.service.namespace.QName)
+     */
     public Collection<ConstraintDefinition> getConstraints(QName model)
     {
         return dictionaryDAO.getConstraints(model);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.DictionaryService#getConstraints(org.alfresco.service.namespace.QName, boolean)
+     */
+    public Collection<ConstraintDefinition> getConstraints(QName model, boolean referenceableDefsOnly)
+    {
+        return dictionaryDAO.getConstraints(model, referenceableDefsOnly);
     }
 
     public void init()

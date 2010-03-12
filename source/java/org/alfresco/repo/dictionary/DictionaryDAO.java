@@ -19,6 +19,7 @@
 package org.alfresco.repo.dictionary;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -138,26 +139,26 @@ public interface DictionaryDAO extends ModelQuery
     public Collection<NamespaceDefinition> getNamespaces(QName modelName);
     
     /**
-     * @param model the model to retrieve constraints for
+     * @param model the model to retrieve constraint defs (including property constaint refs)
      * @return the constraints of the model
      */
     public Collection<ConstraintDefinition> getConstraints(QName model);
     
     /**
-     * validate against dictionary
-     * 
-     * if new model 
-     * then nothing to validate
-     * 
-     * else if an existing model 
-     * then could be updated (or unchanged) so validate to currently only allow incremental updates
-     *   - addition of new types, aspects (except default aspects), properties, associations
-     *   - no deletion of types, aspects or properties or associations
-     *   - no addition, update or deletion of default/mandatory aspects
-     * 
-     * @param newOrUpdatedModel
+     * @param model the model to retrieve constraint defs (optionally only referenceable constraints)
+     * @return the constraints of the model
      */
-    public void validateModel(M2Model newOrUpdatedModel);
+    public Collection<ConstraintDefinition> getConstraints(QName model, boolean referenceableDefsOnly);
+    
+    /**
+     * Return diffs between input model and model in the Dictionary.
+     * 
+     * If the input model does not exist in the Dictionary then no diffs will be returned.
+     * 
+     * @param model
+     * @return model diffs (if any)
+     */
+    public List<M2ModelDiff> diffModel(M2Model model);
     
     /**
      *

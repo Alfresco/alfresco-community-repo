@@ -51,4 +51,11 @@ public interface ConstraintDefinition
      * @return Returns the constraint implementation
      */
     public Constraint getConstraint();
+    
+    /**
+     * @return Returns the referenced constraint definition, if any (null for explicit or inline constraint def)
+     * 
+     * @since 3.2R
+     */
+    public QName getRef();
 }

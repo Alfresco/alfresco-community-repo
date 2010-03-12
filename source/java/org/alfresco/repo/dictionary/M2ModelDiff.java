@@ -41,6 +41,7 @@ public class M2ModelDiff
 	public static final String TYPE_DEFAULT_ASPECT = "DEFAULT_ASPECT";
 	public static final String TYPE_PROPERTY = "PROPERTY";
 	public static final String TYPE_ASSOCIATION = "ASSOCIATION";
+	public static final String TYPE_CONSTRAINT = "TYPE_CONSTRAINT";
 	
 	private QName elementName;   
 	private String elementType;  
@@ -53,11 +54,13 @@ public class M2ModelDiff
          ParameterCheck.mandatoryString("elementType", elementType);
          ParameterCheck.mandatoryString("diffType", diffType);
         
-         if ((!elementType.equals(TYPE_TYPE)) && 
-             (!elementType.equals(TYPE_ASPECT)) && 
-             (!elementType.equals(TYPE_DEFAULT_ASPECT)) && 
+         if ((!elementType.equals(TYPE_TYPE)) &&
+             (!elementType.equals(TYPE_ASPECT)) &&
+             (!elementType.equals(TYPE_DEFAULT_ASPECT)) &&
              (!elementType.equals(TYPE_PROPERTY)) &&
-             (!elementType.equals(TYPE_ASSOCIATION)))
+             (!elementType.equals(TYPE_ASSOCIATION)) &&
+             (!elementType.equals(TYPE_CONSTRAINT))
+             )
          {
              throw new AlfrescoRuntimeException("Unknown element type = " + elementType);
          }

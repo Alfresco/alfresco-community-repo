@@ -1458,7 +1458,19 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 }
                 versionService.deleteVersionHistory(nodeRef);
             }
-
+            
+            // Remove not primary parent associations   
+            List<ChildAssociationRef> childAssociations = nodeService.getParentAssocs(nodeRef);
+            if (childAssociations != null)
+            {
+                for (ChildAssociationRef childAssoc : childAssociations)
+                {
+                    if (!childAssoc.isPrimary())
+                    {
+                        nodeService.removeChildAssociation(childAssoc);
+                    }
+                }
+            }
             // Attempt to delete the node
             nodeService.deleteNode(nodeRef);
         }

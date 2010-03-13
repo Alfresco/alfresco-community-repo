@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -49,6 +50,7 @@ public class PatchTest extends TestCase
     private NodeService nodeService;
     private SearchService searchService;
     private AuthenticationContext authenticationContext;
+    private TenantAdminService tenantAdminService;
     private PatchService patchService;
     
     public PatchTest(String name)
@@ -63,6 +65,7 @@ public class PatchTest extends TestCase
         nodeService = (NodeService) ctx.getBean("nodeService");
         searchService = (SearchService) ctx.getBean("searchService");
         authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
+        tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         
         patchService = (PatchService) ctx.getBean("PatchService");
         
@@ -84,6 +87,8 @@ public class PatchTest extends TestCase
         patch.setNodeService(nodeService);
         patch.setSearchService(searchService);
         patch.setAuthenticationContext(authenticationContext);
+        patch.setTenantAdminService(tenantAdminService);
+        patch.setApplicationEventPublisher(ctx);
         // done
         return patch;
     }

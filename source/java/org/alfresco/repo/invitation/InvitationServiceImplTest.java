@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -82,7 +83,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors
         // during unit testing
         // (or sending out email by accident from tests)
-        MailActionExecuter mail = (MailActionExecuter) this.applicationContext.getBean("mail");
+        MailActionExecuter mail = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
+                .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
         mail.setTestMode(true);
 
         createPerson(USER_MANAGER, USER_MANAGER + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);

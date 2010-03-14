@@ -52,6 +52,7 @@ import org.alfresco.cmis.CMISResultSetRow;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
@@ -112,7 +113,7 @@ import org.springframework.context.ApplicationContext;
  * @author andyh
  */
 @SuppressWarnings("unused")
-public class ADMLuceneTest extends TestCase
+public class ADMLuceneTest extends TestCase implements DictionaryListener
 {
 
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/lucenetest";
@@ -216,6 +217,8 @@ public class ADMLuceneTest extends TestCase
     private QueryEngine queryEngine;
 
     private NodeRef n15;
+    
+    private M2Model model;
 
     /**
      *
@@ -224,6 +227,25 @@ public class ADMLuceneTest extends TestCase
     {
         super();
     }
+
+    
+    public void afterDictionaryDestroy()
+    {
+    }
+
+
+    public void afterDictionaryInit()
+    {
+    }
+
+
+    public void onDictionaryInit()
+    {
+        // Register the test model
+        dictionaryDAO.putModel(model);
+        namespaceDao.addPrefix("test", TEST_NAMESPACE);
+    }
+
 
     public void setUp() throws Exception
     {
@@ -263,11 +285,11 @@ public class ADMLuceneTest extends TestCase
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/lucene/LuceneTest_model.xml");
         assertNotNull(modelStream);
-        M2Model model = M2Model.createModel(modelStream);
-        dictionaryDAO.putModel(model);
-
-        namespaceDao.addPrefix("test", TEST_NAMESPACE);
-
+        model = M2Model.createModel(modelStream);        
+        dictionaryDAO.register(this);
+        dictionaryDAO.reset();
+        assertNotNull(dictionaryDAO.getClass(testSuperType));
+        
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 

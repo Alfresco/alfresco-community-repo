@@ -21,18 +21,23 @@ package org.alfresco.repo.content.metadata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.odf.OpenDocumentParser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.xml.sax.ContentHandler;
 
-import com.catcode.odf.ODFMetaFileAnalyzer;
-import com.catcode.odf.OpenDocumentMetadata;
 
 /**
  * Metadata extractor for the
@@ -54,9 +59,9 @@ import com.catcode.odf.OpenDocumentMetadata;
  *   <b>All user properties</b>
  * </pre>
  * 
- * TIKA Note - not all of the metadata is currently
- *  extracted. Will probably need to add some more
- *  support to TIKA.
+ * TIKA Note - this has been converted to deep-call into Tika.
+ *  This will be replaced with proper calls to Tika at a later date.
+ *  Everything except some Print info has been ported to Tika.
  * 
  * @author Antti Jokipii
  * @author Derek Hulley
@@ -76,6 +81,8 @@ public class OpenDocumentMetadataExtracter extends AbstractMappingMetadataExtrac
     private static final String KEY_SUBJECT = "subject";
     private static final String KEY_TITLE = "title";
     
+    private static final String CUSTOM_PREFIX = "custom:";
+
     public static String[] SUPPORTED_MIMETYPES = new String[] {
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT_TEMPLATE,
@@ -95,6 +102,8 @@ public class OpenDocumentMetadataExtracter extends AbstractMappingMetadataExtrac
             MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT_WEB,
             MimetypeMap.MIMETYPE_OPENDOCUMENT_DATABASE };
 
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+
     public OpenDocumentMetadataExtracter()
     {
         super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
@@ -105,43 +114,38 @@ public class OpenDocumentMetadataExtracter extends AbstractMappingMetadataExtrac
     {
         Map<String, Serializable> rawProperties = newRawMap();
         
-        ODFMetaFileAnalyzer analyzer = new ODFMetaFileAnalyzer();
         InputStream is = null;
         try
         {
             is = reader.getContentInputStream();
-            // stream the document in
-            OpenDocumentMetadata docInfo = analyzer.analyzeZip(is);
 
-            if (docInfo != null)
-            {
-                putRawValue(KEY_CREATION_DATE, docInfo.getCreationDate(), rawProperties);
-                putRawValue(KEY_CREATOR, docInfo.getCreator(), rawProperties);
-                putRawValue(KEY_DATE, docInfo.getDate(), rawProperties);
-                putRawValue(KEY_DESCRIPTION, docInfo.getDescription(), rawProperties);
-                putRawValue(KEY_GENERATOR, docInfo.getGenerator(), rawProperties);
-                putRawValue(KEY_INITIAL_CREATOR, docInfo.getInitialCreator(), rawProperties);
-                putRawValue(KEY_KEYWORD, docInfo.getKeyword(), rawProperties);
-                putRawValue(KEY_LANGUAGE, docInfo.getLanguage(), rawProperties);
-                putRawValue(KEY_PRINT_DATE, docInfo.getPrintDate(), rawProperties);
-                putRawValue(KEY_PRINTED_BY, docInfo.getPrintedBy(), rawProperties);
-                putRawValue(KEY_SUBJECT, docInfo.getSubject(), rawProperties);
-                putRawValue(KEY_TITLE, docInfo.getTitle(), rawProperties);
+            OpenDocumentParser docParser = new OpenDocumentParser();
+            ContentHandler handler = new BodyContentHandler() ;
+            Metadata metadata = new Metadata();
+            ParseContext context = new ParseContext();
+        	
+            docParser.parse(is, handler, metadata, context);
+
+            putRawValue(KEY_CREATION_DATE, getDateOrNull(metadata.get(Metadata.CREATION_DATE)), rawProperties);
+            putRawValue(KEY_CREATOR, metadata.get(Metadata.CREATOR), rawProperties);
+            putRawValue(KEY_DATE, getDateOrNull(metadata.get(Metadata.DATE)), rawProperties);
+            putRawValue(KEY_DESCRIPTION, metadata.get(Metadata.DESCRIPTION), rawProperties);
+            putRawValue(KEY_GENERATOR, metadata.get("generator"), rawProperties);
+            putRawValue(KEY_INITIAL_CREATOR, metadata.get("initial-creator"), rawProperties);
+            putRawValue(KEY_KEYWORD, metadata.get(Metadata.KEYWORDS), rawProperties);
+            putRawValue(KEY_LANGUAGE, metadata.get(Metadata.LANGUAGE), rawProperties);
+//          putRawValue(KEY_PRINT_DATE, getDateOrNull(metadata.get(Metadata.)), rawProperties);
+//          putRawValue(KEY_PRINTED_BY, metadata.get(Metadata.), rawProperties);
+            putRawValue(KEY_SUBJECT, metadata.get(Metadata.SUBJECT), rawProperties);
+            putRawValue(KEY_TITLE, metadata.get(Metadata.TITLE), rawProperties);
                 
-                // Handle user-defined properties dynamically
-                Map<String, Set<QName>> mapping = super.getMapping();
-                Hashtable userDefinedProperties = docInfo.getUserDefined();
-                // Extract those user properties for which there is a mapping
-                for (String key : mapping.keySet())
+            // Handle user-defined properties dynamically
+            Map<String, Set<QName>> mapping = super.getMapping();
+            for (String key : mapping.keySet())
+            {
+                if (metadata.get(CUSTOM_PREFIX + key) != null)
                 {
-                    if (userDefinedProperties.containsKey(key))
-                    {
-                        Object value = userDefinedProperties.get(key);
-                        if (value != null && value instanceof Serializable)
-                        {
-                            putRawValue(key, (Serializable) value, rawProperties);
-                        }
-                    }
+                     putRawValue(key, metadata.get(CUSTOM_PREFIX + key), rawProperties);
                 }
             }
         }
@@ -154,5 +158,15 @@ public class OpenDocumentMetadataExtracter extends AbstractMappingMetadataExtrac
         }
         // Done
         return rawProperties;
+    }
+	
+    private Date getDateOrNull(String dateString) throws ParseException
+    {
+        if (dateString != null && dateString.length() != 0)
+        {
+            return dateFormat.parse(dateString);
+        }
+
+        return null;
     }
 }

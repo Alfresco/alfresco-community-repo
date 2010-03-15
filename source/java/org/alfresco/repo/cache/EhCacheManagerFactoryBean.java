@@ -66,7 +66,7 @@ public class EhCacheManagerFactoryBean implements FactoryBean, InitializingBean,
         {
             URL configUrl = this.configLocation.getURL();
             logger.info("Initializing EHCache CacheManager using URL: " + configLocation);
-            this.cacheManager = CacheManager.create(configUrl);
+            this.cacheManager = new CacheManager(configUrl);
         }
         catch (IOException e)
         {

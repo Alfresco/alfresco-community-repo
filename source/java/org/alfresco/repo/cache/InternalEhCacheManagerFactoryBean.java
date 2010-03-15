@@ -109,7 +109,7 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean<CacheManag
                 {
                     throw new AlfrescoRuntimeException("Missing default cache config: " + DEFAULT_CONFIGURATION_FILE);
                 }
-                InternalEhCacheManagerFactoryBean.cacheManager = CacheManager.create(configUrl);
+                InternalEhCacheManagerFactoryBean.cacheManager = new CacheManager(configUrl);
                 defaultLocation = true;
             }
             // done

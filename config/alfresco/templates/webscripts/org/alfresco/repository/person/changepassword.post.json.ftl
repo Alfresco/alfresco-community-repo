@@ -1,3 +1,3 @@
 {
-   success : "${success?string}"
+   "success" :    ${success?string("true", "false")}
 }

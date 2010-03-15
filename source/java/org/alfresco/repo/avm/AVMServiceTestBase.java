@@ -267,11 +267,16 @@ public class AVMServiceTestBase extends TestCase
         
         fService.createFile("main:/a/b/c", "bar").close();
         writer = fService.getContentWriter("main:/a/b/c/bar");
+        /*
         // Force a conversion
         writer.setEncoding("UTF-16");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.putContent(new ByteArrayInputStream("I am main:/a/b/c/bar".getBytes("UTF-16")));
+        */
+        writer.setEncoding("UTF-8");
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent("I am main:/a/b/c/bar");
-       
+        
         fService.createSnapshot("main", null, null);
     }
      

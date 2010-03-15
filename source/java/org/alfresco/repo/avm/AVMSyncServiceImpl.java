@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -410,6 +411,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
         
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         Set<String> destStores = new HashSet<String>();
+        
+        Map<String, AVMDifference> diffsToUpdate = new TreeMap<String, AVMDifference>();
+        
         for (AVMDifference diff : diffList)
         {
             if (excluder != null && (excluder.matches(diff.getSourcePath()) ||
@@ -417,10 +421,17 @@ public class AVMSyncServiceImpl implements AVMSyncService
             {
                 continue;
             }
+            
             if (!diff.isValid())
             {
                 throw new AVMSyncException("Malformed AVMDifference.");
             }
+            
+            diffsToUpdate.put(diff.getSourcePath(), diff);
+        }
+        
+        for (AVMDifference diff : diffsToUpdate.values())
+        {
             if (logger.isDebugEnabled())
             {
                 logger.debug("update: " + diff);

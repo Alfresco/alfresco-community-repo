@@ -576,6 +576,86 @@ public class AVMServiceLocalTest extends TestCase
         }
     }
     
+    public void testSimpleUpdateLD6() throws Exception
+    {
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+            
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("main:/a", "b");
+            
+            logger.debug("created dirs: main:/a, main:/a/b");
+            
+            fService.createLayeredDirectory("main:/", "layer:/", "layer");
+            
+            logger.debug("created layered dir: layer:/layer -> main:/");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(0, diffs.size());
+            
+            fService.createDirectory("layer:/layer/a", "xyz");
+            fService.createFile("layer:/layer/a/xyz", "index.html").close();
+            
+            logger.debug("created: layer:/layer/a/xyz, layer:/layer/a/xyz/index.html");
+            
+            diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/layer/a/xyz[-1] > main:/a/xyz[-1]]", diffs.toString());
+            
+            fService.createStore("main--workflow1");
+            
+            logger.debug("created store: main--workflow1");
+            
+            fService.createLayeredDirectory("main:/a", "main--workflow1:/", "a");
+            
+            logger.debug("created layered dir: main--workflow1:/a -> main:/a");
+            
+            diffs = fSyncService.compare(-1, "main--workflow1:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = new ArrayList<AVMDifference>(1);
+            diffs.add(new AVMDifference(-1, "layer:/layer/a/xyz/index.html", -1, "main--workflow1:/a/xyz/index.html", AVMDifference.NEWER));
+            diffs.add(new AVMDifference(-1, "layer:/layer/a/xyz", -1, "main--workflow1:/a/xyz", AVMDifference.NEWER));
+            
+            // ETHREEOH-2057
+            fSyncService.update(diffs, null, false, false, false, false, "one", "one");
+            
+            logger.debug("updated: added: main--workflow1:/a/xyz,  main--workflow1:/a/xyz/index.html");
+            
+            diffs = fSyncService.compare(-1, "layer:/layer/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[layer:/layer/a/xyz[-1] > main:/a/xyz[-1]]", diffs.toString());
+            
+            diffs = fSyncService.compare(-1, "main--workflow1:/a", -1, "main:/a", null);
+            assertEquals(1, diffs.size());
+            assertEquals("[main--workflow1:/a/xyz[-1] > main:/a/xyz[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, true, true, "two", "two");
+            fSyncService.flatten("main--workflow1:/a", "main:/a");
+            
+            logger.debug("updated & flattened");
+            
+            diffs = fSyncService.compare(-1, "main--workflow1:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            diffs = fSyncService.compare(-1, "main--workflow1:/a", -1, "layer:/layer/a", null);
+            assertEquals(0, diffs.size());
+            
+            recursiveList("main");
+            recursiveList("layer");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+        finally
+        {
+            if (fService.getStore("main--workflow1") != null) { fService.purgeStore("main--workflow1"); }
+        }
+    }
+    
     public void testDeleteLD1() throws Exception
     {
         try

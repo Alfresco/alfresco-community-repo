@@ -32,6 +32,7 @@ import java.util.SortedMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -1731,7 +1732,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         try
         {
             AVMNodeDescriptor child = fAVMService.lookup(avmVersionPath.getFirst(),
-                                                         avmVersionPath.getSecond());
+                                                         AVMUtil.extendAVMPath(avmVersionPath.getSecond(), childName));
             if (child == null)
             {
                 return null;

@@ -37,7 +37,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;

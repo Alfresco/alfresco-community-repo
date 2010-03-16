@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Class containing behaviour for the actions aspect

@@ -56,7 +56,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.Utf7;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.apache.commons.logging.Log;

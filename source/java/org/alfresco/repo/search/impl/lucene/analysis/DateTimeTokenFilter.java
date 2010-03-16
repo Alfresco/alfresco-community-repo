@@ -21,13 +21,12 @@ package org.alfresco.repo.search.impl.lucene.analysis;
 import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.springframework.extensions.surf.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.WhitespaceTokenizer;

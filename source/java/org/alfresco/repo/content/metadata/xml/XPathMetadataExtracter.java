@@ -47,7 +47,7 @@ import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;

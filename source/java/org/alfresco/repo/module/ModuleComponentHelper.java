@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

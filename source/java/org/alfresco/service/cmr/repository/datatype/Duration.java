@@ -29,7 +29,7 @@ import java.text.ParsePosition;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.springframework.extensions.surf.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat;
 
 /**
  * This data type represents duration/interval/period as defined by the XMLSchema type

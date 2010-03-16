@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMDAOs;
@@ -77,7 +76,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
@@ -94,6 +93,7 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Searcher;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Update the index after a snap shot to an AVM store. (Revert is dealt with as a new snap shot is created)

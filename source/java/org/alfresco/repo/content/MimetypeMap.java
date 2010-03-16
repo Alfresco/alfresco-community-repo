@@ -33,7 +33,7 @@ import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

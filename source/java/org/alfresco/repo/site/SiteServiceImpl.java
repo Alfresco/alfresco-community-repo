@@ -76,7 +76,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.

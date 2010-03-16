@@ -27,7 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.support.AbstractApplicationContext;

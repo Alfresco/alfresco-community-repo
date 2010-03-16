@@ -37,19 +37,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.cmis.CMISQueryOptions;
-import org.alfresco.cmis.CMISResultSet;
-import org.alfresco.cmis.CMISResultSetRow;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
@@ -101,13 +93,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.extensions.surf.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author andyh

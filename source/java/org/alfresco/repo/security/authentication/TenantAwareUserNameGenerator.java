@@ -19,7 +19,7 @@
 package org.alfresco.repo.security.authentication;
 
 import org.alfresco.repo.tenant.TenantService;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.RandomStringUtils;
 
 /**

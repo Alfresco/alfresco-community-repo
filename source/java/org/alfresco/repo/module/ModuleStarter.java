@@ -22,7 +22,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 
 /**

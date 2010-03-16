@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * A metadata extractor that selects an appropiate workder for the extraction.

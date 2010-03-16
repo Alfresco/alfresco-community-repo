@@ -21,7 +21,7 @@ package org.alfresco.repo.activities.feed;
 import org.alfresco.repo.activities.ActivityPostServiceImpl;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -30,7 +30,7 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VersionNumber;
 import org.springframework.beans.factory.BeanNameAware;
 

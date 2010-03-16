@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -51,9 +50,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.extensions.surf.util.LogUtil;
+import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.schemadump.Main;
 import org.apache.commons.logging.Log;
@@ -84,6 +82,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 /**

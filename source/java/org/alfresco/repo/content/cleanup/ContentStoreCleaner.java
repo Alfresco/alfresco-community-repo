@@ -38,7 +38,7 @@ import org.alfresco.util.VmShutdownListener.VmShutdownException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * This component is responsible cleaning up orphaned content.

@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * An extractor that pulls out the {@link ContentModel#PROP_NAME <b>cm:name</b>} property from a node.

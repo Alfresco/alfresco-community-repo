@@ -60,7 +60,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Component to migrate old-style content URL storage (<tt>contentUrl=store://...|mimetype=...</tt>)

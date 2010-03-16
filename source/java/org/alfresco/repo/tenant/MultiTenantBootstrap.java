@@ -19,7 +19,7 @@
 package org.alfresco.repo.tenant;
 
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.PropertyCheck;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 
 /**

@@ -404,9 +404,9 @@ public class SubethaEmailMessage implements EmailMessage
     {
         return attachments;
     }
-
+    
     /**
-     * Replaces characters \/*|:"<>? on their hex values. Subject field is used as name of the content, so we need to replace characters that are forbidden in content names.
+     * Replaces characters \/*|:"<>?. on their hex values. Subject field is used as name of the content, so we need to replace characters that are forbidden in content names.
      * 
      * @param subject String representing subject
      * @return Encoded string
@@ -415,7 +415,7 @@ public class SubethaEmailMessage implements EmailMessage
     {
         String result = subject.trim();
         String[][] s = new String[][] { { "\\", "%5c" }, { "/", "%2f" }, { "*", "%2a" }, { "|", "%7c" }, { ":", "%3a" }, { "\"", "%22" }, { "<", "%3c" }, { ">", "%3e" },
-                { "?", "%3f" } };
+                { "?", "%3f" },  { ".", "%2e" } };
 
         for (int i = 0; i < s.length; i++)
         {

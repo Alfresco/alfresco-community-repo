@@ -55,7 +55,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 
 /**

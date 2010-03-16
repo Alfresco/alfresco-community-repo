@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

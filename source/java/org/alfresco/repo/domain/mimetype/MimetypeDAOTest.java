@@ -26,7 +26,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 
 /**

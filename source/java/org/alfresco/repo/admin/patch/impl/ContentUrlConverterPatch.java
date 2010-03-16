@@ -59,7 +59,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**

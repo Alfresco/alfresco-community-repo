@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.avm.util.AVMUtil;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -32,7 +32,7 @@ import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import com.ibatis.sqlmap.client.event.RowHandler;

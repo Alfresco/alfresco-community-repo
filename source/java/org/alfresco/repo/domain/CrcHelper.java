@@ -21,7 +21,7 @@ package org.alfresco.repo.domain;
 import java.io.UnsupportedEncodingException;
 import java.util.zip.CRC32;
 
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Helper class to calculate CRC values for string persistence.

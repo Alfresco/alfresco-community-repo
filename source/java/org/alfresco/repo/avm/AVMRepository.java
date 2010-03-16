@@ -60,7 +60,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileNameValidator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * This or AVMStore are the implementors of the operations specified by AVMService.

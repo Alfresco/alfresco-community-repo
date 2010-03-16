@@ -25,7 +25,7 @@ import java.util.List;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
 import org.springframework.dao.ConcurrencyFailureException;

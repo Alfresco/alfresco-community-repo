@@ -28,7 +28,7 @@ import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * A cache for two-way lookups of database entities.  These are characterized by having a unique

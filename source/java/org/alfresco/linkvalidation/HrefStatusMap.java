@@ -26,7 +26,7 @@ package  org.alfresco.linkvalidation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
   
 /**
 *  A synchronized wrapper for the ephemeral cache of href status results.

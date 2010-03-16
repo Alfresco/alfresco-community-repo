@@ -33,7 +33,7 @@ import org.alfresco.repo.domain.audit.AuditModelEntity;
 import org.alfresco.repo.domain.audit.AuditQueryParameters;
 import org.alfresco.repo.domain.audit.AuditQueryResult;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import com.ibatis.sqlmap.client.event.RowHandler;

@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;

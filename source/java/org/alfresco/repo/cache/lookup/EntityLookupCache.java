@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.dao.ConcurrencyFailureException;
 

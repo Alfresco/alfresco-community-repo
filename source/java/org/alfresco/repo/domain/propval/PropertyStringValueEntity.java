@@ -20,7 +20,7 @@ package org.alfresco.repo.domain.propval;
 
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Entity bean for <b>alf_prop_string_value</b> table.

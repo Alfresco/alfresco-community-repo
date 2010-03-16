@@ -24,7 +24,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Entity bean for <b>alf_prop_date_value</b> table.

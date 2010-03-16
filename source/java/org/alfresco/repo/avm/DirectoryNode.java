@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * The interface for Directory Nodes.

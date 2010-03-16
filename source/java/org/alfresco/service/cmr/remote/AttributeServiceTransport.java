@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.service.cmr.attributes.AttrQuery;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * The transport wrapper for remoted AttributeService.

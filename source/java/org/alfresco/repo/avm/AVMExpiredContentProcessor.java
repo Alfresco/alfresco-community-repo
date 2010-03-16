@@ -60,7 +60,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

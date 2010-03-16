@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;

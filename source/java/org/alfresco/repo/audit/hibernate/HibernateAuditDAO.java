@@ -54,7 +54,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.mapping.Column;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;

@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Takes a String representation of a list of Version/Paths (created

@@ -68,7 +68,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.util.Assert;
 

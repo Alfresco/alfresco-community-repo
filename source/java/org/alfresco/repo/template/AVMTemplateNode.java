@@ -46,7 +46,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -29,7 +29,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOA
 import org.alfresco.service.namespace.QName;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**

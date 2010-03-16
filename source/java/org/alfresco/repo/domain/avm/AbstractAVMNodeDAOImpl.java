@@ -33,7 +33,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.namespace.QName;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**

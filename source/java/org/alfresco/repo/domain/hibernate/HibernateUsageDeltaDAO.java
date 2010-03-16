@@ -30,7 +30,7 @@ import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.hibernate.Query;
 import org.hibernate.Session;

@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * A loopback implementation of the AVMRemote interface?

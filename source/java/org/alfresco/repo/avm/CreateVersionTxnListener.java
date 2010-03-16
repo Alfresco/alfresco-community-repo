@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Transaction listener that fires create version events.

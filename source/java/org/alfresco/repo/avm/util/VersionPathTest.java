@@ -21,7 +21,7 @@ package org.alfresco.repo.avm.util;
 import java.util.List;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 import junit.framework.TestCase;
 

@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.security.person;
 
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 public class UserNameMatcherImpl implements UserNameMatcher
 {

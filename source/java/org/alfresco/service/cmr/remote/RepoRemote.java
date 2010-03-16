@@ -23,7 +23,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * A highly simplified remote interface for the repo.

@@ -21,7 +21,7 @@ package org.alfresco.repo.props;
 import java.io.Serializable;
 
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

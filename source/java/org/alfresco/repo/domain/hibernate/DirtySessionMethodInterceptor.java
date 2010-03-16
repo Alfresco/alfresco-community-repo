@@ -28,7 +28,7 @@ import java.util.Stack;
 
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;

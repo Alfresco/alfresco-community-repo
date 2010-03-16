@@ -26,7 +26,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.LocaleDAO;
 import org.alfresco.repo.domain.LocaleEntity;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

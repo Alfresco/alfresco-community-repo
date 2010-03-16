@@ -37,7 +37,7 @@ import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.PropertyCheck;
 
 /**

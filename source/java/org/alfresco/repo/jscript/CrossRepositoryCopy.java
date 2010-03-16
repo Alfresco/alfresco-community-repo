@@ -22,7 +22,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 

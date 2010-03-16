@@ -20,7 +20,7 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Entity bean for <b>alf_prop_serializable_value</b> table.

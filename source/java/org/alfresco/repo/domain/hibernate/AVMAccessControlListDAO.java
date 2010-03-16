@@ -55,7 +55,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

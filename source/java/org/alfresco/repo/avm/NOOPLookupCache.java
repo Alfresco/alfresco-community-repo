@@ -22,7 +22,7 @@ import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * A NO-OP implementation of AVM path lookup cache

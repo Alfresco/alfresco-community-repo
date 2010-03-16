@@ -36,7 +36,7 @@ import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataIntegrityViolationException;

@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

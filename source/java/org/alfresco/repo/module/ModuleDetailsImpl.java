@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.alfresco.util.VersionNumber;
 
 /**

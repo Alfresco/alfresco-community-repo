@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

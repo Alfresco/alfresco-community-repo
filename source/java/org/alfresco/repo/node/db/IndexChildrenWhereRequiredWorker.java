@@ -28,7 +28,7 @@ import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Indexes child nodes where cascade re-indexing is disabled.

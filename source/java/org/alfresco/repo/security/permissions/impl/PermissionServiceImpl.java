@@ -523,7 +523,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     private AccessStatus doAvmCan(NodeRef nodeRef, PermissionReference permission)
     {
-        org.springframework.extensions.surf.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        org.alfresco.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = avmVersionPath.getFirst();
         String path = avmVersionPath.getSecond();
         boolean result = AVMRepository.GetInstance().can(nodeRef.getStoreRef().getIdentifier(), version, path, permission.getName());

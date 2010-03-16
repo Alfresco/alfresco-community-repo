@@ -29,7 +29,7 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Implementation of the AttributeService interface.

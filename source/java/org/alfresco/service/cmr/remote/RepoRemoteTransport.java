@@ -21,7 +21,7 @@ package org.alfresco.service.cmr.remote;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Over the wire, and authentication safe flavor of

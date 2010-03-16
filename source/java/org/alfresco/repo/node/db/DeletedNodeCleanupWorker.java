@@ -27,7 +27,7 @@ import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableLong;
 
 /**

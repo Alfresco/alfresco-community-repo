@@ -26,7 +26,7 @@ import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.remote.AttributeServiceTransport;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Client side AttributeService implementation.

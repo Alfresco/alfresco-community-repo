@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.remote.RepoRemoteTransport;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * The server side implementation of RepoRemoteTransport. It

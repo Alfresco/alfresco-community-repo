@@ -59,7 +59,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy
 {

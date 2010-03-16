@@ -54,7 +54,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
+
 
 /**
  * Base tests for {@link CMISChangeLogServiceImpl}

@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.Pair;
+import org.alfresco.util.Pair;
 
 /**
  * Implementation of AVMRemoteTransport for the server side. It's 

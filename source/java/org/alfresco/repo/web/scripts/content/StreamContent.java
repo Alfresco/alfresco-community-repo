@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.SocketException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -346,17 +345,12 @@ public class StreamContent extends AbstractWebScript
             {
                 modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
             }
-            catch (ParseException e)
+            catch (Throwable e)
             {
                 if (logger.isInfoEnabled())
-                    logger.info("ParseException: Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+                    logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
             }
-            catch (NumberFormatException e)
-            {
-                if (logger.isInfoEnabled())
-                    logger.info("NumberFormatException: Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
-            }
-
+            
             if (modifiedSince > 0L)
             {
                 // round the date to the ignore millisecond value which is not supplied by header

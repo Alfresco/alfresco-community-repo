@@ -44,6 +44,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.StringBuilderWriter;
 import org.springframework.extensions.webscripts.AbstractRuntimeContainer;
 import org.springframework.extensions.webscripts.Authenticator;
@@ -61,12 +67,6 @@ import org.springframework.extensions.webscripts.Description.RequiredAuthenticat
 import org.springframework.extensions.webscripts.Description.RequiredTransaction;
 import org.springframework.extensions.webscripts.Description.RequiredTransactionParameters;
 import org.springframework.extensions.webscripts.Description.TransactionCapability;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 
 /**
@@ -631,6 +631,22 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             return res.getEncodeScriptUrlFunction(name);
         }
 
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptResponse#encodeResourceUrl(java.lang.String)
+         */
+        public String encodeResourceUrl(String url)
+        {
+            return res.encodeResourceUrl(url);
+        }
+
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptResponse#getEncodeResourceUrlFunction(java.lang.String)
+         */
+        public String getEncodeResourceUrlFunction(String name)
+        {
+            return res.getEncodeResourceUrlFunction(name);
+        }
+        
         /*
          * (non-Javadoc)
          * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream()

@@ -152,6 +152,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
     public void init()
     {
         fThread = new Thread(this);
+        fThread.setDaemon(true);
         fDone = false;
         fThread.start();
     }

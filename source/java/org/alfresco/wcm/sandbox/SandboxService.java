@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.PublicService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.asset.AssetInfo;
 
@@ -34,6 +35,7 @@ import org.alfresco.wcm.asset.AssetInfo;
  * 
  * @author janv
  */
+@PublicService
 public interface SandboxService
 {
     /**

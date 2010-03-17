@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.invitation;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.PublicService;
 
 /**
  * The invitation service provides the ability to invite
@@ -32,6 +33,7 @@ import org.alfresco.service.Auditable;
  *    
  * @author mrogers
  */
+@PublicService
 public interface InvitationService 
 {
 	/**

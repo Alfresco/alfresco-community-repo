@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
@@ -37,6 +38,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author janv
  */
+@PublicService
 public interface AssetService
 {
     /**

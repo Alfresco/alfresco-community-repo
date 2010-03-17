@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.attributes.Attribute;
+import org.alfresco.service.PublicService;
 import org.alfresco.util.Pair;
 
 /**
@@ -60,6 +61,7 @@ import org.alfresco.util.Pair;
  *
  * @author britt
  */
+@PublicService
 public interface AttributeService 
 {
     /**

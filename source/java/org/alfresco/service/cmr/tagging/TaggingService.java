@@ -20,14 +20,16 @@ package org.alfresco.service.cmr.tagging;
 
 import java.util.List;
 
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * Taggin Service Interface
+ * Tagging Service Interface
  * 
  * @author Roy Wetherall
  */
+@PublicService
 public interface TaggingService
 {
     /**

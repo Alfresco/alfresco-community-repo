@@ -22,6 +22,7 @@ package org.alfresco.service.cmr.transfer;
 import java.util.Collection;
 import java.util.Set;
 
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -30,6 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Mark Rogers
  */
+@PublicService
 public interface TransferService
 {
 

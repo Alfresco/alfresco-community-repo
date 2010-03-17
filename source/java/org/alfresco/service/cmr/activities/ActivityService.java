@@ -20,6 +20,13 @@ package org.alfresco.service.cmr.activities;
 
 import java.util.List;
 
+import org.alfresco.service.PublicService;
+
+
+/**
+ * The activity service
+ */
+@PublicService
 public interface ActivityService extends ActivityPostService
 {
     /*

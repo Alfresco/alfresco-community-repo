@@ -22,14 +22,17 @@ package org.alfresco.service.cmr.rendition;
 import java.util.List;
 
 import org.alfresco.repo.rendition.RenditionDefinitionPersister;
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * The Rendition service.
  * @author Nick Smith
  * @author Neil McErlean
  */
+@PublicService
 public interface RenditionService extends RenditionDefinitionPersister
 {
     /**

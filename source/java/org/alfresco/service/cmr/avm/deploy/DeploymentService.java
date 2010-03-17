@@ -21,13 +21,15 @@ package org.alfresco.service.cmr.avm.deploy;
 import java.util.Set;
 import java.util.List;
 
+import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.util.NameMatcher;
 
 /**
- * A service to handle AVM repository to remote AVM repository deployment.
+ * A service to handle WCM AVM repository to remote AVM repository deployment.
  * @author britt
  */
+@PublicService
 public interface DeploymentService
 {
     /**

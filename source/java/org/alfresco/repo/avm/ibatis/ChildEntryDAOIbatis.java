@@ -21,6 +21,7 @@ package org.alfresco.repo.avm.ibatis;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.ChildEntry;
@@ -98,11 +99,21 @@ class ChildEntryDAOIbatis implements ChildEntryDAO
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.avm.ChildEntryDAO#update(org.alfresco.repo.avm.ChildEntry)
+     * @see org.alfresco.repo.avm.ChildEntryDAO#rename(org.alfresco.repo.avm.ChildKey, String)
      */
-    public void update(ChildEntry child)
+    public void rename(ChildKey key, String newName)
     {
-        // NOOP
+        // direct rename should only be used if changing case
+        if (! key.getName().equalsIgnoreCase(newName))
+        {
+            throw new AlfrescoRuntimeException("Invalid rename (can only change case");
+        }
+        
+        AVMChildEntryEntity childEntryEntity = AVMDAOs.Instance().newAVMNodeLinksDAO.getChildEntry(key.getParent().getId(), key.getName());
+        
+        childEntryEntity.setName(newName);
+        
+        AVMDAOs.Instance().newAVMNodeLinksDAO.updateChildEntry(childEntryEntity);
     }
     
     /* (non-Javadoc)

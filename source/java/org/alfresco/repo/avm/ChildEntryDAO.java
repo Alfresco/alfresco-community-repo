@@ -64,10 +64,10 @@ public interface ChildEntryDAO
     public List<ChildEntry> getByChild(AVMNode child);
 
     /**
-     * Update a dirty ChildEntry.
-     * @param child The dirty entry.
+     * Rename a child entry (specific rename 'case' only)
+     * @param child The one to rename.
      */
-    public void update(ChildEntry child);
+    public void rename(ChildKey key, String newName);
 
     /**
      * Delete one.

@@ -444,10 +444,12 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
      */
     public Map<String, AVMNode> getListing(Lookup lPath, String childNamePattern, boolean includeDeleted)
     {
-        // Get the base listing from the thing we indirect to.
         Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
+        Map<String, String> baseLowerKeyName = new HashMap<String, String>();
+        
         if (!getOpacity())
         {
+            // If we are not opaque, get the underlying base listing (from the thing we indirect to)
             Lookup lookup = AVMRepository.GetInstance().lookupDirectory(getUnderlyingVersion(lPath), getUnderlying(lPath));
             if (lookup != null)
             {
@@ -464,6 +466,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                         }
                     }
                     listing.put(entry.getKey(), entry.getValue());
+                    baseLowerKeyName.put(entry.getKey().toLowerCase(), entry.getKey());
                 }
             }
         }
@@ -483,6 +486,13 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
             }
             else
             {
+                String keyName = baseLowerKeyName.get(entry.getKey().getName().toLowerCase());
+                if (keyName != null)
+                {
+                    // specific rename 'case' only
+                    listing.remove(keyName);
+                }
+                
                 listing.put(entry.getKey().getName(), entry.getChild());
             }
         }
@@ -584,16 +594,18 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         {
             throw new AVMBadArgumentException("Illegal null argument.");
         }
-        SortedMap<String, AVMNodeDescriptor> baseListing = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
-        // If we are not opaque, get the underlying base listing.
+        SortedMap<String, AVMNodeDescriptor> listing = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, String> baseLowerKeyName = new HashMap<String, String>();
+        
         if (!getOpacity())
         {
+            // If we are not opaque, get the underlying base listing (from the thing we indirect to)
             Lookup lookup = AVMRepository.GetInstance().lookupDirectory(dir.getIndirectionVersion(), dir.getIndirection());
             if (lookup != null)
             {
                 DirectoryNode dirNode = (DirectoryNode) lookup.getCurrentNode();
-                Map<String, AVMNode> listing = dirNode.getListing(lookup, childNamePattern, includeDeleted);
-                for (Map.Entry<String, AVMNode> entry : listing.entrySet())
+                Map<String, AVMNode> underListing = dirNode.getListing(lookup, childNamePattern, includeDeleted);
+                for (Map.Entry<String, AVMNode> entry : underListing.entrySet())
                 {
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                         entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
@@ -603,37 +615,45 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                             continue;
                         }
                     }
-                    baseListing.put(entry.getKey(),
+                    listing.put(entry.getKey(),
                                     entry.getValue().getDescriptor(dir.getPath(), entry.getKey(),
                                                                    lookup.getCurrentIndirection(),
                                                                    lookup.getCurrentIndirectionVersion()));
+                    
+                    baseLowerKeyName.put(entry.getKey().toLowerCase(), entry.getKey());
                 }
             }
         }
-        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this, childNamePattern);
-        for (ChildEntry child : children)
+        for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this, childNamePattern))
         {
-            if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
-                child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
+            if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
+                entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(null, child.getChild(), PermissionService.READ_CHILDREN, false))
+                if (!AVMRepository.GetInstance().can(null, entry.getChild(), PermissionService.READ_CHILDREN, false))
                 {
                     continue;
                 }
             }
-            if (!includeDeleted && child.getChild().getType() == AVMNodeType.DELETED_NODE)
+            if (!includeDeleted && entry.getChild().getType() == AVMNodeType.DELETED_NODE)
             {
-                baseListing.remove(child.getKey().getName());
+                listing.remove(entry.getKey().getName());
             }
             else
             {
-                baseListing.put(child.getKey().getName(), child.getChild()
-                        .getDescriptor(dir.getPath(), child.getKey().getName(), dir.getIndirection(), dir.getIndirectionVersion()));
+                String keyName = baseLowerKeyName.get(entry.getKey().getName().toLowerCase());
+                if (keyName != null)
+                {
+                    // specific rename 'case' only
+                    listing.remove(keyName);
+                }
+                
+                listing.put(entry.getKey().getName(), entry.getChild()
+                        .getDescriptor(dir.getPath(), entry.getKey().getName(), dir.getIndirection(), dir.getIndirectionVersion()));
             }
         }
-        return baseListing;
+        return listing;
     }
-
+    
     /**
      * Get the names of nodes deleted in this directory.
      *
@@ -652,9 +672,9 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         }
         return listing;
     }
-
+    
     /**
-     * Lookup a child by name.
+     * Lookup a child entry by name.
      *
      * @param lPath
      *            The Lookup.
@@ -664,9 +684,9 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
      *            The version in which we are looking.
      * @param write
      *            Whether this lookup is occurring in a write context.
-     * @return The child or null if not found.
+     * @return The child entry or null if not found.
      */
-    public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
+    public Pair<ChildEntry, Boolean> lookupChildEntry(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
@@ -676,7 +696,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
             {
                 return null;
             }
-            Pair<AVMNode, Boolean> result = new Pair<AVMNode, Boolean>(entry.getChild(), true);
+            Pair<ChildEntry, Boolean> result = new Pair<ChildEntry, Boolean>(entry, true);
             return result;
         }
         // Don't check our underlying directory if we are opaque.
@@ -689,7 +709,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         if (lookup != null)
         {
             DirectoryNode dir = (DirectoryNode) lookup.getCurrentNode();
-            Pair<AVMNode, Boolean> retVal = dir.lookupChild(lookup, name, includeDeleted);
+            Pair<ChildEntry, Boolean> retVal = dir.lookupChildEntry(lookup, name, includeDeleted);
             if (retVal != null)
             {
                 retVal.setSecond(false);

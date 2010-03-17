@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -91,20 +90,22 @@ public class NOOPLookupCache implements LookupCache
             {
                 throw new AccessDeniedException("Not allowed to read children: " + path.get(i) + " ("+store.getName()+")");
             }
-            Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(i), includeDeleted);
-            if (child == null)
+            Pair<ChildEntry, Boolean> childEntryResult = dir.lookupChildEntry(result, path.get(i), includeDeleted);
+            if (childEntryResult == null)
             {
                 return null;
             }
+            AVMNode child = childEntryResult.getFirst().getChild();
             // Every element that is not the last needs to be a directory.
-            if (child.getFirst().getType() != AVMNodeType.PLAIN_DIRECTORY &&
-                child.getFirst().getType() != AVMNodeType.LAYERED_DIRECTORY)
+            if (child.getType() != AVMNodeType.PLAIN_DIRECTORY &&
+                child.getType() != AVMNodeType.LAYERED_DIRECTORY)
             {
                 return null;
             }
             
-            prevDir = (DirectoryNode)child.getFirst();
-            result.add(child.getFirst(), path.get(i), child.getSecond(), write);
+            prevDir = (DirectoryNode)child;
+            String lookupPathElementName = childEntryResult.getFirst().getKey().getName();
+            result.add(child, lookupPathElementName, childEntryResult.getSecond(), write);
             dir = (DirectoryNode)result.getCurrentNode();
         }
         // Now look up the last element.
@@ -112,9 +113,8 @@ public class NOOPLookupCache implements LookupCache
         {
             throw new AccessDeniedException("Not allowed to read children: " + path.get(path.size() - 1) + " ("+store.getName()+")");
         }
-        Pair<AVMNode, Boolean> child = dir.lookupChild(result, path.get(path.size() - 1),
-                                        includeDeleted);
-        if (child == null)
+        Pair<ChildEntry, Boolean> childEntryResult = dir.lookupChildEntry(result, path.get(path.size() - 1), includeDeleted);
+        if (childEntryResult == null)
         {
             if (write && (dir.getType() == AVMNodeType.LAYERED_DIRECTORY))
             {
@@ -127,7 +127,7 @@ public class NOOPLookupCache implements LookupCache
                     {
                         return null;
                     }
-                    child = new Pair<AVMNode, Boolean>(AVMNodeUnwrapper.Unwrap(entry.getChild()), true);
+                    childEntryResult = new Pair<ChildEntry, Boolean>(entry, true);
                 }
                 else
                 {
@@ -139,7 +139,9 @@ public class NOOPLookupCache implements LookupCache
                 return null;
             }
         }
-        result.add(child.getFirst(), path.get(path.size() - 1), child.getSecond(), write);
+        AVMNode child = childEntryResult.getFirst().getChild();
+        String lookupPathElementName = childEntryResult.getFirst().getKey().getName();
+        result.add(child, lookupPathElementName, childEntryResult.getSecond(), write);
         return result;
     }
 

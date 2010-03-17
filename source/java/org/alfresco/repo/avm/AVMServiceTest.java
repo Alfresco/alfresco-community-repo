@@ -5976,23 +5976,87 @@ public class AVMServiceTest extends AVMServiceTestBase
      */
     public void testCaseInsensitive() throws Exception
     {
+        String storeName = "caseIn";
+        String storeNameUpper = storeName.toUpperCase();
+        String storeNameLower = storeName.toLowerCase();
+        
         try
         {
-            setupBasicTree();
+            fService.createStore(storeName);
+            
             try
             {
-                fService.createFile("main:/a/b/c", "Foo").close();
+                fService.createStore(storeNameUpper);
                 fail();
             }
             catch (AVMExistsException e)
             {
                 // Do nothing.
             }
+            
+            AVMStoreDescriptor storeDesc1 = fService.getStore(storeNameUpper);
+            assertNotNull(storeDesc1);
+            assertEquals(storeName, storeDesc1.getName());
+            
+            AVMStoreDescriptor storeDesc2 = fService.getStore(storeNameLower);
+            assertNotNull(storeDesc2);
+            assertEquals(storeName, storeDesc2.getName());
+            
+            assertEquals(storeDesc1, storeDesc2); // same id
+            
+            fService.createDirectory(storeName+":/", "a");
+            fService.createDirectory(storeName+":/a", "B");
+            fService.createDirectory(storeName+":/a/B", "c");
+            fService.createFile(storeName+":/a/B/c", "Foo").close();
+            
+            AVMNodeDescriptor desc1 = fService.lookup(-1, storeNameUpper+":/A/B/C/FOO");
+            assertNotNull(desc1);
+            assertEquals(storeName+":/a/B/c/Foo", desc1.getPath());
+            
+            try
+            {
+                fService.createFile(storeName+":/a/B/c", "FoO").close();
+                fail();
+            }
+            catch (AVMExistsException e)
+            {
+                // Do nothing.
+            }
+            
+            AVMNodeDescriptor desc2 = fService.lookup(-1, storeNameLower+":/a/b/c/foo");
+            assertNotNull(desc2);
+            assertEquals(storeName+":/a/B/c/Foo", desc2.getPath());
+            
+            assertEquals(desc1, desc2); // same id
+            
+            desc1 = fService.lookup(-1, storeNameUpper+":/A/B/C");
+            assertNotNull(desc1);
+            assertEquals(storeName+":/a/B/c", desc1.getPath());
+            
+            try
+            {
+                fService.createFile(storeName+":/a/b", "C").close();
+                fail();
+            }
+            catch (AVMExistsException e)
+            {
+                // Do nothing.
+            }
+            
+            desc2 = fService.lookup(-1, storeNameLower+":/a/b/c");
+            assertNotNull(desc2);
+            assertEquals(storeName+":/a/B/c", desc2.getPath());
+            
+            assertEquals(desc1, desc2); // same id
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
             throw e;
+        }
+        finally
+        {
+            fService.purgeStore(storeName);
         }
     }
 

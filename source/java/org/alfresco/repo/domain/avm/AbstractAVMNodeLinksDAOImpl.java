@@ -194,6 +194,24 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
     /**
      * {@inheritDoc}
      */
+    public void updateChildEntry(AVMChildEntryEntity childEntryEntity)
+    {
+        ParameterCheck.mandatory("childEntryEntity", childEntryEntity);
+        ParameterCheck.mandatory("childEntryEntity.getParentNodeId()", childEntryEntity.getParentNodeId());
+        ParameterCheck.mandatory("childEntryEntity.getChildId()", childEntryEntity.getChildId());
+        ParameterCheck.mandatory("childEntryEntity.getName()", childEntryEntity.getName());
+        
+        ChildKey key = new ChildKey(childEntryEntity.getParentNodeId(), childEntryEntity.getName());
+        int updated = avmChildEntryCache.updateValue(key, childEntryEntity);
+        if (updated < 1)
+        {
+            throw new ConcurrencyFailureException("AVMChildEntry for parent/name (" + key.getParentNodeId() + ", " + key.getName() + ") no longer exists");
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public void deleteChildEntry(AVMChildEntryEntity childEntryEntity)
     {
         ParameterCheck.mandatory("childEntryEntity", childEntryEntity);
@@ -344,7 +362,7 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
         
         public int updateValue(ChildKey key, AVMChildEntryEntity value)
         {
-            throw new UnsupportedOperationException("updateValue(Long, AVMChildEntryEntity");
+            return updateChildEntryEntity(value);
         }
         
         public int deleteByKey(ChildKey key)
@@ -367,6 +385,9 @@ public abstract class AbstractAVMNodeLinksDAOImpl implements AVMNodeLinksDAO
     protected abstract AVMChildEntryEntity getChildEntryEntity(AVMChildEntryEntity childEntryEntity);
     
     protected abstract void createChildEntryEntity(AVMChildEntryEntity childEntryEntity);
+    
+    protected abstract int updateChildEntryEntity(AVMChildEntryEntity childEntryEntity); // specific rename 'case' only
+    
     protected abstract int deleteChildEntryEntity(long parentNodeId, String name);
     protected abstract int deleteChildEntryEntity(long parentNodeId, long childNodeId);
     protected abstract int deleteChildEntryEntities(long parentNodeId);

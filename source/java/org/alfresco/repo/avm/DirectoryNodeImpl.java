@@ -21,6 +21,7 @@ package org.alfresco.repo.avm;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
+import org.alfresco.util.Pair;
 
 /**
  * Base class for Directories.
@@ -81,5 +82,22 @@ public abstract class DirectoryNodeImpl extends AVMNodeImpl implements Directory
     public boolean directlyContains(AVMNode node)
     {
         return AVMDAOs.Instance().fChildEntryDAO.existsParentChild(this, node);
+    }
+    
+    /**
+     * Lookup a child node by name.
+     * @param lPath The lookup path so far.
+     * @param name The name to lookup.
+     * @param includeDeleted Whether to lookup deleted nodes.
+     * @return The child node or null.
+     */
+    public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
+    {
+        Pair<ChildEntry, Boolean> result = lookupChildEntry(lPath, name, includeDeleted);
+        if (result == null)
+        {
+            return null;
+        }
+        return new Pair<AVMNode, Boolean>(result.getFirst().getChild(), result.getSecond());
     }
 }

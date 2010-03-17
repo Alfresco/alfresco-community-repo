@@ -721,7 +721,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Path not found.");
             }
             srcDir = (DirectoryNode) sPath.getCurrentNode();
-  
+            
             Pair<AVMNode, Boolean> temp = srcDir.lookupChild(sPath, srcName, false);
             srcNode = (temp == null) ? null : temp.getFirst();
             if (srcNode == null)
@@ -760,108 +760,147 @@ public class AVMRepository
             }
             Pair<AVMNode, Boolean> temp = dstDir.lookupChild(dPath, dstName, true);
             AVMNode child = (temp == null) ? null : temp.getFirst();
+            
+            boolean renameCase = false;
             if (child != null && child.getType() != AVMNodeType.DELETED_NODE)
             {
-                throw new AVMExistsException("Node exists: " + dstName);
-            }
-
-            Long parentAcl = dstDir.getAcl() == null ? null : dstDir.getAcl().getId();
-
-            AVMNode dstNode = null;
-            // We've passed the check, so we can go ahead and do the rename.
-            if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
-            {
-                // If the source is layered then the renamed thing needs to be layered also.
-                if (sPath.isLayered())
+                String avmSrcPath = AVMUtil.extendAVMPath(srcPath, srcName);
+                String avmDstPath = AVMUtil.extendAVMPath(dstPath, dstName);
+                
+                if ((avmSrcPath.equalsIgnoreCase(avmDstPath)) && (! srcName.equals(dstName)))
                 {
-                    // If this is a rename happening in the same layer we make a new
-                    // OverlayedDirectoryNode that is not a primary indirection layer.
-                    // Otherwise we do make the new OverlayedDirectoryNode a primary
-                    // Indirection layer. This complexity begs the question of whether
-                    // we should allow renames from within one layer to within another
-                    // layer. Allowing it makes the logic absurdly complex.
-                    if (dPath.isLayered() && dPath.getTopLayer().equals(sPath.getTopLayer()))
+                    // specific rename 'case' only (within a store)
+                    if (fgLogger.isDebugEnabled())
                     {
-                        dstNode = new LayeredDirectoryNodeImpl((PlainDirectoryNode) srcNode, dstRepo, sPath, true, parentAcl, ACLCopyMode.COPY);
-                        ((LayeredDirectoryNode) dstNode).setLayerID(sPath.getTopLayer().getLayerID());
+                        fgLogger.debug("rename: only change case: from "+avmSrcPath+" to "+avmDstPath);
+                    }
+                    renameCase = true;
+                }
+                else
+                {
+                    throw new AVMExistsException("Node exists: " + dstName);
+                }
+            }
+            
+            if (! renameCase)
+            {
+                // general rename/move
+                
+                Long parentAcl = dstDir.getAcl() == null ? null : dstDir.getAcl().getId();
+                
+                AVMNode dstNode = null;
+                // We've passed the check, so we can go ahead and do the rename.
+                if (srcNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
+                {
+                    // If the source is layered then the renamed thing needs to be layered also.
+                    if (sPath.isLayered())
+                    {
+                        // If this is a rename happening in the same layer we make a new
+                        // OverlayedDirectoryNode that is not a primary indirection layer.
+                        // Otherwise we do make the new OverlayedDirectoryNode a primary
+                        // Indirection layer. This complexity begs the question of whether
+                        // we should allow renames from within one layer to within another
+                        // layer. Allowing it makes the logic absurdly complex.
+                        if (dPath.isLayered() && dPath.getTopLayer().equals(sPath.getTopLayer()))
+                        {
+                            dstNode = new LayeredDirectoryNodeImpl((PlainDirectoryNode) srcNode, dstRepo, sPath, true, parentAcl, ACLCopyMode.COPY);
+                            ((LayeredDirectoryNode) dstNode).setLayerID(sPath.getTopLayer().getLayerID());
+                        }
+                        else
+                        {
+                            dstNode = new LayeredDirectoryNodeImpl((DirectoryNode) srcNode, dstRepo, sPath, srcName, parentAcl, ACLCopyMode.COPY);
+                            
+                            // note: re-use generated node id as a layer id
+                            ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
+                        }
+                        
+                        AVMDAOs.Instance().fAVMNodeDAO.update(dstNode);
                     }
                     else
                     {
-                        dstNode = new LayeredDirectoryNodeImpl((DirectoryNode) srcNode, dstRepo, sPath, srcName, parentAcl, ACLCopyMode.COPY);
-                        
-                        // note: re-use generated node id as a layer id
-                        ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
+                        dstNode = new PlainDirectoryNodeImpl((PlainDirectoryNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
+                    }
+                }
+                else if (srcNode.getType() == AVMNodeType.LAYERED_DIRECTORY)
+                {
+                    if (!sPath.isLayered() || (sPath.isInThisLayer() && srcDir.getType() == AVMNodeType.LAYERED_DIRECTORY && ((LayeredDirectoryNode) srcDir).directlyContains(srcNode)))
+                    {
+                        Lookup srcLookup = lookup(-1, srcPath + "/" + srcName, true);
+                        // Use the simple 'copy' constructor.
+                        dstNode = new LayeredDirectoryNodeImpl((LayeredDirectoryNode) srcNode, dstRepo, srcLookup, true, parentAcl, ACLCopyMode.COPY);
+                        ((LayeredDirectoryNode) dstNode).setLayerID(((LayeredDirectoryNode) srcNode).getLayerID());
+                    }
+                    else
+                    {
+                        // If the source node is a primary indirection, then the 'copy' constructor
+                        // is used. Otherwise the alternate constructor is called and its
+                        // indirection is calculated from it's source context.
+                        if (((LayeredDirectoryNode) srcNode).getPrimaryIndirection())
+                        {
+                            Lookup srcLookup = lookup(-1, srcPath + "/" + srcName, true);
+                            dstNode = new LayeredDirectoryNodeImpl((LayeredDirectoryNode) srcNode, dstRepo, srcLookup, true, parentAcl, ACLCopyMode.COPY);
+                        }
+                        else
+                        {
+                            dstNode = new LayeredDirectoryNodeImpl((DirectoryNode) srcNode, dstRepo, sPath, srcName, parentAcl, ACLCopyMode.COPY);
+                        }
+                        // What needs to be done here is dependent on whether the
+                        // rename is to a layered context. If so then it should get the layer id
+                        // of its destination parent. Otherwise it should get a new layer
+                        // id.
+                        if (dPath.isLayered())
+                        {
+                            ((LayeredDirectoryNode) dstNode).setLayerID(dPath.getTopLayer().getLayerID());
+                        }
+                        else
+                        {
+                            // note: re-use generated node id as a layer id
+                            ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
+                        }
                     }
                     
                     AVMDAOs.Instance().fAVMNodeDAO.update(dstNode);
                 }
-                else
+                else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
                 {
-                    dstNode = new PlainDirectoryNodeImpl((PlainDirectoryNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
-                }
-            }
-            else if (srcNode.getType() == AVMNodeType.LAYERED_DIRECTORY)
-            {
-                if (!sPath.isLayered() || (sPath.isInThisLayer() && srcDir.getType() == AVMNodeType.LAYERED_DIRECTORY && ((LayeredDirectoryNode) srcDir).directlyContains(srcNode)))
-                {
-                    Lookup srcLookup = lookup(-1, srcPath + "/" + srcName, true);
-                    // Use the simple 'copy' constructor.
-                    dstNode = new LayeredDirectoryNodeImpl((LayeredDirectoryNode) srcNode, dstRepo, srcLookup, true, parentAcl, ACLCopyMode.COPY);
-                    ((LayeredDirectoryNode) dstNode).setLayerID(((LayeredDirectoryNode) srcNode).getLayerID());
+                    dstNode = new LayeredFileNodeImpl((LayeredFileNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
                 }
                 else
+                // This is a plain file node.
                 {
-                    // If the source node is a primary indirection, then the 'copy' constructor
-                    // is used. Otherwise the alternate constructor is called and its
-                    // indirection is calculated from it's source context.
-                    if (((LayeredDirectoryNode) srcNode).getPrimaryIndirection())
-                    {
-                        Lookup srcLookup = lookup(-1, srcPath + "/" + srcName, true);
-                        dstNode = new LayeredDirectoryNodeImpl((LayeredDirectoryNode) srcNode, dstRepo, srcLookup, true, parentAcl, ACLCopyMode.COPY);
-                    }
-                    else
-                    {
-                        dstNode = new LayeredDirectoryNodeImpl((DirectoryNode) srcNode, dstRepo, sPath, srcName, parentAcl, ACLCopyMode.COPY);
-                    }
-                    // What needs to be done here is dependent on whether the
-                    // rename is to a layered context. If so then it should get the layer id
-                    // of its destination parent. Otherwise it should get a new layer
-                    // id.
-                    if (dPath.isLayered())
-                    {
-                        ((LayeredDirectoryNode) dstNode).setLayerID(dPath.getTopLayer().getLayerID());
-                    }
-                    else
-                    {
-                        // note: re-use generated node id as a layer id
-                        ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
-                    }
+                    dstNode = new PlainFileNodeImpl((PlainFileNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
                 }
                 
-                AVMDAOs.Instance().fAVMNodeDAO.update(dstNode);
-            }
-            else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
-            {
-                dstNode = new LayeredFileNodeImpl((LayeredFileNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
+                srcDir.removeChild(sPath, srcName);
+                // srcDir.updateModTime();
+                // dstNode.setVersionID(dstRepo.getNextVersionID());
+                if (child != null)
+                {
+                    dstNode.setAncestor(child);
+                }
+                
+                //dstDir.updateModTime();
+                dstDir.putChild(dstName, dstNode);
+                if (child == null)
+                {
+                    dstNode.setAncestor(srcNode);
+                }
             }
             else
-            // This is a plain file node.
             {
-                dstNode = new PlainFileNodeImpl((PlainFileNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
+                // specific rename 'case' only (within a store)
+                
+                forceCopy(AVMUtil.extendAVMPath(srcPath, srcName));
+                
+                Pair<ChildEntry, Boolean> result = srcDir.lookupChildEntry(sPath, srcName, false);
+                if (result != null)
+                {
+                    ChildKey key = result.getFirst().getKey();
+                    key.setName(srcName);
+                    AVMDAOs.Instance().fChildEntryDAO.rename(key, dstName);
+                }
             }
-            srcDir.removeChild(sPath, srcName);
-            // srcDir.updateModTime();
-            // dstNode.setVersionID(dstRepo.getNextVersionID());
-            if (child != null)
-            {
-                dstNode.setAncestor(child);
-            }
-            //dstDir.updateModTime();
-            dstDir.putChild(dstName, dstNode);
-            if (child == null)
-            {
-                dstNode.setAncestor(srcNode);
-            }
+            
             fLookupCache.onWrite(pathParts[0]);
         }
         finally

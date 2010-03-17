@@ -1214,8 +1214,7 @@ public class AVMServiceLocalTest extends TestCase
         }
     }
     
-
-    public void testRename6() throws Exception
+    public void testRename1() throws Exception
     {
         try
         {
@@ -1251,6 +1250,143 @@ public class AVMServiceLocalTest extends TestCase
             throw e;
         }
     }
+    
+    public void testRename2() throws Exception
+    {
+        String fileLower = "foo";
+        String fileUpper = "FOO";
+        
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+
+            fService.createDirectory("main:/", "a");
+            fService.createFile("main:/a", fileLower);
+            
+            logger.debug("created: main:/a/"+fileLower);
+
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/"+fileLower);
+            assertNotNull(desc);
+            assertEquals("main:/a/"+fileLower, desc.getPath());
+            
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            
+            logger.debug("created: layer:/a/"+fileLower+" -> main:/a/"+fileLower);
+
+            assertNotNull(fService.lookup(-1, "layer:/a/"+fileLower));
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fService.rename("layer:/a/", fileLower, "layer:/a", fileUpper);
+            
+            logger.debug("rename: layer:/a/"+fileLower+" -> layer:/a/"+fileUpper);
+
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals("[layer:/a/"+fileUpper+"[-1] > main:/a/"+fileUpper+"[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            logger.debug("update: layer:/a/"+fileUpper+" -> main:/a/"+fileUpper);
+
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/a", "main:/a");
+            
+            logger.debug("flatten: layer:/a -> main:/a");
+            
+            desc = fService.lookup(-1, "main:/a/"+fileLower);
+            assertNotNull(desc);
+            assertEquals("main:/a/"+fileUpper, desc.getPath());
+            
+            desc = fService.lookup(-1, "main:/a/"+fileUpper);
+            assertNotNull(desc);
+            assertEquals("main:/a/"+fileUpper, desc.getPath());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+    
+    public void testRename3() throws Exception
+    {
+        try
+        {
+            logger.debug("created 2 stores: main, layer");
+            
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("main:/a", "b");
+            fService.createDirectory("main:/a/b", "c");
+            
+            logger.debug("created: main:/a/b/c");
+            
+            fService.createLayeredDirectory("main:/a", "layer:/", "a");
+            
+            logger.debug("created: layer:/a -> main:/a");
+            
+            List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            AVMNodeDescriptor desc = fService.lookup(-1, "main:/a/b");
+            assertNotNull(desc);
+            assertEquals("main:/a/b", desc.getPath());
+            
+            desc = fService.lookup(-1, "main:/a/B");
+            assertNotNull(desc);
+            assertEquals("main:/a/b", desc.getPath());
+            
+            desc = fService.lookup(-1, "layer:/a/b");
+            assertNotNull(desc);
+            assertEquals("layer:/a/b", desc.getPath());
+            
+            fService.rename("layer:/a/", "b", "layer:/a", "B");
+            
+            logger.debug("rename: layer:/a/b -> layer:/a/B");
+            
+            desc = fService.lookup(-1, "main:/a/b");
+            assertNotNull(desc);
+            assertEquals("main:/a/b", desc.getPath());
+            
+            desc = fService.lookup(-1, "layer:/a/B");
+            assertNotNull(desc);
+            assertEquals("layer:/a/B", desc.getPath());
+            
+            desc = fService.lookup(-1, "layer:/a/b");
+            assertNotNull(desc);
+            assertEquals("layer:/a/B", desc.getPath());
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals("[layer:/a/B[-1] > main:/a/B[-1]]", diffs.toString());
+            
+            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            
+            logger.debug("update: layer:/a/B -> main:/a/B");
+            
+            diffs = fSyncService.compare(-1, "layer:/a", -1, "main:/a", null);
+            assertEquals(0, diffs.size());
+            
+            fSyncService.flatten("layer:/a", "main:/a");
+            
+            logger.debug("flatten: layer:/a -> main:/a");
+            
+            desc = fService.lookup(-1, "main:/a/b");
+            assertNotNull(desc);
+            assertEquals("main:/a/B", desc.getPath());
+            
+            desc = fService.lookup(-1, "main:/a/B");
+            assertNotNull(desc);
+            assertEquals("main:/a/B", desc.getPath());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+    
     
     /**
      * Test file properties update ...

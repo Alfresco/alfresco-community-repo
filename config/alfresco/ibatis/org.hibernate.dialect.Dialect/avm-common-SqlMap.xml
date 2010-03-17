@@ -838,6 +838,17 @@
             child_id = #childNodeId#
     </select>
     
+    <select id="select_AVMChildEntryL" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+        select
+            *
+        from
+            avm_child_entries
+        where
+            parent_id = #parentNodeId# and
+            lower(name) = lower(#name#) and
+            child_id = #childNodeId#
+    </select>
+    
     <!-- Get AVMNodeChildEntries by parent node ID -->
     <select id="select_AVMNodeChildEntriesByParent" parameterMap="parameter_IdMap" resultMap="result_AVMChildEntry">
         select
@@ -857,6 +868,16 @@
         where
             parent_id = ? and
             name like ?
+    </select>
+    
+    <select id="select_AVMNodeChildEntriesByParentAndNamePatternL" parameterMap="parameter_IdPatternMap" resultMap="result_AVMChildEntry">
+        select
+            *
+        from
+            avm_child_entries
+        where
+            parent_id = ? and
+            lower(name) like lower(?)
     </select>
     
     <!-- Get AVMNodeChildEntries by child node ID -->
@@ -880,6 +901,16 @@
             name = #name#
     </select>
     
+    <select id="select_AVMChildEntryByParentAndNameL" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
+        select
+            *
+        from
+            avm_child_entries
+        where
+            parent_id = #parentNodeId# and
+            lower(name) = lower(#name#)
+    </select>
+    
     <!-- Get AVMChildEntry by parent node ID and child node ID -->
     <select id="select_AVMChildEntryByParentAndChild" parameterClass="AVMChildEntry" resultMap="result_AVMChildEntry">
         select
@@ -892,6 +923,7 @@
     </select>
     
     <!-- Remove AVMChildEntry -->
+    <!-- unused
     <delete id="delete_AVMChildEntry" parameterClass="AVMChildEntry">
         delete
         from
@@ -902,7 +934,29 @@
             child_id = #childNodeId#
     </delete>
     
-        <!-- Remove AVMChildEntry by parent node ID and name -->
+    <delete id="delete_AVMChildEntryL" parameterClass="AVMChildEntry">
+        delete
+        from
+            avm_child_entries
+        where
+            parent_id = #parentNodeId# and
+            lower(name) = lower(#name#) and
+            child_id = #childNodeId#
+    </delete>
+    -->
+
+    <!-- Update child entry name (currently used for specific rename 'case' only) -->
+    <update id="update_AVMChildEntry" parameterClass="AVMChildEntry">
+        update
+            avm_child_entries
+        set
+            name = #name#
+        where
+            parent_id = #parentNodeId# and
+            child_id = #childNodeId#
+    </update>
+    
+    <!-- Remove AVMChildEntry by parent node ID and name -->
     <delete id="delete_AVMChildEntryByParentAndName" parameterClass="AVMChildEntry">
         delete
         from
@@ -912,7 +966,16 @@
             name = #name#
     </delete>
     
-        <!-- Remove AVMChildEntry by parent node ID and child node ID -->
+    <delete id="delete_AVMChildEntryByParentAndNameL" parameterClass="AVMChildEntry">
+        delete
+        from
+            avm_child_entries
+        where
+            parent_id = #parentNodeId# and
+            lower(name) = lower(#name#)
+    </delete>
+    
+    <!-- Remove AVMChildEntry by parent node ID and child node ID -->
     <delete id="delete_AVMChildEntryByParentAndChild" parameterClass="AVMChildEntry">
         delete
         from

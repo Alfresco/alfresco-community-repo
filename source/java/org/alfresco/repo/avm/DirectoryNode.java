@@ -53,6 +53,14 @@ public interface DirectoryNode extends AVMNode
     public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted);
     
     /**
+     * Lookup a child entry.
+     * @param lPath The Lookup so far.
+     * @param name The name of the child to lookup.
+     * @param includeDeleted Include deleted nodes or not.
+     */
+    public Pair<ChildEntry, Boolean> lookupChildEntry(Lookup lPath, String name, boolean includeDeleted);
+    
+    /**
      * Lookup a child node using an AVMNodeDescriptor as context.
      * @param mine The node descriptor for this.
      * @param name The name of the child to lookup.

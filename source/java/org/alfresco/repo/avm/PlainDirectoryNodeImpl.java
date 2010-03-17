@@ -203,15 +203,15 @@ public class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDi
     {
         return new ArrayList<String>();
     }
-
+    
     /**
-     * Lookup a child by name.
+     * Lookup a child entry by name.
      * @param lPath The lookup path so far.
      * @param name The name to lookup.
      * @param includeDeleted Whether to lookup deleted nodes.
-     * @return The child or null.
+     * @return The child entry or null.
      */
-    public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
+    public Pair<ChildEntry, Boolean> lookupChildEntry(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildKey key = new ChildKey(this, name);
         ChildEntry entry = AVMDAOs.Instance().fChildEntryDAO.get(key);
@@ -223,7 +223,7 @@ public class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDi
         {
             return null;
         }
-        Pair<AVMNode, Boolean> result = new Pair<AVMNode, Boolean>(entry.getChild(), true);
+        Pair<ChildEntry, Boolean> result = new Pair<ChildEntry, Boolean>(entry, true);
         return result;
     }
 

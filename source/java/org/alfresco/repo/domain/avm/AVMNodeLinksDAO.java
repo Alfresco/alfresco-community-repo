@@ -69,6 +69,11 @@ public interface AVMNodeLinksDAO
     public AVMChildEntryEntity getChildEntry(long parentNodeId, long childNodeId);
     
     /**
+     * Specific rename 'case' only
+     */
+    public void updateChildEntry(AVMChildEntryEntity childEntryEntity);
+    
+    /**
      * Delete one
      */
     public void deleteChildEntry(AVMChildEntryEntity childEntryEntity);

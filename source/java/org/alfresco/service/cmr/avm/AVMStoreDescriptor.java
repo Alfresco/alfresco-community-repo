@@ -30,7 +30,12 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 public class AVMStoreDescriptor implements Serializable
 {
     private static final long serialVersionUID = -4401863082685362175L;
-
+    
+    /**
+     * The object id.
+     */
+    private long fID;
+    
     /**
      * The name.
      */
@@ -46,15 +51,16 @@ public class AVMStoreDescriptor implements Serializable
      */
     private long fCreateDate;
     
-    public AVMStoreDescriptor(String name,
-                                String creator,
-                                long createDate)
+    public AVMStoreDescriptor(long id,
+                              String name,
+                              String creator,
+                              long createDate)
     {
         fName = name;
         fCreator = creator;
         fCreateDate = createDate;
     }
-
+    
     /**
      * @return the fCreateDate
      */
@@ -62,7 +68,7 @@ public class AVMStoreDescriptor implements Serializable
     {
         return fCreateDate;
     }
-
+    
     /**
      * @return the fCreator
      */
@@ -70,7 +76,7 @@ public class AVMStoreDescriptor implements Serializable
     {
         return fCreator;
     }
-
+    
     /**
      * @return the fName
      */
@@ -79,8 +85,37 @@ public class AVMStoreDescriptor implements Serializable
         return fName;
     }
     
+    /**
+     * Get the object id.
+     * @return The object id.
+     */
+    public long getId()
+    {
+        return fID;
+    }
+    
     public String toString()
     {
-        return "[" + fName + ":" + fCreator + ":" + ISO8601DateFormat.format(new Date(fCreateDate)) + "]";
+        return "[" + fID + ":"+fName + ":" + fCreator + ":" + ISO8601DateFormat.format(new Date(fCreateDate)) + "]";
+    }
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof AVMStoreDescriptor))
+        {
+            return false;
+        }
+        return fID == ((AVMStoreDescriptor)obj).fID;
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return (int)fID;
     }
 }

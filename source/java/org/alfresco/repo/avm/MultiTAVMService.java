@@ -982,6 +982,7 @@ public class MultiTAVMService implements AVMService
         }
         
         return new AVMStoreDescriptor(
+                store.getId(),
                 getBaseStoreName(store.getName()),
                 store.getCreator(),
                 store.getCreateDate());

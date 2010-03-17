@@ -1286,7 +1286,7 @@ public class AVMStoreImpl implements AVMStore
         PropertyValue createdValue = getProperty(ContentModel.PROP_CREATED);
         Date created = createdValue == null ? (new Date()) : (Date) createdValue.getValue(DataTypeDefinition.DATE);
         created = (created == null) ? (new Date()) : created;
-        return new AVMStoreDescriptor(getName(), creator, created.getTime());
+        return new AVMStoreDescriptor(getId(), getName(), creator, created.getTime());
     }
 
     /**

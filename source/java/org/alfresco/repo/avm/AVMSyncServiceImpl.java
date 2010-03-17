@@ -161,9 +161,29 @@ public class AVMSyncServiceImpl implements AVMSyncService
                          int dstVersion, AVMNodeDescriptor dstDesc,
                          List<AVMDifference> result, NameMatcher excluder, boolean firstLevel)
     {
+        String srcPath = srcDesc.getPath();
+        String dstPath = dstDesc.getPath();
+        
+        String srcParts[] = AVMUtil.splitBase(srcPath);
+        String srcChildName = srcParts[1];
+        
+        String dstParts[] = AVMUtil.splitBase(dstPath);
+        String dstChildName = dstParts[1];
+        
+        if ((dstChildName.equalsIgnoreCase(srcChildName)) && (! dstChildName.equals(srcChildName)))
+        {
+            // specific rename 'case'
+            String dstParentPath = dstParts[0];
+            if (dstParentPath == null)
+            {
+                dstParentPath = AVMUtil.buildAVMPath(AVMUtil.getStoreName(dstPath), "");
+            }
+            dstPath = AVMUtil.extendAVMPath(dstParentPath, srcChildName);
+        }
+        
         // Determine how the source and destination nodes differ.
-        if (excluder != null && (excluder.matches(srcDesc.getPath()) ||
-                                 excluder.matches(dstDesc.getPath())))
+        if (excluder != null && (excluder.matches(srcPath) ||
+                                 excluder.matches(dstPath)))
         {
             return;
         }
@@ -180,8 +200,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
             case AVMDifference.OLDER :
             case AVMDifference.CONFLICT :
             {
-                result.add(new AVMDifference(srcVersion, srcDesc.getPath(),
-                                             dstVersion, dstDesc.getPath(),
+                result.add(new AVMDifference(srcVersion, srcPath,
+                                             dstVersion, dstPath,
                                              diffCode));
                 return;
             }
@@ -190,7 +210,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 // First special case: source is a layered directory which points to
                 // the destinations path, and we are comparing 'head' versions.
                 if (srcDesc.isLayeredDirectory() &&
-                    srcDesc.getIndirection().equals(dstDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
+                    srcDesc.getIndirection().equalsIgnoreCase(dstPath) && srcVersion < 0 && dstVersion < 0)
                 {
                     // skip firstLevel (root)
                     if (! firstLevel)
@@ -203,8 +223,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
                             case AVMDifference.NEWER :
                             case AVMDifference.CONFLICT :
                             {
-                                result.add(new AVMDifference(srcVersion, srcDesc.getPath(),
-                                                             dstVersion, dstDesc.getPath(),
+                                result.add(new AVMDifference(srcVersion, srcPath,
+                                                             dstVersion, dstPath,
                                                              dirDiffCode));
                                 return; // short circuit
                             }
@@ -235,19 +255,21 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     {
                         AVMNodeDescriptor srcChild = srcList.get(name);
                         AVMNodeDescriptor dstChild = dstList.get(name);
-                        String dstPath = AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name);
-                        if (excluder != null && (excluder.matches(srcChild.getPath()) ||
-                                                 excluder.matches(dstPath)))
+                        
+                        String srcChildPath = srcChild.getPath();
+                        String dstChildPath = AVMNodeConverter.ExtendAVMPath(dstPath, name);
+                        
+                        if (excluder != null && (excluder.matches(srcChildPath) ||
+                                                 excluder.matches(dstChildPath)))
                         {
                             continue;
                         }
                         if (dstChild == null)
                         {
                             // A missing destination child means the source is NEWER.
-                            result.add(new AVMDifference(srcVersion, srcChild.getPath(),
-                                       dstVersion,
-                                       dstPath,
-                                       AVMDifference.NEWER));
+                            result.add(new AVMDifference(srcVersion, srcChildPath,
+                                                         dstVersion, dstChildPath,
+                                                         AVMDifference.NEWER));
                             continue;
                         }
                         // Otherwise recursively invoke.
@@ -259,7 +281,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 }
                 // Second special case.  Just as above but reversed.
                 if (dstDesc.isLayeredDirectory() &&
-                    dstDesc.getIndirection().equals(srcDesc.getPath()) && srcVersion < 0 && dstVersion < 0)
+                    dstDesc.getIndirection().equalsIgnoreCase(srcPath) && srcVersion < 0 && dstVersion < 0)
                 {
                     // skip firstLevel (root)
                     if (! firstLevel)
@@ -272,8 +294,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
                             case AVMDifference.NEWER :
                             case AVMDifference.CONFLICT :
                             {
-                                result.add(new AVMDifference(srcVersion, srcDesc.getPath(),
-                                                             dstVersion, dstDesc.getPath(),
+                                result.add(new AVMDifference(srcVersion, srcPath,
+                                                             dstVersion, dstPath,
                                                              dirDiffCode));
                                 return; // short circuit
                             }
@@ -303,18 +325,20 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     {
                         AVMNodeDescriptor dstChild = dstList.get(name);
                         AVMNodeDescriptor srcChild = srcList.get(name);
-                        String srcPath = AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name);
-                        if (excluder != null && (excluder.matches(srcPath) ||
-                                                 excluder.matches(dstChild.getPath())))
+                        
+                        String srcChildPath = AVMNodeConverter.ExtendAVMPath(srcPath, name);
+                        String dstChildPath = dstChild.getPath();
+                        
+                        if (excluder != null && (excluder.matches(srcChildPath) ||
+                                                 excluder.matches(dstChildPath)))
                         {
                             continue;
                         }
                         if (srcChild == null)
                         {
                             // Missing means the source is older.
-                            result.add(new AVMDifference(srcVersion,
-                                                         srcPath,
-                                                         dstVersion, dstChild.getPath(),
+                            result.add(new AVMDifference(srcVersion, srcChildPath,
+                                                         dstVersion, dstChildPath,
                                                          AVMDifference.OLDER));
                             continue;
                         }
@@ -335,18 +359,20 @@ public class AVMSyncServiceImpl implements AVMSyncService
                 {
                     AVMNodeDescriptor srcChild = srcList.get(name);
                     AVMNodeDescriptor dstChild = dstList.get(name);
-                    String dstPath = AVMNodeConverter.ExtendAVMPath(dstDesc.getPath(), name);
-                    if (excluder != null && (excluder.matches(srcChild.getPath()) ||
-                                             excluder.matches(dstPath)))
+                    
+                    String srcChildPath = srcChild.getPath();
+                    String dstChildPath = AVMNodeConverter.ExtendAVMPath(dstPath, name);
+                    
+                    if (excluder != null && (excluder.matches(srcChildPath) ||
+                                             excluder.matches(dstChildPath)))
                     {
                         continue;
                     }
                     if (dstChild == null)
                     {
                         // Not found in the destination means NEWER.
-                        result.add(new AVMDifference(srcVersion, srcChild.getPath(),
-                                                     dstVersion,
-                                                     dstPath,
+                        result.add(new AVMDifference(srcVersion, srcChildPath,
+                                                     dstVersion, dstChildPath,
                                                      AVMDifference.NEWER));
                         continue;
                     }
@@ -362,17 +388,20 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     {
                         continue;
                     }
+                    
                     AVMNodeDescriptor dstChild = dstList.get(name);
-                    String srcPath = AVMNodeConverter.ExtendAVMPath(srcDesc.getPath(), name);
-                    if (excluder != null && (excluder.matches(srcPath) ||
-                                             excluder.matches(dstChild.getPath())))
+                    
+                    String srcChildPath = AVMNodeConverter.ExtendAVMPath(srcPath, name);
+                    String dstChildPath = dstChild.getPath();
+                    
+                    if (excluder != null && (excluder.matches(srcChildPath) ||
+                                             excluder.matches(dstChildPath)))
                     {
                         continue;
                     }
                     // An entry not found in the source is OLDER.
-                    result.add(new AVMDifference(srcVersion,
-                                                 srcPath,
-                                                 dstVersion, dstChild.getPath(),
+                    result.add(new AVMDifference(srcVersion, srcChildPath,
+                                                 dstVersion, dstChildPath,
                                                  AVMDifference.OLDER));
                 }
                 break;

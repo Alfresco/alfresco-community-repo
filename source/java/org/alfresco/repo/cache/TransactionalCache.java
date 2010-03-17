@@ -21,17 +21,17 @@ package org.alfresco.repo.cache;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -83,9 +83,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /** the shared cache that will get updated after commits */
     private SimpleCache<Serializable, Object> sharedCache;
 
-    /** the manager to control Ehcache caches */
-    private CacheManager cacheManager;
-    
     /** the maximum number of elements to be contained in the cache */
     private int maxCacheSize = 500;
     
@@ -145,13 +142,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Set the manager to activate and control the cache instances
-     * 
-     * @param cacheManager
+     * No-op
      */
     public void setCacheManager(CacheManager cacheManager)
     {
-        this.cacheManager = cacheManager;
     }
 
     /**
@@ -185,7 +179,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     public void afterPropertiesSet() throws Exception
     {
         Assert.notNull(name, "name property not set");
-        Assert.notNull(cacheManager, "cacheManager property not set");
         // generate the resource binding key
         resourceKeyTxnData = RESOURCE_KEY_TXN_DATA + "." + name;
         // Refine the log category
@@ -201,30 +194,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         TransactionData data = (TransactionData) AlfrescoTransactionSupport.getResource(resourceKeyTxnData);
         if (data == null)
         {
-            String txnId = AlfrescoTransactionSupport.getTransactionId();
             data = new TransactionData();
             // create and initialize caches
-            data.updatedItemsCache = new Cache(
-                    name + "_"+ txnId + "_updates",
-                    maxCacheSize, false, true, 0, 0);
-            data.removedItemsCache = new Cache(
-                    name + "_" + txnId + "_removes",
-                    maxCacheSize, false, true, 0, 0);
-            try
-            {
-                cacheManager.addCache(data.updatedItemsCache);
-                cacheManager.addCache(data.removedItemsCache);
-            }
-            catch (CacheException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to add txn caches to manager", e);
-            }
-            finally
-            {
-                // ensure that we get the transaction callbacks as we have bound the unique
-                // transactional caches to a common manager
-                AlfrescoTransactionSupport.bindListener(this);
-            }
+            data.updatedItemsCache = new LRUMap(maxCacheSize);
+            data.removedItemsCache = new HashSet<K>(maxCacheSize * 2);
+
+            // ensure that we get the transaction callbacks as we have bound the unique
+            // transactional caches to a common manager
+            AlfrescoTransactionSupport.bindListener(this);
             AlfrescoTransactionSupport.bindResource(resourceKeyTxnData, data);
         }
         return data;
@@ -266,9 +243,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 keys.addAll(backingKeys);
             }
             // add keys
-            keys.addAll((Collection<K>) txnData.updatedItemsCache.getKeys());
+            keys.addAll(txnData.updatedItemsCache.keySet());
             // remove keys
-            keys.removeAll((Collection<K>) txnData.removedItemsCache.getKeys());
+            keys.removeAll(txnData.removedItemsCache);
         }
         else
         {
@@ -324,7 +301,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     if (!txnData.isClearOn)   // deletions cache only useful before a clear
                     {
                         // check to see if the key is present in the transaction's removed items
-                        if (txnData.removedItemsCache.get(key) != null)
+                        if (txnData.removedItemsCache.contains(key))
                         {
                             // it has been removed in this transaction
                             if (isDebugEnabled)
@@ -338,10 +315,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     }
                     
                     // check for the item in the transaction's new/updated items
-                    Element element = txnData.updatedItemsCache.get(key);
-                    if (element != null)
+                    CacheBucket<V> bucket = (CacheBucket<V>) txnData.updatedItemsCache.get(key);
+                    if (bucket != null)
                     {
-                        CacheBucket<V> bucket = (CacheBucket<V>) element.getValue();
                         V value = bucket.getValue();
                         // element was found in transaction-specific updates/additions
                         if (isDebugEnabled)
@@ -429,7 +405,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 // we have an active transaction - add the item into the updated cache for this transaction
                 // are we in an overflow condition?
-                if (txnData.updatedItemsCache.getMemoryStoreSize() >= maxCacheSize)
+                if (txnData.updatedItemsCache.isFull())
                 {
                     // overflow about to occur or has occured - we can only guarantee non-stale
                     // data by clearing the shared cache after the transaction.  Also, the
@@ -456,8 +432,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     // The value didn't exist before
                     bucket = new NewCacheBucket<V>(nullMarker, value);
                 }
-                Element element = new Element(key, bucket);
-                txnData.updatedItemsCache.put(element);
+                txnData.updatedItemsCache.put(key, bucket);
                 // remove the item from the removed cache, if present
                 txnData.removedItemsCache.remove(key);
                 // done
@@ -517,7 +492,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 else
                 {
                     // are we in an overflow condition?
-                    if (txnData.removedItemsCache.getMemoryStoreSize() >= maxCacheSize)
+                    if (txnData.removedItemsCache.size() >= maxCacheSize)
                     {
                         // overflow about to occur or has occured - we can only guarantee non-stale
                         // data by clearing the shared cache after the transaction.  Also, the
@@ -539,9 +514,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         else
                         {
                             // Create a bucket to remove the value from the shared cache
-                            CacheBucket<V> removeBucket = new RemoveCacheBucket<V>(existingValue);
-                            Element element = new Element(key, removeBucket);
-                            txnData.removedItemsCache.put(element);
+                            txnData.removedItemsCache.add(key);
                         }
                     }
                 }
@@ -590,8 +563,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // and also serves to ensure that the shared cache will be ignored
                 // for the remainder of the transaction
                 txnData.isClearOn = true;
-                txnData.updatedItemsCache.removeAll();
-                txnData.removedItemsCache.removeAll();
+                txnData.updatedItemsCache.clear();
+                txnData.removedItemsCache.clear();
             }
         }
         else            // no transaction
@@ -654,23 +627,22 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // transfer any removed items
                 // any removed items will have also been removed from the in-transaction updates
                 // propogate the deletes to the shared cache
-                List<Serializable> keys = txnData.removedItemsCache.getKeys();
-                for (Serializable key : keys)
+                for (Serializable key : txnData.removedItemsCache)
                 {
                     sharedCache.remove(key);
                 }
                 if (isDebugEnabled)
                 {
-                    logger.debug("Removed " + keys.size() + " values from shared cache");
+                    logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache");
                 }
             }
 
             // transfer updates
-            List<Serializable> keys = txnData.updatedItemsCache.getKeys();
-            for (Serializable key : keys)
+            Set<K> keys = (Set<K>) txnData.updatedItemsCache.keySet();
+            for (Map.Entry<K, CacheBucket<V>> entry : (Set<Map.Entry<K, CacheBucket<V>>>) txnData.updatedItemsCache.entrySet())
             {
-                Element element = txnData.updatedItemsCache.get(key);
-                CacheBucket<V> bucket = (CacheBucket<V>) element.getObjectValue();
+                K key = entry.getKey();
+                CacheBucket<V> bucket = entry.getValue();
                 bucket.doPostCommit(sharedCache, key);
             }
             if (isDebugEnabled)
@@ -705,8 +677,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     private void removeCaches(TransactionData txnData)
     {
-        cacheManager.removeCache(txnData.updatedItemsCache.getName());
-        cacheManager.removeCache(txnData.removedItemsCache.getName());
         txnData.isClosed = true;
     }
     
@@ -830,30 +800,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         }
     }
     
-    /**
-     * Data holder to keep track of cache removals.  This bucket assumes the previous existence
-     * of an entry in the shared cache.
-     */
-    private static class RemoveCacheBucket<BV> extends UpdateCacheBucket<BV>
-    {
-        private static final long serialVersionUID = -7736719065158540252L;
-
-        public RemoveCacheBucket(BV originalValue)
-        {
-            super(originalValue, null);
-        }
-        public void doPostCommit(SimpleCache<Serializable, Object> sharedCache, Serializable key)
-        {
-            // We remove the shared entry whether it has moved on or not
-            sharedCache.remove(key);
-        }
-    }
-    
     /** Data holder to bind data to the transaction */
     private class TransactionData
     {
-        private Cache updatedItemsCache;
-        private Cache removedItemsCache;
+        private LRUMap updatedItemsCache;
+        private Set<K> removedItemsCache;
         private boolean haveIssuedFullWarning;
         private boolean isClearOn;
         private boolean isClosed;

@@ -22,7 +22,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -38,7 +40,9 @@
         maxElementsInMemory="50"
         eternal="true"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -53,7 +57,9 @@
         name="org.hibernate.cache.UpdateTimestampsCache"
         maxElementsInMemory="2000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -70,7 +76,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -87,7 +95,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -104,7 +114,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -121,7 +133,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -138,7 +152,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -155,7 +171,9 @@
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -170,7 +188,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -185,7 +205,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl"
         maxElementsInMemory="5000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -200,7 +222,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl"
         maxElementsInMemory="5000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -215,7 +239,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -230,7 +256,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -245,7 +273,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAuthorityAliasImpl"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -260,7 +290,9 @@
         name="org.alfresco.repo.domain.hibernate.DbAuthorityImpl"
         maxElementsInMemory="10000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -275,7 +307,9 @@
         name="org.alfresco.repo.domain.hibernate.DbPermissionImpl"
         maxElementsInMemory="500"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -290,7 +324,9 @@
         name="org.alfresco.repo.audit.hibernate.AuditConfigImpl"
         maxElementsInMemory="2"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -305,7 +341,9 @@
         name="org.alfresco.repo.audit.hibernate.AuditDateImpl"
         maxElementsInMemory="2"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -320,7 +358,9 @@
         name="org.alfresco.repo.audit.hibernate.AuditSourceImpl"
         maxElementsInMemory="2000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -335,7 +375,9 @@
         name="org.alfresco.repo.attributes.AttributeImpl"
         maxElementsInMemory="5000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -350,7 +392,9 @@
         name="org.alfresco.repo.attributes.ListEntryImpl"
         maxElementsInMemory="2000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -365,7 +409,9 @@
         name="org.alfresco.repo.attributes.MapEntryImpl"
         maxElementsInMemory="2000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -380,7 +426,9 @@
         name="org.alfresco.repo.attributes.GlobalAttributeEntryImpl"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -397,7 +445,9 @@
         name="org.alfresco.cache.avm.avmEntityCache"
         maxElementsInMemory="10000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -412,7 +462,9 @@
         name="org.alfresco.cache.avm.versionRootEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -427,7 +479,9 @@
         name="org.alfresco.cache.avm.avmNodeCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -442,7 +496,9 @@
         name="org.alfresco.cache.avm.avmStoreCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -457,7 +513,9 @@
         name="org.alfresco.cache.avm.avmNodeAspectsCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -473,7 +531,9 @@
         maxElementsInMemory="1000"
         eternal="false"
         timeToLiveSeconds="300"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -488,7 +548,9 @@
         name="org.alfresco.cache.storeAndNodeIdCache"
         maxElementsInMemory="80000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -503,7 +565,9 @@
         name="org.alfresco.cache.qnameEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -518,7 +582,9 @@
         name="org.alfresco.cache.namespaceEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -533,7 +599,9 @@
         name="org.alfresco.cache.localeIdCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -548,7 +616,9 @@
         name="org.alfresco.cache.mimetypeEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -563,7 +633,9 @@
         name="org.alfresco.cache.encodingEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -578,7 +650,9 @@
         name="org.alfresco.cache.contentDataCache"
         maxElementsInMemory="10000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -593,7 +667,9 @@
         name="org.alfresco.cache.immutableEntityCache"
         maxElementsInMemory="50000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -608,7 +684,9 @@
         name="org.alfresco.cache.parentAssocsCache"
         maxElementsInMemory="80000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -623,7 +701,9 @@
         name="org.alfresco.cache.userToAuthorityCache"
         maxElementsInMemory="5000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -638,7 +718,9 @@
         name="org.alfresco.cache.authorityCache" 
         maxElementsInMemory="5000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -653,7 +735,9 @@
         name="org.alfresco.cache.permissionsAccessCache"
         maxElementsInMemory="50000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -668,7 +752,9 @@
         name="org.alfresco.cache.nodeOwnerCache"
         maxElementsInMemory="20000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -683,7 +769,9 @@
         name="org.alfresco.cache.personCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -698,7 +786,9 @@
         name="org.alfresco.cache.ticketsCache"
         maxElementsInMemory="1000"
         eternal="true"
-        overflowToDisk="true">
+        overflowToDisk="true"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -714,7 +804,9 @@
         name="org.alfresco.cache.sysAdminCache"
         maxElementsInMemory="10"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -729,7 +821,9 @@
         name="org.alfresco.cache.aclCache"
         maxElementsInMemory="50000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
 
             <cacheEventListenerFactory
                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -746,7 +840,9 @@
         name="org.alfresco.cache.globalConfigCache" 
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -764,7 +860,9 @@
         name="org.alfresco.cache.resourceBundleBaseNamesCache" 
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -780,7 +878,9 @@
         name="org.alfresco.cache.loadedResourceBundlesCache" 
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -796,7 +896,9 @@
         name="org.alfresco.cache.messagesCache"
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -814,7 +916,9 @@
         name="org.alfresco.cache.compiledModelsCache" 
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -830,7 +934,9 @@
         name="org.alfresco.cache.prefixesCache" 
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -849,7 +955,9 @@
         name="org.alfresco.cache.tenantsCache" 
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -867,7 +975,9 @@
         name="org.alfresco.cache.tenantFileStoresCache"
         maxElementsInMemory="10000"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
@@ -885,7 +995,9 @@
         name="org.alfresco.cache.webScriptsRegistryCache"
         maxElementsInMemory="100"
         eternal="true"
-        overflowToDisk="false">
+        overflowToDisk="false"
+        statistics="false"
+        >
         
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"

@@ -4,15 +4,18 @@
 <!-- sample bean configuration to test cache configurations -->
 <beans>
    
-   <bean name="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" >
+   <bean name="testEHCacheManager" class="org.alfresco.repo.cache.EhCacheManagerFactoryBean" >
       <property name="configLocation">
-         <value>classpath:alfresco/ehcache-default.xml</value>
+         <value>classpath:cache-test/cache-test-config.xml</value>
       </property>
    </bean>
    
    <bean name="ehCache1" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="testEHCacheManager" />
+            </property>
             <property name="cacheName">
                <value>cache1</value>
             </property>
@@ -23,6 +26,9 @@
    <bean name="backingCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="testEHCacheManager" />
+            </property>
             <property name="cacheName">
                <value>backingCache</value>
             </property>
@@ -34,20 +40,20 @@
       <property name="sharedCache">
          <ref bean="backingCache" />
       </property>
-      <property name="cacheManager" >
-         <ref bean="ehCacheManager" />
-      </property>
       <property name="name">
          <value>transactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>20000</value>
+         <value>200000</value>
       </property>
    </bean>
    
    <bean name="objectCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="testEHCacheManager" />
+            </property>
             <property name="cacheName">
                <value>objectCache</value>
             </property>

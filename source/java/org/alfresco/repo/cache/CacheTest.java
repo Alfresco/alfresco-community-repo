@@ -36,7 +36,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @see org.alfresco.repo.cache.EhCacheAdapter
@@ -45,9 +44,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class CacheTest extends TestCase
 {
-    private static ApplicationContext ctx =new ClassPathXmlApplicationContext(
-            new String[] {"classpath:cache-test-context.xml", ApplicationContextHelper.CONFIG_LOCATIONS[0]}
-            );
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(
+            new String[] {
+                    "classpath:cache-test/cache-test-context.xml",
+                    ApplicationContextHelper.CONFIG_LOCATIONS[0]});
     
     private ServiceRegistry serviceRegistry;
     private SimpleCache<String, Object> standaloneCache;
@@ -77,9 +77,9 @@ public class CacheTest extends TestCase
     
     public void testSetUp() throws Exception
     {
-        CacheManager cacheManager = (CacheManager) ctx.getBean("ehCacheManager");
+        CacheManager cacheManager = (CacheManager) ctx.getBean("testEHCacheManager");
         assertNotNull(cacheManager);
-        CacheManager cacheManagerCheck = (CacheManager) ctx.getBean("ehCacheManager");
+        CacheManager cacheManagerCheck = (CacheManager) ctx.getBean("testEHCacheManager");
         assertTrue(cacheManager == cacheManagerCheck);
     
         assertNotNull(serviceRegistry);
@@ -344,7 +344,7 @@ public class CacheTest extends TestCase
      */
     public void testPerformance() throws Exception
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
             int count = (int) Math.pow(10D, (double)i);
             
@@ -368,6 +368,32 @@ public class CacheTest extends TestCase
                     "   count: " + count + "\n" +
                     "   direct: " + timePlain/((long)count) + " ns\\count \n" + 
                     "   transaction: " + timeTxn/((long)count) + " ns\\count"); 
+        }
+    }
+    
+    /**
+     * @see #testPerformance()
+     */
+    public static void main(String ... args)
+    {
+        try
+        {
+            CacheTest test = new CacheTest();
+            test.setUp();
+            System.out.println("Press any key to run test ...");
+            System.in.read();
+            test.testPerformance();
+            System.out.println("Press any key to shutdown ...");
+            System.in.read();
+            test.tearDown();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            ApplicationContextHelper.closeApplicationContext();
         }
     }
     
@@ -412,7 +438,7 @@ public class CacheTest extends TestCase
             
             assertEquals("The start value isn't correct", startValue, transactionalCache.get(startKey));
             
-            for (int i = 0; i < 50000; i++)
+            for (int i = 0; i < 205000; i++)
             {
                 Object value = Integer.valueOf(i);
                 String key = value.toString();

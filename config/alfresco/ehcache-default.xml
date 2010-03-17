@@ -11,6 +11,7 @@
         timeToIdleSeconds="0" 
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
+        statistics="false"
         >
     </defaultCache>
 
@@ -20,6 +21,7 @@
         maxElementsInMemory="50" 
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 0.4MB memory required -->
     <cache 
@@ -27,6 +29,7 @@
         maxElementsInMemory="2000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 40MB memory required -->
     <cache 
@@ -34,6 +37,7 @@
         maxElementsInMemory="50000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 15MB memory required -->
     <cache 
@@ -41,6 +45,7 @@
         maxElementsInMemory="40000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 10MB memory required -->
     <cache 
@@ -48,6 +53,7 @@
         maxElementsInMemory="20000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 250MB memory required -->
     <cache 
@@ -55,6 +61,7 @@
         maxElementsInMemory="200000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- general use node associations are not common  -->
     <cache 
@@ -62,6 +69,7 @@
         maxElementsInMemory="5000" 
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- low numbers of objects expected -->
     <cache 
@@ -69,6 +77,7 @@
         maxElementsInMemory="100" 
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- Permission related caches -->
     <!-- approx 1MB memory required -->    
@@ -77,6 +86,7 @@
         maxElementsInMemory="1000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 5MB memory required -->
     <cache 
@@ -84,6 +94,7 @@
         maxElementsInMemory="5000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 5MB memory required -->
     <cache 
@@ -91,6 +102,7 @@
         maxElementsInMemory="5000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 1MB memory required -->    
     <cache 
@@ -98,6 +110,7 @@
         maxElementsInMemory="1000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 1MB memory required -->    
      <cache 
@@ -105,6 +118,7 @@
         maxElementsInMemory="1000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 1MB memory required -->    
     <cache 
@@ -112,6 +126,7 @@
         maxElementsInMemory="1000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 10MB memory required -->
     <cache 
@@ -119,6 +134,7 @@
         maxElementsInMemory="10000"        
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- approx 1MB memory required -->
     <cache 
@@ -126,6 +142,7 @@
         maxElementsInMemory="500"          
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- Audit caches -->
     <cache 
@@ -133,18 +150,21 @@
         maxElementsInMemory="2"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.repo.audit.hibernate.AuditDateImpl" 
         maxElementsInMemory="2"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.repo.audit.hibernate.AuditSourceImpl" 
         maxElementsInMemory="2000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <!-- Attribute Service Caches. -->
     <cache
@@ -152,24 +172,28 @@
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache
         name="org.alfresco.repo.attributes.ListEntryImpl"
         maxElementsInMemory="2000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache
         name="org.alfresco.repo.attributes.MapEntryImpl"
         maxElementsInMemory="2000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache
         name="org.alfresco.repo.attributes.GlobalAttributeEntryImpl"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
 
     <!-- AVM caches -->
@@ -179,6 +203,7 @@
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <cache
@@ -186,6 +211,7 @@
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <cache
@@ -193,6 +219,7 @@
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <cache
@@ -200,6 +227,7 @@
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <cache
@@ -207,6 +235,7 @@
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <!-- Internally used caches -->
@@ -216,102 +245,119 @@
         eternal="false"
         timeToLiveSeconds="300"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.qnameEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.namespaceEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.localeIdCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.mimetypeEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.encodingEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.contentDataCache"
         maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.immutableEntityCache"
         maxElementsInMemory="50000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.storeAndNodeIdCache"
         maxElementsInMemory="80000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.parentAssocsCache"
         maxElementsInMemory="80000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.userToAuthorityCache" 
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.authorityCache" 
         maxElementsInMemory="5000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.permissionsAccessCache" 
         maxElementsInMemory="50000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.nodeOwnerCache" 
         maxElementsInMemory="20000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.personCache" 
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.ticketsCache" 
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="true"
+        statistics="false"
         />
     <cache 
         name="org.alfresco.cache.aclCache" 
         maxElementsInMemory="50000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <!-- Web Client Config (tenant-based) -->
@@ -321,6 +367,7 @@
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <!-- Messages I18N (tenant-based) -->
@@ -330,6 +377,7 @@
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <cache 
@@ -337,6 +385,7 @@
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <cache 
@@ -344,6 +393,7 @@
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <!-- Dictionary / Namespace (tenant-based) -->
@@ -354,6 +404,7 @@
         maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
 
 	<!-- dictionary namespaces -->
@@ -362,6 +413,7 @@
         maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <!-- Tenants Cache -->
@@ -371,6 +423,7 @@
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
 
     <!-- Tenant-based Routing File Content Store -->
@@ -380,6 +433,7 @@
         maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
         
     <!-- Web Scripts Registry -->
@@ -389,6 +443,7 @@
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
 
     <!-- Routing Content Store -->
@@ -398,6 +453,7 @@
         maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
+        statistics="false"
         />
 
 </ehcache>

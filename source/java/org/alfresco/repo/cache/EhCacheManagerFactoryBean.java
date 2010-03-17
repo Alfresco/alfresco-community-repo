@@ -43,6 +43,13 @@ import org.springframework.core.io.Resource;
  */
 public class EhCacheManagerFactoryBean implements FactoryBean, InitializingBean, DisposableBean
 {
+    static
+    {
+        // https://jira.terracotta.org/jira/browse/EHC-652
+        // Force old-style LruMemoryStore
+        System.setProperty("net.sf.ehcache.use.classic.lru", "true");
+    }
+    
     protected final Log logger = LogFactory.getLog(EhCacheManagerFactoryBean.class);
 
     private Resource configLocation;

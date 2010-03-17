@@ -63,6 +63,13 @@ import org.springframework.util.ResourceUtils;
  */
 public class InternalEhCacheManagerFactoryBean implements FactoryBean<CacheManager>, CacheProvider
 {
+    static
+    {
+        // https://jira.terracotta.org/jira/browse/EHC-652
+        // Force old-style LruMemoryStore
+        System.setProperty("net.sf.ehcache.use.classic.lru", "true");
+    }
+    
     public static final String CUSTOM_CONFIGURATION_FILE = "classpath:alfresco/extension/ehcache-custom.xml";
     public static final String DEFAULT_CONFIGURATION_FILE = "classpath:alfresco/ehcache-default.xml";
     

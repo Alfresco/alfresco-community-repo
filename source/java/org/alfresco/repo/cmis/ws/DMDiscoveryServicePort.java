@@ -83,7 +83,8 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         {
             options.setMaxItems(parameters.getMaxItems().getValue().intValue());
         }
-        boolean includeAllowableActions = (null != parameters.getIncludeAllowableActions()) ? (parameters.getIncludeAllowableActions().getValue()) : (false);
+        boolean includeAllowableActions = ((null != parameters.getIncludeAllowableActions()) && (null != parameters.getIncludeAllowableActions().getValue())) ? (parameters
+                .getIncludeAllowableActions().getValue()) : (false);
         String renditionFilter = (null != parameters.getRenditionFilter()) ? (parameters.getRenditionFilter().getValue()) : null;
 
         // execute query

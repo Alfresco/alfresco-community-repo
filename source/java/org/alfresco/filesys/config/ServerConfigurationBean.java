@@ -1441,6 +1441,16 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                     throw new AlfrescoRuntimeException("NFS server port out of valid range");
             }
 
+            // Check for an RPC registration port
+            
+            Integer rpcRegisterPort = nfsConfigBean.getRpcRegisterPort();
+            if ( rpcRegisterPort != null)
+            {
+                nfsConfig.setRPCRegistrationPort( rpcRegisterPort);
+                if ( nfsConfig.getRPCRegistrationPort() < 0 || nfsConfig.getRPCRegistrationPort() >= 65535)
+                    throw new AlfrescoRuntimeException("RPC registrtion port out of valid range");
+            }
+            
             // Check for NFS debug flags
 
             String flags = nfsConfigBean.getDebugFlags();

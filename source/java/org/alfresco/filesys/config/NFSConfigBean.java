@@ -62,6 +62,9 @@ public class NFSConfigBean
     /** The rpc authenticator. */
     private RpcAuthenticator rpcAuthenticator;
 
+    /** RPC register port */
+    private Integer rpcRegisterPort;
+    
     /**
      * Checks if is server enabled.
      * 
@@ -293,4 +296,23 @@ public class NFSConfigBean
         this.rpcAuthenticator = rpcAuthenticator;
     }
 
+    /**
+     * Set the RPC registration port
+     * 
+     * @param rpcRegPort Integer
+     */
+    public void setRpcRegisterPort(Integer rpcRegPort)
+    {
+        this.rpcRegisterPort = rpcRegPort;
+    }
+    
+    /**
+     * Return the RPC register port
+     * 
+     * @return Integer
+     */
+    public Integer getRpcRegisterPort()
+    {
+        return rpcRegisterPort;
+    }
 }

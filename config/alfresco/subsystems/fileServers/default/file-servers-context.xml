@@ -260,6 +260,11 @@
 		  <value>${nfs.portMapperPort}</value>  
 	  </property>
 	   
+	 <!-- RPC registration port -->
+	 <property name="rpcRegisterPort">
+		 <value>${nfs.rpcRegisterPort}</value>
+	 </property>
+	   
 	  <!-- Enable/disable the builtin portMapper service --> 
 	  <property name="portMapperEnabled">
 		  <value>${nfs.portMapperEnabled}</value>

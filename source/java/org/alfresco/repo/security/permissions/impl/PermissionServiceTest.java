@@ -2488,6 +2488,20 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
     }
 
+    public void testClearPermissionNullAuthority()
+    {
+        assertEquals(0, permissionService.getAllSetPermissions(rootNodeRef).size());
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED));
+        assertEquals(2, permissionService.getAllSetPermissions(rootNodeRef).size());
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "lemur", AccessStatus.ALLOWED));
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ_CHILDREN), "lemur", AccessStatus.ALLOWED));
+        assertEquals(4, permissionService.getAllSetPermissions(rootNodeRef).size());
+
+        permissionService.clearPermission(rootNodeRef, null);
+        assertEquals(0, permissionService.getAllSetPermissions(rootNodeRef).size());
+    }
+
     public void testGetAllSetPermissionsFromAllNodes()
     {
         runAs(AuthenticationUtil.getAdminUserName());

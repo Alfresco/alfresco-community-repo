@@ -58,6 +58,7 @@ import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -1945,7 +1946,7 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             if (pattern.getAuthority() != null)
             {
                 DbAuthority authority = (DbAuthority) result.get("authority");
-                if (!pattern.getAuthority().equals(authority.getAuthority()))
+                if ((pattern.getAuthorityType() != AuthorityType.WILDCARD) && !pattern.getAuthority().equals(authority.getAuthority()))
                 {
                     return false;
                 }

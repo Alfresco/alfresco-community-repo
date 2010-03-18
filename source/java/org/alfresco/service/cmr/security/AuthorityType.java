@@ -29,6 +29,7 @@ package org.alfresco.service.cmr.security;
  * <li>OWNER - the special authority that applies to the owner of a node
  * <li>EVERYONE - the special authority that is interpreted as everyone
  * <li>GUEST - the special authority that applies to a GUEST (An unknown, unauthenticated user)
+ * <li>WILDCARD - the set of all authorities (including the guest user)
  * </ol>
  * 
  * @author Andy Hind
@@ -225,6 +226,33 @@ public enum AuthorityType
         {
             return 6;
         }
+    },
+    WILDCARD
+    {
+        public boolean isFixedString()
+        {
+            return false;
+        }
+
+        public String getFixedString()
+        {
+            return "";
+        }
+
+        public boolean isPrefixed()
+        {
+            return false;
+        }
+
+        public String getPrefixString()
+        {
+            return "";
+        }
+
+        public int getOrderPosition()
+        {
+            return 7;
+        }
     };
 
     public abstract boolean isFixedString();
@@ -245,34 +273,43 @@ public enum AuthorityType
     public static AuthorityType getAuthorityType(String authority)
     {
         AuthorityType authorityType;
-        if (authority.equals(PermissionService.ADMINISTRATOR_AUTHORITY))
+
+        if(null == authority)
         {
-            authorityType = AuthorityType.ADMIN;
-        }
-        if (authority.equals(PermissionService.ALL_AUTHORITIES))
-        {
-            authorityType = AuthorityType.EVERYONE;
-        }
-        else if (authority.equals(PermissionService.OWNER_AUTHORITY))
-        {
-            authorityType = AuthorityType.OWNER;
-        }
-        else if (authority.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
-        {
-            authorityType = AuthorityType.GUEST;
-        }
-        else if (authority.startsWith(PermissionService.GROUP_PREFIX))
-        {
-            authorityType = AuthorityType.GROUP;
-        }
-        else if (authority.startsWith(PermissionService.ROLE_PREFIX))
-        {
-            authorityType = AuthorityType.ROLE;
+            authorityType = AuthorityType.WILDCARD;
         }
         else
         {
-            authorityType = AuthorityType.USER;
+            if (authority.equals(PermissionService.ADMINISTRATOR_AUTHORITY))
+            {
+                authorityType = AuthorityType.ADMIN;
+            }
+            if (authority.equals(PermissionService.ALL_AUTHORITIES))
+            {
+                authorityType = AuthorityType.EVERYONE;
+            }
+            else if (authority.equals(PermissionService.OWNER_AUTHORITY))
+            {
+                authorityType = AuthorityType.OWNER;
+            }
+            else if (authority.equalsIgnoreCase(PermissionService.GUEST_AUTHORITY))
+            {
+                authorityType = AuthorityType.GUEST;
+            }
+            else if (authority.startsWith(PermissionService.GROUP_PREFIX))
+            {
+                authorityType = AuthorityType.GROUP;
+            }
+            else if (authority.startsWith(PermissionService.ROLE_PREFIX))
+            {
+                authorityType = AuthorityType.ROLE;
+            }
+            else
+            {
+                authorityType = AuthorityType.USER;
+            }
         }
+
         return authorityType;
     }
 }

@@ -14,7 +14,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. 
+ */
 
 package org.alfresco.repo.avm;
 
@@ -51,9 +52,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.wcm.util.WCMUtil;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * An interactive console for the AVM repository.
@@ -433,7 +434,7 @@ public class AVMInterpreter
                 
                 String storeName = command[1];
                 int ver =Integer.parseInt(command[2]);
-                String wpStoreId = getWebProject(storeName);
+                String wpStoreId = WCMUtil.getWebProject(fService, storeName);
                 if ((wpStoreId != null) && (ver <= 2))
                 {
                     return "WCM store - cannot delete versions 0-2";
@@ -447,7 +448,7 @@ public class AVMInterpreter
                     return "Syntax Error.";
                 }
                 String storeName = command[1];
-                String wpStoreId = getWebProject(storeName);
+                String wpStoreId = WCMUtil.getWebProject(fService, storeName);
                 
                 Date fromDate = ISO8601DateFormat.parse(command[2]);
                 Date toDate = ISO8601DateFormat.parse(command[3]);
@@ -970,15 +971,5 @@ public class AVMInterpreter
             elements[0] = valueString;
         }
         return elements;
-    }
-    
-    private String getWebProject(String name)
-    {   
-        String wpStoreId = WCMUtil.getWebProjectStoreId(name);
-        if (WCMUtil.getWebProjectNodeFromWebProjectStore(fService, wpStoreId) != null)
-        {
-            return wpStoreId;
-        }
-        return null;
     }
 }

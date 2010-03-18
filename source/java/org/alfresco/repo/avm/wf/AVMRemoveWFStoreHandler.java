@@ -18,16 +18,17 @@
  */
 package org.alfresco.repo.avm.wf;
 
-import java.util.Map;
+import java.util.List;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.util.WCMUtil;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
@@ -40,12 +41,11 @@ import org.springframework.beans.factory.BeanFactory;
 public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler 
 {
     private static final long serialVersionUID = 4113360751217684995L;
-
+    
     /**
-     * The AVMService instance.
+     * The WCM SandboxService instance.
      */
-    private AVMService fAVMService;    
-
+    private SandboxService sbService;
     
     /**
      * Initialize service references.
@@ -54,9 +54,9 @@ public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory) 
     {
-        fAVMService = (AVMService)factory.getBean("AVMService");
+        sbService = (SandboxService)factory.getBean("SandboxService");
     }
-
+    
     /**
      * Do the actual work.
      * @param executionContext The context to get stuff from.
@@ -69,18 +69,19 @@ public class AVMRemoveWFStoreHandler extends JBPMSpringActionHandler
         // retrieve submitted package
         NodeRef pkg = ((JBPMNode)executionContext.getContextInstance().getVariable("bpm_package")).getNodeRef();
         Pair<Integer, String> pkgPath = AVMNodeConverter.ToAVMVersionPath(pkg);
-
-        // Now delete the stores in the workflow sandbox.
-        String [] storePath = pkgPath.getSecond().split(":");
-        // Get the sandbox id for the package.
-        Map<QName, PropertyValue> matches = fAVMService.queryStorePropertyKey(storePath[0], QName.createQName(null, ".sandbox-id%"));
-        QName sandboxID = matches.keySet().iterator().next();
-        // Get all the stores in the sandbox.
-        Map<String, Map<QName, PropertyValue>> stores = fAVMService.queryStoresPropertyKeys(sandboxID);
-        for (String storeName : stores.keySet())
+        
+        // Now delete the stores in the WCM workflow sandbox
+        final String avmPath = pkgPath.getSecond();
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            fAVMService.purgeStore(storeName);
-        }
+            public Object doWork() throws Exception
+            {
+                sbService.deleteSandbox(WCMUtil.getSandboxStoreId(avmPath));
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
     }
-    
 }

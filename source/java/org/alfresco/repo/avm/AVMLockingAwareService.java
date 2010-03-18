@@ -702,7 +702,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.removeNode(parent, name);
         String[] storePath = AVMUtil.splitPath(parent);
         fService.createSnapshot(storePath[0], null, "Removed "+path);
-        String webProject = getWebProject(storePath[0]);
+        String webProject = WCMUtil.getWebProject(fService, storePath[0]);
         if (webProject != null)
         {
             fLockingService.removeLocksInDirectory(webProject, storePath[0], AVMUtil.extendAVMPath(storePath[1], name));
@@ -718,7 +718,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.removeNode(path);
         String[] storePath = AVMUtil.splitPath(path);
         fService.createSnapshot(storePath[0], null, "Removed "+path);
-        String webProject = getWebProject(storePath[0]);
+        String webProject = WCMUtil.getWebProject(fService, storePath[0]);
         if (webProject != null)
         {
             fLockingService.removeLocksInDirectory(webProject, storePath[0], storePath[1]);
@@ -749,8 +749,8 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             String[] srcStorePath = AVMUtil.splitPath(srcPath);
             String[] dstStorePath = AVMUtil.splitPath(dstPath);
             
-            String srcWebProject = getWebProject(srcStorePath[0]);
-            String dstWebProject = getWebProject(dstStorePath[0]);
+            String srcWebProject = WCMUtil.getWebProject(fService, srcStorePath[0]);
+            String dstWebProject = WCMUtil.getWebProject(fService, dstStorePath[0]);
             
             if ((dstWebProject != null) && (dstWebProject.equals(srcWebProject)))
             {
@@ -889,16 +889,6 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.uncover(dirPath, name);
     }
     
-    private String getWebProject(String name)
-    {	
-    	String wpStoreId = WCMUtil.getWebProjectStoreId(name);
-        if (WCMUtil.getWebProjectNodeFromWebProjectStore(fService, wpStoreId) != null)
-        {
-            return wpStoreId;
-        }
-        return null;
-    }
-
     private void grabLock(String path)
     {
         AVMNodeDescriptor desc = fService.lookup(-1, path, false);
@@ -907,7 +897,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             return;
         }
         String[] storePath = AVMUtil.splitPath(path);
-        String webProject = getWebProject(storePath[0]);
+        String webProject = WCMUtil.getWebProject(fService, storePath[0]);
         if (webProject != null && webProject.equals(storePath[0]))
         {
             // Don't do locking in staging.

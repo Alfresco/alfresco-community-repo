@@ -848,6 +848,8 @@ public interface AVMService
      * @param store      The name of the store.
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return           A Map of the matching key value pairs.
+     * 
+     * @deprecated
      */
     public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern);
     
@@ -958,6 +960,8 @@ public interface AVMService
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return           A Map of store names to Maps of property key value pairs that match
      * the pattern.
+     * 
+     * @deprecated
      */
     public Map<String, Map<QName, PropertyValue>>
         queryStoresPropertyKeys(QName keyPattern);

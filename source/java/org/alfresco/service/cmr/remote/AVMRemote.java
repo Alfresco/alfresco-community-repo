@@ -1,5 +1,5 @@
-/*-----------------------------------------------------------------------------
-*  Copyright 2005-2010 Alfresco Software Limited.
+/*
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -15,8 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
-*
-*----------------------------------------------------------------------------*/
+ */
 
 package org.alfresco.service.cmr.remote;
 
@@ -828,6 +827,8 @@ public interface AVMRemote
      * @param store      The name of the store.
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return           A Map of the matching key value pairs.
+     * 
+     * @deprecated
      */
     public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern);
 
@@ -838,6 +839,8 @@ public interface AVMRemote
      * @param store      The name of the store.
      * @param keyPattern The sql 'like' pattern, inserted into a QName.
      * @return           A Map of the matching key value pairs.
+     * 
+     * @deprecated
      */
     public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKey(QName keyPattern);
     

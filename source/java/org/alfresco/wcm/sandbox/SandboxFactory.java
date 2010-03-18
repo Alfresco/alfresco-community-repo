@@ -225,14 +225,13 @@ public final class SandboxFactory extends WCMUtil
       
       
       // tag all related stores to indicate that they are part of a single sandbox
-      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      final String sandboxGuid = GUID.generate();
       
-      avmService.setStoreProperty(stagingStoreName,
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
-      avmService.setStoreProperty(previewStoreName,
-                                  sandboxIdProp,
-                                  new PropertyValue(DataTypeDefinition.TEXT, null));
+      props = new HashMap<QName, PropertyValue>(2);
+      addSandboxGuid(sandboxGuid, props);
+      
+      avmService.setStoreProperties(stagingStoreName, props);
+      avmService.setStoreProperties(previewStoreName, props);
       
       if (logger.isTraceEnabled())
       {
@@ -572,7 +571,7 @@ public final class SandboxFactory extends WCMUtil
           return userSandboxInfo;
       }
       
-      QName sandboxIdProp = QName.createQName(null, SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      final String sandboxGuid = GUID.generate();
       
       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
       
@@ -582,10 +581,11 @@ public final class SandboxFactory extends WCMUtil
       props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
       // tag the store with the base name of the website so that corresponding staging areas can be found.
       props.put(SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(DataTypeDefinition.TEXT, storeId));
+      
       // tag the store, oddly enough, with its own store name for querying.
-      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + userStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxPrefix(userStoreName, props);
       // tag all related stores to indicate that they are part of a single sandbox
-      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxGuid(sandboxGuid, props);
       // tag the store with the DNS name property
       addStoreDNSPath(userStoreName, props, storeId, username);
       // The user store depends on the main staging store (dist=1)
@@ -630,8 +630,9 @@ public final class SandboxFactory extends WCMUtil
       props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
       // tag the store with its own store name for querying.
       props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      
       // tag all related stores to indicate that they are part of a single sandbox
-      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxGuid(sandboxGuid, props);
       // tag the store with the DNS name property
       addStoreDNSPath(previewStoreName, props, storeId, username, "preview");
       // The preview user store depends on the main user store (dist=1)
@@ -698,7 +699,7 @@ public final class SandboxFactory extends WCMUtil
       String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
       String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
       
-      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      final String sandboxGuid = GUID.generate();
       
       // tag store with properties
       Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(6);
@@ -706,10 +707,11 @@ public final class SandboxFactory extends WCMUtil
       props.put(SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
       // tag the store with the base name of the website so that corresponding staging areas can be found.
       props.put(SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(DataTypeDefinition.TEXT, storeId));
+      
       // tag the store, oddly enough, with its own store name for querying.
-      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxPrefix(mainStoreName, props);
       // tag all related stores to indicate that they are part of a single sandbox
-      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxGuid(sandboxGuid, props);
       // tag the store with the DNS name property
       addStoreDNSPath(mainStoreName, props, storeId, packageName);
       // The main workflow store depends on the main staging store (dist=1)
@@ -739,8 +741,10 @@ public final class SandboxFactory extends WCMUtil
       props.put(SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
       // tag the store with its own store name for querying.
       props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      
       // tag all related stores to indicate that they are part of a single sandbox
-      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxGuid(sandboxGuid, props);
+      
       // tag the store with the DNS name property
       addStoreDNSPath(previewStoreName, props, storeId, packageName, "preview");
       // The preview workflow store depends on the main workflow store (dist=1)
@@ -800,7 +804,7 @@ public final class SandboxFactory extends WCMUtil
       String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
       String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
       
-      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      final String sandboxGuid = GUID.generate();
       
       // tag store with properties
       Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(6);
@@ -808,14 +812,15 @@ public final class SandboxFactory extends WCMUtil
       props.put(SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
       // tag the store with the base name of the website so that corresponding staging areas can be found.
       props.put(SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(DataTypeDefinition.TEXT, storeId));
+      
       // tag the store, oddly enough, with its own store name for querying.
-      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+      addSandboxPrefix(mainStoreName, props);
+      // tag all related stores to indicate that they are part of a single sandbox
+      addSandboxGuid(sandboxGuid, props);
       // tag the store with the DNS name property
       addStoreDNSPath(mainStoreName, props, storeId, packageName);
       // The main workflow store depends on the main staging store (dist=1)
       addStoreBackgroundLayer(props, stagingStoreName, 1);
-      // tag all related stores to indicate that they are part of a single sandbox
-      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
       
       avmService.createStore(mainStoreName, props);
       
@@ -853,7 +858,7 @@ public final class SandboxFactory extends WCMUtil
        String packageName = "workflow-" + GUID.generate();
        String workflowStoreName = userStore + STORE_SEPARATOR + packageName;
        
-       final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+       final String sandboxGuid = GUID.generate();
        
        // tag store with properties
        Map<QName, PropertyValue> props = new HashMap<QName, PropertyValue>(7);
@@ -861,16 +866,17 @@ public final class SandboxFactory extends WCMUtil
        props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN, new PropertyValue(DataTypeDefinition.TEXT, null));
        // tag the store with the name of the author's store this one is layered over
        props.put(SandboxConstants.PROP_AUTHOR_NAME, new PropertyValue(DataTypeDefinition.TEXT, userStore));
+       
        // tag the store, oddly enough, with its own store name for querying.
-       props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + workflowStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+       addSandboxPrefix(workflowStoreName, props);
+       // tag all related stores to indicate that they are part of a single sandbox
+       addSandboxGuid(sandboxGuid, props);
        // tag the store with the DNS name property
        addStoreDNSPath(workflowStoreName, props, stagingStore, packageName);
        // the main workflow store depends on the main user store (dist=1)
        addStoreBackgroundLayer(props, userStore, 1);
        // The main workflow store depends on the main staging store (dist=2)
        addStoreBackgroundLayer(props, stagingStore, 2);
-       // tag all related stores to indicate that they are part of a single sandbox
-       props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
        
        avmService.createStore(workflowStoreName, props);
        
@@ -896,6 +902,9 @@ public final class SandboxFactory extends WCMUtil
        props.put(SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW, new PropertyValue(DataTypeDefinition.TEXT, null));
        // tag the store with its own store name for querying.
        props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName), new PropertyValue(DataTypeDefinition.TEXT, null));
+       
+       // tag all related stores to indicate that they are part of a single sandbox
+       addSandboxGuid(sandboxGuid, props);
        // tag the store with the DNS name property
        addStoreDNSPath(previewStoreName, props, userStore, packageName, "preview");
        // The preview worfkflow store depends on the main workflow store (dist=1)
@@ -904,9 +913,6 @@ public final class SandboxFactory extends WCMUtil
        addStoreBackgroundLayer(props, userStore, 2);
        // The preview workflow store depends on the main staging store (dist=3)
        addStoreBackgroundLayer(props, stagingStore, 3);
-       
-       // tag all related stores to indicate that they are part of a single sandbox
-       props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
        
        avmService.createStore(previewStoreName, props);
        
@@ -961,8 +967,11 @@ public final class SandboxFactory extends WCMUtil
    
    public void deleteSandbox(String wpStoreId, String sbStoreId)
    {
-       SandboxInfo sbInfo = getSandbox(wpStoreId, sbStoreId, true);
-       
+       deleteSandbox(getSandbox(wpStoreId, sbStoreId, true));
+   }
+   
+   public void deleteSandbox(SandboxInfo sbInfo)
+   {
        if (sbInfo != null)
        {
            String mainSandboxStore = sbInfo.getMainStoreName();
@@ -989,7 +998,7 @@ public final class SandboxFactory extends WCMUtil
             
             WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
             
-            // TODO: Use the .sandbox-id.  property to delete all sandboxes,
+            // NOTE: Could use the .sandbox-id. GUID property to delete all sandboxes,
             //       rather than assume a sandbox always had a single preview
             //       layer attached.
             
@@ -1166,10 +1175,11 @@ public final class SandboxFactory extends WCMUtil
    {
       String path = WCMUtil.buildSandboxRootPath(store);
       // DNS name mangle the property name - can only contain value DNS characters!
-      String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(components);
+      String dnsName = DNSNameMangler.MakeDNSName(components);
+      String dnsProp = SandboxConstants.PROP_DNS + dnsName;
       props.put(QName.createQName(null, dnsProp), new PropertyValue(DataTypeDefinition.TEXT, path));
    }
-
+   
    /**
     *   Tags a store with a property that indicates one of its 
     *   backgroundStore layers, and the distance of that layer. 
@@ -1202,6 +1212,18 @@ public final class SandboxFactory extends WCMUtil
       String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + backgroundStore;
       props.put(QName.createQName(null, prop_key), new PropertyValue(DataTypeDefinition.INT, distance));
    }
+   
+   private static void addSandboxGuid(String sandboxGuid, Map<QName, PropertyValue> props)
+   {
+      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + sandboxGuid);
+      props.put(sandboxIdProp, new PropertyValue(DataTypeDefinition.TEXT, null));
+   }
+   
+   private static void addSandboxPrefix(String storeName, Map<QName, PropertyValue> props)
+   {
+      props.put(QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + storeName), new PropertyValue(DataTypeDefinition.TEXT, null));
+   }
+
 
    /**
     * Debug helper method to dump the properties of a store

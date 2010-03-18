@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
@@ -35,7 +35,6 @@ import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
@@ -111,10 +110,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
             // submit the package changes
             final String description = (String) executionContext.getContextInstance().getVariable("bpm_workflowDescription");
             final String tag = (String) executionContext.getContextInstance().getVariable("wcmwf_label");
-    
-            final Map<QName, PropertyValue> dnsProperties = this.fAVMService.queryStorePropertyKey(targetPath.split(":")[0], QName.createQName(null, ".dns%"));
-            String localName = dnsProperties.keySet().iterator().next().getLocalName();
-            final String webProject = localName.substring(localName.lastIndexOf('.') + 1, localName.length());
+            
+            final String webProject = WCMUtil.getWebProject(fAVMService, AVMUtil.getStoreName(targetPath));
+            
             final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
     
             // Allow AVMSubmitTransactionListener to inspect the staging diffs
@@ -135,9 +133,16 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
                     fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
                     fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
                     
-                    for (final AVMDifference diff : stagingDiffs)
+                    if (webProject != null)
                     {
-                        recursivelyRemoveLocks(webProject, -1, diff.getSourcePath());
+                        for (final AVMDifference diff : stagingDiffs)
+                        {
+                            recursivelyRemoveLocks(webProject, -1, diff.getSourcePath());
+                        }
+                    }
+                    else
+                    {
+                        logger.warn("No webproject (hence no locks removed) for submit of " + pkgPath.getSecond() + " from " + from + " to " + targetPath);
                     }
                     
                     // flatten source folder where changes were submitted from

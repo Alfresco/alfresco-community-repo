@@ -14,7 +14,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. 
+ */
 
 package org.alfresco.repo.avm;
 
@@ -6279,25 +6280,25 @@ public class AVMServiceTest extends AVMServiceTestBase
     {
         try
         {
-            fService.setStoreProperty("main", QName.createQName(null, ".dns.alice--preview"), new PropertyValue(null, "alice-preview"));
+            fService.setStoreProperty("main", QName.createQName(null, SandboxConstants.PROP_DNS+"alice--preview"), new PropertyValue(null, "alice-preview"));
             fService.setStoreProperty("main", QName.createQName("", ".other.property"), new PropertyValue(null, "other value"));
-            Map<QName, PropertyValue> result = fService.queryStorePropertyKey("main", QName.createQName("", ".dns.%"));
+            Map<QName, PropertyValue> result = fService.queryStorePropertyKey("main", QName.createQName("", SandboxConstants.PROP_DNS+"%"));
             assertEquals(1, result.size());
             
             fService.createStore("second");
-            fService.setStoreProperty("second", QName.createQName("", ".dns.alice"), new PropertyValue(null, "alice-space"));
-            Map<String, Map<QName, PropertyValue>> matches = fService.queryStoresPropertyKeys(QName.createQName("", ".dns.%"));
+            fService.setStoreProperty("second", QName.createQName("", SandboxConstants.PROP_DNS+"alice"), new PropertyValue(null, "alice-space"));
+            Map<String, Map<QName, PropertyValue>> matches = fService.queryStoresPropertyKeys(QName.createQName("", SandboxConstants.PROP_DNS+"%"));
             assertEquals(1, matches.get("main").size());
             assertEquals(1, matches.get("second").size());
-            assertEquals("alice-preview", matches.get("main").get(QName.createQName(null, ".dns.alice--preview")).getStringValue());
-            assertEquals("alice-space", matches.get("second").get(QName.createQName(null, ".dns.alice")).getStringValue());
+            assertEquals("alice-preview", matches.get("main").get(QName.createQName(null, SandboxConstants.PROP_DNS+"alice--preview")).getStringValue());
+            assertEquals("alice-space", matches.get("second").get(QName.createQName(null, SandboxConstants.PROP_DNS+"alice")).getStringValue());
             
             fService.createStore("third");
-            fService.setStoreProperty("third", QName.createQName("", ".dns.someUPPERcase"), new PropertyValue(null, "someUPPERcase-space"));
-            matches = fService.queryStoresPropertyKeys(QName.createQName("", ".dns.someuppercase%"));
+            fService.setStoreProperty("third", QName.createQName("", SandboxConstants.PROP_DNS+"someUPPERcase"), new PropertyValue(null, "someUPPERcase-space"));
+            matches = fService.queryStoresPropertyKeys(QName.createQName("", SandboxConstants.PROP_DNS+"someuppercase%"));
             assertNotNull(matches.get("third"));
             assertEquals(1, matches.get("third").size());
-            assertEquals("someUPPERcase-space", matches.get("third").get(QName.createQName(null, ".dns.someUPPERcase")).getStringValue());
+            assertEquals("someUPPERcase-space", matches.get("third").get(QName.createQName(null, SandboxConstants.PROP_DNS+"someUPPERcase")).getStringValue());
         }
         catch (Exception e)
         {

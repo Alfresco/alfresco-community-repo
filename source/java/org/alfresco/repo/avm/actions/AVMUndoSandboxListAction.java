@@ -19,12 +19,11 @@
 package org.alfresco.repo.avm.actions;
 
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -32,8 +31,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -84,12 +83,13 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
             (List<Pair<Integer, String>>)action.getParameterValue(PARAM_NODE_LIST);
         for (Pair<Integer, String> item : versionPaths)
         {
-            AVMNodeDescriptor desc = fAVMService.lookup(-1, item.getSecond(), true);
+            String avmPath = item.getSecond();
+            AVMNodeDescriptor desc = fAVMService.lookup(-1, avmPath, true);
             if (desc == null)
             {
                 continue;
             }
-            String [] parentChild = AVMNodeConverter.SplitBase(item.getSecond());
+            String [] parentChild = AVMNodeConverter.SplitBase(avmPath);
             if (parentChild.length != 2)
             {
                 continue;
@@ -101,18 +101,21 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
                    fgLogger.debug("reverting " + parentChild[1] + " in " + parentChild[0]);
                 fAVMService.makeTransparent(parentChild[0], parentChild[1]);
             }
-
+            
             if (desc.isFile() || desc.isDeletedFile())
             {
-                final Map<QName, PropertyValue> dnsProperties = fAVMService.queryStorePropertyKey(item.getSecond().split(":")[0], QName.createQName(null, ".dns%"));
-                if (dnsProperties.size() == 1)
+                String parts[] = AVMUtil.splitPath(avmPath);
+                String avmStore = parts[0];
+                String path = parts[1]; // store relative path
+                
+                String webProject = WCMUtil.getWebProject(fAVMService, avmStore);
+                if (webProject != null)
                 {
-                    String webProject = dnsProperties.keySet().iterator().next().getLocalName();
-                    webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
-                    String path = item.getSecond().substring(item.getSecond().indexOf(":") + 1);
                     if (fgLogger.isDebugEnabled())
+                    {
                         fgLogger.debug("unlocking file " + path + " in web project " + webProject);
-    
+                    }
+                    
                     if (fAVMLockingService.getLock(webProject, path) != null)
                     {
                         fAVMLockingService.removeLock(webProject, path);

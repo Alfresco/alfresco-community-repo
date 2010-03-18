@@ -378,26 +378,34 @@ public class SandboxServiceImpl implements SandboxService
         
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         
-        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (sbStoreId.equals(WCMUtil.buildUserMainStoreName(wpStoreId, currentUserName)))
+        if (AuthenticationUtil.isRunAsUserTheSystemUser())
         {
-            // author may delete their own sandbox
+            // system may delete (eg. workflow) sandbox
             sandboxFactory.deleteSandbox(sbStoreId);
         }
         else
-        {       
-            if (! wpService.isContentManager(wpStoreId))
+        {
+            String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
+            if (sbStoreId.equals(WCMUtil.buildUserMainStoreName(wpStoreId, currentUserName)))
             {
-                throw new AccessDeniedException("Only content managers may delete sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                // author may delete their own sandbox
+                sandboxFactory.deleteSandbox(sbStoreId);
             }
-            
-            if (sbStoreId.equals(wpStoreId))
+            else
             {
-                throw new AccessDeniedException("Cannot delete staging sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                if (! wpService.isContentManager(wpStoreId, currentUserName))
+                {
+                    throw new AccessDeniedException("Only content managers may delete sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                }
+                
+                if (sbStoreId.equals(wpStoreId))
+                {
+                    throw new AccessDeniedException("Cannot delete staging sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                }
+                
+                // content manager may delete sandboxes, except staging sandbox
+                sandboxFactory.deleteSandbox(sbStoreId);
             }
-            
-            // content manager may delete sandboxes, except staging sandbox
-            sandboxFactory.deleteSandbox(sbStoreId);
         }
         
         if (logger.isInfoEnabled())
@@ -834,7 +842,7 @@ public class SandboxServiceImpl implements SandboxService
 
     /**
      * Cleans up the workflow sandbox created by the first transaction. This
-     * action is itself preformed in a separate transaction.
+     * action is itself performed in a separate transaction.
      */
     private void cleanupWorkflowSandbox(final SandboxInfo sandboxInfo)
     {
@@ -844,12 +852,12 @@ public class SandboxServiceImpl implements SandboxService
         {
             public String execute() throws Throwable
             {
-                // call the actual implementation
-                cleanupWorkflowSandboxImpl(sandboxInfo);
+                // delete AVM stores in the workflow sandbox
+                sandboxFactory.deleteSandbox(sandboxInfo);
                 return null;
             }
         };
-
+        
         try
         {
             // Execute the cleanup handler
@@ -859,27 +867,6 @@ public class SandboxServiceImpl implements SandboxService
         {
             // not much we can do now, just log the error to inform admins
             logger.error("Failed to cleanup workflow sandbox after workflow failure", e);
-        }
-    }
-
-    /**
-     * Performs the actual deletion of stores in the workflow sandbox.
-     */
-    private void cleanupWorkflowSandboxImpl(SandboxInfo sandboxInfo)
-    {
-        if (sandboxInfo != null)
-        {
-            String mainWorkflowStore = sandboxInfo.getMainStoreName();
-            Map<QName, PropertyValue> matches = avmService.queryStorePropertyKey(mainWorkflowStore, 
-                                                                                 QName.createQName(null, ".sandbox-id%"));
-            
-            QName sandboxID = matches.keySet().iterator().next();
-            // Get all the stores in the sandbox.
-            Map<String, Map<QName, PropertyValue>> stores = avmService.queryStoresPropertyKeys(sandboxID);
-            for (String storeName : stores.keySet())
-            {
-                avmService.purgeStore(storeName);
-            }
         }
     }
     

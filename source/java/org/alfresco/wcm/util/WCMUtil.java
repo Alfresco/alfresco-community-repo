@@ -438,7 +438,7 @@ public class WCMUtil extends AVMUtil
    public static String lookupStoreDNS(AVMService avmService, String store)
    {
        ParameterCheck.mandatoryString("store", store);
-      
+       
        final Map<QName, PropertyValue> props = 
          avmService.queryStorePropertyKey(store, QName.createQName(null, SandboxConstants.PROP_DNS + '%'));
        
@@ -468,6 +468,19 @@ public class WCMUtil extends AVMUtil
        }
        
        return wpNodeRef;
+   }
+   
+   /** 
+    * Returns web project store id for an AVM store name (or null for vanilla AVM store)
+    */
+   public static String getWebProject(AVMService avmService, String avmStoreName)
+   {   
+       String wpStoreId = WCMUtil.getWebProjectStoreId(avmStoreName);
+       if (WCMUtil.getWebProjectNodeFromWebProjectStore(avmService, wpStoreId) != null)
+       {
+           return wpStoreId;
+       }
+       return null;
    }
    
    /**

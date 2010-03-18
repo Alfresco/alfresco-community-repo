@@ -22,6 +22,7 @@ import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.mapping.CMISMapping;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.namespace.QName;
 
@@ -71,7 +72,9 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
         
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         
-        creatable = true;
+        // TODO: introduce abstract into core alfresco content metamodel
+        // NOTE: system folder cannot be created via FolderFileService
+        creatable = (typeId.getQName().equals(ContentModel.TYPE_SYSTEM_FOLDER) ? false : true);
         queryable = true;
         fullTextIndexed = true;
         controllablePolicy = false;

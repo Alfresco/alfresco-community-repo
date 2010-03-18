@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
@@ -123,6 +124,12 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
                         categoryProperty = entry.getKey();
                         break;
                     }
+                }
+                
+                // Check that the category property is not null
+                if (categoryProperty == null)
+                {
+                    throw new AlfrescoRuntimeException("The category aspect " + categoryAspect.toPrefixString() + " does not have a category property to set.");
                 }
                 
                 if (categoryAspect != null)

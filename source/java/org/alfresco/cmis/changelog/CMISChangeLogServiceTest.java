@@ -261,8 +261,17 @@ public class CMISChangeLogServiceTest extends TestCase
     {
         Map<CMISChangeType, Integer> logAmounts = new HashMap<CMISChangeType, Integer>();
         boolean folderWasFound = false;
+        int idx = 0;
         for (CMISChangeEvent event : changeLog.getChangeEvents())
         {
+            // skip first change log entry if a log token has been specified, as the CMIS spec expects
+            // the change entry to be returned for the specified log token
+            idx++;
+            if (logToken != null && idx == 1)
+            {
+                continue;
+            }
+            
             assertNotNull(("One of the Change Log Event Enries is undefined for '" + logToken + "' Change Log Token"), event);
             assertNotNull(("Change Event Entry Id of one of the Change Entries is undefined for '" + logToken + "' Change Log Token"), event.getChangedNode());
             assertNotNull(("Change Event Change Type of one of the Change Entries is undefined for '" + logToken + "' Change Log Token"), event.getChangeType());
@@ -340,7 +349,7 @@ public class CMISChangeLogServiceTest extends TestCase
         assertChangeEvents(logToken, changeLog, THE_HALFT_OF_CREATED_AMOUNT, FoldersAppearing.NOT_EXPECTED);
         assertEquals(THE_HALFT_OF_CREATED_AMOUNT, changeLog.getChangeEvents().size());
         assertTrue("Not all Change Log Entries were requested but result set is indicating that no one more Entry is avilable", changeLog.hasMoreItems());
-        changeLog = changeLogService.getChangeLogEvents(logToken, TOTAL_AMOUNT);
+        changeLog = changeLogService.getChangeLogEvents(logToken, TOTAL_AMOUNT + (logToken == null ? 0 : 1));
         assertChangeEvents(logToken, changeLog, TOTAL_AMOUNT, FoldersAppearing.NOT_EXPECTED);
         assertFalse("All Change Log Entries were requested but result set is indicating that some more Entry(s) are available", changeLog.hasMoreItems());
     }
@@ -404,7 +413,7 @@ public class CMISChangeLogServiceTest extends TestCase
         assertTrue("Not all Change Event Entries were requested but result set indicates that no more Entry(s) available", changeLogEvents.hasMoreItems());
         assertChangeLog(changeToken, changeLogEvents);
         assertChangeEvents(changeToken, changeLogEvents, 15, FoldersAppearing.MAY_APPEAR);
-        changeLogEvents = changeLogService.getChangeLogEvents(changeToken, TOTAL_AMOUNT);
+        changeLogEvents = changeLogService.getChangeLogEvents(changeToken, TOTAL_AMOUNT + (changeToken == null ? 0 : 1));
         assertChangeLog(changeToken, changeLogEvents);
         assertChangeEvents(changeToken, changeLogEvents, TOTAL_AMOUNT, FoldersAppearing.MUST_APPEAR);
         assertFalse("All Change Event Entries were requested but results indicating that some more Entry(s) available", changeLogEvents.hasMoreItems());

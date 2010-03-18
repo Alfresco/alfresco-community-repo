@@ -46,6 +46,7 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
     public void addObjectToFolder(String repositoryId, String objectId, String folderId, Boolean allVersions, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
+        checkConstraints(objectId, folderId, false);
         try
         {
             cmisService.addObjectToFolder(objectId, folderId);
@@ -67,7 +68,7 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
     public void removeObjectFromFolder(String repositoryId, String objectId, String folderId, Holder<CmisExtensionType> extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
-        checkConstraints(objectId, folderId);
+        checkConstraints(objectId, folderId, true);
 
         try
         {
@@ -80,7 +81,7 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
 
     }
     
-    private void checkConstraints(String objectId, String folderId) throws CmisException
+    private void checkConstraints(String objectId, String folderId, boolean checkIsObjectInFolder) throws CmisException
     {
         NodeRef objectNodeRef = null;
         NodeRef folderNodeRef = null;
@@ -101,8 +102,8 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
         {
             throw ExceptionUtil.createCmisException("Object " + objectId + " is not a document", EnumServiceException.INVALID_ARGUMENT);
         }
-
-        if (!isObjectInFolder(objectNodeRef, folderNodeRef))
+        
+        if (checkIsObjectInFolder && !isObjectInFolder(objectNodeRef, folderNodeRef))
         {
             throw ExceptionUtil.createCmisException("Folder doesn't contain specified object", EnumServiceException.OBJECT_NOT_FOUND);
         }

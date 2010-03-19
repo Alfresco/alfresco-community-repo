@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Share Data Lists Model -->
+
+<!-- Note: the dl: namespace is defined further on in the document -->
+<model name="dl:datalistmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->   
+   <description>Alfresco Share Data List Model</description>
+   <author>Mike Hatfield</author>
+   <version>0.1</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+   
+   <!-- Data List Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/datalist/1.0" prefix="dl"/>
+   </namespaces>
+
+   <types>
+
+      <type name="dl:dataList">
+         <title>Data List container type</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="dl:dataListItemType">
+               <title>List Item Type</title>
+               <description>Determines which Data Dictionary type will be used when create new items within the Data List.</description>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <!-- Do not archive during development phase -->
+            <aspect>sys:temporary</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="dl:dataListItem">
+         <title>Data List parent type</title>
+         <parent>cm:content</parent>
+         <mandatory-aspects>
+            <!-- Do not archive during development phase -->
+            <aspect>sys:temporary</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <type name="dl:todoList">
+         <title>To Do List</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:todoTitle">
+               <title>Title</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="dl:todoDueDate">
+               <title>Due Date</title>
+               <type>d:datetime</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:todoPriority">
+               <title>Priority</title>
+               <type>d:int</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:todoNotes">
+               <title>Notes</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <association name="dl:assignee">
+               <title>Assignee</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:person</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+
+   </types>
+
+</model>

@@ -37,11 +37,11 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.search.SearchService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * AVM Remote Store service.
@@ -151,11 +151,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                         if (extIndex != -1)
                         {
                             String ext = path.substring(extIndex + 1);
-                            String mt = mimetypeService.getMimetypesByExtension().get(ext);
-                            if (mt != null)
-                            {
-                                mimetype = mt;
-                            }
+                            mimetype = mimetypeService.getMimetype(ext);
                         }
                     }
                     

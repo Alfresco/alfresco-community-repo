@@ -460,11 +460,7 @@ public class StreamContent extends AbstractWebScript
         int extIndex = filePath.lastIndexOf('.');
         if (extIndex != -1)
         {
-            String mt = mimetypeService.getMimetypesByExtension().get(filePath.substring(extIndex + 1));
-            if (mt != null)
-            {
-                mimetype = mt;
-            }
+            mimetype = mimetypeService.getMimetype(filePath.substring(extIndex + 1));
         }
         
         // setup file reader and stream
@@ -520,11 +516,7 @@ public class StreamContent extends AbstractWebScript
             if (extIndex != -1)
             {
                 String ext = extensionPath.substring(extIndex + 1);
-                String mt = mimetypeService.getMimetypesByExtension().get(ext);
-                if (mt != null)
-                {
-                    mimetype = mt;
-                }
+                mimetype = mimetypeService.getMimetype(ext);
             }
         }
 

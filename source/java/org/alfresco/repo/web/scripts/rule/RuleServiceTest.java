@@ -500,24 +500,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(successData.has("action"));
 
         // execute before response (should fail)
-        Response failResponse = sendRequest(new PostRequest(url, copyAction.toString(), "application/json"), 200);
-
-        JSONObject failResult = new JSONObject(failResponse.getContentAsString());
-
-        assertNotNull(failResult);
-
-        assertTrue(failResult.has("data"));
-
-        JSONObject failData = failResult.getJSONObject("data");
-
-        assertTrue(failData.has("status"));
-        assertEquals("fail", failData.getString("status"));
-        assertTrue(failData.has("actionedUponNode"));
-        assertTrue(failData.has("exception"));
-        JSONObject exception = failData.getJSONObject("exception");
-        assertTrue(exception.has("message"));
-        assertTrue(exception.has("stackTrace"));
-        assertTrue(failData.has("action"));
+        sendRequest(new PostRequest(url, copyAction.toString(), "application/json"), 500);
 
         // execute after response (should fail but error should not present in response)
         String asyncUrl = formateQueueActionUrl(true);

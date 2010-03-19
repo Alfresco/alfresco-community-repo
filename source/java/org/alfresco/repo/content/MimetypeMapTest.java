@@ -80,4 +80,23 @@ public class MimetypeMapTest extends TestCase
         assertNotNull("No charset finder", mimetypeService.getContentCharsetFinder());
     }
 
+    public void testMimetypeFromExtension() throws Exception
+    {
+        // test known mimetype
+        assertEquals("application/msword", mimetypeService.getMimetype("doc"));
+        // test case insensitivity
+        assertEquals("application/msword", mimetypeService.getMimetype("DOC"));
+        
+        // test fallback for unknown and missing
+        assertEquals(MimetypeMap.MIMETYPE_BINARY, mimetypeService.getMimetype(null));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY, mimetypeService.getMimetype("unknownext"));
+    }
+    
+    public void testGuessMimetypeForFilename() throws Exception
+    {
+        assertEquals("application/msword", mimetypeService.guessMimetype("something.doc"));
+        assertEquals("application/msword", mimetypeService.guessMimetype("SOMETHING.DOC"));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY, mimetypeService.guessMimetype("noextension"));
+        assertEquals(MimetypeMap.MIMETYPE_BINARY, mimetypeService.guessMimetype("file.unknownext"));
+    }
 }

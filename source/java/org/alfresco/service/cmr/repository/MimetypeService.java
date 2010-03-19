@@ -31,7 +31,6 @@ import org.alfresco.service.PublicService;
  * This service interface provides support for Mimetypes.
  * 
  * @author Derek Hulley
- *
  */
 @PublicService
 public interface MimetypeService
@@ -41,10 +40,18 @@ public interface MimetypeService
      * 
      * @param mimetype a valid mimetype
      * @return Returns the default extension for the mimetype
-     * @throws AlfrescoRuntimeException if the mimetype doesn't exist
      */
     @NotAuditable
     public String getExtension(String mimetype);
+
+    /**
+     * Get the mimetype for the specified extension
+     * 
+     * @param extension a valid file extension
+     * @return Returns a valid mimetype if found, or null if does not exist
+     */
+    @NotAuditable
+    public String getMimetype(String extension);
 
     /**
      * Get all human readable mimetype descriptions indexed by mimetype extension

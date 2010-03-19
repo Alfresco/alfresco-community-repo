@@ -26,16 +26,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigLookupContext;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigLookupContext;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Provides a bidirectional mapping between well-known mimetypes and
@@ -295,14 +295,27 @@ public class MimetypeMap implements MimetypeService
     public String getExtension(String mimetype)
     {
         String extension = extensionsByMimetype.get(mimetype);
-        if (extension == null)
+        return (extension == null ? EXTENSION_BINARY : extension);
+    }
+    
+    /**
+     * Get the mimetype for the specified extension
+     * 
+     * @param extension a valid file extension
+     * @return Returns a valid mimetype if found, or {@link #MIMETYPE_BINARY binary} as default.
+     */
+    public String getMimetype(String extension)
+    {
+        String mimetype = MIMETYPE_BINARY;
+        if (extension != null)
         {
-            return EXTENSION_BINARY;
+            extension = extension.toLowerCase();
+            if (mimetypesByExtension.containsKey(extension))
+            {
+                mimetype = mimetypesByExtension.get(extension);
+            }
         }
-        else
-        {
-            return extension;
-        }
+        return mimetype;
     }
 
     public Map<String, String> getDisplaysByExtension()
@@ -340,13 +353,12 @@ public class MimetypeMap implements MimetypeService
      */
     public String guessMimetype(String filename)
     {
-        filename = filename.toLowerCase();
         String mimetype = MIMETYPE_BINARY;
         // extract the extension
         int index = filename.lastIndexOf('.');
         if (index > -1 && (index < filename.length() - 1))
         {
-            String extension = filename.substring(index + 1);
+            String extension = filename.substring(index + 1).toLowerCase();
             if (mimetypesByExtension.containsKey(extension))
             {
                 mimetype = mimetypesByExtension.get(extension);

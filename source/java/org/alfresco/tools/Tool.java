@@ -117,12 +117,7 @@ public abstract class Tool
     /**
      * Handle Error Message
      * 
-     * @param e  exception
-     */
-    /**
-     * Handle Error Message
-     * 
-     * @param e  exception
+     * @param e exception
      */
     protected int handleError(Throwable e)
     {
@@ -135,14 +130,14 @@ public abstract class Tool
         else if (e instanceof ToolException)
         {
             if (e.getCause() != null)
-            {    
+            {
                 logError(e.getMessage() + " caused by: " + e.getCause().getMessage());
             }
             else
             {
                 logError(e.getMessage());
             }
-            
+
             // If we are being verbose then show the stack trace as well.
             if (toolContext != null && toolContext.isVerbose())
             {
@@ -155,7 +150,7 @@ public abstract class Tool
         else
         {
             logError("The following error has occurred:" + e.getMessage());
-            
+
             if (toolContext != null && toolContext.isVerbose())
             {
                 StringWriter stringWriter = new StringWriter();
@@ -164,7 +159,7 @@ public abstract class Tool
                 logError(stringWriter.toString());
             }
         }
-        
+
         // return generic error code
         return -1;
     }

@@ -522,12 +522,8 @@ public final class Repository
       int extIndex = filename.lastIndexOf('.');
       if (extIndex != -1)
       {
-         String ext = filename.substring(extIndex + 1).toLowerCase();
-         String mt = mimetypeService.getMimetypesByExtension().get(ext);
-         if (mt != null)
-         {
-            mimetype = mt;
-         }
+         String ext = filename.substring(extIndex + 1);
+         mimetype = mimetypeService.getMimetype(ext);
       }
       
       return mimetype;

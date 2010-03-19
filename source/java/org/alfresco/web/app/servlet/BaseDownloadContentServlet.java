@@ -48,11 +48,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.URLDecoder;
-import org.springframework.extensions.surf.util.URLEncoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
 import org.apache.commons.logging.Log;
+import org.springframework.extensions.surf.util.URLDecoder;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
  * Base class for the download content servlets. Provides common
@@ -289,11 +289,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
             if (extIndex != -1)
             {
                String ext = filename.substring(extIndex + 1);
-               String mt = mimetypeMap.getMimetypesByExtension().get(ext);
-               if (mt != null)
-               {
-                  mimetype = mt;
-               }
+               mimetype = mimetypeMap.getMimetype(ext);
             }
          }
 

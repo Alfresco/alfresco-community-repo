@@ -81,16 +81,10 @@ public class ActionQueuePost extends AbstractRuleWebScript
                 model.put(STATUS, STATUS_SUCCESS);
             }
 
-            try
-            {
-                actionService.executeAction(action, actionedUponNode, true, async);
-            }
-            catch (Throwable e)
-            {
-                model.put(STATUS, STATUS_FAIL);
-                model.put("exception", e);
-            }
+            // Execute action
+            actionService.executeAction(action, actionedUponNode, true, async);
 
+            // Prepair model
             model.put("actionedUponNode", actionedUponNode.toString());
             model.put("action", json);
         }

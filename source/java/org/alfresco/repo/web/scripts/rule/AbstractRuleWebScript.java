@@ -19,26 +19,25 @@
 package org.alfresco.repo.web.scripts.rule;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.action.ActionConditionDefinition;
-import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -73,10 +72,6 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     protected ActionService actionService;
     protected FileFolderService fileFolderService;
     protected NamespaceService namespaceService;
-
-    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
-    private static Map<String, Map<String, QName>> propertyTypes = null;
 
     /**
      * Sets the node service instance
@@ -164,147 +159,6 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         }
 
         return nodeRef;
-    }
-
-    protected QName getPropertyType(String name, boolean isAction, String propertyName)
-    {
-        QName result = null;
-
-        if (propertyTypes == null)
-        {
-            propertyTypes = new HashMap<String, Map<String, QName>>();
-
-            // get parameters for all action definitions
-            List<ActionDefinition> actionDefinitions = actionService.getActionDefinitions();
-
-            for (ActionDefinition actionDefinition : actionDefinitions)
-            {
-                List<ParameterDefinition> parameterDefinitions = actionDefinition.getParameterDefinitions();
-                Map<String, QName> parameters = new HashMap<String, QName>();
-
-                for (ParameterDefinition parameterDefinition : parameterDefinitions)
-                {
-                    String parameterName = parameterDefinition.getName();
-                    QName parameterType = parameterDefinition.getType();
-                    parameters.put(parameterName, parameterType);
-                }
-
-                try
-                {
-                    // cache parameter
-                    lock.writeLock().lock();
-                    propertyTypes.put(actionDefinition.getName(), parameters);
-                }
-                finally
-                {
-                    lock.writeLock().unlock();
-                }
-            }
-
-            // get parameters for all action condition definitions
-            List<ActionConditionDefinition> actionConditionDefinitions = actionService.getActionConditionDefinitions();
-
-            for (ActionConditionDefinition actionConditionDefinition : actionConditionDefinitions)
-            {
-                List<ParameterDefinition> parameterDefinitions = actionConditionDefinition.getParameterDefinitions();
-                Map<String, QName> parameters = new HashMap<String, QName>();
-
-                for (ParameterDefinition parameterDefinition : parameterDefinitions)
-                {
-                    String parameterName = parameterDefinition.getName();
-                    QName parameterType = parameterDefinition.getType();
-                    parameters.put(parameterName, parameterType);
-                }
-
-                try
-                {
-                    lock.writeLock().lock();
-                    propertyTypes.put(actionConditionDefinition.getName(), parameters);
-                }
-                finally
-                {
-                    lock.writeLock().unlock();
-                }
-            }
-        }
-
-        if (propertyTypes.containsKey(name))
-        {
-            Map<String, QName> parameters;
-            try
-            {
-                lock.readLock().lock();
-                parameters = propertyTypes.get(name);
-            }
-            finally
-            {
-                lock.readLock().unlock();
-            }
-            result = parameters.get(propertyName);
-            return result;
-        }
-        else
-        {
-            if (isAction)
-            {
-                ActionDefinition actionDefinition = actionService.getActionDefinition(name);
-                List<ParameterDefinition> parameterDefinitions = actionDefinition.getParameterDefinitions();
-                Map<String, QName> parameters = new HashMap<String, QName>();
-
-                for (ParameterDefinition parameterDefinition : parameterDefinitions)
-                {
-                    String parameterName = parameterDefinition.getName();
-                    QName parameterType = parameterDefinition.getType();
-                    parameters.put(parameterName, parameterType);
-
-                    if (parameterName.equals(propertyName))
-                    {
-                        result = parameterType;
-                    }
-                }
-
-                try
-                {
-                    // cache parameter
-                    lock.writeLock().lock();
-                    propertyTypes.put(name, parameters);
-                }
-                finally
-                {
-                    lock.writeLock().unlock();
-                }
-            }
-            else
-            {
-                ActionConditionDefinition actionConditionDefinition = actionService.getActionConditionDefinition(name);
-                List<ParameterDefinition> parameterDefinitions = actionConditionDefinition.getParameterDefinitions();
-                Map<String, QName> parameters = new HashMap<String, QName>();
-
-                for (ParameterDefinition parameterDefinition : parameterDefinitions)
-                {
-                    String parameterName = parameterDefinition.getName();
-                    QName parameterType = parameterDefinition.getType();
-                    parameters.put(parameterName, parameterType);
-
-                    if (parameterName.equals(propertyName))
-                    {
-                        result = parameterType;
-                    }
-                }
-
-                try
-                {
-                    lock.writeLock().lock();
-                    propertyTypes.put(name, parameters);
-                }
-                finally
-                {
-                    lock.writeLock().unlock();
-                }
-            }
-        }
-
-        return result;
     }
 
     protected Rule parseJsonRule(JSONObject jsonRule) throws JSONException
@@ -459,82 +313,99 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     protected Map<String, Serializable> parseJsonParameterValues(JSONObject jsonParameterValues, String name, boolean isAction) throws JSONException
     {
         Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();
 
         // get parameters names
         JSONArray names = jsonParameterValues.names();
-
         if (names == null)
         {
             return null;
+        }
+
+        // Get the action or condition definition
+        ParameterizedItemDefinition definition = null;
+        if (isAction == true)
+        {
+            definition = actionService.getActionDefinition(name);
+        }
+        else
+        {
+            definition = actionService.getActionConditionDefinition(name);
+        }
+        if (definition == null)
+        {
+            throw new AlfrescoRuntimeException("Could not find defintion for action/condition " + name);
         }
 
         for (int i = 0; i < names.length(); i++)
         {
             String propertyName = names.getString(i);
             Object propertyValue = jsonParameterValues.get(propertyName);
-
-            // get parameter repository type
-            QName typeQName = getPropertyType(name, isAction, propertyName);
-
-            if (typeQName == null)
+            
+            // Get the parameter definition we care about
+            ParameterDefinition paramDef = definition.getParameterDefintion(propertyName);
+            if (paramDef == null)
             {
-                if (propertyValue.toString().equals("true") || propertyValue.toString().equals("false"))
-                {
-                    typeQName = DataTypeDefinition.BOOLEAN;
-                }
-                else
-                {
-                    typeQName = DataTypeDefinition.TEXT;
-                }
+                throw new AlfrescoRuntimeException("Invalid parameter " + propertyName + " for action/condition " + name);
             }
+            QName typeQName = paramDef.getType();
 
-            Serializable value = null;
-
-            if (typeQName.equals(DataTypeDefinition.QNAME))
-            {
-                value = QName.createQName(propertyValue.toString(), namespaceService);
-            }
-
-            if (typeQName.equals(DataTypeDefinition.ANY))
-            {
-                try
-                {
-                    value = dateFormate.parse(propertyValue.toString());
-                }
-                catch (ParseException e)
-                {
-                    try
-                    {
-                        value = Long.valueOf(propertyValue.toString());
-                    }
-                    catch (NumberFormatException e1)
-                    {
-                        if (propertyValue instanceof JSONArray)
-                        {
-                            value = new ArrayList<String>();
-                            JSONArray array = (JSONArray) propertyValue;
-                            for (int j = 0; j < array.length(); j++)
-                            {
-                                ((List<String>) value).add(array.getString(j));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (value == null)
-            {
-                // convert to correct repository type
-                value = (Serializable) DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
-            }
-
+            // Convert the property value
+            Serializable value = convertValue(typeQName, propertyValue);
             parameterValues.put(propertyName, value);
         }
 
         return parameterValues;
+    }
+    
+    private Serializable convertValue(QName typeQName, Object propertyValue) throws JSONException
+    {        
+        Serializable value = null;
+        
+        DataTypeDefinition typeDef = dictionaryService.getDataType(typeQName);
+        if (typeDef == null)
+        {
+            throw new AlfrescoRuntimeException("Action property type definition " + typeQName.toPrefixString() + " is unknown.");
+        }
+        
+        if (propertyValue instanceof JSONArray)
+        {
+            // Convert property type to java class
+            Class<?> javaClass = null;
+            
+            String javaClassName = typeDef.getJavaClassName();
+            try
+            {
+                javaClass = Class.forName(javaClassName);
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new DictionaryException("Java class " + javaClassName + " of property type " + typeDef.getName() + " is invalid", e);
+            }
+            
+            int length = ((JSONArray)propertyValue).length();
+            List<Serializable> list = new ArrayList<Serializable>(length);
+            for (int i = 0; i < length; i++)
+            {
+                list.add(convertValue(typeQName, ((JSONArray)propertyValue).get(i)));
+            }
+            value = (Serializable)list;
+        }
+        else
+        {
+            if (typeQName.equals(DataTypeDefinition.QNAME) == true && 
+                typeQName.toString().contains(":") == true)
+            {
+                 value = QName.createQName(propertyValue.toString(), namespaceService);
+            }
+            else
+            {
+                value = (Serializable)DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
+            }
+        }
+        
+        return value;
     }
 }

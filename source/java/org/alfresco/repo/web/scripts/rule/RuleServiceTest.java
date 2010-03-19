@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.digester.Rules;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -161,7 +162,12 @@ public class RuleServiceTest extends BaseWebScriptTest
 
     private JSONObject createRule(NodeRef ruleOwnerNodeRef) throws Exception
     {
-        JSONObject jsonRule = buildTestRule();
+        return createRule(ruleOwnerNodeRef, "test_rule");
+    }
+    
+    private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title) throws Exception
+    {
+        JSONObject jsonRule = buildTestRule(title);
 
         Response response = sendRequest(new PostRequest(formatRulesUrl(ruleOwnerNodeRef, false), jsonRule.toString(), "application/json"), 200);
 
@@ -215,8 +221,6 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertEquals(jsonAction.getString("actionDefinitionName"), "composite-action");
         assertEquals(jsonAction.getString("description"), "this is description for composite-action");
         assertEquals(jsonAction.getString("title"), "test_title");
-
-        assertTrue(jsonAction.has("parameterValues"));
 
         assertTrue(jsonAction.getBoolean("executeAsync"));
 
@@ -689,6 +693,61 @@ public class RuleServiceTest extends BaseWebScriptTest
         // no more rules present 
         assertEquals(0, ruleService.getRules(testNodeRef).size());
     }
+    
+    public void testRuleReorder() throws Exception
+    {
+        assertEquals(0, ruleService.getRules(testNodeRef).size());
+        
+        // Create 3 rules
+        NodeRef rule1 = createRuleNodeRef(testNodeRef, "Rule 1");
+        NodeRef rule2 = createRuleNodeRef(testNodeRef, "Rule 2");
+        NodeRef rule3 = createRuleNodeRef(testNodeRef, "Rule 3");
+        
+        List<Rule> rules = ruleService.getRules(testNodeRef);
+        assertEquals(3, rules.size());
+        assertEquals("Rule 1", rules.get(0).getTitle());
+        assertEquals("Rule 2", rules.get(1).getTitle());
+        assertEquals("Rule 3", rules.get(2).getTitle());
+        
+        JSONObject action = new JSONObject();
+        action.put("actionDefinitionName", "reorder-rules");
+        action.put("actionedUponNode", testNodeRef.toString());
+        
+        JSONObject params = new JSONObject();
+        JSONArray orderArray = new JSONArray();
+        orderArray.put(rules.get(2).getNodeRef().toString());
+        orderArray.put(rules.get(1).getNodeRef().toString());
+        orderArray.put(rules.get(0).getNodeRef().toString());
+        params.put("rules", orderArray);
+        action.put("parameterValues", params);
+        
+        String url = formateQueueActionUrl(false);
+
+        // execute before response (should be successful)
+        Response successResponse = sendRequest(new PostRequest(url, action.toString(), "application/json"), 200);
+        JSONObject successResult = new JSONObject(successResponse.getContentAsString());
+        assertNotNull(successResult);
+        assertTrue(successResult.has("data"));
+        JSONObject successData = successResult.getJSONObject("data");
+        assertTrue(successData.has("status"));
+        assertEquals("success", successData.getString("status"));
+        assertTrue(successData.has("actionedUponNode"));
+        assertFalse(successData.has("exception"));
+        assertTrue(successData.has("action"));
+        
+        rules = ruleService.getRules(testNodeRef);
+        assertEquals(3, rules.size());
+        assertEquals("Rule 3", rules.get(0).getTitle());
+        assertEquals("Rule 2", rules.get(1).getTitle());
+        assertEquals("Rule 1", rules.get(2).getTitle());
+    }
+    
+    private NodeRef createRuleNodeRef(NodeRef folder, String title) throws Exception
+    {
+        JSONObject jsonRule = createRule(folder, title);
+        String id = jsonRule.getJSONObject("data").getString("id");
+        return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
+    }
 
     private JSONObject buildCopyAction(NodeRef destination) throws JSONException
     {
@@ -714,9 +773,14 @@ public class RuleServiceTest extends BaseWebScriptTest
 
     private JSONObject buildTestRule() throws JSONException
     {
+        return buildTestRule("test_rule");
+    }
+    
+    private JSONObject buildTestRule(String title) throws JSONException
+    {
         JSONObject result = new JSONObject();
 
-        result.put("title", "test_rule");
+        result.put("title", title);
         result.put("description", "this is description for test_rule");
 
         JSONArray ruleType = new JSONArray();
@@ -743,10 +807,10 @@ public class RuleServiceTest extends BaseWebScriptTest
         result.put("description", "this is description for " + actionName);
         result.put("title", "test_title");
 
-        JSONObject parameterValues = new JSONObject();
-        parameterValues.put("test_name", "test_value");
+        //JSONObject parameterValues = new JSONObject();
+        //parameterValues.put("test_name", "test_value");
 
-        result.put("parameterValues", parameterValues);
+        //result.put("parameterValues", parameterValues);
 
         result.put("executeAsync", addActions);
 
@@ -780,10 +844,10 @@ public class RuleServiceTest extends BaseWebScriptTest
         result.put("conditionDefinitionName", conditionName);
         result.put("invertCondition", false);
 
-        JSONObject parameterValues = new JSONObject();
-        parameterValues.put("test_name", "test_value");
+        //JSONObject parameterValues = new JSONObject();
+        //parameterValues.put("test_name", "test_value");
 
-        result.put("parameterValues", parameterValues);
+        //result.put("parameterValues", parameterValues);
 
         return result;
     }

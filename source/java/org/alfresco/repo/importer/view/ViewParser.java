@@ -187,11 +187,19 @@ public class ViewParser implements Parser
             }
             catch(Exception e)
             {
+                if(logger.isDebugEnabled())
+                {
+                   logger.debug("Failed to import package at line " + xpp.getLineNumber() + "; column " + xpp.getColumnNumber() + " due to error: ", e); 
+                }
                 throw new ImporterException("Failed to import package at line " + xpp.getLineNumber() + "; column " + xpp.getColumnNumber() + " due to error: " + e.getMessage(), e);
             }
         }
         catch(XmlPullParserException e)
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Failed to parse view", e);
+            }
             throw new ImporterException("Failed to parse view", e);
         }
     }

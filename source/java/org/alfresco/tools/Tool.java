@@ -119,35 +119,56 @@ public abstract class Tool
      * 
      * @param e  exception
      */
+    /**
+     * Handle Error Message
+     * 
+     * @param e  exception
+     */
     protected int handleError(Throwable e)
     {
-    	if (e instanceof ToolArgumentException)
-    	{
+        if (e instanceof ToolArgumentException)
+        {
             logError(e.getMessage());
             logError("");
             displayHelp();
-    	}
-    	else if (e instanceof ToolException)
-    	{
-    		logError(e.getMessage());
-    	}
-    	else
-    	{
-            logError("The following error has occurred:");
-            logError(e.getMessage());
+        }
+        else if (e instanceof ToolException)
+        {
+            if (e.getCause() != null)
+            {    
+                logError(e.getMessage() + " caused by: " + e.getCause().getMessage());
+            }
+            else
+            {
+                logError(e.getMessage());
+            }
+            
+            // If we are being verbose then show the stack trace as well.
             if (toolContext != null && toolContext.isVerbose())
             {
-            	StringWriter stringWriter = new StringWriter();
-            	PrintWriter printWriter = new PrintWriter(stringWriter);
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
                 e.printStackTrace(printWriter);
                 logError(stringWriter.toString());
             }
-    	}
-    	
+        }
+        else
+        {
+            logError("The following error has occurred:" + e.getMessage());
+            
+            if (toolContext != null && toolContext.isVerbose())
+            {
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                logError(stringWriter.toString());
+            }
+        }
+        
         // return generic error code
-    	return -1;
+        return -1;
     }
-
+    
     /**
      * Exit Tool
      * 

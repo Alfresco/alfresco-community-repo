@@ -201,41 +201,44 @@ public class AddUsersDialog extends BaseDialogBean
          {
             public SelectItem[] execute() throws Exception
             {
-               SelectItem[] items;
-
+               SelectItem[] items = new SelectItem[0];
+               
                // Use lucene search to retrieve user details
                String term = LuceneQueryParser.escape(contains.trim());
-               StringBuilder query = new StringBuilder(128);
-               Utils.generatePersonSearch(query, term);
-               List<NodeRef> nodes;
-               ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
-                       Repository.getStoreRef(),
-                       SearchService.LANGUAGE_LUCENE,
-                       query.toString());
-               try
+               if (term.length() != 0)
                {
-                  nodes = resultSet.getNodeRefs();
+                   StringBuilder query = new StringBuilder(128);
+                   Utils.generatePersonSearch(query, term);
+                   List<NodeRef> nodes;
+                   ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
+                           Repository.getStoreRef(),
+                           SearchService.LANGUAGE_LUCENE,
+                           query.toString());
+                   try
+                   {
+                      nodes = resultSet.getNodeRefs();
+                   }
+                   finally
+                   {
+                      resultSet.close();
+                   }
+                   
+                   ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
+                   for (NodeRef personRef : nodes)
+                   {
+                      String username = (String)getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
+                      if (AuthenticationUtil.getGuestUserName().equals(username) == false)
+                      {
+                         String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+                         String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+    
+                         SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
+                         itemList.add(item);
+                      }
+                   }
+                   items = new SelectItem[itemList.size()];
+                   itemList.toArray(items);
                }
-               finally
-               {
-                  resultSet.close();
-               }
-               
-               ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
-               for (NodeRef personRef : nodes)
-               {
-                  String username = (String)getNodeService().getProperty(personRef, ContentModel.PROP_USERNAME);
-                  if (AuthenticationUtil.getGuestUserName().equals(username) == false)
-                  {
-                     String firstName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-                     String lastName = (String)getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
-
-                     SelectItem item = new SortableSelectItem(username, firstName + " " + lastName + " [" + username + "]", lastName);
-                     itemList.add(item);
-                  }
-               }
-               items = new SelectItem[itemList.size()];
-               itemList.toArray(items);
                return items;
             }
          });

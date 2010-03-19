@@ -28,7 +28,7 @@ script:
             status.setCode(400, "Relationship type " + relType + " unknown");
             break script;
         }
-        if (model.relTypeDef.baseType.typeId != "relationship")
+        if (model.relTypeDef.baseType.typeId != RELATIONSHIP_TYPE_ID)
         {
             status.setCode(400, "Type + " + relType + " is not a relationship type");
             break script;
@@ -52,7 +52,7 @@ script:
     
     // retrieve relationships
     var page = paging.createPageOrWindow(args);
-    var paged = cmis.queryRelationships(model.node, model.relDefType, model.includeSubRelationshipTypes, model.direction, page);
+    var paged = cmis.queryRelationships(model.node, model.relTypeDef, model.includeSubRelationshipTypes, model.direction, page);
     model.results = paged.results;
     model.cursor = paged.cursor;
 }

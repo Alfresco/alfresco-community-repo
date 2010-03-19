@@ -806,8 +806,11 @@ public class RuleServiceImpl
                 {
                     orderedAssocs.add(assoc);
                 }
-            }            
-            orderedAssocs.add(index, movedAssoc);
+            }          
+            if (movedAssoc != null)
+            {
+                orderedAssocs.add(index, movedAssoc);
+            }
             
             index = 0;
             for (ChildAssociationRef orderedAssoc : orderedAssocs)

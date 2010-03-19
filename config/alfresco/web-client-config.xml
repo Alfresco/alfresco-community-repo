@@ -327,8 +327,14 @@
    </config>
    
    <config evaluator="string-compare" condition="Content Wizards">
+      <!-- The default content type - all content types must be subtypes of it -->
+      <default-content-type>
+      	<type name="cm:content" />
+      </default-content-type>
+      
       <!-- The list of custom content types to show in the content wizards -->
       <content-types>
+      	<type name="cm:content" />
       </content-types>
       
       <!-- The list of mime types that can be created inline -->

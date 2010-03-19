@@ -92,7 +92,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
       this.description = null;
       this.mimeType = null;
       this.inlineEdit = false;
-      this.objectType = ContentModel.TYPE_CONTENT.toString();
+      this.objectType = null;
       
       initOtherProperties();
    }
@@ -300,57 +300,104 @@ public abstract class BaseContentWizard extends BaseWizardBean
          
          // add the well known object type to start with
          this.objectTypes = new ArrayList<SelectItem>(5);
-         this.objectTypes.add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
-               Application.getMessage(context, "content")));
          
-         // add any configured content sub-types to the list
          ConfigService svc = Application.getConfigService(FacesContext.getCurrentInstance());
          Config wizardCfg = svc.getConfig("Content Wizards");
          if (wizardCfg != null)
          {
-            ConfigElement typesCfg = wizardCfg.getConfigElement("content-types");
-            if (typesCfg != null)
-            {               
-               for (ConfigElement child : typesCfg.getChildren())
+            ConfigElement defaultTypesCfg = wizardCfg.getConfigElement("default-content-type");
+            String parentLabel = "";
+            if (defaultTypesCfg != null)
+            {
+               // Get the default content-type to apply
+               ConfigElement typeElement = defaultTypesCfg.getChildren().get(0);
+               QName parentQName = Repository.resolveToQName(typeElement.getAttribute("name"));
+               TypeDefinition parentType = null;
+               if (parentQName != null)
                {
-                  QName idQName = Repository.resolveToQName(child.getAttribute("name"));
-                  if (idQName != null)
+                  parentType = this.getDictionaryService().getType(parentQName);
+                  
+                  if (parentType == null)
                   {
-                     TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
+                     // If no default content type is defined default to content
+                     parentQName = ContentModel.TYPE_CONTENT;
+                     parentType = this.getDictionaryService().getType(ContentModel.TYPE_CONTENT);
+                     this.objectTypes.add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
+                                          Application.getMessage(context, "content")));
+                     logger.warn("Configured default content type not found in dictionary: " + parentQName);
+                  }
+                  else
+                  {
+                     // try and get the display label from config
+                     parentLabel = Utils.getDisplayLabel(context, typeElement);
                      
-                     if (typeDef != null)
+                     // if there wasn't a client based label try and get it from the dictionary
+                     if (parentLabel == null)
                      {
-                        if (this.getDictionaryService().isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
+                        parentLabel = parentType.getTitle();
+                     }
+                     
+                     // finally, just use the localname
+                     if (parentLabel == null)
+                     {
+                        parentLabel = parentQName.getLocalName();
+                     }
+                  }
+               }
+               
+               // Get all content types defined
+               ConfigElement typesCfg = wizardCfg.getConfigElement("content-types");
+               if (typesCfg != null)
+               {
+                  for (ConfigElement child : typesCfg.getChildren())
+                  {
+                     QName idQName = Repository.resolveToQName(child.getAttribute("name"));
+                     if (idQName != null)
+                     {
+                        TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
+                        
+                        if (typeDef != null)
                         {
-                           // try and get the display label from config
-                           String label = Utils.getDisplayLabel(context, child);
-         
-                           // if there wasn't a client based label try and get it from the dictionary
-                           if (label == null)
+                           // for each type check if it is a subtype of the default content type
+                           if (this.getDictionaryService().isSubClass(typeDef.getName(), parentType.getName()))
                            {
-                              label = typeDef.getTitle();
+                              // try and get the display label from config
+                              String label = Utils.getDisplayLabel(context, child);
+                              
+                              // if there wasn't a client based label try and get it from the dictionary
+                              if (label == null)
+                              {
+                                 label = typeDef.getTitle();
+                              }
+                              
+                              // finally, just use the localname
+                              if (label == null)
+                              {
+                                 label = idQName.getLocalName();
+                              }
+                              
+                              this.objectTypes.add(new SelectItem(idQName.toString(), label));
                            }
-                           
-                           // finally, just use the localname
-                           if (label == null)
+                           else
                            {
-                              label = idQName.getLocalName();
+                              logger.warn("Failed to add '" + child.getAttribute("name") + 
+                                          "' to the list of content types - it is not a subtype of " + parentQName);
                            }
-                           
-                           this.objectTypes.add(new SelectItem(idQName.toString(), label));
-                        }
-                        else
-                        {
-                           logger.warn("Failed to add '" + child.getAttribute("name") + 
-                                 "' to the list of content types as the type is not a subtype of cm:content");
                         }
                      }
                      else
                      {
                         logger.warn("Failed to add '" + child.getAttribute("name") + 
-                              "' to the list of content types as the type is not recognised");
+                                    "' to the list of content types as the type is not recognised");
                      }
                   }
+               }
+               
+               // Case when no type is defined - we add the default content type to the list of available types
+               if (this.objectTypes.isEmpty())
+               {
+                  // add default content type to the list of available types
+                  this.objectTypes.add(new SelectItem(parentQName.toString(), parentLabel));
                }
                
                // make sure the list is sorted by the label

@@ -37,19 +37,11 @@
                <type>d:text</type>
             </property>
          </properties>
-         <mandatory-aspects>
-            <!-- Do not archive during development phase -->
-            <aspect>sys:temporary</aspect>
-         </mandatory-aspects>
       </type>
 
       <type name="dl:dataListItem">
          <title>Data List parent type</title>
          <parent>cm:content</parent>
-         <mandatory-aspects>
-            <!-- Do not archive during development phase -->
-            <aspect>sys:temporary</aspect>
-         </mandatory-aspects>
       </type>
 
       <type name="dl:todoList">

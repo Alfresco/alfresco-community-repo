@@ -54,8 +54,10 @@ import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -806,7 +808,25 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         
         return this.properties;
     }
-    
+
+    /**
+     * Return all the property names defined for this node's type as an array.
+     * 
+     * @param useShortQNames if true short-form qnames will be returned, else long-form.
+     * @return Array of property names for this node's type.
+     */
+    public Scriptable getTypePropertyNames(boolean useShortQNames)
+    {
+        Set<QName> props = this.services.getDictionaryService().getClass(this.getQNameType()).getProperties().keySet();
+        Object[] result = new Object[props.size()];
+        int count = 0;
+        for (QName qname : props)
+        {
+            result[count++] = useShortQNames ? getShortQName(qname).toString() : qname.toString();
+        }
+        return Context.getCurrentContext().newArray(this.scope, result);
+    }
+
     /**
      * @return true if this Node is a container (i.e. a folder)
      */

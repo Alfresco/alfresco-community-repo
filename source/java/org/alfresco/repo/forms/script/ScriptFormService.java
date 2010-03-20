@@ -124,8 +124,9 @@ public class ScriptFormService extends BaseScopableProcessorExtension
      * @param itemId The identifier of the item to retrieve a form for
      * @param postData The post data, this can be a Map of name value
      *                 pairs, a webscript FormData object or a JSONObject
+     * @return The persisted object
      */
-    public void saveForm(String itemKind, String itemId, Object postData)
+    public Object saveForm(String itemKind, String itemId, Object postData)
     {
         // A note on data conversion as passed in to this method:
         // Each of the 3 submission methods (multipart/formdata, JSON Post and
@@ -145,9 +146,9 @@ public class ScriptFormService extends BaseScopableProcessorExtension
             {
                 logger.debug("ScriptFormService.saveForm: postData not instanceof FormData.");
             }
-            return;
+            return null;
         }
        
-        formService.saveForm(new Item(itemKind, itemId), dataForFormService);
+        return formService.saveForm(new Item(itemKind, itemId), dataForFormService);
     }
 }

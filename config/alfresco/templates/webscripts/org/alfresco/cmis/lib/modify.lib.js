@@ -113,7 +113,7 @@ function updateNode(node, entry, exclude, validator)
         if (extension != null)
         {
             // Add and remove aspects
-            cmis.setAspects(node, extension.aspectsToAdd, extension.aspectsToRemove);
+            cmis.setAspects(node, extension.aspectsToRemove, extension.aspectsToAdd);
 
             // Apply the provided properties of the aspects
             unpackProperties(node, null, extension.properties, exclude, validator, vals);

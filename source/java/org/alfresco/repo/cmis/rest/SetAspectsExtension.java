@@ -82,11 +82,12 @@ public class SetAspectsExtension extends ExtensibleElementWrapper
     public Set<String> getAspectsToAdd()
     {
         Set<String> aspects = new TreeSet<String>();
-        for (Element aspect = getFirstChild(ASPECTS_TO_ADD); aspect != null; aspect = aspect
-                .getNextSibling(ASPECTS_TO_ADD))
+        for (Element aspect : this)
         {
-            aspects.add(aspect.getText());
-
+            if (aspect.getQName().equals(ASPECTS_TO_ADD))
+            {
+                aspects.add(aspect.getText());
+            }
         }
         return aspects;
     }
@@ -99,11 +100,12 @@ public class SetAspectsExtension extends ExtensibleElementWrapper
     public Set<String> getAspectsToRemove()
     {
         Set<String> aspects = new TreeSet<String>();
-        for (Element aspect = getFirstChild(ASPECTS_TO_REMOVE); aspect != null; aspect = aspect
-                .getNextSibling(ASPECTS_TO_REMOVE))
+        for (Element aspect : this)
         {
-            aspects.add(aspect.getText());
-
+            if (aspect.getQName().equals(ASPECTS_TO_REMOVE))
+            {
+                aspects.add(aspect.getText());
+            }
         }
         return aspects;
     }

@@ -13,6 +13,7 @@ function main()
 
     // potential redirect URL
     var redirect = null;
+    var persistedObject = null;
     
     try
     {
@@ -42,7 +43,7 @@ function main()
                 }
             }
 
-            formService.saveForm(itemKind, itemId, repoFormData);
+            persistedObject = formService.saveForm(itemKind, itemId, repoFormData);
         }
         else
         {
@@ -51,7 +52,7 @@ function main()
                 logger.log("Saving form with args = " + args);
             }
 
-            formService.saveForm(itemKind, itemId, args);
+            persistedObject = formService.saveForm(itemKind, itemId, args);
         }
     }
     catch (error)
@@ -92,6 +93,7 @@ function main()
        status.location = redirect;
     }
     
+    model.persistedObject = persistedObject.toString();
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 

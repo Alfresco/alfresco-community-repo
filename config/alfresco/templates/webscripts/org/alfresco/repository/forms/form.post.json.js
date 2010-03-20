@@ -32,9 +32,9 @@ function main()
     var jsonKeys = json.keys();
     for ( ; jsonKeys.hasNext(); )
     {
-	     var nextKey = jsonKeys.next();
-	     
-	     if (nextKey == "alf_redirect")
+        var nextKey = jsonKeys.next();
+        
+        if (nextKey == "alf_redirect")
         {
            // store redirect url in model
            model.redirect = json.get(nextKey);
@@ -44,16 +44,17 @@ function main()
                logger.log("found redirect: " + model.redirect);
            }
         }
-	     else
-	     {
-	        // add field to form data
-	        repoFormData.addFieldData(nextKey, json.get(nextKey));
-	     }
+        else
+        {
+           // add field to form data
+           repoFormData.addFieldData(nextKey, json.get(nextKey));
+        }
     }
 
+    var persistedObject = null;
     try
     {
-        formService.saveForm(itemKind, itemId, repoFormData);
+        persistedObject = formService.saveForm(itemKind, itemId, repoFormData);
     }
     catch (error)
     {
@@ -82,6 +83,7 @@ function main()
         return;
     }
     
+    model.persistedObject = persistedObject.toString();
     model.message = "Successfully persisted form for item [" + itemKind + "]" + itemId;
 }
 

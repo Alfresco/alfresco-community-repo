@@ -126,7 +126,7 @@ function main()
  * @param virtualNodeRef {string} nodeRef
  * @return {ScriptNode|null} Node corresponding to supplied virtual nodeRef. Returns null if supplied nodeRef isn't a "virtual" type
  */
-resolveVirtualNodeRef: function ParseArgs_resolveVirtualNodeRef(nodeRef)
+function resolveVirtualNodeRef(nodeRef)
 {
    var node = null;
    if (nodeRef == "alfresco://company/home")

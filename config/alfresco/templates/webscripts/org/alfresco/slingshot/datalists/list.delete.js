@@ -20,11 +20,11 @@
  */
 
 /**
- * Main entry point: Return list of Data Lists
+ * Main entry point: Delete a Data List
  *
- * @method getDataLists
+ * @method deleteList
  */
-function getDataLists()
+function deleteList()
 {
    // Use helper function to get the arguments
    var parsedArgs = ParseArgs.getParsedArgs();
@@ -32,12 +32,20 @@ function getDataLists()
    {
       return;
    }
-   
-   return (
+
+   try
    {
-      container: parsedArgs.rootNode,
-      lists: parsedArgs.rootNode.children
-   });
+      if (!parsedArgs.rootNode.remove())
+      {
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not delete.");
+         return;
+      }
+   }
+   catch(e)
+   {
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, e.toString());
+      return;
+   }
 }
 
-model.datalists = getDataLists();
+deleteList();

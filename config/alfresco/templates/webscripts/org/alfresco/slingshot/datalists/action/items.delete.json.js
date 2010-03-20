@@ -40,7 +40,7 @@ function runAction(p_params)
    // Must have array of items
    if (!items || items.length == 0)
    {
-      status.setCode(status.STATUS_BAD_REQUEST, "No items.");
+      status.setCode(status.STATUS_BAD_REQUEST, "No items supplied in JSON body.");
       return;
    }
    

@@ -34,32 +34,75 @@
 function runAction(p_params)
 {
    var results = [],
+      parentNode = p_params.rootNode,
       items = p_params.items,
-      item, result, nodeRef;
+      index, itemNode, result, nodeRef;
 
-   // Must have array of items
-   if (!items || items.length == 0)
+   // Must have parent node and array of items
+   if (!parentNode)
    {
-      status.setCode(status.STATUS_BAD_REQUEST, "No items.");
+      status.setCode(status.STATUS_BAD_REQUEST, "No parent node supplied on URL.");
+      return;
+   }
+   if (!items || items.length === 0)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "No items supplied in JSON body.");
       return;
    }
    
-   for (item in items)
+   // Properties to skip when duplicating
+   var propertiesToSkip =
    {
-      nodeRef = items[item];
+      "cm:name": true,
+      "cm:content": true
+   };
+   
+   for (index in items)
+   {
+      nodeRef = items[index];
       result =
       {
          nodeRef: nodeRef,
          action: "duplicateItem",
          success: false
-      }
+      };
       
       try
       {
          itemNode = search.findNode(nodeRef);
-         if (itemNode != null)
+         if (itemNode !== null)
          {
-            // TODO: DUPLICATE NODE
+            var duplicateProperties = new Array(),
+               propNames = itemNode.getTypePropertyNames(true),
+               propName;
+            
+            // Copy selected properties from the original node
+            for (var i = 0, ii = propNames.length; i < ii; i++)
+            {
+               propName = propNames[i];
+               if (propName in propertiesToSkip)
+               {
+                  continue;
+               }
+               duplicateProperties[propName] = itemNode.properties[propName];
+            }
+
+            // Duplicate the node with a new GUID cm:name
+            var newNode = parentNode.createNode(null, itemNode.type, duplicateProperties);
+            if (newNode !== null)
+            {
+               // Now copy any associations
+               for (var idxAssoc in itemNode.assocs)
+               {
+                  var assocs = itemNode.assocs[idxAssoc];
+                  for (var j = 0, jj = assocs.length; j < jj; j++)
+                  {
+                     newNode.createAssociation(assocs[j], idxAssoc);
+                  }
+               }
+               result.nodeRef = newNode.nodeRef.toString();
+               result.success = true;
+            }
          }
       }
       catch (e)

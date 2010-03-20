@@ -105,7 +105,4 @@ function getData()
    });
 }
 
-/**
- * Document List Component: doclist
- */
 model.data = getData();

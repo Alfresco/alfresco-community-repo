@@ -369,15 +369,16 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         return storeRefs;
     }
     
-    protected InIndex isTxnIdPresentInIndex(long txnId)
-    {
-        Transaction txn = nodeDaoService.getTxnById(txnId);
-        if (txn == null)
-        {
-            return InIndex.YES;
-        }
-        return isTxnPresentInIndex(txn);
-    }
+//    Unused - comemnted out to make use clearer for isTxnPresentInIndex
+//    protected InIndex isTxnIdPresentInIndex(long txnId)
+//    {
+//        Transaction txn = nodeDaoService.getTxnById(txnId);
+//        if (txn == null)
+//        {
+//            return InIndex.YES;
+//        }
+//        return isTxnPresentInIndex(txn);
+//    }
     
     /**
      * Determines if a given transaction is definitely in the index or not.
@@ -463,13 +464,16 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 {
                     // There are no updates or deletes and no entry in the indexes.
                     // There are outdated nodes in the index.
-                    result = InIndex.YES;
+                    result = InIndex.INDETERMINATE;
                 }
                 else
                 {
                     // There were deleted nodes only.  Check that all the deleted nodes were
                     // removed from the index otherwise it is out of date.
-                    result = InIndex.YES;
+                    // If all nodes have been removed from the index then the result is that the index is OK
+                    // ETWOTWO-1387
+                    // ALF-1989 - even if the nodes have not been found it is no good to use for AUTO index checking 
+                    result = InIndex.INDETERMINATE;
                     for (StoreRef storeRef : storeRefs)
                     {
                         if (!haveNodesBeenRemovedFromIndex(storeRef, txn))
@@ -633,22 +637,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             }
         }
         return !foundNodeRef;
-    }
-    
-    /**
-     * @return          Returns <tt>false</tt> if any one of the transactions aren't in the index.
-     */
-    protected boolean areTxnsInIndex(List<Transaction> txns)
-    {
-        for (Transaction txn : txns)
-        {
-            if (isTxnPresentInIndex(txn) == InIndex.NO)
-            {
-                // Missing txn
-                return false;
-            }
-        }
-        return true;
     }
     
     /**

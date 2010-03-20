@@ -456,11 +456,16 @@ found:
                 case YES:
                     fromTimeInclusive = txnCommitTime;
                     break found;
+                case INDETERMINATE:
+                    // If we hit an indeterminate transaction we go back a small amount to try and hit something definitive before a bigger step back
+                    firstWasInIndex = false;
+                    toTimeExclusive = txnCommitTime - 1000;
+                    continue;
                 default:
                     firstWasInIndex = false;
                     // Look further back in time.  Step back by 60 seconds each time, increasing
                     // the step by 10% each iteration.
-                    // Don't step back by more than a day
+                    // Don't step back by more than an hour
                     long decrement = Math.min(ONE_HOUR_MS, (long) (60000.0D * stepFactor));
                     toTimeExclusive = txnCommitTime - decrement;
                     stepFactor *= 1.1D;

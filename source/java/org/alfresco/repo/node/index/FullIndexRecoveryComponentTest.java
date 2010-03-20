@@ -18,8 +18,27 @@
  */
 package org.alfresco.repo.node.index;
 
+import java.util.List;
+import java.util.Locale;
+
+import javax.transaction.UserTransaction;
+
 import junit.framework.TestCase;
 
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.node.index.AbstractReindexComponent.InIndex;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
@@ -35,16 +54,112 @@ public class FullIndexRecoveryComponentTest extends TestCase
     private FullIndexRecoveryComponent indexRecoverer;
 
     private AVMFullIndexRecoveryComponent avmIndexRecoveryComponent;
+
+    private NodeService nodeService;
+
+    private NodeRef rootNodeRef;
+
+    private TransactionService transactionService;
+
+    private RetryingTransactionHelper retryingTransactionHelper;
+
+    private AuthenticationComponent authenticationComponent;
+
+    private UserTransaction testTX;
+    
+    private NodeDaoService nodeDaoService;
+    
     public void setUp() throws Exception
     {
         indexRecoverer = (FullIndexRecoveryComponent) ctx.getBean("indexRecoveryComponent");
         avmIndexRecoveryComponent = (AVMFullIndexRecoveryComponent) ctx.getBean("avmIndexRecoveryComponent");
+        nodeService = (NodeService) ctx.getBean("nodeService");
+        transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");     
+        nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoServiceImpl"); 
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        
+     
         
     }
     
     public void testSetup() throws Exception
     {
         
+    }
+    
+    public void XtestDeletionReporting() throws Exception
+    {
+        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        rootNodeRef = nodeService.getRootNode(storeRef);
+
+        NodeRef folder = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}folder"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
+        NodeRef[] refs = new NodeRef[20];
+        for(int i = 0; i < refs.length; i++)
+        {
+            refs[i] = nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}file"+i), ContentModel.TYPE_CONTENT).getChildRef();
+        }
+        
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        for(int i = 0; i < refs.length; i++)
+        {
+            nodeService.deleteNode(refs[i]);
+            testTX.commit();
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+        }
+        
+        // The following test are important but take too long ....
+        
+//        List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+//                Long.MIN_VALUE, Long.MAX_VALUE, 1, null, false);
+//        InIndex startAllPresent = indexRecoverer.areTxnsInStartSample(startTxns);
+//        assertEquals(InIndex.YES, startAllPresent);
+//        Long maxId = nodeDaoService.getMaxTxnIdByCommitTime(Long.MAX_VALUE);
+//        startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+//                Long.MIN_VALUE, Long.MAX_VALUE, maxId.intValue(), null, false);
+//        startAllPresent = indexRecoverer.areTxnsInStartSample(startTxns);
+//        assertEquals(InIndex.INDETERMINATE, startAllPresent);
+       
+//        for(int i = 0; i <= maxId.intValue(); i++)
+//        {
+//            System.out.println("TX "+i+" is "+indexRecoverer.isTxnPresentInIndex(nodeDaoService.getTxnById(i)));
+//        }
+        
+//        startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+//                Long.MIN_VALUE, Long.MAX_VALUE, startTxns.size() - 20, null, false);
+//        startAllPresent = indexRecoverer.areTxnsInStartSample(startTxns);
+//        assertEquals(InIndex.YES, startAllPresent);
+//        
+        
+        
+        List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+                Long.MIN_VALUE, Long.MAX_VALUE, 20, null, false);
+        InIndex endAllPresent = indexRecoverer.areAllTxnsInEndSample(endTxns);
+        assertEquals(InIndex.INDETERMINATE, endAllPresent);
+        
+        endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+                Long.MIN_VALUE, Long.MAX_VALUE, 21, null, false);
+        endAllPresent = indexRecoverer.areAllTxnsInEndSample(endTxns);
+        assertEquals(InIndex.INDETERMINATE, endAllPresent);
+        
+        endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+                Long.MIN_VALUE, Long.MAX_VALUE, 22, null, false);
+        endAllPresent = indexRecoverer.areAllTxnsInEndSample(endTxns);
+        assertEquals(InIndex.YES, endAllPresent);
     }
     
     public synchronized void testReindexing() throws Exception

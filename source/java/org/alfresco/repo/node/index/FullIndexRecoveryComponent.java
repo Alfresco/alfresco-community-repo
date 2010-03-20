@@ -27,6 +27,7 @@ import java.util.List;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.node.index.AbstractReindexComponent.InIndex;
 import org.alfresco.repo.node.index.IndexTransactionTracker.IndexTransactionTrackerListener;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -182,31 +183,56 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 transactionService.setAllowWrite(false);
             }
             
-            // Check that the first and last meaningful transactions are indexed 
-            List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
-                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null, false);
-            boolean startAllPresent = areTxnsInIndex(startTxns);
-            List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
-                    Long.MIN_VALUE, Long.MAX_VALUE, 10, null, false);
-            boolean endAllPresent = areTxnsInIndex(endTxns);
+            int startSample = 10;
+            InIndex startAllPresent;
+            do
+            {
+                // Check that the first and last meaningful transactions are indexed 
+                List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+                        Long.MIN_VALUE, Long.MAX_VALUE, startSample, null, false);
+                startAllPresent = areTxnsInStartSample(startTxns);
+                startSample += 10;
+                if(startSample > 1000)
+                {
+                    startAllPresent = InIndex.NO;
+                    break;
+                }
+            }
+            while(startAllPresent == InIndex.INDETERMINATE);
+            
+            int endSample = 10;
+            InIndex endAllPresent;
+            do
+            {
+                List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+                        Long.MIN_VALUE, Long.MAX_VALUE, endSample, null, false);
+                endAllPresent = areAllTxnsInEndSample(endTxns);
+                endSample += 10;
+                if(endSample > 1000)
+                {
+                    endAllPresent = InIndex.NO;
+                    break;
+                }
+            }
+            while(endAllPresent == InIndex.INDETERMINATE);
             
             // check the level of cover required
             switch (recoveryMode)
             {
             case AUTO:
-                if (!startAllPresent)
+                if (startAllPresent == InIndex.NO)
                 {
                     // Initial transactions are missing - rebuild
                     performFullRecovery();
                 }
-                else if (!endAllPresent)
+                else if (endAllPresent == InIndex.NO)
                 {
                     performPartialRecovery();
                 }
                 break;
             case VALIDATE:
                 // Check
-                if (!startAllPresent || !endAllPresent)
+                if ((startAllPresent == InIndex.NO) || (endAllPresent == InIndex.NO))
                 {
                     // Index is out of date
                     logger.warn(I18NUtil.getMessage(ERR_INDEX_OUT_OF_DATE));
@@ -223,6 +249,50 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             transactionService.setAllowWrite(allowWrite);
         }
         
+    }
+    
+    /**
+     * @return          Returns <tt>false</tt> if any one of the transactions aren't in the index.
+     */
+    protected InIndex areAllTxnsInEndSample(List<Transaction> txns)
+    {
+        int yesCount = 0;
+        for (Transaction txn : txns)
+        {
+            if (isTxnPresentInIndex(txn) == InIndex.NO)
+            {
+                // Missing txn
+                return InIndex.NO;
+            }
+            if (isTxnPresentInIndex(txn) == InIndex.YES)
+            {
+                yesCount++;
+            }
+        }
+        // Work around for TX that is written to the repo at start up .. must be more than one real add /update
+        if(yesCount > 1)
+        {
+            return InIndex.YES;
+        }
+        else
+        {
+            return InIndex.INDETERMINATE;
+        }
+    }
+    
+    protected InIndex areTxnsInStartSample(List<Transaction> txns)
+    {
+        InIndex current = InIndex.INDETERMINATE;
+        for (Transaction txn : txns)
+        {
+            current = isTxnPresentInIndex(txn);
+            if (current == InIndex.NO)
+            {
+                // Missing txn
+                return InIndex.NO;
+            } 
+        }
+        return current;
     }
     
     private void performPartialRecovery()

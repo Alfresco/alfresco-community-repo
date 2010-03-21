@@ -115,7 +115,7 @@ public abstract class BaseCMISTest extends BaseWebScriptTest
         Response res = sendRequest(get, 200);
         Assert.assertNotNull(res);
         String xml = res.getContentAsString();
-        T result = parse(new StringReader(xml));
+        T result = this.<T> parse(new StringReader(xml));
         Assert.assertNotNull(result);
         return result;
     }

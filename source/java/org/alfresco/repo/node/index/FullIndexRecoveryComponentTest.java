@@ -19,21 +19,17 @@
 package org.alfresco.repo.node.index;
 
 import java.util.List;
-import java.util.Locale;
 
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.index.AbstractReindexComponent.InIndex;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;

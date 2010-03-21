@@ -1219,18 +1219,19 @@ public class CMISScript extends BaseScopableProcessorExtension
     /**
      * Gets the list of policy objects currently applied to a target object.
      * 
-     * @param objectId
-     *            the object id
+     * @param source
+     *            source node
      * @param filter
      *            property filter
      * @throws WebScriptException on error
      */
-    public PagedResults getAppliedPolicies(String objectId, String filter, Page page)
+    public PagedResults getAppliedPolicies(ScriptNode source, String filter, Page page)
     {
         List<CMISTypeDefinition> policies;
         try
         {
-            policies = cmisService.getAppliedPolicies(objectId, filter);
+            policies = cmisService.getAppliedPolicies((String) cmisService.getProperty(source.getNodeRef(),
+                    CMISDictionaryModel.PROP_OBJECT_ID), filter);
         }
         catch (CMISServiceException e)
         {

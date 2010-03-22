@@ -26,7 +26,6 @@
       OfficeAddin.defaultQuery = "${defaultQuery}";
       ExternalComponent.init(
       {
-         fullUrl: "${url.full}",
          folderPath: "${url.serviceContext}/office/",
          ticket: "${session.ticket}"
       });

@@ -32,8 +32,11 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -66,7 +69,9 @@ import org.alfresco.util.ISO9075;
  */
 public class TaggingServiceImpl implements TaggingService, 
                                            TransactionListener,
-                                           NodeServicePolicies.BeforeDeleteNodePolicy
+                                           NodeServicePolicies.BeforeDeleteNodePolicy,
+                                           NodeServicePolicies.OnMoveNodePolicy,
+                                           CopyServicePolicies.OnCopyCompletePolicy
 {
     /** Node service */
     private NodeService nodeService;
@@ -163,17 +168,60 @@ public class TaggingServiceImpl implements TaggingService,
                 ContentModel.ASPECT_TAGGABLE, 
                 new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
         
-        // Update tag behaviour
+        // Create tag behaviour
         createTagBehaviour = new JavaBehaviour(this, "createTags", NotificationFrequency.FIRST_EVENT);
         this.policyComponent.bindClassBehaviour(
                 OnCreateNodePolicy.QNAME, 
                 ContentModel.ASPECT_TAGGABLE, 
                 createTagBehaviour);
+        // We need to register on content and folders, rather than
+        //  tagable, so we can pick up when things start and
+        //  stop being tagged
         updateTagBehaviour = new JavaBehaviour(this, "updateTags", NotificationFrequency.EVERY_EVENT);
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_CONTENT, 
                 updateTagBehaviour);
+        this.policyComponent.bindClassBehaviour(
+                OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.TYPE_FOLDER, 
+                updateTagBehaviour);
+        
+        // We need to know when you move or copy nodes
+        this.policyComponent.bindClassBehaviour(
+              OnCopyCompletePolicy.QNAME,
+              ContentModel.ASPECT_TAGGABLE, 
+              new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.FIRST_EVENT));
+        this.policyComponent.bindClassBehaviour(
+              OnMoveNodePolicy.QNAME,
+              ContentModel.ASPECT_TAGGABLE, 
+              new JavaBehaviour(this, "onMoveNode", NotificationFrequency.FIRST_EVENT));
+    }
+    
+    /**
+     * Called after a copy / delete / move, to trigger a 
+     *  tag scope update of all the tags on the node.
+     */
+    private void updateAllScopeTags(NodeRef nodeRef, Boolean isAdd)
+    {
+       ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(nodeRef);
+       if (assocRef != null)
+       {
+          updateAllScopeTags(nodeRef, assocRef.getParentRef(), isAdd);
+       }
+    }
+    private void updateAllScopeTags(NodeRef nodeRef, NodeRef parentNodeRef, Boolean isAdd)
+    {
+        if (parentNodeRef != null)
+        {
+            List<String> tags = getTags(nodeRef);
+            Map<String, Boolean> tagUpdates = new HashMap<String, Boolean>(tags.size());
+            for (String tag : tags)
+            {
+                tagUpdates.put(tag, isAdd);
+            }
+            updateTagScope(parentNodeRef, tagUpdates, false);
+        }
     }
     
     /**
@@ -185,25 +233,52 @@ public class TaggingServiceImpl implements TaggingService,
            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true &&
            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
        {
-           ChildAssociationRef assocRef = this.nodeService.getPrimaryParent(nodeRef);
-           if (assocRef != null)
-           {
-               NodeRef parent = assocRef.getParentRef();
-               if (parent != null)
-               {
-                   List<String> tags = getTags(nodeRef);
-                   Map<String, Boolean> tagUpdates = new HashMap<String, Boolean>(tags.size());
-                   for (String tag : tags)
-                   {
-                       tagUpdates.put(tag, Boolean.FALSE);
-                   }
-                   updateTagScope(parent, tagUpdates, false);
-               }
-           }
+           updateAllScopeTags(nodeRef, Boolean.FALSE);
        }
     }
     
-    public void createTags(ChildAssociationRef childAssocRef)
+   public void onCopyComplete(QName classRef, NodeRef sourceNodeRef,
+         NodeRef targetNodeRef, boolean copyToNewNode,
+         Map<NodeRef, NodeRef> copyMap) {
+      if(this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE)) {
+         updateAllScopeTags(targetNodeRef, Boolean.TRUE);
+      }
+   }
+
+   public void onMoveNode(ChildAssociationRef oldChildAssocRef,
+         ChildAssociationRef newChildAssocRef) {
+      NodeRef oldRef = oldChildAssocRef.getChildRef();
+      NodeRef oldParent = oldChildAssocRef.getParentRef();
+      NodeRef newRef = newChildAssocRef.getChildRef();
+      NodeRef newParent = newChildAssocRef.getParentRef();
+      
+      // Do nothing if it's a "rename" not a move
+      if(oldParent.equals(newParent)) {
+         return;
+      }
+      
+      // It has moved somewhere
+      // Remove the tags from the old location
+      if(this.nodeService.hasAspect(oldRef, ContentModel.ASPECT_TAGGABLE)) {
+         // Use the parent we were passed in, rather than re-fetching
+         //  via the node, as we need to reference the old scope!
+         ChildAssociationRef scopeParent;
+         if(oldChildAssocRef.isPrimary()) {
+            scopeParent = oldChildAssocRef;
+         } else {
+            scopeParent = this.nodeService.getPrimaryParent(oldParent);
+         }
+         if(scopeParent != null) {
+            updateAllScopeTags(oldRef, scopeParent.getParentRef(), Boolean.FALSE);
+         }
+      }
+      // Add the tags at its new location
+      if(this.nodeService.hasAspect(newRef, ContentModel.ASPECT_TAGGABLE)) {
+         updateAllScopeTags(newRef, Boolean.TRUE);
+      }
+   }
+
+   public void createTags(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
         Map<QName, Serializable> before = new HashMap<QName, Serializable>(0);

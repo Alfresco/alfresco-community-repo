@@ -38,6 +38,7 @@ import org.alfresco.cmis.CMISChoice;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISPermissionDefinition;
 import org.alfresco.cmis.CMISPermissionMapping;
@@ -457,7 +458,14 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
-        repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));
+        try
+        {
+            repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));
+        }
+        catch (CMISInvalidArgumentException e)
+        {
+            throw ExceptionUtil.createCmisException(e);
+        }
         repositoryInfoType.setLatestChangeLogToken(cmisChangeLogService.getLastChangeLogToken());
         // TODO: cmisVersionSupported is different in stubs and specification
         repositoryInfoType.setCmisVersionSupported("1.0");

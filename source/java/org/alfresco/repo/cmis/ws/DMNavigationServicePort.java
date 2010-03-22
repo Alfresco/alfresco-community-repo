@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.PropertyFilter;
@@ -223,38 +224,38 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME, CONSTRAINT,
      *         FILTER_NOT_VALID)
      */
-    public List<CmisObjectParentsType> getObjectParents(String repositoryId, String objectId, String filter, Boolean includeAllowableActions,
-            EnumIncludeRelationships includeRelationships, String renditionFilter, Boolean includeRelativePathSegment, CmisExtensionType extension) throws CmisException
+    public List<CmisObjectParentsType> getObjectParents(String repositoryId, String objectId, String filter,
+            Boolean includeAllowableActions, EnumIncludeRelationships includeRelationships, String renditionFilter,
+            Boolean includeRelativePathSegment, CmisExtensionType extension) throws CmisException
     {
         checkRepositoryId(repositoryId);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
 
-        NodeRef childNode;
         try
         {
-            childNode = (NodeRef) cmisService.getReadableObject(objectId, NodeRef.class);
+            NodeRef childNode = (NodeRef) cmisService.getReadableObject(objectId, NodeRef.class);
+            List<NodeRef> parents = receiveObjectParents(childNode);
+
+            List<CmisObjectParentsType> result = new ArrayList<CmisObjectParentsType>();
+            String relativePathSegment = propertiesUtil.getProperty(childNode, CMISDictionaryModel.PROP_NAME, "");
+            for (NodeRef objectNodeRef : parents)
+            {
+                CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeRelationships,
+                        includeAllowableActions, renditionFilter);
+                CmisObjectParentsType cmisObjectParentsType = new CmisObjectParentsType();
+                cmisObjectParentsType.setObject(cmisObject);
+                if (includeRelativePathSegment != null && includeRelativePathSegment)
+                {
+                    cmisObjectParentsType.setRelativePathSegment(relativePathSegment);
+                }
+                result.add(cmisObjectParentsType);
+            }
+            return result;
         }
         catch (CMISServiceException e)
         {
             throw ExceptionUtil.createCmisException(e);
         }
-        List<NodeRef> parents = receiveObjectParents(childNode);
-
-        List<CmisObjectParentsType> result = new ArrayList<CmisObjectParentsType>();
-        String relativePathSegment = propertiesUtil.getProperty(childNode, CMISDictionaryModel.PROP_NAME, "");
-        for (NodeRef objectNodeRef : parents)
-        {
-            CmisObjectType cmisObject = createCmisObject(objectNodeRef, propertyFilter, includeRelationships,
-                    includeAllowableActions, renditionFilter);
-            CmisObjectParentsType cmisObjectParentsType = new CmisObjectParentsType();
-            cmisObjectParentsType.setObject(cmisObject);
-            if (includeRelativePathSegment != null && includeRelativePathSegment)
-            {
-                cmisObjectParentsType.setRelativePathSegment(relativePathSegment);
-            }
-            result.add(cmisObjectParentsType);
-        }
-        return result;
     }
 
     private CmisObjectInFolderContainerType getDescendantsTree(String repositoryId, String folderId, BigInteger depth, String filter, Boolean includeAllowableActions,
@@ -316,7 +317,15 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         objectInFolderType.setObject(cmisObject);
         if (includePathSegments != null && includePathSegments)
         {
-            String path = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_NAME, "");
+            String path;
+            try
+            {
+                path = propertiesUtil.getProperty(nodeRef, CMISDictionaryModel.PROP_NAME, "");
+            }
+            catch (CMISInvalidArgumentException e)
+            {
+                throw ExceptionUtil.createCmisException(e);
+            }
             objectInFolderType.setPathSegment(path);
         }
         CmisObjectInFolderContainerType result = new CmisObjectInFolderContainerType();

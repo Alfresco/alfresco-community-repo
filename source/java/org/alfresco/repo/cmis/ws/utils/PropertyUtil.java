@@ -123,17 +123,20 @@ public class PropertyUtil
      * @param defaultValue - some value of the appropriate for conversion type. Also <b>null</b> may be accepted by this parameter
      * @return value instance of the appropriate type if specified object has such property and <i>defaultValue</i> if requested property value or <i>objectNodeRef</i> or
      *         <i>propertyName</i> are <b>null</b> or if some exception occurred during property receiving
+     * @throws CMISInvalidArgumentException 
      */
     public <ResultType> ResultType getProperty(NodeRef objectNodeRef, String propertyName, ResultType defaultValue)
+            throws CMISInvalidArgumentException
     {
         if ((null == objectNodeRef) || (null == propertyName))
         {
             return defaultValue;
         }
 
+        Serializable value = cmisService.getProperty(objectNodeRef, propertyName);
         try
         {
-            return convertPropertyValue(cmisService.getProperty(objectNodeRef, propertyName), defaultValue);
+            return convertPropertyValue(value, defaultValue);
         }
         catch (Exception exception)
         {
@@ -511,6 +514,11 @@ public class PropertyUtil
     @SuppressWarnings("unchecked")
     public CmisProperty createProperty(String pdid, CMISDataTypeEnum dataType, Serializable value)
     {
+        if (value == null)
+        {
+            return null;
+        }
+
         switch (dataType)
         {
         case BOOLEAN:

@@ -11,7 +11,7 @@
 const DEFAULT_MAX_RESULTS = 100;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 const QUERY_TEMPLATES = [
-   {field: "keywords", template: "%(cm:name cm:title cm:description lnk:title lnk:description TEXT)"}];
+   {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT)"}];
 
 /**
  * Returns site data as returned to the user.

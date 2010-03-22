@@ -172,7 +172,7 @@ public interface NodeServicePolicies
 	
     public interface BeforeAddAspectPolicy extends ClassPolicy
     {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode");
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddAspect");
         /**
          * Called before an <b>aspect</b> is added to a node
          * 

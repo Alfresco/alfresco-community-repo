@@ -1,5 +1,5 @@
-<#assign isImage=node.isDocument && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
-<#assign isVideo=node.isDocument && node.mimetype?starts_with("video/")>
+<#assign isImage=node.isDocument && node.mimetype?? && (node.mimetype = "image/gif" || node.mimetype = "image/jpeg" || node.mimetype = "image/png")>
+<#assign isVideo=node.isDocument && node.mimetype?? && node.mimetype?starts_with("video/")>
 <#setting locale="${locale}">
 
 <div class="summaryPopupPanel">

@@ -51,6 +51,8 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.sun.star.lang.NullPointerException;
+
 /**
  * This class adds some new behaviour to the standard ActionExecuterAbstractBase
  * in order to support the RenditionService.
@@ -450,8 +452,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             return null;
         else
         {
+            if(clazz == null)
+                throw new RenditionServiceException("The class must not be null!", new NullPointerException());
             Class<? extends Serializable> valueClass = value.getClass();
-            if (!valueClass.isAssignableFrom(clazz))
+            if ( !valueClass.isAssignableFrom(clazz))
             {
                 throw new RenditionServiceException("The parameter: " + paramName + " must be of type: "
                             + clazz.getName() + "but was of type: " + valueClass.getName());
@@ -476,6 +480,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     @SuppressWarnings("unchecked")
     public static <T> T getParamWithDefault(String paramName, T defaultValue, RenditionDefinition definition)
     {
+        if(defaultValue == null)
+            throw new RenditionServiceException("The defaultValue cannot be null!", new NullPointerException());
         Class<? extends T> clazz = (Class<? extends T>) defaultValue.getClass();
         T result = getCheckedParam(paramName, clazz, definition);
         if (result == null)

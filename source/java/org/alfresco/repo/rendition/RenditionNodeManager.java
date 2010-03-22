@@ -65,7 +65,7 @@ public class RenditionNodeManager
     public ChildAssociationRef findOrCreateRenditionNode()
     {
         QName renditionName = renditionDefinition.getRenditionName();
-        // If no rendition already exists create anew rendition node and
+        // If no rendition already exists create a new rendition node and
         // association.
         if (oldRendition == null)
         {
@@ -94,7 +94,9 @@ public class RenditionNodeManager
 
     private ChildAssociationRef moveRendition(QName associationName)
     {
-        return nodeService.moveNode(oldRendition, location.getParentRef(), ContentModel.ASSOC_CONTAINS, associationName);
+        NodeRef parent = location.getParentRef();
+        QName assocType = sourceNode.equals(parent) ? RenditionModel.ASSOC_RENDITION : ContentModel.ASSOC_CONTAINS;
+        return nodeService.moveNode(oldRendition, parent, assocType, associationName);
     }
 
     private void orphanRendition(QNamePattern renditionName)

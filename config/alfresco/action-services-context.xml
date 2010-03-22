@@ -712,6 +712,36 @@
       </property>
     </bean>
     
+    <bean id="accept-simpleworkflow" class="org.alfresco.repo.action.executer.TransitionSimpleWorkflowActionExecuter" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="copyService">
+          <ref bean="CopyService"/>
+      </property>
+      <property name="isAcceptTransition">
+          <value>true</value>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
+     <bean id="reject-simpleworkflow" class="org.alfresco.repo.action.executer.TransitionSimpleWorkflowActionExecuter" parent="action-executer">
+      <property name="nodeService">
+          <ref bean="NodeService"/>
+      </property>
+      <property name="copyService">
+          <ref bean="CopyService"/>
+      </property>
+      <property name="isAcceptTransition">
+          <value>false</value>
+      </property>
+      <property name="publicAction">
+          <value>false</value>
+      </property>
+    </bean>
+    
     <!-- deprecated -->
     <bean id="avm-link-validation" class="org.alfresco.linkvalidation.LinkValidationAction" parent="action-executer" lazy-init="true">
       <property name="linkValidationService">

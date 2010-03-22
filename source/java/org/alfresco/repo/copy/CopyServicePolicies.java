@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -97,6 +98,8 @@ public interface CopyServicePolicies
      */
     public interface OnCopyNodePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback");
+       
         /**
          * Called for all types and aspects before copying a node.
          * 
@@ -126,6 +129,8 @@ public interface CopyServicePolicies
      */
     public interface OnCopyCompletePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete");
+        
         /**
          * @param classRef          the type of the node that was copied
          * @param sourceNodeRef     the origional node

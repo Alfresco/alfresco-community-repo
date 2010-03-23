@@ -1,6 +1,9 @@
 <webscript>
-  <shortname>CMIS AtomPub Service Document</shortname>
+  <shortname>Get Repositories (getRepositories, getRepositoryInfo)</shortname>
   <description>
+ <![CDATA[
+  Returns a list of CMIS repositories available from this CMIS service endpoint.
+  ]]>
   </description>
   
   <url>/cmis</url>
@@ -8,6 +11,11 @@
   <url>/api/cmis</url>  
   
   <format default="atomsvc"/>
+  <responses>
+    <response type="cmis.atomsvc"/>
+  </responses>
+  
   <authentication>user</authentication>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

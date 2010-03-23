@@ -1,0 +1,57 @@
+<package>
+ <shortname>Alfresco CMIS AtomPub Binding</shortname>
+ <description>
+ <![CDATA[
+ The Content Management Interoperability Services (CMIS) standard defines a domain model and set of bindings that include Web Services and ReSTful AtomPub that
+ can be used by applications to work with one or more Content Management repositories/systems. The CMIS interface is designed to be layered on top of existing 
+ Content Management systems and their existing programmatic interfaces. It is not intended to prescribe how specific features should be implemented within those 
+ CM systems, nor to exhaustively expose all of the CM system’s capabilities through the CMIS interfaces. Rather, it is intended to define a generic/universal set
+ of capabilities provided by a CM system and a set of services for working with those capabilities.
+ <p/>
+ For a full description of the domain model and binding see the <a href="http://www.oasis-open.org/committees/document.php?document_id=36412">CMIS specification</a>.
+ <p/>
+ This Web Scripts package provides the Alfresco implementation of the CMIS AtomPub binding. This binding is based upon the Atom (RFC4287) and Atom Publishing Protocol (RFC5023).
+ In this binding, the client interacts with the repository by acquiring the service document, which Alfresco provides with each repository installation at:
+ <p/>
+ http://[host]:[port]/alfresco/service/cmis
+ <p/>
+ The client will then choose a CMIS collection, and then start accessing the repository by following the references in the returned documents. This binding consists of a service
+ document specifying at least CMIS service collections, atom collections, feeds and entry documents. CMIS extends the Atom and AtomPub documents utilizing the Atom and AtomPub
+ extension mechanism. CMIS also leverages link tags to specify additional resources related to the requested resource.
+ ]]>
+ </description>
+ <resources>
+ 
+  <resource>
+   <shortname>Service Document</shortname>
+   <description>Entry point for accessing CMIS AtomPub binding.</description>
+   <webscripts>cmis.get</webscripts>
+  </resource>
+ 
+  <resource>
+   <shortname>Types Collection</shortname>
+   <description>Represents a collection of CMIS Type definitions.</description>
+   <webscripts>typechildren.get</webscripts>
+  </resource>
+
+  <resource>
+   <shortname>Types Descendants</shortname>
+   <description>Represents a hierarchy of CMIS Type definitions.</description>
+   <webscripts>typedescendants.get</webscripts>
+  </resource>
+
+  <resource>
+   <shortname>Type Description</shortname>
+   <description>A CMIS Type Definition</description>
+   <webscripts>type.get</webscripts>
+  </resource>
+
+  <resource>
+   <shortname>CMIS ACLs</shortname>
+   <description>Access Control List</description>
+   <webscripts>acl.get,acl.put</webscripts>
+  </resource>
+  
+ </resources>
+ 
+</package>

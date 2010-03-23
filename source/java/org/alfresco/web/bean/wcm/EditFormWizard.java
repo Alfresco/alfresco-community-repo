@@ -331,13 +331,14 @@ public class EditFormWizard
                    
                    try
                    {
-                      props.clear();
-                      props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
-                                retd.getName());
                       for (int i=0; i<webforms.length(); i++)
                       {
                           if (LOGGER.isDebugEnabled())
                              LOGGER.debug("WebForm NodeRef: " + webforms.getNodeRef(i));
+                          
+                          props.clear();
+                          props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
+                                    retd.getName());
                           
                           NodeRef templateRef = getNodeService().createNode(webforms.getNodeRef(i),
                                                                             WCMAppModel.ASSOC_WEBFORMTEMPLATE,

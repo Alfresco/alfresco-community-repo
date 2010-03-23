@@ -412,7 +412,8 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         // The one to start at is the least of the two times
         long startTime = Math.min(lastIndexedAllCommitTimeMs, lastIndexedRemoteCommitTimeMs);
         // Done
-        return startTime;
+        // Make sure we recheck any voids
+        return startTime - maxTxnDurationMs;
     }
     /**
      * Gets the commit time for the last indexed transaction.  If there are no transactions, then the

@@ -39,12 +39,23 @@ function getPermissions()
    // [ALLOWED|DENIED];[USERNAME|GROUPNAME|ROLE];PERMISSION;[INHERITED|DIRECT]
    var isInherited = node.inheritsPermissions(),
       nodePermissions = parsePermissions(node.getDirectPermissions(), settable),
+      inheritedPermissions = [],
+      canReadInherited = true;
+   
+   if (node.parent.hasPermission("ReadPermissions"))
+   {
       inheritedPermissions = parsePermissions(node.parent.getPermissions(), settable);
+   }
+   else
+   {
+      canReadInherited = false;
+   }
 
    return (
    {
       inherited: inheritedPermissions,
       isInherited: isInherited,
+      canReadInherited: canReadInherited,
       direct: nodePermissions,
       settable: settable
    });

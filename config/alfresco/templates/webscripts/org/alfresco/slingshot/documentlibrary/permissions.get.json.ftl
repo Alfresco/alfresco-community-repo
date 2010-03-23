@@ -22,6 +22,7 @@
 {
    "inherited": <@permissionsJSON data.inherited />,
    "isInherited": ${data.isInherited?string},
+   "canReadInherited": ${data.canReadInherited?string},
    "direct": <@permissionsJSON data.direct />,
    "settable":
    [

@@ -426,6 +426,18 @@
         </property>
     </bean>
     
+    <!-- Import MailService from the OutboundSMTP subsystem (needed for email space/invited users actions) -->
+    <bean id="mailService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="OutboundSMTP" />
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.mail.javamail.JavaMailSender</value>
+            </list>
+        </property>
+    </bean>
+   
     <bean id="set-property-value" class="org.alfresco.repo.action.executer.SetPropertyValueActionExecuter" parent="action-executer">
         <property name="publicAction">
             <value>false</value>
@@ -517,8 +529,8 @@
         <property name="companyHomePath">
             <value>/${spaces.company_home.childname}</value>
         </property>
-        <property name="webApplicationContextUrl">
-            <value>${web.application.context.url}</value>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
         </property>
     </bean>
     

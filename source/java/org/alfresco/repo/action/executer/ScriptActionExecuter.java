@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.ScriptAction;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -48,11 +49,11 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_SCRIPTREF = "script-ref";
     
     private ServiceRegistry serviceRegistry;
+    private SysAdminParams sysAdminParams;
     private PersonService personService;
     private String companyHomePath;
     private StoreRef storeRef;
     private ScriptLocation scriptLocation;
-    private String webApplicationContextUrl;
 
     /**
      * @param serviceRegistry       The serviceRegistry to set.
@@ -62,6 +63,14 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
         this.serviceRegistry = serviceRegistry;
     }
     
+    /**
+     * @param sysAdminParams The sysAdminParams to set.
+     */
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+
     /**
      * @param personService         The personService to set.
      */
@@ -88,16 +97,6 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     public void setScriptLocation(ScriptLocation scriptLocation)
     {
         this.scriptLocation = scriptLocation;
-    }
-
-    /**
-     * Set the web application context url
-     * 
-     * @param webApplicationContextUrl web application context url
-     */
-    public void setWebApplicationContextUrl(String webApplicationContextUrl)
-    {
-        this.webApplicationContextUrl = webApplicationContextUrl;
     }
 
     /**
@@ -155,7 +154,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 ScriptAction scriptAction = new ScriptAction(this.serviceRegistry, action, this.actionDefinition);
                 model.put("action", scriptAction);
 
-                model.put("webApplicationContextUrl", webApplicationContextUrl);
+                model.put("webApplicationContextUrl", sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext());
 
                 Object result = null;
                 if (this.scriptLocation == null)

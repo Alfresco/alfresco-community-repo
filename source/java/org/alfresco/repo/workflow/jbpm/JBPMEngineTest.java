@@ -157,7 +157,7 @@ public class JBPMEngineTest extends BaseSpringTest
     }
 
     
-    public void testGetWorkflowInstance()
+    public void testGetWorkflowById()
     {
         WorkflowDefinition workflowDef = getTestDefinition();
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, null);
@@ -169,6 +169,10 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowInstance instance = workflowComponent.getWorkflowById(path.instance.id);
         assertNotNull(instance);
         assertEquals(path.instance.id, instance.id);
+        
+        workflowComponent.cancelWorkflow(instance.id);
+    	WorkflowInstance result = workflowComponent.getWorkflowById(instance.id);
+    	assertNull("The workflow isntance should be null!", result);
     }
     
     
@@ -267,7 +271,7 @@ public class JBPMEngineTest extends BaseSpringTest
         addAssocs.put(assocName, toAdd);
         WorkflowTask taskU3 = taskComponent.updateTask(task.id, null, addAssocs, null);
         assertNotNull(taskU3.properties.get(assocName));
-        assertEquals(3, ((List<NodeRef>)taskU3.properties.get(assocName)).size());
+        assertEquals(3, ((List<?>)taskU3.properties.get(assocName)).size());
         
         // add to assocation again
         List<NodeRef> toAddAgain = new ArrayList<NodeRef>();
@@ -277,7 +281,7 @@ public class JBPMEngineTest extends BaseSpringTest
         addAssocsAgain.put(assocName, toAddAgain);
         WorkflowTask taskU4 = taskComponent.updateTask(task.id, null, addAssocsAgain, null);
         assertNotNull(taskU4.properties.get(assocName));
-        assertEquals(5, ((List<NodeRef>)taskU4.properties.get(assocName)).size());
+        assertEquals(5, ((List<?>)taskU4.properties.get(assocName)).size());
         
         // remove assocation
         List<NodeRef> toRemove = new ArrayList<NodeRef>();
@@ -287,7 +291,7 @@ public class JBPMEngineTest extends BaseSpringTest
         removeAssocs.put(assocName, toRemove);
         WorkflowTask taskU5 = taskComponent.updateTask(task.id, null, null, removeAssocs);
         assertNotNull(taskU5.properties.get(assocName));
-        assertEquals(3, ((List<NodeRef>)taskU5.properties.get(assocName)).size());
+        assertEquals(3, ((List<?>)taskU5.properties.get(assocName)).size());
     }
     
     

@@ -154,7 +154,6 @@ public class JBPMEngine extends BPMEngine
         "select timer " +
         "from org.jbpm.job.Timer timer " +
         "where timer.processInstance = :process ";
-        
     
     // Workflow Path Seperators
     private final static String WORKFLOW_PATH_SEPERATOR = "-";
@@ -654,7 +653,6 @@ public class JBPMEngine extends BPMEngine
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.WorkflowComponent#startWorkflow(java.lang.String, java.util.Map)
      */
-    @SuppressWarnings("unchecked")
     public WorkflowPath startWorkflow(final String workflowDefinitionId, final Map<QName, Serializable> parameters)
     {
         try
@@ -765,7 +763,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     // retrieve workflow
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
+                    ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowId);
                     return processInstance == null ? null : createWorkflowInstance(processInstance);
                 }
             });
@@ -776,16 +774,9 @@ public class JBPMEngine extends BPMEngine
         }        
     }
     
-    /**
-     * Gets a jBPM Process Instance
-     * @param graphSession  jBPM graph session
-     * @param workflowId  workflow id
-     * @return  process instance
-     */
-    protected ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
+    private ProcessInstance getProcessInstanceIfExists(GraphSession graphSession, String workflowId)
     {
         ProcessInstance processInstance = graphSession.getProcessInstance(getJbpmId(workflowId));
-        
         if ((processInstance != null) && (tenantService.isEnabled()))
         {
             try
@@ -797,7 +788,18 @@ public class JBPMEngine extends BPMEngine
                 processInstance = null;
             }
         }
-        
+        return processInstance;
+    }
+    
+    /**
+     * Gets a jBPM Process Instance
+     * @param graphSession  jBPM graph session
+     * @param workflowId  workflow id
+     * @return  process instance
+     */
+    protected ProcessInstance getProcessInstance(GraphSession graphSession, String workflowId)
+    {
+        ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowId);
         if (processInstance == null)
         {
             throw new WorkflowException("Workflow instance '" + workflowId + "' does not exist");
@@ -901,7 +903,6 @@ public class JBPMEngine extends BPMEngine
         {
             return (WorkflowInstance) jbpmTemplate.execute(new JbpmCallback()
             {
-				@SuppressWarnings("unchecked")
                 public Object doInJbpm(JbpmContext context)
                 {
                     // retrieve and cancel process instance
@@ -934,7 +935,6 @@ public class JBPMEngine extends BPMEngine
         {
             return (WorkflowInstance) jbpmTemplate.execute(new JbpmCallback()
             {
-                @SuppressWarnings("unchecked")
                 public Object doInJbpm(JbpmContext context)
                 {
                     // retrieve and cancel process instance
@@ -1379,20 +1379,8 @@ public class JBPMEngine extends BPMEngine
                 createProcessCriteria(variables, query);
                 
                 // retrieve list of processes matching specified variables
-                List<ProcessInstance> processList = variables.list();
-                Object[] processIds = null;
-                if (processList.size() == 0)
-                {
-                    processIds = new Object[] { new Long(-1) };
-                }
-                else
-                {
-                    processIds = new Object[processList.size()];
-                    for (int i = 0; i < processList.size(); i++)
-                    {
-                        processIds[i] = processList.get(i).getId();
-                    }
-                }
+                List<?> processList = variables.list();
+                Object[] processIds = getProcessIds( processList);
 
                 // constrain tasks by process list
                 process = (process == null) ? task.createCriteria("processInstance") : process;
@@ -1459,6 +1447,23 @@ public class JBPMEngine extends BPMEngine
         
         return task;
     }
+
+	private Object[] getProcessIds(List<?> processList) {
+		ArrayList<Object> ids = new ArrayList<Object>(processList.size());
+		if (processList.isEmpty())
+		{
+		    ids.add(new Long(-1));
+		}
+		else
+		{
+			for (Object obj : processList)
+			{
+				ProcessInstance instance = (ProcessInstance) obj;
+				ids.add(instance.getId());
+			}
+		}
+		return ids.toArray();
+	}
     
     /**
      * Create process-specific query criteria
@@ -1553,7 +1558,8 @@ public class JBPMEngine extends BPMEngine
         {
             return (WorkflowTask) jbpmTemplate.execute(new JbpmCallback()
             {
-                public Object doInJbpm(JbpmContext context)
+                @SuppressWarnings("unchecked")
+				public Object doInJbpm(JbpmContext context)
                 {
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
@@ -1589,7 +1595,7 @@ public class JBPMEngine extends BPMEngine
                                 }
                                 else
                                 {
-                                    for (NodeRef nodeRef : (List<NodeRef>)toAdd.getValue())
+                                    for (NodeRef nodeRef : toAdd.getValue())
                                     {
                                         if (!(existingAdd.contains(nodeRef)))
                                         {
@@ -2080,9 +2086,9 @@ public class JBPMEngine extends BPMEngine
                 }
                 
                 // convert property value
-                if (value instanceof Collection)
+                if (value instanceof Collection<?>)
                 {
-                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), (Collection)value);
+                    value = (Serializable)DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), (Collection<?>)value);
                 }
                 else
                 {
@@ -2132,7 +2138,7 @@ public class JBPMEngine extends BPMEngine
                     }
                         
                     // NOTE: Only use first comment in list
-                    final List<Comment> comments = instance.getComments();
+                    final List<?> comments = instance.getComments();
                     if (comments != null && comments.size() > 0)
                     {
                         // remove existing comments
@@ -2142,8 +2148,9 @@ public class JBPMEngine extends BPMEngine
                             public Object doInJbpm(JbpmContext context)
                             {
                                 Session session = context.getSession();
-                                for (Comment comment : comments)
+                                for (Object obj: comments)
                                 {
+                                	Comment comment = (Comment) obj;
                                     comment.getToken().getComments().remove(comment);
                                     session.delete(comment);
                                 }
@@ -2356,13 +2363,13 @@ public class JBPMEngine extends BPMEngine
         if (!processContext.hasVariable(workflowPackageName))
         {
             Serializable packageNodeRef = taskProperties.get(WorkflowModel.ASSOC_PACKAGE);
-            processContext.setVariable(workflowPackageName, convertNodeRefs(packageNodeRef instanceof List, packageNodeRef));
+            processContext.setVariable(workflowPackageName, convertNodeRefs(packageNodeRef instanceof List<?>, packageNodeRef));
         }
         String workflowContextName = mapQNameToName(WorkflowModel.PROP_CONTEXT);
         if (!processContext.hasVariable(workflowContextName))
         {
             Serializable contextRef = taskProperties.get(WorkflowModel.PROP_CONTEXT);
-            processContext.setVariable(workflowContextName, convertNodeRefs(contextRef instanceof List, contextRef));
+            processContext.setVariable(workflowContextName, convertNodeRefs(contextRef instanceof List<?>, contextRef));
         }
     }
     
@@ -2414,7 +2421,7 @@ public class JBPMEngine extends BPMEngine
                 if (isMandatory)
                 {
                     Object value = existingValues.get(entry.getKey());
-                    if (value == null || (value instanceof List && ((List)value).size() == 0))
+                    if (value == null || (value instanceof List<?> && ((List<?>)value).isEmpty()))
                     {
                         if (missingProps == null)
                         {
@@ -2475,7 +2482,8 @@ public class JBPMEngine extends BPMEngine
      * @param value  value to convert
      * @return JBPMNodeList or JBPMNode
      */
-    private Serializable convertNodeRefs(boolean isMany, Serializable value)
+    @SuppressWarnings("unchecked")
+	private Serializable convertNodeRefs(boolean isMany, Serializable value)
     {
         if (value instanceof NodeRef)
         {

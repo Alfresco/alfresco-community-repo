@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 
 /**
@@ -87,8 +88,19 @@ public class LinkRules extends ActionExecuterAbstractBase
                 NodeRef linkedToNode = ((RuleService)ruleService).getLinkedToRuleNode(actionedUponNodeRef);
                 if (linkedToNode == null)
                 {
-                    // Can't link a node if it already has rules
-                    throw new AlfrescoRuntimeException("The current folder has rules and can not be linked to another folder.");
+                    // if the node has no rules we can delete the folder ready to link
+                    List<Rule> rules = ((RuleService)ruleService).getRules(actionedUponNodeRef, false);
+                    if (rules.isEmpty() == false)
+                    {
+                        // Can't link a node if it already has rules
+                        throw new AlfrescoRuntimeException("The current folder has rules and can not be linked to another folder.");
+                    }
+                    else
+                    {
+                        // Delete the rules system folder
+                        NodeRef ruleFolder = ruleService.getSavedRuleFolderAssoc(actionedUponNodeRef).getChildRef();
+                        nodeService.deleteNode(ruleFolder);
+                    }
                 }
                 else
                 {

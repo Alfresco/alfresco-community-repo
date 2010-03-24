@@ -232,6 +232,11 @@ public class RuleLinkTest extends BaseSpringTest
         
         try
         {
+            rules = ruleService.getRules(folderTwo);
+            assertNotNull(rules);
+            assertFalse(rules.isEmpty());
+            assertEquals(2, rules.size());
+            
             link(folderTwo, folderOne);
             fail("Shouldn't be able to link a folder that already has rules that it owns.");
         }

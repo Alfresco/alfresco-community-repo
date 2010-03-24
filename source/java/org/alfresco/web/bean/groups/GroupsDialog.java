@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -43,6 +44,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.dialog.ChangeViewSupport;
 import org.alfresco.web.bean.dialog.FilterViewSupport;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.data.DynamicResolver;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -333,191 +335,182 @@ public class GroupsDialog extends BaseDialogBean
       return this.location;
    }
    
-    /**
-     * @return true if user is in the root group
-     */
-    public boolean isAllowSearchGroups()
-    {
-        return this.group == null;
-    }
+   /**
+    * @return true if user is in the root group
+    */
+   public boolean isAllowSearchGroups()
+   {
+      return this.group == null;
+   }
 
-    /**
-     * @return The list of group objects to display. Returns the list of root groups or the list of sub-groups for the current group if set.
-     */
-    public List<Map<String,String>> getGroups()
-    {
-       if (this.group == null)
-       {
-          if (this.groups == null)
-          {
-             searchGroups();
-          }
-       }
-       else
-       {
-          if (this.groups == null)
-          {
-             showAllGroups();
-          }
-       }
-       return this.groups;
-    }
-   
-    /**
-     * @return Returns the groups search criteria
-     */
-    public String getGroupsSearchCriteria()
-    {
-       return groupsSearchCriteria;
-    }
+   /**
+    * @return The list of group objects to display. Returns the list of root groups or the list of sub-groups for the current group if set.
+    */
+   public List<Map<String,String>> getGroups()
+   {
+      if (this.group == null)
+      {
+         if (this.groups == null)
+         {
+            searchGroups();
+         }
+      }
+      else
+      {
+         if (this.groups == null)
+         {
+            showAllGroups();
+         }
+      }
+      return this.groups;
+   }
 
-    /**
-     * Event handler called when the user wishes to search for a group
-     * 
-     * @return The outcome
-     */
-    public String searchGroups()
-    {
-       searchGroups(false);
-       // return null to stay on the same page
-       return null;
-    }
+   /**
+    * @return Returns the groups search criteria
+    */
+   public String getGroupsSearchCriteria()
+   {
+      return groupsSearchCriteria;
+   }
 
-    /**
-     * Action handler to show all the sub-groups in the group
-     * 
-     * @return The outcome
-     */
-    public String showAllGroups()
-    {
-       searchGroups(true);
-       // return null to stay on the same page
-       return null;
-    }
+   /**
+    * Event handler called when the user wishes to search for a group
+    * 
+    * @return The outcome
+    */
+   public String searchGroups()
+   {
+      searchGroups(false);
+      // return null to stay on the same page
+      return null;
+   }
 
-    /**
-     * Searches groups
-     * 
-     * @param all if true searches all groups and doesn't take account of search term
-     */
-    private void searchGroups(boolean all)
-    {
-        groupsRichList.setValue(null);
-        String search = null;
+   /**
+    * Action handler to show all the sub-groups in the group
+    * 
+    * @return The outcome
+    */
+   public String showAllGroups()
+   {
+      searchGroups(true);
+      // return null to stay on the same page
+      return null;
+   }
 
-        // Use the search criteria if we are not searching for everything
-        if (!all)
-        {
-            if (this.groupsSearchCriteria == null)
-            {
-                search = null;
+   /**
+    * Searches groups
+    * 
+    * @param all if true searches all groups and doesn't take account of search term
+    */
+   private void searchGroups(boolean all)
+   {
+      groupsRichList.setValue(null);
+      String search = null;
+      
+      // Use the search criteria if we are not searching for everything
+      if (!all)
+      {
+         if (this.groupsSearchCriteria == null)
+         {
+            search = null;
+         }
+         else
+         {
+            search = groupsSearchCriteria.trim();
+            if (search.length() == 0)
+            {   
+               search = null;
             }
             else
             {
-                search = groupsSearchCriteria.trim();
-                if (search.length() == 0)
-                {   
-                    search = null;
-                }
-                else
-                {
-                    // Let's make it search on the short name/display name prefix
-                    search = search + "*";
-                }
+               // Let's make it search on the short name/display name prefix
+               search = search + "*";
             }
-        }
+         }
+      }
+      
+      if (!all && search == null)
+      {
+         // Do not allow empty searches
+         this.groups = Collections.<Map<String,String>> emptyList();
+      }
+      else
+      {
+         boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+         Set<String> authorities = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
+         groups = new ArrayList<Map<String,String>>(authorities.size());
+         for (String authority : authorities)
+         {
+            Map<String, String> authMap = new HashMap<String, String>(11);
 
-        if (!all && search == null)
-        {
-            // Do not allow empty searches
-            this.groups = Collections.<Map<String,String>> emptyList();
-        }
-        else
-        {
-            boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-            Set<String> authorities = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
-            groups = new ArrayList<Map<String,String>>(authorities.size());
-            for (String authority : authorities)
+            String name = this.authService.getAuthorityDisplayName(authority);
+            if (name == null)
             {
-               Map<String, String> authMap = new HashMap<String, String>(11);
-
-               String name = this.authService.getAuthorityDisplayName(authority);
-               if (name == null)
-               {
-                   name = this.authService.getShortName(name);
-               }
-               authMap.put("name", name);
-               authMap.put("id", authority);
-               authMap.put("group", authority);
-               authMap.put("groupName", name);
-               
-               groups.add(authMap);
+               name = this.authService.getShortName(name);
             }
-        }
-    }
+            authMap.put("name", name);
+            authMap.put("id", authority);
+            authMap.put("group", authority);
+            authMap.put("groupName", name);
+            
+            groups.add(authMap);
+         }
+      }
+   }
 
-    /**
-     * @return The list of user objects to display. Returns the list of user for the current group.
-     */
-    public List<Map<String,String>> getUsers()
-    {
-       List<Map<String,String>> users;
-       
-       UserTransaction tx = null;
-       try
-       {
-          FacesContext context = FacesContext.getCurrentInstance();
-          tx = Repository.getUserTransaction(context, true);
-          tx.begin();
-          
-          Set<String> authorities;
-          if (this.group == null)
-          {
-             authorities = Collections.<String>emptySet();
-          }
-          else
-          {
-             // users of an existing group
-             boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-             authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, this.group, immediate);
-          }
-          users = new ArrayList<Map<String,String>>(authorities.size());
-          for (String authority : authorities)
-          {
-             Map<String, String> authMap = new HashMap<String, String>(5);
-
-             String userName = this.getAuthorityService().getShortName(authority);
-             authMap.put("userName", userName);
-             authMap.put("id", authority);
-
-             // get Person details for this Authority
-             NodeRef ref = this.getPersonService().getPerson(authority);
-             String firstName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
-             String lastName = (String)this.getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
-
-             // build a sensible label for display
-             StringBuilder label = new StringBuilder(48);
-             label.append(firstName)
-                  .append(' ')
-                  .append(lastName != null ? lastName : "");
-             authMap.put("name", label.toString());
-             
-             users.add(authMap);
-          }
-          
-          // commit the transaction
-          tx.commit();
-       }
-       catch (Throwable err)
-       {
-          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
-                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-          users = Collections.<Map<String,String>>emptyList();
-          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-       }
-       
-       return users;
-    }
+   /**
+    * @return The list of user objects to display. Returns the list of user for the current group.
+    */
+   public List<Map<String, Object>> getUsers()
+   {
+      List<Map<String, Object>> users;
+      
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         Set<String> authorities;
+         if (this.group == null)
+         {
+            authorities = Collections.<String>emptySet();
+         }
+         else
+         {
+            // users of an existing group
+            boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+            authorities = this.getAuthorityService().getContainedAuthorities(AuthorityType.USER, this.group, immediate);
+         }
+         users = new ArrayList<Map<String, Object>>(authorities.size());
+         for (String authority : authorities)
+         {
+            final Map<String, Object> authMap = new HashMap<String, Object>(8);
+            
+            final String userName = this.getAuthorityService().getShortName(authority);
+            authMap.put("userName", userName);
+            authMap.put("id", authority);
+            authMap.put("name", new AuthorityNamePropertyResolver(userName));
+            authMap.put("firstName", new AuthorityPropertyResolver(userName, ContentModel.PROP_FIRSTNAME));
+            authMap.put("lastName", new AuthorityPropertyResolver(userName, ContentModel.PROP_LASTNAME));
+            
+            users.add(authMap);
+         }
+         
+         // commit the transaction
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
+         users = Collections.<Map<String, Object>>emptyList();
+         try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
+      
+      return users;
+   }
 
    /**
     * Set the current Group Authority.
@@ -723,6 +716,7 @@ public class GroupsDialog extends BaseDialogBean
       public String Label;
    }
    
+   
    /**
     * Simple wrapper bean exposing user authority and person details for JSF results list
     */
@@ -748,5 +742,63 @@ public class GroupsDialog extends BaseDialogBean
       
       private String name;
       private String authority;
+   }
+   
+   
+   /**
+    * Simple dynamic resolver class to return authority properties at runtime
+    */
+   public class AuthorityPropertyResolver implements DynamicResolver
+   {
+      final private String authority;
+      final private QName property;
+      private String value = null;
+      
+      AuthorityPropertyResolver(String authority, QName property)
+      {
+         this.authority = authority;
+         this.property = property;
+      }
+      
+      @Override
+      public String toString()
+      {
+         if (this.value == null)
+         {
+            NodeRef ref = getPersonService().getPerson(this.authority);
+            this.value = (String)getNodeService().getProperty(ref, this.property);
+         }
+         return this.value;
+      }
+   }
+   
+   public class AuthorityNamePropertyResolver implements DynamicResolver
+   {
+      final private String authority;
+      private String value = null;
+      
+      AuthorityNamePropertyResolver(String authority)
+      {
+         this.authority = authority;
+      }
+      
+      @Override
+      public String toString()
+      {
+         if (this.value == null)
+         {
+            NodeRef ref = getPersonService().getPerson(this.authority);
+            String firstName = (String)getNodeService().getProperty(ref, ContentModel.PROP_FIRSTNAME);
+            String lastName = (String)getNodeService().getProperty(ref, ContentModel.PROP_LASTNAME);
+            
+            // build a sensible label for display
+            StringBuilder label = new StringBuilder(48);
+            label.append(firstName != null ? firstName : "")
+                 .append(' ')
+                 .append(lastName != null ? lastName : "");
+            this.value = label.toString();
+         }
+         return this.value;
+      }
    }
 }

@@ -131,7 +131,7 @@
 
 	<a:richList id="users-list" binding="#{DialogManager.bean.usersRichList}" viewMode="#{DialogManager.bean.viewMode}" pageSize="12"
             styleClass="recordSet" headerStyleClass="recordSetHeader" rowStyleClass="recordSetRow" altRowStyleClass="recordSetRowAlt" width="100%"
-            value="#{DialogManager.bean.users}" var="r" initialSortColumn="name" initialSortDescending="true">
+            value="#{DialogManager.bean.users}" var="r" initialSortColumn="userName" initialSortDescending="true">
          
          <%-- Primary column for icons view mode --%>
          <a:column primary="true" style="padding:2px;text-align:left;vertical-align:top;font-weight: bold;" rendered="#{DialogManager.bean.viewMode == 'icons'}">
@@ -144,12 +144,20 @@
          <%-- Primary column for details view mode --%>
          <a:column primary="true" style="padding:2px;text-align:left;" rendered="#{DialogManager.bean.viewMode == 'details'}">
             <f:facet name="small-icon">
-               <h:graphicImage alt="#{r.name}" value="/images/icons/person.gif" />
+               <h:graphicImage alt="#{r.firstName}" value="/images/icons/person.gif" />
             </f:facet>
             <f:facet name="header">
-               <a:sortLink label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
+               <a:sortLink label="#{msg.first_name}" value="firstName" mode="case-insensitive" styleClass="header"/>
             </f:facet>
-            <h:outputText value="#{r.name}" />
+            <h:outputText value="#{r.firstName}" />
+         </a:column>
+         
+         <%-- Last name column --%>
+         <a:column width="120" style="text-align:left" rendered="#{DialogManager.bean.viewMode == 'details'}">
+            <f:facet name="header">
+               <a:sortLink label="#{msg.last_name}" value="lastName" styleClass="header" />
+            </f:facet>
+            <h:outputText value="#{r.lastName}" />
          </a:column>
          
          <%-- Username column --%>

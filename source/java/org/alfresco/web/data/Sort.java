@@ -183,6 +183,10 @@ public abstract class Sort
          {
             this.comparator = new TimestampComparator();
          }
+         else if (DynamicResolver.class.isAssignableFrom(returnType))
+         {
+            this.comparator = new SimpleStringComparator();
+         }
          else
          {
             s_logger.warn("Unsupported sort data type: " + returnType + " defaulting to .toString()");

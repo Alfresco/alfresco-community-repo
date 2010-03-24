@@ -165,6 +165,8 @@ public final class FacesHelper
       {
          // catch exception to resolve ADB-158/ACT-7343
          // not much we can do here, just make sure return is null
+         if (logger.isDebugEnabled())
+             logger.debug("Failed to resolve managed bean: " + name);
          obj = null;
       }
       

@@ -183,38 +183,16 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 transactionService.setAllowWrite(false);
             }
             
-            int startSample = 10;
-            InIndex startAllPresent;
-            do
-            {
-                // Check that the first and last meaningful transactions are indexed 
-                List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
-                        Long.MIN_VALUE, Long.MAX_VALUE, startSample, null, false);
-                startAllPresent = areTxnsInStartSample(startTxns);
-                startSample += 10;
-                if(startSample > 1000)
-                {
-                    startAllPresent = InIndex.NO;
-                    break;
-                }
-            }
-            while(startAllPresent == InIndex.INDETERMINATE);
             
-            int endSample = 10;
-            InIndex endAllPresent;
-            do
-            {
-                List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
-                        Long.MIN_VALUE, Long.MAX_VALUE, endSample, null, false);
-                endAllPresent = areAllTxnsInEndSample(endTxns);
-                endSample += 10;
-                if(endSample > 1000)
-                {
-                    endAllPresent = InIndex.NO;
-                    break;
-                }
-            }
-            while(endAllPresent == InIndex.INDETERMINATE);
+            List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+                    Long.MIN_VALUE, Long.MAX_VALUE, 1000, null, false);
+            InIndex startAllPresent = areTxnsInStartSample(startTxns);
+            
+            
+            List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+                    Long.MIN_VALUE, Long.MAX_VALUE, 1000, null, false);
+            InIndex endAllPresent = areAllTxnsInEndSample(endTxns);
+                
             
             // check the level of cover required
             switch (recoveryMode)
@@ -256,9 +234,11 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
      */
     protected InIndex areAllTxnsInEndSample(List<Transaction> txns)
     {
+        int count = 0;
         int yesCount = 0;
         for (Transaction txn : txns)
         {
+            count++;
             if (isTxnPresentInIndex(txn) == InIndex.NO)
             {
                 // Missing txn
@@ -267,30 +247,33 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             if (isTxnPresentInIndex(txn) == InIndex.YES)
             {
                 yesCount++;
+                if((yesCount > 1) && (count >= 10))
+                {
+                    return InIndex.YES;
+                }
             }
         }
-        // Work around for TX that is written to the repo at start up .. must be more than one real add /update
-        if(yesCount > 1)
-        {
-            return InIndex.YES;
-        }
-        else
-        {
-            return InIndex.INDETERMINATE;
-        }
+        return InIndex.INDETERMINATE;
     }
     
     protected InIndex areTxnsInStartSample(List<Transaction> txns)
     {
+        int count = 0;
         InIndex current = InIndex.INDETERMINATE;
         for (Transaction txn : txns)
         {
+            count++;
             current = isTxnPresentInIndex(txn);
             if (current == InIndex.NO)
             {
                 // Missing txn
                 return InIndex.NO;
             } 
+            if((current == InIndex.YES) && (count >= 10))
+            {
+                return InIndex.YES;
+            }
+             
         }
         return current;
     }

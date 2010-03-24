@@ -16,6 +16,9 @@
       <property name="userIdPattern">
          <value>${external.authentication.userIdPattern}</value>
       </property>
+      <property name="personService">
+         <ref bean="PersonService" />
+      </property>
    </bean>
 
 </beans>

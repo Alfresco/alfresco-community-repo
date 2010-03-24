@@ -417,7 +417,7 @@ public class NtlmAuthenticationHandler extends AbstractAuthenticationHandler imp
         }
 
         // Check if the user has been authenticated, if so then setup the user environment
-        if (authenticated == true && callback.isSiteMember(request, alfrescoContext, userName.toLowerCase()))
+        if (authenticated == true && callback.isSiteMember(request, alfrescoContext, userName))
         {
             String uri = request.getRequestURI();
 

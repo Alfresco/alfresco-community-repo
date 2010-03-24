@@ -24,14 +24,18 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.security.PersonService;
 
 /**
- * A default {@link RemoteUserMapper} implementation. Extracts the user ID using
- * {@link HttpServletRequest#getRemoteUser()}. If it matches the configured proxy user name or the configured proxy user
- * name is null, it extracts the user ID from the configured proxy request header. Otherwise returns the remote user
- * name. An optional regular expression defining how to convert the header to a user ID can be configured using
- * {@link #setUserIdPattern(String)}. This allows for the secure proxying of requests from a Surf client such as
- * Alfresco Share using SSL client certificates.
+ * A default {@link RemoteUserMapper} implementation. Extracts a user ID using
+ * {@link HttpServletRequest#getRemoteUser()} and optionally from a configured request header. If there is no configured
+ * proxy user name, it returns the request header user name if there is one, or the remote user name otherwise. If there
+ * is a configured proxy user, then it returns the request header user name if the remote user matches the proxy user,
+ * or the remote user otherwise. An optional regular expression defining how to convert the header to a user ID can be
+ * configured using {@link #setUserIdPattern(String)}. This allows for the secure proxying of requests from a Surf
+ * client such as Alfresco Share using SSL client certificates.
  * 
  * @author dward
  */
@@ -48,6 +52,9 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
 
     /** Regular expression for extracting a user ID from the header. */
     private Pattern userIdPattern;
+
+    /** The person service. */
+    private PersonService personService;
 
     /**
      * Sets the name of the remote user used to 'proxy' requests securely in the name of another user. Typically this
@@ -70,7 +77,7 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
      */
     public void setProxyHeader(String proxyHeader)
     {
-        this.proxyHeader = proxyHeader;
+        this.proxyHeader = proxyHeader == null || proxyHeader.length() == 0 ? null : proxyHeader;
     }
 
     /**
@@ -98,6 +105,17 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
                 .compile(userIdPattern);
     }
 
+    /**
+     * Sets the person service.
+     * 
+     * @param personService
+     *            the person service
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(javax.servlet.http.HttpServletRequest)
@@ -108,26 +126,49 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
         {
             return null;
         }
+        String remoteUserId = request.getRemoteUser();
+        String headerUserId = extractUserFromProxyHeader(request);
         if (this.proxyUserName == null)
         {
-            return extractUserFromProxyHeader(request);
+            // Normalize the user ID taking into account case sensitivity settings
+            return normalizeUserId(headerUserId != null ? headerUserId : remoteUserId);
+        }
+        else if (remoteUserId == null)
+        {
+            return null;
         }
         else
         {
-            String userId = request.getRemoteUser();
-            if (userId == null)
-            {
-                return null;
-            }
-            if (userId.equals(this.proxyUserName))
-            {
-                userId = extractUserFromProxyHeader(request);
-            }
-            return userId;
+            // Normalize the user ID taking into account case sensitivity settings
+            return normalizeUserId(remoteUserId.equals(this.proxyUserName) ? headerUserId : remoteUserId);
         }
     }
 
-    /* (non-Javadoc)
+    /**
+     * Normalizes a user id, taking into account existing user accounts and case sensitivity settings.
+     * 
+     * @param userId
+     *            the user id
+     * @return the string
+     */
+    private String normalizeUserId(final String userId)
+    {
+        if (userId == null)
+        {
+            return null;
+        }
+        String normalized = AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return personService.getUserIdentifier(userId);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        return normalized == null ? userId : normalized;
+    }
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
      */
     public boolean isActive()
@@ -146,6 +187,10 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
      */
     private String extractUserFromProxyHeader(HttpServletRequest request)
     {
+        if (this.proxyHeader == null)
+        {
+            return null;
+        }
         String userId = request.getHeader(this.proxyHeader);
         if (userId == null)
         {
@@ -160,7 +205,7 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
             Matcher matcher = this.userIdPattern.matcher(userId);
             if (matcher.matches())
             {
-                userId = matcher.group().trim();
+                userId = matcher.group(1).trim();
             }
         }
         return userId.length() == 0 ? null : userId;

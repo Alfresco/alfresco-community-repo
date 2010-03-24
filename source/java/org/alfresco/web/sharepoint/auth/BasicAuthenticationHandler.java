@@ -67,10 +67,16 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler
             try
             {
                 if (logger.isDebugEnabled())
-                    logger.debug("Authenticate the user '" + username + "'");
+                    logger.debug("Authenticating user '" + username + "'");
                 
                 authenticationService.authenticate(username, password.toCharArray());
                 
+                // Normalize the user ID taking into account case sensitivity settings
+                username = authenticationService.getCurrentUserName();
+                
+                if (logger.isDebugEnabled())
+                    logger.debug("Authenticated user '" + username + "'");
+
                 if (mapper.isSiteMember(request, alfrescoContext, username))
                 {
                     user = new User(username, authenticationService.getCurrentTicket(session.getId()), personService.getPerson(username));

@@ -2127,7 +2127,7 @@ alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
     // don't let it float - it screws up layout somehow
     this.widget.timePicker.domNode.style.cssFloat = "none";
     this._pickerDiv.style.height = Math.max(this.widget.timePicker.domNode.offsetHeight,
-                                            this.widget.datePicker.domNode.offsetHeight);
+                                            this.widget.datePicker.domNode.offsetHeight) + "px";
     this.domContainer.style.height = 
       Math.max(this._pickerDiv.offsetHeight +
                this.widget.offsetHeight +

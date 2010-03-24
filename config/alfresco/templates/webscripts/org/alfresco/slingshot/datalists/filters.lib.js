@@ -64,8 +64,8 @@ var Filters =
          case "recentlyModified":
          case "recentlyCreatedByMe":
          case "recentlyModifiedByMe":
-            var onlySelf = (filterData.indexOf("ByMe")) > 0 ? true : false,
-               dateField = (filterData.indexOf("Created") > 0) ? "created" : "modified",
+            var onlySelf = (filter.indexOf("ByMe")) > 0 ? true : false,
+               dateField = (filter.indexOf("Created") > 0) ? "created" : "modified",
                ownerField = (dateField == "created") ? "creator" : "modifier";
 
             // Default to 7 days - can be overridden using "days" argument

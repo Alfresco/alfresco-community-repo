@@ -91,22 +91,27 @@ var Evaluator =
 
    /**
     * Generate displayValue and any extra metadata for this field
+    *
+    * @method decorateFieldData
+    * @param objData {object} Object literal containing this field's data
+    * @param node {ScriptNode} The list item node for this field
+    * @return {Boolean} false to prevent this field being added to the output stream.
     */
    decorateFieldData: function Evaluator_decorateFieldData(objData, node)
    {
       var value = objData.value,
          type = objData.type,
-         displayValue = value,
          obj;
       
       if (type == "cm:person")
       {
          obj = Evaluator.getPersonObject(value);
-         if (obj != null)
+         if (obj == null)
          {
-            displayValue = obj.displayName;
-            objData.metadata = obj.userName;
+            return false;
          }
+         objData.displayValue = obj.displayName;
+         objData.metadata = obj.userName;
       }
       else if (type == "datetime" || type == "date")
       {
@@ -115,21 +120,22 @@ var Evaluator =
       else if (node.isSubType("cm:folder"))
       {
          obj = getContentObject(node.nodeRef);
-         if (obj != null)
+         if (obj == null)
          {
-            displayValue = obj.displayPath.substring(companyhome.name.length() + 1);
+            return false;
          }
+         objData.displayValue = obj.displayPath.substring(companyhome.name.length() + 1);
       }
       else if (node.isSubType("cm:object"))
       {
          obj = getContentObject(node.nodeRef);
-         if (obj != null)
+         if (obj == null)
          {
-            displayValue = obj.properties["cm:name"];
+            return false;
          }
+         objData.displayValue = obj.properties["cm:name"];
       }
-      
-      objData.displayValue = displayValue;
+      return true;
    },
    
    /**
@@ -185,9 +191,12 @@ var Evaluator =
             // java.util.List instances are returned from ScriptFormData.java as Strings
             objData.value = value;
          }
+         objData.displayValue = objData.value;
 
-         Evaluator.decorateFieldData(objData, node);
-         nodeData[k] = objData;
+         if (Evaluator.decorateFieldData(objData, node))
+         {
+            nodeData[k] = objData;
+         }
       }
 
       return(

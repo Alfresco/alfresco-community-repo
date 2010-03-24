@@ -18,8 +18,11 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -160,7 +163,9 @@ public class SubClassesGet extends DictionaryWebServiceBase
 			}
 	    }
     	
-    	model.put(MODEL_PROP_KEY_CLASS_DEFS, classdef.values());
+        List<ClassDefinition> classDefinitions = new ArrayList<ClassDefinition>(classdef.values());
+        Collections.sort(classDefinitions, new DictionaryComparators.ClassDefinitionComparator());
+    	model.put(MODEL_PROP_KEY_CLASS_DEFS, classDefinitions);
 	    model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
 	    model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
 	    return model;        	

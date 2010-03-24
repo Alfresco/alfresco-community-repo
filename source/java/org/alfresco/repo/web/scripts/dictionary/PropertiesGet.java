@@ -21,14 +21,12 @@ package org.alfresco.repo.web.scripts.dictionary;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections.comparators.ComparatorChain;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -120,7 +118,7 @@ public class PropertiesGet extends DictionaryWebServiceBase
         }
         
         // Order property definitions by title
-        Collections.sort(props, new PropertyDefinitionComparator());
+        Collections.sort(props, new DictionaryComparators.PropertyDefinitionComparator());
         
         // Pass list of property definitions to template
         Map<String, Object> model = new HashMap<String, Object>();
@@ -129,35 +127,6 @@ public class PropertiesGet extends DictionaryWebServiceBase
          
     }
     
-    /**
-     * Property definition comparator.
-     * 
-     * Used to order property definitions by title.
-     */
-    private class PropertyDefinitionComparator implements Comparator<PropertyDefinition>
-    {
-        public int compare(PropertyDefinition arg0, PropertyDefinition arg1)
-        {
-            int result = 0;
-            
-            String title0 = arg0.getTitle();
-            String title1 = arg1.getTitle();
-            
-            if (title0 == null && title1 != null)
-            {
-                result = 1;
-            }
-            else if (title0 != null && title1 == null)
-            {
-                result = -1;
-            }
-            else if (title0 != null && title1 != null)
-            {
-                result = String.CASE_INSENSITIVE_ORDER.compare(arg0.getTitle(), arg1.getTitle());
-            }
-            
-            return result;
-        }        
-    }
+    
    
 }

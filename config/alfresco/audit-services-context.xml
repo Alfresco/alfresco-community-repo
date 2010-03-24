@@ -49,7 +49,7 @@
     
     <bean id="auditConfiguration" class="org.alfresco.repo.audit.AuditConfigurationImpl">
         <property name="config">
-            <value>alfresco/auditConfig.xml</value>
+            <value>classpath:alfresco/auditConfig.xml</value>
         </property>
     </bean>
     

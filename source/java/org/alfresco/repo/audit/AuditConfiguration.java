@@ -35,8 +35,8 @@ public interface AuditConfiguration
     InputStream getInputStream();
     
     /**
-     * Return path of the XML
+     * Return last modified time of the XML
      * @return path
      */
-    String getPath();
+    long getLastModified();
 }

@@ -888,23 +888,38 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 ContentModel.TYPE_AUTHORITY_CONTAINER);
         QName idProp = isAuthority ? ContentModel.PROP_AUTHORITY_NAME  : ContentModel.PROP_USERNAME;
         String authBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(idProp));
+        if (authBefore == null)
+        {
+            // Node has just been created; nothing to do
+            return;
+        }
         String authAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(idProp));
         if (!EqualsHelper.nullSafeEquals(authBefore, authAfter))
         {
-            if ((authBefore == null) || authBefore.equalsIgnoreCase(authAfter))
+            if (authBefore.equalsIgnoreCase(authAfter))
             {
                 if (isAuthority)
                 {
                     // Fix any ACLs
                     aclDao.updateAuthority(authBefore, authAfter);
-                    // Fix primary association local name
 
-                    // Unfortunately all the zone and group associations will still be bust!
+                    // Fix primary association local name
                     QName newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
                     ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
                     nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
 
-                    // We can't be totally sure which tenant domain we need to target so clear the noderef cache
+                    // Fix other non-case sensitive parent associations
+                    QName oldAssocQName = QName.createQName("cm", authBefore, namespacePrefixResolver);
+                    newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
+                    for (ChildAssociationRef parent : nodeService.getParentAssocs(nodeRef))
+                    {
+                        if (!parent.isPrimary() && parent.getQName().equals(oldAssocQName))
+                        {
+                            nodeService.removeChildAssociation(parent);
+                            nodeService.addChild(parent.getParentRef(), parent.getChildRef(), parent.getTypeQName(),
+                                    newAssocQName);
+                        }
+                    }
                     authorityLookupCache.clear();
 
                     // Cache is out of date

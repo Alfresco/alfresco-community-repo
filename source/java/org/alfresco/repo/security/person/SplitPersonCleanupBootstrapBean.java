@@ -19,8 +19,11 @@
 package org.alfresco.repo.security.person;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -78,14 +81,14 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
      * 
      * @return
      */
-    private int removePeopleWithGUIDBasedIds()
+    protected int removePeopleWithGUIDBasedIds()
     {
-        Integer count = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Integer>()
+        Set<String> uidsToRemove = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Set<String>>()
                 {
-                    public Integer execute() throws Exception
+                    public Set<String> execute() throws Exception
                     {
-                        int count = 0;
+                        Set<String> uidsToRemove = new TreeSet<String>();
                         // A GUID should be 36 chars
 
                         Set<NodeRef> people = personService.getAllPeople();
@@ -95,21 +98,56 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
                                     person, ContentModel.PROP_USERNAME));
                             if (isUIDWithGUID(uid))
                             {
-                                // Delete via the person service to get the correct tidy up
-                                personService.deletePerson(uid);
+                                uidsToRemove.add(uid);
                                 if (log.isDebugEnabled())
                                 {
-                                    log.debug("... removed person with uid " + uid);
+                                    log.debug("... will remove person with uid " + uid);
                                 }
-                                log.info("... removed person with uid " + uid);
-                                count++;
                             }
                         }
-                        return count;
+                        return uidsToRemove;
                     }
 
                 });
-        return count.intValue();
+        
+        if (uidsToRemove.isEmpty())
+        {
+            return 0;
+        }
+
+        // Process the duplicate persons in small batches
+        BatchProcessor<String> batchProcessor = new BatchProcessor<String>("Split Person Removal", transactionService
+                .getRetryingTransactionHelper(), uidsToRemove, 2, 10, getApplicationContext(), log, 100);
+        batchProcessor.process(new BatchProcessor.BatchProcessWorker<String>()
+        {
+
+            public String getIdentifier(String entry)
+            {
+                return entry;
+            }
+
+            public void beforeProcess() throws Throwable
+            {
+                // Authenticate as system
+                String systemUsername = AuthenticationUtil.getSystemUserName();
+                AuthenticationUtil.setFullyAuthenticatedUser(systemUsername);
+            }
+
+            public void afterProcess() throws Throwable
+            {
+            }
+
+            public void process(String entry) throws Throwable
+            {
+                // Delete via the person service to get the correct tidy up
+                personService.deletePerson(entry);
+                if (log.isDebugEnabled())
+                {
+                    log.debug("... removed person with uid " + entry);
+                }
+            }
+        }, true);
+        return uidsToRemove.size();
 
     }
 

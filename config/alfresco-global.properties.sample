@@ -34,10 +34,14 @@
 #db.url=jdbc:oracle:thin:@localhost:1521:alfresco
 
 #
-# SQLServer connection (note you must enable TCP protocol on fixed port 1433)
+# SQLServer connection
+# Requires jTDS driver version 1.2.5 and SNAPSHOT isolation mode
+# Enable TCP protocol on fixed port 1433
+# Prepare the database with:
+# ALTER DATABASE alfresco SET ALLOW_SNAPSHOT_ISOLATION ON; 
 #
-#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
-#db.url=jdbc:sqlserver://localhost:1433;databaseName=alfresco
+#db.driver=net.sourceforge.jtds.jdbc.Driver
+#db.url=jdbc:jtds:sqlserver://localhost:1433/alfresco
 #db.txn.isolation=4096
 
 #

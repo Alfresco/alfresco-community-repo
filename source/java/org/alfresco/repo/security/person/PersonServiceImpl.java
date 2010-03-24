@@ -355,8 +355,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, searchUserName.toLowerCase()),
                     false);
             allRefs = new LinkedHashSet<NodeRef>(childRefs.size() * 2);
-            // add to cache
-            personCache.put(cacheKey, allRefs);
 
             for (ChildAssociationRef childRef : childRefs)
             {
@@ -382,6 +380,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         else if (refs.size() == 1)
         {
             returnRef = refs.get(0);
+
+            // Don't bother caching unless we get a result that doesn't need duplicate processing
+            personCache.put(cacheKey, allRefs);            
         }
         return returnRef;
     }
@@ -411,6 +412,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     }
 
     private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
+    private static final String KEY_ALLOW_UID_UPDATE  = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
 
     /**
      * Get the txn-bound usernames that need cleaning up
@@ -455,6 +457,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
                 if (duplicateMode.equalsIgnoreCase(SPLIT))
                 {
+                    // Allow UIDs to be updated in this transaction
+                    AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
                     split(postTxnDuplicates);
                     s_logger.info("Split duplicate person objects");
                 }
@@ -497,13 +501,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private NodeRef findBest(List<NodeRef> refs)
     {
+        // Given that we might not have audit attributes, use the assumption that the node ID increases to sort the
+        // nodes
         if (lastIsBest)
         {
-            Collections.sort(refs, new CreationDateComparator(nodeService, false));
+            Collections.sort(refs, new NodeIdComparator(nodeService, false));
         }
         else
         {
-            Collections.sort(refs, new CreationDateComparator(nodeService, true));
+            Collections.sort(refs, new NodeIdComparator(nodeService, true));
         }
 
         NodeRef fallBack = null;
@@ -775,6 +781,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             nodeService.deleteNode(personNodeRef);
         }
+        personCache.remove(userName.toLowerCase());
     }
 
     public Set<NodeRef> getAllPeople()
@@ -845,6 +852,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         NodeRef personRef = childAssocRef.getChildRef();
         String username = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+        personCache.remove(username.toLowerCase());
         permissionsManager.setPermissions(personRef, username, username);
 
         // Make sure there is an authority entry - with a DB constraint for uniqueness
@@ -936,13 +944,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return null;
     }
 
-    public static class CreationDateComparator implements Comparator<NodeRef>
+    public static class NodeIdComparator implements Comparator<NodeRef>
     {
         private NodeService nodeService;
 
         boolean ascending;
 
-        CreationDateComparator(NodeService nodeService, boolean ascending)
+        NodeIdComparator(NodeService nodeService, boolean ascending)
         {
             this.nodeService = nodeService;
             this.ascending = ascending;
@@ -950,14 +958,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
         public int compare(NodeRef first, NodeRef second)
         {
-            Date firstDate = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(first, ContentModel.PROP_CREATED));
-            Date secondDate = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(second, ContentModel.PROP_CREATED));
+            Long firstId = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(first, ContentModel.PROP_NODE_DBID));
+            Long secondId = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(second, ContentModel.PROP_NODE_DBID));
 
-            if (firstDate != null)
+            if (firstId != null)
             {
-                if (secondDate != null)
+                if (secondId != null)
                 {
-                    return firstDate.compareTo(secondDate) * (ascending ? 1 : -1);
+                    return firstId.compareTo(secondId) * (ascending ? 1 : -1);
                 }
                 else
                 {
@@ -966,7 +974,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
             else
             {
-                if (secondDate != null)
+                if (secondId != null)
                 {
                     return ascending ? 1 : -1;
                 }
@@ -996,22 +1004,39 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USERNAME));
+        if (uidBefore == null)
+        {
+            // Node has just been created; nothing to do
+            return;
+        }
         String uidAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(ContentModel.PROP_USERNAME));
         if (!EqualsHelper.nullSafeEquals(uidBefore, uidAfter))
         {
-            if ((uidBefore == null) || uidBefore.equalsIgnoreCase(uidAfter))
+            // Only allow UID update if we are in the special split processing txn or we are just changing case
+            if (AlfrescoTransactionSupport.getResource(KEY_ALLOW_UID_UPDATE) != null || uidBefore.equalsIgnoreCase(uidAfter))
             {
                 // Fix any ACLs
                 aclDao.updateAuthority(uidBefore, uidAfter);
+
                 // Fix primary association local name
                 QName newAssocQName = QName.createQName("cm", uidAfter.toLowerCase(), namespacePrefixResolver);
                 ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
                 nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
-                // Fix cache
-                if (uidBefore != null)
+                
+                // Fix other non-case sensitive parent associations
+                QName oldAssocQName = QName.createQName("cm", uidBefore, namespacePrefixResolver);
+                newAssocQName = QName.createQName("cm", uidAfter, namespacePrefixResolver);
+                for (ChildAssociationRef parent : nodeService.getParentAssocs(nodeRef))
                 {
-                    personCache.remove(uidBefore.toLowerCase());
+                    if (!parent.isPrimary() && parent.getQName().equals(oldAssocQName))
+                    {
+                        nodeService.removeChildAssociation(parent);
+                        nodeService.addChild(parent.getParentRef(), parent.getChildRef(), parent.getTypeQName(), newAssocQName);
+                    }
                 }
+
+                // Fix cache
+                personCache.remove(uidBefore.toLowerCase());
             }
             else
             {

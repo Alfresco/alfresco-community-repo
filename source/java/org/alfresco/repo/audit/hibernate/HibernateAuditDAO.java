@@ -19,7 +19,6 @@
 package org.alfresco.repo.audit.hibernate;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
@@ -362,8 +361,7 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         {
             if (contentStore instanceof FileContentStore)
             {
-                File currFile = new File(auditInfo.getAuditConfiguration().getPath());
-                long currTimestamp = currFile.lastModified();
+                long currTimestamp = auditInfo.getAuditConfiguration().getLastModified();
                 long timestamp = ((FileContentStore)contentStore).getReader(auditConfig.getConfigURL()).getLastModified();
                 if (timestamp < currTimestamp)
                 {

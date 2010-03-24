@@ -21,15 +21,19 @@ package org.alfresco.repo.security.person;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -725,5 +729,95 @@ public class PersonTest extends BaseSpringTest
                 return null;
             }
         }, true, true);        
+    }
+    
+    public void testSplitDuplicates()
+    {
+        testProcessDuplicates(true);
+
+        // Test out the SplitPersonCleanupBootstrapBean for removal of the duplicates
+        SplitPersonCleanupBootstrapBean splitPersonBean = new SplitPersonCleanupBootstrapBean();
+        splitPersonBean.setNodeService(nodeService);
+        splitPersonBean.setPersonService(personService);
+        splitPersonBean.setTransactionService(transactionService);        
+        Assert.assertEquals(9, splitPersonBean.removePeopleWithGUIDBasedIds());
+        
+    }
+    
+    public void testDeleteDuplicates()
+    {
+        testProcessDuplicates(false);        
+    }
+
+    private void testProcessDuplicates(final boolean split)
+    {
+        // Kill the annoying Spring-managed txn
+        super.setComplete();
+        super.endTransaction();
+
+        // Set the duplicate processing mode
+        ((PersonServiceImpl) personService).setDuplicateMode(split ? "SPLIT" : "DELETE");
+
+        final String duplicateUserName = GUID.generate();
+        final NodeRef[] duplicates = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<NodeRef[]>()
+                {
+
+                    public NodeRef[] execute() throws Throwable
+                    {
+                        NodeRef[] duplicates = new NodeRef[10];
+
+                        // Generate a first person node
+                        Map<QName, Serializable> properties = createDefaultProperties(duplicateUserName, "firstName", "lastName", "email@orgId", "orgId", null); 
+                        duplicates[0] = personService.createPerson(properties);
+                        ChildAssociationRef container = nodeService.getPrimaryParent(duplicates[0]);
+                        List<ChildAssociationRef> parents = nodeService.getParentAssocs(duplicates[0]);
+
+                        // Generate some duplicates
+                        for (int i = 1; i < duplicates.length; i++)
+                        {
+                            // Create the node with the same parent assocs
+                            duplicates[i] = nodeService.createNode(container.getParentRef(), container.getTypeQName(),
+                                    container.getQName(), ContentModel.TYPE_PERSON, properties).getChildRef();
+                            for (ChildAssociationRef parent : parents)
+                            {
+                                if (!parent.isPrimary())
+                                {
+                                    nodeService.addChild(parent.getParentRef(), duplicates[i], parent.getTypeQName(),
+                                            parent.getQName());
+                                }
+                            }
+                        }
+                        // With the default settings, the last created node should be the one that wins
+                        assertEquals(duplicates[duplicates.length - 1], personService.getPerson(duplicateUserName));
+                        return duplicates;
+                    }
+                }, false, true);
+
+        // Check the duplicates were processed appropriately in the previous transaction
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                for (int i = 0; i < duplicates.length - 1; i++)
+                {
+                    if (split)
+                    {
+                        String newUserName = (String) nodeService
+                                .getProperty(duplicates[i], ContentModel.PROP_USERNAME);
+                        assertNotSame(duplicateUserName, newUserName);
+                    }
+                    else
+                    {
+                        assertFalse(nodeService.exists(duplicates[i]));
+                    }
+                }
+
+                // Get rid of the non-split person
+                assertTrue(personService.personExists(duplicateUserName));
+                personService.deletePerson(duplicateUserName);
+                return null;
+            }
+        }, false, true);
     }
 }

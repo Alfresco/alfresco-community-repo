@@ -329,6 +329,12 @@
       <property name="nodeService" ref="NodeService" />
    </bean>
 
+   <!--  CMIS Query -->
+   <bean id="webscript.org.alfresco.cmis.queries.post" class="org.alfresco.repo.cmis.rest.CMISQueryWebScript" parent="webscript" />
+
+   <!--  CMIS Query -->
+   <bean id="webscript.org.alfresco.cmis.query.get" class="org.alfresco.repo.cmis.rest.CMISQueryWebScript" parent="webscript" />
+
 
    <!--            -->
    <!--  API Beans -->

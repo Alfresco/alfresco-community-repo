@@ -33,7 +33,6 @@ import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -211,6 +210,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     {
         long startTime = System.currentTimeMillis();
         
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("onDictionaryInit: ["+Thread.currentThread()+"]");
+        }
+        
         Collection<QName> modelsBefore = dictionaryDAO.getModels();
         int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
         
@@ -219,6 +223,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         if (this.repositoryModelsLocations != null)
         {
             Map<String, Pair<RepositoryLocation, M2Model>> modelMap = new HashMap<String, Pair<RepositoryLocation, M2Model>>();
+            
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("onDictionaryInit: locations="+this.repositoryModelsLocations);
+            }
             
             // Register the models found in the repository
             
@@ -289,14 +298,14 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         if (modelsAfterCnt != (modelsBeforeCnt + loadedModels.size()))
         {
             String tenantDomain = tenantAdminService.getCurrentUserDomain();
-            logger.warn("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" ["+AlfrescoTransactionSupport.getTransactionId()+"] in "+(System.currentTimeMillis()-startTime)+" msecs "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+            logger.warn("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
         else
         {
             if (logger.isDebugEnabled())
             {
                 String tenantDomain = tenantAdminService.getCurrentUserDomain();
-                logger.debug("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" ["+AlfrescoTransactionSupport.getTransactionId()+"] in "+(System.currentTimeMillis()-startTime)+" msecs "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+                logger.debug("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
             }
         }
     }

@@ -162,8 +162,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         
         destroy();
-    	init();
-    	
+        init();
+        
         if (logger.isDebugEnabled()) 
         {
             logger.debug("... resetting dictionary completed");
@@ -175,17 +175,19 @@ public class DictionaryDAOImpl implements DictionaryDAO
     {
         long startTime = System.currentTimeMillis();
         
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Init Dictionary: ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+        }
+        
         try
         {
             return AuthenticationUtil.runAs(new RunAsWork<DictionaryRegistry>()
             {
                 public DictionaryRegistry doWork()
-                {  
+                {
                     try
                     {
-                        // create threadlocal, if needed
-                        createDataDictionaryLocal(tenantDomain);
-                        
                         DictionaryRegistry dictionaryRegistry = initDictionaryRegistry(tenantDomain);
                         
                         if (dictionaryRegistry == null)
@@ -221,24 +223,32 @@ public class DictionaryDAOImpl implements DictionaryDAO
                             readLock.unlock();
                         }
                     }
-                }                               
+                }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
         finally
         {
             if (logger.isInfoEnabled())
             {
-                logger.info("Init Dictionary: model count = "+(getModels() != null ? getModels().size() : 0) +" in "+(System.currentTimeMillis()-startTime)+" msecs "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+                logger.info("Init Dictionary: model count = "+(getModels() != null ? getModels().size() : 0) +" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
             }
         }
     }
     
     private DictionaryRegistry initDictionaryRegistry(String tenantDomain)
     {
-        getDictionaryRegistry(tenantDomain).setCompiledModels(new HashMap<QName,CompiledModel>());
-        getDictionaryRegistry(tenantDomain).setUriToModels(new HashMap<String, List<CompiledModel>>());
+        // create threadlocal, if needed
+        DictionaryRegistry dictionaryRegistry = createDataDictionaryLocal(tenantDomain);
         
-        // initialise empty dictionary & namespaces
+        dictionaryRegistry.setCompiledModels(new HashMap<QName,CompiledModel>());
+        dictionaryRegistry.setUriToModels(new HashMap<String, List<CompiledModel>>());
+        
+        if (logger.isTraceEnabled()) 
+        {
+            logger.trace("Empty dictionary initialised: "+dictionaryRegistry+" - "+defaultDictionaryRegistryThreadLocal+" ["+Thread.currentThread()+"]");
+        }
+        
+        // initialise empty namespaces
         namespaceDAO.init();
         
         // populate the dictionary based on registered sources
@@ -253,7 +263,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             dictionaryListener.afterDictionaryInit();
         }
         
-        return getDictionaryRegistryLocal(tenantDomain);
+        return dictionaryRegistry;
     }
     
     /* (non-Javadoc)
@@ -1018,7 +1028,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     }
     
     // create threadlocal
-    private void createDataDictionaryLocal(String tenantDomain)      
+    private DictionaryRegistry createDataDictionaryLocal(String tenantDomain)
     {
        // create threadlocal, if needed
         DictionaryRegistry dictionaryRegistry = getDictionaryRegistryLocal(tenantDomain);
@@ -1035,6 +1045,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 dictionaryRegistryThreadLocal.set(dictionaryRegistry);
             }
         }
+        
+        return dictionaryRegistry;
     }
     
     // get threadlocal 

@@ -123,6 +123,11 @@ public class DictionaryBootstrap implements DictionaryListener
     {
         long startTime = System.currentTimeMillis();
         
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("onDictionaryInit: ["+Thread.currentThread()+"]");
+        }
+        
         Collection<QName> modelsBefore = dictionaryDAO.getModels(); // note: on first bootstrap will init empty dictionary
         int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
         
@@ -158,7 +163,7 @@ public class DictionaryBootstrap implements DictionaryListener
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Model count: before="+modelsBeforeCnt+", load="+models.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs");
+                logger.debug("Model count: before="+modelsBeforeCnt+", load="+models.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"]");
             }
         }
     }

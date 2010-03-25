@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Simple in-memory namespace DAO
  */
-public class NamespaceDAOImpl implements NamespaceDAO
+public class NamespaceDAOImpl implements NamespaceDAO, DictionaryListener
 {
     private static final Log logger = LogFactory.getLog(NamespaceDAOImpl.class);
     
@@ -74,15 +74,78 @@ public class NamespaceDAOImpl implements NamespaceDAO
     public void registerDictionary(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
+        this.dictionaryDAO.register(this);
     }
     
+    
+    public void afterDictionaryDestroy()
+    {
+     // TODO Auto-generated method stub
+    }
+    
+    public void onDictionaryInit()
+    {
+        // TODO Auto-generated method stub
+    }
+    
+    /**
+     * Complete the initialisation
+     */
+    public void afterDictionaryInit()
+    {
+        String tenantDomain = getTenantDomain();
+        
+        try
+        {
+            NamespaceRegistry namespaceRegistry = getNamespaceRegistryLocal(tenantDomain);
+            
+            if (namespaceRegistry == null)
+            {
+                // unexpected
+                throw new AlfrescoRuntimeException("Failed to init namespaceRegistry " + tenantDomain);
+            }
+            
+            try
+            {
+                writeLock.lock();
+                namespaceRegistryCache.put(tenantDomain, namespaceRegistry);
+            }
+            finally
+            {
+                writeLock.unlock();
+            }
+        }
+        finally
+        {
+            try
+            {
+                readLock.lock();
+                if (namespaceRegistryCache.get(tenantDomain) != null)
+                {
+                    removeNamespaceLocal(tenantDomain);
+                }
+            }
+            finally
+            {
+                readLock.unlock();
+            }
+        }
+    }
+
     
     /**
      * Initialise empty namespaces
      */
     public void init()
-    {     
-        initNamespace(getTenantDomain());
+    {
+        String tenantDomain = getTenantDomain();
+        NamespaceRegistry namespaceRegistry = initNamespaceRegistry(tenantDomain);
+        
+        if (namespaceRegistry == null)
+        {
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to init namespaceRegistry " + tenantDomain);
+        }
     }
     
     /**
@@ -128,60 +191,20 @@ public class NamespaceDAOImpl implements NamespaceDAO
         return namespaceRegistry;
     }
     
-    private NamespaceRegistry initNamespace(String tenantDomain)
-    {
-        try
-        {
-            createNamespaceLocal(tenantDomain);
-            
-            NamespaceRegistry namespaceRegistry = initNamespaceRegistry(tenantDomain);
-            
-            if (namespaceRegistry == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to init namespaceRegistry " + tenantDomain);
-            }
-            
-            try
-            {
-                writeLock.lock();        
-                namespaceRegistryCache.put(tenantDomain, namespaceRegistry);
-            }
-            finally
-            {
-                writeLock.unlock();
-            }
-            
-            return namespaceRegistry;
-        }
-        finally
-        {
-            try
-            {
-                readLock.lock();
-                if (namespaceRegistryCache.get(tenantDomain) != null)
-                {
-                    removeNamespaceLocal(tenantDomain);
-                }
-            }
-            finally
-            {
-                readLock.unlock();
-            }
-        }
-    }
-    
     private NamespaceRegistry initNamespaceRegistry(String tenantDomain)
     {
-        getNamespaceRegistry(tenantDomain).setUrisCache(new ArrayList<String>());
-        getNamespaceRegistry(tenantDomain).setPrefixesCache(new HashMap<String, String>());
+        // create threadlocal, if needed
+        NamespaceRegistry namespaceRegistry = createNamespaceLocal(tenantDomain);
+        
+        namespaceRegistry.setUrisCache(new ArrayList<String>());
+        namespaceRegistry.setPrefixesCache(new HashMap<String, String>());
         
         if (logger.isTraceEnabled()) 
         {
-            logger.trace("Empty namespaces initialised");
+            logger.trace("Empty namespaces initialised: "+namespaceRegistry+" - "+namespaceRegistryThreadLocal+" ["+Thread.currentThread()+"]");
         }
         
-        return getNamespaceRegistryLocal(tenantDomain);
+        return namespaceRegistry;
     }
     
     
@@ -242,7 +265,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
                     // overridden, hence skip this default prefix
                     continue; 
                 }
-                prefixesFiltered.add(prefix);        
+                prefixesFiltered.add(prefix);
             }
             
             // default (non-overridden) + tenant-specific
@@ -427,7 +450,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
     }
     
     // create threadlocal
-    private void createNamespaceLocal(String tenantDomain)      
+    private NamespaceRegistry createNamespaceLocal(String tenantDomain)
     {
          // create threadlocal, if needed
         NamespaceRegistry namespaceRegistry = getNamespaceRegistryLocal(tenantDomain);
@@ -435,17 +458,17 @@ public class NamespaceDAOImpl implements NamespaceDAO
         {
             namespaceRegistry = new NamespaceRegistry(tenantDomain);
             
-            if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+            if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+            {
+                defaultNamespaceRegistryThreadLocal.set(namespaceRegistry);
+            }
+            else
             {
                 namespaceRegistryThreadLocal.set(namespaceRegistry);
             }
-            
-            if (defaultNamespaceRegistryThreadLocal.get() == null)
-            {
-                namespaceRegistry = new NamespaceRegistry(TenantService.DEFAULT_DOMAIN);
-                defaultNamespaceRegistryThreadLocal.set(namespaceRegistry);
-            }
         }
+        
+        return namespaceRegistry;
     }
     
     // get threadlocal 
@@ -466,7 +489,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
         if ((namespaceRegistry != null) && (tenantDomain.equals(namespaceRegistry.getTenantDomain())))
         {
             return namespaceRegistry; // return threadlocal, if set
-        }   
+        }
         
         return null;
     }

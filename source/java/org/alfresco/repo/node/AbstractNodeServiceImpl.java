@@ -19,6 +19,7 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.alfresco.repo.policy.AssociationPolicyDelegate;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -95,6 +97,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
     protected TransactionService transactionService;
+    protected TenantService tenantService;
+    protected List<String> storesToIgnorePolicies = new ArrayList<String>(0);
 
     /*
      * Policy delegates
@@ -143,6 +147,16 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setStoresToIgnorePolicies(List<String> storesToIgnorePolicies)
+    {
+        this.storesToIgnorePolicies = storesToIgnorePolicies;
     }
 
     /**
@@ -203,13 +217,28 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         onCreateAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateAssociationPolicy.class);
         onDeleteAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnDeleteAssociationPolicy.class);
     }
-
+    
+    private boolean ignorePolicy(StoreRef storeRef)
+    {
+        return (storesToIgnorePolicies.contains(tenantService.getBaseName(storeRef).toString()));
+    }
+    
+    private boolean ignorePolicy(NodeRef nodeRef)
+    {
+        return (storesToIgnorePolicies.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()));
+    }
+    
     /**
      * @see NodeServicePolicies.BeforeCreateStorePolicy#beforeCreateStore(QName,
      *      StoreRef)
      */
     protected void invokeBeforeCreateStore(QName nodeTypeQName, StoreRef storeRef)
     {
+        if (ignorePolicy(storeRef))
+        {
+            return;
+        }
+        
         NodeServicePolicies.BeforeCreateStorePolicy policy = this.beforeCreateStoreDelegate.get(nodeTypeQName);
         policy.beforeCreateStore(nodeTypeQName, storeRef);
     }
@@ -219,6 +248,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeOnCreateStore(NodeRef rootNodeRef)
     {
+        if (ignorePolicy(rootNodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(rootNodeRef);
         // execute policy for node type and aspects
@@ -232,6 +266,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeCreateNode(NodeRef parentNodeRef, QName assocTypeQName, QName assocQName, QName childNodeTypeQName)
     {
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         // execute policy for node type
         NodeServicePolicies.BeforeCreateNodePolicy policy = beforeCreateNodeDelegate.get(childNodeTypeQName);
         policy.beforeCreateNode(parentNodeRef, assocTypeQName, assocQName, childNodeTypeQName);
@@ -243,6 +282,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeOnCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef childNodeRef = childAssocRef.getChildRef();
+        
+        if (ignorePolicy(childNodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
         // execute policy for node type and aspects
@@ -256,6 +301,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeOnMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         NodeRef childNodeRef = newChildAssocRef.getChildRef();
+        
+        if (ignorePolicy(childNodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
         // execute policy for node type and aspects
@@ -268,6 +319,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeUpdateNode(NodeRef nodeRef)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
@@ -280,6 +336,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeOnUpdateNode(NodeRef nodeRef)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
@@ -295,6 +356,10 @@ public abstract class AbstractNodeServiceImpl implements NodeService
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
         
         // Some logging so we can see which properties have been modified
         if (logger.isDebugEnabled() == true)
@@ -344,6 +409,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeDeleteNode(NodeRef nodeRef)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects
@@ -356,14 +426,30 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeOnDeleteNode(ChildAssociationRef childAssocRef, QName childNodeTypeQName, Set<QName> childAspectQnames, boolean isArchivedNode)
     {
-        // get qnames to invoke against
-        Set<QName> qnames = new HashSet<QName>(childAspectQnames.size() + 1);
-        qnames.addAll(childAspectQnames);
-        qnames.add(childNodeTypeQName);
+        NodeRef childNodeRef = childAssocRef.getChildRef();
         
-        // execute policy for node type and aspects
-        NodeServicePolicies.OnDeleteNodePolicy policy = onDeleteNodeDelegate.get(childAssocRef.getChildRef(), qnames);
-        policy.onDeleteNode(childAssocRef, isArchivedNode);
+        Set<QName> qnames = null;
+        
+        if (ignorePolicy(childNodeRef))
+        {
+            // special case
+            qnames = new HashSet<QName>(1);
+            qnames.add(ContentModel.ASPECT_VERSIONABLE);
+        }
+        else
+        {
+            // get qnames to invoke against
+            qnames = new HashSet<QName>(childAspectQnames.size() + 1);
+            qnames.addAll(childAspectQnames);
+            qnames.add(childNodeTypeQName);
+        }
+        
+        if (qnames != null)
+        {
+            // execute policy for node type and aspects
+            NodeServicePolicies.OnDeleteNodePolicy policy = onDeleteNodeDelegate.get(childAssocRef.getChildRef(), qnames);
+            policy.onDeleteNode(childAssocRef, isArchivedNode);
+        }
     }
 
     /**
@@ -372,6 +458,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         NodeServicePolicies.BeforeAddAspectPolicy policy = beforeAddAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.beforeAddAspect(nodeRef, aspectTypeQName);
     }
@@ -381,6 +472,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeOnAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         NodeServicePolicies.OnAddAspectPolicy policy = onAddAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.onAddAspect(nodeRef, aspectTypeQName);
     }
@@ -391,6 +487,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         NodeServicePolicies.BeforeRemoveAspectPolicy policy = beforeRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.beforeRemoveAspect(nodeRef, aspectTypeQName);
     }
@@ -401,6 +502,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeOnRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
         NodeServicePolicies.OnRemoveAspectPolicy policy = onRemoveAspectDelegate.get(nodeRef, aspectTypeQName);
         policy.onRemoveAspect(nodeRef, aspectTypeQName);
     }
@@ -411,6 +517,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeCreateNodeAssociation(NodeRef parentNodeRef, QName assocTypeQName, QName assocQName)
     {
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type
@@ -425,6 +536,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     {
         // Get the parent reference and the assoc type qName
         NodeRef parentNodeRef = childAssocRef.getParentRef();
+        
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
@@ -439,6 +556,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeCreateChildAssociation(NodeRef parentNodeRef, NodeRef childNodeRef, QName assocTypeQName, QName assocQName, boolean isNewNode)
     {
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
         // execute policy for node type
@@ -453,6 +575,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     {
         // Get the parent reference and the assoc type qName
         NodeRef parentNodeRef = childAssocRef.getParentRef();
+        
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
@@ -467,6 +595,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeBeforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
         NodeRef parentNodeRef = childAssocRef.getParentRef();
+        
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
@@ -481,6 +615,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeOnDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
         NodeRef parentNodeRef = childAssocRef.getParentRef();
+        
+        if (ignorePolicy(parentNodeRef))
+        {
+            return;
+        }
+        
         QName assocTypeQName = childAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
@@ -495,6 +635,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeOnCreateAssociation(AssociationRef nodeAssocRef)
     {
         NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
+        
+        if (ignorePolicy(sourceNodeRef))
+        {
+            return;
+        }
+        
         QName assocTypeQName = nodeAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(sourceNodeRef);
@@ -509,6 +655,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected void invokeOnDeleteAssociation(AssociationRef nodeAssocRef)
     {
         NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
+        
+        if (ignorePolicy(sourceNodeRef))
+        {
+            return;
+        }
+        
         QName assocTypeQName = nodeAssocRef.getTypeQName();
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(sourceNodeRef);

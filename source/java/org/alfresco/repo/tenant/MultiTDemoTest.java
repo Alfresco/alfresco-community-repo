@@ -149,6 +149,8 @@ public class MultiTDemoTest extends TestCase
         repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
         usageService = (UsageService) ctx.getBean("usageService");
+        
+        createTenants();
     }
     
     @Override
@@ -157,6 +159,51 @@ public class MultiTDemoTest extends TestCase
         super.tearDown();
     }
     
+    private void createTenants()
+    {
+        for (final String tenantDomain : tenants)
+        {
+            createTenant(tenantDomain);
+        }
+    }
+    
+    public void testCreateTenants() throws Throwable
+    {   
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
+        
+        logger.info("Create tenants");
+        
+        Set<NodeRef> personRefs = personService.getAllPeople();
+        //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
+        for (NodeRef personRef : personRefs)
+        {
+            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            for (final String tenantDomain : tenants)
+            {
+                assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
+            }
+        }
+    }
+    
+    private void createTenant(final String tenantDomain)
+    {
+        // create tenants (if not already created)
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                if (! tenantAdminService.existsTenant(tenantDomain))
+                {
+                    //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
+                    tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
+                    
+                    logger.info("Created tenant " + tenantDomain);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
     
     public void test_ETHREEOH_2015()
     {
@@ -192,58 +239,6 @@ public class MultiTDemoTest extends TestCase
         usageService.deleteDeltas(personNodeRef);
     }
     
-    public void testCreateTenants() throws Throwable
-    {   
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
-        
-        logger.info("Create tenants");
-        
-        Set<NodeRef> personRefs = personService.getAllPeople();
-        //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
-        for (NodeRef personRef : personRefs)
-        {
-            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-            for (final String tenantDomain : tenants)
-            {
-                assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
-            }
-        }
-        
-        try 
-        {   
-            for (final String tenantDomain : tenants)
-            {
-                createTenant(tenantDomain);
-            }
-        }   
-        catch (Throwable t)
-        {
-            StringWriter stackTrace = new StringWriter();
-            t.printStackTrace(new PrintWriter(stackTrace));
-            System.err.println(stackTrace.toString());
-            throw t;
-        }
-    }
-    
-    private void createTenant(final String tenantDomain)
-    {
-        // create tenants (if not already created)
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                if (! tenantAdminService.existsTenant(tenantDomain))
-                {
-                    //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
-                    tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
-                    
-                    logger.info("Created tenant " + tenantDomain);
-                }
-                
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
     
     public void testCreateUsers() throws Throwable
     {

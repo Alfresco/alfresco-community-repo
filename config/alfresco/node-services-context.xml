@@ -84,7 +84,7 @@
    <bean id="storeArchiveMap" class="org.alfresco.repo.node.StoreArchiveMap">
       <property name="archiveMap">
          <map>
-            <entry key="workspace://SpacesStore"><value>archive://SpacesStore</value></entry>
+            <entry key="workspace://SpacesStore"><value>${spaces.archive.store}</value></entry>
          </map>
       </property>
       <property name="tenantService">
@@ -228,10 +228,18 @@
          <ref bean="avmNodeService"/>
       </property>
       <property name="nodeIndexer">
-         <ref bean="nodeIndexer" />
+         <ref bean="nodeIndexer"/>
       </property>
       <property name="cascadeInTransaction">
          <value>${system.cascadeDeleteInTransaction}</value>
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService"/>
+      </property>
+      <property name="storesToIgnorePolicies">
+         <list>
+            <value>${spaces.archive.store}</value>
+         </list>
       </property>
    </bean>
 

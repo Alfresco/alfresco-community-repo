@@ -92,9 +92,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     /** Key to the removed "workingcopy" aspect */
     private static final String KEY_WORKING_COPY = "dictionaryModelType.workingCopy";
     
-    /** Key to the removed "archived" aspect */
-    private static final String KEY_ARCHIVED = "dictionaryModelType.archived";
-    
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
     
@@ -235,37 +232,37 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         // Register interest in the onContentUpdate policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 ContentServicePolicies.ON_CONTENT_UPDATE, 
-                ContentModel.TYPE_DICTIONARY_MODEL, 
+                ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onContentUpdate"));
         
         // Register interest in the onUpdateProperties policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-                ContentModel.TYPE_DICTIONARY_MODEL, 
+                ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onUpdateProperties"));
         
         // Register interest in the beforeDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
-                ContentModel.TYPE_DICTIONARY_MODEL, 
+                ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "beforeDeleteNode"));
         
         // Register interest in the onDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), 
-                ContentModel.TYPE_DICTIONARY_MODEL, 
+                ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onDeleteNode"));
         
         // Register interest in the onRemoveAspect policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
-                this, 
+                this,
                 new JavaBehaviour(this, "onRemoveAspect"));
         
         // Register interest in the onCreateNode policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                this, 
+                this,
                 new JavaBehaviour(this, "onCreateNode"));
         
         // Create the transaction listener
@@ -349,12 +346,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         {
             AlfrescoTransactionSupport.bindResource(KEY_WORKING_COPY, nodeRef);
         }
-        
-        // restore removes the "archived" aspect prior to restoring (via delete/move) the node - hence need to track here
-        if (aspect.equals(ContentModel.ASPECT_ARCHIVED))
-        {
-            AlfrescoTransactionSupport.bindResource(KEY_ARCHIVED, nodeRef);
-        }
     }
     
     @SuppressWarnings("unchecked")
@@ -367,17 +358,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             workingCopy = true;
         }
         
-        boolean archived = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED);
-        NodeRef aNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_ARCHIVED);
-        if ((aNodeRef != null) && (aNodeRef.equals(nodeRef)))
-        {
-            archived = true;
-        }
-        
         boolean isVersionNode = nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID);
         
-        // Ignore if the node is a working copy, archived or version node
-        if (! (workingCopy || archived || isVersionNode))
+        // Ignore if the node is a working copy or version node
+        if (! (workingCopy || isVersionNode))
         {
             QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
             
@@ -407,7 +391,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         {
             if (logger.isTraceEnabled())
             {
-                logger.trace("beforeDeleteNode: nodeRef="+nodeRef+ " ignored ("+(workingCopy ? " workingCopy " : "")+(archived ? " archived " : "")+(isVersionNode ? " isVersionNode " : "")+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                logger.trace("beforeDeleteNode: nodeRef="+nodeRef+ " ignored ("+(workingCopy ? " workingCopy " : "")+(isVersionNode ? " isVersionNode " : "")+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
             }
         }
     }
@@ -606,8 +590,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                 isActive = value.booleanValue();
                             }
                             
-                            // Ignore if the node is a working copy or archived
-                            if (! (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED)))
+                            // Ignore if the node is a working copy
+                            if (! (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY)))
                             {
                                 if (isActive == true)
                                 {

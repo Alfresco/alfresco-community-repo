@@ -64,6 +64,8 @@ public interface NamespaceDAO extends NamespacePrefixResolver
      */
     public void init();
     
+    public void afterDictionaryInit();
+    
     /**
      * Destroy Namespaces
      */

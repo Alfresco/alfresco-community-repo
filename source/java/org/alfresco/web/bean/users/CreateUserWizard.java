@@ -483,7 +483,7 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public void setUserName(String userName)
     {
-        this.userName = userName;
+        this.userName = (userName != null ? userName.trim() : null);
     }
 
     /**

@@ -7,13 +7,17 @@ const PROP_UPDATED = "cm:updated";
 function setOrUpdateReleasedAndUpdatedDates(node)
 {
    // make sure the syndication aspect has been added
-   if (! node.hasAspect(ASPECT_SYNDICATION))
+   if (!node.hasAspect(ASPECT_SYNDICATION))
    {
       node.addAspect(ASPECT_SYNDICATION, []);
    }
    
    // (re-)enable permission inheritance which got disable for draft posts
-   node.setInheritsPermissions(true);
+   // only set if was previously draft - as only the owner/admin can do this
+   if (!node.inheritsPermissions)
+   {
+      node.setInheritsPermissions(true);
+   }
    
    // check whether the published date has been set
    if (!node.properties[PROP_PUBLISHED])

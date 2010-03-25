@@ -20,7 +20,6 @@ package org.alfresco.web.bean.content;
 
 import java.io.File;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -180,7 +179,8 @@ public abstract class BaseContentWizard extends BaseWizardBean
          }
          if (encoding == null || encoding.length() == 0)
          {
-            encoding = Charset.defaultCharset().name();
+            // if not configured, set to a sensible default for most character sets
+            encoding = "UTF-8";
          }
       }
       return encoding;

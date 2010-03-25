@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -61,6 +62,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
 {
     /** Services */
     private TaggingService taggingService;
+    private CopyService copyService;
     private ScriptService scriptService;
     private PolicyComponent policyComponent;
     
@@ -91,6 +93,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         // Get services
         this.taggingService = (TaggingService)this.applicationContext.getBean("TaggingService");
         this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
+        this.copyService = (CopyService) this.applicationContext.getBean("CopyService");
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
         this.actionService = (ActionService)this.applicationContext.getBean("ActionService");
@@ -502,7 +505,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testETHREEOH_220() throws Exception
     {
-        this.taggingService.addTagScope(this.folder);;
+        this.taggingService.addTagScope(this.folder);
         this.taggingService.addTag(this.folder, TAG_I18N);
         waitForActionExecution();
         
@@ -520,6 +523,193 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(tagDetails);
         assertEquals(TAG_I18N, tagDetails.getName());
         assertEquals(1, tagDetails.getCount());
+    }
+    
+    /**
+     * Ensures that the tag scope is correctly updated
+     *  when folders and content are created, updated,
+     *  moved, copied and deleted.
+     */
+    public void testTagScopeUpdateViaNodePolicies() throws Exception {
+       // The various tags we'll be using in testing
+       NodeRef tagFoo1 = taggingService.createTag(folder.getStoreRef(), "Foo1");
+       NodeRef tagFoo2 = taggingService.createTag(folder.getStoreRef(), "Foo2");
+       NodeRef tagFoo3 = taggingService.createTag(folder.getStoreRef(), "Foo3");
+       NodeRef tagBar = taggingService.createTag(folder.getStoreRef(), "Bar");
+       
+       List<NodeRef> tagsList = new ArrayList<NodeRef>();
+       
+       
+       // Create two containers marked as tag scopes
+       Map<QName, Serializable> container1Props = new HashMap<QName, Serializable>(1);
+       container1Props.put(ContentModel.PROP_NAME, "Container1");
+       NodeRef container1 = this.nodeService.createNode(
+               folder, 
+               ContentModel.ASSOC_CONTAINS, 
+               ContentModel.ASPECT_TAGSCOPE,
+               ContentModel.TYPE_FOLDER,
+               container1Props).getChildRef();
+       
+       Map<QName, Serializable> container2Props = new HashMap<QName, Serializable>(1);
+       container1Props.put(ContentModel.PROP_NAME, "Container2");
+       NodeRef container2 = this.nodeService.createNode(
+               folder, 
+               ContentModel.ASSOC_CONTAINS, 
+               ContentModel.ASPECT_TAGSCOPE,
+               ContentModel.TYPE_FOLDER,
+               container2Props).getChildRef();
+       
+       
+       // Check that the tag scopes are empty
+       taggingService.addTagScope(container1);
+       taggingService.addTagScope(container2);
+       waitForActionExecution();
+       assertTrue( taggingService.isTagScope(container1) );
+       assertTrue( taggingService.isTagScope(container2) );
+       assertEquals(0, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       
+       
+       // Create a folder, without any tags on it
+       Map<QName, Serializable> taggedFolderProps = new HashMap<QName, Serializable>(1);
+       taggedFolderProps.put(ContentModel.PROP_NAME, "Folder");
+       NodeRef taggedFolder = this.nodeService.createNode(
+               container1, 
+               ContentModel.ASSOC_CONTAINS, 
+               ContentModel.ASPECT_TAGGABLE,
+               ContentModel.TYPE_FOLDER,
+               taggedFolderProps).getChildRef();
+       
+       waitForActionExecution();
+       assertEquals(0, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       
+       
+       // Now update the folder to add in tags
+       taggedFolderProps.clear();
+       tagsList.clear();
+       
+       tagsList.add(tagFoo1);
+       tagsList.add(tagFoo3);
+       taggedFolderProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
+       this.nodeService.addProperties(taggedFolder, taggedFolderProps);
+       
+       waitForActionExecution();
+       assertEquals(2, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       
+       // Create a document within it, check that tag scope tags are updated
+       tagsList.clear();
+       tagsList.add(tagFoo1);
+       tagsList.add(tagFoo2);
+       
+       Map<QName, Serializable> taggedDocProps = new HashMap<QName, Serializable>(1);
+       taggedDocProps.put(ContentModel.PROP_NAME, "Document");
+       taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
+       NodeRef taggedDoc = this.nodeService.createNode(
+               container1, 
+               ContentModel.ASSOC_CONTAINS, 
+               ContentModel.ASPECT_TAGGABLE,
+               ContentModel.TYPE_CONTENT,
+               taggedDocProps).getChildRef();
+       
+       waitForActionExecution();
+       assertEquals(3, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       
+       assertEquals(2, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo2").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+
+       
+       // Copy the folder to another container
+       taggedFolderProps.clear();
+       taggedFolderProps.put(ContentModel.PROP_NAME, "Folder");
+       NodeRef taggedFolder2 = this.nodeService.createNode(
+             container2, 
+             ContentModel.ASSOC_CONTAINS, 
+             ContentModel.ASPECT_TAGGABLE,
+             ContentModel.TYPE_FOLDER,
+             taggedFolderProps).getChildRef();
+       
+       waitForActionExecution();
+       assertEquals(3, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       
+       copyService.copy(taggedFolder, taggedFolder2);
+       
+       waitForActionExecution();
+       assertEquals(3, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       
+       assertEquals(2, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo2").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
+       
+       
+       // Update the document on the original
+       tagsList.clear();
+       tagsList.add(tagBar);
+       taggedDocProps.clear();
+       taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
+       this.nodeService.addProperties(taggedDoc, taggedDocProps);
+       
+       waitForActionExecution();
+       assertEquals(3, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("bar").getCount());
+       
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
+
+       
+       // Move the document to another container
+       taggedDoc = nodeService.moveNode(taggedDoc, container2, 
+             ContentModel.ASSOC_CONTAINS, 
+             ContentModel.ASPECT_TAGGABLE).getChildRef();
+
+       waitForActionExecution();
+       assertEquals(2, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
+       
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("bar").getCount());
+
+       
+       // Delete the documents and folder one at a time
+       nodeService.deleteNode(taggedDoc);
+       
+       waitForActionExecution();
+       assertEquals(2, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       
+       
+       nodeService.deleteNode(taggedFolder);
+       
+       waitForActionExecution();
+       assertEquals(0, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       
+       
+       nodeService.deleteNode(taggedFolder2);
+       
+       waitForActionExecution();
+       assertEquals(0, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(0, taggingService.findTagScope(container2).getTags().size());
     }
     
     // == Test the JavaScript API ==

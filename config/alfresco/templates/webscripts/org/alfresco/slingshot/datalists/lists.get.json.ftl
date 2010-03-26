@@ -2,6 +2,10 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "container": "${datalists.container.nodeRef?string}",
+   "permissions":
+   {
+      "create": ${datalists.container.hasPermission("CreateChildren")?string}
+   },
    "datalists":
    [
    <#list datalists.lists as list>

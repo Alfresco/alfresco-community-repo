@@ -113,27 +113,25 @@ var Evaluator =
          objData.displayValue = obj.displayName;
          objData.metadata = obj.userName;
       }
-      else if (type == "datetime" || type == "date")
+      else if (type == "cm:folder")
       {
-         objData.metadata = type;
-      }
-      else if (node.isSubType("cm:folder"))
-      {
-         obj = getContentObject(node.nodeRef);
+         obj = Evaluator.getContentObject(value);
          if (obj == null)
          {
             return false;
          }
          objData.displayValue = obj.displayPath.substring(companyhome.name.length() + 1);
+         objData.metadata = "container";
       }
-      else if (node.isSubType("cm:object"))
+      else if (type == "cm:cmobject" || type == "cm:content")
       {
-         obj = getContentObject(node.nodeRef);
+         obj = Evaluator.getContentObject(value);
          if (obj == null)
          {
             return false;
          }
          objData.displayValue = obj.properties["cm:name"];
+         objData.metadata = obj.isContainer ? "container" : "document";
       }
       return true;
    },
@@ -176,7 +174,9 @@ var Evaluator =
       {
          var isAssoc = k.indexOf("assoc") == 0,
             value = formData[k].value,
+            values,
             type = isAssoc ? objDefinitions[k].endpointType : objDefinitions[k].dataType,
+            endpointMany = isAssoc ? objDefinitions[k].endpointMany : false,
             objData =
             {
                type: type
@@ -185,17 +185,40 @@ var Evaluator =
          if (value instanceof java.util.Date)
          {
             objData.value = utils.toISO8601(value);
+            objData.displayValue = objData.value;
+            nodeData[k] = objData;
+         }
+         else if (endpointMany)
+         {
+            if (value.length() > 0)
+            {
+               values = value.split(",");
+               nodeData[k] = [];
+               for each (value in values)
+               {
+                  var objLoop =
+                  {
+                     type: objData.type,
+                     value: value,
+                     displayValue: value
+                  };
+
+                  if (Evaluator.decorateFieldData(objLoop, node))
+                  {
+                     nodeData[k].push(objLoop);
+                  }
+               }
+            }
          }
          else
          {
-            // java.util.List instances are returned from ScriptFormData.java as Strings
             objData.value = value;
-         }
-         objData.displayValue = objData.value;
+            objData.displayValue = objData.value;
 
-         if (Evaluator.decorateFieldData(objData, node))
-         {
-            nodeData[k] = objData;
+            if (Evaluator.decorateFieldData(objData, node))
+            {
+               nodeData[k] = objData;
+            }
          }
       }
 

@@ -199,6 +199,10 @@ public abstract class WebDAVMethod
                 throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
             }
         }
+        finally
+        {
+            cleanup();
+        }
     }
 
     /**
@@ -647,7 +651,9 @@ public abstract class WebDAVMethod
         return ns.toString();
     }
 
-    
+    protected void cleanup()
+    {
+    }
     /**
      * Checks if write operation can be performed on node.
      * 

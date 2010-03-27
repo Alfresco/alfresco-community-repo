@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
@@ -36,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.context.MessageSource;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Ensures that the <b>invite email templates</b> and <b>notify email templates</b> folders are present.

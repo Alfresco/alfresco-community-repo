@@ -1098,6 +1098,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // get the inviter user name (the name of user web script is executed
         // under)
         String inviterUserName = this.authenticationService.getCurrentUserName();
+        boolean created = false;
 
         checkManagerRole(inviterUserName, resourceType, siteShortName);
 
@@ -1164,10 +1165,16 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
             if (inviteeUserName == null)
             {
+                // This shouldn't normally happen. Due to the fix for ETHREEOH-3268, the link to invite external users
+                // should be disabled when the authentication chain does not allow it.
+                if (!authenticationService.isAuthenticationCreationAllowed())
+                {
+                    throw new InvitationException("invitation.invite.authentication_chain");
+                }
                 // else there are no existing people who have the given invitee
                 // email address so create new person
                 inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
-
+                created = true;
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("not explictly passed username - created new person, inviteeUserName="
@@ -1211,19 +1218,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // user name, then local reference to invitee password will be "null"
         //
         final String initeeUserNameFinal = inviteeUserName;
-        String inviteePassword = AuthenticationUtil.runAs(new RunAsWork<String>()
+        
+        String inviteePassword = created ? AuthenticationUtil.runAs(new RunAsWork<String>()
         {
             public String doWork()
             {
-                if (!InvitationServiceImpl.this.authenticationService.authenticationExists(initeeUserNameFinal))
-                {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Invitee user account does not exist, creating disabled account.");
-                    return createInviteeDisabledAccount(initeeUserNameFinal);
-                }
-                return null;
+                return createInviteeDisabledAccount(initeeUserNameFinal);
             }
-        }, AuthenticationUtil.getSystemUserName());
+        }, AuthenticationUtil.getSystemUserName()) : null;
 
         // create a ticket for the invite - this is used
         String inviteTicket = GUID.generate();

@@ -320,6 +320,20 @@
             </list>
         </property>
     </bean>
+    <bean id="patch.emailInviteAndNotifyTemplatesFolder" class="org.alfresco.repo.admin.patch.impl.EmailTemplatesInviteAndNotifyFoldersPatch" parent="basePatch" >
+        <property name="id"><value>patch.emailInviteAndNotifyTemplatesFolder</value></property>
+        <property name="description"><value>patch.emailInviteAndNotif	yTemplatesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4006</value></property>
+        <property name="targetSchema"><value>4007</value></property>
+        <!-- helper beans for execution -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="messageSource">
+            <ref bean="bootstrapSpacesMessageSource" />
+        </property>   
+    </bean>
 
     <!-- Note: targetSchema 11 is allocated for patching in an enterprise trial license -->
     <!--       A patch bean is not provided as this is handled by the license component internally (enterprise only) -->

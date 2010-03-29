@@ -166,7 +166,7 @@ public class TaggingServiceImpl implements TaggingService,
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.ASPECT_TAGGABLE, 
-                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));
         
         // Create tag behaviour
         createTagBehaviour = new JavaBehaviour(this, "createTags", NotificationFrequency.FIRST_EVENT);
@@ -191,11 +191,11 @@ public class TaggingServiceImpl implements TaggingService,
         this.policyComponent.bindClassBehaviour(
               OnCopyCompletePolicy.QNAME,
               ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.FIRST_EVENT));
+              new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
               OnMoveNodePolicy.QNAME,
               ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "onMoveNode", NotificationFrequency.FIRST_EVENT));
+              new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
     }
     
     /**

@@ -35,6 +35,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -538,6 +539,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        NodeRef tagBar = taggingService.createTag(folder.getStoreRef(), "Bar");
        
        List<NodeRef> tagsList = new ArrayList<NodeRef>();
+       List<ChildAssociationRef> children;
        
        
        // Create two containers marked as tag scopes
@@ -546,18 +548,20 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        NodeRef container1 = this.nodeService.createNode(
                folder, 
                ContentModel.ASSOC_CONTAINS, 
-               ContentModel.ASPECT_TAGSCOPE,
+               ContentModel.ASSOC_CHILDREN,
                ContentModel.TYPE_FOLDER,
                container1Props).getChildRef();
+       assertEquals(0, nodeService.getChildAssocs(container1).size());
        
        Map<QName, Serializable> container2Props = new HashMap<QName, Serializable>(1);
        container1Props.put(ContentModel.PROP_NAME, "Container2");
        NodeRef container2 = this.nodeService.createNode(
                folder, 
                ContentModel.ASSOC_CONTAINS, 
-               ContentModel.ASPECT_TAGSCOPE,
+               ContentModel.ASSOC_CHILDREN,
                ContentModel.TYPE_FOLDER,
                container2Props).getChildRef();
+       assertEquals(0, nodeService.getChildAssocs(container2).size());
        
        
        // Check that the tag scopes are empty
@@ -576,13 +580,14 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        NodeRef taggedFolder = this.nodeService.createNode(
                container1, 
                ContentModel.ASSOC_CONTAINS, 
-               ContentModel.ASPECT_TAGGABLE,
+               ContentModel.ASSOC_CHILDREN,
                ContentModel.TYPE_FOLDER,
                taggedFolderProps).getChildRef();
        
        waitForActionExecution();
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(1, nodeService.getChildAssocs(container1).size());
        
        
        // Now update the folder to add in tags
@@ -611,7 +616,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        taggedDocProps.put(ContentModel.PROP_NAME, "Document");
        taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
        NodeRef taggedDoc = this.nodeService.createNode(
-               container1, 
+               taggedFolder, 
                ContentModel.ASSOC_CONTAINS, 
                ContentModel.ASPECT_TAGGABLE,
                ContentModel.TYPE_CONTENT,
@@ -624,23 +629,31 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        assertEquals(2, taggingService.findTagScope(container1).getTag("foo1").getCount());
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo2").getCount());
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       
+       // Check that the Document really is a child of the folder,
+       //  otherwise later checks will fail for really odd reasons
+       assertEquals(1, nodeService.getChildAssocs(container1).size());
+       assertEquals(1, nodeService.getChildAssocs(taggedFolder).size());
 
        
-       // Copy the folder to another container
-       taggedFolderProps.clear();
-       taggedFolderProps.put(ContentModel.PROP_NAME, "Folder");
-       NodeRef taggedFolder2 = this.nodeService.createNode(
+       // Do a node->node copy of the document onto the other container
+       taggedDocProps.clear();
+       taggedDocProps.put(ContentModel.PROP_NAME, "CopyDoc");
+       assertEquals(0, nodeService.getChildAssocs(container2).size());
+       NodeRef taggedDoc2 = this.nodeService.createNode(
              container2, 
              ContentModel.ASSOC_CONTAINS, 
              ContentModel.ASPECT_TAGGABLE,
-             ContentModel.TYPE_FOLDER,
-             taggedFolderProps).getChildRef();
+             ContentModel.TYPE_CONTENT,
+             taggedDocProps).getChildRef();
        
        waitForActionExecution();
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(1, nodeService.getChildAssocs(container2).size());
        
-       copyService.copy(taggedFolder, taggedFolder2);
+       copyService.copy(taggedDoc, taggedDoc2);
        
        waitForActionExecution();
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
@@ -651,6 +664,34 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
        
        assertEquals(1, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo2").getCount());
+       
+       // Check that things were fine after the copy
+       assertEquals(1, nodeService.getChildAssocs(container2).size());
+       assertEquals(container2, nodeService.getPrimaryParent(taggedDoc2).getParentRef());
+       assertEquals(container2, taggingService.findTagScope(taggedDoc2).getNodeRef());
+       
+       
+       // Copy the folder to another container
+       // Does a proper, recursing copy
+       NodeRef taggedFolder2 = copyService.copy(
+             taggedFolder, container2,
+             ContentModel.ASSOC_CONTAINS,
+             ContentModel.ASSOC_CHILDREN,
+             true);
+       
+       waitForActionExecution();
+       assertEquals(3, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(2, nodeService.getChildAssocs(container2).size());
+       assertEquals(1, nodeService.getChildAssocs(taggedFolder2).size());
+       
+       assertEquals(2, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo2").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       assertEquals(3, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(2, taggingService.findTagScope(container2).getTag("foo2").getCount());
        assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
        
        
@@ -659,17 +700,19 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        tagsList.add(tagBar);
        taggedDocProps.clear();
        taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
+       taggedDocProps.put(ContentModel.PROP_NAME, "UpdatedDocument");
        this.nodeService.addProperties(taggedDoc, taggedDocProps);
        
        waitForActionExecution();
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
-       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
        
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
        assertEquals(1, taggingService.findTagScope(container1).getTag("bar").getCount());
        
-       assertEquals(1, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(3, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(2, taggingService.findTagScope(container2).getTag("foo2").getCount());
        assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
 
        
@@ -677,39 +720,84 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        taggedDoc = nodeService.moveNode(taggedDoc, container2, 
              ContentModel.ASSOC_CONTAINS, 
              ContentModel.ASPECT_TAGGABLE).getChildRef();
-
        waitForActionExecution();
        assertEquals(2, taggingService.findTagScope(container1).getTags().size());
-       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(4, taggingService.findTagScope(container2).getTags().size());
        
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
        assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
        
-       assertEquals(1, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(3, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(2, taggingService.findTagScope(container2).getTag("foo2").getCount());
        assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
        assertEquals(1, taggingService.findTagScope(container2).getTag("bar").getCount());
 
        
+       // Check the state of the tree
+       assertEquals(1, nodeService.getChildAssocs(container1).size());
+       assertEquals(3, nodeService.getChildAssocs(container2).size());
+
+       assertEquals(container2, nodeService.getPrimaryParent(taggedDoc).getParentRef());
+       assertEquals(container2, taggingService.findTagScope(taggedDoc).getNodeRef());
+       assertEquals(container2, nodeService.getPrimaryParent(taggedDoc2).getParentRef());
+       assertEquals(container2, taggingService.findTagScope(taggedDoc2).getNodeRef());
+       
+       
        // Delete the documents and folder one at a time
-       nodeService.deleteNode(taggedDoc);
+       nodeService.deleteNode(taggedDoc); // container 2, "bar"
        
        waitForActionExecution();
        assertEquals(2, taggingService.findTagScope(container1).getTags().size());
-       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(1, nodeService.getChildAssocs(container1).size());
+       assertEquals(2, nodeService.getChildAssocs(container2).size());
+       
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       assertEquals(3, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(2, taggingService.findTagScope(container2).getTag("foo2").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
+       assertEquals(null, taggingService.findTagScope(container2).getTag("bar"));
+
+       
+       nodeService.deleteNode(taggedDoc2); // container 2, "foo1", "foo2"
+       
+       waitForActionExecution();
+       assertEquals(2, taggingService.findTagScope(container1).getTags().size());
+       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(1, nodeService.getChildAssocs(container1).size());
+       assertEquals(1, nodeService.getChildAssocs(container2).size());
+       
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container1).getTag("foo3").getCount());
+       
+       assertEquals(2, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo2").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
+       assertEquals(null, taggingService.findTagScope(container2).getTag("bar"));
        
        
-       nodeService.deleteNode(taggedFolder);
+       nodeService.deleteNode(taggedFolder); // container 1, "foo1", "foo3"
        
        waitForActionExecution();
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
-       assertEquals(2, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(3, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(0, nodeService.getChildAssocs(container1).size());
+       assertEquals(1, nodeService.getChildAssocs(container2).size());
+       
+       assertEquals(2, taggingService.findTagScope(container2).getTag("foo1").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo2").getCount());
+       assertEquals(1, taggingService.findTagScope(container2).getTag("foo3").getCount());
        
        
-       nodeService.deleteNode(taggedFolder2);
+       nodeService.deleteNode(taggedFolder2); // container 2, has a child also
        
        waitForActionExecution();
        assertEquals(0, taggingService.findTagScope(container1).getTags().size());
        assertEquals(0, taggingService.findTagScope(container2).getTags().size());
+       assertEquals(0, nodeService.getChildAssocs(container1).size());
+       assertEquals(0, nodeService.getChildAssocs(container2).size());
     }
     
     // == Test the JavaScript API ==
@@ -782,7 +870,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         synchronized (mutex)
         {
             // Wait for a maximum of 10 seconds
-            mutex.wait(10000);         
+            mutex.wait(10000);
         }
     }
 

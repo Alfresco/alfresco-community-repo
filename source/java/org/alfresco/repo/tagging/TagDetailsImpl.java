@@ -124,4 +124,9 @@ public class TagDetailsImpl implements TagDetails
         }
         return result;
     }
+    
+    public String toString()
+    {
+       return "Tag: '" + tagName + "' @ " + tagCount + " instances";
+    }
 }

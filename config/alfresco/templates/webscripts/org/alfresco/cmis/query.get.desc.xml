@@ -1,37 +1,51 @@
 <webscript>
-  <shortname>Issue ad-hoc query (query)</shortname>
+  <shortname>Issue Query (query)</shortname>
   <description>
-<![CDATA[
-Queries the repository for queryable object based on properties or an optional full-text string.  Relationship objects are not queryable.   Content-streams are not returned as part of query.<br>
-<br>
-Inputs:<br>
-<br>
-String statement: Query statement<br>
-(Optional) Bool searchAllVersions: False (Default)<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-(Optional) int maxItems: 0 = Repository-default number of items (Default)<br>
-(Optional) int skipCount: 0 = Start at first position (Default)<br>
-<br>
-Outputs:<br>
-<br>
-Collection objectCollection - this collection represents a result table produced by the query statement. Typically each row of this table corresponds to an object, and each column corresponds to a property or a computed value as specified by the SELECT clause of the query statement. A CMIS SQL 1.0 query without JOIN always produces one object per row.<br>
-Bool hasMoreItems<br>
-<br>
-Notes:<br>
-<br>
-If SearchAllVersions is True, and CONTAINS() is used in the query, OperationNotSupported will be thrown if full-text search is not supported or if the repository does not have previous versions in the full-text index.<br>
-Returns set of objects from (skipCount, maxItems+skipCount)<br>
-If no “maxItems” value is provided, then the Repository will determine an appropriate number of items to return. How the Repository determines this value is repository-specific and opaque to CMIS.<br>  
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each result object in the output table as an additional multi-valued column containing computed values of type string, provided that each row in the output table indeed corresponds to one object (which is true for a CMIS SQL 1.0 query without JOIN).<br>
-If each row in the output table does not correspond to a specific object and “includeAllowableActions” is TRUE, then InvalidArgumentException will be thrown.<br>
-It is recommended that “includeAllowableActions” be used with query statements without JOIN, and that the Object ID property or “*” be included in the SELECT list.<br>
-"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
-]]>
+  <![CDATA[
+  Executes a CMIS query statement against the contents of the Repository.
+  ]]>
   </description>
-  <url>/cmis/query?q={q}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;searchAllVersions={searchAllVersions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  
+  <url>/cmis/query?q={q}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;searchAllVersions={searchAllVersions?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+  <args>
+    <arg>
+        <shortname>q</shortname>
+        <description>query statement to execute</description>
+    </arg>
+    <arg>
+        <shortname>searchAllVersions</shortname>
+        <description>note: Alfresco does not the optional capabilityAllVersionsSearchable</description>
+        <default>false</default>
+    </arg>
+    <arg>
+        <shortname>includeAllowableActions</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#allowableactions">allowable actions</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelationships</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#relationships">relationships</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>renditionFilter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#renditionfilter">rendition filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>skipCount</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>maxItems</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+  </args>
+  
+  <format default="atomfeed"/>
+  <responses>
+    <response type="cmis.atomfeed"/>
+  </responses>
+  
   <authentication>user</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed"/>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

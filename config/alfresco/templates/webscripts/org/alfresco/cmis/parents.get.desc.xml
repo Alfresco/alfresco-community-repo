@@ -1,41 +1,63 @@
 <webscript>
-  <shortname>Retrieve Parent Folders (getObjectParents)</shortname>
+  <shortname>Get Parent Folders (getObjectParents)</shortname>
   <description>
-<![CDATA[
-Returns the parent folders for the specified non-folder, fileable object<br>
-<br>
-Inputs:<br>
-<br>
-ID objectId: ID of a non-folder, fileable object.<br>
-(Optional) String filter: filter specifying which properties to return.<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-<br>
-Outputs:<br>
-<br>
-ResultSet resultSet - Set of folders containing the object.<br>
-<br>
-Notes:<br>
-<br> 
-Order is repository-specific<br>
-It is suggested that the parent and the ObjectId properties are included in the filter to allow re-ordering if necessary.<br>
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each parent folder as part of the output.<br>
-"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
-]]>  
+  <![CDATA[
+  Gets the parent folder(s) for the specified non-folder, fileable object.
+  ]]>  
   </description>
   
   <!-- by object id -->
-  <url>/cmis/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/cmis/s/{store}/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;includeRelativePathSegment={includeRelativePathSegment?}</url>
+  <url>/cmis/s/{store}/i/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;includeRelativePathSegment={includeRelativePathSegment?}</url>
   <!-- by path -->
-  <url>/cmis/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/cmis/s/{store}/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;includeRelativePathSegment={includeRelativePathSegment?}</url>
+  <url>/cmis/s/{store}/p{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;includeRelativePathSegment={includeRelativePathSegment?}</url>
   <!-- alfresco style -->
-  <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;includeRelativePathSegment={includeRelativePathSegment?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;includeRelativePathSegment={includeRelativePathSegment?}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the folder</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the folder</description>
+    </arg>
+    <arg>
+        <shortname>filter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#filter">filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeAllowableActions</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#allowableactions">allowable actions</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelationships</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#relationships">relationships</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>renditionFilter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#renditionfilter">rendition filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelativePathSegment</shortname>
+        <description>note: Alfresco ignores this argument and always returns a relative path segment</description>
+        <default>true</default>
+    </arg>
+  </args>
+
+  <format default="atomfeed">argument</format>
+  <responses>
+    <response type="cmis.atomfeed"/>
+  </responses>
   
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

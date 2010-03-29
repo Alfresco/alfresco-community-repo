@@ -138,7 +138,7 @@
       <ul>
         <li><a href="http://wiki.alfresco.com/wiki/CMIS">CMIS Wiki</a></li>
         <li><a href="http://blogs.alfresco.com/cmis/">CMIS Blog</a></li>
-        <li><a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis">Restful Binding Reference</a></li>
+        <li><a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis/doc">AtomPub Binding Reference</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
       </ul>

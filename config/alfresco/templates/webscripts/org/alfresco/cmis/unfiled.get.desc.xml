@@ -1,9 +1,15 @@
 <webscript>
-  <shortname>Unfiled Documents</shortname>
-  <description>Retrieve list of documents that are not in any folder</description>
+  <shortname>Unfiled Documents (getUnfiled)</shortname>
+  <description>Gets all unfiled documents in the Repository.</description>
   <url>/cmis/unfiled</url>
+
+  <format default="atomfeed"/>
+  <responses>
+    <response type="cmis.atomfeed"/>
+  </responses>
+  
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed"/>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

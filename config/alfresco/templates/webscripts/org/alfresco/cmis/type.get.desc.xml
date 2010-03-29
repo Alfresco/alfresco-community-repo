@@ -1,27 +1,31 @@
 <webscript>
-  <shortname>Retrieve a Type (getTypeDefinition)</shortname>
+  <shortname>Get Type Definition (getTypeDefinition)</shortname>
   <description>
-<![CDATA[
-Gets the definition for specified object type<br>
-<br>
-Inputs:<br>
-<br>
-ID typeId: Type Id<br>
-<br>
-Outputs:<br>
-<br>
-Collection typeAttributeCollection: Type attributes of an object type definition. See the “Object Type” section for a complete list of type attributes.<br>
-<Array> propertyDefinition: A list of property definitions. Each property definition consists of a collection of property attributes. See the “Object Type” section for a complete list of property attributes.<br>
-<br>
-Notes:<br>
-<br>
-canCreateInstances if false, the user MUST NOT be able to create instances of this particular type.  If true, the user may be able to create instances.<br> 
-When includeInheritedProperties is true, the repository SHOULD return all properties defined for the Object Type, including any properties inherited from its parent. If false, only Properties defined on the Object Type (but not its parent) SHOULD be returned. 
-]]>
+  <![CDATA[
+  Gets the definition of the specified type.
+  ]]>
   </description>
+  
   <url>/cmis/type/{typeId}?includeInheritedProperties={includeInheritedProperties?}</url>
+  <args>
+    <arg>
+        <shortname>typeId</shortname>
+        <description>the type id of the type to describe</description>
+    </arg>
+    <arg>
+        <shortname>includePropertyDefinitions</shortname>
+        <description>if true, include property definitions with the type definition</description>
+        <default>true</default>
+    </arg>
+  </args>
+  
+  <format default="atomentry"/>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
+  
   <authentication>user</authentication>
   <transaction allow="readonly"/>
-  <format default="atomentry"/>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

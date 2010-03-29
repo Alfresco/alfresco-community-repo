@@ -1,36 +1,50 @@
 <webscript>
-  <shortname>Checked-out Documents (getCheckedoutDocuments)</shortname>
+  <shortname>Get Checked Out Documents (getCheckedOutDocs)</shortname>
   <description>
-<![CDATA[
-Gets the list of documents that are checked out that the user has access to.  Most likely this will be the set of documents checked out by the user.  Content-streams are not returned.<br>
-<br>
-Inputs:<br>
-<br>
-(Optional) ID folderId<br>
-(Optional) String filter specifying which properties to return.<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-(Optional) int maxItems: 0 = Repository-default number of items (Default)<br>
-(Optional) int skipCount: 0 (Default)<br>
-<br>
-Outputs:<br>
-<br>
-Result set specified by Filter<br>
-Bool hasMoreItems<br>
-<br>
-Notes:<br>
-<br>
-The documents will be returned in a repository-specific order.<br>
-The repository may include checked-out objects that the calling user has access to, but did not check out.<br>
-If folderId is specified, then the results MUST include only the children of that folder, NOT other descendants of the folder nor documents outside this tree.<br>
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each document as part of the output.<br>
-"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
-If no “maxItems” value is provided, then the Repository will determine an appropriate number of items to return. How the Repository determines this value is repository-specific and opaque to CMIS.<br>    
-]]>  
+  <![CDATA[
+  Gets the list of documents that are checked out that the user has access to.
+  ]]>
   </description>
+  
   <url>/cmis/checkedout?folderId={folderId?}&amp;includeDescendants={includeDescendants?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <args>
+    <arg>
+        <shortname>folderId</shortname>
+        <description>if specified, only return checked out documents that are children of the specified folder, otherwise return all checked out documents</description>
+    </arg>
+    <arg>
+        <shortname>filter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#filter">filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeAllowableActions</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#allowableactions">allowable actions</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelationships</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#relationships">relationships</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>renditionFilter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#renditionfilter">rendition filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>skipCount</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>maxItems</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+  </args>
+
+  <format default="atomfeed"/>
+  <responses>
+    <response type="cmis.atomfeed"/>
+  </responses>
+  
   <authentication>user</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed"/>
   <family>CMIS</family>
+  <lifecylce>public_api</lifecylce>
 </webscript>

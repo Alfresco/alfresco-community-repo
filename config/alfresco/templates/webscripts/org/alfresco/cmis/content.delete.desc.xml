@@ -1,6 +1,9 @@
 <webscript>
-  <shortname>Content Delete (deleteContent)</shortname>
+  <shortname>Delete Content (deleteContent)</shortname>
   <description>
+  <![CDATA[
+  Deletes the content stream for the specified Document object.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -15,9 +18,30 @@
   <url>/api/avmpath/content{property}/{store_id}/{id}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}</url>
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}</url>
+
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the object</description>
+    </arg>
+    <arg>
+        <shortname>property</shortname>
+        <description>the name of the content property to retrieve content from</description>
+        <default>cm:content</default>
+    </arg>
+  </args>
+
+  <format default="atomentry">argument</format>
   
   <authentication>guest</authentication>
-  <format default="atomentry">argument</format>
   <family>CMIS</family>
   <lifecycle>public_api</lifecycle>
 </webscript>

@@ -1,6 +1,9 @@
 <webscript>
-  <shortname>Create policy (createPolicy)</shortname>
+  <shortname>Apply Policy (applyPolicy)</shortname>
   <description>
+  <![CDATA[
+  Applies a specified policy to an object.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -9,12 +12,33 @@
   <!-- by path -->
   <url>/cmis/p{path}/pols</url>
   <url>/cmis/s/{store}/p{path}/pols</url>
-  
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/pols</url>
   <url>/api/path/{store_type}/{store_id}/{id}/pols</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the object</description>
+    </arg>
+  </args>
+
+  <format default="atomentry">argument</format>
+  <requests>
+    <request type="cmis.atomentry"/>
+  </requests>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
   
   <authentication>guest</authentication>
-  <format default="atomentry">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

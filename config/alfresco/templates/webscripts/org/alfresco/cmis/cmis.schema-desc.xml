@@ -8,7 +8,7 @@
     <shortname>CMIS Atom Service Document</shortname>
     <description>
     <![CDATA[
-    The AtomPub Service Document (application/atomsvc+xml) contains the set of repositories that are available. Each repository is mapped to a app:workspace
+    The AtomPub Service Document (application/atomsvc+xml) contains the set of repositories that are available. Each repository is mapped to a workspace
     element in the AtomPub Service document.
     ]]>
     </description>
@@ -22,7 +22,7 @@
     <shortname>CMIS Atom Entry</shortname>
     <description>
     <![CDATA[
-    Atom Entry (application/atom+xml;type=entry) containing extension CMIS markup.
+    An Atom entry (application/atom+xml;type=entry) containing extension CMIS markup.
     ]]>
     </description>
     <format>atomentry</format>
@@ -35,7 +35,7 @@
     <shortname>CMIS Atom Feed</shortname>
     <description>
     <![CDATA[
-    Atom Feed (application/atom+xml;type=feed) containing extension CMIS markup.
+    An Atom feed (application/atom+xml;type=feed) containing extension CMIS markup.
     ]]>
     </description>
     <format>atomfeed</format>
@@ -44,7 +44,7 @@
    </type>
 
    <type>
-    <id>cmisquery</id>
+    <id>query</id>
     <shortname>CMIS Query</shortname>
     <description>
     <![CDATA[
@@ -56,8 +56,6 @@
     <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd</url>
     <definition>
     <![CDATA[
-    <pre>
-    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <cmis:query xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
         <cmis:statement>SELECT * FROM cmis:document</cmis:statement>
         <cmis:searchAllVersions>true</cmis:searchAllVersions>
@@ -67,13 +65,12 @@
         <cmis:maxItems>50</cmis:maxItems>
         <cmis:skipCount>0</cmis:skipCount>
     </cmis:query>
-    </pre>
     ]]>
     </definition>
    </type>
 
    <type>
-    <id>cmisallowableactions</id>
+    <id>allowableactions</id>
     <shortname>CMIS Allowable Actions</shortname>
     <description>
     <![CDATA[
@@ -85,8 +82,6 @@
     <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd</url>
     <definition>
     <![CDATA[
-    <pre>
-    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <cmis:allowableActions xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
         <cmis:canDeleteObject>true</cmis:canDeleteObject>
         <cmis:canUpdateProperties>true</cmis:canUpdateProperties>
@@ -108,13 +103,12 @@
         <cmis:canRemovePolicy>true</cmis:canRemovePolicy>
         <cmis:canCreateDocument>true</cmis:canCreateDocument>
     </cmis:allowableActions>
-    </pre>
     ]]>
     </definition>
    </type>
 
    <type>
-    <id>cmistree</id>
+    <id>tree</id>
     <shortname>CMIS Tree</shortname>
     <description>
     <![CDATA[
@@ -127,7 +121,7 @@
    </type>
 
    <type>
-    <id>cmisacl</id>
+    <id>acl</id>
     <shortname>CMIS ACL</shortname>
     <description>
     <![CDATA[
@@ -139,8 +133,6 @@
     <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd</url>
     <definition>
     <![CDATA[
-    <pre>
-    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <cmis:acl xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
         <cmis:permission>
             <cmis:principal>
@@ -153,7 +145,6 @@
             <cmis:direct>true</cmis:direct>
         </cmis:permission>
     </cmis:acl>
-    </pre>
     ]]>
     </definition>
    </type>

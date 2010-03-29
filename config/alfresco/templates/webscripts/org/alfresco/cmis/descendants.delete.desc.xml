@@ -1,46 +1,49 @@
 <webscript>
-  <shortname>Delete tree (deleteTree)</shortname>
+  <shortname>Delete Folder Tree (deleteTree)</shortname>
   <description>
-<![CDATA[
-Deletes the tree rooted at specified folder (including that folder)<br>
-<br>
-Inputs:<br>
-<br>
-ID folderId<br>
-Enum unfileNonfolderObjects:<br> 
-o   Unfile – unfile all non-folder objects from folders in this tree. They may remain filed in other folders, or may become unfiled.<br>
-o   DeleteSingleFiled – delete non-folder objects filed only in this tree, and unfile the others so they remain filed in other folders.<br>
-o   Delete – delete all non-folder objects in this tree (Default)<br>
-(Optional) Bool continueOnFailure: False (Default)<br>
-<br>
-Outputs:<br>
-<br>
-Collection failedToDelete - List of object IDs that failed to delete (if continueOnFailure is FALSE, then single object ID)<br>
-<br>
-Notes:<br>
-<br>
-If a non-folder object is removed from the last folder it is filed in, it can continue to survive outside of the folder structure if the repository supports the “Unfiling” capabiliity.<br>
-If the specified folder is the Root Folder, throw OperationNotSupportedException.<br>
-If unfiling is not supported, throw OperationNotSupportedException if deleteTree is called with Unfile.<br>
-For repositories that support version-specific filing, this may delete some versions of a document but not necessarily all versions. For repositories that do not support version-specific filing, if a document is to be deleted, all versions are deleted.<br>
-This is not transactional.<br>  
-o   However, if DeleteSingleFiled is chosen, then having the objects unfiled is not sufficient if some objects fail to delete.  The user MUST be able to re-issue command (recover) from the error by using the same tree.<br>
-Does not specify the order in which delete will happen<br>
-o   However, any objects that are not deleted (e.g. because a previous object failed to delete), they MUST remain valid CMIS objects (including any applicable filing constraint for each object).<br>
-]]>  
+  <![CDATA[
+  Deletes the specified folder and all of its child and descendant objects.
+  ]]>
   </description>
   
   <!-- by object id -->
-  <url>/cmis/i/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
-  <url>/cmis/s/{store}/i/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/cmis/i/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
+  <url>/cmis/s/{store}/i/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
   <!-- by path -->
-  <url>/cmis/p{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
-  <url>/cmis/s/{store}/p{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/cmis/p{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
+  <url>/cmis/s/{store}/p{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
   <!-- alfresco style -->
-  <url>/api/node/{store_type}/{store_id}/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileMultiFiledDocuments={unfileMultiFiledDocuments}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/descendants?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
   
-  <authentication>user</authentication>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the folder</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the folder</description>
+    </arg>
+    <arg>
+        <shortname>continueOnFailure</shortname>
+        <description>if true, continue attempting to perform this operation, even if deletion of child or descendant fails</description>
+        <default>false</default>
+    </arg>
+    <arg>
+        <shortname>unfileObjects</shortname>
+        <description>one of unfile (unfile all fileable objects), deletesinglefiled, delete (delete all fileable objects)</description>
+        <default>delete</default>
+    </arg>
+  </args>
+  
   <format default="atomfeed"/>
+
+  <authentication>user</authentication>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

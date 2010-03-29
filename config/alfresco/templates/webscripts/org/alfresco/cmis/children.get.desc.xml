@@ -1,52 +1,75 @@
 <webscript>
-  <shortname>Retrieve list of children (getChildren)</shortname>
+  <shortname>Get Folder Children (getChildren)</shortname>
   <description>
-<![CDATA[
-Gets the list of child objects contained in the specified folder.  Only the filter-selected properties associated with each object are returned.  The content-streams of documents are not returned.<br>
-<br>
-For paging through the children (depth of 1) only use getChildren.  For returning a tree of objects of a certain depth, use getDescendants.<br>
-<br>
-For a repository that supports version-specific filing, this will return the version of the documents in the folder specified by the user filing the documents into the folder.  Otherwise, the latest version of the documents will be returned.<br>
-<br>
-Inputs:<br>
-<br>
-ID folderId<br>
-(Optional) Enum type: Documents, Folders, Policies, Any (default)<br>
-(Optional) String filter: Filter specifying which properties to return.<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-(Optional) int maxItems: 0 = Repository-default number of items (Default)<br>
-(Optional) int skipCount: 0 = start (Default)<br>
-(Optional) String orderBy: must be a valid ORDER BY clause from the query grammer excluding ‘ORDER BY’.  Example ‘name DESC’.<br>
-<br>
-Outputs:<br>
-<br>
-Result set specified by Filter of each child object in the specified folder<br>
-If maxItems > 0, Bool hasMoreItems<br>
-<br>
-Notes:<br>
-<br>
-Between invocations the order of the results may change due to repository state changing, i.e. skipCount might not show objects or more likely show an object twice (bottom of first page and top of second) when an object is added to the top of the list.<br>
-Ordering is repository-specific except the ordering MUST remain consistent across invocations, provided that the repository state has not changed.<br> 
-When returning the results of a call where the caller specified “Any” type,  the repository SHOULD return all folder objects first followed by other objects.<br>
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each child object as part of the output.<br>
-"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
-If no “maxItems” value is provided, then the Repository will determine an appropriate number of items to return. How the Repository determines this value is repository-specific and opaque to CMIS.<br>
-]]>
+  <![CDATA[
+  Gets the list of child objects contained in the specified folder.
+  ]]>
   </description>
 
   <!-- by object id -->
-  <url>/cmis/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
-  <url>/cmis/s/{store}/i/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
+  <url>/cmis/i/{id}/children?types={types?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
+  <url>/cmis/s/{store}/i/{id}/children?types={types?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
   <!-- by path -->
-  <url>/cmis/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
-  <url>/cmis/s/{store}/p{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
+  <url>/cmis/p{path}/children?types={types?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
+  <url>/cmis/s/{store}/p{path}/children?types={types?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
   <!-- alfresco style -->
-  <url>/api/node/{store_type}/{store_id}/{id}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/children?types={types}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
-
+  <url>/api/node/{store_type}/{store_id}/{id}/children?types={types?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/children?types={types?}&amp;filter={filter?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}&amp;orderBy={orderBy?}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the folder</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the folder</description>
+    </arg>
+    <arg>
+        <shortname>types</shortname>
+        <description>restrict the type of children returned. one of documents, folders, policies, any</description>
+    </arg>
+    <arg>
+        <shortname>filter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#filter">filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeAllowableActions</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#allowableactions">allowable actions</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelationships</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#relationships">relationships</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>renditionFilter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#renditionfilter">rendition filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includePathSegment</shortname>
+        <description>if true, returns a PathSegment element for each child for use in constructing that child's path</description>
+        <default>false</default>
+    </arg>
+    <arg>
+        <shortname>skipCount</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>maxItems</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+  </args>
+  
+  <format default="atomfeed">argument</format>
+  <responses>
+    <response type="cmis.atomfeed"/>
+  </responses>
+  
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

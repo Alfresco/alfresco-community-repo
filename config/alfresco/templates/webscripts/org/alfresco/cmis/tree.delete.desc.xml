@@ -1,6 +1,9 @@
 <webscript>
-  <shortname>Delete tree (deleteTree)</shortname>
+  <shortname>Delete Folder Tree (deleteTree)</shortname>
   <description>
+  <![CDATA[
+  Deletes the specified folder and all of its child and descendant objects.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -12,8 +15,34 @@
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/tree?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
   <url>/api/path/{store_type}/{store_id}/{path}/tree?continueOnFailure={continueOnFailure?}&amp;unfileObjects={unfileObjects}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the folder</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the folder</description>
+    </arg>
+    <arg>
+        <shortname>continueOnFailure</shortname>
+        <description>if true, continue attempting to perform this operation, even if deletion of child or descendant fails</description>
+        <default>false</default>
+    </arg>
+    <arg>
+        <shortname>unfileObjects</shortname>
+        <description>one of unfile (unfile all fileable objects), deletesinglefiled, delete (delete all fileable objects)</description>
+        <default>delete</default>
+    </arg>
+  </args>
+
+  <format default="atomfeed"/>
   
   <authentication>user</authentication>
-  <format default="atomfeed"/>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

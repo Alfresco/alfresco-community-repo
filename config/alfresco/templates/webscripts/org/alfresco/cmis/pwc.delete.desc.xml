@@ -1,25 +1,29 @@
 <webscript>
   <shortname>Cancel Checkout (cancelCheckout)</shortname>
   <description>
-<![CDATA[
-Reverses the effect of a check-out. Removes the private working copy of the checked-out document object, allowing other documents in the version series to be checked out again.<br>
-<br>
-Inputs:<br>
-<br>
-ID documentId: ObjectId of Private Working Copy (ID returned on CheckOut)<br>
-<br>
-Notes:<br>
-<br>
-It is repository specific on who can cancel a checkout (user, admin, larger group, etc)<br>
-Throws OperationNotSupportedException if the object is not checked out<br>
-]]>
+  <![CDATA[
+  Reverses the effect of a check-out. Removes the private working copy of the checked-out document, allowing other documents in the version series
+  to be checked out agai
+  ]]>
   </description>
   
   <!-- by object id -->
   <url>/cmis/pwc/i/{id}</url>
   <url>/cmis/pwc/s/{store}/i/{id}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+  </args>
   
-  <authentication>user</authentication>
   <format default="atomentry"/>
+
+  <authentication>user</authentication>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

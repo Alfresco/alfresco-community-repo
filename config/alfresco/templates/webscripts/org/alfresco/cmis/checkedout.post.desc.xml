@@ -1,30 +1,22 @@
 <webscript>
-  <shortname>Checkout a document (checkOut)</shortname>
+  <shortname>Checkout Document (checkOut)</shortname>
   <description>
-<![CDATA[
-Create a private working copy of the object, copies the metadata and optionally content. It is up to the repository to determine if updates to the current version (not PWC) and prior versions are allowed if checked-out.<br>
-<br>
-Inputs:<br>
-<br>
-ID documentId: ObjectID of Doc Version to checkout<br>
-<br>
-Outputs:<br>
-<br>
-ID documentId: ObjectID of Private Working Copy<br>
-Bool contentCopied<br> 
-<br>
-Notes:<br>
-<br>
-It is repository-specific to determine the scope of visibility to the private working copy.<br>
-Other users not in the scope of checkout will see the public (pre-checkout) version while those in scope will be able to work on the checked-out version.<br>
-Copying content on checkout or not is repository-specific.<br>
-CheckOut() may remove update permission on prior versions.<br>
-CheckOut() on a non-document object will throw OperationNotSupportedException.<br>  
-Some repositories may not support updating of private working copies and the updates MUST be supplied via checkIn().<br>
-]]>
+  <![CDATA[
+: Create a private working copy of the document.
+  ]]>
   </description>
+  
   <url>/cmis/checkedout</url>
-  <authentication>user</authentication>
+
   <format default="atomentry"/>
+  <requests>
+    <request type="cmis.atomentry"/>
+  </requests>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
+  
+  <authentication>user</authentication>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

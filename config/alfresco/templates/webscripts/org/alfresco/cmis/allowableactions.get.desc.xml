@@ -1,6 +1,11 @@
 <webscript>
-  <shortname>Retrieve Allowable Actions</shortname>
-  <description>Retrieve Allowable Actions</description>
+  <shortname>Get Allowable Actions (getAllowableActions)</shortname>
+  <description>
+  <![CDATA[
+  Gets the list of allowable actions for an Object.
+  ]]>
+  </description>
+  
   <!-- by object id -->
   <url>/cmis/i/{id}/allowableactions</url>
   <url>/cmis/s/{store}/i/{id}/allowableactions</url>
@@ -10,8 +15,28 @@
   <!-- old style; backwards compatibility -->
   <url>/api/node/{store_type}/{store_id}/{id}/allowableactions</url>
   <url>/api/path/{store_type}/{store_id}/{path}/allowableactions</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the object</description>
+    </arg>
+  </args>
+
+  <format default="cmisallowableactions">argument</format>
+  <responses>
+    <response type="cmis.allowableactions"/>
+  </responses>
+  
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="cmisallowableactions">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

@@ -1,24 +1,9 @@
 <webscript>
-  <shortname>Content Retrieval (getContent)</shortname>
+  <shortname>Get Content (getContent)</shortname>
   <description>
-<![CDATA[
-The service returns the content-stream for a document.  This is the only service that returns content-stream.<br>
-<br>
-Inputs:<br>
-<br>
-ID documentId: Document to return the content-stream<br>
-(Optional) Integer offset:<br>
-(Optional) Integer length:<br>
-<br>
-Outputs:<br>
-<br>
-Byte[] stream<br>
-<br>
-Notes:<br>
-<br>
-Some CMIS protocol bindings MAY choose not to explicitly implement a “getContentStream” method, in cases where the protocol itself provides built-in mechanisms for retrieving byte streams. (E.g. in the ATOM/REST binding, content streams may be retrieved via standard HTTP gets on an “edit-media” URL, rather than a CMIS-specific “getContentStream” URL). See Part II of the CMIS specification for additional details.<br>
-Each CMIS protocol binding will provide a way for fetching a  sub-range within a content stream, in a manner appropriate to that protocol.<br> 
-]]>
+  <![CDATA[
+  Gets the content stream for the specified document, or gets a rendition stream for a specified rendition of a document.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -35,9 +20,35 @@ Each CMIS protocol binding will provide a way for fetching a  sub-range within a
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
   <url>/api/path/{store_type}/{store_id}/{path}/content{property}?a={attach?}</url>
   
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the object</description>
+    </arg>
+    <arg>
+        <shortname>property</shortname>
+        <description>the name of the content property to retrieve content from</description>
+        <default>cm:content</default>
+    </arg>
+    <arg>
+        <shortname>attach</shortname>
+        <description>if true, force download of content as attachment</description>
+        <default>false</default>
+    </arg>
+  </args>
+  
+  <format default="">argument</format>
+  
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="">argument</format>
   <family>CMIS</family>
   <lifecycle>public_api</lifecycle>
 </webscript>

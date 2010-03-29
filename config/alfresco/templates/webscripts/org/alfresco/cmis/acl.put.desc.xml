@@ -1,22 +1,9 @@
 <webscript>
   <shortname>Update ACL (applyACL)</shortname>
   <description>
-<![CDATA[
-This service updates the ACL of the specified object.
-<br>
-Inputs:<br>
-<br>
-ID objectId<br>
-<br>
-Outputs:<br>
-<br>
-Collection accessControlEntryCollection<br>
-<br>
-Notes:<br>
-<br>
-The server may respond using a combination of CMIS Basic permissions and
-repository specific permissions.<br>
-]]>
+  <![CDATA[
+  Adds or removes the given ACEs to or from the ACL of document or folder object.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -28,8 +15,16 @@ repository specific permissions.<br>
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/acl</url>
   <url>/api/path/{store_type}/{store_id}/{path}/acl</url>
+
+  <format default="cmisacl">argument</format>
+  <requests>
+    <request type="cmis.acl"/>
+  </requests>
+  <responses>
+    <response type="cmis.acl"/>
+  </responses>
     
   <authentication>user</authentication>
-  <format default="cmisacl">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

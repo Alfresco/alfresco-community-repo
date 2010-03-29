@@ -1,45 +1,11 @@
 <webscript>
-  <shortname>Create folder or document (createDocument, createFolder)</shortname>
+  <shortname>Create / Move a Folder or Document (createDocument, createFolder, createPolicy, moveObject)</shortname>
   <description>
-<![CDATA[
-Creates a document object of the specified type, and optionally adds the document to a folder<br>
-<br>
-Inputs:<br>
-<br>
-ID typeId: Document type<br>
-Collection properties<br>
-(Optional) ID folderId: Parent folder for this new document<br>
-(Optional) ContentStream contentStream<br>
-(Optional) Enum versioningState: CheckedOut, CheckedInMinor, CheckedInMajor (Default)<br>
-<br>
-Outputs:<br> 
-<br>
-ID objectId: Id of the created document object<br>
-<br>
-The versioningState input is used to create a document in a checked-out state, or as a checked-in minor version, or as a checked-in major version. If created in a checked-out state, the object is a PWC and there is no corresponding "checked out document". (See the "Versioning" section.)<br>
-If the Document’s Object Type does not allow content-stream and a content-stream is provided, or if content-stream is required and a content-stream is not provided, throw ConstraintViolationException.<br>
-If a Folder is specified, and the Document’s Object Type is not one of the “Allowed_Child_Object_Types” for this Folder, throw ConstraintViolationException.<br>
-If unfiling is not supported and a Folder is not specified, throw FolderNotValidException.<br>
-Repositories MAY reject the createDocument request (by throwing ConstaintViolationException) if any of the Required properties specified in the Document’s Object Type are not set.<br>
-However, iF the repository does NOT reject the createDocument request in this case, the repository MUST leave the newly-created Document in a checked-out state, and MUST ensure that all required properties are set before the Document is checked in.<br>
-<br>
-<br>
-Creates a folder object of the specified type<br>
-<br>
-Inputs:<br>
-<br>
-ID typeId: Folder type<br>
-Collection properties<br>
-ID folderId: Parent folder for this new folder<br>
-<br>
-Outputs:<br>
-<br>
-ID objectId: Id of the created folder object<br>
-<br>
-Notes:<br>
-If the to-be-created Folder’s Object Type is not one of the “Allowed_Child_Object_Types” for the parent Folder, throw ConstraintViolationException.<br>
-Root folder can not be created using this service.<br>
-]]>
+  <![CDATA[
+  Creates a folder, document or policy of the specified type (given by the cmis:objectTypeId property).
+  
+  If sourceFolderId is specified, a move operation is performed instead of create.
+  ]]>
   </description>
   
   <url>/cmis/i/{id}/children?sourceFolderId={sourceFolderId}&amp;versioningState={versioningState?}</url>
@@ -50,8 +16,38 @@ Root folder can not be created using this service.<br>
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/children?sourceFolderId={sourceFolderId}&amp;versioningState={versioningState?}</url>
   <url>/api/path/{store_type}/{store_id}/{path}/children?sourceFolderId={sourceFolderId}&amp;versioningState={versioningState?}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the folder</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the folder</description>
+    </arg>
+    <arg>
+        <shortname>sourceFolderId</shortname>
+        <description>if specified, indicates the folder from which the object shall be moved from</description>
+    </arg>
+    <arg>
+        <shortname>versioningState</shortname>
+        <description>specifies the initial versioning state of the created object. one of none, checkedout, major or minor.</description>
+    </arg>
+  </args>
+
+  <format default="atomentry"/>
+  <requests>
+    <request type="cmis.atomentry"/>
+  </requests>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
   
   <authentication>user</authentication>
-  <format default="atomentry"/>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

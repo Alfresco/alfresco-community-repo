@@ -1,31 +1,40 @@
 <webscript>
-  <shortname>Get change log events (getContentChanges)</shortname>
+  <shortname>Get Change Log Events (getContentChanges)</shortname>
   <description>
-<![CDATA[
-Gets a list of change log events and optionally the ACLs applied to the changed objects.<br>
-<br>
-Inputs:<br>
-<br>
-ID objectId<br>
-(Optional) Integer maxItems: The maximum number of entries to return
-(Optional) Boolean includeACL: Include the ACLs applied to the object reference in the change event?<br>
-(Optional) String changeLogToken: the token of the change log entry to start from<br>
-list.
-<br>
-Outputs:<br>
-<br>
-Result set specified by arguments<br>
-<br>
-Notes:<br>
-<br>
-If “changeLogToken” is specified, the changes returned should start from the specified token. Otherwise, the changes will start from the first available change.<br>
-If “maxItems” is specified, only that number of changes will be returned and paging links embedding other change log tokens will allow navigation to further changes.<br>
-]]>
+  <![CDATA[
+  Gets a list of content changes. This service is intended to be used by search crawlers or other applications that need to
+  efficiently understand what has changed in the repository.  
+  ]]>
   </description>
-  <url>/cmis/changes?maxItems={maxItems?}&amp;includeACL={includeACL?}&amp;changeLogToken={changeLogToken?}</url>
+  
+  <url>/cmis/changes?maxItems={maxItems?}&amp;filter={filter?}&amp;includeACL={includeACL?}&amp;changeLogToken={changeLogToken?}</url>
+  <args>
+    <arg>
+        <shortname>changeLogToken</shortname>
+        <description>if specified, return the change event corresponding to the value of the specified change log token as the first result in the output, 
+                     otherwise, return the first change event recorded in the change log</description>
+    </arg>
+    <arg>
+        <shortname>filter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#filter">filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeACL</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#acls">acls</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>maxItems</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#paging">paging</a>]]></description>
+    </arg>
+  </args>
+
+  <format default="atomfeed">argument</format>
+  <responses>
+    <response type="cmis.atomfeed"/>
+  </responses>
   
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

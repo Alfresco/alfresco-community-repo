@@ -1,36 +1,52 @@
 <webscript>
-  <shortname>Retrieve properties of PWC (getProperties)</shortname>
+  <shortname>Get Private Working Copy (getObject)</shortname>
   <description>
-<![CDATA[
-Returns the properties of an object, and optionally the operations that the user is allowed to perform on the object<br>
-<br>
-Inputs:<br>
-<br>
-ID objectId<br>
-(Optional) Enum  returnVersion: This (Default), Latest, LatestMajor<br>
-(Optional) String filter: Filter for properties to be returned<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-<br>
-Outputs:<br>
-<br>
-Collection propertyCollection<br> 
-Collection allowableActionCollection<br>
-<br>
-Notes:<br>
-<br>
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for the object as part of the output.<br>
-"IncludeRelationships" indicates whether relationships are also returned for the object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.<br>
-Does not return the content-stream of a document<br>
-PropertyCollection includes changeToken (if applicable to repository)<br>
-]]>
+  <![CDATA[
+  Gets the specified information for the private working copy.
+  ]]>
   </description>
   
-  <url>/cmis/pwc/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
-  <url>/cmis/pwc/s/{store}/i/{id}?filter={filter?}&amp;returnVersion={returnVersion?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/pwc/i/{id}?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+  <url>/cmis/pwc/s/{store}/i/{id}?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;includeACL={includeACL?}&amp;renditionFilter={renditionFilter?}</url>
+
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>filter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#filter">filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeAllowableActions</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#allowableactions">allowable actions</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelationships</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#relationships">relationships</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>renditionFilter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#renditionfilter">rendition filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeACL</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#acls">acls</a>]]></description>
+    </arg>
+  </args>
+
+  <format default="atomentry">argument</format>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
   
   <authentication>user</authentication>
   <transaction allow="readonly"/>
-  <format default="atomentry">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

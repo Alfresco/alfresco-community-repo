@@ -1,35 +1,47 @@
 <webscript>
   <shortname>Checkin Private Working Copy (checkin)</shortname>
   <description>
-<![CDATA[
-Makes the private working copy the current version of the document.<br>
-<br>
-Inputs:<br>
-<br>  
-ID documentId: ObjectId of the private working copy<br>
-Optional) Boolean major: True (Default)<br>
-(Optional) Property bag<br>
-(Optional) ContentStream stream<br>
-(Optional) String CheckinComment<br>
-<br>
-Outputs:<br>
-<br>
-ID documentId: ID for the new version of the document.<br>
-<br>
-Notes:<br>
-<br>
-It is left to the repository to determine who can check-in a document.<br>
-CheckinComment is persisted if specified.<br>
-For repositories that do not support updating private working copies, all updates MUST be set on the check-in service.<br>
-If Document is not checked out, throw OperationNotSupportedException.<br>
-If the Document has “Content_Stream_Allowed” set to FALSE, and a call is made to checkIn that includes a content-stream, throw ConstraintViolationException.<br>
-]]>
+  <![CDATA[
+  Checks-in the Private Working Copy document.
+  ]]>
   </description>
   
   <url>/cmis/pwc/i/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
   <url>/cmis/pwc/s/{store}/i/{id}?checkinComment={checkinComment?}&amp;major={major?}&amp;checkin={checkin?}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>checkin</shortname>
+        <description>if true, cause this update to checkin</description>
+        <default>false</default>
+    </arg>
+    <arg>
+        <shortname>checkinComment</shortname>
+        <description>comment to be recorded for this checkin</description>
+    </arg>
+    <arg>
+        <shortname>major</shortname>
+        <description>if true, checkin as a major version, otherwise checkin as a minor version</description>
+        <default>true</default>
+    </arg>
+  </args>
+
+  <format default="atomentry"/>
+  <requests>
+    <request type="cmis.atomentry"/>
+  </requests>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
   
   <authentication>user</authentication>
-  <format default="atomentry"/>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

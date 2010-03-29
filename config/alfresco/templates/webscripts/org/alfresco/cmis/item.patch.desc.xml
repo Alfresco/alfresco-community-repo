@@ -1,31 +1,9 @@
 <webscript>
-  <shortname>Update properties (updateProperties)</shortname>
+  <shortname>Update Object (updateProperties)</shortname>
   <description>
-<![CDATA[
-This service updates properties of the specified object.  As per the data model, content-streams are not properties<br>
-<br>
-Inputs:<br>
-<br>
-ID objectId<br>
-(Optional) String changeToken<br>
-Collection propertyCollection - Subset list of Properties to update<br>
-<br>
-Outputs:<br>
-<br>
-ID objectId<br>
-<br>
-Notes:<br>
-<br>
-Preserves the ID of the object<br>
-Subset of properties: Properties not specified in this list are not changed<br>
-To remove a property, specify property with no value<br>
-If an attempt is made to update a read-only property, throw ConstraintViolationException.<br>
-If a ChangeToken is provided by the repository when the object is retrieved, the change token MUST be included as-is when calling updateProperties.<br> 
-For Multi-Value properties, the whole list of values MUST be provided on every update.<br> 
-Use getAllowableActions to identify whether older version specified by ID is updatable.<br>
-If this is a private working copy, some repositories may not support updates.<br>
-Because repositories MAY automatically create new Document Versions on a user’s behalf, the objectId returned may not match the one provided as an input to this method.<br> 
-]]>
+  <![CDATA[
+  Update the properties of the specified Object.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -37,8 +15,30 @@ Because repositories MAY automatically create new Document Versions on a user’
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}</url>
   <url>/api/path/{store_type}/{store_id}/{path}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the object</description>
+    </arg>
+  </args>
+
+  <format default="atomentry">argument</format>
+  <requests>
+    <request type="cmis.atomentry"/>
+  </requests>
+  <responses>
+    <response type="cmis.atomentry"/>
+  </responses>
   
   <authentication>user</authentication>
-  <format default="atomentry">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

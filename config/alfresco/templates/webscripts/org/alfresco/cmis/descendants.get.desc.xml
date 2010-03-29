@@ -1,36 +1,9 @@
 <webscript>
-  <shortname>Retrieve tree of descendants (getDescendants)</shortname>
+  <shortname>Get Folder and Document Hierarchy (getDescendants)</shortname>
   <description>
-<![CDATA[
-Gets the list of descendant objects contained at one or more levels in the tree rooted at the specified folder.  Only the filter-selected properties associated with each object are returned.  The content-stream is not returned.<br>
-<br>
-For paging through the children (depth of 1) only use getChildren.  For returning a tree of objects of a certain depth, use getDescendants.<br>
-<br>
-For a repository that supports version-specific filing, this will return the version of the documents in the folder specified by the user filing the documents into the folder.  Otherwise, the latest version of the documents will be returned.<br>
-<br>
-Inputs:<br>
-<br>
-ID folderId<br>
-(Optional) Enum type: Documents, Folders, Policies, Any (default)<br>
-(Optional) Int depth: 1 this folder only (Default), … N folders deep, -1 for all levels<br>
-(Optional) String filter: Filter specifying which properties to return.<br>
-(Optional) Boolean includeAllowableActions: False (default)<br>
-(Optional) Enum includeRelationships: none (default), source, target, both<br>
-(Optional) String orderBy: must be a valid ORDER BY clause from the query grammer excluding ‘ORDER BY’.  Example ‘name DESC’.<br>
-<br>
-Outputs:<br>
-<br>
-Result set specified by Filter of each descendant object in the specified folder<br>
-This result set will nest the contained objects<br>
-<br>
-Notes:<br>
-<br>
-The ordering and tree walk algorithm is repository-specific, but SHOULD be consistent.<br>
-This method will return all objects of the specified type in the specified depth.<br>
-If no type is specified, then objects of all types will be returned.<br> 
-When returning the results of a call where the caller specified “Any” type,  the repository SHOULD return, at each nesting level, all folder objects first followed by other objects.<br>
-If “includeAllowableActions” is TRUE, the repository will return the allowable actions for the current user for each descendant object as part of the output.<br>
-"IncludeRelationships" indicates whether relationships are also returned for each returned object. If it is set to "source" or "target", relationships for which the returned object is a source, or respectively a target, will also be returned. If it is set to "both", relationships for which the returned object is either a source or a target will be returned. If it is set to "none", relationships are not returned.]]>
+  <![CDATA[
+  Gets the set of descendant objects contained in the specified folder or any of its child-folders.
+  ]]>
   </description>
   
   <!-- by object id -->
@@ -42,9 +15,63 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
   <!-- alfresco style -->
   <url>/api/node/{store_type}/{store_id}/{id}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
   <url>/api/path/{store_type}/{store_id}/{path}/descendants?types={types}&amp;filter={filter?}&amp;depth={depth?}&amp;includeAllowableActions={includeAllowableActions?}&amp;includeRelationships={includeRelationships?}&amp;renditionFilter={renditionFilter?}</url>
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the folder</description>
+    </arg>
+    <arg>
+        <shortname>path</shortname>
+        <description>the path of the folder</description>
+    </arg>
+    <arg>
+        <shortname>types</shortname>
+        <description>restrict the type of descendants returned. one of documents, folders, policies, any</description>
+    </arg>
+    <arg>
+        <shortname>depth</shortname>
+        <description>
+        <![CDATA[
+        if 1, return only children of the folder. if greater than 1, return children that are descendants up to <i>depth</i> levels deep, otherwise if -1,
+        return all descendants.
+        ]]>
+        </description>
+        <default>-1</default>
+    </arg>
+    <arg>
+        <shortname>filter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#filter">filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeAllowableActions</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#allowableactions">allowable actions</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includeRelationships</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#relationships">relationships</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>renditionFilter</shortname>
+        <description><![CDATA[see <a href="/alfresco/service/index/package/org/alfresco/cmis/doc#renditionfilter">rendition filter</a>]]></description>
+    </arg>
+    <arg>
+        <shortname>includePathSegment</shortname>
+        <description>if true, returns a PathSegment element for each child for use in constructing that child's path</description>
+        <default>false</default>
+    </arg>
+  </args>
+
+  <format default="atomfeed">argument</format>
+  <responses>
+    <response type="cmis.tree"/>
+  </responses>
   
   <authentication>guest</authentication>
   <transaction allow="readonly"/>
-  <format default="atomfeed">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

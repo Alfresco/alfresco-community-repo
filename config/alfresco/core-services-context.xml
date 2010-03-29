@@ -1155,6 +1155,9 @@
         <property name="authenticationService">
             <ref bean="authenticationService" />
         </property>
+        <property name="fileFolderService">
+            <ref bean="fileFolderService" />
+        </property>
         <property name="searchService">
             <ref bean="searchService" />
         </property>

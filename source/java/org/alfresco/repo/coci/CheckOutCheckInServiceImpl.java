@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionableAspect;
@@ -32,6 +31,9 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -43,6 +45,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Version operations service implementation
@@ -61,6 +64,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     private static final String MSG_ERR_NOT_AUTHENTICATED = "coci_service.err_not_authenticated";
     private static final String MSG_ERR_WORKINGCOPY_HAS_NO_MIMETYPE = "coci_service.err_workingcopy_has_no_mimetype"; 
     private static final String MSG_ALREADY_CHECKEDOUT = "coci_service.err_already_checkedout";
+    private static final String MSG_ERR_CANNOT_RENAME = "coci_service.err_cannot_rename";
 
     /**
      * Extension character, used to recalculate the working copy names
@@ -86,6 +90,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * The copy service
      */
     private CopyService copyService;
+    
+    /**
+     * The file folder service
+     */
+    private FileFolderService fileFolderService;
     
     /**
      * The search service
@@ -164,7 +173,17 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     {
         this.searchService = searchService;
     }
-    
+
+    /**
+     * Set the file folder service
+     * 
+     * @param fileFolderService     the file folder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
     /**
      * Sets the versionable aspect behaviour implementation
      * 
@@ -176,16 +195,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
     
     /**
-     * Get the working copy label.
-     * 
-     * @return    the working copy label
-     */
-    public String getWorkingCopyLabel() 
-    {
-        return I18NUtil.getMessage(MSG_WORKING_COPY_LABEL);
-    }
-    
-    /**
      * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkout(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
      */
     public NodeRef checkout(
@@ -194,12 +203,12 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             final QName destinationAssocTypeQName, 
             QName destinationAssocQName) 
     {
-    	LockType lockType = this.lockService.getLockType(nodeRef);
+        LockType lockType = this.lockService.getLockType(nodeRef);
         if (LockType.READ_ONLY_LOCK.equals(lockType) == true || getWorkingCopy(nodeRef) != null)
-    	{
-    		throw new CheckOutCheckInServiceException(MSG_ALREADY_CHECKEDOUT);
-    	}
-    	
+        {
+            throw new CheckOutCheckInServiceException(MSG_ALREADY_CHECKEDOUT);
+        }
+    
         // Make sure we are no checking out a working copy node
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
         {
@@ -214,27 +223,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         // Rename the working copy
         String copyName = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        if (this.getWorkingCopyLabel() != null && this.getWorkingCopyLabel().length() != 0)
-        {
-            if (copyName != null && copyName.length() != 0)
-            {
-                int index = copyName.lastIndexOf(EXTENSION_CHARACTER);
-                if (index > 0)
-                {
-                    // Insert the working copy label before the file extension
-                    copyName = copyName.substring(0, index) + " " + getWorkingCopyLabel() + copyName.substring(index);
-                }
-                else
-                {
-                    // Simply append the working copy label onto the end of the existing name
-                    copyName = copyName + " " + getWorkingCopyLabel();
-                }
-            }
-            else
-            {
-                copyName = getWorkingCopyLabel();
-            }
-        }
+        copyName = createWorkingCopyName(copyName);
 
         // Make the working copy
         final QName copyQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
@@ -368,6 +357,45 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 // Copy the contents of the working copy onto the original
                 this.copyService.copy(workingCopyNodeRef, nodeRef);
                 
+                // Handle name change on working copy (only for folders/files)
+                if (fileFolderService.getFileInfo(workingCopyNodeRef) != null)
+                {
+                    String origName = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                    String name = (String)this.nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_NAME);
+                    if (hasWorkingCopyNameChanged(name, origName))
+                    {
+                        // ensure working copy has working copy label in its name to avoid name clash
+                        if (!name.contains(" " + getWorkingCopyLabel()))
+                        {
+                            try
+                            {
+                                fileFolderService.rename(workingCopyNodeRef, createWorkingCopyName(name));
+                            }
+                            catch (FileExistsException e)
+                            {
+                                throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, createWorkingCopyName(name));
+                            }
+                            catch (FileNotFoundException e)
+                            {
+                                throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, createWorkingCopyName(name));
+                            }
+                        }
+                        try
+                        {
+                            // rename original to changed working name
+                            fileFolderService.rename(nodeRef, getNameFromWorkingCopyName(name));
+                        }
+                        catch (FileExistsException e)
+                        {
+                            throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, origName, getNameFromWorkingCopyName(name));
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                            throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, getNameFromWorkingCopyName(name));
+                        }
+                    }
+                }
+                
                 if (versionProperties != null && this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
                 {
                     // Create the new version
@@ -377,7 +405,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 if (keepCheckedOut == false)
                 {
                     // Delete the working copy
-                    this.nodeService.deleteNode(workingCopyNodeRef);                            
+                    this.nodeService.deleteNode(workingCopyNodeRef);
                 }
                 else
                 {
@@ -492,4 +520,81 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         return workingCopy;
     }
+
+    /**
+     * Create working copy name
+     * 
+     * @param name  name
+     * @return  working copy name
+     */
+    public String createWorkingCopyName(String name)
+    {
+        if (this.getWorkingCopyLabel() != null && this.getWorkingCopyLabel().length() != 0)
+        {
+            if (name != null && name.length() != 0)
+            {
+                int index = name.lastIndexOf(EXTENSION_CHARACTER);
+                if (index > 0)
+                {
+                    // Insert the working copy label before the file extension
+                    name = name.substring(0, index) + " " + getWorkingCopyLabel() + name.substring(index);
+                }
+                else
+                {
+                    // Simply append the working copy label onto the end of the existing name
+                    name = name + " " + getWorkingCopyLabel();
+                }
+            }
+            else
+            {
+                name = getWorkingCopyLabel();
+            }
+        }
+        return name;
+    }
+    
+    /**
+     * Get original name from working copy name
+     * 
+     * @param workingCopyName
+     * @return  original name
+     */
+    private String getNameFromWorkingCopyName(String workingCopyName)
+    {
+        String workingCopyLabel = getWorkingCopyLabel();
+        String workingCopyLabelRegEx = workingCopyLabel.replaceAll("\\(", "\\\\(");
+        workingCopyLabelRegEx = workingCopyLabelRegEx.replaceAll("\\)", "\\\\)");
+        if (workingCopyName.contains(" " + workingCopyLabel))
+        {
+            workingCopyName = workingCopyName.replaceFirst(" " + workingCopyLabelRegEx, "");
+        }
+        else if (workingCopyName.contains(workingCopyLabel))
+        {
+            workingCopyName = workingCopyName.replaceFirst(workingCopyLabelRegEx, "");
+        }
+        return workingCopyName;
+    }
+
+    /**
+     * Has the working copy name changed compared to the original name
+     * 
+     * @param name  working copy name
+     * @param origName  original name
+     * @return  true => if changed
+     */
+    private boolean hasWorkingCopyNameChanged(String workingCopyName, String origName)
+    {
+        return !workingCopyName.equals(createWorkingCopyName(origName));
+    }
+    
+    /**
+     * Get the working copy label.
+     * 
+     * @return    the working copy label
+     */
+    public String getWorkingCopyLabel() 
+    {
+        return I18NUtil.getMessage(MSG_WORKING_COPY_LABEL);
+    }
+    
 }

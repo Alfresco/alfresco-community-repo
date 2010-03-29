@@ -126,7 +126,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		ChildAssociationRef childAssocRef = this.nodeService.createNode(
 				rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
-				QName.createQName("{test}test"),
+				QName.createQName("test"),
 				ContentModel.TYPE_CONTENT);
 		this.nodeRef = childAssocRef.getChildRef();
         this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_TITLED, null);
@@ -184,7 +184,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
-				QName.createQName("{test}workingCopy"));
+				QName.createQName("workingCopy"));
 		assertNotNull(workingCopy);
 		
         //System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.storeRef));
@@ -197,18 +197,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		assertEquals(this.userNodeRef, this.nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
 		
 		// Check that the working copy name has been set correctly
-		String workingCopyLabel = ((CheckOutCheckInServiceImpl)this.cociService).getWorkingCopyLabel();
-		String workingCopyName = (String)this.nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
-		if (workingCopyLabel == null || workingCopyLabel.length() == 0)
-		{
-			assertEquals("myDocument.doc", workingCopyName);
-		}
-		else
-		{
-			assertEquals(
-					"myDocument " + workingCopyLabel + ".doc",
-					workingCopyName);
-		}
+        String name = (String)this.nodeService.getProperty(this.nodeRef, PROP_NAME_QNAME);
+        String workingCopyLabel = ((CheckOutCheckInServiceImpl)this.cociService).createWorkingCopyName(name);
+        String workingCopyName = (String)this.nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
+        assertEquals(workingCopyLabel, workingCopyName);
 		
 		// Ensure that the content has been copied correctly
 		ContentReader contentReader = this.contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
@@ -269,8 +261,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals(CONTENT_2, versionContentReader.getContentString());
 		
 		// Check that the name is not updated during the check-in
-		assertEquals(TEST_VALUE_NAME, this.nodeService.getProperty(versionNodeRef, PROP_NAME_QNAME));
-		assertEquals(TEST_VALUE_NAME, this.nodeService.getProperty(origNodeRef, PROP_NAME_QNAME));
+		assertEquals(TEST_VALUE_2, this.nodeService.getProperty(versionNodeRef, PROP_NAME_QNAME));
+		assertEquals(TEST_VALUE_2, this.nodeService.getProperty(origNodeRef, PROP_NAME_QNAME));
 		
 		// Check that the other properties are updated during the check-in
 		assertEquals(TEST_VALUE_3, this.nodeService.getProperty(versionNodeRef, PROP2_QNAME));
@@ -293,7 +285,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		NodeRef translationNodeRef = this.nodeService.createNode(
 				rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
-				QName.createQName("{test}translation"),
+				QName.createQName("translation"),
 				ContentModel.TYPE_CONTENT).getChildRef();
 		
 		this.nodeService.addAspect(this.nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translatable"), null);
@@ -304,7 +296,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
-				QName.createQName("{test}workingCopy"));
+				QName.createQName("workingCopy"));
 		
 				
 		// Check it back in again
@@ -326,7 +318,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		ChildAssociationRef childAssocRef = this.nodeService.createNode(
 				rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
-				QName.createQName("{test}test"),
+				QName.createQName("test"),
 				ContentModel.TYPE_CONTENT,
 				bagOfProps);
 		NodeRef noVersionNodeRef = childAssocRef.getChildRef();
@@ -398,7 +390,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         NodeRef origNodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName("{test}test2"),
+                QName.createQName("test2"),
                 ContentModel.TYPE_CONTENT).getChildRef();
         
         
@@ -440,7 +432,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         NodeRef origNodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName("{test}test2"),
+                QName.createQName("test2"),
                 ContentModel.TYPE_CONTENT).getChildRef();
         
         // Make a copy of the node
@@ -448,7 +440,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 origNodeRef,
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName("{test}test6"),
+                QName.createQName("test6"),
                 false);        
         
         NodeRef wk1 = this.cociService.getWorkingCopy(origNodeRef);
@@ -488,7 +480,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
-				QName.createQName("{test}workingCopy"));
+				QName.createQName("workingCopy"));
 		assertNotNull(workingCopy);
 		
 		// Try and check the same node out again
@@ -498,7 +490,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
-				QName.createQName("{test}workingCopy2"));
+				QName.createQName("workingCopy2"));
 			fail("This document has been checked out twice.");
 		}
 		catch (Exception exception)
@@ -516,7 +508,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         ChildAssociationRef childAssocRef = this.nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
-                QName.createQName("{test}test"),
+                QName.createQName("test"),
                 ContentModel.TYPE_CONTENT,
                 null);
         final NodeRef testNodeRef = childAssocRef.getChildRef();

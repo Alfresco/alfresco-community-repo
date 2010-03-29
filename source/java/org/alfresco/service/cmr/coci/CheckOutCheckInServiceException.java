@@ -52,4 +52,17 @@ public class CheckOutCheckInServiceException extends AlfrescoRuntimeException
 	{
 		super(message, throwable);
 	}
+
+    /**
+     * Constructor
+     * 
+     * @param message       the error message   
+     * @param throwable     the cause of the exeption
+     * @param objects       message arguments
+     */
+    public CheckOutCheckInServiceException(Throwable throwable, String message, Object ...objects)
+    {
+        super(message, objects, throwable);
+    }
+
 }

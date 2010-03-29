@@ -102,8 +102,11 @@ function updateNode(node, entry, exclude, validator)
     unpackProperties(node, typeDef, object == null ? null : object.properties, exclude, validator, vals);
 
     // NOTE: special case name: entry.title overrides cmis:name
-    var propDef = typeDef.propertyDefinitions[PROP_NAME];
-    vals[propDef.propertyAccessor.mappedProperty.toString()] = entry.title;
+    if (entry.title != null)
+    {
+        var propDef = typeDef.propertyDefinitions[PROP_NAME];
+        vals[propDef.propertyAccessor.mappedProperty.toString()] = entry.title;
+    }
 
     // Handle Alfresco aspects extension
     if (object != null)

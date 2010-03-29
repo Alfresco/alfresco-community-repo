@@ -147,6 +147,12 @@
          <archive>false</archive>
       </aspect>
       
+      <!-- aspect to tag nodes being formed and without any content yet -->
+      <aspect name="sys:noContent">
+         <title>NoContent</title>
+         <archive>false</archive>
+      </aspect>
+      
       <!-- details stored on archived nodes -->
       <aspect name="sys:archived">
          <title>Archived</title>

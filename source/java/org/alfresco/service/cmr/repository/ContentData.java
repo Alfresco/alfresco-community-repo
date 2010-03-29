@@ -153,7 +153,7 @@ public class ContentData implements Serializable
      * Helper method to determine if the data represents any physical content or not.
      * 
      * @param contentData           the content to check (may be <tt>null</tt>)
-     * @return                      <tt>true</tt> if the value is non-null and has a content URL of non-zero length
+     * @return                      <tt>true</tt> if the value is non-null
      */
     public static boolean hasContent(ContentData contentData)
     {
@@ -161,7 +161,7 @@ public class ContentData implements Serializable
         {
             return false;
         }
-        return (contentData.contentUrl != null) && (contentData.size > 0L);
+        return contentData.contentUrl != null;
     }
     
     /**

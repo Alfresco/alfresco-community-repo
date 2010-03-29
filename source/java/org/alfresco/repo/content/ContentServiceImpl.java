@@ -35,6 +35,7 @@ import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -175,7 +176,7 @@ public class ContentServiceImpl implements ContentService
 
         // Bind on update properties behaviour
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
                 this,
                 new JavaBehaviour(this, "onUpdateProperties"));
         
@@ -197,6 +198,12 @@ public class ContentServiceImpl implements ContentService
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
+        // ALF-254: empty files (0 bytes) do not trigger content rules
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+        {
+            return;
+        }
+    	
         // Don't duplicate work when firing multiple policies
         Set<QName> types = null;
         OnContentPropertyUpdatePolicy propertyPolicy = null;            // Doesn't change for the node instance

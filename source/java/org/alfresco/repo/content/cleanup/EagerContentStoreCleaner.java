@@ -26,9 +26,6 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,13 +66,11 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
 {
     /**
      * Content URLs to delete once the transaction commits.
-     * @see #onContentPropertyUpdate(NodeRef, QName, ContentData, ContentData)
      * @see #afterCommit()
      */
     private static final String KEY_POST_COMMIT_DELETION_URLS = "ContentStoreCleaner.PostCommitDeletionUrls";
     /**
-     * Content URLs to delete if the transaction rolls b ack.
-     * @see #onContentPropertyUpdate(NodeRef, QName, ContentData, ContentData)
+     * Content URLs to delete if the transaction rolls back.
      * @see #afterRollback()
      */
     private static final String KEY_POST_ROLLBACK_DELETION_URLS = "ContentStoreCleaner.PostRollbackDeletionUrls";

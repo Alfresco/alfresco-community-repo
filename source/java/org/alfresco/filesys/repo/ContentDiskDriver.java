@@ -1835,6 +1835,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Create it - the path will be created, if necessary
             
             NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, true);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
             
             // Create the network file
             

@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -37,6 +38,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -59,9 +61,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.alfresco.util.PropertyCheck;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -139,11 +141,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     private BehaviourFilter behaviourFilter;
     private TransferProgressMonitor progressMonitor;
     private ActionService actionService;
+    private TenantService tenantService;
 
-    private NodeRef transferLockFolder;
-    private NodeRef transferTempFolder;
-    private NodeRef inboundTransferRecordsFolder;
-
+    private Map<String,NodeRef> transferLockFolderMap = new ConcurrentHashMap<String, NodeRef>();
+    private Map<String,NodeRef> transferTempFolderMap = new ConcurrentHashMap<String, NodeRef>();
+    private Map<String,NodeRef> inboundTransferRecordsFolderMap = new ConcurrentHashMap<String, NodeRef>();
+    
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
@@ -185,26 +188,23 @@ public class RepoTransferReceiverImpl implements TransferReceiver
 
     private NodeRef getLockFolder()
     {
+        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
+        NodeRef transferLockFolder = transferLockFolderMap.get(tenantDomain);
+        
         // Have we already resolved the node that is the parent of the lock node?
         // If not then do so.
         if (transferLockFolder == null)
         {
-            synchronized (this)
+            ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
+                    transferLockFolderPath);
+            if (rs.length() > 0)
             {
-                if (transferLockFolder == null)
-                {
-                    ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_XPATH, transferLockFolderPath);
-                    if (rs.length() > 0)
-                    {
-                        transferLockFolder = rs.getNodeRef(0);
-                    }
-                    else
-                    {
-                        throw new TransferException(MSG_TRANSFER_LOCK_FOLDER_NOT_FOUND,
-                                new Object[] { transferLockFolderPath });
-                    }
-                }
+                transferLockFolder = rs.getNodeRef(0);
+                transferLockFolderMap.put(tenantDomain, transferLockFolder);
+            }
+            else
+            {
+                throw new TransferException(MSG_TRANSFER_LOCK_FOLDER_NOT_FOUND, new Object[] { transferLockFolderPath });
             }
         }
         return transferLockFolder;
@@ -213,26 +213,24 @@ public class RepoTransferReceiverImpl implements TransferReceiver
 
     public NodeRef getTempFolder(String transferId)
     {
+        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
+        NodeRef transferTempFolder = transferTempFolderMap.get(tenantDomain);
+        
         // Have we already resolved the node that is the temp folder?
         // If not then do so.
         if (transferTempFolder == null)
         {
-            synchronized (this)
+            ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
+                    transferTempFolderPath);
+            if (rs.length() > 0)
             {
-                if (transferTempFolder == null)
-                {
-                    ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_XPATH, transferTempFolderPath);
-                    if (rs.length() > 0)
-                    {
-                        transferTempFolder = rs.getNodeRef(0);
-                    }
-                    else
-                    {
-                        throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
-                                transferTempFolderPath });
-                    }
-                }
+                transferTempFolder = rs.getNodeRef(0);
+                transferTempFolderMap.put(tenantDomain, transferTempFolder);
+            }
+            else
+            {
+                throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
+                        transferTempFolderPath });
             }
         }
 
@@ -319,29 +317,27 @@ public class RepoTransferReceiverImpl implements TransferReceiver
      */
     private NodeRef createTransferRecord()
     {
-        log.debug("->createTransferRecord");
+        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
+        NodeRef inboundTransferRecordsFolder = inboundTransferRecordsFolderMap.get(tenantDomain);
+
         if (inboundTransferRecordsFolder == null)
         {
-            synchronized (this)
+            log.debug("Trying to find transfer records folder: " + inboundTransferRecordsPath);
+            ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
+                    inboundTransferRecordsPath);
+            if (rs.length() > 0)
             {
-                if (inboundTransferRecordsFolder == null)
-                {
-                    log.debug("Trying to find transfer records folder: " + inboundTransferRecordsPath);
-                    ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_XPATH, inboundTransferRecordsPath);
-                    if (rs.length() > 0)
-                    {
-                        inboundTransferRecordsFolder = rs.getNodeRef(0);
-                        log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
-                    }
-                    else
-                    {
-                        throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
-                                new Object[] { inboundTransferRecordsPath });
-                    }
-                }
+                inboundTransferRecordsFolder = rs.getNodeRef(0);
+                inboundTransferRecordsFolderMap.put(tenantDomain, inboundTransferRecordsFolder);
+                log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
+            }
+            else
+            {
+                throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
+                        new Object[] { inboundTransferRecordsPath });
             }
         }
+
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSSZ");
         String timeNow = format.format(new Date());
         QName recordName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, timeNow);
@@ -718,6 +714,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**

@@ -16,6 +16,9 @@
 		<property name="transactionService">
 			<ref bean="TransactionService" />
 		</property>
+		<property name="tenantService">
+			<ref bean="tenantService" />
+		</property>
 		<property name="transferSpaceQuery">
 			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}/${spaces.transfer_groups.childname}</value>
 		</property>
@@ -54,6 +57,7 @@
 		<property name="searchService" ref="SearchService" />
 		<property name="transactionService" ref="TransactionService" />
 		<property name="actionService" ref="ActionService" />
+		<property name="tenantService" ref="tenantService" />
 
 		<property name="transferLockFolderPath">
 			<value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}</value>

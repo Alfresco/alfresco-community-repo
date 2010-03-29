@@ -34,6 +34,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.UserTransaction;
 import javax.xml.parsers.SAXParser;
@@ -41,6 +43,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
@@ -91,7 +95,7 @@ public class TransferServiceImpl implements TransferService
     /**
      * The synchronised list of transfers in progress.
      */
-    private Map<String, TransferStatus> transferMonitoring = Collections.synchronizedMap(new HashMap<String,TransferStatus>());
+    private Map<String, TransferStatus> transferMonitoring = Collections.synchronizedMap(new TreeMap<String,TransferStatus>());
     
     private static Log logger = LogFactory.getLog(TransferServiceImpl.class);
     
@@ -116,6 +120,7 @@ public class TransferServiceImpl implements TransferService
     private ActionService actionService;
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private TransferReporter transferReporter;
+    private TenantService tenantService;
     
     /**
      * How long to delay while polling for commit status.
@@ -861,6 +866,11 @@ public class TransferServiceImpl implements TransferService
         return searchService;
     }
 
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
     public void setTransferSpaceQuery(String transferSpaceQuery)
     {
         this.transferSpaceQuery = transferSpaceQuery;
@@ -891,9 +901,11 @@ public class TransferServiceImpl implements TransferService
         this.transmitter = transmitter;
     }
 
-    private NodeRef transferHome;
+    private Map<String,NodeRef> transferHomeMap = new ConcurrentHashMap<String, NodeRef>();
     protected NodeRef getTransferHome()
     {
+        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
+        NodeRef transferHome = transferHomeMap.get(tenantDomain);
         if(transferHome == null)
         {
             String query = transferSpaceQuery;
@@ -909,6 +921,7 @@ public class TransferServiceImpl implements TransferService
             if (result.getNodeRefs().size() != 0)
             {
                 transferHome = result.getNodeRef(0);
+                transferHomeMap.put(tenantDomain, transferHome);
             }
         }
         return transferHome;

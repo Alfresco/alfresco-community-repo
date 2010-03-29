@@ -34,7 +34,7 @@ public class TransferTargetImpl implements TransferTarget
     private String endpointProtocol;
     private String endpointHost; 
     private int endpointPort;
-    private String endpointPath;
+    private String endpointPath = "/alfresco/service/api/transfer";
     private String username;
     private char[] password;
     private boolean enabled;

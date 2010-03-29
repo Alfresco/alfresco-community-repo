@@ -124,12 +124,14 @@ public interface TransferTarget
     
     /**
      * The location of the transfer service on the target endpoint host
+     * Defaults to "/alfresco/service/api/transfer", and this shouldn't typically need to change
      * @return
      */
     String getEndpointPath();
     
     /**
      * The location of the transfer service on the target endpoint host
+     * Defaults to "/alfresco/service/api/transfer", and this shouldn't typically need to change
      */
     void setEndpointPath(String path);
     

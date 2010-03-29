@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Relationships Of Object (getRelationships)</shortname>
+  <shortname>Get Relationships Of Object (getObjectRelationships)</shortname>
   <description>
   <![CDATA[
   Gets all or a subset of relationships associated with an independent object.

@@ -96,7 +96,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_CHECKIN = "checkin";
     public static final String ARG_CHECKIN_COMMENT = "checkinComment";
     public static final String ARG_DEPTH = "depth";
-    public static final String ARG_DIRECTION = "direction";
+    public static final String ARG_DIRECTION = "relationshipDirection";
     public static final String ARG_FILTER = "filter";
     public static final String ARG_FOLDER_BY_PATH = "folderByPath";
     public static final String ARG_FOLDER_ID = "folderId";
@@ -111,7 +111,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     public static final String ARG_OFFSET = "offset";
     public static final String ARG_QUERY_STATEMENT = "q";
     public static final String ARG_REMOVE_FROM = "removeFrom";
-    public static final String ARG_RELATIONSHIP_TYPE = "relationshipType";
+    public static final String ARG_RELATIONSHIP_TYPE = "typeId";
     public static final String ARG_REPOSITORY_ID = "repositoryId";
     public static final String ARG_RETURN_VERSION = "returnVersion";
     public static final String ARG_SKIP_COUNT = "skipCount";

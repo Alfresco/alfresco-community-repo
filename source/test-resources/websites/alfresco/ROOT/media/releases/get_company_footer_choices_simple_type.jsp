@@ -14,7 +14,7 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * along with Alfresco. If not, see http://www.gnu.org/licenses/.
 
 Produces an xml schema simpleType definition which lists all company footers in /media/releases/content
 as an enumerated type.  This is intended to be included within a schema (such as press-release.xsd)

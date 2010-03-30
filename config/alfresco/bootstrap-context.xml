@@ -124,6 +124,7 @@
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
              <ref bean="patch.db-V3.2-Upgrade-JBPM" />
              <ref bean="patch.db-V3.3-Remove-VersionCount" />
+             <ref bean="patch.db-V3.3-Fix-Repo-Seqs_1" />
           </list>
        </property>
     </bean>

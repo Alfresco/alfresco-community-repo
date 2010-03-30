@@ -32,6 +32,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.ibatis.SerializableTypeHandlerCallback;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -138,7 +140,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * @see PropertyValue#DEFAULT_MAX_STRING_LENGTH
      */
-    public static final void setMaxStringLength(int length)
+    private static final void setMaxStringLength(int length)
     {
         if (length < 1024)
         {
@@ -1171,6 +1173,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+        int serializableType = SerializableTypeHandlerCallback.getSerializableType();
         // Adjust the maximum allowable String length according to the dialect
         if (dialect instanceof AlfrescoSQLServerDialect)
         {
@@ -1189,6 +1192,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // string_value varchar(1024),
             // serializable_value varchar(8192) for bit data,
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
+            serializableType = Types.BLOB;
         }
         else if (dialect instanceof HSQLDialect)
         {
@@ -1215,6 +1219,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
         SchemaBootstrap.setMaxStringLength(maxStringLength);
+        SerializableTypeHandlerCallback.setSerializableType(serializableType);
         
         // Now override the maximum string length if it was set directly
         if (maximumStringLength > 0)

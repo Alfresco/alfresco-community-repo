@@ -388,6 +388,18 @@
             qn.local_name like ?
     </select>
     
+    <select id="select_AVMStorePropertiesByKeyPatternL" parameterMap="parameter_KeyPattern" resultMap="result_AVMStoreProperty">
+        select
+            asp.*
+        from
+            avm_store_properties asp
+            join alf_qname qn on (qn.id = asp.qname_id)
+            join alf_namespace ns on (ns.id = qn.ns_id)
+        where
+            ns.uri like ? and
+            lower(qn.local_name) like lower(?)
+    </select>
+    
     <select id="select_AVMStorePropertiesByStoreAndKeyPattern" parameterMap="parameter_IdAndKeyPattern" resultMap="result_AVMStoreProperty">
         select
             asp.*
@@ -399,6 +411,19 @@
             asp.avm_store_id = ? and
             ns.uri like ? and
             qn.local_name like ?
+    </select>
+    
+    <select id="select_AVMStorePropertiesByStoreAndKeyPatternL" parameterMap="parameter_IdAndKeyPattern" resultMap="result_AVMStoreProperty">
+        select
+            asp.*
+        from
+            avm_store_properties asp
+            join alf_qname qn on (qn.id = asp.qname_id)
+            join alf_namespace ns on (ns.id = qn.ns_id)
+        where
+            asp.avm_store_id = ? and
+            ns.uri like ? and
+            lower(qn.local_name) like lower(?)
     </select>
     
     <!-- Optimistic update of the store property -->

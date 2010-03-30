@@ -51,15 +51,20 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     private static final String UPDATE_AVM_STORE_PROP ="alfresco.avm.update_AVMStoreProperty";
     private static final String SELECT_AVM_STORE_PROP ="alfresco.avm.select_AVMStoreProperty";
     private static final String SELECT_AVM_STORE_PROPS ="alfresco.avm.select_AVMStoreProperties";
-    private static final String SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN ="alfresco.avm.select_AVMStorePropertiesByKeyPattern";
-    private static final String SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN ="alfresco.avm.select_AVMStorePropertiesByStoreAndKeyPattern";
+    
+    private static final String SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN ="alfresco.avm.select_AVMStorePropertiesByKeyPattern"; // uri + local_name
+    private static final String SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN_L ="alfresco.avm.select_AVMStorePropertiesByKeyPatternL"; // uri + lower(local_name)
+    
+    private static final String SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN ="alfresco.avm.select_AVMStorePropertiesByStoreAndKeyPattern"; // store id + uri + local_name
+    private static final String SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN_L ="alfresco.avm.select_AVMStorePropertiesByStoreAndKeyPatternL"; // store id + uri + lower(local_name)
+    
     private static final String DELETE_AVM_STORE_PROP ="alfresco.avm.delete_AVMStoreProperty";
     private static final String DELETE_AVM_STORE_PROPS ="alfresco.avm.delete_AVMStoreProperties";
     
     
     private SqlMapClientTemplate template;
     
-    // Initial generic fix for ALF-2278 (pending SAIL-365)
+    // Initial generic fixes for ALF-2278 (pending SAIL-365) & ALF-498 (pending SAIL-359)
     // Note: in order to override to false, DB must be setup to be case-insensitive (at least on column avm_stores.name)
     private boolean toLower = true;
     
@@ -173,6 +178,10 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         params.put("uri", uriPattern);
         params.put("localname", localNamePattern);
         
+        if (toLower)
+        {
+            return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN_L, params);
+        }
         return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_KEY_PATTERN, params);
     }
     
@@ -185,6 +194,10 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
         params.put("uri", uriPattern);
         params.put("localname", localNamePattern);
         
+        if (toLower)
+        {
+            return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN_L, params);
+        }
         return (List<AVMStorePropertyEntity>) template.queryForList(SELECT_AVM_STORE_PROPS_BY_STORE_AND_KEY_PATTERN, params);
     }
     

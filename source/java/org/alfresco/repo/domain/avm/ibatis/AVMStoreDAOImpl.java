@@ -36,7 +36,10 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
 public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
 {
     private static final String SELECT_AVM_STORE_BY_ID ="alfresco.avm.select_AVMStoreById";
-    private static final String SELECT_AVM_STORE_BY_KEY ="alfresco.avm.select_AVMStoreByKey";
+    
+    private static final String SELECT_AVM_STORE_BY_KEY ="alfresco.avm.select_AVMStoreByKey"; // name
+    private static final String SELECT_AVM_STORE_BY_KEY_L ="alfresco.avm.select_AVMStoreByKeyL"; // lower(name)
+    
     private static final String SELECT_AVM_STORE_BY_ROOT_NODE_ID ="alfresco.avm.select_AVMStoreByRootNodeId";
     private static final String SELECT_AVM_STORE_ALL ="alfresco.avm.select_AVMStoreAll";
     
@@ -56,9 +59,18 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     
     private SqlMapClientTemplate template;
     
+    // Initial generic fix for ALF-2278 (pending SAIL-365)
+    // Note: in order to override to false, DB must be setup to be case-insensitive (at least on column avm_stores.name)
+    private boolean toLower = true;
+    
     public void setSqlMapClientTemplate(SqlMapClientTemplate sqlMapClientTemplate)
     {
         this.template = sqlMapClientTemplate;
+    }
+    
+    public void setToLower(boolean toLower)
+    {
+        this.toLower = toLower;
     }
     
     @Override
@@ -74,6 +86,11 @@ public class AVMStoreDAOImpl extends AbstractAVMStoreDAOImpl
     {
         AVMStoreEntity storeEntity = new AVMStoreEntity();
         storeEntity.setName(name);
+        
+        if (toLower)
+        {
+            return (AVMStoreEntity) template.queryForObject(SELECT_AVM_STORE_BY_KEY_L, storeEntity);
+        }
         return (AVMStoreEntity) template.queryForObject(SELECT_AVM_STORE_BY_KEY, storeEntity);
     }
     

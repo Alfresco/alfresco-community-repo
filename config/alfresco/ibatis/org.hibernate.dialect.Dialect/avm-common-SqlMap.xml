@@ -290,6 +290,15 @@
             name = #name#
     </select>
     
+    <select id="select_AVMStoreByKeyL" parameterClass="AVMStore" resultMap="result_AVMStore">
+        select
+            *
+        from
+            avm_stores
+        where
+            lower(name) = lower(#name#)
+    </select>
+    
     <!-- Get AVMStore by ID -->
     <select id="select_AVMStoreById" parameterMap="parameter_IdMap" resultMap="result_AVMStore">
         select

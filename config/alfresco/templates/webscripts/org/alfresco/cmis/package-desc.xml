@@ -8,7 +8,7 @@
  CM systems, nor to exhaustively expose all of the CM system’s capabilities through the CMIS interfaces. Rather, it is intended to define a generic/universal set
  of capabilities provided by a CM system and a set of services for working with those capabilities.
  <p/>
- For a full description of the domain model and binding see the <a href="http://www.oasis-open.org/committees/document.php?document_id=36412">CMIS specification</a>.
+ For a full description of the domain model and binding see the <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.html">CMIS specification</a>.
  <p/>
  This Web Scripts package provides the Alfresco implementation of the CMIS AtomPub binding. This binding is based upon the Atom (RFC4287) and Atom Publishing Protocol (RFC5023).
  In this binding, the client interacts with the repository by acquiring the service document, which Alfresco provides with each repository installation at:

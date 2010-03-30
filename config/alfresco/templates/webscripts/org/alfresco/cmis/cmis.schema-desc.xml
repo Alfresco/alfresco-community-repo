@@ -14,7 +14,7 @@
     </description>
     <format>atomsvc</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-RestAtom.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-RestAtom.xsd</url>
    </type>
   
    <type>
@@ -27,7 +27,7 @@
     </description>
     <format>atomentry</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-RestAtom.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-RestAtom.xsd</url>
    </type>
    
    <type>
@@ -40,7 +40,7 @@
     </description>
     <format>atomfeed</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-RestAtom.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-RestAtom.xsd</url>
    </type>
 
    <type>
@@ -53,7 +53,7 @@
     </description>
     <format>cmisquery</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Core.xsd</url>
     <definition>
     <![CDATA[
     <cmis:query xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
@@ -79,7 +79,7 @@
     </description>
     <format>cmisallowableactions</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Core.xsd</url>
     <definition>
     <![CDATA[
     <cmis:allowableActions xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
@@ -117,7 +117,7 @@
     </description>
     <format>atomfeed</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-RestAtom.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-RestAtom.xsd</url>
    </type>
 
    <type>
@@ -130,7 +130,7 @@
     </description>
     <format>cmisacl</format>
     <!-- TODO: update for CD07 when published -->
-    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd</url>
+    <url>http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Core.xsd</url>
     <definition>
     <![CDATA[
     <cmis:acl xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">

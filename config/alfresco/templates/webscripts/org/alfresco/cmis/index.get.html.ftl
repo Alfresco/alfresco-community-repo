@@ -36,16 +36,18 @@
   
   <div id="body" class="wrapper">
     <div id="introduction">
-      <h2>Explore and Test CMIS</h2>
-      <p>OASIS CMIS (Content Management Interoperability Services) v1.0 has now completed its second Public Review. Preparations are taking place for submitting the specification for approval as an OASIS standard.</p>
-      <p>This site hosts a <a href="#repo">CMIS Repository</a> and <a href="#testatompub">CMIS AtomPub TCK</a> to assist the development of the specification and promote interoperability between up-and-coming implementations. Feel free to use them for building and testing your own CMIS clients and servers.</p>
-      <p>Frequent updates are made to both the Repository and TCK as issues are resolved or new capabilities added. Currently, <strong class="highlight">${cmisSpecTitle}</strong> of the CMIS specification is supported.</p>
-      
+      <p/>
+      CMIS (Content Management Interoperability Services) is a standard for improving interoperability between ECM systems.
+      It specifies a domain model plus a set of services and protocol bindings for Web Services (SOAP) and AtomPub.
+      <p/>
+      This Alfresco server supports CMIS <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.doc"><b>${cmisSpecTitle}</b></a>.
+      <p/
       <a name="repo"></a>
-      <h3>Alfresco CMIS Repository</h3>
+      <h3>Alfresco CMIS Content Repository</h3>
       <p>Point your CMIS client to one of the following Alfresco CMIS bindings (with <strong>user=admin</strong> and <strong>password=admin</strong>).</p>
       <ul>
-        <li>CMIS AtomPub Binding: <a href="${url.serviceContext}/cmis">AtomPub Service Document</a></li>
+        <li>CMIS AtomPub Binding: <a href="${url.serviceContext}/cmis">AtomPub Service Document</a> (<a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis/doc">API reference</a>)</li>
+        </li>
         <li>CMIS Web Services Binding: <a href="${url.context}/cmis">WSDL Documents</a></li>
       </ul>
       
@@ -123,22 +125,17 @@
       </ul>
       <h3>CMIS v1.0 (cd07)</h3>
       <ul>
-        <li><a href="http://www.oasis-open.org/committees/document.php?document_id=36412">CMIS-cd07.zip</a></li>
-      </ul>
-      <h3>CMIS v1.0 (cd06)</h3>
-      <ul>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/cmis-spec-v1.0.doc">cmis-spec-v1.0.doc (Authoritative)</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/cmis-spec-v1.0.pdf">cmis-spec-v1.0.pdf</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd06/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.doc">cmis-spec-v1.0.doc (Authoritative)</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.pdf">cmis-spec-v1.0.pdf</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
       </ul>
       <h3>Alfresco Resources</h3>
       <ul>
         <li><a href="http://wiki.alfresco.com/wiki/CMIS">CMIS Wiki</a></li>
         <li><a href="http://blogs.alfresco.com/cmis/">CMIS Blog</a></li>
-        <li><a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis/doc">AtomPub Binding Reference</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
       </ul>
@@ -151,7 +148,7 @@
       <h3>Provide Feedback</h3>
       <ul>
         <li><a href="http://forums.alfresco.com/en/viewforum.php?f=45">CMIS Forum</a></li>
-        <li><a href="https://issues.alfresco.com/jira/secure/IssueNavigator.jspa?reset=true&mode=hide&pid=10103&sorter/order=DESC&sorter/field=priority&resolution=-1&component=10459">Find / Raise Issues</li>
+        <li><a href="https://issues.alfresco.com/jira/secure/IssueNavigator.jspa?reset=true&jqlQuery=project+%3D+ALF+AND+resolution+%3D+Unresolved+AND+component+%3D+CMIS+ORDER+BY+priority+DESC&mode=hide">Find / Raise Issues</li>
         <li><a href="http://groups.google.com/group/cmis-interop">CMIS Interop Group</a></li>
       </ul>
     </div>

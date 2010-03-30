@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.EmptyContentReader;
 import org.alfresco.repo.i18n.MessageDeployer;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -212,10 +213,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         
         if (logger.isTraceEnabled())
         {
-            logger.trace("onDictionaryInit: ["+Thread.currentThread()+"]");
+            String tenantDomain = tenantAdminService.getCurrentUserDomain();
+            logger.trace("onDictionaryInit: ["+Thread.currentThread()+"]"+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
         
-        Collection<QName> modelsBefore = dictionaryDAO.getModels();
+        Collection<QName> modelsBefore = dictionaryDAO.getModels(); // note: re-entrant
         int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
         
         List<String> loadedModels = new ArrayList<String>();
@@ -295,18 +297,10 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         Collection<QName> modelsAfter = dictionaryDAO.getModels();
         int modelsAfterCnt = (modelsAfter != null ? modelsAfter.size() : 0);
         
-        if (modelsAfterCnt != (modelsBeforeCnt + loadedModels.size()))
+        if (logger.isDebugEnabled())
         {
             String tenantDomain = tenantAdminService.getCurrentUserDomain();
-            logger.warn("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                String tenantDomain = tenantAdminService.getCurrentUserDomain();
-                logger.debug("Model count: before="+modelsBeforeCnt+", load="+loadedModels.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
-            }
+            logger.debug("Model count: before="+modelsBeforeCnt+", load/update="+loadedModels.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
     }
     
@@ -459,7 +453,15 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
         if (contentReader != null)
         {
-            model = M2Model.createModel(contentReader.getContentInputStream());
+            if (contentReader instanceof EmptyContentReader)
+            {
+                // belts-and-braces
+                logger.error("Failed to create model (due to EmptyContentReader): "+nodeRef);
+            }
+            else
+            {
+                model = M2Model.createModel(contentReader.getContentInputStream());
+            }
         }
         // TODO should we inactivate the model node and put the error somewhere??
         return model;

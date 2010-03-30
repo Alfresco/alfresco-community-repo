@@ -271,23 +271,24 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         register(dictionaryComponent);
         
         // register file store - to allow enable/disable tenant callbacks
-        register(tenantFileContentStore);
+        // note: tenantFileContentStore must be registed before dictionaryRepositoryBootstrap
+        register(tenantFileContentStore, 0);
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
         
-        try 
+        try
         {
             authenticationContext.setSystemUserAsCurrentUser();
             userTransaction.begin();
             
-            // bootstrap Tenant Service internal cache            
+            // bootstrap Tenant Service internal cache
             List<Tenant> tenants = getAllTenants();
                     
             int enabledCount = 0;
             int disabledCount = 0;
             
             for (Tenant tenant : tenants)
-            {                    
+            {
                 if (tenant.isEnabled())
                 {
                     // this will also call tenant deployers registered so far ...
@@ -1076,14 +1077,26 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     public void register(TenantDeployer deployer)
     {
+        register(deployer, -1);
+    }
+    
+    protected void register(TenantDeployer deployer, int position)
+    {
         if (deployer == null)
         {
-            throw new AlfrescoRuntimeException("TenantDeployer must be provided");
+            throw new AlfrescoRuntimeException("Deployer must be provided");
         }
-        
+       
         if (! tenantDeployers.contains(deployer))
         {
-            tenantDeployers.add(deployer);
+            if (position == -1)
+            {
+                tenantDeployers.add(deployer);
+            }
+            else
+            {
+                tenantDeployers.add(position, deployer);
+            }
         }
     }
     
@@ -1092,8 +1105,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         if (deployer == null)
         {
             throw new AlfrescoRuntimeException("TenantDeployer must be provided");
-        } 
-
+        }
+        
         if (tenantDeployers != null)
         {
             tenantDeployers.remove(deployer);

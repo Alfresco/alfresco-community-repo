@@ -21,14 +21,14 @@ package org.alfresco.service.cmr.transfer;
 import org.alfresco.repo.transfer.TransferEventImpl;
 
 /**
- * Event for sending the transfer manifest.
+ * Event for sending the properties snapshot.
  *
  */
-public class TransferEventSendingManifest extends TransferEventImpl implements RangedTransferEvent
+public class TransferEventSendingSnapshot extends TransferEventImpl implements RangedTransferEvent
 {
     public String toString()
     {
-        return "TransferEventSendingManifest: " + super.getPosition() + " of " + super.getRange();
+        return "TransferEventSendingSnapshot: " + super.getPosition() + " of " + super.getRange();
     }
 
 }

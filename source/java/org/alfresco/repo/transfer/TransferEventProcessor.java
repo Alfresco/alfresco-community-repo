@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.transfer.TransferEventEndState;
 import org.alfresco.service.cmr.transfer.TransferEventEnterState;
 import org.alfresco.service.cmr.transfer.TransferEventError;
 import org.alfresco.service.cmr.transfer.TransferEventSendingContent;
-import org.alfresco.service.cmr.transfer.TransferEventSendingManifest;
+import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
 import org.alfresco.service.cmr.transfer.TransferEventSuccess;
 
 /**
@@ -145,15 +145,15 @@ public class TransferEventProcessor
      * @param range
      * @param position
      */
-    public void sendManifest(long range, long position)
+    public void sendSnapshot(long range, long position)
     {
-        setState(TransferEvent.TransferState.SENDING_MANIFEST);
+        setState(TransferEvent.TransferState.SENDING_SNAPSHOT);
         
-        TransferEventSendingManifest event = new TransferEventSendingManifest();
-        event.setTransferState(TransferEvent.TransferState.SENDING_MANIFEST);
+        TransferEventSendingSnapshot event = new TransferEventSendingSnapshot();
+        event.setTransferState(TransferEvent.TransferState.SENDING_SNAPSHOT);
         event.setRange(range);
         event.setPosition(position);
-        event.setMessage("sending manifest");
+        event.setMessage("sending snapshot");
         queue.add(event);
         notifyObservers();
     }

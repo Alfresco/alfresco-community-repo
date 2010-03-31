@@ -606,7 +606,7 @@ public class TransferServiceImpl implements TransferService
                     /**
                      * send Manifest
                      */
-                    eventProcessor.sendManifest(1,1);
+                    eventProcessor.sendSnapshot(1,1);
                     transmitter.sendManifest(transfer, snapshotFile);
                     
                     logger.debug("manifest sent");

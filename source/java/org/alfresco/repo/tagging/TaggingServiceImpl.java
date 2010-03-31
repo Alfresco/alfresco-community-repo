@@ -33,6 +33,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
@@ -71,7 +72,8 @@ public class TaggingServiceImpl implements TaggingService,
                                            TransactionListener,
                                            NodeServicePolicies.BeforeDeleteNodePolicy,
                                            NodeServicePolicies.OnMoveNodePolicy,
-                                           CopyServicePolicies.OnCopyCompletePolicy
+                                           CopyServicePolicies.OnCopyCompletePolicy,
+                                           CopyServicePolicies.BeforeCopyPolicy
 {
     /** Node service */
     private NodeService nodeService;
@@ -189,13 +191,17 @@ public class TaggingServiceImpl implements TaggingService,
         
         // We need to know when you move or copy nodes
         this.policyComponent.bindClassBehaviour(
-              OnCopyCompletePolicy.QNAME,
-              ContentModel.ASPECT_TAGGABLE, 
-              new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
-        this.policyComponent.bindClassBehaviour(
               OnMoveNodePolicy.QNAME,
               ContentModel.ASPECT_TAGGABLE, 
               new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
+        this.policyComponent.bindClassBehaviour(
+              BeforeCopyPolicy.QNAME,
+              ContentModel.ASPECT_TAGGABLE, 
+              new JavaBehaviour(this, "beforeCopy", NotificationFrequency.EVERY_EVENT));
+        this.policyComponent.bindClassBehaviour(
+              OnCopyCompletePolicy.QNAME,
+              ContentModel.ASPECT_TAGGABLE, 
+              new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
     }
     
     /**
@@ -230,22 +236,40 @@ public class TaggingServiceImpl implements TaggingService,
     public void beforeDeleteNode(NodeRef nodeRef)
     {
        if (this.nodeService.exists(nodeRef) == true &&          
-           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true &&
-           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
        {
            updateAllScopeTags(nodeRef, Boolean.FALSE);
        }
     }
     
-   public void onCopyComplete(QName classRef, NodeRef sourceNodeRef,
+    /**
+     * Fired once per node, before a copy overrides one node
+     *  (which is possibly newly created) with the contents
+     *  of another one.
+     * We should remove any tags from the scope, as they'll
+     *  shortly be overwritten.
+     */
+    public void beforeCopy(QName classRef, NodeRef sourceNodeRef,
+          NodeRef targetNodeRef) {
+       if(this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE)) {
+          updateAllScopeTags(targetNodeRef, Boolean.FALSE);
+       }
+    }
+
+    /**
+     * Fired once per node that was copied, after the copy
+     *  has completed. 
+     * We need to add in all the tags to the scope.
+     */
+    public void onCopyComplete(QName classRef, NodeRef sourceNodeRef,
          NodeRef targetNodeRef, boolean copyToNewNode,
          Map<NodeRef, NodeRef> copyMap) {
       if(this.nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_TAGGABLE)) {
          updateAllScopeTags(targetNodeRef, Boolean.TRUE);
       }
-   }
+    }
 
-   public void onMoveNode(ChildAssociationRef oldChildAssocRef,
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef,
          ChildAssociationRef newChildAssocRef) {
       NodeRef oldRef = oldChildAssocRef.getChildRef();
       NodeRef oldParent = oldChildAssocRef.getParentRef();

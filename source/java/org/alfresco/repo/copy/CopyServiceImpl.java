@@ -106,6 +106,7 @@ public class CopyServiceImpl implements CopyService
     /** Policy delegates */
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyCompletePolicy> onCopyCompleteDelegate;
+    private ClassPolicyDelegate<CopyServicePolicies.BeforeCopyPolicy> beforeCopyDelegate;
     
     /**
      * Set the node service
@@ -195,6 +196,7 @@ public class CopyServiceImpl implements CopyService
         // Register the policies
         onCopyNodeDelegate = policyComponent.registerClassPolicy(CopyServicePolicies.OnCopyNodePolicy.class);
         onCopyCompleteDelegate = policyComponent.registerClassPolicy(CopyServicePolicies.OnCopyCompletePolicy.class);
+        beforeCopyDelegate = policyComponent.registerClassPolicy(CopyServicePolicies.BeforeCopyPolicy.class);
         
         // Register policy behaviours
         this.policyComponent.bindClassBehaviour(
@@ -345,6 +347,9 @@ public class CopyServiceImpl implements CopyService
         
         // Remove the name property from the source properties to avoid having it copied
         sourceNodeProperties.remove(ContentModel.PROP_NAME);
+        
+        // invoke the before copy policy
+        invokeBeforeCopy(sourceNodeRef, targetNodeRef);
         
         // Copy 
         copyProperties(copyDetails, targetNodeRef, sourceNodeTypeQName, callbacks);
@@ -524,6 +529,9 @@ public class CopyServiceImpl implements CopyService
         // Save the mapping for later
         copiesByOriginal.put(sourceNodeRef, targetNodeRef);
         copies.add(targetNodeRef);
+        
+        // We now have a node, so fire the BeforeCopyPolicy
+        invokeBeforeCopy(sourceNodeRef, targetNodeRef);
 
         // Work out which aspects still need copying.  The source aspects less the default aspects
         // will give this set.
@@ -638,6 +646,40 @@ public class CopyServiceImpl implements CopyService
     }
     
     /**
+     * Invokes the before copy policy for the node reference provided
+     * 
+     * @param sourceNodeRef         the source node reference
+     * @param targetNodeRef         the destination node reference
+     */
+    private void invokeBeforeCopy(
+            NodeRef sourceNodeRef, 
+            NodeRef targetNodeRef) 
+    {
+        // By Type
+        QName targetClassRef = internalNodeService.getType(targetNodeRef);     
+        invokeBeforeCopy(targetClassRef, sourceNodeRef, targetNodeRef);
+        
+        // And by Aspect
+        Set<QName> targetAspects = this.nodeService.getAspects(targetNodeRef);
+        for (QName targetAspect : targetAspects) 
+        {
+            invokeBeforeCopy(targetAspect, sourceNodeRef, targetNodeRef);
+        }
+    }
+    
+    private void invokeBeforeCopy(
+          QName typeQName, 
+          NodeRef sourceNodeRef, 
+          NodeRef targetNodeRef)
+    {
+        Collection<CopyServicePolicies.BeforeCopyPolicy> policies = beforeCopyDelegate.getList(typeQName);
+        for (CopyServicePolicies.BeforeCopyPolicy policy : policies) 
+        {
+            policy.beforeCopy(typeQName, sourceNodeRef, targetNodeRef);
+        }
+    }
+    
+    /**
      * Invokes the copy complete policy for the node reference provided
      * 
      * @param sourceNodeRef         the source node reference
@@ -650,6 +692,7 @@ public class CopyServiceImpl implements CopyService
             boolean copyToNewNode,
             Map<NodeRef, NodeRef> copiedNodeRefs)
     {
+        // By Type
         QName sourceClassRef = internalNodeService.getType(sourceNodeRef);     
         invokeCopyComplete(sourceClassRef, sourceNodeRef, targetNodeRef, copyToNewNode, copiedNodeRefs);
         

@@ -120,6 +120,28 @@ public interface CopyServicePolicies
     }
     
     /**
+     * The intermediate copy callback, which occurs once it has been decided which properties
+     *  and aspects will be copied, but before the copy occurs.
+     * This allows you to remove cached data based on the destination node, before it is
+     *  overwritten. You are unable to make changes to what gets copied though, that must
+     *  be done earlier via a {@link OnCopyNodePolicy}.
+     */
+    public interface BeforeCopyPolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCopy");
+        
+        /**
+         * @param classRef          the type of the node that will be copied
+         * @param sourceNodeRef     the original node
+         * @param targetNodeRef     the destination node
+         */
+        public void beforeCopy(
+                QName classRef,
+                NodeRef sourceNodeRef,
+                NodeRef targetNodeRef);
+    }
+    
+    /**
      * Final callback after the copy (including any cascading) has been completed.  This should
      * be used where post-copy manipulation of nodes is required in order to enforce adherence
      * to a particular dictionary or business model.
@@ -133,7 +155,7 @@ public interface CopyServicePolicies
         
         /**
          * @param classRef          the type of the node that was copied
-         * @param sourceNodeRef     the origional node
+         * @param sourceNodeRef     the original node
          * @param targetNodeRef     the destination node
          * @param copyMap           a map containing all the nodes that have been created during the copy
          */
@@ -143,8 +165,5 @@ public interface CopyServicePolicies
                 NodeRef targetNodeRef,
                 boolean copyToNewNode,
                 Map<NodeRef, NodeRef> copyMap);
-        
-        static Arg ARG_0 = Arg.KEY;
-        static Arg ARG_1 = Arg.KEY; 
     }
 }

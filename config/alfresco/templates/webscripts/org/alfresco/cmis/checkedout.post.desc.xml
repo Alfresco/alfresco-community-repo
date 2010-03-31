@@ -2,7 +2,7 @@
   <shortname>Checkout Document (checkOut)</shortname>
   <description>
   <![CDATA[
-: Create a private working copy of the document.
+  Create a private working copy of the document.
   ]]>
   </description>
   

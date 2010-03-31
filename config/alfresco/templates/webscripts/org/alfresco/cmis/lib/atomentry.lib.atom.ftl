@@ -627,7 +627,12 @@
 [#if propdef.defaultValue??]
   <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
-  [#-- TODO: maxValue, minValue --]
+[#if propdef.minValue??]
+  <cmis:minValue>${propdef.minValue?c}</cmis:minValue>
+[/#if]
+[#if propdef.maxValue??]
+  <cmis:maxValue>${propdef.maxValue?c}</cmis:maxValue>
+[/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyIntegerDefinition>
 [/#macro]
@@ -648,7 +653,12 @@
 [#if propdef.defaultValue??]
   <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
-  [#-- TODO: maxValue, minValue, precision --]
+[#if propdef.minValue??]
+  <cmis:minValue>${propdef.minValue?c}</cmis:minValue>
+[/#if]
+[#if propdef.maxValue??]
+  <cmis:maxValue>${propdef.maxValue?c}</cmis:maxValue>
+[/#if]
   [@cmisChoices propdef.choices propdef.dataType.label/]
 </cmis:propertyDecimalDefinition>
 [/#macro]
@@ -669,7 +679,6 @@
 [#if propdef.defaultValue??]
   <cmis:defaultValue><cmis:value>${propdef.defaultValue?xml}</cmis:value></cmis:defaultValue>
 [/#if]
-  [#-- TODO: maxValue, minValue, precision --]
 [#if propdef.maximumLength != -1]
   <cmis:maxLength>${propdef.maximumLength}</cmis:maxLength>
 [/#if]

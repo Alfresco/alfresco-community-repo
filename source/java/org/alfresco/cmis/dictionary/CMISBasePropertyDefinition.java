@@ -35,6 +35,7 @@ import org.alfresco.cmis.mapping.AbstractProperty;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
+import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.repo.search.impl.lucene.analysis.DateAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
@@ -73,6 +74,10 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
 
     private CMISCardinalityEnum cardinality;
 
+    private Double minValue = null;
+    
+    private Double maxValue = null; 
+    
     private int maximumLength = -1;
 
     private Collection<CMISChoice> choices = new HashSet<CMISChoice>();
@@ -125,6 +130,12 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
             {
                 StringLengthConstraint slc = (StringLengthConstraint) constraint;
                 maximumLength = slc.getMaxLength();
+            }
+            if (constraint instanceof NumericRangeConstraint)
+            {
+                NumericRangeConstraint nrc = (NumericRangeConstraint) constraint;
+                minValue = nrc.getMinValue();
+                maxValue = nrc.getMaxValue();
             }
         }
         required = propDef.isMandatory();
@@ -259,6 +270,22 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         return maximumLength;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.CMISPropertyDefinition#getMinValue()
+     */
+    public Double getMinValue()
+    {
+        return minValue;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.CMISPropertyDefinition#getMaxValue()
+     */
+    public Double getMaxValue()
+    {
+        return maxValue;
+    }
+    
     /**
      * Get the choices available as values for this property TODO: not implemented yet
      * 

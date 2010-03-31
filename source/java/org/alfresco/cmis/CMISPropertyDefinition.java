@@ -126,12 +126,26 @@ public interface CMISPropertyDefinition
     public boolean isOrderable();
     
     /**
-     * For variable length properties, get the maximum length allowed. Unsupported.
+     * For variable length properties, get the maximum length allowed.
      * 
      * @return
      */
     public int getMaximumLength();
 
+    /**
+     * For Integer and Decimal properties, get the minimum value allowed
+     * 
+     * @return
+     */
+    public Double getMinValue();
+    
+    /**
+     * For Integer and Decimal properties, get the maximum value allowed
+     * 
+     * @return
+     */
+    public Double getMaxValue();
+    
     /**
      * Gets the property accessor (for reading / writing values)
      * 

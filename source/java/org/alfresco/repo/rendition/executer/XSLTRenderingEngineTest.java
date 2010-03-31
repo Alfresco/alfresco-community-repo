@@ -304,8 +304,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     "<xsl:preserve-space elements=\"*\"/>" +
 
     "<xsl:variable name=\"all_docs\" select=\"alf:parseXMLDocuments('cm:content', 'path/to/xml/files')\"/>" +
-    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"$all_docs\">" + "<xsl:for-each select=\"food\">"
-    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
+    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"$all_docs//food\">"
+    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
 
-    
 }

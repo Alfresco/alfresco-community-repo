@@ -52,6 +52,8 @@ import org.xml.sax.SAXException;
  */
 public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
 {
+    public static final String NAME = "xsltRenderingEngine";
+
     private static final Log log = LogFactory.getLog(XSLTRenderingEngine.class);
 
     private XSLTFunctions xsltFunctions;
@@ -138,7 +140,7 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
                         }
                         catch (Exception ex)
                         {
-
+                            log.warn("Received an exception from parseXMLDocument()", ex);
                         }
                         return d == null ? null : d.getDocumentElement();
                     }

@@ -55,8 +55,6 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
 {
     private static final Log log = LogFactory.getLog(BaseTemplateRenderingEngine.class);
 
-    public static final String NAME = "xsltRenderingEngine";
-
     /**
      * This optional {@link Map}<{@link String}, {@link Serializable}> parameter
      * can be used to pass additional arguments to the templating engine when processing a

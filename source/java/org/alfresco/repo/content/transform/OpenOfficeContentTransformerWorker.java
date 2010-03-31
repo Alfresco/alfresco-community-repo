@@ -32,7 +32,6 @@ import net.sf.jooreports.openoffice.converter.AbstractOpenOfficeDocumentConverte
 import net.sf.jooreports.openoffice.converter.OpenOfficeDocumentConverter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -49,7 +48,7 @@ import org.springframework.core.io.DefaultResourceLoader;
  * 
  * @author Derek Hulley
  */
-public class OpenOfficeContentTransformerWorker extends ContentTransformerHelper implements ContentTransformerWorker, InitializingBean
+public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {
     private OpenOfficeConnection connection;
     private AbstractOpenOfficeDocumentConverter converter;
@@ -137,33 +136,11 @@ public class OpenOfficeContentTransformerWorker extends ContentTransformerHelper
             return false;
         }
 
-        // there are some conversions that fail, despite the converter believing them possible
-        if (targetMimetype.equals(MimetypeMap.MIMETYPE_XHTML))
+        if (isTransformationBlocked(sourceMimetype, targetMimetype))
         {
             return false;
         }
-        else if (targetMimetype.equals(MimetypeMap.MIMETYPE_WORDPERFECT))
-        {
-            return false;
-        }
-        else if (targetMimetype.equals(MimetypeMap.MIMETYPE_FLASH))
-        {
-            return false;
-        }
-        // OpenOffice 3.2.x doesn't seem to support all Office 97 to Office 07 conversions
-        else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_WORD) && targetMimetype.equals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING))
-        {
-            return false;
-        }
-        else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_EXCEL) && targetMimetype.equals(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET))
-        {
-            return false;
-        }
-        else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_HTML) && targetMimetype.equals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING))
-        {
-            return false;
-        }
-
+        
         MimetypeService mimetypeService = getMimetypeService();
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);

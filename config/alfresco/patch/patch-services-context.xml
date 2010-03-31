@@ -2119,6 +2119,29 @@
         -->
     </bean>
     
+    <bean id="patch.transferDefinitionsFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.transferServiceFolder</value></property>
+        <property name="description"><value>patch.transferDefinitions.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4008</value></property>
+        <property name="targetSchema"><value>4009</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.transfers.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/transferSpaces.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
     <bean id="patch.convertContentUrls" class="org.alfresco.repo.admin.patch.impl.ContentUrlConverterPatch" parent="basePatch">
         <property name="id"><value>patch.convertContentUrls</value></property>
         <property name="description"><value>patch.convertContentUrls.description</value></property>

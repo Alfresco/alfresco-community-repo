@@ -140,7 +140,7 @@ public class GuestDownloadContentServlet extends BaseDownloadContentServlet
       
       public Object doWork() throws Exception
       {
-         processDownloadRequest(this.req, this.res, false);
+         processDownloadRequest(this.req, this.res, false, true);
          
          return null;
       }

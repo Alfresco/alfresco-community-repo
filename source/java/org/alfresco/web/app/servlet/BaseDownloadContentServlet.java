@@ -553,7 +553,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       if (ranges.size() != 0)
       {
          // merge byte ranges if possible
-         if (ranges.size() > 1)
+         /*if (ranges.size() > 1)
          {
             for (int i=0; i<ranges.size() - 1; i++)
             {
@@ -572,7 +572,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                   i--;
                }
             }
-         }
+         }*/
          
          // calculate response content length
          long length = MULTIPART_BYTERANGES_BOUNDRY_END.length() + 2;

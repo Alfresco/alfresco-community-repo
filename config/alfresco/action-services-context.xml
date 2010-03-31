@@ -175,7 +175,7 @@
     	<property name="dictionaryService" ref="dictionaryService"/>
     	<property name="searchService" ref="searchService"/>
     	<property name="nodeService" ref="nodeService"/>
-    	<property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates"/>
+    	<property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates"/>
    </bean>
    
    <bean id="ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      

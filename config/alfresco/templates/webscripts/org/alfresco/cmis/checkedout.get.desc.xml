@@ -46,5 +46,5 @@
   <authentication>user</authentication>
   <transaction allow="readonly"/>
   <family>CMIS</family>
-  <lifecylce>public_api</lifecylce>
+  <lifecycle>public_api</lifecycle>
 </webscript>

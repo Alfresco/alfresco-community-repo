@@ -351,6 +351,7 @@
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="searchService" ref="SearchService" />
         <property name="permissionService" ref="PermissionService" />
+        <property name="authorityService" ref="AuthorityService" />
 
         <property name="propertiesUtil" ref="propertiesUtils" />
     </bean>

@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -132,6 +133,7 @@ public class DMAbstractServicePort
     protected SearchService searchService;
     protected PropertyUtil propertiesUtil;
     protected PermissionService permissionService;
+    protected AuthorityService authorityService;
 
     public void setCmisService(CMISServices cmisService)
     {
@@ -186,6 +188,11 @@ public class DMAbstractServicePort
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
     }
 
     protected PropertyFilter createPropertyFilter(String filter) throws CmisException

@@ -33,7 +33,7 @@
     <response type="cmis.atomfeed"/>
   </responses>
   
-  <authentication>guest</authentication>
+  <authentication>admin</authentication>
   <transaction allow="readonly"/>
   <family>CMIS</family>
   <lifecycle>public_api</lifecycle>

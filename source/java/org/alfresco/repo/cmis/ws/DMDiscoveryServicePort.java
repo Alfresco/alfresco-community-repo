@@ -40,6 +40,7 @@ import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -172,6 +173,11 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
     public void getContentChanges(String repositoryId, Holder<String> changeLogToken, Boolean includeProperties, String filter, Boolean includePolicyIds, Boolean includeACL,
             BigInteger maxItems, CmisExtensionType extension, Holder<CmisObjectListType> objects) throws CmisException
     {
+        if (!authorityService.hasAdminAuthority())
+        {
+            throw ExceptionUtil.createCmisException("Cannot retrieve content changes", new AccessDeniedException("Requires admin authority"));
+        }
+        
         // TODO: includePolicyIds
         checkRepositoryId(repositoryId);
         String changeToken = (null != changeLogToken) ? (changeLogToken.value) : (null);

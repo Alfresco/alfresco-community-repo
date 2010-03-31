@@ -81,16 +81,16 @@ public class DownloadContentServlet extends BaseDownloadContentServlet
       return logger;
    }
    
-   /**
-    * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+   /* (non-Javadoc)
+    * @see javax.servlet.http.HttpServlet#doHead(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
-   protected void doGet(final HttpServletRequest req, final HttpServletResponse res)
-      throws ServletException, IOException
+   @Override
+   protected void doHead(final HttpServletRequest req, final HttpServletResponse res) throws ServletException, IOException
    {
       if (logger.isDebugEnabled())
       {
          String queryString = req.getQueryString();
-         logger.debug("Authenticating request to URL: " + req.getRequestURI() + 
+         logger.debug("Authenticating (HEAD) request to URL: " + req.getRequestURI() + 
                ((queryString != null && queryString.length() > 0) ? ("?" + queryString) : ""));
       }
       
@@ -106,7 +106,39 @@ public class DownloadContentServlet extends BaseDownloadContentServlet
       {
          public Void execute() throws Throwable
          {
-             processDownloadRequest(req, res, true);
+             processDownloadRequest(req, res, true, false);
+             return null;
+         }
+      };
+      transactionService.getRetryingTransactionHelper().doInTransaction(processCallback, true);
+   }
+
+   /**
+    * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    */
+   protected void doGet(final HttpServletRequest req, final HttpServletResponse res)
+      throws ServletException, IOException
+   {
+      if (logger.isDebugEnabled())
+      {
+         String queryString = req.getQueryString();
+         logger.debug("Authenticating (GET) request to URL: " + req.getRequestURI() + 
+               ((queryString != null && queryString.length() > 0) ? ("?" + queryString) : ""));
+      }
+      
+      AuthenticationStatus status = servletAuthenticate(req, res);
+      if (status == AuthenticationStatus.Failure)
+      {
+         return;
+      }
+      
+      ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
+      TransactionService transactionService = serviceRegistry.getTransactionService();
+      RetryingTransactionCallback<Void> processCallback = new RetryingTransactionCallback<Void>()
+      {
+         public Void execute() throws Throwable
+         {
+             processDownloadRequest(req, res, true, true);
              return null;
          }
       };

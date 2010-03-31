@@ -18,14 +18,22 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,11 +58,13 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.springframework.util.FileCopyUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -80,6 +90,9 @@ public abstract class WebDAVMethod
 
     protected HttpServletRequest m_request;
     protected HttpServletResponse m_response;
+    private File m_requestBody;
+    private ServletInputStream m_inputStream;
+    private BufferedReader m_reader;
 
     // WebDAV helper
 
@@ -116,21 +129,131 @@ public abstract class WebDAVMethod
     /**
      * Set the request/response details
      * 
-     * @param req HttpServletRequest
-     * @param resp HttpServletResponse
-     * @param registry ServiceRegistry
-     * @param rootNode NodeRef
+     * @param req
+     *            HttpServletRequest
+     * @param resp
+     *            HttpServletResponse
+     * @param registry
+     *            ServiceRegistry
+     * @param rootNode
+     *            NodeRef
      */
-    public void setDetails(HttpServletRequest req, HttpServletResponse resp, WebDAVHelper davHelper, NodeRef rootNode)
+    public void setDetails(final HttpServletRequest req, HttpServletResponse resp, WebDAVHelper davHelper,
+            NodeRef rootNode)
     {
-        m_request = req;
-        m_response = resp;
-        m_davHelper = davHelper;
-        m_rootNodeRef = rootNode;
+        // Wrap the request so that it is 'retryable'. Calls to getInputStream() and getReader() will result in the
+        // request body being read into an intermediate file.
+        this.m_request = new HttpServletRequestWrapper(req)
+        {
 
-        m_strPath = WebDAV.getRepositoryPath(req);
+            @Override
+            public ServletInputStream getInputStream() throws IOException
+            {
+                if (WebDAVMethod.this.m_reader != null)
+                {
+                    throw new IllegalStateException("Reader in use");
+                }
+                if (WebDAVMethod.this.m_inputStream == null)
+                {
+                    final FileInputStream in = new FileInputStream(getRequestBodyAsFile(req));
+                    WebDAVMethod.this.m_inputStream = new ServletInputStream()
+                    {
+
+                        @Override
+                        public int read() throws IOException
+                        {
+                            return in.read();
+                        }
+
+                        @Override
+                        public int read(byte b[]) throws IOException
+                        {
+                            return in.read(b);
+                        }
+
+                        @Override
+                        public int read(byte b[], int off, int len) throws IOException
+                        {
+                            return in.read(b, off, len);
+                        }
+
+                        @Override
+                        public long skip(long n) throws IOException
+                        {
+                            return in.skip(n);
+                        }
+
+                        @Override
+                        public int available() throws IOException
+                        {
+                            return in.available();
+                        }
+
+                        @Override
+                        public void close() throws IOException
+                        {
+                            in.close();
+                        }
+
+                        @Override
+                        public void mark(int readlimit)
+                        {
+                            in.mark(readlimit);
+                        }
+
+                        @Override
+                        public void reset() throws IOException
+                        {
+                            in.reset();
+                        }
+
+                        @Override
+                        public boolean markSupported()
+                        {
+                            return in.markSupported();
+                        }
+                    };
+                }
+
+                return WebDAVMethod.this.m_inputStream;
+            }
+
+            @Override
+            public BufferedReader getReader() throws IOException
+            {
+                if (WebDAVMethod.this.m_inputStream != null)
+                {
+                    throw new IllegalStateException("Input Stream in use");
+                }
+                if (WebDAVMethod.this.m_reader == null)
+                {
+                    String encoding = req.getCharacterEncoding();
+                    WebDAVMethod.this.m_reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+                            getRequestBodyAsFile(req)), encoding == null ? "ISO-8859-1" : encoding));
+                }
+
+                return WebDAVMethod.this.m_reader;
+            }
+
+        };
+        this.m_response = resp;
+        this.m_davHelper = davHelper;
+        this.m_rootNodeRef = rootNode;
+
+        this.m_strPath = WebDAV.getRepositoryPath(req);
     }
-    
+
+    private File getRequestBodyAsFile(HttpServletRequest req) throws IOException
+    {
+        if (this.m_requestBody == null)
+        {
+            this.m_requestBody = TempFileProvider.createTempFile("webdav_" + req.getMethod() + "_", ".bin");
+            OutputStream out = new FileOutputStream(this.m_requestBody);
+            FileCopyUtils.copy(req.getInputStream(), out);
+        }
+        return this.m_requestBody;
+    }
+
     /**
      * Override and return <tt>true</tt> if the method is a query method only.  The default implementation
      * returns <tt>false</tt>.
@@ -168,6 +291,10 @@ public abstract class WebDAVMethod
         {
             public Object execute() throws Exception
             {
+                // Reset the request input stream / reader state
+                WebDAVMethod.this.m_inputStream = null;
+                WebDAVMethod.this.m_reader = null;
+
                 executeImpl();
                 return null;
             }
@@ -201,7 +328,19 @@ public abstract class WebDAVMethod
         }
         finally
         {
-            cleanup();
+			// Remove temporary file if created
+            if (this.m_requestBody != null)
+            {
+                try
+                {
+                    this.m_requestBody.delete();
+					this.m_requestBody = null;
+                }
+                catch (Throwable t)
+                {
+                    WebDAVMethod.logger.error("Failed to delete temp file", t);
+                }
+            }
         }
     }
 
@@ -649,10 +788,6 @@ public abstract class WebDAVMethod
         }
         
         return ns.toString();
-    }
-
-    protected void cleanup()
-    {
     }
     /**
      * Checks if write operation can be performed on node.

@@ -19,6 +19,7 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
+import java.io.Reader;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -37,6 +38,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A base class for authentication filters. Handles management of the session user.
@@ -282,5 +285,68 @@ public abstract class BaseAuthenticationFilter
      * @return Log
      */
     protected abstract Log getLogger();
+    
+    /**
+     * Handles the login form directly, allowing management of the session user.
+     * 
+     * @param req
+     *            the request
+     * @param res
+     *            the response
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     * @throws ServletException
+     *             on error
+     */
+    protected void handleLoginForm(HttpServletRequest req, HttpServletResponse res) throws IOException,
+            ServletException
+    {
+        // Invalidate current session
+        HttpSession session = req.getSession(false);
+        if (session != null)
+        {
+            session.invalidate();
+        }
+        StringBuilder out = new StringBuilder(1024);
+        Reader in = req.getReader();
+        char[] buff = new char[1024];
+        int charsRead;
+        while ((charsRead = in.read(buff)) != -1)
+        {
+            out.append(buff, 0, charsRead);
+        }
+        in.close();
 
+        try
+        {
+            JSONObject json = new JSONObject(out.toString());
+            String username = json.getString("username");
+            String password = json.getString("password");
+
+            if (username == null || username.length() == 0)
+            {
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
+                return;
+            }
+
+            if (password == null)
+            {
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
+                return;
+            }
+
+            authenticationService.authenticate(username, password.toCharArray());
+            session = req.getSession();            
+            createUserEnvironment(session, username, authenticationService.getCurrentTicket(session.getId()), false);
+            res.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
+        catch (AuthenticationException e)
+        {
+            res.sendError(HttpServletResponse.SC_FORBIDDEN, "Login failed");
+        }
+        catch (JSONException jErr)
+        {
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON POST body: " + jErr.getMessage());
+        }
+    }
 }

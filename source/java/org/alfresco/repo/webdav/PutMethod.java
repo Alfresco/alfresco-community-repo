@@ -19,12 +19,7 @@
 package org.alfresco.repo.webdav;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -34,14 +29,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TempFileProvider;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Implements the WebDAV PUT method
@@ -54,8 +48,6 @@ public class PutMethod extends WebDAVMethod
     private String m_strLockToken = null;
     private String m_strContentType = null;
     private boolean m_expectHeaderPresent = false;
-
-    private File requestBody = null;
 
     /**
      * Default constructor
@@ -91,16 +83,8 @@ public class PutMethod extends WebDAVMethod
      */
     protected void parseRequestBody() throws WebDAVServerException
     {
-        requestBody = TempFileProvider.createTempFile("webdav_PUT_", ".bin");
-        try
-        {
-            OutputStream out = new FileOutputStream(requestBody);
-            FileCopyUtils.copy(m_request.getInputStream(), out);
-        }
-        catch (IOException e)
-        {
-            throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
-        }
+        // Nothing to do in this method, the body contains
+        // the content it will be dealt with later
     }
 
     /**
@@ -156,6 +140,16 @@ public class PutMethod extends WebDAVMethod
             }
         }
         
+        LockStatus lockSts = getLockService().getLockStatus(contentNodeInfo.getNodeRef());
+        String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
+        String owner = (String) getNodeService().getProperty(contentNodeInfo.getNodeRef(), ContentModel.PROP_LOCK_OWNER);
+
+        if (lockSts == LockStatus.LOCKED || (lockSts == LockStatus.LOCK_OWNER && !userName.equals(owner)))
+        {
+            // Indicate that the resource is locked
+            throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+        }
+
         // Access the content
         ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
         // set content properties
@@ -166,13 +160,13 @@ public class PutMethod extends WebDAVMethod
         }
         else
         {
-            String guessedMimetype = getMimetypeService().guessMimetype(getPath());
+            String guessedMimetype = getMimetypeService().guessMimetype(contentNodeInfo.getName());
             mimetype = guessedMimetype;
         }
         writer.setMimetype(mimetype);
 
         // Get the input stream from the request data
-        InputStream is = new FileInputStream(requestBody);
+        InputStream is = m_request.getInputStream();
         is = is.markSupported() ? is : new BufferedInputStream(is);
         
         ContentCharsetFinder charsetFinder = getMimetypeService().getContentCharsetFinder();
@@ -184,18 +178,5 @@ public class PutMethod extends WebDAVMethod
 
         // Set the response status, depending if the node existed or not
         m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
-    }
-    
-    @Override
-    protected void cleanup()
-    {
-        try
-        {
-            requestBody.delete();
-        }
-        catch (Throwable t)
-        {
-            logger.error("Failed to delete temp file", t);
-        }
     }
 }

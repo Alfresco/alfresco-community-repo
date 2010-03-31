@@ -26,6 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Match;
@@ -43,6 +44,7 @@ import org.springframework.extensions.webscripts.Description.RequiredAuthenticat
  */
 public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
 {
+    private static final String API_LOGIN = "/api/login";
     private RuntimeContainer container;        
     
     /**
@@ -63,6 +65,7 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
     {
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest)sreq;
+        HttpServletResponse res = (HttpServletResponse)sresp;
         
         // find a webscript match for the requested URI
         String requestURI = req.getRequestURI();
@@ -84,7 +87,16 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
                 req.setAttribute(AbstractAuthenticationFilter.NO_AUTH_REQUIRED, Boolean.TRUE);
             }
         }
-        
-        super.doFilter(context, sreq, sresp, chain);
+
+        // Allow propagation of manual logins to the session user
+        String script = req.getPathInfo();
+        if (script != null && script.equals(API_LOGIN) && req.getMethod().equalsIgnoreCase("POST"))
+        {
+            handleLoginForm(req, res);
+        }
+        else
+        {
+            super.doFilter(context, sreq, sresp, chain);
+        }
     }
 }

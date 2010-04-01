@@ -143,7 +143,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 new JavaBehaviour(this, "afterCreateVersion", Behaviour.NotificationFrequency.EVERY_EVENT));
         
         this.policyComponent.bindClassBehaviour(
-                ContentServicePolicies.ON_CONTENT_UPDATE,
+                ContentServicePolicies.OnContentUpdatePolicy.QNAME,
                 ContentModel.ASPECT_VERSIONABLE,
                 new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
         

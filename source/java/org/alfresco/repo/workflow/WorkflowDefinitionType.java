@@ -71,7 +71,7 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
     {
         // Register interest in the onContentUpdate policy for the workflow definition type
         policyComponent.bindClassBehaviour(
-                ContentServicePolicies.ON_CONTENT_UPDATE, 
+                ContentServicePolicies.OnContentUpdatePolicy.QNAME, 
                 WorkflowModel.TYPE_WORKFLOW_DEF, 
                 new JavaBehaviour(this, "onContentUpdate"));
         

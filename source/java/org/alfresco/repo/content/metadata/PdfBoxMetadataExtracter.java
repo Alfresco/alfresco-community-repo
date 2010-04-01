@@ -42,6 +42,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
  *   <b>title:</b>                  --      cm:title
  *   <b>subject:</b>                --      cm:description
  *   <b>created:</b>                --      cm:created
+ *   <b>Any custom property:</b>    --      [not mapped]
  * </pre>
  * 
  * TIKA Note - all the fields (plus a few others) are present
@@ -124,7 +125,18 @@ public class PdfBoxMetadataExtracter extends AbstractMappingMetadataExtracter
                         Date parsedDate = sdf.parse(dateWithoutLeadingDColon);
                         putRawValue(KEY_CREATED, parsedDate, rawProperties);
                     }
-                } 
+                }
+                // Extract remaining custom properties
+                for (String customProp : super.getMapping().keySet())
+                {
+                    if (rawProperties.keySet().contains(customProp))
+                    {
+                        // Ignore it
+                        continue;
+                    }
+                    String customValue = docInfo.getCustomMetadataValue(customProp);
+                    putRawValue(customProp, customValue, rawProperties);
+                }
             }
         }
         finally

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -120,26 +121,20 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
 
     public List<NodeRef> getNodeRefs()
     {
-        List<NodeRef> answer = unfiltered.getNodeRefs();
-        for (int i = unfiltered.length() - 1; i >= 0; i--)
+        ArrayList<NodeRef> answer = new ArrayList<NodeRef>(length());
+        for(ResultSetRow row : this)
         {
-            if (!inclusionMask.get(i))
-            {
-                answer.remove(i);
-            }
+            answer.add(row.getNodeRef());
         }
         return answer;
     }
 
     public List<ChildAssociationRef> getChildAssocRefs()
     {
-        List<ChildAssociationRef> answer = unfiltered.getChildAssocRefs();
-        for (int i = unfiltered.length() - 1; i >= 0; i--)
+        ArrayList<ChildAssociationRef> answer = new ArrayList<ChildAssociationRef>(length());
+        for(ResultSetRow row : this)
         {
-            if (!inclusionMask.get(i))
-            {
-                answer.remove(i);
-            }
+            answer.add(row.getChildAssocRef());
         }
         return answer;
     }

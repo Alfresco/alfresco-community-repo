@@ -32,9 +32,11 @@ import org.alfresco.service.namespace.QName;
  */
 public interface ContentServicePolicies
 {
-    /** The QName's of the policies */
+    /** @deprecated Use {@link OnContentUpdatePolicy#QNAME} */
     public static final QName ON_CONTENT_UPDATE = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate");
+    /** @deprecated Use {@link OnContentPropertyUpdatePolicy#QNAME} */
     public static final QName ON_CONTENT_PROPERTY_UPDATE = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentPropertyUpdate");
+    /** @deprecated Use {@link OnContentReadPolicy#QNAME} */
     public static final QName ON_CONTENT_READ = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentRead");
     
 	/**
@@ -44,6 +46,7 @@ public interface ContentServicePolicies
 	 */
 	public interface OnContentUpdatePolicy extends ClassPolicy
 	{
+	    public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate");
 		/**
 		 * @param nodeRef	the node reference
 		 */
@@ -59,6 +62,7 @@ public interface ContentServicePolicies
      */
     public interface OnContentPropertyUpdatePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentPropertyUpdate");
         /**
          * @param nodeRef           the node reference
          * @param propertyQName     the name of the property that changed
@@ -86,6 +90,7 @@ public interface ContentServicePolicies
      */
     public interface OnContentReadPolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentRead");
         /**
          * @param nodeRef   the node reference
          */

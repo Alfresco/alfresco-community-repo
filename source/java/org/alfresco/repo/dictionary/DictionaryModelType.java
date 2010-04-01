@@ -231,7 +231,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         // Register interest in the onContentUpdate policy for the dictionary model type
         policyComponent.bindClassBehaviour(
-                ContentServicePolicies.ON_CONTENT_UPDATE, 
+                ContentServicePolicies.OnContentUpdatePolicy.QNAME, 
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onContentUpdate"));
         

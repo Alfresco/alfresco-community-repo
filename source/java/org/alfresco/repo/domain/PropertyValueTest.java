@@ -37,7 +37,6 @@ import org.springframework.context.ApplicationContext;
  */
 public class PropertyValueTest extends TestCase
 {
-    @SuppressWarnings("unused")
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     public void testMLText()
@@ -54,11 +53,21 @@ public class PropertyValueTest extends TestCase
                 PropertyValue propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
                 assertNotNull("MLText not persisted as a string", propertyValue.getStringValue());
                 
-                // multiple languages
-                mlText = new MLText(Locale.GERMAN, "hallo");
-                mlText.addValue(Locale.ITALIAN, "ciao");
-                propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
-                assertNotNull("MLText not persisted as an attribute", propertyValue.getAttributeValue());
+                try
+                {
+                    // multiple languages
+                    mlText = new MLText(Locale.GERMAN, "hallo");
+                    mlText.addValue(Locale.ITALIAN, "ciao");
+                    propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
+                    assertNotNull("MLText not persisted as an attribute", propertyValue.getAttributeValue());
+                    
+                    fail();
+                }
+                catch (UnsupportedOperationException uoe)
+                {
+                    // expected
+                    // NOTE: since 2.2.1, PropertyValue is only used by AVM (which does not natively support MLText, other than single/default string)
+                }
                 
                 return null;
             }

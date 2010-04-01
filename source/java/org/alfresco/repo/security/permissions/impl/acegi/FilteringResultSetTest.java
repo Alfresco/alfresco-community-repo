@@ -81,6 +81,9 @@ public class FilteringResultSetTest extends TestCase
            filtering.setIncluded(i, true);
            assertEquals(1, filtering.length());
            assertEquals("n"+i, filtering.getNodeRef(0).getId());
+           assertEquals(1, filtering.getNodeRefs().size());
+           assertEquals(1, filtering.getChildAssocRefs().size());
+           assertEquals("n"+i, filtering.getNodeRefs().get(0).getId());
            filtering.setIncluded(i, false);
            assertEquals(0, filtering.length());
         }       

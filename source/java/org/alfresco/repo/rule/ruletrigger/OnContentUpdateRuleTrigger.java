@@ -76,7 +76,7 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
     {
         // Bind behaviour
         this.policyComponent.bindClassBehaviour(
-                ContentServicePolicies.ON_CONTENT_UPDATE, 
+                ContentServicePolicies.OnContentUpdatePolicy.QNAME, 
                 this, 
                 new JavaBehaviour(this, "onContentUpdate"));
     }

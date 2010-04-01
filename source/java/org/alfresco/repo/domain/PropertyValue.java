@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConverter.Converter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.VersionNumber;
@@ -268,12 +269,36 @@ public class PropertyValue implements Cloneable, Serializable
                         return ValueType.STRING;
                     }
                 }
+                else if (value instanceof String)
+                {
+                    return ValueType.STRING;
+                }
                 return ValueType.DB_ATTRIBUTE;
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             Serializable convert(Serializable value)
             {
+                // NOTE: since 2.2.1, PropertyValue is only used by AVM (which does not natively support MLText, other than single/default string)
+                if (value != null)
+                {
+                    if (value instanceof String)
+                    {
+                        return value;
+                    }
+                    else if (value instanceof MLText)
+                    {
+                        if (((MLText)value).size() <= 1)
+                        {
+                            return (String)((Converter<MLText, String>)DefaultTypeConverter.INSTANCE.getConverter(MLText.class, String.class)).convert((MLText)value);
+                        }
+                        else
+                        {
+                            throw new UnsupportedOperationException("PropertyValue MLText is not supported for AVM");
+                        }
+                    }
+                }
                 return DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
             }
         },

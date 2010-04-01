@@ -18,6 +18,7 @@
 */
 package org.alfresco.repo.admin.patch.impl;
 
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorkerAdaptor;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
@@ -106,6 +108,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
     private JobLockService jobLockService;
     private NodeDaoService nodeDaoService;
     private PatchDAO patchDAO;
+    private ControlDAO controlDAO;
     private ContentStore contentStore;
     private ContentDataDAO contentDataDAO;
     private int threadCount;
@@ -154,6 +157,14 @@ public class ContentUrlConverterPatch extends AbstractPatch
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
+    }
+
+    /**
+     * Component that provides low-level database-specific control to support the patch
+     */
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
     }
 
     /**
@@ -306,6 +317,13 @@ public class ContentUrlConverterPatch extends AbstractPatch
             boolean urlLiftingCompleted = applyUrlLifting(lockToken);
             
             completed = admCompleted && avmCompleted && urlLiftingCompleted;
+        }
+        catch (RuntimeException e)
+        {
+            logger.error(
+                    I18NUtil.getMessage("patch.convertContentUrls.error", e.getMessage()),
+                    e);
+            return I18NUtil.getMessage("patch.convertContentUrls.error", e.getMessage());
         }
         finally
         {
@@ -606,14 +624,20 @@ public class ContentUrlConverterPatch extends AbstractPatch
                     return;
                 }
                 currentSize.setValue(currentSize.longValue() + reader.getSize());
+                
+                // Create a savepoint
+                String savepointName = new Long(System.nanoTime()).toString();
+                Savepoint savepoint = controlDAO.createSavepoint(savepointName);
                 try
                 {
                     contentDataDAO.createContentUrlOrphaned(contentUrl);
+                    controlDAO.releaseSavepoint(savepoint);
                     count.setValue(count.intValue()+1);
                 }
                 catch (DataIntegrityViolationException e)
                 {
                     // That's OK, the URL was already managed
+                    controlDAO.rollbackToSavepoint(savepoint);
                 }
                 allCount++;
                 if (allCount % batchSize == 0)

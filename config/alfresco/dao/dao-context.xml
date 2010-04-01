@@ -3,6 +3,32 @@
 
 <beans>
 
+   <bean id="controlDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+      <property name="targetBeanName">
+         <value>controlDAO.#bean.dialect#</value>
+      </property>
+      <property name="targetClass">
+         <value>org.alfresco.repo.domain.control.ControlDAO</value>
+      </property>
+        <property name="dialectBaseClass">
+            <value>org.hibernate.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+   </bean>
+   <bean id="controlDAO.org.hibernate.dialect.Dialect"
+         class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl">
+      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+   </bean>
+   <bean id="controlDAO.org.hibernate.dialect.PostgreSQLDialect"
+         class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl$PostgreSQL"
+         parent="controlDAO.org.hibernate.dialect.Dialect">
+   </bean>
+
    <bean id="postDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityPostDAOImpl">
       <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
    </bean>

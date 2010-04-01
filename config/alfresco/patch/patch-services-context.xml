@@ -2138,6 +2138,9 @@
         <property name="patchDAO">
             <ref bean="patchDAO"/>
         </property>
+        <property name="controlDAO">
+            <ref bean="controlDAO"/>
+        </property>
         <property name="contentDataDAO">
             <ref bean="contentDataDAO"/>
         </property>

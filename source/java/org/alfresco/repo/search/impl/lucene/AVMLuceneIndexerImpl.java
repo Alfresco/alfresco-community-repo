@@ -271,12 +271,23 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 // New
                 if (srcDesc == null)
                 {
-                    index(difference.getDestinationPath());
-                    if (dstDesc.isDirectory())
+                    if (dstDesc == null)
                     {
-                        indexDirectory(dstDesc);
+                        // Nothing to do for this case - both are deleted/not there
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Skipped - src & dst deleted / not there: "+difference);
+                        }
                     }
-                    reindexAllAncestors(difference.getDestinationPath());
+                    else
+                    {
+                        index(difference.getDestinationPath());
+                        if (dstDesc.isDirectory())
+                        {
+                            indexDirectory(dstDesc);
+                        }
+                        reindexAllAncestors(difference.getDestinationPath());
+                    }
                 }
                 // New Delete
                 else if (!srcDesc.isDeleted() && ((dstDesc == null) || dstDesc.isDeleted()))
@@ -291,6 +302,10 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                     if ((dstDesc == null) || dstDesc.isDeleted())
                     {
                         // Nothing to do for this case - both are deleted/not there
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Skipped - src & dst deleted / not there: "+difference);
+                        }
                     }
                     else
                     {

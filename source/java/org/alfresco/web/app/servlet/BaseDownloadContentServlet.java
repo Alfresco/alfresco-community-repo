@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.SocketException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -87,6 +88,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
    private static final String HEADER_ETAG           = "ETag";
    private static final String HEADER_CACHE_CONTROL  = "Cache-Control";
    private static final String HEADER_LAST_MODIFIED  = "Last-Modified";
+   private static final String HEADER_USER_AGENT     = "User-Agent";
    private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
    
    /** size of a multi-part byte range output buffer */
@@ -341,7 +343,9 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                   // ensure the range header is starts with "bytes=" and process the range(s)
                   if (range.length() > 6)
                   {
-                     processedRange = processRange(res, reader, range.substring(6), nodeRef, propertyQName, mimetype);
+                     processedRange = processRange(
+                           res, reader, range.substring(6), nodeRef, propertyQName,
+                           mimetype, req.getHeader(HEADER_USER_AGENT));
                   }
                }
                if (processedRange == false)
@@ -399,7 +403,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
     * Process a range header - handles single and multiple range requests.
     */
    private boolean processRange(HttpServletResponse res, ContentReader reader, String range,
-         NodeRef ref, QName property, String mimetype)
+         NodeRef ref, QName property, String mimetype, String userAgent)
       throws IOException
    {
       // test for multiple byte ranges present in header
@@ -409,7 +413,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       }
       else
       {
-         return processMultiRange(res, range, ref, property, mimetype);
+         return processMultiRange(res, range, ref, property, mimetype, userAgent);
       }
    }
 
@@ -499,10 +503,12 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
     * @param ref        NodeRef to the content for streaming
     * @param property   Content Property for the content
     * @param mimetype   Mimetype of the content
+    * @param userAgent  User Agent of the caller
     * 
     * @return true if processed range, false otherwise
     */
-   private boolean processMultiRange(HttpServletResponse res, String range, NodeRef ref, QName property, String mimetype)
+   private boolean processMultiRange(
+         HttpServletResponse res, String range, NodeRef ref, QName property, String mimetype, String userAgent)
       throws IOException
    {
       final Log logger = getLogger();
@@ -552,27 +558,34 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       
       if (ranges.size() != 0)
       {
-         // merge byte ranges if possible
-         /*if (ranges.size() > 1)
+         // merge byte ranges if possible - IE handles this well, FireFox not so much
+         if (userAgent == null || userAgent.indexOf("MSIE ") != -1)
          {
+            Collections.sort(ranges);
+            
             for (int i=0; i<ranges.size() - 1; i++)
             {
                Range first = ranges.get(i);
                Range second = ranges.get(i + 1);
-               if (first.end + 1 == second.start)
+               if (first.end + 1 >= second.start)
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Merging byte range: " + first + " with " + second);
                   
-                  // merge second range into first
-                  first.end = second.end;
+                  if (first.end < second.end)
+                  {
+                     // merge second range into first
+                     first.end = second.end;
+                  }
+                  // else we simply discard the second range - it is contained within the first
+                  
                   // delete second range
                   ranges.remove(i + 1);
                   // reset loop index
                   i--;
                }
             }
-         }*/
+         }
          
          // calculate response content length
          long length = MULTIPART_BYTERANGES_BOUNDRY_END.length() + 2;
@@ -815,7 +828,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
        */
       public int compareTo(Range o)
       {
-         return this.start < o.start ? 1 : -1;
+         return this.start > o.start ? 1 : -1;
       }
    }
    

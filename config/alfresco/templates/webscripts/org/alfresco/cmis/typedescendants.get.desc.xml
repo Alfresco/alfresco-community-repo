@@ -20,12 +20,7 @@
     </arg>
     <arg>
         <shortname>depth</shortname>
-        <description>
-        <![CDATA[
-        if 1, return only types that are children. if greater than 1, return types that are descendants up to <i>depth</i> levels deep, otherwise if -1,
-        return all descendant types.
-        ]]>
-        </description>
+        <description><![CDATA[if 1, return only types that are children. if greater than 1, return types that are descendants up to <i>depth</i> levels deep, otherwise if -1, return all descendant types.]]></description>
         <default>-1</default>
     </arg>
   </args>

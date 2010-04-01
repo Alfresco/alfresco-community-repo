@@ -2,86 +2,90 @@
  <shortname>Alfresco CMIS AtomPub Binding</shortname>
  <description>
  <![CDATA[
- The Content Management Interoperability Services (CMIS) standard defines a domain model and set of bindings that include Web Services and ReSTful AtomPub that
- can be used by applications to work with one or more Content Management repositories/systems. The CMIS interface is designed to be layered on top of existing 
- Content Management systems and their existing programmatic interfaces. It is not intended to prescribe how specific features should be implemented within those 
- CM systems, nor to exhaustively expose all of the CM system’s capabilities through the CMIS interfaces. Rather, it is intended to define a generic/universal set
- of capabilities provided by a CM system and a set of services for working with those capabilities.
- <p/>
- For a full description of the domain model and binding see the <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.html">CMIS specification</a>.
- <p/>
- This Web Scripts package provides the Alfresco implementation of the CMIS AtomPub binding. This binding is based upon the Atom (RFC4287) and Atom Publishing Protocol (RFC5023).
- In this binding, the client interacts with the repository by acquiring the service document, which Alfresco provides with each repository installation at:
- <p/>
- http://[host]:[port]/alfresco/service/cmis
- <p/>
- The client will then choose a CMIS collection, and then start accessing the repository by following the references in the returned documents. This binding consists of a service
- document specifying at least CMIS service collections, atom collections, feeds and entry documents. CMIS extends the Atom and AtomPub documents utilizing the Atom and AtomPub
- extension mechanism. CMIS also leverages link tags to specify additional resources related to the requested resource.
- <p/>
- <a name="paging"><b>Paging</b></a>
- <p/>
- All of the methods that allow for the retrieval of a collection of CMIS objects support paging of their result sets except where explicitly stated otherwise. The following
- parameters control paging:
- <p/>
- <ul>
- <li>Integer maxItems : This is the maximum number of items to return in a response. Defaults to -1, which means unlimited.</li>
- <li>Integer skipCount : This is the number of potential results that the repository skip over before returning any results. Defaults to 0.</li>
- </ul>
- <a name="filter"><b>Properties Filter</b></a>
- <p/>
- All of the methods that allow for the retrieval of properties for CMIS Objects have a “Property Filter” as an optional parameter, which allows the caller to specify a subset of
- properties that must be returned by the repository in the output of the method. The filter is specified as follows:
- <p/>
- <ul>
- <li>Not set : All properties of the CMIS Object are returned (default)</li>
- <li>A comma-delimited list of property query names : The properties listed are returned</li>
- <li>* : All properties are returned</li>
- </ul>
- <a name="allowableactions"><b>Include Allowable Actions</b></a>
- <p/>
- Many methods provide support for including allowable actions for the each CMIS Object returned in the response. Allowable actions are specified by the 
- includeAllowableActions parameter:
- <p/>
- <ul>
- <li>true : include allowable actions</li>
- <li>false : exlude allowable actions (default)</li>
- </ul>
- <p/>
- <a name="relationships"><b>Include Relationships</b></a>
- <p/>
- Many methods provide support for including relationships for each CMIS Object returned in the response. Relationships are specified by the includeRelationships parameter:
- <p/>
- <ul>
- <li>none : Relationships are not returned (default)</li>
- <li>source : Only relationships in which the objects are the source are returned</li>
- <li>target : Only relationships in which the objects are the target are returned</li>
- <li>both : Relationships in which the objects are source of target are returned</li>
- </ul> 
- <a name="renditionfilter"><b>Rendition Filter</b></a>
- <p/>
- Many methods provide support for including renditions of each CMIS Object returned in the response. The renditions to return are specified by the renditionFilter parameter:
- <p/>
- <ul>
- <li>cmis:none : exclude all associated renditions (default)</li> 
- <li>* : include all associated renditions</li>
- <li>comma-separated list of kinds or mimetypes : include only those renditions that match one of the specified kinds or mimetypes</li>
- </ul>
- For example:
- <p/>
- <ul>
- <li>* : include all renditions</li>
- <li>cmis:thumbnail : include only thumbnails</li>
- <li>image/* : include all image renditions</li>
- <li>application/pdf,application/x-shockwave-flash : include web ready renditions</li>
- </ul>
- <a name="acls"><b>ACLs</b></a>
- <p/>
- Some methods provide support for including ACLs for each CMIS Object returned in the response. ACLs are specified by the includeACL parameter:
- <ul>
- <li>true : include all ACLs for each CMIS Object</li>
- <li>false : exclude ACLs (default)</li>
- </ul>
+The Content Management Interoperability Services (CMIS) standard defines a domain model and set of bindings that include Web Services and ReSTful AtomPub that
+can be used by applications to work with one or more Content Management repositories/systems. The CMIS interface is designed to be layered on top of existing 
+Content Management systems and their existing programmatic interfaces. It is not intended to prescribe how specific features should be implemented within those 
+CM systems, nor to exhaustively expose all of the CM system’s capabilities through the CMIS interfaces. Rather, it is intended to define a generic/universal set
+of capabilities provided by a CM system and a set of services for working with those capabilities.
+<br><br>
+For a full description of the domain model and binding see the <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.html">CMIS specification</a>.
+<br><br>
+This Web Scripts package provides the Alfresco implementation of the CMIS AtomPub binding. This binding is based upon the Atom (RFC4287) and Atom Publishing Protocol (RFC5023).
+In this binding, the client interacts with the repository by acquiring the service document, which Alfresco provides with each repository installation at:
+<br><br>
+http://[host]:[port]/alfresco/service/cmis
+<br><br>
+The client will then choose a CMIS collection, and then start accessing the repository by following the references in the returned documents. This binding consists of a service
+document specifying at least CMIS service collections, atom collections, feeds and entry documents. CMIS extends the Atom and AtomPub documents utilizing the Atom and AtomPub
+extension mechanism. CMIS also leverages link tags to specify additional resources related to the requested resource.
+<br><br>
+<a name="paging"><b>Paging</b></a>
+<br><br>
+All of the methods that allow for the retrieval of a collection of CMIS objects support paging of their result sets except where explicitly stated otherwise. The following
+parameters control paging:
+<br>
+<ul>
+<li>Integer maxItems : This is the maximum number of items to return in a response. Defaults to -1, which means unlimited.</li>
+<li>Integer skipCount : This is the number of potential results that the repository skip over before returning any results. Defaults to 0.</li>
+</ul>
+<br>
+<a name="filter"><b>Properties Filter</b></a>
+<br><br>
+All of the methods that allow for the retrieval of properties for CMIS Objects have a “Property Filter” as an optional parameter, which allows the caller to specify a subset of
+properties that must be returned by the repository in the output of the method. The filter is specified as follows:
+<br>
+<ul>
+<li>Not set : All properties of the CMIS Object are returned (default)</li>
+<li>A comma-delimited list of property query names : The properties listed are returned</li>
+<li>* : All properties are returned</li>
+</ul>
+<br>
+<a name="allowableactions"><b>Include Allowable Actions</b></a>
+<br><br>
+Many methods provide support for including allowable actions for the each CMIS Object returned in the response. Allowable actions are specified by the 
+includeAllowableActions parameter:
+<br>
+<ul>
+<li>true : include allowable actions</li>
+<li>false : exlude allowable actions (default)</li>
+</ul>
+<br>
+<a name="relationships"><b>Include Relationships</b></a>
+<br><br>
+Many methods provide support for including relationships for each CMIS Object returned in the response. Relationships are specified by the includeRelationships parameter:
+<br>
+<ul>
+<li>none : Relationships are not returned (default)</li>
+<li>source : Only relationships in which the objects are the source are returned</li>
+<li>target : Only relationships in which the objects are the target are returned</li>
+<li>both : Relationships in which the objects are source of target are returned</li>
+</ul> 
+<br>
+<a name="renditionfilter"><b>Rendition Filter</b></a>
+<br><br>
+Many methods provide support for including renditions of each CMIS Object returned in the response. The renditions to return are specified by the renditionFilter parameter:
+<br>
+<ul>
+<li>cmis:none : exclude all associated renditions (default)</li> 
+<li>* : include all associated renditions</li>
+<li>comma-separated list of kinds or mimetypes : include only those renditions that match one of the specified kinds or mimetypes</li>
+</ul>
+For example:
+<br>
+<ul>
+<li>* : include all renditions</li>
+<li>cmis:thumbnail : include only thumbnails</li>
+<li>image/* : include all image renditions</li>
+<li>application/pdf,application/x-shockwave-flash : include web ready renditions</li>
+</ul>
+<br>
+<a name="acls"><b>ACLs</b></a>
+<br><br>
+Some methods provide support for including ACLs for each CMIS Object returned in the response. ACLs are specified by the includeACL parameter:
+<ul>
+<li>true : include all ACLs for each CMIS Object</li>
+<li>false : exclude ACLs (default)</li>
+</ul>
  ]]>
  </description>
  <resources>

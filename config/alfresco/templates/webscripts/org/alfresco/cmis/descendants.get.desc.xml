@@ -34,12 +34,7 @@
     </arg>
     <arg>
         <shortname>depth</shortname>
-        <description>
-        <![CDATA[
-        if 1, return only children of the folder. if greater than 1, return children that are descendants up to <i>depth</i> levels deep, otherwise if -1,
-        return all descendants.
-        ]]>
-        </description>
+        <description><![CDATA[if 1, return only children of the folder. if greater than 1, return children that are descendants up to <i>depth</i> levels deep, otherwise if -1, return all descendants.]]></description>
         <default>-1</default>
     </arg>
     <arg>

@@ -11,8 +11,7 @@
   <args>
     <arg>
         <shortname>changeLogToken</shortname>
-        <description>if specified, return the change event corresponding to the value of the specified change log token as the first result in the output, 
-                     otherwise, return the first change event recorded in the change log</description>
+        <description>if specified, return the change event corresponding to the value of the specified change log token as the first result in the output, otherwise, return the first change event recorded in the change log</description>
     </arg>
     <arg>
         <shortname>filter</shortname>

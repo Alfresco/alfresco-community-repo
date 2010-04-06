@@ -655,9 +655,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     {
         // by the spec. if typeId=null then it is necessary return ALL associated Relationship objects!
         // establish relationship type to filter on
-        if ((relDef != null) && !relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
+        if (relDef == null)
         {
-            throw new CMISInvalidArgumentException("Type Id " + relDef.getTypeId() + " is not a relationship type");
+            relDef = cmisDictionaryService.findType(CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
+        }
+        if (!relDef.getBaseType().getTypeId().equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
+        {
+            throw new AlfrescoRuntimeException("Type Id " + relDef.getTypeId() + " is not a relationship type");
         }
 
         // retrieve associations
@@ -671,28 +675,21 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             assocs.addAll(nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL));
         }
 
+        // filter association by type
+        // NOTE: even if typeId = null, we still filter out relationships that do not map to CMIS domain model e.g.
+        //       relationships whose source or target are not folders or documents
+        Collection<CMISTypeDefinition> subRelDefs = (includeSubTypes ? relDef.getSubTypes(true) : null);
         List<AssociationRef> filteredAssocs = new ArrayList<AssociationRef>(assocs.size());
-        if (null != relDef)
+        for (AssociationRef assoc : assocs)
         {
-            // filter association by type
-            Collection<CMISTypeDefinition> subRelDefs = (includeSubTypes ? relDef.getSubTypes(true) : null);
-            for (AssociationRef assoc : assocs)
+            CMISTypeDefinition assocTypeDef = cmisDictionaryService.findTypeForClass(assoc.getTypeQName(), CMISScope.RELATIONSHIP);
+            if (assocTypeDef != null)
             {
-                CMISTypeDefinition assocTypeDef = cmisDictionaryService.findTypeForClass(assoc.getTypeQName(), CMISScope.RELATIONSHIP);
-                if (assocTypeDef == null)
-                {
-                    throw new CMISInvalidArgumentException("Association Type QName " + assoc.getTypeQName() + " does not map to a CMIS Relationship Type");
-                }
-
                 if (assocTypeDef.equals(relDef) || (subRelDefs != null && subRelDefs.contains(assocTypeDef)))
                 {
                     filteredAssocs.add(assoc);
                 }
             }
-        }
-        else
-        {
-            filteredAssocs = assocs;
         }
 
         AssociationRef[] assocArray = new AssociationRef[filteredAssocs.size()];

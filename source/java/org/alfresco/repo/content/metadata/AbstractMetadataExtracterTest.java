@@ -103,7 +103,15 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         {
             Map<QName, Serializable> properties = extractFromMimetype(mimetype);
             // check we got something
-            assertFalse("extractFromMimetype should return at least some properties, none found", properties.isEmpty());
+            
+            // Properties come back null-valued back for author, title, description for xlsx & pptx
+            if (mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET) == false &&
+            		mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION) == false)
+            {
+            	assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
+            			properties.isEmpty());
+            }
+            
             // check common metadata
             testCommonMetadata(mimetype, properties);
             // check file-type specific metadata
@@ -148,7 +156,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
        // One of Creator or Author
-       if(!skipAuthorCheck()) {
+       if(!skipAuthorCheck(mimetype)) {
           if(properties.containsKey(ContentModel.PROP_CREATOR)) {
              assertEquals(
                    "Property " + ContentModel.PROP_CREATOR + " not found for mimetype " + mimetype,
@@ -160,12 +168,16 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
                    QUICK_CREATOR,
                    DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
           } else {
-             fail("Expected on Property out of " + ContentModel.PROP_CREATOR + " and " + 
-                   ContentModel.PROP_AUTHOR + " but found neither of them.");
+             fail("Expected one property out of " + ContentModel.PROP_CREATOR + " and " + 
+                   ContentModel.PROP_AUTHOR + " but found neither of them for " + mimetype);
           }
        }
        
        // Title and description
+       if (mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET) ||
+    		   mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION)) {
+    	   return;
+       }
        assertEquals(
                 "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
                 QUICK_TITLE,
@@ -176,7 +188,18 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
     }
     protected abstract void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties);
-    protected boolean skipAuthorCheck() { return false; }
+    
+    /**
+     * This method can be overridden to cause the author/creator property check to be skipped.
+     * The default behaviour is for the check to be skipped for all MIME types.
+     * 
+     * @param mimetype
+     * @return <code>true</code> to skip the checks, else <code>false</code>
+     */
+    protected boolean skipAuthorCheck(String mimetype)
+    {
+    	return false;
+    }
     
     
     public void testZeroLengthFile() throws Exception

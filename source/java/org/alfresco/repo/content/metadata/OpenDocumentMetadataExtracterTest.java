@@ -71,7 +71,9 @@ public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracter
             testExtractFromMimetype(mimetype);
         }
     }
-    protected boolean skipAuthorCheck() { return true; }
+    
+    @Override
+    protected boolean skipAuthorCheck(String mimetype) { return true; }
 
    /**
     * We also provide the creation date - check that

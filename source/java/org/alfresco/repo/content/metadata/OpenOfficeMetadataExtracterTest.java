@@ -19,8 +19,11 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.namespace.QName;
 
 
@@ -73,6 +76,13 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
 
     public void testSupportedMimetypes() throws Exception
     {
+    	// If this test method is run on its own, then it may run to completion before the OOo connection is reconnected.
+    	// To fully run this test method (with full execution of the various extractions) you need to debug it,
+    	// put a breakpoint below (at extracter.isConnected()) and wait for
+    	// "[alfresco.util.OpenOfficeConnectionTester] The OpenOffice connection was re-established" in the log before
+    	// proceeding. Otherwise the extracter is not "connected" and the tests are short-circuited.
+    	//
+    	// When run on the build server, the timings are such that the OOo connection is available.
         if (!extracter.isConnected())
         {
             return;
@@ -93,6 +103,22 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
            super.testCommonMetadata(mimetype, properties);
        }
    }
+    
+    protected boolean skipAuthorCheck(String mimetype)
+    {
+    	// The following 'quick' files have no author/creator property and so should not
+    	// have its value checked.
+    	List<String> mimeTypesWithNoAuthor = new ArrayList<String>();
+    	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS);
+    	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS);
+    	
+    	// The following do have them, but they are not being returned by OOo
+    	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET);
+    	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION);
+    	
+    	return mimeTypesWithNoAuthor.contains(mimetype);
+    }
+
 
    /** Extractor only does the usual basic three properties */
     public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {}

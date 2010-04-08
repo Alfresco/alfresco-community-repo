@@ -25,26 +25,25 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.queryParser.QueryParser;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 
 /**
@@ -163,6 +162,13 @@ public class KeywordSearch extends DeclarativeWebScript
         {
             // construct search statement
             String[] terms = searchTerms.split(" "); 
+
+            // Escape special characters in the terms, so that they can't confuse the parser 
+            for (int i=0; i<terms.length; i++) 
+            { 
+                terms[i] = QueryParser.escape(terms[i]); 
+            } 
+
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);
             statementModel.put("args", createArgs(req));
             statementModel.put("terms", terms);

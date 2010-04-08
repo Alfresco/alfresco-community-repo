@@ -9,9 +9,13 @@
     <!--                    -->
 
     <!-- Load runtime-dependent properties (e.g.: alfresco.jmx.dir).     -->
-    <!-- Note:  This bean relies on PropertyPlaceholderConfigurer        -->
-    <bean id="runtimeProperties"  class="org.alfresco.util.RuntimeSystemPropertiesSetter"/>
-
+    <!-- Note:  This bean relies on PropertyPlaceholderConfigurer (should be ordered before "shared-properties") -->
+    <bean id="runtimeProperties"  class="org.alfresco.util.RuntimeSystemPropertiesSetter">
+        <property name="order">
+            <value>5</value>
+        </property>
+    </bean>
+    
     <!-- Ensure backward compatibility with installations that control custom properties through repository-properties -->
     <bean id="legacyConfigPostProcessor" class="org.alfresco.repo.management.subsystems.LegacyConfigPostProcessor"/>
     
@@ -70,8 +74,8 @@
     <!-- Load properties that must be shared between the        -->
     <!-- Alfresco server and its remote clients.                -->
     <!--                                                        -->
-    <!-- Note:  This is done in a seperate bean to make it      -->
-    <!--        for users who have alrady overridden their      -->
+    <!-- Note:  This is done in a separate bean to make it      -->
+    <!--        for users who have already overridden their     -->
     <!--        "repository-properties" in a dev-context.xml    -->
     <!--        or custom-db-and-data-context.xml file.         -->
 
@@ -84,6 +88,9 @@
             <list>
                 <value>classpath:alfresco/alfresco-shared.properties</value>
             </list>
+        </property>
+        <property name="order">
+            <value>10</value>
         </property>
     </bean>
     

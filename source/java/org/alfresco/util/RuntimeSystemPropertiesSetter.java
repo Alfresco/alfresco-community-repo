@@ -29,7 +29,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.Ordered;
+import org.springframework.core.PriorityOrdered;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
@@ -44,7 +44,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * @author Jon Cox
  * @see #setProperties(Map)
 */
-public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, ApplicationContextAware, Ordered
+public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, ApplicationContextAware, PriorityOrdered
 {
     private static Log logger = LogFactory.getLog(RuntimeSystemPropertiesSetter.class );
 

@@ -14,7 +14,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.filesys.repo.desk;
 
 import java.io.Serializable;
@@ -25,13 +26,15 @@ import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.filesys.alfresco.DesktopTarget;
+import org.alfresco.filesys.state.FileState;
+import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.FileName;
+import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NotifyChange;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Check In/Out Desktop Action Class
@@ -102,7 +105,7 @@ public class CheckInOutDesktopAction extends DesktopAction {
             {
                 try
                 {
-                    // Check in the file, pass an empty version properties so that veriosnable nodes create a new version
+                    // Check in the file, pass an empty version properties so that versionable nodes create a new version
                     
                 	Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
                     getCheckInOutService().checkin( target.getNode(), versionProperties, null, false);
@@ -174,13 +177,25 @@ public class CheckInOutDesktopAction extends DesktopAction {
 
                     response.setStatus(StsSuccess, "Checked out working copy " + workingCopyName);
                     
+                    // Build the relative path to the checked out file
+
+                    String fileName = FileName.buildPath( params.getFolder().getFullName(), null, workingCopyName, FileName.DOS_SEPERATOR);
+                    
+                    // Update cached state for the working copy to indicate the file exists
+                    
+                    FileStateTable stateTable = getContext().getStateTable();
+                    if ( stateTable != null) {
+                    	
+                    	// Update any cached state for the working copy file
+                    	
+                    	FileState fstate = stateTable.findFileState( fileName);
+                    	if ( fstate != null)
+                    		fstate.setFileStatus( FileStatus.FileExists);
+                    }
+                    
                     // Check if there are any file/directory change notify requests active
 
                     if ( getContext().hasChangeHandler()) {
-                        
-                        // Build the relative path to the checked in file
-
-                        String fileName = FileName.buildPath( params.getFolder().getFullName(), null, workingCopyName, FileName.DOS_SEPERATOR);
                         
                         // Queue a file added change notification
                         

@@ -104,13 +104,8 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
             Map<QName, Serializable> properties = extractFromMimetype(mimetype);
             // check we got something
             
-            // Properties come back null-valued back for author, title, description for xlsx & pptx
-            if (mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET) == false &&
-            		mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION) == false)
-            {
-            	assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
-            			properties.isEmpty());
-            }
+        	assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
+        			properties.isEmpty());
             
             // check common metadata
             testCommonMetadata(mimetype, properties);
@@ -174,29 +169,39 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
        }
        
        // Title and description
-       if (mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET) ||
-    		   mimetype.equals(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION)) {
-    	   return;
-       }
        assertEquals(
                 "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
                 QUICK_TITLE,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
-       assertEquals(
-                "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
-                QUICK_DESCRIPTION,
-                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
+       if (!skipDescriptionCheck(mimetype)) {
+    	   assertEquals(
+    			   "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
+    			   QUICK_DESCRIPTION,
+    			   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
+       }
     }
     protected abstract void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties);
     
     /**
      * This method can be overridden to cause the author/creator property check to be skipped.
-     * The default behaviour is for the check to be skipped for all MIME types.
+     * The default behaviour is for the check not to be skipped for all MIME types.
      * 
      * @param mimetype
      * @return <code>true</code> to skip the checks, else <code>false</code>
      */
     protected boolean skipAuthorCheck(String mimetype)
+    {
+    	return false;
+    }
+    
+    /**
+     * This method can be overridden to cause the description property check to be skipped.
+     * The default behaviour is for the check not to be skipped for all MIME types.
+     * 
+     * @param mimetype
+     * @return <code>true</code> to skip the checks, else <code>false</code>
+     */
+    protected boolean skipDescriptionCheck(String mimetype)
     {
     	return false;
     }

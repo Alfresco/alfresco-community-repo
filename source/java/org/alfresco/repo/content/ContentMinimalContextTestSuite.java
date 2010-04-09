@@ -25,6 +25,7 @@ import org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.PoiMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
@@ -86,6 +87,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite( OpenDocumentMetadataExtracterTest.class );
        suite.addTestSuite( OpenOfficeMetadataExtracterTest.class );
        suite.addTestSuite( PdfBoxMetadataExtracterTest.class );
+       suite.addTestSuite( PoiMetadataExtracterTest.class );
        suite.addTestSuite( RFC822MetadataExtracterTest.class );
        
        // Transform tests

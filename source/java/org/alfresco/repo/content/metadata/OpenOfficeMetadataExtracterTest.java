@@ -112,10 +112,6 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
     	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS);
     	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS);
     	
-    	// The following do have them, but they are not being returned by OOo
-    	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET);
-    	mimeTypesWithNoAuthor.add(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION);
-    	
     	return mimeTypesWithNoAuthor.contains(mimetype);
     }
 

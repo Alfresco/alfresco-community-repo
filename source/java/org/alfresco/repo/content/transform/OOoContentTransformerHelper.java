@@ -49,19 +49,6 @@ public class OOoContentTransformerHelper extends ContentTransformerHelper
         {
             return true;
         }
-        // OpenOffice 3.2.x doesn't seem to support all Office 97 to Office 07 conversions
-        else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_WORD) && targetMimetype.equals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING))
-        {
-            return true;
-        }
-        else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_EXCEL) && targetMimetype.equals(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET))
-        {
-            return true;
-        }
-        else if (sourceMimetype.equals(MimetypeMap.MIMETYPE_HTML) && targetMimetype.equals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING))
-        {
-            return true;
-        }
         else
         {
             return false;

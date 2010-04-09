@@ -20,9 +20,12 @@ package org.alfresco.filesys.repo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
@@ -69,6 +72,8 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -84,6 +89,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.config.ConfigElement;
@@ -118,6 +124,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private PermissionService permissionService;
     private FileFolderService fileFolderService;
     private NodeArchiveService nodeArchiveService;
+    private LockService lockService;
     
     private AuthenticationContext authContext;
     private AuthenticationService authService;
@@ -237,6 +244,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
     
     /**
+     * Return the lock service
+     * 
+     * @return LockService
+     */
+    public final LockService getLockService() {
+        return lockService;
+    }
+    
+    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -343,6 +359,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public void setNodeArchiveService(NodeArchiveService nodeArchiveService) {
     	this.nodeArchiveService = nodeArchiveService;
+    }
+    
+    /**
+     * Set the lock service
+     * 
+     * @param lockService LockService
+     */
+    public void setLockService(LockService lockService) {
+        this.lockService = lockService;
     }
     
     /**
@@ -2327,7 +2352,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // DEBUG
         
-        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+        if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME)))
             logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
     }
 
@@ -2406,7 +2431,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Debug
             
-            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+            if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME)))
                 logger.debug("Deleted file: " + name + ", node=" + nodeRef);
         }
         catch (NodeLockedException ex)
@@ -2457,7 +2482,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         // Create the transaction
 
-    	beginWriteTransaction( sess);
+        beginWriteTransaction( sess);
         
         // Get the device context
         
@@ -2466,7 +2491,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // DEBUG
         
         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-        	logger.debug("Rename oldName=" + oldName + ", newName=" + newName);
+            logger.debug("Rename oldName=" + oldName + ", newName=" + newName);
         
         try
         {
@@ -2477,7 +2502,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Check if the node is a link node
 
             if ( nodeToMoveRef != null && nodeService.getProperty(nodeToMoveRef, ContentModel.PROP_LINK_DESTINATION) != null)
-            	throw new AccessDeniedException("Cannot rename link nodes");
+                throw new AccessDeniedException("Cannot rename link nodes");
             
             // Get the new target folder - it must be a folder
             
@@ -2491,7 +2516,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             boolean sameFolder = false;
             if ( splitPaths[0].equalsIgnoreCase( oldPaths[0]))
-            	sameFolder = true;
+                sameFolder = true;
             
             // Get the file state for the old file, if available
             
@@ -2502,9 +2527,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             boolean isFolder = cifsHelper.isDirectory( nodeToMoveRef);
             
             if ( isFolder == true || sameFolder == false) {
-            	
-            	// Update the old file state
-            	
+                
+                // Update the old file state
+                
                 if ( oldState != null)
                 {
                     // Update the file state index to use the new name
@@ -2515,51 +2540,51 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 // Rename or move the file/folder
                 
                 if ( sameFolder == true)
-            		cifsHelper.rename(nodeToMoveRef, name);
+                    cifsHelper.rename(nodeToMoveRef, name);
                 else
-                	cifsHelper.move(nodeToMoveRef, targetFolderRef, name);
+                    cifsHelper.move(nodeToMoveRef, targetFolderRef, name);
                 
                 // DEBUG
                 
                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                	logger.debug("  Renamed " + (isFolder ? "folder" : "file") + " using " + (sameFolder ? "rename" : "move"));
+                    logger.debug("  Renamed " + (isFolder ? "folder" : "file") + " using " + (sameFolder ? "rename" : "move"));
             }
             else {
-            	
-            	// Rename a file within the same folder
-            	//
-            	// Check if the target file already exists
-            	
-            	int newExists = fileExists( sess, tree, newName);
-            	FileState newState = ctx.getStateTable().findFileState( newName, false, true);
-            	
-            	NodeRef targetNodeRef = null;
-            	
-            	boolean isFromVersionable = nodeService.hasAspect( nodeToMoveRef, ContentModel.ASPECT_VERSIONABLE);
-            	
-            	if ( newExists == FileStatus.FileExists) {
-            		
-            		// Use the existing file as the target node
-            		
-            		targetNodeRef = getNodeForPath( tree, newName);
-            	}
-            	else {
-            		
-            		// Check if the target has a renamed or delete-on-close state
-            		
-            		if ( newState.getFileStatus() == FileStateStatus.Renamed) {
-            			
+                
+                // Rename a file within the same folder
+                //
+                // Check if the target file already exists
+                
+                int newExists = fileExists( sess, tree, newName);
+                FileState newState = ctx.getStateTable().findFileState( newName, false, true);
+                
+                NodeRef targetNodeRef = null;
+                
+                boolean isFromVersionable = nodeService.hasAspect( nodeToMoveRef, ContentModel.ASPECT_VERSIONABLE);
+                
+                if ( newExists == FileStatus.FileExists) {
+                    
+                    // Use the existing file as the target node
+                    
+                    targetNodeRef = getNodeForPath( tree, newName);
+                }
+                else {
+                    
+                    // Check if the target has a renamed or delete-on-close state
+                    
+                    if ( newState.getFileStatus() == FileStateStatus.Renamed) {
+                        
                         // DEBUG
                         
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                             logger.debug("  Using renamed node, " + newState);
                         
-                        // Use the renamed node as the target
+                        // Use the renamed node to clone aspects/state
                         
-                        targetNodeRef = newState.getNodeRef();
-            		}
-            		else if ( newState.getFileStatus() == FileStateStatus.DeleteOnClose) {
-            			
+                        cloneNodeAspects( name, newState.getNodeRef(), nodeToMoveRef, ctx);
+                    }
+                    else if ( newState.getFileStatus() == FileStateStatus.DeleteOnClose) {
+                        
                         // DEBUG
                         
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
@@ -2572,114 +2597,145 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         // DEBUG
                         
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                        	logger.debug("  Found archived node + " + archivedNode);
+                            logger.debug("  Found archived node " + archivedNode);
                         
                         if ( archivedNode != null && getNodeService().exists( archivedNode))
                         {
-                        	// Restore the node
-                        	
-                        	targetNodeRef = getNodeService().restoreNode( archivedNode, null, null, null);
-                        
-                        	// DEBUG
-                        	
-                        	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                        		logger.debug("  Restored node " + targetNodeRef);
-                        }
-            		}
-            		
-            		// Check if the node being renamed is versionable
-            		
-            		else if ( isFromVersionable == true) {
-            			
-            			// Create a new node for the target
-            			
-                        targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, true);
-        				
-                    	// DEBUG
-                    	
-                    	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                    		logger.debug("  Created new node for " + newName);
-                    	
-                    	// Check if the new file name is a temporary file name
-                    	
-                    	String newNameNorm = newName.toLowerCase();
-                    	
-                        if ( newNameNorm.endsWith(".tmp") || newNameNorm.endsWith(".temp")) {
-                        	
-                        	// Add the temporary aspect, also prevents versioning
-                        
-                            nodeService.addAspect(targetNodeRef, ContentModel.ASPECT_TEMPORARY, null);
-
+                            // Restore the node
+                            
+                            targetNodeRef = getNodeService().restoreNode( archivedNode, null, null, null);
+                            
                             // DEBUG
-                    		
-                    		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                    			logger.debug("  Added Temporary aspect to renamed file " + newName);
+                            
+                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                logger.debug("  Restored node " + targetNodeRef);
+                            
+                            // Check if the deleted file had a linked node, due to a rename
+                            
+                            if ( newState.hasLinkNode() && nodeService.exists( newState.getLinkNode())) {
+                                
+                                // Clone aspects from the linked node onto the restored node
+                                
+                                cloneNodeAspects( name, newState.getLinkNode(), targetNodeRef, ctx);
+
+                                // DEBUG
+                                
+                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME)) {
+                                    logger.debug("  Moved aspects from linked node " + newState.getLinkNode());
+
+                                    // Check if the node is a working copy
+                                    
+                                    if ( nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_WORKING_COPY)) {
+                                        
+                                        // Check if the main document is still locked
+                                        
+                                        NodeRef mainNodeRef = (NodeRef) nodeService.getProperty( targetNodeRef, ContentModel.PROP_COPY_REFERENCE);
+                                        if ( mainNodeRef != null) {
+                                            LockType lockTyp = lockService.getLockType( mainNodeRef);
+                                            logger.debug("  Main node ref lock type = " + lockTyp);
+                                        }
+                                    }
+                                }
+                            }
                         }
-            		}
-            	}
+                    }
+                    
+                    // Check if the node being renamed is versionable
+                    
+                    else if ( isFromVersionable == true) {
+                        
+                        // Create a new node for the target
+                        
+                        targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, true);
+                        
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                            logger.debug("  Created new node for " + newName);
 
-            	// If the original or target nodes are not versionable then just use a standard rename of the node
-            	
-            	if ( isFromVersionable == false &&
-            			( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)) {
+                        // Copy aspects from the original file
+                        
+                        cloneNodeAspects( name, nodeToMoveRef, targetNodeRef, ctx);
+                    }
+                }
 
-            		// Rename the file/folder
-            		
-            		cifsHelper.rename(nodeToMoveRef, name);
-            		
-            		// Remove the file state for the old file name
-            		
-            		ctx.getStateTable().renameFileState(newName, oldState);
-            		
-            		// DEBUG
-            		
-                	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                		logger.debug("  User standard rename for " + name + "(versionable=" + isFromVersionable + ", targetNodeRef=" + targetNodeRef + ")");
-            	}
-            	else {
-            		
-	            	// Make sure we have a valid target node
-	            	
-	            	if ( targetNodeRef == null) {
-	            		
-	            		// DEBUG
-	            		
-	                	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-	                		logger.debug("  No target node for rename");
-	            		
-	                	// Throw an error
-	                	
-	                	throw new AccessDeniedException( "No target node for file rename");
-	            	}
-	            	
-	            	// Copy content data from the old file to the new file
-	            	
-	            	copyContentData( sess, tree, nodeToMoveRef, targetNodeRef);
-					
-					// Mark the new file as existing
-					
-					newState.setFileStatus( FileStatus.FileExists);
-					newState.setNodeRef( targetNodeRef);
-					
-					// Delete the old file
-					
-					nodeService.deleteNode( nodeToMoveRef);
-					
-	                // Make sure the old file state is cached for a short while, the file may not be open so the
-	                // file state could be expired
-	                
-	                oldState.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
-	                
-	                // Indicate that this is a deleted file state, set the node ref of the file that was renamed
-	                
-	                oldState.setFileStatus(FileStateStatus.DeleteOnClose);
-	                oldState.setNodeRef(nodeToMoveRef);
-	                
-					// DEBUG
-					
-					if ( logger.isDebugEnabled() && ctx.hasDebug( AlfrescoContext.DBG_RENAME))
-						logger.debug("  Cached delete state for " + oldName);
-	            }
+                // If the original or target nodes are not versionable then just use a standard rename of the node
+                
+                if ( isFromVersionable == false &&
+                        ( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)) {
+
+                    // Rename the file/folder
+                    
+                    cifsHelper.rename(nodeToMoveRef, name);
+                    
+                    // Mark the new file as existing
+                    
+                    newState.setFileStatus( FileStatus.FileExists);
+                    newState.setNodeRef( nodeToMoveRef);
+
+                    // Make sure the old file state is cached for a short while, the file may not be open so the
+                    // file state could be expired
+                    
+                    oldState.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
+                    
+                    // Indicate that this is a renamed file state, set the node ref of the file that was renamed
+                    
+                    oldState.setFileStatus(FileStateStatus.Renamed);
+                    oldState.setNodeRef(nodeToMoveRef);
+
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                        logger.debug("  Use standard rename for " + name + "(versionable=" + isFromVersionable + ", targetNodeRef=" + targetNodeRef + ")");
+                }
+                else {
+                    
+                    // Make sure we have a valid target node
+                    
+                    if ( targetNodeRef == null) {
+                        
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                            logger.debug("  No target node for rename");
+                        
+                        // Throw an error
+                        
+                        throw new AccessDeniedException( "No target node for file rename");
+                    }
+                    
+                    // Copy content data from the old file to the new file
+                    
+                    copyContentData( sess, tree, nodeToMoveRef, targetNodeRef);
+                    
+                    // Mark the new file as existing
+                    
+                    newState.setFileStatus( FileStatus.FileExists);
+                    newState.setNodeRef( targetNodeRef);
+                    
+                    // Delete the old file
+                    
+                    nodeService.deleteNode( nodeToMoveRef);
+                    
+                    // Make sure the old file state is cached for a short while, the file may not be open so the
+                    // file state could be expired
+                    
+                    oldState.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
+                    
+                    // Indicate that this is a deleted file state, set the node ref of the file that was renamed
+                    
+                    oldState.setFileStatus(FileStateStatus.DeleteOnClose);
+                    oldState.setNodeRef(nodeToMoveRef);
+                    
+                    // Link to the new node, a new file may be renamed into place, we need to transfer aspect/locks
+                    
+                    oldState.setLinkNode( targetNodeRef);
+                    
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled() && ctx.hasDebug( AlfrescoContext.DBG_RENAME))
+                        logger.debug("  Cached delete state for " + oldName);
+                }   
             }
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
@@ -3228,4 +3284,111 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 			throw new IOException("Failed to copy content");
 		}
 	}
+	
+    
+    /**
+     * Clone/move aspects/properties between nodes
+     * 
+     * @param newName String
+     * @param fromNode NodeRef
+     * @param toNode NodeRef
+     * @param ctx ContentContext
+     */
+    private void cloneNodeAspects( String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx)
+    {
+        // We need to remove various aspects/properties from the original file, and move them to the new file
+        //
+        // Check for the lockable aspect
+        
+        if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_LOCKABLE)) {
+            
+            // Remove the lockable aspect from the old working copy, add it to the new file
+            
+            nodeService.removeAspect( fromNode, ContentModel.ASPECT_LOCKABLE);
+            nodeService.addAspect( toNode, ContentModel.ASPECT_LOCKABLE, null);
+
+            // DEBUG
+            
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                logger.debug("  Moved aspect " + ContentModel.ASPECT_LOCKABLE + " to new document");
+        }
+        
+        // Check for the working copy aspect
+        
+        if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_WORKING_COPY)) {
+            
+            // Add the working copy aspect to the new file
+            
+            Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
+            workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, nodeService.getProperty( fromNode, ContentModel.PROP_WORKING_COPY_OWNER));
+            
+            nodeService.addAspect( toNode, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
+            
+            // Remove the working copy aspect from old working copy file 
+            
+            nodeService.removeAspect( fromNode, ContentModel.ASPECT_WORKING_COPY);
+
+            // DEBUG
+            
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                logger.debug("  Moved aspect " + ContentModel.ASPECT_WORKING_COPY + " to new document");
+        }
+        
+        // Check for the copied from aspect
+        
+        if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_COPIEDFROM)) {
+            
+            // Add the copied from aspect to the new file
+            
+            NodeRef copiedFromNode = (NodeRef) nodeService.getProperty( fromNode, ContentModel.PROP_COPY_REFERENCE);
+            Map<QName, Serializable> copiedFromProperties = new HashMap<QName, Serializable>(1);
+            copiedFromProperties.put(ContentModel.PROP_COPY_REFERENCE, copiedFromNode);
+            
+            nodeService.addAspect( toNode, ContentModel.ASPECT_COPIEDFROM, copiedFromProperties);
+            
+            // Remove the copied from aspect from old working copy file 
+            
+            nodeService.removeAspect( fromNode, ContentModel.ASPECT_COPIEDFROM);
+
+            // DEBUG
+            
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                logger.debug("  Moved aspect " + ContentModel.ASPECT_COPIEDFROM + " to new document");
+            
+            // Check if the original node is locked
+            
+            if ( lockService.getLockType( copiedFromNode) == null) {
+                
+                // Add the lock back onto the original file
+                
+                lockService.lock( copiedFromNode, LockType.READ_ONLY_LOCK);
+
+                // DEBUG
+                
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                    logger.debug("  Re-locked copied from node " + copiedFromNode);
+            }
+        }
+        
+        // Check if the new file name is a temporary file, remove any versionable aspect from it
+        
+        String newNameNorm = newName.toLowerCase();
+        
+        if ( newNameNorm.endsWith( ".tmp") || newNameNorm.endsWith( ".temp")) {
+            
+            // Remove the versionable aspect
+            
+            if ( nodeService.hasAspect( toNode, ContentModel.ASPECT_VERSIONABLE))
+                nodeService.removeAspect( toNode, ContentModel.ASPECT_VERSIONABLE);
+
+            // Add the temporary aspect, also prevents versioning
+            
+            nodeService.addAspect( toNode, ContentModel.ASPECT_TEMPORARY, null);
+
+            // DEBUG
+            
+            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                logger.debug("  Removed versionable aspect from temp file");
+        }
+    }       
 }

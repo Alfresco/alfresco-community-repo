@@ -103,6 +103,10 @@ public class FileState
     private long m_modifyDate;
     private long m_changeDate;
     
+    // Keep track of the node we are linked to, when deleted
+    
+    private NodeRef m_linkNode;
+    
     /**
      * Class constructor
      * 
@@ -637,6 +641,33 @@ public class FileState
      */
     public final void updateModifyDateTime( long modTime) {
     	m_modifyDate = modTime;
+    }
+    
+    /**
+     * Check if the file is linked to another node
+     * 
+     * @return boolean
+     */
+    public final boolean hasLinkNode() {
+        return m_linkNode != null ? true : false;
+    }
+    
+    /**
+     * Return the node that the file is linked to
+     * 
+     * @return NodeRef
+     */
+    public final NodeRef getLinkNode() {
+        return m_linkNode;
+    }
+    
+    /**
+     * Set the node that this file is linked to
+     * 
+     * @param node NodeRef
+     */
+    public final void setLinkNode( NodeRef node) {
+        m_linkNode = node;
     }
     
     /**

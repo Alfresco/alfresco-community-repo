@@ -1055,7 +1055,7 @@ public class DeploymentServiceImpl implements DeploymentService
     	/**
     	 * Lock cluster for the remote target
     	 */
-		String lockStr = hostName + "." + target;
+		String lockStr = hostName + "." + port + "." + target;
 		QName lockQName = QName.createQName("{org.alfresco.deployment.lock}" + lockStr);
 		final Lock lock = new Lock(lockQName);
 		lock.makeLock();

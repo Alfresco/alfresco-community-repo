@@ -650,6 +650,9 @@
       <property name="deploymentService">
             <ref bean="DeploymentService"/>
       </property>
+      <property name="transactionService">
+            <ref bean="TransactionService"/>
+      </property>
       <property name="contentService">
           <ref bean="ContentService"/>
       </property>

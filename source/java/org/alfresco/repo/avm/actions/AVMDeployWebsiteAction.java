@@ -34,6 +34,8 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
@@ -48,6 +50,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.RegexNameMatcher;
 import org.apache.commons.logging.Log;
@@ -85,6 +88,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    private DeploymentService deployService;
    private ContentService contentService;
    private NodeService nodeService;
+   private TransactionService transactionService;
 
    private static Log logger = LogFactory.getLog(AVMDeployWebsiteAction.class);
    private static Log delayDeploymentLogger = LogFactory.getLog("alfresco.deployment.delay");
@@ -467,14 +471,19 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
     *              deployment was successful
     * @return The created deployment report NodeRef
     */
-   private NodeRef createDeploymentReportNode(DeploymentReport report, NodeRef attempt,
-            Map<QName, Serializable> serverProps, int version, NodeRef websiteRef,
-            Date startDate, Throwable error)
+   private NodeRef createDeploymentReportNode(final DeploymentReport report, 
+            final NodeRef attempt, 
+            final Map<QName, Serializable> serverProps, 
+            final int version, 
+            final NodeRef websiteRef,
+            final Date startDate, 
+            final Throwable error)
    {
+      logger.debug("createDeploymentReportNode called ");
       NodeRef reportRef = null;
 
-      String serverUri = calculateServerUri(serverProps);
-      Map<QName, Serializable> reportProps = new HashMap<QName, Serializable>(4, 1.0f);
+      final String serverUri = calculateServerUri(serverProps);
+      final Map<QName, Serializable> reportProps = new HashMap<QName, Serializable>(4, 1.0f);
       reportProps.put(WCMAppModel.PROP_DEPLOYSERVER, serverUri);
       reportProps.put(WCMAppModel.PROP_DEPLOYVERSION, version);
       reportProps.put(WCMAppModel.PROP_DEPLOYSTARTTIME, startDate);
@@ -507,47 +516,73 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          reportProps.put(WCMAppModel.PROP_DEPLOYFAILEDREASON, errorMsg);
       }
       
-      reportRef = this.nodeService.createNode(attempt,
-               WCMAppModel.ASSOC_DEPLOYMENTREPORTS, WCMAppModel.ASSOC_DEPLOYMENTREPORTS,
-               WCMAppModel.TYPE_DEPLOYMENTREPORT, reportProps).getChildRef();
-      ContentWriter writer = contentService.getWriter(reportRef, ContentModel.PROP_CONTENT, true);
-      writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-      writer.setEncoding("UTF-8");
-
-      if (report == null)
+      RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+      
+      RetryingTransactionCallback<NodeRef> cb = new RetryingTransactionCallback<NodeRef>() 
       {
-         if (error == null)
-         {
-            writer.putContent("");
-         }
-         else
-         {
-            // add the full stack trace of the error as the content
-            StringWriter stack = new StringWriter();
-            PrintWriter stackPrint = new PrintWriter(stack);
-            error.printStackTrace(stackPrint);
-            writer.putContent(stack.toString());
-         }
-      }
-      else
-      {
-         // TODO: revisit this, is it better to stream to a temp file?
-         StringBuilder builder = new StringBuilder();
-         for (DeploymentEvent event : report)
-         {
-            builder.append(event.getType());
-            builder.append(" ");
-            builder.append(event.getDestination());
-            builder.append("\r\n");
-         }
+          public NodeRef execute() throws Throwable
+          {
+              /**
+               * Write out the deployment report
+               */
+              NodeRef reportRef = nodeService.createNode(attempt,
+                          WCMAppModel.ASSOC_DEPLOYMENTREPORTS, WCMAppModel.ASSOC_DEPLOYMENTREPORTS,
+                          WCMAppModel.TYPE_DEPLOYMENTREPORT, reportProps).getChildRef();
+                 ContentWriter writer = contentService.getWriter(reportRef, ContentModel.PROP_CONTENT, true);
+                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                 writer.setEncoding("UTF-8");
 
-         writer.putContent(builder.toString());
-      }
+                 if (report == null)
+                 {
+                    if (error == null)
+                    {
+                       writer.putContent("");
+                    }
+                    else
+                    {
+                       // add the full stack trace of the error as the content
+                       StringWriter stack = new StringWriter();
+                       PrintWriter stackPrint = new PrintWriter(stack);
+                       error.printStackTrace(stackPrint);
+                       writer.putContent(stack.toString());
+                    }
+                 }
+                 else
+                 {
+                    // TODO: revisit this, is it better to stream to a temp file?
+                    StringBuilder builder = new StringBuilder();
+                    for (DeploymentEvent event : report)
+                    {
+                       builder.append(event.getType());
+                       builder.append(" ");
+                       builder.append(event.getDestination());
+                       builder.append("\r\n");
+                    }
+
+                    writer.putContent(builder.toString());
+                 }
+
+              return reportRef;
+          }
+      };
+      
+      // Run the creation of the deployment report in its own write transaction
+      reportRef = tran.doInTransaction(cb, false, true);
 
       if (logger.isDebugEnabled())
          logger.debug("Created deplyoment report node (" + reportRef + ") for server " +
                   serverUri);
 
       return reportRef;
+   }
+
+   public void setTransactionService(TransactionService transactionService)
+   {
+       this.transactionService = transactionService;
+   }
+
+   public TransactionService getTransactionService()
+   {
+       return transactionService;
    }
 }

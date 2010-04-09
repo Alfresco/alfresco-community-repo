@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.XPathException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -807,7 +808,16 @@ public class ImporterComponent
             else
             {
                 Map<QName, Serializable> typeProperties = context.getProperties();
-                String name = (String)typeProperties.get(ContentModel.PROP_NAME);
+                
+                Serializable nameValue = typeProperties.get(ContentModel.PROP_NAME);
+
+                if(nameValue != null && !String.class.isAssignableFrom(nameValue.getClass()))
+                {
+                    throw new  ImporterException("Unable to use childName property: "+ ContentModel.PROP_NAME + " is not a string");  
+                }
+                
+                String name = (String)nameValue;
+                
                 if (name != null && name.length() > 0)
                 {
                     name = bindPlaceHolder(name, binding);

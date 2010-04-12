@@ -2292,9 +2292,75 @@ public class QueryTest extends BaseCMISTest
         // DOC
 
         testQuery("SELECT cmis:baseTypeId FROM cmis:document", file_count, false, "cmis:baseTypeId", new String(), false);
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:document'", file_count, false, "cmis:baseTypeId", new String(), true);
+        
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:document'", file_count, false, "cmis:baseTypeId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <> 'cmis:document'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId <= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId >  'cmis:document'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId >= 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
+
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IN     ('cmis:document')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), false);
+
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId     LIKE 'cmis:document'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId NOT LIKE 'cmis:document'", 0, false, "cmis:objectId", new String(), true);
+
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' =  ANY cmis:baseTypeId", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' <> ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' <  ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' <= ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' >  ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE 'cmis:document' >= ANY cmis:baseTypeId", 0, false, "cmis:objectId", new String(), true);
+
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId IN     ('cmis:document')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE ANY cmis:baseTypeId NOT IN ('cmis:document')", 0, false, "cmis:objectId", new String(), true);
+        
+        
+        
+        
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder", folder_count, false, "cmis:baseTypeId", new String(), false);
-        testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:folder'", folder_count, false, "cmis:baseTypeId", new String(), true);
+        
+        testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:folder'", folder_count, false, "cmis:baseTypeId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId <> 'cmis:folder'", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId <  'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId <= 'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId >  'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId >= 'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
+
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IN     ('cmis:folder')", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId NOT IN ('cmis:folder')", 0, false, "cmis:objectId", new String(), false);
+
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId     LIKE 'cmis:folder'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId NOT LIKE 'cmis:folder'", 0, false, "cmis:objectId", new String(), true);
+
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE cmis:objectTypeId IS     NULL", 0, false, "cmis:objectId", new String(), false);
+
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' =  ANY cmis:objectTypeId", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' <> ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' <  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' <= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' >  ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE 'cmis:folder' >= ANY cmis:objectTypeId", 0, false, "cmis:objectId", new String(), true);
+
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE ANY cmis:objectTypeId IN     ('cmis:folder')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:objectTypeId FROM cmis:folder WHERE ANY cmis:objectTypeId NOT IN ('cmis:folder')", 0, false, "cmis:objectId", new String(), true);
+
+        // RELATIONSHIP
+
+        testQuery("SELECT cmis:baseTypeId FROM cmis:relationship WHERE cmis:baseTypeId =  'cmis:relationship'", 1, false, "cmis:objectId", new String(), true);
+        
+        testQuery("SELECT cmis:baseTypeId FROM cmis:policy WHERE cmis:baseTypeId =  'cmis:relationship'", 1, false, "cmis:objectId", new String(), true);
+        
+        testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:policy'", 0, false, "cmis:baseTypeId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:relationship'", 0, false, "cmis:baseTypeId", new String(), true);
+        
+        testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:document'", 0, false, "cmis:baseTypeId", new String(), false);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:folder'", 0, false, "cmis:baseTypeId", new String(), false);
 
     }
 

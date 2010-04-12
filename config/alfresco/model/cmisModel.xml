@@ -78,7 +78,9 @@
           <protected>true</protected>
           <mandatory enforced="true">true</mandatory>
           <multiple>false</multiple>
-          <index enabled="false" />
+          <index enabled="true">
+            <tokenised>true</tokenised>
+          </index>
         </property>
         <property name="cmis:createdBy">
           <title>Created by</title>

@@ -48,13 +48,26 @@ import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService;
 import org.alfresco.cmis.mapping.BaseCMISTest;
+import org.alfresco.cmis.mapping.BaseTypeIdProperty;
+import org.alfresco.cmis.mapping.CheckinCommentProperty;
+import org.alfresco.cmis.mapping.ContentStreamIdProperty;
 import org.alfresco.cmis.mapping.ContentStreamLengthProperty;
 import org.alfresco.cmis.mapping.ContentStreamMimetypeProperty;
 import org.alfresco.cmis.mapping.DirectProperty;
+import org.alfresco.cmis.mapping.FixedValueProperty;
+import org.alfresco.cmis.mapping.IsImmutableProperty;
+import org.alfresco.cmis.mapping.IsLatestMajorVersionProperty;
+import org.alfresco.cmis.mapping.IsLatestVersionProperty;
+import org.alfresco.cmis.mapping.IsMajorVersionProperty;
+import org.alfresco.cmis.mapping.IsVersionSeriesCheckedOutProperty;
 import org.alfresco.cmis.mapping.ObjectIdProperty;
 import org.alfresco.cmis.mapping.ObjectTypeIdProperty;
 import org.alfresco.cmis.mapping.ParentProperty;
+import org.alfresco.cmis.mapping.PathProperty;
 import org.alfresco.cmis.mapping.VersionLabelProperty;
+import org.alfresco.cmis.mapping.VersionSeriesCheckedOutByProperty;
+import org.alfresco.cmis.mapping.VersionSeriesCheckedOutIdProperty;
+import org.alfresco.cmis.mapping.VersionSeriesIdProperty;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
@@ -337,7 +350,7 @@ public class QueryTest extends BaseCMISTest
         properties5.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties5.put(ContentModel.PROP_DESCRIPTION, desc5);
         properties5.put(ContentModel.PROP_TITLE, desc5);
-        properties5.put(ContentModel.PROP_NAME, "EE");
+        properties5.put(ContentModel.PROP_NAME, "EE.aa");
         properties5.put(ContentModel.PROP_CREATED, new Date());
 
         c5 = nodeService.createNode(f5, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Five", namespaceService), ContentModel.TYPE_CONTENT, properties5).getChildRef();
@@ -350,7 +363,7 @@ public class QueryTest extends BaseCMISTest
         Map<QName, Serializable> lockProperties = new HashMap<QName, Serializable>();
         lockProperties.put(ContentModel.PROP_EXPIRY_DATE, DefaultTypeConverter.INSTANCE.convert(Date.class, "2012-12-12T12:12:12.012Z"));
         lockProperties.put(ContentModel.PROP_LOCK_OWNER, "andy");
-        lockProperties.put(ContentModel.PROP_LOCK_TYPE, "test");
+        lockProperties.put(ContentModel.PROP_LOCK_TYPE, "WRITE_LOCK");
 
         nodeService.addAspect(c5, ContentModel.ASPECT_LOCKABLE, lockProperties);
 
@@ -361,7 +374,7 @@ public class QueryTest extends BaseCMISTest
         properties6.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties6.put(ContentModel.PROP_DESCRIPTION, desc6);
         properties6.put(ContentModel.PROP_TITLE, desc6);
-        properties6.put(ContentModel.PROP_NAME, "FF");
+        properties6.put(ContentModel.PROP_NAME, "FF.EE");
         properties6.put(ContentModel.PROP_CREATED, new Date());
         c6 = nodeService.createNode(f6, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", "Six", namespaceService), ContentModel.TYPE_CONTENT, properties6).getChildRef();
         ContentWriter writer6 = contentService.getWriter(c6, ContentModel.PROP_CONTENT, true);
@@ -539,15 +552,13 @@ public class QueryTest extends BaseCMISTest
         assertEquals(folder_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // not queryable
             Serializable sValue = row.getValue("cmis:allowedChildObjectTypeIds");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:allowedChildObjectTypeIds");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.MULTI_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.MULTI_VALUED, column.getCMISPropertyDefinition().getCardinality());
         }
         rs.close();
 
@@ -610,7 +621,6 @@ public class QueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:parentId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:parentId");
             assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
             assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
@@ -674,16 +684,16 @@ public class QueryTest extends BaseCMISTest
         {
             Serializable sValue = row.getValue("cmis:path");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
+            assertNotNull(value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:path");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof PathProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof PathProperty);
         }
         rs.close();
 
-        testQuery("SELECT cmis:path FROM cmis:folder", folder_count, false, "cmis:path", new String(), true);
+        testQuery("SELECT cmis:path FROM cmis:folder", folder_count, false, "cmis:path", new String(), false);
         testQuery("SELECT cmis:path FROM cmis:folder WHERE cmis:path =  'anything'", folder_count, false, "cmis:path", new String(), true);
 
     }
@@ -699,13 +709,14 @@ public class QueryTest extends BaseCMISTest
         {
             Serializable sValue = row.getValue("cmis:contentStreamId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
+            assertNotNull(value);
+            ContentData cd = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_CONTENT));
+            assertEquals(cd.getContentUrl(), value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:contentStreamId");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof ContentStreamIdProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof ContentStreamIdProperty);
         }
         rs.close();
 
@@ -718,17 +729,17 @@ public class QueryTest extends BaseCMISTest
         {
             Serializable sValue = row.getValue("cmis:contentStreamId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
-            // assertEquals(contentUrl0, value);
+            assertNotNull(value);
+            assertEquals(contentUrl0, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:contentStreamId");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof ContentStreamIdProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof ContentStreamIdProperty);
         }
         rs.close();
 
-        testQuery("SELECT cmis:contentStreamId FROM cmis:document", file_count, false, "cmis:contentStreamId", new String(), true);
+        testQuery("SELECT cmis:contentStreamId FROM cmis:document", file_count, false, "cmis:contentStreamId", new String(), false);
 
         // not allowed in predicates
         testQuery("SELECT cmis:contentStreamId FROM cmis:document WHERE cmis:contentStreamId =  '" + contentUrl0 + "'", 1, false, "cmis:contentStreamId", new String(), true);
@@ -747,7 +758,6 @@ public class QueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:contentStreamFileName");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:contentStreamFileName");
             assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
             assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
@@ -779,8 +789,8 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'BB_'", 1, false, "cmis:contentStreamFileName", new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'CC\\\\'", 1, false, "cmis:contentStreamFileName", new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'DD\\''", 1, false, "cmis:contentStreamFileName", new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'EE'", 1, false, "cmis:contentStreamFileName", new String(), false);
-        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'FF'", 1, false, "cmis:contentStreamFileName", new String(), false);
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'EE.aa'", 1, false, "cmis:contentStreamFileName", new String(), false);
+        testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'FF.EE'", 1, false, "cmis:contentStreamFileName", new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'GG*GG'", 1, false, "cmis:contentStreamFileName", new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'HH?HH'", 1, false, "cmis:contentStreamFileName", new String(), false);
         testQuery("SELECT cmis:contentStreamFileName FROM cmis:document WHERE cmis:contentStreamFileName =  'aa'", 1, false, "cmis:contentStreamFileName", new String(), false);
@@ -842,7 +852,6 @@ public class QueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:contentStreamMimeType");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:contentStreamMimeType");
             assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
             assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
@@ -925,7 +934,6 @@ public class QueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:contentStreamLength");
             Long value = DefaultTypeConverter.INSTANCE.convert(Long.class, sValue);
             assertNotNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:contentStreamLength");
             assertEquals(CMISDataTypeEnum.INTEGER, column.getCMISDataType());
             assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
@@ -987,19 +995,19 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // not queryable
             Serializable sValue = row.getValue("cmis:checkinComment");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:checkinComment");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof CheckinCommentProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof CheckinCommentProperty);
         }
         rs.close();
 
+        testQuery("SELECT cmis:checkinComment FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment =  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <> 'admin'", 10, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:checkinComment FROM cmis:document WHERE cmis:checkinComment <  'admin'", 0, false, "cmis:objectId", new String(), true);
@@ -1036,18 +1044,18 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // not queryable
             Serializable sValue = row.getValue("cmis:versionSeriesCheckedOutId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionSeriesCheckedOutId");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof CheckinCommentProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionSeriesCheckedOutIdProperty);
         }
         rs.close();
+        
+        testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId =  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutId FROM cmis:document WHERE cmis:versionSeriesCheckedOutId <> 'admin'", 10, false, "cmis:objectId", new String(), true);
@@ -1087,18 +1095,18 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // not queryable
             Serializable sValue = row.getValue("cmis:versionSeriesCheckedOutBy");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionSeriesCheckedOutBy");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof CheckinCommentProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionSeriesCheckedOutByProperty);
         }
         rs.close();
+        
+        testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy =  'admin'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesCheckedOutBy FROM cmis:document WHERE cmis:versionSeriesCheckedOutBy <> 'admin'", 10, false, "cmis:objectId", new String(), true);
@@ -1138,44 +1146,45 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // not queryable
-            Serializable sValue = row.getValue("cmis:isVeriesSeriesCheckedOut");
-            String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
-            CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:isVeriesSeriesCheckedOut");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof CheckinCommentProperty);
+            Serializable sValue = row.getValue("cmis:isVersionSeriesCheckedOut");
+            Boolean value = DefaultTypeConverter.INSTANCE.convert(Boolean.class, sValue);
+            assertNotNull(value);
+            assertEquals(Boolean.FALSE, value);
+            CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:isVersionSeriesCheckedOut");
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.BOOLEAN, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsVersionSeriesCheckedOutProperty);
         }
         rs.close();
 
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <> 'TRUE'", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <  'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <= 'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut >  'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut >= 'TRUE'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <> 'TRUE'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <  'TRUE'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut <= 'TRUE'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut >  'TRUE'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut >= 'TRUE'", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut     LIKE 'TRUE'", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT LIKE 'TRUE'", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut     LIKE 'TRUE'", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut NOT LIKE 'TRUE'", 10, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS     NULL", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS NOT NULL", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE cmis:isVeriesSeriesCheckedOut IS     NULL", 10, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE 'TRUE' =  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <> ANY cmis:isVeriesSeriesCheckedOut", 10, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <= ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE 'TRUE' >  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE 'TRUE' >= ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' =  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <> ANY cmis:isVeriesSeriesCheckedOut", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' <= ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' >  ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE 'TRUE' >= ANY cmis:isVeriesSeriesCheckedOut", 0, false, "cmis:objectId", new String(), true);
 
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "cmis:objectId", new String(), true);
-        testQuery("SELECT cmis:isVeriesSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut IN     ('TRUE')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT cmis:isVersionSeriesCheckedOut FROM cmis:document WHERE ANY cmis:isVeriesSeriesCheckedOut NOT IN ('TRUE')", 10, false, "cmis:objectId", new String(), true);
     }
 
     public void test_VERSION_SERIES_ID() throws Exception
@@ -1189,16 +1198,19 @@ public class QueryTest extends BaseCMISTest
         {
             Serializable sValue = row.getValue("cmis:versionSeriesId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
-            // assertEquals(row.getNodeRef().toString(), value);
+            assertNotNull(value);
+            assertEquals(row.getNodeRef().toString(), value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionSeriesId");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionSeriesIdProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionSeriesIdProperty);
         }
         rs.close();
 
+        testQuery("SELECT cmis:versionSeriesId FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        
+        
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId =  'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <> 'company'", 10, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionSeriesId FROM cmis:document WHERE cmis:versionSeriesId <  'company'", 0, false, "cmis:objectId", new String(), true);
@@ -1235,14 +1247,18 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // NOt queryable
             Serializable sValue = row.getValue("cmis:versionLabel");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
+            assertNotNull(value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionLabel");
-            assertNull(column);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof VersionLabelProperty);
         }
         rs.close();
+        
+        testQuery("SELECT cmis:versionLabel FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel =  'company'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE cmis:versionLabel <> 'company'", 10, false, "cmis:objectId", new String(), true);
@@ -1280,18 +1296,19 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // NOt queryable
             Serializable sValue = row.getValue("cmis:isLatestMajorVersion");
             Boolean value = DefaultTypeConverter.INSTANCE.convert(Boolean.class, sValue);
-            assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
+            assertNotNull(value);
+            assertEquals(Boolean.FALSE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:isLatestMajorVersion");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.BOOLEAN, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsLatestMajorVersionProperty);
         }
         rs.close();
+        
+        testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document WHERE cmis:isLatestMajorVersion =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isLatestMajorVersion FROM cmis:document WHERE cmis:isLatestMajorVersion <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1329,19 +1346,20 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // NOt queryable
             Serializable sValue = row.getValue("cmis:isMajorVersion");
             Boolean value = DefaultTypeConverter.INSTANCE.convert(Boolean.class, sValue);
-            assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
+            assertNotNull(value);
+            assertEquals(Boolean.FALSE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:isMajorVersion");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.BOOLEAN, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsMajorVersionProperty);
         }
         rs.close();
 
+        testQuery("SELECT cmis:isMajorVersion FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  TRUE", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  true", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isMajorVersion FROM cmis:document WHERE cmis:isMajorVersion =  FALSE", 0, false, "cmis:objectId", new String(), true);
@@ -1381,18 +1399,19 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // NOt queryable
             Serializable sValue = row.getValue("cmis:isLatestVersion");
             Boolean value = DefaultTypeConverter.INSTANCE.convert(Boolean.class, sValue);
-            assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
+            assertNotNull(value);
+            assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:isLatestVersion");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.BOOLEAN, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsLatestVersionProperty);
         }
         rs.close();
+        
+        testQuery("SELECT cmis:isLatestVersion FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
 
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document WHERE cmis:isLatestVersion =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isLatestVersion FROM cmis:document WHERE cmis:isLatestVersion <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1430,19 +1449,20 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // NOt queryable
             Serializable sValue = row.getValue("cmis:isImmutable");
             Boolean value = DefaultTypeConverter.INSTANCE.convert(Boolean.class, sValue);
-            assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
+            assertNotNull(value);
+            assertEquals(Boolean.FALSE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:isImmutable");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.BOOLEAN, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof IsImmutableProperty);
         }
         rs.close();
 
+        testQuery("SELECT cmis:isImmutable FROM cmis:document", 10, false, "cmis:objectId", new String(), false);
+        
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable =  'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable <> 'TRUE'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:isImmutable FROM cmis:document WHERE cmis:isImmutable <  'TRUE'", 0, false, "cmis:objectId", new String(), true);
@@ -1611,19 +1631,19 @@ public class QueryTest extends BaseCMISTest
         assertEquals(file_count, rs.length());
         for (CMISResultSetRow row : rs)
         {
-            // not queryable
             Serializable sValue = row.getValue("cmis:changeToken");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNull(value);
-            // assertEquals(Boolean.TRUE, value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:changeToken");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof DirectProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.STRING, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof FixedValueProperty);
         }
         rs.close();
 
+        testQuery("SELECT cmis:changeToken FROM cmis:folder", 10, false, "cmis:objectId", new String(), false);
+        
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE cmis:changeToken =  'test'", 0, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE cmis:changeToken <> 'test'", 10, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE cmis:changeToken <  'test'", 0, false, "cmis:objectId", new String(), true);
@@ -2240,13 +2260,13 @@ public class QueryTest extends BaseCMISTest
         {
             Serializable sValue = row.getValue("cmis:baseTypeId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
-            // assertEquals("cmis:document", value);
+            assertNotNull(value);
+            assertEquals("cmis:document", value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:baseTypeId");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof BaseTypeIdProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof BaseTypeIdProperty);
         }
         rs.close();
 
@@ -2259,21 +2279,21 @@ public class QueryTest extends BaseCMISTest
         {
             Serializable sValue = row.getValue("cmis:baseTypeId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
-            assertNull(value);
-            // assertEquals("cmis:folder", value);
+            assertNotNull(value);
+            assertEquals("cmis:folder", value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:baseTypeId");
-            assertNull(column);
-            // assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
-            // assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
-            // assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof BaseTypeIdProperty);
+            assertNotNull(column);
+            assertEquals(CMISDataTypeEnum.ID, column.getCMISDataType());
+            assertEquals(CMISCardinalityEnum.SINGLE_VALUED, column.getCMISPropertyDefinition().getCardinality());
+            assertTrue(column.getCMISPropertyDefinition().getPropertyAccessor() instanceof BaseTypeIdProperty);
         }
         rs.close();
 
         // DOC
 
-        testQuery("SELECT cmis:baseTypeId FROM cmis:document", file_count, false, "cmis:baseTypeId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:document", file_count, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:document WHERE cmis:baseTypeId =  'cmis:document'", file_count, false, "cmis:baseTypeId", new String(), true);
-        testQuery("SELECT cmis:baseTypeId FROM cmis:folder", folder_count, false, "cmis:baseTypeId", new String(), true);
+        testQuery("SELECT cmis:baseTypeId FROM cmis:folder", folder_count, false, "cmis:baseTypeId", new String(), false);
         testQuery("SELECT cmis:baseTypeId FROM cmis:folder WHERE cmis:baseTypeId =  'cmis:folder'", folder_count, false, "cmis:baseTypeId", new String(), true);
 
     }
@@ -2453,6 +2473,10 @@ public class QueryTest extends BaseCMISTest
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
         testOrderBy("SELECT cmis:name FROM cmis:folder ORDER BY cmis:name DESC", folder_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
+        
+        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name ASC", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
+        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", file_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
+        testOrderBy("SELECT cmis:name FROM cmis:document ORDER BY cmis:name DESC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:name");
 
         // version label is not orderable as indexed and tokenised
         testOrderBy("SELECT cmis:versionLabel FROM cmis:document ORDER BY cmis:versionLabel ASC", file_count, true, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:versionLabel");
@@ -2983,11 +3007,8 @@ public class QueryTest extends BaseCMISTest
         CMISTypeDefinition typeDef = cmisDictionaryService.findType(CMISDictionaryModel.DOCUMENT_TYPE_ID);
         int count = 0;
         for (CMISPropertyDefinition pdef : typeDef.getPropertyDefinitions().values())
-        {
-            if (pdef.isQueryable())
-            {
-                count++;
-            }
+        {            
+            count++;   
         }
         assertEquals(count, md.getColumnNames().length);
         assertNotNull(md.getColumn(CMISDictionaryModel.PROP_OBJECT_ID));

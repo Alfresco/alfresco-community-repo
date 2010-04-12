@@ -907,10 +907,7 @@ public class CMISQueryParser
                     functionArguments.put(arg.getName(), arg);
                     String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId().getId();
                     Column column = factory.createColumn(function, functionArguments, alias);
-                    if (column.isQueryable())
-                    {
-                        columns.add(column);
-                    }
+                    columns.add(column);
                 }
             }
         }
@@ -951,10 +948,7 @@ public class CMISQueryParser
                         functionArguments.put(arg.getName(), arg);
                         String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getId() : definition.getPropertyId().getId();
                         Column column = factory.createColumn(function, functionArguments, alias);
-                        if (column.isQueryable())
-                        {
-                            columns.add(column);
-                        }
+                        columns.add(column);
                     }
                 }
 
@@ -1013,12 +1007,6 @@ public class CMISQueryParser
                         }
 
                         Column column = factory.createColumn(function, functionArguments, alias);
-
-                        if (!column.isQueryable())
-                        {
-                            throw new CMISQueryException("Column is not queryable " + typeDef.getQueryName() + "." + columnName);
-                        }
-
                         columns.add(column);
 
                     }

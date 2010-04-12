@@ -257,6 +257,7 @@ public class PropertyValue implements Cloneable, Serializable
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
+                // NOTE: since 2.2.1, PropertyValue is only used by AVM (which does not natively support MLText, other than single/default string)
                 if (value instanceof MLText)
                 {
                     MLText mlText = (MLText) value;
@@ -269,7 +270,7 @@ public class PropertyValue implements Cloneable, Serializable
                         return ValueType.STRING;
                     }
                 }
-                else if (value instanceof String)
+                else if ((value == null) || (value instanceof String))
                 {
                     return ValueType.STRING;
                 }

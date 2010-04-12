@@ -51,7 +51,7 @@ public class PropertyValueTest extends TestCase
                 // single language
                 MLText mlText = new MLText(Locale.FRENCH, "bonjour");
                 PropertyValue propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
-                assertNotNull("MLText not persisted as a string", propertyValue.getStringValue());
+                assertEquals("MLText not persisted as a string", "bonjour", propertyValue.getStringValue());
                 
                 try
                 {
@@ -68,6 +68,16 @@ public class PropertyValueTest extends TestCase
                     // expected
                     // NOTE: since 2.2.1, PropertyValue is only used by AVM (which does not natively support MLText, other than single/default string)
                 }
+                
+                // single language - empty string
+                mlText = new MLText(Locale.FRENCH, "");
+                propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
+                assertEquals("MLText not persisted as an empty string", "", propertyValue.getStringValue());
+                
+                // single language - null string
+                mlText = new MLText(Locale.GERMAN, null);
+                propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
+                assertNull("MLText not persisted as a null string", propertyValue.getStringValue());
                 
                 return null;
             }

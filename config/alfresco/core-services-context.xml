@@ -405,6 +405,7 @@
                 <value>alfresco.messages.avm-messages</value>
                 <value>alfresco.messages.linkvalidation-messages</value>
                 <value>alfresco.messages.content-filter-languages</value>
+                <value>alfresco.messages.jbpm-engine-messages</value>
             </list>
         </property>
     </bean>

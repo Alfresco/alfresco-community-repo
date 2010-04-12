@@ -162,8 +162,53 @@ public class JBPMEngine extends BPMEngine
     // I18N labels
     private final static String TITLE_LABEL = "title";
     private final static String DESC_LABEL = "description";
-    private final static String DEFAULT_TRANSITION_LABEL = "bpm_businessprocessmodel.transition";    
+    private final static String DEFAULT_TRANSITION_LABEL = "bpm_businessprocessmodel.transition";
     
+    private static final String ERR_MANDATORY_TASK_PROPERTIES_MISSING = "Jbpm.engine.mandatory.properties.missing";
+    private static final String ERR_DEPLOY_WORKFLOW= "jbpm.engine.deploy.workflow.error";
+    private static final String ERR_IS_WORKFLOW_DEPLOYED = "jbpm.engine.is.workflow.deployed.error";
+    private static final String ERR_UNDEPLOY_WORKFLOW = "jbpm.engine.undeploy.workflow.error";
+    private static final String ERR_GET_WORKFLOW_DEF = "jbpm.engine.get.workflow.definition.error";
+    private static final String ERR_GET_WORKFLOW_DEF_BY_ID = "jbpm.engine.get.workflow.definition.by.id.error";
+    private static final String ERR_GET_WORKFLOW_DEF_BY_NAME = "jbpm.engine.get.workflow.definition.by.name.error";
+    private static final String ERR_GET_ALL_DEFS_BY_NAME = "jbpm.engine.get.all.workflow.definitions.by.name.error";
+    private static final String ERR_GET_DEF_IMAGE = "jbpm.engine.get.workflow.definition.image.error";
+    private static final String ERR_GET_TASK_DEFS = "jbpm.engine.get.task.definitions.error";
+    private static final String ERR_GET_PROCESS_DEF = "jbpm.engine.get.process.definition.error";
+    private static final String ERR_START_WORKFLOW = "jbpm.enginestart.workflow.error";
+    private static final String ERR_GET_ACTIVE_WORKFLOW_INSTS = "jbpm.engine.get.active.workflows.error";
+    private static final String ERR_GET_WORKFLOW_INST_BY_ID = "jbpm.engine.get.workflow.instance.by.id.error";
+    private static final String ERR_GET_PROCESS_INSTANCE = "jbpm.engine.get.process.instance.error";
+    private static final String ERR_GET_WORKFLOW_PATHS = "jbpm.engine.get.workflow.paths.error";
+    private static final String ERR_GET_PATH_PROPERTIES = "jbpm.engine.get.path.properties.error";
+    private static final String ERR_CANCEL_WORKFLOW = "jbpm.engine.cancel.workflow.error";
+    private static final String ERR_DELETE_WORKFLOW = "jbpm.engine.delete.workflow.error";
+    private static final String ERR_SIGNAL_TRANSITION = "jbpm.engine.signal.transition.error";
+    protected static final String ERR_INVALID_EVENT = "jbpm.engine.invalid.event";
+    private static final String ERR_FIRE_EVENT = "jbpm.engine.fire.event.error";
+    private static final String ERR_GET_TASKS_FOR_PATH = "jbpm.engine.get.tasks.for.path.error";
+    private static final String ERR_GET_TIMERS = "jbpm.engine.get.timers.error";
+    protected static final String ERR_FIND_COMPLETED_TASK_INSTS = "jbpm.engine.find.completed.task.instances.error";
+    private static final String ERR_GET_ASSIGNED_TASKS = "jbpm.engine.get.assigned.tasks.error";
+    private static final String ERR_GET_POOLED_TASKS = "jbpm.engine.get.pooled.tasks.error";
+    private static final String ERR_QUERY_TASKS = "jbpm.engine.query.tasks.error";
+    private static final String ERR_GET_TASK_INST = "jbpm.engine.get.task.instance.error";
+    private static final String ERR_UPDATE_TASK = "jbpm.engine.update.task.error";
+    protected static final String ERR_END_TASK_INVALID_TRANSITION ="jbpm.engine.end.task.invalid.transition";
+    private static final String ERR_END_TASK = "jbpm.engine.end.task.error";
+    private static final String ERR_GET_TASK_BY_ID = "jbpm.engine.get.task.by.id.error";
+    private static final String ERR_COMPILE_PROCESS_DEF_zip = "jbpm.engine.compile.process.definition.zip.error";
+    private static final String ERR_COMPILE_PROCESS_DEF_XML = "jbpm.engine.compile.process.definition.xml.error";
+    private static final String ERR_COMPILE_PROCESS_DEF_UNSUPPORTED = "jbpm.engine.compile.process.definition.unsupported.error";
+    private static final String ERR_GET_TASK_DEF = "jbpm.engine.get.task.definition.error";
+    private static final String ERR_GET_JBPM_ID = "jbpm.engine.get.jbpm.id.error";
+    private static final String ERR_GET_WORKFLOW_TOKEN_INVALID = "jbpm.engine.get.workflow.token.invalid";
+    private static final String ERR_GET_WORKFLOW_TOKEN_NULL = "jbpm.engine.get.workflow.token.is.null";
+    private static final String ERR_SET_TASK_PROPS_INVALID_VALUE = "jbpm.engine.set.task.properties.invalid.value";
+    private static final String ERR_PACKAGE_ALREADY_ASSOCIATED = "jbpm.engine.package.already.associated.error";
+    private static final String ERR_CONVERT_VALUE = "jbpm.engine.convert.value.error";
+    private static final String ERR_GET_COMPANY_HOME_INVALID = "jbpm.engine.get.company.home.invalid";
+    private static final String ERR_GET_COMPANY_HOME_MULTIPLE = "jbpm.engine.get.company.home.multiple";
     
     /**
      * Sets the JBPM Template used for accessing JBoss JBPM in the correct context
@@ -316,7 +361,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to deploy workflow definition - " + e.getMessage(), e);
+            String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -344,7 +390,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to determine if workflow definition is already deployed", e);
+            String msg = messageService.getMessage(ERR_IS_WORKFLOW_DEPLOYED);
+            throw new WorkflowException(msg, e);
         }
     }
     
@@ -375,7 +422,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to undeploy workflow definition - " + e.getMessage(), e);
+            String msg = messageService.getMessage(ERR_UNDEPLOY_WORKFLOW, workflowDefinitionId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -418,7 +466,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow definitions", e);
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -435,7 +484,7 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     GraphSession graphSession = context.getGraphSession();
-                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findAllProcessDefinitions();
+                    List<ProcessDefinition> processDefs = graphSession.findAllProcessDefinitions();
                     List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
                     for (ProcessDefinition processDef : processDefs)
                     {
@@ -461,7 +510,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow definitions", e);
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -485,7 +535,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow definition '" + workflowDefinitionId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF_BY_ID, workflowDefinitionId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -509,7 +560,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow definition '" + workflowName + "'", e);
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF_BY_NAME, workflowName);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -540,7 +592,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve all definitions for workflow '" + workflowName + "'", e);
+            String msg = messageService.getMessage(ERR_GET_ALL_DEFS_BY_NAME, workflowName);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -565,7 +618,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow definition image for '" + workflowDefinitionId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
+            throw new WorkflowException(msg, e);
         }
     }
     
@@ -610,7 +664,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow task definitions for workflow definition '" + workflowDefinitionId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_TASK_DEFS, workflowDefinitionId);
+            throw new WorkflowException(msg, e);
         }
     }
     
@@ -639,7 +694,8 @@ public class JBPMEngine extends BPMEngine
         
         if (processDefinition == null)
         {
-            throw new WorkflowException("Workflow definition '" + workflowDefinitionId + "' does not exist");
+            String msg = messageService.getMessage(ERR_GET_PROCESS_DEF, workflowDefinitionId);
+            throw new WorkflowException(msg);
         }
         return processDefinition;
     }
@@ -707,14 +763,18 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to start workflow " + workflowDefinitionId, e);
+            throw getStartWorkflowException(workflowDefinitionId, e);
         }
 		catch (DataAccessException e) 
 		{
-			throw new WorkflowException(new StringBuffer(
-					"Failed to start workflow ").append(workflowDefinitionId)
-					.toString(), e);
+		    throw getStartWorkflowException(workflowDefinitionId, e);
 		}
+    }
+
+    private WorkflowException getStartWorkflowException(final String workflowDefinitionId, Exception e)
+    {
+        String msg = messageService.getMessage(ERR_START_WORKFLOW, workflowDefinitionId);
+        return new WorkflowException(msg, e);
     }
 
     /* (non-Javadoc)
@@ -746,7 +806,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow instances for definition '" + workflowDefinitionId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, workflowDefinitionId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -770,7 +831,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow instance '" + workflowId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_INST_BY_ID);
+            throw new WorkflowException(msg, e);
         }        
     }
     
@@ -802,7 +864,8 @@ public class JBPMEngine extends BPMEngine
         ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowId);
         if (processInstance == null)
         {
-            throw new WorkflowException("Workflow instance '" + workflowId + "' does not exist");
+            String msg = messageService.getMessage(ERR_GET_PROCESS_INSTANCE, workflowId);
+            throw new WorkflowException(msg);
         }
         return processInstance;
     }
@@ -841,7 +904,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve workflow paths for workflow instance '" + workflowId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_PATHS, workflowId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -890,7 +954,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve properties of path '" + pathId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_PATH_PROPERTIES, pathId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -922,7 +987,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to cancel workflow instance '" + workflowId + "'", e);
+            String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW, workflowId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -952,7 +1018,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to cancel workflow instance '" + workflowId + "'", e);
+            String msg = messageService.getMessage(ERR_DELETE_WORKFLOW, workflowId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -997,7 +1064,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to signal transition '" + transition + "' from workflow path '" + pathId + "'", e);
+            String msg = messageService.getMessage(ERR_SIGNAL_TRANSITION, transition, pathId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -1031,7 +1099,8 @@ public class JBPMEngine extends BPMEngine
                         event.equals(Event.EVENTTYPE_TIMER) ||
                         event.equals(Event.EVENTTYPE_TRANSITION))
                     {
-                        throw new WorkflowException("Event " + event + " is not a valid event");
+                        String msg = messageService.getMessage(ERR_INVALID_EVENT, event);
+                        throw new WorkflowException(msg);
                     }
                     
                     // retrieve jBPM token for workflow position
@@ -1069,7 +1138,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to fire event '" + event + "' on workflow path '" + pathId + "'", e);
+            String msg = messageService.getMessage(ERR_FIRE_EVENT, event, pathId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -1096,7 +1166,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve tasks assigned at Workflow path '" + pathId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_TASKS_FOR_PATH, pathId);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -1135,7 +1206,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new JbpmException("Couldn't get timers for process '" + workflowId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_TIMERS, workflowId);
+            throw new WorkflowException(msg, e);
         }
     }
     
@@ -1193,7 +1265,8 @@ public class JBPMEngine extends BPMEngine
                     }
                     catch (Exception e)
                     {
-                        throw new JbpmException("Couldn't get completed task instances list for actor '" + actorId + "'", e);
+                        String msg = messageService.getMessage(ERR_FIND_COMPLETED_TASK_INSTS, actorId);
+                        throw new JbpmException(msg, e);
                     }
                     return result;
                 }
@@ -1201,7 +1274,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve tasks assigned to authority '" + authority + "' in state '" + state + "'", e);
+            String msg = messageService.getMessage(ERR_GET_ASSIGNED_TASKS, authority, state);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -1226,7 +1300,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve pooled tasks for authorities '" + authorities + "'", e);
+            String msg = messageService.getMessage(ERR_GET_POOLED_TASKS, authorities);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -1257,7 +1332,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to query tasks", e);
+            String msg = messageService.getMessage(ERR_QUERY_TASKS, query);
+            throw new WorkflowException(msg, e);
         }
     }
     
@@ -1544,7 +1620,8 @@ public class JBPMEngine extends BPMEngine
         
         if (taskInstance == null)
         {
-            throw new WorkflowException("Task instance '" + taskId + "' does not exist");
+            String msg = messageService.getMessage(ERR_GET_TASK_INST, taskId);
+            throw new WorkflowException(msg);
         }
         return taskInstance;
     }
@@ -1648,7 +1725,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to update workflow task '" + taskId + "'", e);
+            String msg = messageService.getMessage(ERR_UPDATE_TASK, taskId);
+            throw new WorkflowException(msg, e);
         }        
     }
 
@@ -1694,7 +1772,9 @@ public class JBPMEngine extends BPMEngine
                         {
                             props += missingProps[i].toString() + ((i < missingProps.length -1) ? "," : "");
                         }
-                        throw new WorkflowException("Mandatory task properties have not been provided: " + props);
+                        String msg = messageService.getMessage(ERR_MANDATORY_TASK_PROPERTIES_MISSING, props);
+                        throw new WorkflowException(msg);
+
                     }
                     
                     // signal the transition on the task
@@ -1707,7 +1787,8 @@ public class JBPMEngine extends BPMEngine
                         Node node = taskInstance.getToken().getNode();
                         if (node.getLeavingTransition(transition) == null)
                         {
-                            throw new WorkflowException("Transition '" + transition + "' is invalid for Workflow task '" + taskId + "'");
+                            String msg = messageService.getMessage(ERR_END_TASK_INVALID_TRANSITION, transition, taskId);
+                            throw new WorkflowException(msg);
                         }
                         taskInstance.end(transition);
                     }
@@ -1724,7 +1805,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to signal transition '" + transition + "' from workflow task '" + taskId + "'", e);
+            String msg = messageService.getMessage(ERR_END_TASK, transition, taskId);
+            throw new WorkflowException(msg, e);
         }        
     }
 
@@ -1748,15 +1830,14 @@ public class JBPMEngine extends BPMEngine
         }
         catch(JbpmException e)
         {
-            throw new WorkflowException("Failed to retrieve task '" + taskId + "'", e);
+            String msg = messageService.getMessage(ERR_GET_TASK_BY_ID, taskId);
+            throw new WorkflowException(msg, e);
         }        
     }
-    
     
     //
     // Helpers...
     //
-    
 
     /**
      * Process Definition with accompanying problems
@@ -1806,13 +1887,20 @@ public class JBPMEngine extends BPMEngine
             }
             catch(Exception e)
             {
-                throw new JbpmException("Failed to parse process definition from jBPM zip archive stream", e);
+                String msg = messageService.getMessage(ERR_COMPILE_PROCESS_DEF_zip);
+                throw new JbpmException(msg, e);
             }
             finally
             {
                 if (zipInputStream != null)
                 {
-                    try { zipInputStream.close(); } catch(IOException e) {};
+                    try
+                    {
+                        zipInputStream.close();
+                    } catch (IOException e)
+                    {
+                        // Intentionally empty!
+                    }
                 }
             }
         }
@@ -1829,13 +1917,14 @@ public class JBPMEngine extends BPMEngine
             }
             catch(Exception e)
             {
-                throw new JbpmException("Failed to parse process definition from jBPM xml stream", e);
+                String msg = messageService.getMessage(ERR_COMPILE_PROCESS_DEF_XML);
+                throw new JbpmException(msg, e);
             }
         }
-        
         else
         {
-            throw new JbpmException("Failed to parse process definition - unsupported mime type '" + mimetype + "'");
+            String msg = messageService.getMessage(ERR_COMPILE_PROCESS_DEF_UNSUPPORTED, mimetype);
+            throw new JbpmException(msg);
         }
                
         if ((compiledDef != null) && tenantService.isEnabled()) 
@@ -1862,7 +1951,8 @@ public class JBPMEngine extends BPMEngine
             typeDef = dictionaryService.getType(task.getStartState() == null ? WorkflowModel.TYPE_WORKFLOW_TASK : WorkflowModel.TYPE_START_TASK);
             if (typeDef == null)
             {
-                throw new WorkflowException("Failed to find type definition '" + WorkflowModel.TYPE_WORKFLOW_TASK + "'");
+                String msg = messageService.getMessage(ERR_GET_TASK_DEF, WorkflowModel.TYPE_WORKFLOW_TASK);
+                throw new WorkflowException( msg);
             }
         }
         return typeDef;
@@ -1918,7 +2008,8 @@ public class JBPMEngine extends BPMEngine
         }
         catch(NumberFormatException e)
         {
-            throw new WorkflowException("Format of id '" + id + "' is invalid", e);
+            String msg = messageService.getMessage(ERR_GET_JBPM_ID, id);
+            throw new WorkflowException(msg, e);
         }
     }
 
@@ -1935,7 +2026,8 @@ public class JBPMEngine extends BPMEngine
         String[] path = pathId.split(WORKFLOW_PATH_SEPERATOR);
         if (path.length != 2)
         {
-            throw new WorkflowException("Invalid workflow path '" + pathId + "'");
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, pathId);
+            throw new WorkflowException(msg);
         }
 
         // retrieve jBPM token for workflow position
@@ -1944,7 +2036,8 @@ public class JBPMEngine extends BPMEngine
         Token token = processInstance.findToken(tokenId);
         if (token == null)
         {
-            throw new WorkflowException("Workflow path '" + pathId + "' does not exist");
+            String msg = messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_NULL, pathId);
+            throw new WorkflowException(msg);
         }
         
         return token;
@@ -2107,7 +2200,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     if (value != null && !(value instanceof String))
                     {
-                        throw new WorkflowException("Task description '" + value + "' is invalid");
+                        throw getInvalidPropertyValueException(key, value);
                     }
                     instance.setDescription((String)value);
                     continue;
@@ -2116,7 +2209,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     if (value != null && !(value instanceof Date))
                     {
-                        throw new WorkflowException("Task due date '" + value + "' is invalid");
+                        throw getInvalidPropertyValueException(key, value);
                     }
                     instance.setDueDate((Date)value);
                     continue;
@@ -2125,7 +2218,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     if (!(value instanceof Integer))
                     {
-                        throw new WorkflowException("Task priority '" + value + "' is invalid");
+                        throw getInvalidPropertyValueException(key, value);
                     }
                     instance.setPriority((Integer)value);
                     continue;
@@ -2134,7 +2227,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     if (!(value instanceof String))
                     {
-                        throw new WorkflowException("Task comment '" + value + "' is invalid");
+                        throw getInvalidPropertyValueException(key, value);
                     }
                         
                     // NOTE: Only use first comment in list
@@ -2166,7 +2259,7 @@ public class JBPMEngine extends BPMEngine
                 {
                     if (value != null && !(value instanceof String))
                     {
-                        throw new WorkflowException("Task owner '" + value + "' is invalid");
+                        throw getInvalidPropertyValueException(key, value);
                     }
                     String actorId = (String)value;
                     String existingActorId = instance.getActorId();
@@ -2207,7 +2300,7 @@ public class JBPMEngine extends BPMEngine
                         }
                         else
                         {
-                            throw new WorkflowException("Pooled actors value '" + value + "' is invalid");
+                            throw getInvalidPropertyValueException(key, value);
                         }
                         instance.setPooledActors(pooledActors);
                         continue;
@@ -2227,7 +2320,8 @@ public class JBPMEngine extends BPMEngine
                             if (packageInstanceId != null && packageInstanceId.length() > 0 && (processInstance.getId() == getJbpmId(packageInstanceId)))
                             {
                                 String workflowInstanceId = createGlobalId(new Long(processInstance.getId()).toString());
-                                throw new WorkflowException("Cannot associate workflow package '" + newPackageNodeRef + "' with workflow instance '" + workflowInstanceId + "' as it's already associated with workflow instance '" + packageInstanceId + "'"); 
+                                String msg = messageService.getMessage(ERR_PACKAGE_ALREADY_ASSOCIATED, newPackageNodeRef, workflowInstanceId, packageInstanceId);
+                                throw new WorkflowException(msg); 
                             }
                         }
 
@@ -2262,6 +2356,12 @@ public class JBPMEngine extends BPMEngine
             String name = mapQNameToName(key);
             instance.setVariableLocally(name, value);
         }
+    }
+
+    private WorkflowException getInvalidPropertyValueException(QName key, Serializable value)
+    {
+        String msg = messageService.getMessage(ERR_SET_TASK_PROPS_INVALID_VALUE, value, key);
+        return new WorkflowException(msg);
     }
 
     /**
@@ -2470,7 +2570,8 @@ public class JBPMEngine extends BPMEngine
         }
         else
         {
-            throw new WorkflowException("Unable to convert jBPM value " + value + " to Alfresco Value - not serializable");
+            String msg = messageService.getMessage(ERR_CONVERT_VALUE, value);
+            throw new WorkflowException(msg);
         }
         return alfValue;
     }
@@ -2654,7 +2755,8 @@ public class JBPMEngine extends BPMEngine
            }
            catch (RuntimeException re)
            {
-               throw new IllegalStateException("Invalid company home path: " + companyHomePath + ": " + re.getMessage(), re);
+               String msg = messageService.getMessage(ERR_GET_COMPANY_HOME_INVALID, companyHomePath);
+               throw new IllegalStateException(msg, re);
            }
         }
         else
@@ -2662,7 +2764,8 @@ public class JBPMEngine extends BPMEngine
             List<NodeRef> refs = unprotectedSearchService.selectNodes(nodeService.getRootNode(companyHomeStore), companyHomePath, null, namespaceService, false);
             if (refs.size() != 1)
             {
-                throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+                String msg = messageService.getMessage(ERR_GET_COMPANY_HOME_MULTIPLE, companyHomePath, refs.size());
+                throw new IllegalStateException(msg);
             }
             return refs.get(0);
         }

@@ -33,5 +33,5 @@ import org.alfresco.service.cmr.action.ActionList;
  */
 public interface CompositeRenditionDefinition extends RenditionDefinition, ActionList<RenditionDefinition>
 {
-
+    // Intentionally empty!
 }

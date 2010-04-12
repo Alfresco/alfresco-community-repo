@@ -934,8 +934,18 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     tinyMCE.execCommand("mceAddControl", false, this.widget.id)
     var editorDocument = tinyMCE.get(this.widget.id).getDoc();
     editorDocument.widget = this;
-    tinymce.dom.Event.add(editorDocument,window.ie ? "mouseout" : "blur", 
-                     this._tinyMCE_blurHandler);
+    
+    if (navigator.userAgent.contains('Safari'))
+    {
+      // ETHREEOH-2568 bug fixing
+      this.domNode.onmouseout = this._tinyMCE_blurHandler.bindAsEventListener(this);
+    }
+    else
+    {
+      tinymce.dom.Event.add(editorDocument,window.ie ? "mouseout" : "blur", 
+            this._tinyMCE_blurHandler);
+    }
+    
     tinymce.dom.Event.add(editorDocument, "focus", this._tinyMCE_focusHandler);
     this._created = true;
   },
@@ -1053,11 +1063,24 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
 
   _tinyMCE_blurHandler: function(event)
   {
+    var widget;
     if (event.type == "mouseout")
     {
-      event.target = event.srcElement.ownerDocument;
+      if (window.ie)
+      {
+         event.target = event.srcElement.ownerDocument;
+         widget = event.target.widget;
+      }
+      else
+      {
+         widget = this;
+      }
     }
-    var widget = event.target.widget;
+    else
+    {
+      widget = event.target.widget;
+    }
+    
     var value = widget.getValue();
     if (value != widget._oldValue)
     {

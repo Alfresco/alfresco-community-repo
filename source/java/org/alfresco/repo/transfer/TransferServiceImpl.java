@@ -549,7 +549,8 @@ public class TransferServiceImpl implements TransferService
             logger.debug("create snapshot");
         
             // where to put snapshot ?
-            snapshotFile = TempFileProvider.createTempFile(prefix, suffix);
+            File tempDir = TempFileProvider.getLongLifeTempDir("transfer");
+            snapshotFile = TempFileProvider.createTempFile(prefix, suffix, tempDir);
   
             FileWriter snapshotWriter = new FileWriter(snapshotFile);
             

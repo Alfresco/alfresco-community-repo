@@ -534,6 +534,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 
                  if (report == null)
                  {
+                    // There is no report 
                     if (error == null)
                     {
                        writer.putContent("");
@@ -549,7 +550,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                  }
                  else
                  {
-                    // TODO: revisit this, is it better to stream to a temp file?
+                    // There is a deployment report 
                     StringBuilder builder = new StringBuilder();
                     for (DeploymentEvent event : report)
                     {
@@ -557,6 +558,18 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                        builder.append(" ");
                        builder.append(event.getDestination());
                        builder.append("\r\n");
+                    }
+                    
+                    if(error != null)
+                    {
+                        builder.append("\r\n");
+                        
+                        // add the full stack trace of the error as the content
+                        StringWriter stack = new StringWriter();
+                        PrintWriter stackPrint = new PrintWriter(stack);
+                        error.printStackTrace(stackPrint);
+                        
+                        builder.append(stack.toString());
                     }
 
                     writer.putContent(builder.toString());

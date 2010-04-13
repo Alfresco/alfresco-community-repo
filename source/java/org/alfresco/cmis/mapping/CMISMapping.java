@@ -355,7 +355,7 @@ public class CMISMapping implements InitializingBean
         {
             throw new AlfrescoRuntimeException("Malformed type id '" + typeId + "'; discriminator " + typeId.charAt(0) + " unknown");
         }
-        QName typeQName = QName.resolveToQName(serviceRegistry.getNamespaceService(), typeId.substring(2));
+        QName typeQName = QName.createQName(typeId.substring(2), serviceRegistry.getNamespaceService());
 
         // Construct CMIS Type Id
         return new CMISTypeId(scope, typeQName, typeId, typeQName);

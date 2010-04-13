@@ -69,7 +69,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
    private static String ASSOC_ID_PREFIX = "assoc_";
    private static String SEP_ID_PREFIX = "sep_";
    
-   private List<ClientValidation> validations = new ArrayList<ClientValidation>();
+   protected List<ClientValidation> validations = new ArrayList<ClientValidation>();
    private String variable;
    private NodeRef nodeRef;
    private Node node;
@@ -507,7 +507,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     * @param context FacesContext
     */
    @SuppressWarnings("unchecked")
-   private void renderValidationScript(FacesContext context) throws IOException
+   protected void renderValidationScript(FacesContext context) throws IOException
    {
       ResponseWriter out = context.getResponseWriter();
       UIForm form = Utils.getParentForm(context, this);
@@ -642,7 +642,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
       out.write("</script>\n");
    }
    
-   private void renderValidationMethod(ResponseWriter out, ClientValidation validation,
+   protected void renderValidationMethod(ResponseWriter out, ClientValidation validation,
          boolean lastMethod, boolean showMessage) throws IOException
    {
       out.write("!");

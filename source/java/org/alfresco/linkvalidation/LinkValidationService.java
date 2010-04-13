@@ -30,6 +30,10 @@ import javax.net.ssl.SSLException;
 
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 
+/**
+ * 
+ * @deprecated will be removed in future release
+ */
 public interface LinkValidationService
 {
     public void onBootstrap();

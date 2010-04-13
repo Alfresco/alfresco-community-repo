@@ -53,11 +53,14 @@ import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.server.filesys.db.DBFileInfo;
 import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
+import org.alfresco.jlan.server.filesys.quota.QuotaManager;
+import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.server.locking.FileLockingInterface;
 import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.server.locking.OpLockInterface;
@@ -650,6 +653,22 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         }
         else
         	logger.warn("Oplock support disabled for filesystem " + ctx.getDeviceName());
+        
+        // Start the quota manager, if enabled
+        
+        if ( context.hasQuotaManager()) {
+            
+            try {
+
+                // Start the quota manager
+                
+                context.getQuotaManager().startManager( this, context);
+                logger.info("Quota manager enabled for filesystem");
+            }
+            catch ( QuotaManagerException ex) {
+                logger.error("Failed to start quota manager", ex);
+            }
+        }
     }
 
     /**
@@ -2261,6 +2280,25 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             }
         }
         
+        // Check if there is a quota manager enabled
+        
+        long fileSize = 0L;
+        
+        if ( ctx.hasQuotaManager() && file.hasDeleteOnClose()) {
+            
+            // Make sure the content stream has been opened, to get the current file size
+            
+            if ( file instanceof ContentNetworkFile) {
+                ContentNetworkFile contentFile = (ContentNetworkFile) file;
+                if ( contentFile.hasContent() == false)
+                    contentFile.openContent( false, false);
+                
+                // Save the current file size
+                
+                fileSize = contentFile.getFileSize();
+            }
+        }
+        
         // Defer to the network file to close the stream and remove the content
            
         file.closeFile();
@@ -2289,6 +2327,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                        // Delete the file
 	                        
 	                        fileFolderService.delete(nodeRef);
+	                        
+	                        // Check if there is a quota manager enabled, release space back to the user quota
+	                        
+	                        if ( ctx.hasQuotaManager())
+	                            ctx.getQuotaManager().releaseSpace(sess, tree, file.getFileId(), file.getFullName(), fileSize);
                     	}
                     	catch ( Exception ex)
                     	{
@@ -2376,6 +2419,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         try
         {
+            // Check if there is a quota manager enabled, if so then we need to save the current file size
+            
+            QuotaManager quotaMgr = ctx.getQuotaManager();
+            FileInfo fInfo = null;
+            
+            if ( quotaMgr != null) {
+                
+                // Get the size of the file being deleted
+                
+                fInfo = getFileInformation( sess, tree, name);
+            }
+            
             // Get the node
         	
             NodeRef nodeRef = getNodeForPath(tree, name);
@@ -2427,6 +2482,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         parentState.updateModifyDateTime();
                     }
                 }
+                
+                // Release the space back to the users quota
+                
+                if ( quotaMgr != null)
+                    quotaMgr.releaseSpace( sess, tree, fInfo.getFileId(), name, fInfo.getSize());
             }
             
             // Debug
@@ -2951,14 +3011,75 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public void truncateFile(SrvSession sess, TreeConnection tree, NetworkFile file, long size) throws IOException
     {
-        // Truncate or extend the file to the required size
+        //  Keep track of the allocation/release size in case the file resize fails
         
-        file.truncateFile(size);
-        
-        // Debug
-
         ContentContext ctx = (ContentContext) tree.getContext();
         
+        long allocSize   = 0L;
+        long releaseSize = 0L;
+        
+        //  Check if there is a quota manager
+
+        QuotaManager quotaMgr = ctx.getQuotaManager();
+              
+        if ( ctx.hasQuotaManager()) {
+          
+            // Check if the file content has been opened, we need the content to be opened to get the
+            // current file size
+            
+            if ( file instanceof ContentNetworkFile) {
+                ContentNetworkFile contentFile = (ContentNetworkFile) file;
+                if ( contentFile.hasContent() == false)
+                    contentFile.openContent( false, false);
+            }
+            else
+                throw new IOException("Invalid file class type, " + file.getClass().getName());
+            
+            //  Determine if the new file size will release space or require space allocating
+          
+            if ( size > file.getFileSize()) {
+            
+                //  Calculate the space to be allocated
+            
+                allocSize = size - file.getFileSize();
+            
+                //  Allocate space to extend the file
+            
+                quotaMgr.allocateSpace(sess, tree, file, allocSize);
+            }
+            else {
+            
+              //  Calculate the space to be released as the file is to be truncated, release the space if
+              //  the file truncation is successful
+            
+              releaseSize = file.getFileSize() - size;
+            }
+        }
+        
+        //  Set the file length
+
+        try {
+            file.truncateFile(size);
+        }
+        catch (IOException ex) {
+          
+            //  Check if we allocated space to the file
+          
+            if ( allocSize > 0 && quotaMgr != null)
+                quotaMgr.releaseSpace(sess, tree, file.getFileId(), null, allocSize);
+
+            //  Rethrow the exception
+          
+            throw ex;       
+        }
+        
+        //  Check if space has been released by the file resizing
+        
+        if ( releaseSize > 0 && quotaMgr != null)
+            quotaMgr.releaseSpace(sess, tree, file.getFileId(), null, releaseSize);
+
+        // Debug
+
         if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
             logger.debug("Truncated file: network file=" + file + " size=" + size);
     }
@@ -3071,15 +3192,52 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	    	if ( contentFile.hasContent() == false)
 	    		beginReadTransaction( sess);
     	}
+
+        //  Check if there is a quota manager
+        
+        ContentContext ctx = (ContentContext) tree.getContext();
+        QuotaManager quotaMgr = ctx.getQuotaManager();
+        long curSize = file.getFileSize();
+        
+        if ( quotaMgr != null) {
+          
+          //  Check if the file requires extending
+          
+          long extendSize = 0L;
+          long endOfWrite = fileOffset + size;
+          
+          if ( endOfWrite > curSize) {
+            
+            //  Calculate the amount the file must be extended
+
+            extendSize = endOfWrite - file.getFileSize();
+            
+            //  Allocate space for the file extend
+            
+            quotaMgr.allocateSpace(sess, tree, file, extendSize);
+          }
+        }
     	
     	// Write to the file
         
         file.writeFile(buffer, size, bufferOffset, fileOffset);
+
+        // Check if the file size was reduced by the write, may have been extended previously
+        
+        if ( quotaMgr != null) {
+            
+            // Check if the file size reduced
+            
+            if ( file.getFileSize() < curSize) {
+                
+                // Release space that was freed by the write
+                
+                quotaMgr.releaseSpace( sess, tree, file.getFileId(), file.getFullName(), curSize - file.getFileSize());
+            }
+        }
         
         // Debug
 
-        ContentContext ctx = (ContentContext) tree.getContext();
-        
         if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
             logger.debug("Wrote bytes to file: network file=" + file + " buffer size=" + buffer.length + " size=" + size + " file offset=" + fileOffset);
 

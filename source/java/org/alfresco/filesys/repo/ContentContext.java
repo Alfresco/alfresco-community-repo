@@ -28,6 +28,7 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileSystem;
+import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -259,6 +260,16 @@ public class ContentContext extends AlfrescoContext
         
         if ( m_nodeMonitor != null)
             m_nodeMonitor.shutdownRequest();
+        
+        //  Stop the quota manager, if enabled
+        
+        if ( hasQuotaManager()) {
+            try {
+                getQuotaManager().stopManager(null, this);
+            }
+            catch ( QuotaManagerException ex) {
+            }
+        }
         
         //  Call the base class
         

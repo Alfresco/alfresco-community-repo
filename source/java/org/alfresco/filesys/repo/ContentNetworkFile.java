@@ -273,7 +273,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * @see NetworkFile#WRITEONLY
      * @see NetworkFile#READWRITE
      */
-    private void openContent(boolean write, boolean trunc)
+    protected void openContent(boolean write, boolean trunc)
     	throws AccessDeniedException, AlfrescoRuntimeException
     {
     	// Check if the file is a directory
@@ -358,6 +358,17 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             // Get the read-only channel
             
             channel = ((ContentReader) content).getFileChannel();
+        }
+        
+        // Update the current file size
+        
+        if ( channel != null) {
+            try {
+                setFileSize(channel.size());
+            }
+            catch (IOException ex) {
+                logger.error( ex);
+            }
         }
     }
 

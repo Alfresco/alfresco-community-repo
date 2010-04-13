@@ -298,6 +298,13 @@
 	  </property>		  
    </bean>
 
+   <!-- Filesystem quota manager -->
+   <bean id="filesystemQuotaManager" class="org.alfresco.filesys.repo.ContentQuotaManager">
+	   <property name="usageService">
+		   <ref bean="ContentUsageService" />
+	   </property>
+   </bean>
+	
    <bean id="filesystemContexts" class="org.springframework.beans.factory.config.ListFactoryBean">
       <property name="sourceList">
          <list>
@@ -324,6 +331,11 @@
                   <value>true</value>
                </property>
 
+			   <!-- Enable the quota manager -->
+			   <property name="quotaManager">
+				   <ref bean="filesystemQuotaManager" />
+			   </property>
+				   
                <!-- Desktop actions -->
                <!-- Uses a client-side application to trigger a server-side action                         -->
                <!--   Echo - displays a message echoed from the server                                     -->

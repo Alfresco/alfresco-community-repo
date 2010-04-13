@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.usage;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -72,8 +74,11 @@ public class UserUsageTest extends TestCase
     private ContentUsageImpl contentUsageImpl;
     private UsageService usageService;
     private OwnableService ownableService;
+    private RepoAdminService repoAdminService;
     
     private static final String TEST_USER = "userUsageTestUser";
+    
+    private static final QName customType = QName.createQName("{my.new.model}sop"); // from exampleModel.xml
     
     protected void setUp() throws Exception
     {
@@ -94,6 +99,8 @@ public class UserUsageTest extends TestCase
         usageService = (UsageService) applicationContext.getBean("usageService");
         
         ownableService = (OwnableService) applicationContext.getBean("ownableService");
+        
+        repoAdminService = (RepoAdminService) applicationContext.getBean("repoAdminService");
         
         testTX = transactionService.getUserTransaction();
         testTX.begin();
@@ -119,7 +126,16 @@ public class UserUsageTest extends TestCase
         }
         authenticationService.createAuthentication(TEST_USER, TEST_USER.toCharArray());
         
+        // deploy custom model
+        InputStream modelStream = getClass().getClassLoader().getResourceAsStream("tenant/exampleModel.xml");
+        repoAdminService.deployModel(modelStream, "exampleModel.xml");
+        
+        testTX.commit();
+        
         authenticationComponent.clearCurrentSecurityContext();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
     }
     
     protected void tearDown() throws Exception
@@ -179,7 +195,7 @@ public class UserUsageTest extends TestCase
         NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
         
         NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
@@ -233,7 +249,7 @@ public class UserUsageTest extends TestCase
         NodeRef content1 = addTextContent(folder, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog");
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        NodeRef content2 = addTextContent(folder, "afdpj.txt", "Amazingly few discotheques provide jukeboxes");
+        NodeRef content2 = addTextContent(folder, "afdpj.txt", "Amazingly few discotheques provide jukeboxes", true);
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
         
         NodeRef content3 = addTextContent(folder, "aqabfweatj.txt", "All questions asked by five watch experts amazed the judge");
@@ -274,6 +290,126 @@ public class UserUsageTest extends TestCase
         
         delete(content1);
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+    }
+    
+    public void testCreateDeleteRestoreInTx() throws Exception
+    {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
+        runAs(TEST_USER);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // Create a folder
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+        folderProps.put(ContentModel.PROP_NAME, "testFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        // add content
+        
+        NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
+        assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete content in a different order
+        
+        delete(content2); // - 44
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        delete(content3); // - 58
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        delete(content1); // - 43
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // restore content in a different order
+        
+        restore(content3); // + 58
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        restore(content1); // + 43
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        restore(content2); // - 44
+        assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+    }
+    
+    public void testCreateDeleteRestoreAcrossTx() throws Exception
+    {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
+        runAs(TEST_USER);
+        
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // Create a folder
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
+        folderProps.put(ContentModel.PROP_NAME, "testFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        // add content
+        
+        NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
+        assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
+        assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        runAs(TEST_USER);
+        
+        // delete content in a different order
+        
+        delete(content2); // - 44
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        delete(content3); // - 58
+        assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        delete(content1); // - 43
+        assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        testTX.commit();
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        runAs(TEST_USER);
+        
+        // restore content in a different order
+        
+        restore(content3); // + 58
+        assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        restore(content1); // + 43
+        assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        restore(content2); // - 44
+        assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
     }
     
     public void testCreateCopyDeleteInTx() throws Exception
@@ -348,26 +484,12 @@ public class UserUsageTest extends TestCase
         NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        testTX.commit();
-        
-        testTX = transactionService.getUserTransaction();
-        testTX.begin();
-        runAs(TEST_USER);
-        
         // copy content
         
         NodeRef content2 = copy(content1, folder, "Copy of text1.txt"); // + 43
         assertEquals(86, contentUsageImpl.getUserUsage(TEST_USER));
         
         NodeRef content3 = copy(content1, folder, "Copy of Copy of text1.txt"); // + 43
-        assertEquals(129, contentUsageImpl.getUserUsage(TEST_USER));
-        
-        testTX.commit();
-        
-        testTX = transactionService.getUserTransaction();
-        testTX.begin();
-        runAs(TEST_USER);
-        
         assertEquals(129, contentUsageImpl.getUserUsage(TEST_USER));
         
         // delete content
@@ -407,7 +529,7 @@ public class UserUsageTest extends TestCase
         addTextContent(folder1, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        addTextContent(folder1, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        addTextContent(folder1, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
         
         addTextContent(folder1, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
@@ -454,7 +576,7 @@ public class UserUsageTest extends TestCase
         addTextContent(folder1, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        addTextContent(folder1, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        addTextContent(folder1, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
         
         addTextContent(folder1, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
@@ -519,7 +641,7 @@ public class UserUsageTest extends TestCase
         NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
         
         NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
@@ -579,7 +701,7 @@ public class UserUsageTest extends TestCase
         NodeRef content1 = addTextContent(folder, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
         
-        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes"); // + 44
+        NodeRef content2 = addTextContent(folder, "text2.txt", "Amazingly few discotheques provide jukeboxes", true); // + 44
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER));
         
         NodeRef content3 = addTextContent(folder, "text3.txt", "All questions asked by five watch experts amazed the judge"); // + 58
@@ -626,13 +748,18 @@ public class UserUsageTest extends TestCase
     
     private NodeRef addTextContent(NodeRef folderRef, String name, String textData)
     {
+        return addTextContent(folderRef, name, textData, false);
+    }
+    
+    private NodeRef addTextContent(NodeRef folderRef, String name, String textData, boolean custom)
+    {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
         
         ChildAssociationRef association = nodeService.createNode(folderRef,
                 ContentModel.ASSOC_CONTAINS, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
-                ContentModel.TYPE_CONTENT,
+                (custom == true ? customType: ContentModel.TYPE_CONTENT),
                 contentProps);
         
         NodeRef content = association.getChildRef();
@@ -660,6 +787,14 @@ public class UserUsageTest extends TestCase
     private void delete(NodeRef folderOrContentRef)
     {
         nodeService.deleteNode(folderOrContentRef);
+    }
+    
+    private void restore(NodeRef origfolderOrContentRef)
+    {
+        NodeRef archiveRootNode = nodeService.getStoreArchiveNode(this.rootNodeRef.getStoreRef());
+        
+        NodeRef archiveNodeRef = new NodeRef(archiveRootNode.getStoreRef(), origfolderOrContentRef.getId());
+        nodeService.restoreNode(archiveNodeRef, null, null, null);
     }
     
     private NodeRef copy(NodeRef sourceFolderOrContentRef, NodeRef targetFolderRef, String newName) throws FileNotFoundException

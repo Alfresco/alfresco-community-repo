@@ -56,6 +56,7 @@ public class AVMStoreDescriptor implements Serializable
                               String creator,
                               long createDate)
     {
+        fID = id;
         fName = name;
         fCreator = creator;
         fCreateDate = createDate;

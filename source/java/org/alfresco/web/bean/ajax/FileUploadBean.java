@@ -194,13 +194,22 @@ public class FileUploadBean implements Serializable
                ContentWriter writer = services.getContentService().getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
                writer.setMimetype(mimetype);
                writer.setEncoding(encoding);
-               writer.putContent(file);
+               writer.putContent(file);          
             }
          }
       }
       catch (Exception e)
       {
          returnPage = returnPage.replace("${UPLOAD_ERROR}", e.getMessage());
+      }
+      finally
+      {
+          if(file != null)
+          {
+              logger.debug("delete temporary file:" + file.getPath());
+              // Delete the temporary file
+              file.delete();
+          }
       }
 
       Document result = XMLUtil.newDocument();
@@ -216,8 +225,9 @@ public class FileUploadBean implements Serializable
       scriptEl.appendChild(scriptText);
 
       if (logger.isDebugEnabled())
+      {
          logger.debug("File upload request complete.");
-      
+      }
       ResponseWriter out = fc.getResponseWriter();
       XMLUtil.print(result, out);
    }

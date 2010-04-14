@@ -19,11 +19,9 @@
 package org.alfresco.filesys.repo;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskFullException;
@@ -115,6 +113,11 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
      */
 	public long getUserFreeSpace(SrvSession sess, TreeConnection tree) {
 	    
+	    // Check if content usage is enabled
+	    
+	    if ( m_usageService.getEnabled() == false)
+	        return 0L;
+	    
 	    // Check if there is a live usage record for the user
 	    
 	    UserQuotaDetails userQuota = getQuotaDetails(sess, true);
@@ -139,6 +142,11 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
     public long allocateSpace(SrvSession sess, TreeConnection tree, NetworkFile file, long alloc)
         throws IOException {
 
+        // Check if content usage is enabled
+        
+        if ( m_usageService.getEnabled() == false)
+            return alloc;
+        
         // Check if there is a live usage record for the user
         
         UserQuotaDetails userQuota = getQuotaDetails(sess, true);
@@ -205,6 +213,11 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	public void releaseSpace(SrvSession sess, TreeConnection tree, int fid, String path, long alloc)
 	    throws IOException {
 
+        // Check if content usage is enabled
+        
+        if ( m_usageService.getEnabled() == false)
+            return;
+        
         // Check if there is a live usage record for the user
         
         UserQuotaDetails userQuota = getQuotaDetails(sess, true);

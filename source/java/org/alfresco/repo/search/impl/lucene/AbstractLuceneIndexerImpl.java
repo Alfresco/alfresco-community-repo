@@ -67,6 +67,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
          * A delete
          */
         DELETE,
+        MOVE,
         /**
          * A cascaded reindex (ensures directory structre is ok)
          */
@@ -89,6 +90,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         ASYNCHRONOUS;
     }
 
+    protected enum IndexDeleteMode {REINDEX, DELETE, MOVE};
+    
     protected long docs;
 
     // Failure codes to index when problems occur indexing content
@@ -561,54 +564,88 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     protected abstract List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
             boolean includeDirectoryDocuments);
-
-    protected Set<String> deleteImpl(String nodeRef, boolean forReindex, boolean cascade, IndexReader mainReader)
+    
+    protected Set<String> deleteImpl(String nodeRef, IndexDeleteMode mode, boolean cascade,  IndexReader mainReader)
             throws LuceneIndexException, IOException
 
     {
-        // startTimer();
+        Set<String> leafrefs = new LinkedHashSet<String>();
+        IndexReader deltaReader = null;
+
+    	// startTimer();
         getDeltaReader();
         // outputTime("Delete "+nodeRef+" size = "+getDeltaWriter().docCount());
         Set<String> refs = new LinkedHashSet<String>();
         Set<String> temp = null;
 
-        if (forReindex)
+        switch(mode)
         {
-            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+        case MOVE:
+        	temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+            closeDeltaReader();
             refs.addAll(temp);
             deletions.addAll(temp);
             temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
             refs.addAll(temp);
             deletions.addAll(temp);
-        }
-        else
-        {
+            
+            leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
+            closeDeltaReader();
+            // May not have to delete references
+            leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
+            closeDeltaReader();
+            refs.addAll(leafrefs);
+            deletions.addAll(leafrefs);
+            
+            // make sure leaves are also removed from the delta before reindexing
+            
+            deltaReader = getDeltaReader();
+            for(String id : leafrefs)
+            {
+                deltaReader.deleteDocuments(new Term("ID", id));
+            }
+            closeDeltaReader();
+        	break;
+        case REINDEX:
+            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+            closeDeltaReader();
+            refs.addAll(temp);
+            deletions.addAll(temp);
+            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
+            refs.addAll(temp);
+            deletions.addAll(temp);
+            break;
+        case DELETE:
             // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
             // Most will skip any indexing as they will really have gone.
             temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+            closeDeltaReader();
             deletions.addAll(temp);
             refs.addAll(temp);
             temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
             deletions.addAll(temp);
             refs.addAll(temp);
-
-            Set<String> leafrefs = new LinkedHashSet<String>();
+            
+            leafrefs.clear();
             leafrefs.addAll(deletePrimary(deletions, getDeltaReader(), true));
+            closeDeltaReader();
             leafrefs.addAll(deletePrimary(deletions, mainReader, false));
             // May not have to delete references
             leafrefs.addAll(deleteReference(deletions, getDeltaReader(), true));
+            closeDeltaReader();
             leafrefs.addAll(deleteReference(deletions, mainReader, false));
             refs.addAll(leafrefs);
             deletions.addAll(leafrefs);
             
             // make sure leaves are also removed from the delta before reindexing
             
-            IndexReader deltaReader = getDeltaReader();
+            deltaReader = getDeltaReader();
             for(String id : leafrefs)
             {
                 deltaReader.deleteDocuments(new Term("ID", id));
             }
-
+            closeDeltaReader();
+            break;
         }
 
         return refs;
@@ -667,6 +704,11 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
         addCommand(new Command<T>(ref, Action.DELETE));
     }
 
+    protected void move(T ref) throws LuceneIndexException
+    {
+        addCommand(new Command<T>(ref, Action.MOVE));
+    }
+    
     private void addCommand(Command<T> command)
     {
         if (commandList.size() > 0)
@@ -760,7 +802,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 else if (command.action == Action.REINDEX)
                 {
                     // Reindex is a delete and then and index
-                    Set<String> set = deleteImpl(command.ref.toString(), true, false, mainReader);
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.REINDEX, false, mainReader);
 
                     // Deleting any pending index actions
                     // - make sure we only do at most one index
@@ -771,7 +813,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 else if (command.action == Action.CASCADEREINDEX)
                 {
                     // Reindex is a delete and then and index
-                    Set<String> set = deleteImpl(command.ref.toString(), true, true, mainReader);
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.REINDEX, true, mainReader);
 
                     // Deleting any pending index actions
                     // - make sure we only do at most one index
@@ -782,7 +824,16 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
                 else if (command.action == Action.DELETE)
                 {
                     // Delete the nodes
-                    Set<String> set = deleteImpl(command.ref.toString(), false, true, mainReader);
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.DELETE, true, mainReader);
+                    // Remove any pending indexes
+                    forIndex.removeAll(set);
+                    // Add the leaf nodes for reindex
+                    forIndex.addAll(set);
+                }
+                else if (command.action == Action.MOVE)
+                {
+                    // Delete the nodes
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.MOVE, true, mainReader);
                     // Remove any pending indexes
                     forIndex.removeAll(set);
                     // Add the leaf nodes for reindex

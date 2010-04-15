@@ -217,7 +217,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     Document document = mainReader.document(doc);
                     String id = document.get("ID");
                     NodeRef ref = new NodeRef(id);
-                    deleteImpl(ref.toString(), false, true, mainReader);
+                    deleteImpl(ref.toString(), IndexDeleteMode.DELETE, true, mainReader);
                 }
             }
             catch (IOException e)
@@ -336,7 +336,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 // reindex(relationshipBeforeRef.getParentRef());
             }
-            reindex(relationshipBeforeRef.getChildRef(), true);
+            move(relationshipBeforeRef.getChildRef());
         }
         catch (LuceneIndexException e)
         {

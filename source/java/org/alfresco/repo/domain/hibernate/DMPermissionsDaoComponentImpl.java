@@ -39,7 +39,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoComponentImpl
 {
-    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(DMPermissionsDaoComponentImpl.class);
 
     @Override
@@ -107,7 +106,10 @@ public class DMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompone
         {
             return;
         }
-        System.out.println("Deleting "+acl+" on "+nodeRef);
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Deleting " + acl + " on " + nodeRef);
+        
         if (acl != null)
         {
             switch (acl.getAclType())

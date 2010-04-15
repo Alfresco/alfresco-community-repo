@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Policies</shortname>
-  <description>Java Policies/Behaviours information</description>
-  <url>/dev/policies</url>
-  <format default="html"/>
-  <authentication>admin</authentication>
-  <transaction>none</transaction>
-</webscript>

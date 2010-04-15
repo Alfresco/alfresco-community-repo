@@ -69,7 +69,7 @@ public class XMLTransferReportWriter
         this.writer.startPrefixMapping(PREFIX, TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI);
     
         // Start Transfer Manifest  // uri, name, prefix
-        this.writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT, TransferReportModel.LOCALNAME_TRANSFER_REPORT, EMPTY_ATTRIBUTES);
+        this.writer.startElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT,  PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_REPORT, EMPTY_ATTRIBUTES);
     }
     
     /**
@@ -78,7 +78,7 @@ public class XMLTransferReportWriter
     public void endTransferReport() throws SAXException
     {
         // End Transfer Manifest
-        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT, TransferReportModel.LOCALNAME_TRANSFER_REPORT);
+        writer.endElement(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferReportModel.LOCALNAME_TRANSFER_REPORT,  PREFIX + ":" + TransferReportModel.LOCALNAME_TRANSFER_REPORT);
         writer.endPrefixMapping(PREFIX);
         writer.endDocument();
     }

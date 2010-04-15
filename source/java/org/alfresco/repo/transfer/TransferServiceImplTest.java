@@ -1740,8 +1740,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             Validator validator = schema.newValidator();
             try 
             {
-                //TODO Test does not work
-                //validator.validate(transferReportSource);
+                validator.validate(transferReportSource);
             }
             catch (Exception e)
             {

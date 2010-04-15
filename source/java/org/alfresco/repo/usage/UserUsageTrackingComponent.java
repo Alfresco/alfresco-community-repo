@@ -564,9 +564,11 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
                     long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
                     if (currentUsage != -1)
                     {
-                        // collapse the usage deltas
-                        currentUsage = contentUsageImpl.getUserUsage(userName);
-                        usageService.deleteDeltas(personNodeRef);
+                    	// Collapse the usage deltas
+                        // Calculate and remove deltas in one go to guard against deletion of
+                        // deltas from another transaction that have not been included in the
+                        // calculation
+                        currentUsage = contentUsageImpl.getUserUsage(userName, true);
                         contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                         
                         if (logger.isTraceEnabled()) 

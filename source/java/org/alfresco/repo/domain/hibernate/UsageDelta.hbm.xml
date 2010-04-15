@@ -50,7 +50,7 @@
     <!-- Get total usage delta for a node -->
     <query name="usage.GetTotalDeltaSize">
         select
-            sum(deltaSize)
+            count(deltaSize), sum(deltaSize)
         from
             org.alfresco.repo.domain.hibernate.UsageDeltaImpl as usage_delta
         where

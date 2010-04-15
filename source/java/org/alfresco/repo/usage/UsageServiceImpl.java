@@ -49,6 +49,11 @@ public class UsageServiceImpl implements UsageService
         return usageDeltaDAO.getTotalDeltaSize(usageNodeRef);
     }
     
+    public long getAndRemoveTotalDeltaSize(NodeRef usageNodeRef)
+    {
+        return usageDeltaDAO.getAndRemoveTotalDeltaSize(usageNodeRef);
+    }
+    
     public Set<NodeRef> getUsageDeltaNodes()
     {
         return usageDeltaDAO.getUsageDeltaNodes();

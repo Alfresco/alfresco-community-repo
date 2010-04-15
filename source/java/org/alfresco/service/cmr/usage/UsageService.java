@@ -44,7 +44,13 @@ public interface UsageService
      */
     @NotAuditable
     public long getTotalDeltaSize(NodeRef usageNodeRef);
-    
+
+    /**
+     * Get sum of usage delta sizes and remove affected deltas.
+     */
+    @NotAuditable
+    public long getAndRemoveTotalDeltaSize(NodeRef usageNodeRef);
+
     /**
      * Get distinct set of usage delta nodes
      */

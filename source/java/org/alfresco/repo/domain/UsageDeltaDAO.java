@@ -43,6 +43,14 @@ public interface UsageDeltaDAO
      */
     public long getTotalDeltaSize(NodeRef usageNodeRef);
     
+    /**
+     * Get the total delta size for a node and remove any deltas used in the calculation.
+     * 
+     * @param nodeRef       the node reference
+     * @return              sum of delta sizes (in bytes) - can be +ve or -ve
+     */
+    public long getAndRemoveTotalDeltaSize(NodeRef usageNodeRef);
+
     public Set<NodeRef> getUsageDeltaNodes();
     
     public int deleteDeltas(NodeRef nodeRef);

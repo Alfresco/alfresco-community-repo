@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -158,12 +159,12 @@ public class HibernateUsageDeltaDAO extends HibernateDaoSupport implements Usage
         
         // execute
         Integer delCount = (Integer) getHibernateTemplate().execute(callback);
-        
-        return delCount.intValue();
+
+        return (delCount == null ? 0 : delCount.intValue());
     }
     
     @SuppressWarnings("unchecked")
-    public long getTotalDeltaSize(NodeRef nodeRef)
+    private Object[] getTotalDeltaSizeImpl(NodeRef nodeRef)
     {
         final Long nodeId = getNodeIdNotNull(nodeRef);
         HibernateCallback callback = new HibernateCallback()
@@ -176,10 +177,40 @@ public class HibernateUsageDeltaDAO extends HibernateDaoSupport implements Usage
                 return query.uniqueResult();
             }
         };
+
         // execute read-only tx
-        Long queryResult = (Long)getHibernateTemplate().execute(callback);
-       
-        return (queryResult == null ? 0 : queryResult);
+        return (Object[])getHibernateTemplate().execute(callback);
+    }
+
+    public long getTotalDeltaSize(NodeRef nodeRef)
+    {
+        Object[] result = getTotalDeltaSizeImpl(nodeRef);
+        Long queryResult = (Long)result[1];
+        return (queryResult == null ? 0 : queryResult.longValue());
+    }
+
+    /**
+     * Guard against deleting deltas committed by another transaction after calculating the delta sum above.
+	 * If the expected number of deletes is different from the actual number of deletes then deltas from
+	 * another committed transaction are probably being removed.
+	 */
+    @SuppressWarnings("unchecked")
+    public long getAndRemoveTotalDeltaSize(NodeRef nodeRef)
+    {
+        Object[] result = getTotalDeltaSizeImpl(nodeRef);
+        Long queryResult = (Long)result[1];
+        Number deltaCount = (Number)result[0];
+
+        long expectedNumDeletes = deltaCount == null ? 0 : deltaCount.intValue();
+
+        int numDeltasRemoved = deleteDeltas(nodeRef);
+
+        if(expectedNumDeletes != numDeltasRemoved) {
+            throw new ConcurrencyFailureException("More than expected number of usage delta deletes has occurred for node id "
+                    + nodeRef.getId() + " in store " + nodeRef.getStoreRef());
+        }
+
+        return (queryResult == null ? 0 : queryResult.longValue());
     }
     
     public void insertDelta(NodeRef usageNodeRef, long deltaSize)

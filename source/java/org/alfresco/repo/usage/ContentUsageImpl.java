@@ -504,7 +504,11 @@ public class ContentUsageImpl implements ContentUsageService,
         return (currentUsage == null ? -1 : currentUsage);
     }
     
-    public long getUserUsage(String userName)
+    public long getUserUsage(String userName) {
+        return getUserUsage(userName, false);
+    }
+    
+    public long getUserUsage(String userName, boolean removeDeltas)
     {
         ParameterCheck.mandatoryString("userName", userName);
         
@@ -518,9 +522,11 @@ public class ContentUsageImpl implements ContentUsageService,
         
         if (currentUsage != -1)
         {
-            // add any deltas
-            currentUsage = currentUsage + usageService.getTotalDeltaSize(personNodeRef);
-            
+            long deltaSize = removeDeltas ? usageService.getAndRemoveTotalDeltaSize(personNodeRef) :
+                usageService.getTotalDeltaSize(personNodeRef);
+            // add any deltas to the currentUsage, removing them if required
+            currentUsage = currentUsage + deltaSize;
+
             if (currentUsage < 0)
             {
                 if (logger.isWarnEnabled())

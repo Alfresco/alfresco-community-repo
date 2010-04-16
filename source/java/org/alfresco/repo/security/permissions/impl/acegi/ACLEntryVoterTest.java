@@ -20,6 +20,8 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
@@ -876,6 +878,12 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
             voter.setNodeService(nodeService);
             voter.setAuthenticationService(authenticationService);
             voter.setAuthorityService(authorityService);
+            
+            // TODO: add explicit abstain tests (for now, configure dummy "abstainFor" to test deleted nodes - see ALF-898)
+            Set<String> abstainFor = new HashSet<String>(1);
+            abstainFor.add("{http://www.alfresco.org/model/content/1.0}emailed");
+            voter.setAbstainFor(abstainFor);
+            voter.afterPropertiesSet();
 
             if (!(voter.vote(null, invocation, cad) == AccessDecisionVoter.ACCESS_DENIED))
             {

@@ -54,7 +54,11 @@ function runAction(p_params)
    var propertiesToSkip =
    {
       "cm:name": true,
-      "cm:content": true
+      "cm:content": true,
+      "cm:created": true,
+      "cm:creator": true,
+      "cm:modified": true,
+      "cm:modifier": true
    };
    
    for (index in items)
@@ -73,14 +77,14 @@ function runAction(p_params)
          if (itemNode !== null)
          {
             var duplicateProperties = new Array(),
-               propNames = itemNode.getTypePropertyNames(true),
+               propNames = itemNode.getPropertyNames(true),
                propName;
             
             // Copy selected properties from the original node
             for (var i = 0, ii = propNames.length; i < ii; i++)
             {
                propName = propNames[i];
-               if (propName in propertiesToSkip)
+               if (propName in propertiesToSkip || propName.indexOf("sys:") == 0)
                {
                   continue;
                }

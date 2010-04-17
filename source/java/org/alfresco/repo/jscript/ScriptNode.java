@@ -810,6 +810,16 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
 
     /**
+     * Return all the property names defined for this node's type as an array of short QNames.
+     * 
+     * @return Array of property names for this node's type.
+     */
+    public Scriptable getTypePropertyNames()
+    {
+        return getTypePropertyNames(true);
+    }
+
+    /**
      * Return all the property names defined for this node's type as an array.
      * 
      * @param useShortQNames if true short-form qnames will be returned, else long-form.
@@ -818,6 +828,24 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     public Scriptable getTypePropertyNames(boolean useShortQNames)
     {
         Set<QName> props = this.services.getDictionaryService().getClass(this.getQNameType()).getProperties().keySet();
+        Object[] result = new Object[props.size()];
+        int count = 0;
+        for (QName qname : props)
+        {
+            result[count++] = useShortQNames ? getShortQName(qname).toString() : qname.toString();
+        }
+        return Context.getCurrentContext().newArray(this.scope, result);
+    }
+
+    /**
+     * Return all the property names defined for this node as an array.
+     * 
+     * @param useShortQNames if true short-form qnames will be returned, else long-form.
+     * @return Array of property names for this node type and optionally parent properties.
+     */
+    public Scriptable getPropertyNames(boolean useShortQNames)
+    {
+        Set<QName> props = this.nodeService.getProperties(this.nodeRef).keySet();
         Object[] result = new Object[props.size()];
         int count = 0;
         for (QName qname : props)

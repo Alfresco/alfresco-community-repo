@@ -59,11 +59,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private MetadataExtracterRegistry metadataExtracterRegistry;
-    private boolean carryAspectProperties;
+    private boolean carryAspectProperties = true;
     
     public ContentMetadataExtracter()
     {
-        carryAspectProperties = true;
     }
 
     /**

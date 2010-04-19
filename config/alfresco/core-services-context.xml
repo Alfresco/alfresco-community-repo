@@ -127,6 +127,11 @@
         <property name="locateExistingServerIfPossible" value="${mbean.server.locateExistingServerIfPossible}" />
     </bean>
 
+    <!--  
+        The local in process RMI registry which will be bound to the address in
+        java.rmi.server.hostname 
+    -->
+    
     <bean id="registry"
           class="org.springframework.remoting.rmi.RmiRegistryFactoryBean"
           lazy-init="true">
@@ -141,7 +146,7 @@
 
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
-        <property name="serviceUrl"  value="service:jmx:rmi://localhost/jndi/rmi://localhost:${alfresco.rmi.services.port}/alfresco/jmxrmi" />
+        <property name="serviceUrl"  value="service:jmx:rmi://${alfresco.rmi.services.host}:${monitor.rmi.service.port}/jndi/rmi://${alfresco.rmi.services.host}:${alfresco.rmi.services.port}/alfresco/jmxrmi" />
 
         <property name="environment">
             <map>

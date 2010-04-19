@@ -66,6 +66,9 @@
 		<property name="servicePort">
 			<value>${wcm-deployment-receiver.rmi.service.port}</value>
 		</property>
+		<property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
+        </property>
 	</bean>
 	
 	<!--  Now import the deployment targets -->

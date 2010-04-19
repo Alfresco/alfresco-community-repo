@@ -20,7 +20,9 @@
 	
 	<!-- The RMI wrapper around the AVM remote interface. -->
 	
-	<bean id="avmRemoteService" class="org.springframework.remoting.rmi.RmiServiceExporter">
+	<bean id="avmRemoteService" class="org.springframework.remoting.rmi.RmiServiceExporter"
+	    depends-on="registry">
+	     
 		<property name="service">
 			<ref bean="avmRemoteTransport"/>
 		</property>
@@ -36,6 +38,9 @@
 		<property name="servicePort">
 			<value>${avm.rmi.service.port}</value>
 		</property>
+		<property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
+        </property>
 	</bean>
 			
     <bean id="avmSyncServiceTransport" class="org.alfresco.repo.avm.AVMSyncServiceTransportImpl">
@@ -47,7 +52,8 @@
         </property>
     </bean>
 			
-    <bean id="avmSyncServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+    <bean id="avmSyncServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter"
+        depends-on="registry">
         <property name="service">
             <ref bean="avmSyncServiceTransport"/>
         </property>
@@ -59,6 +65,9 @@
         </property>
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
+        </property>
+        <property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
         </property>
         <property name="servicePort">
 			<value>${avmsync.rmi.service.port}</value>
@@ -75,7 +84,8 @@
         </property>
     </bean>
     
-    <bean id="attributeServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+    <bean id="attributeServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter"
+        depends-on="registry">
         <property name="service">
             <ref bean="attributeServiceTransport"/>
         </property>
@@ -88,13 +98,17 @@
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
         </property>
+        <property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
+        </property>
         <property name="servicePort">
 			<value>${attribute.rmi.service.port}</value>
 		</property>
     </bean>
 
     <!-- The AuthenticationService exported as an RMI service. -->
-	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter">
+	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter"
+	    depends-on="registry">
 		<property name="service">
 			<ref bean="AuthenticationService"/>
 		</property>
@@ -107,6 +121,9 @@
 		<property name="registryPort">
 			<value>${alfresco.rmi.services.port}</value>
 		</property>
+		<property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
+        </property>
 		<property name="servicePort">
 			<value>${authentication.rmi.service.port}</value>
 		</property>
@@ -177,6 +194,9 @@
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
         </property>
+        <property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
+        </property>
         <property name="servicePort">
 			<value>${repo.rmi.service.port}</value>
 		</property>
@@ -205,6 +225,9 @@
         </property>
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
+        </property>
+        <property name="registryHost">
+            <value>${alfresco.rmi.services.host}</value>
         </property>
         <property name="servicePort">
 			<value>${action.rmi.service.port}</value>

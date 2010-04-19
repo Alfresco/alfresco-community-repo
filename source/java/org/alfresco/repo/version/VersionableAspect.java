@@ -251,7 +251,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                     // Create the initial-version
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));
-                    this.versionService.createVersion(nodeRef, versionProperties);
+                    
+                    createVersionImpl(nodeRef, versionProperties);
                 }
             }
         }
@@ -296,7 +297,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                     // Create the auto-version
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
-                    this.versionService.createVersion(nodeRef, versionProperties);
+                    
+                    createVersionImpl(nodeRef, versionProperties);
                 }
             }
         }
@@ -382,17 +384,29 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                     // Create the auto-version
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION_PROPS));
-                    this.versionService.createVersion(nodeRef, versionProperties);
+                    
+                    createVersionImpl(nodeRef, versionProperties);
                 }
             }
         }
     }
     
+    private void createVersionImpl(NodeRef nodeRef, Map<String, Serializable> versionProperties)
+    {
+        recordCreateVersion(nodeRef, null);
+        this.versionService.createVersion(nodeRef, versionProperties);
+    }
+    
     /**
      * @see org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy#onCreateVersion(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, java.util.Map, org.alfresco.repo.policy.PolicyScope)
      */
-    @SuppressWarnings("unchecked")
     public void afterCreateVersion(NodeRef versionableNode, Version version) 
+    {
+        recordCreateVersion(versionableNode, version);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void recordCreateVersion(NodeRef versionableNode, Version version) 
     {
         Map<NodeRef, NodeRef> versionedNodeRefs = (Map<NodeRef, NodeRef>)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
         if (versionedNodeRefs == null)

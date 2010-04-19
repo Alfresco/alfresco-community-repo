@@ -108,26 +108,6 @@ public interface PermissionsDaoComponent
     public boolean getInheritParentPermissions(NodeRef nodeRef);
 
     /**
-     * Get all the permissions set for the given authority
-     * 
-     * @return - the permissions set on all nodes for the given authority.
-     */
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(String authority);
-
-    /**
-     * Find nodes which have the given permisson for the given authority
-     * 
-     * @param authority -
-     *            the authority to match
-     * @param permission -
-     *            the permission to match
-     * @param allow -
-     *            true to match allow, false to match deny
-     * @return - the set of matching nodes
-     */
-    public Set<NodeRef> findNodeByPermission(String authority, PermissionReference permission, boolean allow);
-
-    /**
      * Delete entries from a permission mask on a store by authority
      */
     public void deletePermissions(StoreRef storeRef, String authority);

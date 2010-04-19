@@ -311,63 +311,7 @@ public interface PermissionService
     @Auditable(key = Auditable.Key.ARG_0, parameters = { "nodeRef" })
     public boolean getInheritParentPermissions(NodeRef nodeRef);
 
-    /**
-     * Get all permissions set for the current user.
-     *
-     * @return - A map of noderefs to permissions set
-     * @deprecated
-     */
-    @Auditable
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser();
-
-    /**
-     * Get all the permissions set for the given authority
-     *
-     * @param authority
-     * @return - A map of noderefs to permissions set
-     * @deprecated
-     */
-    @Auditable(parameters = { "authority" })
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority);
-
-    /**
-     * Find all the nodes where the current user has explicitly been assigned the specified permission.
-     *
-     * @param permission -
-     *            the permission to find
-     * @param allow
-     *            -search for allow (true) or deny
-     * @param includeContainingAuthorities -
-     *            include permissions for authorities that contain the current user in the list
-     * @param includeContainingPermissions -
-     *            true; do an exact match: false; search for any permission that woudl imply the one given
-     * @return - the set of nodes where the user is assigned the permission
-     * @deprecated
-     */
-    @Auditable(parameters = { "permission", "allow", "includeContainingAuthorities", "includeContainingPermissions" })
-    public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities,
-            boolean includeContainingPermissions);
-
-    /**
-     * Find all the nodes where the current user has explicitly been assigned the specified permission.
-     *
-     * @param permission -
-     *            the permission to find
-     * @param allow
-     *            -search for allow (true) or deny
-     * @param includeContainingAuthorities -
-     *            include permissions for authorities that contain the current user in the list
-     * @param exactPermissionMatch -
-     *            true; do an exact match: false; search for any permission that woudl imply the one given
-     * @return - the set of nodes where the user is assigned the permission
-     * @deprecated
-     */
-    @Auditable(parameters = { "authority", "permission", "allow", "includeContainingAuthorities",
-            "exactPermissionMatch" })
-    public Set<NodeRef> findNodesByAssignedPermission(String authority, String permission, boolean allow,
-            boolean includeContainingAuthorities, boolean exactPermissionMatch);
-    
-    
+   
     /**
      * Add a permission mask to a store
      * 

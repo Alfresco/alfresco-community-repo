@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
@@ -45,18 +44,17 @@ import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Common suppot for permisisons dao
+ * Common support for permissions DAO
  * 
- * Sub classes deteremine how ACLs are cascaded to children and how changes may COW/version children as ACLs are pushed down.
+ * Sub classes determine how ACLs are cascaded to children and how changes may COW/version children as ACLs are pushed down.
  * 
- * TODO: remove the protocol to dao mapping
+ * TODO: remove the protocol to DAO mapping
  * 
  * @author andyh
  *
@@ -254,16 +252,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         return npe;
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissions(final String authority)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public Set<NodeRef> findNodeByPermission(final String authority, final PermissionReference permission, final boolean allow)
-    {
-        throw new UnsupportedOperationException();
-    }
 
     // Utility methods to create simple detached objects for the outside world
     // We do not pass out the hibernate objects

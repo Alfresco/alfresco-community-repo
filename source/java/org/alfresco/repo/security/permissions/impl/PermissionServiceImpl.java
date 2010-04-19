@@ -1833,56 +1833,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             return value;
         }
     }
-
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()
-    {
-        String currentUser = AuthenticationUtil.getRunAsUser();
-        return getAllSetPermissionsForAuthority(currentUser);
-    }
-
-    public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForAuthority(String authority)
-    {
-        return permissionsDaoComponent.getAllSetPermissions(authority);
-    }
-
-    public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
-    {
-        String currentUser = AuthenticationUtil.getRunAsUser();
-        return findNodesByAssignedPermission(currentUser, permission, allow, includeContainingAuthorities, exactPermissionMatch);
-    }
-
-    public Set<NodeRef> findNodesByAssignedPermission(String authority, String permission, boolean allow, boolean includeContainingAuthorities, boolean includeContainingPermissions)
-    {
-        // TODO: owned nodes and add owner rights ??
-        // Does not include dynamic permissions (they would have to be done by query - e.g. owership and OWNER rights)
-        // Does not include ACEGI auth object authorities
-        Set<String> authorities = new HashSet<String>();
-        authorities.add(authority);
-        if (includeContainingAuthorities)
-        {
-            authorities.addAll(authorityService.getAuthoritiesForUser(authority));
-        }
-
-        HashSet<NodeRef> answer = new HashSet<NodeRef>();
-
-        PermissionReference pr = getPermissionReference(permission);
-        Set<PermissionReference> permissions = new HashSet<PermissionReference>();
-        permissions.add(pr);
-
-        if (includeContainingPermissions)
-        {
-            permissions.addAll(modelDAO.getGrantingPermissions(pr));
-        }
-
-        for (PermissionReference perm : permissions)
-        {
-            for (String auth : authorities)
-            {
-                answer.addAll(permissionsDaoComponent.findNodeByPermission(auth, perm, allow));
-            }
-        }
-        return answer;
-    }
     
     /**
      * This methods checks whether the specified nodeRef instance is a version nodeRef (ie. in the 'version' store)

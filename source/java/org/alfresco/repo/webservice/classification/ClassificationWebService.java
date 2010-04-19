@@ -373,16 +373,25 @@ public class ClassificationWebService extends AbstractWebService implements
                                         {
                                             ClassificationWebService.this.nodeService.addAspect(nodeRef, aspect, null);
                                         }
-                                        
-                                        ArrayList<NodeRef> categoryNodeRefs = new ArrayList<NodeRef>(category.getCategories().length);
-                                        for (Reference categoryReference : category.getCategories())
+                                                                                
+                                        Reference[] categories = category.getCategories();
+                                        ArrayList<NodeRef> categoryNodeRefs = null;
+                                        if(categories == null)
                                         {
-                                            categoryNodeRefs.add(Utils.convertToNodeRef(
-                                                                        categoryReference,
-                                                                        ClassificationWebService.this.nodeService,
-                                                                        ClassificationWebService.this.searchService,
-                                                                        ClassificationWebService.this.namespaceService));
+                                            categoryNodeRefs = new ArrayList<NodeRef>(0);
                                         }
+                                        else
+                                        {
+                                            categoryNodeRefs = new ArrayList<NodeRef>(categories.length);
+                                            for (Reference categoryReference : categories)
+                                            {
+                                                categoryNodeRefs.add(Utils.convertToNodeRef(
+                                                    categoryReference,
+                                                ClassificationWebService.this.nodeService,
+                                                ClassificationWebService.this.searchService,
+                                                ClassificationWebService.this.namespaceService));
+                                            }
+                                        } 
                                         
                                         ClassificationWebService.this.nodeService.setProperty(nodeRef, propertyName, categoryNodeRefs);
                                         
@@ -418,7 +427,7 @@ public class ClassificationWebService extends AbstractWebService implements
            throw new ClassificationFault(0, e.getMessage());
         }
     }
-
+    
     /**
      * @see org.alfresco.repo.webservice.classification.ClassificationServiceSoapPort#describeClassification(org.alfresco.repo.webservice.types.Reference)
      */

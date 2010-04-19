@@ -147,6 +147,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * "mocked out" or some other better way of running the unit tests. 
      */
     private boolean testMode = false;
+    private MimeMessage lastTestMessage;
     
     /**
      * @param javaMailSender    the java mail sender
@@ -437,6 +438,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             {
                 javaMailSender.send(mailPreparer);
             }
+            else
+            {
+               try {
+                  MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
+                  mailPreparer.prepare(mimeMessage);
+                  lastTestMessage = mimeMessage;
+               } catch(Exception e) {
+                  System.err.println(e);
+               }
+            }
         }
         catch (MailException e)
         {
@@ -527,6 +538,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public boolean isTestMode()
     {
         return testMode;
+    }
+    
+    /**
+     * Returns the most recent message that wasn't sent
+     *  because TestMode had been enabled.
+     */
+    public MimeMessage retrieveLastTestMessage()
+    {
+        return lastTestMessage; 
     }
 
     public static class URLHelper

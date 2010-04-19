@@ -22,6 +22,8 @@ package org.alfresco.repo.invitation;
 import java.util.Date;
 import java.util.List;
 
+import javax.mail.internet.MimeMessage;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
@@ -49,6 +51,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private InvitationService invitationService;
+    private MailActionExecuter mailService;
 
     private final String SITE_SHORT_NAME_INVITE = "InvitationTest";
     private final String SITE_SHORT_NAME_RED = "InvitationTestRed";
@@ -83,9 +86,9 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors
         // during unit testing
         // (or sending out email by accident from tests)
-        MailActionExecuter mail = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
+        mailService = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
                 .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
-        mail.setTestMode(true);
+        mailService.setTestMode(true);
 
         createPerson(USER_MANAGER, USER_MANAGER + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
         createPerson(USER_ONE, USER_ONE_EMAIL, USER_ONE_FIRSTNAME, USER_ONE_LASTNAME);
@@ -212,6 +215,26 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
             // sentInviteDate should be set to today
             assertTrue("sentDate wrong too early", sentDate.after(startDate));
             assertTrue("sentDate wrong - too late", sentDate.before(new Date(new Date().getTime() + 1)));
+        }
+        
+        /**
+         * Check the email itself, and check it
+         *  is as we would expect it to be
+         */
+        {
+           MimeMessage msg = mailService.retrieveLastTestMessage();
+           
+           assertEquals(1, msg.getAllRecipients().length);
+           assertEquals(inviteeEmail, msg.getAllRecipients()[0].toString());
+           
+           assertEquals(1, msg.getFrom().length);
+           assertEquals(USER_MANAGER + "@alfrescotesting.com", msg.getFrom()[0].toString());
+           
+           // Hasn't been sent, so no sent or received date
+           assertNull("Not been sent yet", msg.getSentDate());
+           assertNull("Not been sent yet", msg.getReceivedDate());
+           
+           // TODO - check some more details of the email
         }
 
         /**

@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.invitation;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 
 /**
@@ -41,6 +42,7 @@ public interface InvitationService
 	 * 
 	 * @return the names of the workkflows managed by the invitation service.
 	 */
+   @NotAuditable
 	public List<String> getInvitationServiceWorkflowNames();
 	
 	/**
@@ -166,14 +168,14 @@ public interface InvitationService
 	 * @param invitationId
 	 * @param reason
 	 */        
-    @Auditable(parameters = {"invitationId", "reason"})
+   @Auditable(parameters = {"invitationId", "reason"})
 	public Invitation reject(String invitationId, String reason);
 
 	
 	/**
 	 * cancel this request
 	 */
-    @Auditable(parameters = {"invitationId"})
+   @Auditable(parameters = {"invitationId"})
 	public Invitation cancel (String invitationId);
 	
 	/**
@@ -181,11 +183,13 @@ public interface InvitationService
 	 * 
 	 * @param invitationId;
 	 */
+   @NotAuditable
 	public Invitation getInvitation(String invitationId) ;
 	
 	/**
 	 * list Invitations for a specific person
 	 */
+   @NotAuditable
 	public List<Invitation> listPendingInvitationsForInvitee(String invitee);
 	
 	/**
@@ -193,6 +197,7 @@ public interface InvitationService
 	 * @param resourceType
 	 * @param resourceName
 	 */
+   @NotAuditable
 	public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName);
 		
  	/**
@@ -201,6 +206,7 @@ public interface InvitationService
  	 * @param criteria
  	 * @return the list of invitations
  	 */
+   @NotAuditable
  	public List<Invitation> searchInvitation(InvitationSearchCriteria criteria);
 	
 	

@@ -20,6 +20,8 @@ package org.alfresco.service.cmr.tagging;
 
 import java.util.List;
 
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -39,6 +41,7 @@ public interface TaggingService
      * @param tag           tag name
      * @return boolean      true if the tag exists, false otherwise
      */
+    @NotAuditable
     boolean isTag(StoreRef storeRef, String tag);
     
     /**
@@ -46,6 +49,7 @@ public interface TaggingService
      * 
      * @return List<String> list of tags
      */
+    @NotAuditable
     List<String> getTags(StoreRef storeRef);
     
     /** 
@@ -55,6 +59,7 @@ public interface TaggingService
      * @param filter        tag filter
      * @return List<String> list of tags
      */
+    @NotAuditable
     List<String> getTags(StoreRef storeRef, String filter);
     
     /**
@@ -63,6 +68,7 @@ public interface TaggingService
      * @param storeRef  store reference
      * @param tag       tag name
      */
+    @Auditable(parameters = {"tag"})
     NodeRef createTag(StoreRef storeRef, String tag);
     
     /**
@@ -71,6 +77,7 @@ public interface TaggingService
      * @param storeRef  store reference
      * @param tag       tag name
      */
+    @Auditable(parameters = {"tag"})
     void deleteTag(StoreRef storeRef, String tag);
     
     /**
@@ -80,6 +87,7 @@ public interface TaggingService
      * @param tag       tag name
      * @return boolean  true if the node has the tag, false otherwise
      */
+    @Auditable(parameters = {"tag"})
     boolean hasTag(NodeRef nodeRef, String tag);
     
     /**
@@ -88,6 +96,7 @@ public interface TaggingService
      * @param nodeRef   node reference
      * @param tag       tag name
      */
+    @Auditable(parameters = {"tag"})
     void addTag(NodeRef nodeRef, String tag);
 
     /**
@@ -99,6 +108,7 @@ public interface TaggingService
      * @param tag           tag
      * @return NodeRef      tag node reference or null not exist
      */
+    @NotAuditable
     NodeRef getTagNodeRef(StoreRef storeRef, String tag);
 
     /**
@@ -109,6 +119,7 @@ public interface TaggingService
      * @param nodeRef   node reference
      * @param tags      list of tags
      */
+    @Auditable(parameters = {"tags"})
     void addTags(NodeRef nodeRef, List<String> tags);
     
     /**
@@ -117,6 +128,7 @@ public interface TaggingService
      * @param nodeRef   node reference
      * @param tag       tag name
      */
+    @Auditable(parameters = {"tag"})
     void removeTag(NodeRef nodeRef, String tag);
     
     /**
@@ -125,6 +137,7 @@ public interface TaggingService
      * @param nodeRef   node reference
      * @param tags      list of tags
      */
+    @Auditable(parameters = {"tags"})
     void removeTags(NodeRef nodeRef, List<String> tags);
     
     /**
@@ -133,6 +146,7 @@ public interface TaggingService
      * @param nodeRef           node reference
      * @return List<String>     list of tags on the node
      */
+    @NotAuditable
     List<String> getTags(NodeRef nodeRef);
     
     /**
@@ -142,6 +156,7 @@ public interface TaggingService
      * @param nodeRef   node reference
      * @param tags      list of tags
      */
+    @Auditable(parameters = {"tags"})
     void setTags(NodeRef nodeRef, List<String> tags);
     
     /**
@@ -149,6 +164,7 @@ public interface TaggingService
      * 
      * @param nodeRef   node reference
      */
+    @Auditable
     void clearTags(NodeRef nodeRef);
     
     /** 
@@ -157,6 +173,7 @@ public interface TaggingService
      * @param nodeRef   node reference
      * @return boolean  true if node is a tag scope, false otherwise
      */
+    @NotAuditable
     boolean isTagScope(NodeRef nodeRef);
     
     /**    
@@ -164,6 +181,7 @@ public interface TaggingService
      * 
      * @param nodeRef   node reference
      */
+    @Auditable
     void addTagScope(NodeRef nodeRef);
     
     /**
@@ -173,6 +191,7 @@ public interface TaggingService
      * @param nodeRef       tag scope node reference
      * @param async         indicates whether the tag scope refresh should happen asynchronously or not
      */
+    @Auditable
     void refreshTagScope(NodeRef nodeRef, boolean async);
     
     /**
@@ -182,6 +201,7 @@ public interface TaggingService
      * 
      * @param nodeRef   node reference
      */
+    @Auditable
     void removeTagScope(NodeRef nodeRef);
     
     /**
@@ -195,6 +215,7 @@ public interface TaggingService
      * @param nodeRef       node reference
      * @return              the 'nearest' tag scope or null if none found
      */
+    @NotAuditable
     TagScope findTagScope(NodeRef nodeRef);
     
     /**
@@ -207,6 +228,7 @@ public interface TaggingService
      * @param nodeRef           node reference
      * @return List<TagScope>   list of tag scopes
      */
+    @NotAuditable
     List<TagScope> findAllTagScopes(NodeRef nodeRef);
     
     /**
@@ -215,6 +237,7 @@ public interface TaggingService
      * @param  tag              tag name
      * @return List<NodeRef>    list of nodes tagged with specified tag, empty of none found
      */
+    @NotAuditable
     List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag);
     
     /**
@@ -225,6 +248,7 @@ public interface TaggingService
      * @param nodeRef           node providing context for the search
      * @return List<NodeRef>    list of nodes tagged in the context specified, empty if none found
      */
+    @NotAuditable
     List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef);
 }
 

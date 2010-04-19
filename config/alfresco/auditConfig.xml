@@ -184,6 +184,8 @@
     <Service name="ExporterService"/>
     
     <Service name="ImporterService"/>
+
+    <Service name="InvitationService"/>
     
     <Service name="RepositoryExporterService"/>
     
@@ -192,6 +194,8 @@
     <Service name="LicenseService" mode="none" enabled="false"/>
     
     <Service name="NamespaceService" mode="none" enabled="false"/>
+    
+    <Service name="TaggingService" mode="none" enabled="false"/>
     
     <Service name="TransactionService" mode="none" enabled="false"/>
     

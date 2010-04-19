@@ -1367,5 +1367,32 @@ public interface AVMService
      * @throws     AVMWrongTypeException
      */
     public void setContentData(String path, ContentData data);
+    
+    /**
+     * Get all versions from the last down to and including the one specified
+     * Returned in descending version id.
+     * @param name
+     * @param version
+     * @return list of version descriptors
+     */
+    public List<VersionDescriptor> getStoreVersionsFrom(String name, int version);
+    
+    /**
+     * Get all versions from the first up to and including the one specified
+     * Returned in ascending version id order.
+     * @param name
+     * @param version
+     * @return list of version descriptors
+     */
+    public List<VersionDescriptor> getStoreVersionsTo(String name, int version);
+    
+    /**
+     * Get all versions from an including startVersion up to but NOT including endVersion 
+     * @param name
+     * @param startVersion
+     * @param endVersion
+     * @return list of version descriptors
+     */
+    public List<VersionDescriptor> getStoreVersionsBetween(String name, int startVersion, int endVersion);
 
 }

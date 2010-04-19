@@ -283,4 +283,27 @@ public abstract class AbstractAVMVersionRootDAOImpl implements AVMVersionRootDAO
     protected abstract AVMVersionLayeredNodeEntryEntity createVersionLayeredNodeEntryEntity(long versionRootId, String md5sum, String path);
     protected abstract int deleteVersionLayeredNodeEntryEntities(long versionRootId);
     protected abstract List<AVMVersionLayeredNodeEntryEntity> getVersionLayeredNodeEntryEntities(long storeId);
+
+    
+    protected abstract List<AVMVersionRootEntity> getVersionRootEntitiesByVersionsTo(long storeId, long to);
+    protected abstract List<AVMVersionRootEntity> getVersionRootEntitiesByVersionsFrom(long storeId, long from);
+    protected abstract List<AVMVersionRootEntity> getVersionRootEntitiesByVersionsBetween(long storeId, long from, long to);
+    
+    public List<AVMVersionRootEntity> getByVersionsTo(long id, int version)
+    {
+        return getVersionRootEntitiesByVersionsTo(id, version);
+    }
+
+    public List<AVMVersionRootEntity> getByVersionsFrom(long id, int version)
+    {
+       return getVersionRootEntitiesByVersionsFrom(id, version);
+    }
+
+    public List<AVMVersionRootEntity> getByVersionsBetween(long id, int startVersion, int endVersion)
+    {
+        return getVersionRootEntitiesByVersionsBetween(id, startVersion, endVersion);
+    }
+    
+    
+    
 }

@@ -949,4 +949,20 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         grabLock(AVMUtil.extendAVMPath(path, name));
         fService.createFile(path, name, in, aspects, properties);
     }
+
+    public List<VersionDescriptor> getStoreVersionsTo(String name, int version)
+    {
+        return fService.getStoreVersionsTo(name, version);
+    }
+
+    public List<VersionDescriptor> getStoreVersionsFrom(String name, int version)
+    {
+        return fService.getStoreVersionsFrom(name, version);
+    }
+    
+    public List<VersionDescriptor> getStoreVersionsBetween(String name, int from, int to)
+    {
+        return fService.getStoreVersionsBetween(name, from, to);
+    }
+    
 }

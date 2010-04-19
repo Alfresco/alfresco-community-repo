@@ -1617,4 +1617,38 @@ public class AVMServiceImpl implements AVMService
         }
         fAVMRepository.setMimeType(path, mimeType);
     }
+
+    public List<VersionDescriptor> getStoreVersionsTo(String name, int version)
+    {
+        if (name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.getAVMStoreVersionsTo(name, version);
+    }
+
+    public List<VersionDescriptor> getStoreVersionsFrom(String name, int version)
+    {
+        if (name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.getAVMStoreVersionsFrom(name, version);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getStoreVersionsBetween(java.lang.String, int, int)
+     */
+    public List<VersionDescriptor> getStoreVersionsBetween(String name, int startVersion, int endVersion)
+    {
+        if (name == null)
+        {
+            throw new AVMBadArgumentException("Illegal null argument.");
+        }
+        return fAVMRepository.getAVMStoreVersionsBetween(name, startVersion, endVersion);
+    }
+    
+    
+    
+    
 }

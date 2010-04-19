@@ -85,4 +85,26 @@ public interface VersionRootDAO
      * @return The highest numbered id.
      */
     public Integer getMaxVersionID(AVMStore store);
+
+    /**
+     * @param store
+     * @param version
+     * @return
+     */
+    public List<VersionRoot> getByVersionsTo(AVMStore store, int version);
+
+    /**
+     * @param store
+     * @param version
+     * @return
+     */
+    public List<VersionRoot> getByVersionsFrom(AVMStore store, int version);
+
+    /**
+     * @param store
+     * @param startVersion
+     * @param endVersion
+     * @return
+     */
+    public List<VersionRoot> getByVersionsBetween(AVMStore store, int startVersion, int endVersion);
 }

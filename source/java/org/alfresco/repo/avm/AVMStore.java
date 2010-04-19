@@ -212,6 +212,28 @@ public interface AVMStore
     public List<VersionDescriptor> getVersions();
 
     /**
+     * Get all the versions starting from the last until the version specified
+     * @param version - the version which which to end
+     * @return - the versions in descending order
+     */
+    public List<VersionDescriptor> getVersionsFrom(int version);
+    
+    /**
+     * Get all the versions after and including the one specified
+     * @param version - the version to start from
+     * @return - the versions in ascending order
+     */
+    public List<VersionDescriptor> getVersionsTo(int version);
+    
+    /**
+     * Get all versions from an including startVersion up to but NOT including endVersion 
+     * @param startVersion
+     * @param endVersion
+     * @return - the versions in ascending order
+     */
+    public List<VersionDescriptor> getVersionsBetween(int startVersion, int endVersion);
+    
+    /**
      * Get the versions from between the given dates. From or to
      * may be null but not both.
      * @param from The earliest date.

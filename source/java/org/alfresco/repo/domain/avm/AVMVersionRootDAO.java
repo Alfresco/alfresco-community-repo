@@ -103,4 +103,26 @@ public interface AVMVersionRootDAO
     public void deleteVersionLayeredNodeEntries(long versionRootId);
     
     public List<AVMVersionLayeredNodeEntryEntity> getVersionLayeredNodeEntries(long versionRootId);
+
+    /**
+     * @param id
+     * @param version
+     * @return
+     */
+    public List<AVMVersionRootEntity> getByVersionsTo(long id, int version);
+
+    /**
+     * @param id
+     * @param version
+     * @return
+     */
+    public List<AVMVersionRootEntity> getByVersionsFrom(long id, int version);
+
+    /**
+     * @param id
+     * @param startVersion
+     * @param endVersion
+     * @return
+     */
+    public List<AVMVersionRootEntity> getByVersionsBetween(long id, int startVersion, int endVersion);
 }

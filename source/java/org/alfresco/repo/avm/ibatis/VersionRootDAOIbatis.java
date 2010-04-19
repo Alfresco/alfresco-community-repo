@@ -25,6 +25,7 @@ import java.util.List;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.AVMStore;
+import org.alfresco.repo.avm.AVMStoreImpl;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.avm.VersionRoot;
 import org.alfresco.repo.avm.VersionRootDAO;
@@ -140,6 +141,43 @@ class VersionRootDAOIbatis implements VersionRootDAO
         return new Integer(maxVersionId.intValue());
     }
     
+    
+    
+    public List<VersionRoot> getByVersionsTo(AVMStore store, int version)
+    {
+        List<AVMVersionRootEntity> vrEntities = AVMDAOs.Instance().newAVMVersionRootDAO.getByVersionsTo(store.getId(), version);
+        List<VersionRoot> vrs = new ArrayList<VersionRoot>(vrEntities.size());
+        for (AVMVersionRootEntity vrEntity : vrEntities)
+        {
+            vrs.add(convertVersionRootEntityToVersionRoot(vrEntity));
+        }
+        return vrs;
+    }
+
+    public List<VersionRoot> getByVersionsFrom(AVMStore store, int version)
+    {
+        List<AVMVersionRootEntity> vrEntities = AVMDAOs.Instance().newAVMVersionRootDAO.getByVersionsFrom(store.getId(), version);
+        List<VersionRoot> vrs = new ArrayList<VersionRoot>(vrEntities.size());
+        for (AVMVersionRootEntity vrEntity : vrEntities)
+        {
+            vrs.add(convertVersionRootEntityToVersionRoot(vrEntity));
+        }
+        return vrs;
+    }
+
+    
+    
+    public List<VersionRoot> getByVersionsBetween(AVMStore store, int startVersion, int endVersion)
+    {
+        List<AVMVersionRootEntity> vrEntities = AVMDAOs.Instance().newAVMVersionRootDAO.getByVersionsBetween(store.getId(), startVersion, endVersion);
+        List<VersionRoot> vrs = new ArrayList<VersionRoot>(vrEntities.size());
+        for (AVMVersionRootEntity vrEntity : vrEntities)
+        {
+            vrs.add(convertVersionRootEntityToVersionRoot(vrEntity));
+        }
+        return vrs;
+    }
+
     private AVMVersionRootEntity convertVersionRootToVersionRootEntity(VersionRoot vr)
     {
         if (vr == null)

@@ -951,6 +951,65 @@ public class AVMStoreImpl implements AVMStore
         return descs;
     }
 
+    
+    
+    public List<VersionDescriptor> getVersionsTo(int version)
+    {
+        List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getByVersionsTo(this, version);
+        List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
+        for (VersionRoot vr : versions)
+        {
+            VersionDescriptor desc =
+                new VersionDescriptor(getName(),
+                                      vr.getVersionID(),
+                                      vr.getCreator(),
+                                      vr.getCreateDate(),
+                                      vr.getTag(),
+                                      vr.getDescription());
+            descs.add(desc);
+        }
+        return descs;
+    }
+
+    public List<VersionDescriptor> getVersionsFrom(int version)
+    {
+        List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getByVersionsFrom(this, version);
+        List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
+        for (VersionRoot vr : versions)
+        {
+            VersionDescriptor desc =
+                new VersionDescriptor(getName(),
+                                      vr.getVersionID(),
+                                      vr.getCreator(),
+                                      vr.getCreateDate(),
+                                      vr.getTag(),
+                                      vr.getDescription());
+            descs.add(desc);
+        }
+        return descs;
+    }
+    
+    
+    
+
+    public List<VersionDescriptor> getVersionsBetween(int startVersion, int endVersion)
+    {
+        List<VersionRoot> versions = AVMDAOs.Instance().fVersionRootDAO.getByVersionsBetween(this, startVersion, endVersion);
+        List<VersionDescriptor> descs = new ArrayList<VersionDescriptor>();
+        for (VersionRoot vr : versions)
+        {
+            VersionDescriptor desc =
+                new VersionDescriptor(getName(),
+                                      vr.getVersionID(),
+                                      vr.getCreator(),
+                                      vr.getCreateDate(),
+                                      vr.getTag(),
+                                      vr.getDescription());
+            descs.add(desc);
+        }
+        return descs;
+    }
+
     /**
      * Get the AVMRepository.
      * @return The AVMRepository

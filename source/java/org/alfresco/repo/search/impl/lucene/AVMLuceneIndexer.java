@@ -18,8 +18,11 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
+import java.util.List;
+
 import org.alfresco.repo.search.BackgroundIndexerAware;
 import org.alfresco.repo.search.IndexMode;
+import org.alfresco.service.cmr.avm.VersionDescriptor;
 
 /**
  * AVM specific indxer support
@@ -57,17 +60,6 @@ public interface AVMLuceneIndexer extends LuceneIndexer, BackgroundIndexerAware
     public void createIndex(String store, IndexMode mode);
     
     /**
-     * Get the id of the last snapshot added to the index
-     * @param store 
-     * 
-     * @param mode 
-     *    - IndexMode.SYNCHRONOUS - the last searchable snapshop
-     *    - IndexMode.ASYNCHRONOUS - the last pending snapshot to be indexed. It may or may not be searchable.
-     * @return - the snapshot id
-     */
-    public int getLastIndexedSnapshot(String store);
-    
-    /**
      * Is the snapshot applied to the index?
      *      
      * Is there an entry for any node that was added OR have all the nodes in the transaction been deleted as expected?
@@ -99,4 +91,12 @@ public interface AVMLuceneIndexer extends LuceneIndexer, BackgroundIndexerAware
      * @return
      */
     public long getIndexedDocCount();
+    
+    /**
+     * Get the last snapshot in the index - this does not mean that all snapshots before it have been indexed.
+     * 
+     * @param store
+     * @return
+     */
+    public int getLastIndexedSnapshot(String store);
 }

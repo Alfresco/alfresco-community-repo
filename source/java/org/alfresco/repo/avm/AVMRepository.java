@@ -3428,4 +3428,50 @@ public class AVMRepository
         }
         return store.getStoreAcl();
     }
+
+    /**
+     * @param name
+     * @param version
+     * @return
+     */
+    public List<VersionDescriptor> getAVMStoreVersionsTo(String name, int version)
+    {
+        AVMStore store = getAVMStoreByName(name);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found.");
+        }
+        return store.getVersionsTo(version);
+    }
+
+    /**
+     * @param name
+     * @param version
+     * @return
+     */
+    public List<VersionDescriptor> getAVMStoreVersionsFrom(String name, int version)
+    {
+        AVMStore store = getAVMStoreByName(name);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found.");
+        }
+        return store.getVersionsFrom(version);
+    }
+
+    /**
+     * @param name
+     * @param startVersion
+     * @param endVersion
+     * @return
+     */
+    public List<VersionDescriptor> getAVMStoreVersionsBetween(String name, int startVersion, int endVersion)
+    {
+        AVMStore store = getAVMStoreByName(name);
+        if (store == null)
+        {
+            throw new AVMNotFoundException("Store not found.");
+        }
+        return store.getVersionsBetween(startVersion, endVersion);
+    }
 }

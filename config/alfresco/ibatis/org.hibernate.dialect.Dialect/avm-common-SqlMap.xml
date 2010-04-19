@@ -784,6 +784,43 @@
         order by version_id
     </select>
     
+    <!-- by version ids -->
+    
+    <select id="select_AVMVersionRootsByVersionTo" parameterMap="parameter_IdToMap" resultMap="result_AVMVersionRoot">
+        <![CDATA[
+        select
+            *
+        from
+            avm_version_roots
+        where
+            avm_store_id = ? and
+            version_id <= ?
+        order by version_id
+        ]]>
+    </select>
+    
+    <select id="select_AVMVersionRootsByVersionFrom" parameterMap="parameter_IdFromMap" resultMap="result_AVMVersionRoot">
+        select
+            *
+        from
+            avm_version_roots
+        where
+            avm_store_id = ? and
+            version_id >= ?
+        order by version_id
+    </select>
+    
+    <select id="select_AVMVersionRootsByVersionsBetween" parameterMap="parameter_IdFromToMap" resultMap="result_AVMVersionRoot">
+        select
+            *
+        from
+            avm_version_roots
+        where
+            avm_store_id = ? and
+            version_id between ? and ?
+        order by version_id
+    </select>
+    
     <!-- Optimistic update of the version root -->
     <update id="update_AVMVersionRoot" parameterClass="AVMVersionRoot">
         update

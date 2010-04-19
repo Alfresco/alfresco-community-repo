@@ -29,7 +29,9 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
@@ -74,6 +76,10 @@ public class AVMServiceTestBase extends TestCase
      */
     private long fStartTime;
 
+    protected static RetryingTransactionHelper fRetryingTransactionHelper;
+
+    protected static AuthenticationComponent fAuthenticationComponent;
+
     protected static AVMSnapShotTriggeredIndexingMethodInterceptor fIndexingInterceptor;
 
     protected static TransactionService fTransactionService;
@@ -108,6 +114,8 @@ public class AVMServiceTestBase extends TestCase
             fLockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
             fIndexingInterceptor = (AVMSnapShotTriggeredIndexingMethodInterceptor)fContext.getBean("avmSnapShotTriggeredIndexingMethodInterceptor");
             fAuthService = (AuthenticationService)fContext.getBean("AuthenticationService");
+            fAuthenticationComponent = (AuthenticationComponent) fContext.getBean("authenticationComponent");
+            fRetryingTransactionHelper = (RetryingTransactionHelper) fContext.getBean("retryingTransactionHelper");
             
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
             cstl.addCallback(

@@ -912,6 +912,9 @@
                 <value>hasAspect</value>
                 <value>getAPath</value>
                 <value>getGuid</value>
+                <value>getStoreVersionsFrom</value>
+                <value>getStoreVersionsTo</value>
+                <value>getStoreVersionsBetween</value>
             </list>
         </property>
     </bean>

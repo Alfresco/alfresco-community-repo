@@ -823,6 +823,24 @@ public class MultiTAVMService implements AVMService
     }
     
     
+    public List<VersionDescriptor> getStoreVersionsTo(String name, int version)
+    {
+        // TODO - review
+        return fService.getStoreVersionsTo(name, version);
+    }
+
+    public List<VersionDescriptor> getStoreVersionsFrom(String name, int version)
+    {
+        // TODO - review
+        return fService.getStoreVersionsFrom(name, version);
+    }
+    
+    public List<VersionDescriptor> getStoreVersionsBetween(String name, int from, int to)
+    {
+     // TODO - review
+        return fService.getStoreVersionsBetween(name, from, to);
+    }
+    
     private String getTenantStoreName(String avmStoreName)
     {
         if ((avmStoreName == null) || (! isTenantServiceEnabled()))

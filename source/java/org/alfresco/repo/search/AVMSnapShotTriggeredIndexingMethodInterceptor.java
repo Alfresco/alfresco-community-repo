@@ -257,7 +257,8 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                     createIndex(store);
                 }
                 
-                avmIndexer.index(store, (before != -1 ? before : last), after, getIndexMode(store));
+                int from = before != -1 ? before : last;
+                avmIndexer.index(store, from, after, getIndexMode(store));
             }
         }
     }
@@ -268,6 +269,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
      */
     public int getLastIndexedSnapshot(String store)
     {
+       
         AVMLuceneIndexer avmIndexer = getIndexer(store);
         if (avmIndexer != null)
         {
@@ -347,7 +349,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             if (avmIndexer != null)
             {
                 avmIndexer.flushPending();
-                return getLastIndexedSnapshot(avmIndexer, store) == last;
+                return avmIndexer.isSnapshotIndexed(store, last);
             }
             return false;
         default:

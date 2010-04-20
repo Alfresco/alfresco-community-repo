@@ -1056,12 +1056,28 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     else if ((value instanceof String) && ((String) value).length() == 0)
                     {
                         // make sure empty strings stay as empty strings,
-                        // everything else
-                        // should be represented as null
-                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT)
-                                    && !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                        // everything else should be represented as null
+                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) && 
+                            !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
                         {
                             value = null;
+                        }
+                        else
+                        {
+                            // if the text property has a regex constraint set the empty
+                            // string to null otherwise the integrity checker will reject it
+                            List<ConstraintDefinition> constraints = propDef.getConstraints();
+                            if (constraints != null && constraints.size() > 0)
+                            {
+                                for (ConstraintDefinition constraintDef : constraints)
+                                {
+                                    if ("REGEX".equals(constraintDef.getConstraint().getType()))
+                                    {
+                                        value = null;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
 

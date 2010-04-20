@@ -21,6 +21,7 @@ package org.alfresco.repo.search;
 import org.alfresco.repo.service.StoreRedirectorProxyFactory;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationEvent;
 
@@ -100,6 +101,15 @@ public class IndexerComponent extends AbstractLifecycleBean implements Indexer
         Indexer indexer = indexerAndSearcherFactory.getIndexer(
                 relationshipRef.getChildRef().getStoreRef());
         indexer.deleteChildRelationship(relationshipRef);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.Indexer#deleteIndex(org.alfresco.service.cmr.repository.StoreRef)
+     */
+    public void deleteIndex(StoreRef storeRef)
+    {
+        Indexer indexer = indexerAndSearcherFactory.getIndexer(storeRef);
+        indexer.deleteIndex(storeRef);
     }
 
 }

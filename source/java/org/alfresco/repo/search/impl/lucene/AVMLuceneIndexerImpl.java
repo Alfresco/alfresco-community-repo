@@ -1588,7 +1588,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
         else
         {
-            return isSynchronousSnapshotPresent(store, id) || isSynchronousSnapshotPresent(store, id);
+            return isSynchronousSnapshotPresent(store, id) || isAsynchronousSnapshotPresent(store, id);
         }
     }
 
@@ -2105,5 +2105,14 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                 s_logger.warn("Failed to close main reader", e);
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.Indexer#deleteIndex(org.alfresco.service.cmr.repository.StoreRef)
+     */
+    public void deleteIndex(StoreRef storeRef)
+    {
+       deleteIndex();
+        
     }
 }

@@ -355,6 +355,81 @@ public class IndexInfo implements IndexMonitor
         // We do not require any of the lucene in-built locking.
         FSDirectory.setDisableLocks(true);
     }
+    
+    /**
+     * 
+     */
+    public void delete(final String deltaId)
+    {
+        
+        getWriteLock();
+        try
+        {
+            doWithFileLock(new LockWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    setStatusFromFile();
+
+                    // If the index is not shared we can do some easy clean
+                    // up
+                    if (!indexIsShared)
+                    {
+                        HashSet<String> deletable = new HashSet<String>();
+                        // clean up
+                        for (IndexEntry entry : indexEntries.values())
+                        {
+                            if(!entry.getName().equals(deltaId))
+                            {
+                                entry.setStatus(TransactionStatus.DELETABLE);
+                                deletable.add(entry.getName());
+                            }
+                        }
+                        // Delete entries that are not required
+                        for (String id : deletable)
+                        {
+                            indexEntries.remove(id);
+                        }
+                        
+                        clearOldReaders();
+
+                        cleaner.schedule();
+
+                        merger.schedule();
+
+                        // persist the new state
+                        writeStatus();
+                        
+                        if (mainIndexReader != null)
+                        {
+                            if (s_logger.isDebugEnabled())
+                            {
+                                s_logger.debug("... invalidating main index reader");
+                            }
+                            ((ReferenceCounting) mainIndexReader).setInvalidForReuse();
+                            mainIndexReader = null;
+                        }
+                    }
+                    return null;
+                }
+
+                public boolean canRetry()
+                {
+                    return false;
+                }
+
+            });
+        }
+        finally
+        {
+            releaseWriteLock();
+        }
+        if(s_logger.isDebugEnabled())
+        {
+           s_logger.debug("Index "+ indexDirectory+" deleted");
+        }
+        
+    }
 
     /**
      * Get the IndexInfo object based in the given directory. There is only one object per directory per JVM.

@@ -20,6 +20,7 @@ package org.alfresco.repo.search;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * This interface abstracts how indexing is used from within the node service
@@ -101,6 +102,12 @@ public interface Indexer
      * @param relationshipRef
      */
     public void deleteChildRelationship(ChildAssociationRef relationshipRef);
+
+    /**
+     * Delete the index for a store
+     * @param storeRef
+     */
+    public void deleteIndex(StoreRef storeRef);
 
   
     

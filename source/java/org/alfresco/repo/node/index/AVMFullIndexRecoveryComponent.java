@@ -287,6 +287,16 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
             else if (mode == RecoveryMode.FULL)
             {
                 logger.info("    Rebuilding index for " + store);
+                // delete existing index
+                RetryingTransactionCallback<Void> deleteWork = new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Exception
+                    {
+                        avmSnapShotTriggeredIndexingMethodInterceptor.deleteIndex(store);
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(deleteWork, true, true);
             }
             
             final int latest = avmService.getLatestSnapshotID(store);

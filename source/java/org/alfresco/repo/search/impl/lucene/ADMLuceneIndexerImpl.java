@@ -1697,4 +1697,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.Indexer#deleteIndex(org.alfresco.service.cmr.repository.StoreRef)
+     */
+    public void deleteIndex(StoreRef storeRef)
+    {
+        deleteIndex();
+    }
+
 }

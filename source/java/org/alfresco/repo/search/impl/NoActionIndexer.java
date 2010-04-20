@@ -21,6 +21,7 @@ package org.alfresco.repo.search.impl;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * A no action indexer - the indexing is done automatically along with
@@ -60,6 +61,14 @@ public class NoActionIndexer implements Indexer
     }
 
     public void deleteChildRelationship(ChildAssociationRef relationshipRef)
+    {
+        return;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.Indexer#deleteIndex(org.alfresco.service.cmr.repository.StoreRef)
+     */
+    public void deleteIndex(StoreRef storeRef)
     {
         return;
     }

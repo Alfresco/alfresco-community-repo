@@ -519,4 +519,14 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         return null;
     }
 
+    public void deleteIndex(String store)
+    {
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
+        Indexer indexer = indexerAndSearcher.getIndexer(storeRef);
+        if (indexer instanceof AVMLuceneIndexer)
+        {
+            AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
+            avmIndexer.deleteIndex(storeRef);
+        }
+    }
 }

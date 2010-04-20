@@ -32,6 +32,7 @@ import org.alfresco.repo.node.index.IndexTransactionTracker.IndexTransactionTrac
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -318,6 +319,21 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
     private static final int MAX_TRANSACTIONS_PER_ITERATION = 1000;
     private void performFullRecovery()
     {
+        RetryingTransactionCallback<Void> deleteWork = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Exception
+            {
+                // delete stores
+                for(StoreRef storeRef : nodeService.getStores())
+                {
+                    indexer.deleteIndex(storeRef);
+                }
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteWork, true, true);
+        
+        
         int txnCount = nodeDaoService.getTransactionCount();
         // starting
         String msgStart = I18NUtil.getMessage(MSG_RECOVERY_STARTING, txnCount);

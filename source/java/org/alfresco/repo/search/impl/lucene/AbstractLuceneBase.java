@@ -338,6 +338,11 @@ public abstract class AbstractLuceneBase
         return indexInfo.doWithWriteLock(lockWork);
     }
 
+    
+    public void deleteIndex()
+    {
+        indexInfo.delete(deltaId);
+    }
    
 
 }

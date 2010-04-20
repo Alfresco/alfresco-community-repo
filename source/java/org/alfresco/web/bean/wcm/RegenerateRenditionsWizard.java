@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
@@ -86,6 +88,7 @@ public class RegenerateRenditionsWizard
    transient private AVMSyncService avmSyncService;
    transient private SearchService searchService;
    transient private FormsService formsService;
+   transient private PermissionService permissionService;
    
    private WebProject selectedWebProject;
    private String[] selectedForms;
@@ -248,12 +251,15 @@ public class RegenerateRenditionsWizard
       
       for (WebProjectInfo wpInfo : wpInfos)
       {
-         String s = wpInfo.getTitle();
-         if (this.selectedWebProject == null)
-         {
-            this.selectedWebProject = new WebProject(wpInfo.getNodeRef());
+         if(getPermissionService().hasPermission(wpInfo.getNodeRef(), PermissionService.WCM_CONTENT_MANAGER) == AccessStatus.ALLOWED) {
+             // display only web projects to which the authenticated user has CONTENT MANAGER rights
+             String s = wpInfo.getTitle();
+             if (this.selectedWebProject == null)
+             {
+                this.selectedWebProject = new WebProject(wpInfo.getNodeRef());
+             }
+             result.add(new SelectItem(wpInfo.getNodeRef().toString(), s != null && s.length() != 0 ? s : wpInfo.getName()));
          }
-         result.add(new SelectItem(wpInfo.getNodeRef().toString(), s != null && s.length() != 0 ? s : wpInfo.getName()));
       }
       return result;
    }
@@ -471,6 +477,23 @@ public class RegenerateRenditionsWizard
          this.formsService = (FormsService)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
       }
       return this.formsService;
+   }
+
+   /**
+    * @param formsService    The FormsService to set.
+    */
+   public void setPermissionService(final PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
+   }
+   
+   private PermissionService getPermissionService()
+   {
+      if (this.permissionService == null)
+      {
+         this.permissionService = (PermissionService)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "PermissionService");
+      }
+      return this.permissionService;
    }
    
    // ------------------------------------------------------------------------------

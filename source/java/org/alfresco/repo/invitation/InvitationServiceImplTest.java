@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.invitation;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
@@ -41,6 +43,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Unit tests of Invitation Service
@@ -67,9 +70,11 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     public static String USER_ONE = "InvitationServiceAlice";
     public static String USER_TWO = "InvitationServiceBob";
     public static String USER_EVE = "InvitationServiceEve";
+    public static String USER_NOEMAIL = "InvitationServiceNoEmail";
     public static String USER_ONE_FIRSTNAME = "One";
     public static String USER_ONE_LASTNAME = "Test";
     public static String USER_ONE_EMAIL = USER_ONE + "@alfrescotesting.com";
+    public static String USER_TWO_EMAIL = USER_TWO + "@alfrescotesting.com";
 
     /**
      * Called during the transaction setup
@@ -94,14 +99,17 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         createPerson(USER_ONE, USER_ONE_EMAIL, USER_ONE_FIRSTNAME, USER_ONE_LASTNAME);
         createPerson(USER_TWO, USER_TWO + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
         createPerson(USER_EVE, USER_EVE + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
+        createPerson(USER_NOEMAIL, null, USER_NOEMAIL, USER_NOEMAIL);
 
         this.authenticationComponent.setCurrentUser(USER_MANAGER);
 
         SiteInfo siteInfo = siteService.getSite(SITE_SHORT_NAME_INVITE);
         if (siteInfo == null)
         {
-            siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE, "InviteSiteTitle",
+            siteInfo = siteService.createSite("InviteSitePreset", SITE_SHORT_NAME_INVITE, "InviteSiteTitle",
                         "InviteSiteDescription", SiteVisibility.MODERATED);
+            
+            siteService.setMembership(SITE_SHORT_NAME_INVITE, USER_NOEMAIL, SiteModel.SITE_MANAGER);
         }
 
         SiteInfo siteInfoRed = siteService.getSite(SITE_SHORT_NAME_RED);
@@ -275,6 +283,37 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
         assertEquals("role name wrong", roleName, inviteeRole);
         siteService.removeMembership(resourceName, inviteeUserName);
+        
+        
+        /**
+         * Check that system generated invitations can work as well
+         */
+        {
+           Field faf = mailService.getClass().getDeclaredField("fromAddress");
+           faf.setAccessible(true);
+           String defaultFromAddress = (String)ReflectionUtils.getField(faf, mailService);
+           
+           AuthenticationUtil.setFullyAuthenticatedUser(USER_NOEMAIL);
+
+           // Check invitiation
+           NominatedInvitation nominatedInvitation2 = invitationService.inviteNominated(inviteeFirstName, inviteeLastName,
+                 USER_TWO_EMAIL, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+
+           assertNotNull("nominated invitation is null", nominatedInvitation2);
+           inviteId = nominatedInvitation.getInviteId();
+           assertEquals("first name wrong", inviteeFirstName, nominatedInvitation2.getInviteeFirstName());
+           assertEquals("last name wrong", inviteeLastName, nominatedInvitation2.getInviteeLastName());
+           assertEquals("email name wrong", USER_TWO_EMAIL, nominatedInvitation2.getInviteeEmail());
+     
+           // Check the email
+           MimeMessage msg = mailService.retrieveLastTestMessage();
+           
+           assertEquals(1, msg.getAllRecipients().length);
+           assertEquals(USER_TWO_EMAIL, msg.getAllRecipients()[0].toString());
+           
+           assertEquals(1, msg.getFrom().length);
+           assertEquals(defaultFromAddress, msg.getFrom()[0].toString());           
+        }
     }
 
     // TODO MER START

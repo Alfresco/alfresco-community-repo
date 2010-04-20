@@ -251,14 +251,17 @@ public class SandboxServiceImpl implements SandboxService
         {
             sbInfos = new ArrayList<SandboxInfo>(1);
             
-            SandboxInfo authorSandbox = getAuthorSandbox(wpStoreId, currentUser);
-            
-            if (authorSandbox != null)
+            if (userRole != null)
             {
-                sbInfos.add(authorSandbox);
+                SandboxInfo authorSandbox = getAuthorSandbox(wpStoreId, currentUser);
+                
+                if (authorSandbox != null)
+                {
+                    sbInfos.add(authorSandbox);
+                }
+                
+                sbInfos.add(getSandbox(WCMUtil.buildStagingStoreName(wpStoreId))); // get staging sandbox
             }
-            
-            sbInfos.add(getSandbox(WCMUtil.buildStagingStoreName(wpStoreId))); // get staging sandbox
         }
         
         return sbInfos;

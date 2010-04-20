@@ -482,6 +482,13 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         String wpStoreId = wpInfo.getStoreId();
         assertNotNull(wpService.getWebProject(wpStoreId));
         
+        // Create ANOther web project
+        WebProjectInfo wpAnoInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete ano", TEST_WEBPROJ_NAME+"-delete ano", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
+        String wpStoreAnoId = wpAnoInfo.getStoreId();
+        
+        assertEquals(2, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(2, sbService.listSandboxes(wpStoreAnoId).size());
+        
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
@@ -516,6 +523,9 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         // Delete the web project
         wpService.deleteWebProject(wpStoreId);
         assertNull(wpService.getWebProject(wpStoreId));
+        
+        assertEquals(0, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(2, sbService.listSandboxes(wpStoreAnoId).size());
         
         try
         {

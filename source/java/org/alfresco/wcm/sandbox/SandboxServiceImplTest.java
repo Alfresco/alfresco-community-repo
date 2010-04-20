@@ -254,8 +254,14 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-list", TEST_WEBPROJ_NAME+" list", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         
-        List<SandboxInfo> sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+        // Create ANOther web project
+        WebProjectInfo wpAnoInfo = wpService.createWebProject(TEST_SANDBOX+"-list ano", TEST_WEBPROJ_NAME+" list ano", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        String wpStoreAnoId = wpAnoInfo.getStoreId();
+        
+        List<SandboxInfo> sbInfos = sbService.listSandboxes(wpStoreId);
         assertEquals(2, sbInfos.size()); // staging sandbox, author sandbox (for admin)
+        
+        assertEquals(2, sbService.listSandboxes(wpStoreAnoId).size());
         
         String expectedUserSandboxId = TEST_SANDBOX+"-list" + "--" + AuthenticationUtil.getAdminUserName();
         
@@ -432,7 +438,12 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-delete", TEST_WEBPROJ_NAME+" delete", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         
+        // Create ANOther web project
+        WebProjectInfo wpAnoInfo = wpService.createWebProject(TEST_SANDBOX+"-delete ano", TEST_WEBPROJ_NAME+" delete ano", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        String wpStoreAnoId = wpAnoInfo.getStoreId();
+        
         assertEquals(2, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(2, sbService.listSandboxes(wpStoreAnoId).size());
         
         // Get staging sandbox
         SandboxInfo sbInfo = sbService.getStagingSandbox(wpStoreId);
@@ -460,10 +471,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Get admin author sandbox
-        sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());
+        sbInfo = sbService.getAuthorSandbox(wpStoreId);
         sbService.deleteSandbox(sbInfo.getSandboxId());
         
-        assertEquals(1, sbService.listSandboxes(wpInfo.getStoreId()).size());
+        assertEquals(1, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(2, sbService.listSandboxes(wpStoreAnoId).size());
         
         // Invite web users
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);

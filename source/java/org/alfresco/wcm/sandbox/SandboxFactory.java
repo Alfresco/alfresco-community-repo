@@ -948,7 +948,7 @@ public final class SandboxFactory extends WCMUtil
            String storeName = store.getName();
            
            // list main stores - not preview stores or workflow stores or locally deployed "live" ASR servers (LIVE or TEST)
-           if ((storeName.startsWith(wpStoreId)) && 
+           if ((WCMUtil.getWebProjectStoreId(storeName).equals(wpStoreId)) &&
                (! WCMUtil.isPreviewStore(storeName)) &&
                ((includeLocalhostDeployed || (! WCMUtil.isLocalhostDeployedStore(wpStoreId, storeName)))) &&
                ((includeWorkflowSandboxes || (! WCMUtil.isWorkflowStore(storeName))))

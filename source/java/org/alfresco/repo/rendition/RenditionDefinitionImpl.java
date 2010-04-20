@@ -37,7 +37,7 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
      * Serial version UID
      */
     private static final long serialVersionUID = 4336392868488634875L;
-    //TODO rename to renditionDefinitionName
+
     protected static final String RENDITION_DEFINITION_NAME = "renderingActionName";
 
     public NodeRef renditionParent;

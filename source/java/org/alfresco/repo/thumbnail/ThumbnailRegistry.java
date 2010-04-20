@@ -29,6 +29,8 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -44,7 +46,10 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @author Neil McErlean
  */
 public class ThumbnailRegistry implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>
-{   
+{
+    /** Logger */
+    private static Log logger = LogFactory.getLog(ThumbnailRegistry.class);
+
     /** Content service */
     private ContentService contentService;
     
@@ -127,7 +132,24 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
                     // for the ThumbnailParentAssociationDetails object. Hence the null
                     RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
                     
-                    renditionService.saveRenditionDefinition(renditionDef);
+                    // Thumbnail definitions are saved into the repository as actions
+                    // but only if they have not already been saved.
+                    boolean alreadyPersisted = renditionService.loadRenditionDefinition(renditionDef.getRenditionName()) != null;
+                    if (!alreadyPersisted)
+                    {
+                    	if (logger.isDebugEnabled())
+                    	{
+                    		logger.debug("Init'ing and saving thumbnail definition " + thumbnailDefName);
+                    	}
+                    	renditionService.saveRenditionDefinition(renditionDef);
+                    }
+                    else
+                    {
+                    	if (logger.isDebugEnabled())
+                    	{
+                    		logger.debug("Init'ing thumbnail definition " + thumbnailDefName);
+                    	}
+                    }
                 }
 
                 return null;

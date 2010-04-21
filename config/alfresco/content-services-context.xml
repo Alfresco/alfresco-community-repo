@@ -217,6 +217,7 @@
    <!--  Unsupported experimental extractor commented out -->
    <!-- <bean id="extracter.MP3"           class="org.alfresco.repo.content.metadata.MP3MetadataExtracter"           parent="baseMetadataExtracter" /> -->
    <bean id="extracter.OpenDocument"  class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter"  parent="baseMetadataExtracter" />
+   <bean id="extracter.DWG"           class="org.alfresco.repo.content.metadata.DWGMetadataExtracter"           parent="baseMetadataExtracter" />
    <bean id="extracter.RFC822"        class="org.alfresco.repo.content.metadata.RFC822MetadataExtracter"        parent="baseMetadataExtracter" >
       <property name="supportedDateFormats">
          <list>

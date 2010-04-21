@@ -356,6 +356,9 @@
             <extension display="JAR">jar</extension>
             <extension display="EAR">ear</extension>
          </mimetype>
+         <mimetype mimetype="application/dwg" display="AutoCAD Drawing">
+            <extension>dwg</extension>
+         </mimetype>
          <mimetype mimetype="image/x-dwg" display="AutoCAD Drawing">
             <extension>dwg</extension>
          </mimetype>

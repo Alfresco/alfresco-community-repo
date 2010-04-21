@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content;
 
+import org.alfresco.repo.content.metadata.DWGMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.MP3MetadataExtracterTest;
 import org.alfresco.repo.content.metadata.MailMetadataExtracterTest;
@@ -80,6 +81,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        TestSuite suite = new TestSuite();
        
        // Metadata tests
+       suite.addTestSuite( DWGMetadataExtracterTest.class );
        suite.addTestSuite( HtmlMetadataExtracterTest.class );
        suite.addTestSuite( MailMetadataExtracterTest.class );
        suite.addTestSuite( MP3MetadataExtracterTest.class );

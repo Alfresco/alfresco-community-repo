@@ -122,8 +122,6 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
 
     protected Map<QName, Serializable> extractFromMimetype(String mimetype) throws Exception
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        
         // get the extension for the mimetype
         String ext = mimetypeMap.getExtension(mimetype);
 
@@ -133,7 +131,12 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         {
             throw new FileNotFoundException("No quick." + ext + " file found for test");
         }
+        return extractFromFile(sourceFile, mimetype);
+    }
 
+    protected Map<QName, Serializable> extractFromFile(File sourceFile, String mimetype) throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         // construct a reader onto the source file
         ContentReader sourceReader = new FileContentReader(sourceFile);
         sourceReader.setMimetype(mimetype);

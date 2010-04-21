@@ -32,6 +32,7 @@ import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
 import org.alfresco.service.cmr.email.EmailMessage;
@@ -227,10 +228,9 @@ public class SubethaEmailMessage implements EmailMessage
                 for (int i = 0; i < count; i++)
                 {
                     BodyPart bp = mp.getBodyPart(i);
-                    String disposition = bp.getDisposition();
-                    if (i > 0)
+                    if (bp.getContent() instanceof MimeMultipart)
                     {
-                        // It's an attachment.  Recurse.
+                        // It's multipart.  Recurse.
                         parseMessagePart(bp);
                     }
                     else

@@ -1,11 +1,12 @@
 var Filters =
 {
    /**
-    * Type map to filter required types
+    * Type map to filter required types.
+    * NOTE: "documents" filter also returns folders to show UI hint about hidden folders.
     */
    TYPE_MAP:
    {
-      "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink")',
+      "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink" OR TYPE:"{http://www.alfresco.org/model/content/1.0}folder")',
       "folders": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}folder" OR TYPE:"{http://www.alfresco.org/model/application/1.0}folderlink")',
       "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
    },

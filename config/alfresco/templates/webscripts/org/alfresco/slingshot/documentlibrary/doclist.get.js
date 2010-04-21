@@ -71,8 +71,17 @@ function getDoclist()
    // Node type counts
    var folderNodesCount = folderNodes.length,
       documentNodesCount = documentNodes.length,
-      nodes = folderNodes.concat(documentNodes),
-      totalRecords = nodes.length;
+      nodes, totalRecords;
+
+   if (parsedArgs.type === "documents")
+   {
+      nodes = documentNodes;
+   }
+   else
+   {
+      nodes = folderNodes.concat(documentNodes);
+   }
+   totalRecords = nodes.length;
    
    // Pagination
    var pageSize = args.size || nodes.length,

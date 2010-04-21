@@ -766,7 +766,7 @@
 
 [#-- Helper to render Atom Summary --]
 [#macro contentsummary node][#if node.properties.description??]${node.properties.description?xml}[#elseif node.properties.title??]${node.properties.title?xml}[#elseif node.mimetype?? && node.mimetype == "text/plain"]${cropContent(node.properties.content, 50)?xml}[#else]${node.properties.name?xml}[/#if][/#macro]
-[#macro foldersummary node][#if node.properties??]${node.properties.description?xml}[#elseif node.properties.title??]${node.properties.title?xml}[#else][/#if][/#macro]
+[#macro foldersummary node][#if node.properties.description??]${node.properties.description?xml}[#elseif node.properties.title??]${node.properties.title?xml}[#else][/#if][/#macro]
 
 [#-- Helper to render Alfresco content type to Atom content type --]
 [#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text<#else>${type}[/#if][/#macro]

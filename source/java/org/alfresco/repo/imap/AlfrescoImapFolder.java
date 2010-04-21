@@ -391,6 +391,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         {
             return "";
         }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getFullNameInternal entry");
+        }
 
         StringBuilder fullName = new StringBuilder();
         List<FileInfo> pathList;
@@ -450,6 +455,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected int getMessageCountInternal()
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getMessageCountInternal entry");
+        }
+        
         if (messages.size() == 0)
         {
             List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
@@ -552,6 +562,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected List<SimpleStoredMessage> getMessagesInternal(MsgRangeFilter msgRangeFilter)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getMessagesInternal entry");
+        }
         if (messages == null || messages.size() == 0)
         {
             List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
@@ -564,6 +578,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             {
                 ret.add(messages.get(i));
             }
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getMessagesInternal exit");
         }
 
         return ret;

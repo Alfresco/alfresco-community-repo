@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -86,6 +87,21 @@ public class FileFolderServiceImpl implements FileFolderService
         " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
         " or subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
+    /** Deep search for folders with a name pattern */
+    private static final String XPATH_QUERY_DEEP_FOLDERS =
+        ".//*" +
+        "[like(@cm:name, $cm:name, false)" +
+        " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
+        " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "'))]";
+    
+    /** Deep search for files with a name pattern */
+    private static final String XPATH_QUERY_DEEP_FILES =
+        ".//*" +
+        "[like(@cm:name, $cm:name, false)" +
+        " and not (subtypeOf('" + ContentModel.TYPE_SYSTEM_FOLDER + "'))" +
+        " and (subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
+        " or subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
+       
     /** empty parameters */
     private static final QueryParameterDefinition[] PARAMS_ANY_NAME = new QueryParameterDefinition[1];
     
@@ -422,12 +438,21 @@ public class FileFolderServiceImpl implements FileFolderService
         boolean anyName = namePattern.equals(LUCENE_MULTI_CHAR_WILDCARD);
         
         List<NodeRef> nodeRefs = null;
-        if (!includeSubFolders && anyName)
+        if (anyName)
         {
-            nodeRefs = listSimple(contextNodeRef, folderSearch, fileSearch);
+            // This is search for any name
+            if(includeSubFolders)
+            {
+               nodeRefs = listSimpleDeep(contextNodeRef, folderSearch, fileSearch);   
+            }
+            else
+            {
+                nodeRefs = listSimple(contextNodeRef, folderSearch, fileSearch);
+            }
         }
-        else                // Go with XPath
+        else                
         {
+            // TODO - we need to get rid of this xpath stuff
             // if the name pattern is null, then we use the ANY pattern
             QueryParameterDefinition[] params = null;
             if (namePattern != null)
@@ -447,16 +472,32 @@ public class FileFolderServiceImpl implements FileFolderService
             }
             else
             {
+                // name pattern is null so search for ANY_NAME
                 params = PARAMS_ANY_NAME;
             }
             // determine the correct query to use
             String query = null;
             if (includeSubFolders)
             {
-                query = XPATH_QUERY_DEEP_ALL;
+                // this is a deep search
+                if(!fileSearch && folderSearch)
+                {
+                    // This is a folder search only;
+                    query = XPATH_QUERY_DEEP_FOLDERS;
+                }
+                else if(fileSearch && folderSearch)
+                {
+                    // This is a folder search only;
+                    query = XPATH_QUERY_DEEP_FILES;
+                }
+                else
+                {        
+                    query = XPATH_QUERY_DEEP_ALL;
+                }
             }
             else
             {
+                // this is a shallow search
                 query = XPATH_QUERY_SHALLOW_ALL;
             }
             // execute the query
@@ -506,6 +547,94 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             result.add(assocRef.getChildRef());
         }
+        // Done
+        return result;
+    }
+    
+    /**
+     * A deep version of listSimple.   Which recursivly walks down the tree from a given starting point, returning 
+     * the node refs found along the way.
+     * 
+     * MER: I've added this rather than changeing listSimple to minimise the risk of breaking 
+     * the existing code.   This is a quick performance improvent between using 
+     * XPath which is awful or adding new methods to the NodeService/DB   This is also a dangerous method in that it can return a 
+     * lot of data and take a long time. 
+     * 
+     * @param contextNodeRef the starting point.
+     * @param folders return nodes of type folders.
+     * @param files return nodes of type files.
+     * @return list of node refs
+     */
+    private List<NodeRef> listSimpleDeep(NodeRef contextNodeRef, boolean folders, boolean files)
+    {
+        Set<QName> folderTypeQNames = new HashSet<QName>(10);
+        Set<QName> fileTypeQNames = new HashSet<QName>(10);
+        
+        // To hold the results.
+        List<NodeRef> result = new ArrayList<NodeRef>();
+        
+        // Build a list of folder types
+        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
+        folderTypeQNames.addAll(qnames);
+        folderTypeQNames.add(ContentModel.TYPE_FOLDER);
+        
+        // Remove 'system' folders
+        Collection<QName> systemFolderQNames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+        folderTypeQNames.removeAll(systemFolderQNames);
+        folderTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
+        
+        if (files)
+        {
+            Collection<QName> fileQNames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
+            fileTypeQNames.addAll(fileQNames);
+            fileTypeQNames.add(ContentModel.TYPE_CONTENT);
+            Collection<QName> linkQNames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
+            fileTypeQNames.addAll(linkQNames);
+            fileTypeQNames.add(ContentModel.TYPE_LINK);
+        }
+        
+        if(!folders && !files)
+        {
+            return Collections.emptyList();
+            
+        }
+        
+        // Shortcut
+        if (folderTypeQNames.size() == 0)
+        {
+            return Collections.emptyList();
+        }
+        
+        Stack<NodeRef> toSearch = new Stack<NodeRef>();
+        toSearch.push(contextNodeRef);
+        
+        // Now we need to walk down the folders.
+        while(!toSearch.empty())
+        {
+            NodeRef currentDir = toSearch.pop();
+            
+            List<ChildAssociationRef> folderAssocRefs = nodeService.getChildAssocs(currentDir, folderTypeQNames);
+            
+            for (ChildAssociationRef folderRef : folderAssocRefs)
+            {
+                toSearch.push(folderRef.getChildRef());
+                if(folders)
+                {
+                    result.add(folderRef.getChildRef());
+                }
+                if(files)
+                {
+                    List<ChildAssociationRef> fileAssocRefs = nodeService.getChildAssocs(currentDir, fileTypeQNames);
+                    for (ChildAssociationRef fileRef : fileAssocRefs)
+                    {
+                        result.add(fileRef.getChildRef());
+                    }
+                }
+            }
+        }
+        
+        logger.debug("search deep finished size:" + result.size());
+ 
         // Done
         return result;
     }

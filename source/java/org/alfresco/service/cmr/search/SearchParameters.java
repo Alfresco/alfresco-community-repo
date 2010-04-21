@@ -548,7 +548,9 @@ public class SearchParameters
     }
 
     /**
-     * Set the max number of rows for the result set 0 or less is unlimited
+     * Set the max number of rows for the result set.
+     * A negative value implies unlimited
+     * 0 will return no results.
      * 
      * @param maxItems
      *            the maxItems to set

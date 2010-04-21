@@ -22,11 +22,11 @@ package org.alfresco.web.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.service.namespace.QName;
+import org.dom4j.Element;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigException;
 import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
-import org.alfresco.service.namespace.QName;
-import org.dom4j.Element;
 
 /**
  * Custom element reader to parse config for client config values
@@ -67,6 +67,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_ALLOWUSERCONFIG = "allow-user-config";
    public static final String ELEMENT_PICKERSEARCHMINIMUM = "picker-search-minimum";
    public static final String ELEMENT_CHECKCONTEXTPATH = "check-context-against-path";
+   public static final String ELEMENT_ALLOWUSERSCRIPTEXECUTE = "allow-user-script-execute";
    
    
    /**
@@ -325,6 +326,13 @@ public class ClientElementReader implements ConfigElementReader
          if (checkContextAgainstPath != null)
          {
             configElement.setCheckContextAgainstPath(Boolean.parseBoolean(checkContextAgainstPath.getTextTrim()));
+         }
+         
+         // get allow any user to execute javascript via the command servlet
+         Element allowUserScriptExecute = element.element(ELEMENT_ALLOWUSERSCRIPTEXECUTE);
+         if (allowUserScriptExecute != null)
+         {
+            configElement.setAllowUserScriptExecute(Boolean.parseBoolean(allowUserScriptExecute.getTextTrim()));
          }
       }
       

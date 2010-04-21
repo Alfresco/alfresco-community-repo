@@ -28,15 +28,19 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.ScriptableHashMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.config.ClientConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Script command processor implementation.
@@ -98,7 +102,7 @@ public final class ScriptCommandProcessor implements CommandProcessor
          }
       }
       
-      // check we can access the nodes specified
+      // check we can READ access the nodes specified
       PermissionService ps = Repository.getServiceRegistry(sc).getPermissionService();
       allowed = (ps.hasPermission(this.scriptRef, PermissionService.READ) == AccessStatus.ALLOWED);
       if (this.docRef != null)
@@ -106,7 +110,14 @@ public final class ScriptCommandProcessor implements CommandProcessor
          allowed &= (ps.hasPermission(this.docRef, PermissionService.READ) == AccessStatus.ALLOWED);
       }
       
-      // check that the user has at least READ access on the node - else redirect to the login page
+      // check to see if user is allowed to execute arbituary javascript
+      // by default only an admin authority can perform this action
+      ConfigService configService = Application.getConfigService(sc);
+      ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
+      boolean allowScriptExecute = configElement.getAllowUserScriptExecute();
+      AuthorityService authService = Repository.getServiceRegistry(sc).getAuthorityService();
+      allowed &= (allowScriptExecute || authService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()));
+      
       return allowed;
    }
    

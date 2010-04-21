@@ -23,15 +23,15 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.config.JNDIConstants;
-import org.springframework.extensions.config.element.ConfigElementAdapter;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ExpiringValueCache;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.element.ConfigElementAdapter;
 
 /**
  * Custom config element that represents config values for the client
@@ -83,6 +83,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean allowUserConfig = true;
    private int pickerSearchMinimum = 2;
    private boolean checkContextAgainstPath = false;
+   private boolean allowUserScriptExecute = false;
    
    
    /**
@@ -313,7 +314,12 @@ public class ClientConfigElement extends ConfigElementAdapter
       {
          combinedElement.setCheckContextAgainstPath(newElement.getCheckContextAgainstPath());
       }
-
+      
+      if (newElement.getAllowUserScriptExecute() != combinedElement.getAllowUserScriptExecute())
+      {
+         combinedElement.setAllowUserScriptExecute(newElement.getAllowUserScriptExecute());
+      }
+      
       return combinedElement;
    }
    
@@ -890,5 +896,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setCheckContextAgainstPath(boolean checkContextAgainstPath)
    {
       this.checkContextAgainstPath = checkContextAgainstPath;
+   }
+   
+   /**
+    * @return true if any user can execute JavaScript via the command servlet
+    */
+   public boolean getAllowUserScriptExecute()
+   {
+      return this.allowUserScriptExecute;
+   }
+
+   /**
+    * @param allowUserScriptExecute true to allow any user to execute JavaScript via the command servlet
+    */
+   /*package*/ void setAllowUserScriptExecute(boolean allowUserScriptExecute)
+   {
+      this.allowUserScriptExecute = allowUserScriptExecute;
    }
 }

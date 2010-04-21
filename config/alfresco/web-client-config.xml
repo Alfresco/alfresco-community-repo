@@ -125,6 +125,10 @@
 	      <!-- against the current URL path is required. -->
 	      <!-- Set this flag to true to enable the check. -->
 	      <check-context-against-path>false</check-context-against-path>
+	      
+	      <!-- set true allow any user to execute JavaScript files via the command servlet -->
+	      <!-- since 3.3 only an admin authority can do this by default -->
+         <allow-user-script-execute>false</allow-user-script-execute>
       </client>
    </config>
 

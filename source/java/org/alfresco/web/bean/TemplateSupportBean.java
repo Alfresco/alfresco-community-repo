@@ -26,8 +26,10 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -124,7 +126,7 @@ public class TemplateSupportBean implements Serializable
                Application.getGlossaryFolderName(fc) + "/" +
                Application.getContentTemplatesFolderName(fc) + "//*";
          
-         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
+         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
          
          contentTemplates.put(templates);
       }
@@ -146,7 +148,7 @@ public class TemplateSupportBean implements Serializable
                Application.getGlossaryFolderName(fc) + "/" +
                Application.getEmailTemplatesFolderName(fc) + "//*";
          
-         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
+         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
          
          emailTemplates.put(templates);
       }
@@ -168,7 +170,7 @@ public class TemplateSupportBean implements Serializable
            Application.getEmailTemplatesFolderName(fc) + "/" + 
            Application.getNotifyEmailTemplatesFolderName(fc) + "//*";
      
-       templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
+       templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
        
        return templates;
    }
@@ -187,7 +189,7 @@ public class TemplateSupportBean implements Serializable
                Application.getGlossaryFolderName(fc) + "/" +
                Application.getRSSTemplatesFolderName(fc) + "//*";
          
-         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE);
+         templates = selectDictionaryNodes(fc, xpath, MSG_SELECT_TEMPLATE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
          
          rssTemplates.put(templates);
       }
@@ -209,7 +211,7 @@ public class TemplateSupportBean implements Serializable
                Application.getGlossaryFolderName(fc) + "/" +
                Application.getScriptsFolderName(fc) + "//*";
          
-         scripts = selectDictionaryNodes(fc, xpath, MSG_SELECT_SCRIPT);
+         scripts = selectDictionaryNodes(fc, xpath, MSG_SELECT_SCRIPT, MimetypeMap.MIMETYPE_JAVASCRIPT);
          
          scriptFiles.put(scripts);
       }
@@ -218,12 +220,26 @@ public class TemplateSupportBean implements Serializable
    }
 
    /**
-    * @param context    FacesContext
+    * @param fc         FacesContext
     * @param xpath      XPath to the nodes to select
+    * @param noSelectionLabel   Label to add to the list if no items are found in the search
     * 
     * @return List of SelectItem wrapper objects for the nodes found at the XPath
     */
    private List<SelectItem> selectDictionaryNodes(FacesContext fc, String xpath, String noSelectionLabel)
+   {
+       return selectDictionaryNodes(fc, xpath, noSelectionLabel, null);
+   }
+   
+   /**
+    * @param fc         FacesContext
+    * @param xpath      XPath to the nodes to select
+    * @param noSelectionLabel   Label to add to the list if no items are found in the search
+    * @param mimetype   Optional mimetype of items to add, will not add to list if mimetype does not match
+    * 
+    * @return List of SelectItem wrapper objects for the nodes found at the XPath
+    */
+   private List<SelectItem> selectDictionaryNodes(FacesContext fc, String xpath, String noSelectionLabel, String mimetype)
    {
       List<SelectItem> wrappers = null;
       
@@ -242,7 +258,9 @@ public class TemplateSupportBean implements Serializable
                if (this.getNodeService().exists(ref) == true)
                {
                   Node childNode = new Node(ref);
-                  if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT))
+                  ContentData content = (ContentData)childNode.getProperties().get(ContentModel.PROP_CONTENT);
+                  if (dd.isSubClass(childNode.getType(), ContentModel.TYPE_CONTENT) &&
+                      (mimetype == null || mimetype.equals(content.getMimetype())))
                   {
                      wrappers.add(new SelectItem(childNode.getId(), childNode.getName()));
                   }

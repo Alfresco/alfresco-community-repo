@@ -40,7 +40,7 @@
       CMIS (Content Management Interoperability Services) is a standard for improving interoperability between ECM systems.
       It specifies a domain model plus a set of services and protocol bindings for Web Services (SOAP) and AtomPub.
       <p/>
-      This Alfresco server supports CMIS <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.doc"><b>${cmisSpecTitle}</b></a>.
+      This Alfresco server supports CMIS <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.doc"><b>${cmisSpecTitle}</b></a>.
       <p/
       <a name="repo"></a>
       <h3>Alfresco CMIS Content Repository</h3>
@@ -123,14 +123,14 @@
         <li><a href="http://www.oasis-open.org/committees/cmis">OASIS Technical Committee</a></li>
         <li><a href="http://xml.coverpages.org/cmis.html">Cover Pages</a></li>
       </ul>
-      <h3>CMIS v1.0 (cd07)</h3>
+      <h3>CMIS v1.0 (cs01)</h3>
       <ul>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.doc">cmis-spec-v1.0.doc (Authoritative)</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.pdf">cmis-spec-v1.0.pdf</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cd07/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.doc">cmis-spec-v1.0.doc (Authoritative)</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.pdf">cmis-spec-v1.0.pdf</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
+        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
       </ul>
       <h3>Alfresco Resources</h3>
       <ul>

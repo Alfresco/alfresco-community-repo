@@ -27,6 +27,7 @@ import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
 import org.alfresco.util.ApplicationContextHelper;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
@@ -58,7 +59,26 @@ public class WorkflowTestSuite extends TestSuite
         // This should go last, as its uses a different
         //  context to the other tests
         suite.addTestSuite( JBPMEngineUnitTest.class );
+    
+        // This one will force the suite to shut down the context
+        //  properly, which avoids periodic wierd build failures
+        suite.addTestSuite( WorkflowSuiteContextShutdownTest.class );
         
         return suite;
+    }
+    
+    public static class WorkflowSuiteContextShutdownTest extends TestCase {
+       public void testDummy() {}
+
+       protected void tearDown() throws Exception {
+          System.err.println("Workflow test suite has completed, shutting down the ApplicationContext...");
+          ApplicationContextHelper.closeApplicationContext();
+          
+          Thread.yield();
+          Thread.sleep(25);
+          Thread.yield();
+          
+          System.err.println("Workflow test suite shutdown has finished");
+       }
     }
 }

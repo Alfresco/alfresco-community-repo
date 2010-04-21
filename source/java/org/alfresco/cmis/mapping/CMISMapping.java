@@ -66,7 +66,7 @@ public class CMISMapping implements InitializingBean
      * The Alfresco CMIS Namespace
      */
     public static String CMIS_MODEL_NS = "cmis";
-    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/1.0/cd07";
+    public static String CMIS_MODEL_URI = "http://www.alfresco.org/model/cmis/1.0/cs01";
 
     /**
      * The Alfresco CMIS Model name.

@@ -14,7 +14,7 @@
 
     <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
         <property name="CMISSpecVersion"><value>1.0</value></property>
-        <property name="CMISSpecTitle"><value>Version 1.0 Committee Draft 07</value></property>
+        <property name="CMISSpecTitle"><value>Version 1.0 Committee Specification 01</value></property>
         <property name="defaultStore"><value>workspace://SpacesStore</value></property>
         <property name="defaultRootPath"><value>/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />

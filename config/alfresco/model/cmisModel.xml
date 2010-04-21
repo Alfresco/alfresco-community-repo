@@ -9,7 +9,7 @@
   </imports>
 
   <namespaces>
-    <namespace uri="http://www.alfresco.org/model/cmis/1.0/cd07" prefix="cmis" />
+    <namespace uri="http://www.alfresco.org/model/cmis/1.0/cs01" prefix="cmis" />
   </namespaces>
 
   <data-types>

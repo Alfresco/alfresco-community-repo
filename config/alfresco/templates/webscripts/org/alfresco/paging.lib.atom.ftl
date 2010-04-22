@@ -63,15 +63,15 @@
 [#macro opensearch cursor]
 [#-- NOTE: this macro requires the definition of xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" in --]
 [#--       the enclosing document                                                                           --]
-<opensearch:totalResults>${cursor.totalRows}</opensearch:totalResults>
-<opensearch:startIndex>${cursor.startRow}</opensearch:startIndex>
-<opensearch:itemsPerPage>${cursor.pageSize}</opensearch:itemsPerPage>
+<opensearch:totalResults>${cursor.totalRows?c}</opensearch:totalResults>
+<opensearch:startIndex>${cursor.startRow?c}</opensearch:startIndex>
+<opensearch:itemsPerPage>${cursor.pageSize?c}</opensearch:itemsPerPage>
 [/#macro]
 
 [#macro cmis cursor]
 [#-- NOTE: this macro requires the definition of xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" in --]
 [#--       the enclosing document                                                                                      --]
-<cmisra:numItems>${cursor.totalRows}</cmisra:numItems>
+<cmisra:numItems>${cursor.totalRows?c}</cmisra:numItems>
 [/#macro]
 
 [#macro changelinks changeLog] 

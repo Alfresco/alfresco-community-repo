@@ -74,6 +74,22 @@ public class ISO9075Test extends TestCase
                 .decode("\u0123_x4567_\u8900_xabcd__xefff__xT65A_"));
     }
     
+    public void testDeEncodingUpperCase()
+    {
+        
+        assertEquals("My_x0020_Documents", ISO9075.decode("My_x005F_x0020_Documents"));
+        assertEquals("_x0020_Documents", ISO9075.decode("_x005F_x0020_Documents"));
+        assertEquals("@_x0020_Documents", ISO9075.decode("_x0040__x005F_x0020_Documents"));
+        assertEquals("Andy's Bits & Bobs \uabcd\\", ISO9075
+                .decode("Andy_x0027_s_x0020_Bits_x0020__x0026__x0020_Bobs_x0020__xabcd__x005C_"));
+        assertEquals(
+                " `\u00ac\u00a6!\"\u00a3$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|",
+                ISO9075
+                        .decode("_x0020__x0060__x00AC__x00A6__x0021__x0022__x00A3__x0024__x0025__x005E__x0026__x002A__x0028__x0029_-__x003D__x002B__x0009__x000A__x005C__x0000__x005B__x005D__x007B__x007D__x003B__x0027__x0023__x003A__x0040__x007E__x002C_._x002F__x003C__x003E__x003F__x005C__x007C_"));
+        assertEquals("\u0123\u4567\u8900\uabcd\uefff_xT65A_", ISO9075
+                .decode("\u0123_x4567_\u8900_xABCD__xEFFF__xT65A_"));
+    }
+    
     public void testRoundTrip1()
     {
         assertEquals("MyDocuments", ISO9075.decode(ISO9075.encode("MyDocuments")));

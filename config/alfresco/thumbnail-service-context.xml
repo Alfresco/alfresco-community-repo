@@ -53,6 +53,7 @@
     <bean id="thumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry">
         <property name="contentService" ref="ContentService"/>
         <property name="renditionService" ref="renditionService" />
+        <property name="transactionService" ref="TransactionService" />
         <property name="thumbnailDefinitions">
             <list>
                <!-- Small image thumbnail options -->

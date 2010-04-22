@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -52,6 +53,9 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
 
     /** Content service */
     private ContentService contentService;
+    
+    /** Transaction service */
+    private TransactionService transactionService;
     
     /** Rendition service */
     private RenditionService renditionService;
@@ -88,6 +92,16 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     }
     
     /**
+     * Transaction service
+     * 
+     * @param transactionService    transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
+    /**
      * Rendition service
      * 
      * @param renditionService    rendition service
@@ -121,6 +135,16 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      */
     private void initThumbnailDefinitions()
     {
+    	// If the database is in read-only mode, then do not persist the thumbnail definitions.
+    	if (transactionService.isReadOnly())
+    	{
+    		if (logger.isDebugEnabled())
+    		{
+    			logger.debug("TransactionService is in read-only mode. Therefore no thumbnail definitions have been initialised.");
+    		}
+    		return;
+    	}
+    	
         AuthenticationUtil.runAs(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
@@ -133,23 +157,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
                     RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
                     
                     // Thumbnail definitions are saved into the repository as actions
-                    // but only if they have not already been saved.
-                    boolean alreadyPersisted = renditionService.loadRenditionDefinition(renditionDef.getRenditionName()) != null;
-                    if (!alreadyPersisted)
-                    {
-                    	if (logger.isDebugEnabled())
-                    	{
-                    		logger.debug("Init'ing and saving thumbnail definition " + thumbnailDefName);
-                    	}
-                    	renditionService.saveRenditionDefinition(renditionDef);
-                    }
-                    else
-                    {
-                    	if (logger.isDebugEnabled())
-                    	{
-                    		logger.debug("Init'ing thumbnail definition " + thumbnailDefName);
-                    	}
-                    }
+                	renditionService.saveRenditionDefinition(renditionDef);
                 }
 
                 return null;

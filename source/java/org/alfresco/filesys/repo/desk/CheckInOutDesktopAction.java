@@ -26,11 +26,11 @@ import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.filesys.alfresco.DesktopTarget;
-import org.alfresco.filesys.state.FileState;
-import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NotifyChange;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -183,12 +183,12 @@ public class CheckInOutDesktopAction extends DesktopAction {
                     
                     // Update cached state for the working copy to indicate the file exists
                     
-                    FileStateTable stateTable = getContext().getStateTable();
-                    if ( stateTable != null) {
+                    FileStateCache stateCache = getContext().getStateCache();
+                    if ( stateCache != null) {
                     	
                     	// Update any cached state for the working copy file
                     	
-                    	FileState fstate = stateTable.findFileState( fileName);
+                    	FileState fstate = stateCache.findFileState( fileName);
                     	if ( fstate != null)
                     		fstate.setFileStatus( FileStatus.FileExists);
                     }

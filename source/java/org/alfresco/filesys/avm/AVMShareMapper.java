@@ -284,7 +284,7 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
 	                	// Create a dynamic share mapped to the AVM store/version
 	                	
 		                AVMContext avmCtx = new AVMContext( name, storePath, storeVersion);
-		                avmCtx.enableStateTable( true, m_driver.getStateReaper());
+		                avmCtx.enableStateCache( true);
 		
 		                //  Create a dynamic shared device for the store version
 		                

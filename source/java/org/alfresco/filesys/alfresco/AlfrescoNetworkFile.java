@@ -1,7 +1,8 @@
 package org.alfresco.filesys.alfresco;
 
 import org.alfresco.jlan.server.filesys.NetworkFile;
-import org.alfresco.filesys.state.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 
 /*
  * Copyright (C) 2007-2010 Alfresco Software Limited.
@@ -27,7 +28,7 @@ import org.alfresco.filesys.state.FileState;
  * 
  * <p>Adds Alfresco extensions to the network file.
  */
-public abstract class AlfrescoNetworkFile extends NetworkFile {
+public abstract class AlfrescoNetworkFile extends NetworkFile implements NetworkFileStateInterface {
 
   // Associated file state
   

@@ -352,7 +352,7 @@ public class HomeShareMapper implements ShareMapper
         ContentDiskDriver diskDrv = ( ContentDiskDriver) getRepoDiskInterface();
         ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", client.getHomeFolder());
         
-        diskCtx.enableStateTable( true, diskDrv.getStateReaper());
+        diskCtx.enableStateCache( true);
 
         //  Create a temporary shared device for the users home directory
         

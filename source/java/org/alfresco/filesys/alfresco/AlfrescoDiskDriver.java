@@ -22,7 +22,6 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.state.FileStateReaper;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -56,10 +55,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     
     private ServiceRegistry m_serviceRegistry;
     
-    // File state reaper
-    
-    private FileStateReaper m_stateReaper;
-
     //  Transaction service
     
     private TransactionService m_transactionService;
@@ -74,16 +69,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     	return m_serviceRegistry;
     }
 
-    /**
-     * Return the file state reaper
-     * 
-     * @return FileStateReaper
-     */
-    public final FileStateReaper getStateReaper()
-    {
-    	return m_stateReaper;
-    }
-    
     /**
      * Return the transaction service
      * 
@@ -102,16 +87,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
     	m_serviceRegistry = serviceRegistry;
-    }
-    
-    /**
-     * Set the file state reaper
-     * 
-     * @param stateReaper FileStateReaper
-     */
-    public final void setStateReaper(FileStateReaper stateReaper)
-    {
-    	m_stateReaper = stateReaper;
     }
     
     /**

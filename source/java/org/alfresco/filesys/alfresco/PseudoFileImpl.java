@@ -23,14 +23,15 @@ import java.util.Enumeration;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.pseudo.MemoryPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopActionTable;
 import org.alfresco.filesys.repo.ContentContext;
-import org.alfresco.filesys.state.FileState;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -170,7 +171,7 @@ public class PseudoFileImpl implements PseudoFileInterface
             // If the file state is null create a file state for the path
 
             if ( fstate == null)
-                ctx.getStateTable().findFileState( path, true, true);
+                ctx.getStateCache().findFileState( path, true);
             
             // Add the desktop action pseudo files
             
@@ -205,17 +206,18 @@ public class PseudoFileImpl implements PseudoFileInterface
         {
             // Make sure the state has the associated node details
             
-            if ( fstate.getNodeRef() != null)
+            if ( fstate.hasFilesystemObject())
             {
                 // Build the URL file data
     
+                NodeRef nodeRef = (NodeRef) fstate.getFilesystemObject(); 
                 StringBuilder urlStr = new StringBuilder();
             
                 urlStr.append("[InternetShortcut]\r\n");
                 urlStr.append("URL=");
                 urlStr.append(ctx.getURLPrefix());
                 urlStr.append("navigate/browse/workspace/SpacesStore/");
-                urlStr.append( fstate.getNodeRef().getId());
+                urlStr.append( nodeRef.getId());
                 urlStr.append("\r\n");
     
                 // Create the in memory pseudo file for the URL link
@@ -282,11 +284,11 @@ public class PseudoFileImpl implements PseudoFileInterface
         
         FileState fstate = null;
         
-        if ( ctx.hasStateTable())
+        if ( ctx.hasStateCache())
         {
             // Get the file state for a file/folder
             
-            fstate = ctx.getStateTable().findFileState(path);
+            fstate = ctx.getStateCache().findFileState(path);
         }
         
         // Return the file state

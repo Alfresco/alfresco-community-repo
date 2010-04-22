@@ -389,7 +389,7 @@ public class HomeShareMapper implements ShareMapper, InitializingBean
           //  Create the disk driver and context
           
           ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", alfClient.getHomeFolder());
-          diskCtx.enableStateTable( true, m_driver.getStateReaper());
+          diskCtx.enableStateCache( true);
   
           //  Create a temporary shared device for the users home directory
           

@@ -33,9 +33,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
-import org.alfresco.filesys.state.FileState;
-import org.alfresco.filesys.state.FileStateLockManager;
-import org.alfresco.filesys.state.FileState.FileStateStatus;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -53,7 +50,8 @@ import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
-import org.alfresco.jlan.server.filesys.db.DBFileInfo;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
 import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
@@ -102,7 +100,7 @@ import org.springframework.extensions.config.ConfigElement;
  * 
  * <p>Provides a filesystem interface for various protocols such as SMB/CIFS and FTP.
  * 
- * @author Derek Hulley
+ * @author gkspencer
  */
 public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface
 {
@@ -115,6 +113,21 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private static final String KEY_STORE = "store";
     private static final String KEY_ROOT_PATH = "rootPath";
     private static final String KEY_RELATIVE_PATH = "relativePath";
+    
+    // File status values used in the file state cache
+    
+    public static final int FileUnknown     = FileStatus.Unknown;
+    public static final int FileNotExist    = FileStatus.NotExist;
+    public static final int FileExists      = FileStatus.FileExists;
+    public static final int DirectoryExists = FileStatus.DirectoryExists;
+    
+    public static final int CustomFileStatus= FileStatus.MaxStatus + 1;
+    public static final int FileRenamed     = CustomFileStatus;
+    public static final int DeleteOnClose   = CustomFileStatus + 1;
+    
+    // File state attributes
+    
+    public static final String AttrLinkNode = "ContentLinkNode";
     
     // Services and helpers
     
@@ -139,7 +152,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
 	//	Lock manager
 	
-	private static FileStateLockManager _lockManager = new FileStateLockManager();
+	private static FileStateLockManager _lockManager;
     
     /**
      * Class constructor
@@ -626,7 +639,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // Enable file state caching
         
-        context.enableStateTable( true, getStateReaper());
+        context.enableStateCache( true);
         
         // Initialize the I/O control handler
         
@@ -643,15 +656,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             context.setNodeMonitor( nodeMonitor);
         }
         
+        // Create the lock manager
+        
+        _lockManager = new FileStateLockManager( context.getStateCache());
+        
         // Check if oplocks are enabled
         
-        if ( context.getDisableOplocks() == false) {
-                
-            // Enable oplock support
-            	
-            _lockManager.setStateTable( context.getStateTable());
-        }
-        else
+        if ( context.getDisableOplocks() == true)
         	logger.warn("Oplock support disabled for filesystem " + ctx.getDeviceName());
         
         // Start the quota manager, if enabled
@@ -749,7 +760,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             	// Make sure the parent folder has a file state, and the path exists
         		
                 String[] paths = FileName.splitPath( path);
-                FileState fstate = ctx.getStateTable().findFileState( paths[0]);
+                FileState fstate = ctx.getStateCache().findFileState( paths[0]);
                 
                 if ( fstate == null)
                 {
@@ -764,10 +775,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
               		// Create the file state
                 		
-               		fstate = ctx.getStateTable().findFileState( paths[0], true, true);
+               		fstate = ctx.getStateCache().findFileState( paths[0], true);
                 		
-               		fstate.setFileStatus( FileStatus.DirectoryExists);
-   	                fstate.setNodeRef( nodeRef);
+               		fstate.setFileStatus( DirectoryExists);
+   	                fstate.setFilesystemObject( nodeRef);
                 		
                		// Add pseudo files to the folder
                 		
@@ -782,11 +793,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 {
             		// Make sure the file state has the node ref
             		
-            		if ( fstate.hasNodeRef() == false)
+            		if ( fstate.hasFilesystemObject() == false)
             		{
     	                // Get the node for the folder path
     	                
-    	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
+    	                fstate.setFilesystemObject( getNodeForPath( tree, paths[0]));
             		}
             		
                 	// Add pseudo files for the parent folder
@@ -897,9 +908,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 	
                 	// Create a file state for the file/folder
                 	
-                	fstate = ctx.getStateTable().findFileState( path, finfo.isDirectory(), true);
-                	
-                	fstate.setNodeRef( nodeRef);
+                	fstate = ctx.getStateCache().findFileState( path, true);
+                	if ( finfo.isDirectory())
+                	    fstate.setFileStatus( DirectoryExists);
+                	else
+                	    fstate.setFileStatus( FileExists);
+                	fstate.setFilesystemObject( nodeRef);
                 }
             }
             
@@ -971,7 +985,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             String[] paths = FileName.splitPath(searchPath);
             
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
                 // See if the folder to be searched has a file state, we can avoid having to walk the path
                 
@@ -988,16 +1002,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     {
                         // Create a file state for the folder
 
-                        searchFolderState = ctx.getStateTable().findFileState( paths[0], true, true);
+                        searchFolderState = ctx.getStateCache().findFileState( paths[0], true);
                     }
                     
                     // Make sure the associated node is set
                     
-                    if ( searchFolderState.hasNodeRef() == false)
+                    if ( searchFolderState.hasFilesystemObject() == false)
                     {
                         // Set the associated node for the folder
                         
-                        searchFolderState.setNodeRef( nodeRef);
+                        searchFolderState.setFilesystemObject( nodeRef);
                     }
                     
                     // Add pseudo files to the folder being searched
@@ -1115,16 +1129,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
             	// Use a cache lookup search context 
 
-            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateTable());
+            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache());
             	searchCtx = cacheContext;
             	
             	// Set the '.' and '..' pseudo file entry details
             	
-            	if ( searchFolderState != null && searchFolderState.hasNodeRef())
+            	if ( searchFolderState != null && searchFolderState.hasFilesystemObject())
             	{
             		// Get the '.' pseudo entry file details
             	
-            		FileInfo finfo = cifsHelper.getFileInformation( searchFolderState.getNodeRef());
+            		FileInfo finfo = cifsHelper.getFileInformation((NodeRef) searchFolderState.getFilesystemObject());
             		
             		// Blend in any cached timestamps
             		
@@ -1166,11 +1180,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             			
             			// Get the file state for the parent path, if available
             			
-            			FileState parentState = ctx.getStateTable().findFileState( parentPath);
+            			FileState parentState = ctx.getStateCache().findFileState( parentPath);
             			NodeRef parentNode = null;
             			
             			if ( parentState != null)
-            				parentNode = parentState.getNodeRef();
+            				parentNode = (NodeRef) parentState.getFilesystemObject();
             			
             			if ( parentState == null || parentNode == null)
             				parentNode = getNodeForPath( tree, parentPath);
@@ -1247,27 +1261,21 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         ContentContext ctx = (ContentContext) tree.getContext();
         int status = FileStatus.Unknown;
+        FileState fstate = null;
         
         try
         {
             // Check for a cached file state
             
-            FileState fstate = null;
+            if ( ctx.hasStateCache())
+                fstate = ctx.getStateCache().findFileState(name, true);
             
-            if ( ctx.hasStateTable())
-                ctx.getStateTable().findFileState(name);
-            
-            if ( fstate != null)
+            if ( fstate != null && fstate.getFileStatus() != FileUnknown)
             {
-                FileStateStatus fsts = fstate.getFileStatus();
+                status = fstate.getFileStatus();
+                if ( status >= CustomFileStatus)
+                    status = FileNotExist;
 
-                if ( fsts == FileStateStatus.FileExists)
-                    status = FileStatus.FileExists;
-                else if ( fsts == FileStateStatus.FolderExists)
-                    status = FileStatus.DirectoryExists;
-                else if ( fsts == FileStateStatus.NotExist || fsts == FileStateStatus.Renamed)
-                    status = FileStatus.NotExist;
-                
                 // DEBUG
                 
                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
@@ -1286,7 +1294,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	            	// Make sure the parent folder has a file state, and the path exists
                 		
     	                String[] paths = FileName.splitPath( name);
-    	                fstate = ctx.getStateTable().findFileState( paths[0]);
+    	                fstate = ctx.getStateCache().findFileState( paths[0]);
     	                
     	                if ( fstate == null) {
 
@@ -1296,14 +1304,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                	{
     	                		// Create the file state
     	                		
-    	                		fstate = ctx.getStateTable().findFileState( paths[0], true, true);
+    	                		fstate = ctx.getStateCache().findFileState( paths[0], true);
     	                		
-    	                		fstate.setFileStatus( FileStatus.DirectoryExists);
+    	                		fstate.setFileStatus( DirectoryExists);
     	                		
    	        	                // Get the node for the folder path
     	        	                
     	                		beginReadTransaction( sess);
-   	        	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
+   	        	                fstate.setFilesystemObject( getNodeForPath( tree, paths[0]));
     	                		
     	                		// Add pseudo files to the folder
     	                		
@@ -1319,7 +1327,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     	                {
 	                		// Make sure the file state has the node ref
 	                		
-	                		if ( fstate.hasNodeRef() == false)
+	                		if ( fstate.hasFilesystemObject() == false)
 	                		{
 	        	            	// Create the transaction
 	        	                
@@ -1327,7 +1335,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	        	            
 	        	                // Get the node for the folder path
 	        	                
-	        	                fstate.setNodeRef( getNodeForPath( tree, paths[0]));
+	        	                fstate.setFilesystemObject( getNodeForPath( tree, paths[0]));
 	                		}
 	                		
     	                	// Add pseudo files for the parent folder
@@ -1378,12 +1386,19 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                {
 	                    status = FileStatus.FileExists;
 	                }
+	                
+	                // Update the file state status
+
+	                if ( fstate != null)
+	                    fstate.setFileStatus( status);
                 }
             }
         }
         catch (FileNotFoundException e)
         {
             status = FileStatus.NotExist;
+            if ( fstate != null)
+                fstate.setFileStatus( status);
         }
         catch (IOException e)
         {
@@ -1398,7 +1413,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Debug
         
         if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-            logger.debug("File status determined: name=" + name + " status=" + FileStatus.asString(status));
+            logger.debug("File status determined: name=" + name + " status=" + fileStatusString(fstate.getFileStatus()));
         
         // Return the file/folder status
         
@@ -1436,7 +1451,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	            	// Make sure the parent folder has a file state, and the path exists
 	
 	                String[] paths = FileName.splitPath( path);
-	                FileState fstate = ctx.getStateTable().findFileState( paths[0]);
+	                FileState fstate = ctx.getStateCache().findFileState( paths[0]);
 	                
 	                if ( fstate == null) {
 
@@ -1446,9 +1461,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                	{
 	                		// Create the file state and add any pseudo files
 	                		
-	                		fstate = ctx.getStateTable().findFileState( paths[0], true, true);
+	                		fstate = ctx.getStateCache().findFileState( paths[0], true);
 	                		
-	                		fstate.setFileStatus( FileStatus.DirectoryExists);
+	                		fstate.setFileStatus( DirectoryExists);
 	                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
 	                		
 	                		// Debug
@@ -1523,11 +1538,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             FileState fstate = null;
             
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
                 // Check if there is a file state for the file
 
-                fstate = ctx.getStateTable().findFileState( params.getPath());
+                fstate = ctx.getStateCache().findFileState( params.getPath());
             
                 if ( fstate != null)
                 {                
@@ -1540,7 +1555,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 	
                 	// Create a file state for the path
                 	
-                    fstate = ctx.getStateTable().findFileState( params.getPath(), false, true);
+                    fstate = ctx.getStateCache().findFileState( params.getPath(), true);
                 }                	
                     
             	// Check if the current file open allows the required shared access
@@ -1765,15 +1780,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Create a file state for the open file
             
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
                 if ( fstate  == null)
-                    fstate = ctx.getStateTable().findFileState(params.getPath(), params.isDirectory(), true);
+                    fstate = ctx.getStateCache().findFileState(params.getPath(), true);
             
                 // Update the file state, cache the node
                 
                 fstate.incrementOpenCount();
-                fstate.setNodeRef(nodeRef);
+                fstate.setFilesystemObject(nodeRef);
                 
                 // Store the state with the file
                 
@@ -1846,7 +1861,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // If the state table is available then try to find the parent folder node for the new file
             // to save having to walk the path
           
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
                 // See if the parent folder has a file state, we can avoid having to walk the path
                 
@@ -1871,8 +1886,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Get the file state for the parent folder
                     
                     parentState = getStateForPath(tree, paths[0]);
-                    if ( parentState == null && ctx.hasStateTable())
-                    	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
+                    if ( parentState == null && ctx.hasStateCache())
+                    	parentState = ctx.getStateCache().findFileState( paths[0], true);
                 }
             }
             
@@ -1904,9 +1919,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Add a file state for the new file/folder
             
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
-                FileState fstate = ctx.getStateTable().findFileState(params.getPath(), false, true);
+                FileState fstate = ctx.getStateCache().findFileState(params.getPath(), true);
                 if ( fstate != null)
                 {
                     // Save the file sharing mode, needs to be done before the open count is incremented
@@ -1916,9 +1931,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Indicate that the file is open
     
-                    fstate.setFileStatus(FileStateStatus.FileExists);
+                    fstate.setFileStatus( FileExists);
                     fstate.incrementOpenCount();
-                    fstate.setNodeRef(nodeRef);
+                    fstate.setFilesystemObject(nodeRef);
                     
                     // Store the file state with the file
                     
@@ -2008,7 +2023,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // If the state table is available then try to find the parent folder node for the new folder
             // to save having to walk the path
           
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
                 // See if the parent folder has a file state, we can avoid having to walk the path
                 
@@ -2033,8 +2048,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     // Get the file state for the parent folder
                     
                     parentState = getStateForPath(tree, paths[0]);
-                    if ( parentState == null && ctx.hasStateTable())
-                    	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
+                    if ( parentState == null && ctx.hasStateCache())
+                    	parentState = ctx.getStateCache().findFileState( paths[0], true);
                 }
             }
             
@@ -2044,15 +2059,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             // Add a file state for the new folder
             
-            if ( ctx.hasStateTable())
+            if ( ctx.hasStateCache())
             {
-                FileState fstate = ctx.getStateTable().findFileState( params.getPath(), true, true);
+                FileState fstate = ctx.getStateCache().findFileState( params.getPath(), true);
                 if ( fstate != null)
                 {
                     // Indicate that the file is open
     
-                    fstate.setFileStatus(FileStateStatus.FolderExists);
-                    fstate.setNodeRef(nodeRef);
+                    fstate.setFileStatus( DirectoryExists);
+                    fstate.setFilesystemObject(nodeRef);
                     
                     // DEBUG
                     
@@ -2131,11 +2146,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                
 	                // Remove the file state
 		                
-	                if ( ctx.hasStateTable())
+	                if ( ctx.hasStateCache())
 	                {
 	                	// Remove the file state
 	                
-	                    ctx.getStateTable().removeFileState(dir);
+	                    ctx.getStateCache().removeFileState(dir);
 	                
 	                    // Update, or create, a parent folder file state
 	                    
@@ -2145,8 +2160,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                        // Get the file state for the parent folder
 	                        
 	                        FileState parentState = getStateForPath(tree, paths[0]);
-	                        if ( parentState == null && ctx.hasStateTable())
-	                        	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
+	                        if ( parentState == null && ctx.hasStateCache())
+	                        	parentState = ctx.getStateCache().findFileState( paths[0], true);
 	
 	                        // Update the modification timestamp
 	                        
@@ -2251,32 +2266,32 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 return;
         	}
-        }
         
-        if ( ctx.hasStateTable())
-        {
-            FileState fstate = ctx.getStateTable().findFileState(file.getFullName());
-            if ( fstate != null) {
-            	
-            	// If the file open count is now zero then reset the stored sharing mode
-            
-                if ( fstate.decrementOpenCount() == 0)
-                	fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
-            
-	            // Check if there is a cached modification timestamp to be written out
-	            
-	            if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasNodeRef()) {
-	            	
-	            	// Update the modification date on the file/folder node
-	
-	            	Date modifyDate = new Date( fstate.getModifyDateTime());
-	            	nodeService.setProperty( fstate.getNodeRef(), ContentModel.PROP_MODIFIED, modifyDate);
-	
-	            	// Debug
-	                
-	                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-	                    logger.debug("Updated modifcation timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
-	            }
+            if ( ctx.hasStateCache())
+            {
+                FileState fstate = ctx.getStateCache().findFileState(file.getFullName());
+                if ( fstate != null) {
+                	
+                	// If the file open count is now zero then reset the stored sharing mode
+                
+                    if ( fstate.decrementOpenCount() == 0)
+                    	fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
+                
+    	            // Check if there is a cached modification timestamp to be written out
+    	            
+    	            if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasFilesystemObject()) {
+    	            	
+    	            	// Update the modification date on the file/folder node
+    	
+    	            	Date modifyDate = new Date( fstate.getModifyDateTime());
+    	            	nodeService.setProperty((NodeRef) fstate.getFilesystemObject(), ContentModel.PROP_MODIFIED, modifyDate);
+    	
+    	            	// Debug
+    	                
+    	                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+    	                    logger.debug("Updated modifcation timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
+    	            }
+                }
             }
         }
         
@@ -2341,28 +2356,28 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
                         // Set the file state to indicate a delete on close
                         
-                        if ( ctx.hasStateTable())
+                        if ( ctx.hasStateCache())
                         {
                         	if ( isVersionable == true) {
                         		
 	                        	// Get, or create, the file state
 	                        	
-	                        	FileState fState = ctx.getStateTable().findFileState(file.getFullName(), false, true);
+	                        	FileState fState = ctx.getStateCache().findFileState(file.getFullName(), true);
 	                        	
 	                        	// Indicate that the file was deleted via a delete on close request
 	                        	
-	                        	fState.setFileStatus(FileStateStatus.DeleteOnClose);
+	                        	fState.setFileStatus( DeleteOnClose);
 	
 	                        	// Make sure the file state is cached for a short while, save the noderef details
 	        	                
 	        	                fState.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
-	        	                fState.setNodeRef(nodeRef);
+	        	                fState.setFilesystemObject(nodeRef);
                         	}
                         	else {
                         		
                         		// Remove the file state
                         		
-                        		ctx.getStateTable().removeFileState( file.getFullName());
+                        		ctx.getStateCache().removeFileState( file.getFullName());
                         	}
                         }
                     }
@@ -2444,7 +2459,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 // Remove the file state
                 
-                if ( ctx.hasStateTable())
+                if ( ctx.hasStateCache())
                 {
                 	// Check if the node is versionable, cache the node details for a short while
                 	
@@ -2453,17 +2468,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	                    // Make sure the file state is cached for a short while, a new file may be renamed to the same name
 	                	// in which case we can connect the file to the previous version history
 	
-	                	FileState delState = ctx.getStateTable().findFileState( name, false, true);
+	                	FileState delState = ctx.getStateCache().findFileState( name, true);
 	                    
 	                	delState.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
-	                    delState.setFileStatus(FileStateStatus.DeleteOnClose);
-	                    delState.setNodeRef( nodeRef);
+	                    delState.setFileStatus( DeleteOnClose);
+	                    delState.setFilesystemObject( nodeRef);
                 	}
                 	else {
                 		
                 		// Remove the file state
                 		
-                		ctx.getStateTable().removeFileState( name);
+                		ctx.getStateCache().removeFileState( name);
                 	}
                 	
                     // Update, or create, a parent folder file state
@@ -2474,8 +2489,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         // Get the file state for the parent folder
                         
                         FileState parentState = getStateForPath(tree, paths[0]);
-                        if ( parentState == null && ctx.hasStateTable())
-                        	parentState = ctx.getStateTable().findFileState( paths[0], true, true);
+                        if ( parentState == null && ctx.hasStateCache())
+                        	parentState = ctx.getStateCache().findFileState( paths[0], true);
 
                         // Update the modification timestamp
                         
@@ -2580,7 +2595,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Get the file state for the old file, if available
             
-            FileState oldState = ctx.getStateTable().findFileState( oldName);
+            FileState oldState = ctx.getStateCache().findFileState( oldName);
             
             // Check if we are renaming a folder, or the rename is to a different folder
             
@@ -2594,7 +2609,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 {
                     // Update the file state index to use the new name
                     
-                    ctx.getStateTable().renameFileState(newName, oldState);
+                    ctx.getStateCache().renameFileState(newName, oldState, true);
                 }
                 
                 // Rename or move the file/folder
@@ -2616,7 +2631,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 // Check if the target file already exists
                 
                 int newExists = fileExists( sess, tree, newName);
-                FileState newState = ctx.getStateTable().findFileState( newName, false, true);
+                FileState newState = ctx.getStateCache().findFileState( newName, true);
                 
                 NodeRef targetNodeRef = null;
                 
@@ -2632,7 +2647,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Check if the target has a renamed or delete-on-close state
                     
-                    if ( newState.getFileStatus() == FileStateStatus.Renamed) {
+                    if ( newState.getFileStatus() == FileRenamed) {
                         
                         // DEBUG
                         
@@ -2641,9 +2656,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // Use the renamed node to clone aspects/state
                         
-                        cloneNodeAspects( name, newState.getNodeRef(), nodeToMoveRef, ctx);
+                        cloneNodeAspects( name, (NodeRef) newState.getFilesystemObject(), nodeToMoveRef, ctx);
                     }
-                    else if ( newState.getFileStatus() == FileStateStatus.DeleteOnClose) {
+                    else if ( newState.getFileStatus() == DeleteOnClose) {
                         
                         // DEBUG
                         
@@ -2652,7 +2667,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
                         // Restore the deleted node so we can relink the new version to the old history/properties
                         
-                        NodeRef archivedNode = getNodeArchiveService().getArchivedNode( newState.getNodeRef());
+                        NodeRef archivedNode = getNodeArchiveService().getArchivedNode((NodeRef) newState.getFilesystemObject());
                         
                         // DEBUG
                         
@@ -2672,16 +2687,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             
                             // Check if the deleted file had a linked node, due to a rename
                             
-                            if ( newState.hasLinkNode() && nodeService.exists( newState.getLinkNode())) {
+                            NodeRef linkNode = (NodeRef) newState.findAttribute( AttrLinkNode);
+                            
+                            if ( linkNode != null && nodeService.exists( linkNode)) {
                                 
                                 // Clone aspects from the linked node onto the restored node
                                 
-                                cloneNodeAspects( name, newState.getLinkNode(), targetNodeRef, ctx);
+                                cloneNodeAspects( name, linkNode, targetNodeRef, ctx);
 
                                 // DEBUG
                                 
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME)) {
-                                    logger.debug("  Moved aspects from linked node " + newState.getLinkNode());
+                                    logger.debug("  Moved aspects from linked node " + linkNode);
 
                                     // Check if the node is a working copy
                                     
@@ -2730,8 +2747,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Mark the new file as existing
                     
-                    newState.setFileStatus( FileStatus.FileExists);
-                    newState.setNodeRef( nodeToMoveRef);
+                    newState.setFileStatus( FileExists);
+                    newState.setFilesystemObject( nodeToMoveRef);
 
                     // Make sure the old file state is cached for a short while, the file may not be open so the
                     // file state could be expired
@@ -2740,8 +2757,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Indicate that this is a renamed file state, set the node ref of the file that was renamed
                     
-                    oldState.setFileStatus(FileStateStatus.Renamed);
-                    oldState.setNodeRef(nodeToMoveRef);
+                    oldState.setFileStatus( FileRenamed);
+                    oldState.setFilesystemObject(nodeToMoveRef);
 
                     // DEBUG
                     
@@ -2770,8 +2787,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Mark the new file as existing
                     
-                    newState.setFileStatus( FileStatus.FileExists);
-                    newState.setNodeRef( targetNodeRef);
+                    newState.setFileStatus( FileExists);
+                    newState.setFilesystemObject( targetNodeRef);
                     
                     // Delete the old file
                     
@@ -2784,12 +2801,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Indicate that this is a deleted file state, set the node ref of the file that was renamed
                     
-                    oldState.setFileStatus(FileStateStatus.DeleteOnClose);
-                    oldState.setNodeRef(nodeToMoveRef);
+                    oldState.setFileStatus( DeleteOnClose);
+                    oldState.setFilesystemObject(nodeToMoveRef);
                     
                     // Link to the new node, a new file may be renamed into place, we need to transfer aspect/locks
                     
-                    oldState.setLinkNode( targetNodeRef);
+                    oldState.addAttribute( AttrLinkNode, targetNodeRef);
                     
                     // DEBUG
                     
@@ -3259,16 +3276,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         ContentContext ctx = (ContentContext) tree.getContext();
         
-        if ( ctx.hasStateTable())
+        if ( ctx.hasStateCache())
         {
             // Try and get the node ref from an in memory file state
             
-            FileState fstate = ctx.getStateTable().findFileState(path);
-            if ( fstate != null && fstate.hasNodeRef() && fstate.exists() )
+            FileState fstate = ctx.getStateCache().findFileState(path);
+            if ( fstate != null && fstate.hasFilesystemObject() && fstate.exists() )
             {
                 // Check that the node exists
             	
-                if (fileFolderService.exists(fstate.getNodeRef()))
+                if (fileFolderService.exists((NodeRef) fstate.getFilesystemObject()))
                 {
                 	// Bump the file states expiry time
                 	
@@ -3276,11 +3293,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     // Return the cached noderef
                     
-                    return fstate.getNodeRef();
+                    return (NodeRef) fstate.getFilesystemObject();
                 }
                 else
                 {
-                    ctx.getStateTable().removeFileState(path);
+                    ctx.getStateCache().removeFileState(path);
                 }
             }
         }
@@ -3344,11 +3361,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         ContentContext ctx = (ContentContext) tree.getContext();
         FileState fstate = null;
         
-        if ( ctx.hasStateTable())
+        if ( ctx.hasStateCache())
         {
             // Get the file state for a file/folder
             
-            fstate = ctx.getStateTable().findFileState(path);
+            fstate = ctx.getStateCache().findFileState(path);
         }
         
         // Return the file state
@@ -3548,5 +3565,38 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Removed versionable aspect from temp file");
         }
-    }       
+    } 
+    
+    /**
+     * Return the file state status as a string
+     * 
+     * @param sts int
+     * @return String
+     */
+    private final String fileStatusString( int sts) {
+        String fstatus = "Unknown";
+        
+        switch ( sts) {
+            case FileUnknown:
+                fstatus = "Unknown";
+                break;
+            case FileNotExist:
+                fstatus = "NotExist";
+                break;
+            case FileExists:
+                fstatus = "FileExists";
+                break;
+            case DirectoryExists:
+                fstatus = "DirectoryExists";
+                break;
+            case FileRenamed:
+                fstatus = "FileRenamed";
+                break;
+            case DeleteOnClose:
+                fstatus = "DeleteOnClose";
+                break;
+        }
+        
+        return fstatus;
+    }
 }

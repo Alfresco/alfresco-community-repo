@@ -25,12 +25,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.IOControlHandler;
-import org.alfresco.filesys.state.FileState;
-import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.NotifyChange;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.repo.avm.CreateStoreCallback;
 import org.alfresco.repo.avm.CreateVersionCallback;
@@ -440,13 +440,13 @@ public class AVMContext extends AlfrescoContext
         
         // Make sure the file state cache is enabled
         
-        FileStateTable fsTable = getStateTable();
+        FileStateCache fsTable = getStateCache();
         if ( fsTable == null)
             return;
         
         // Find the file state for the root folder
         
-        FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR, true, true);
+        FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR, true);
 
         if ( rootState != null)
         {
@@ -481,7 +481,7 @@ public class AVMContext extends AlfrescoContext
         
         // Make sure the file state cache is enabled
         
-        FileStateTable fsTable = getStateTable();
+        FileStateCache fsTable = getStateCache();
         if ( fsTable == null)
             return;
         
@@ -542,7 +542,7 @@ public class AVMContext extends AlfrescoContext
         
         // Make sure the file state cache is enabled
         
-        FileStateTable fsTable = getStateTable();
+        FileStateCache fsTable = getStateCache();
         if ( fsTable == null)
             return;
 
@@ -612,7 +612,7 @@ public class AVMContext extends AlfrescoContext
         
         // Make sure the file state cache is enabled
         
-        FileStateTable fsTable = getStateTable();
+        FileStateCache fsTable = getStateCache();
         if ( fsTable == null)
             return;
 

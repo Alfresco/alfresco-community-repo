@@ -22,10 +22,10 @@ package org.alfresco.filesys.repo;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.filesys.state.FileState;
-import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NotifyChange;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.smb.server.notify.NotifyChangeHandler;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -88,7 +88,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 	
 	// File state table and change notification handler
 	
-	private FileStateTable m_stateTable;
+	private FileStateCache m_stateTable;
 	private NotifyChangeHandler m_changeHandler;
 	
 	// Root node path and store
@@ -188,7 +188,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
         // Get the file state table and change notification handler, if enabled
         
-        m_stateTable = m_filesysCtx.getStateTable();
+        m_stateTable = m_filesysCtx.getStateCache();
         m_changeHandler = m_filesysCtx.getChangeHandler();
         
         // Start the event processing thread

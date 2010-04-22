@@ -420,7 +420,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         
         // Enable file state caching
         
-        diskCtx.enableStateTable( true, diskDrv.getStateReaper());
+        diskCtx.enableStateCache( true);
         
         // Initialize the I/O control handler
         

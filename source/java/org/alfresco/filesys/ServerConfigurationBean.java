@@ -1925,6 +1925,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
                   
                     filesys = new DiskSharedDevice(filesysName, filesysDriver, filesysContext);
 
+                    // Check if the filesystem uses the file state cache, if so then add to the file state reaper
+                    
+                    if ( filesysContext.hasStateCache()) {
+                        
+                        // Register the state cache with the reaper thread
+                        
+                        fsysConfig.addFileStateCache( filesysName, filesysContext.getStateCache());
+                    }
+
                     // Start the filesystem
                   
                     filesysContext.startFilesystem(filesys);
@@ -1999,6 +2008,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
 
                     filesysContext.enableChangeHandler(changeNotify);
 
+                    // Check if the filesystem uses the file state cache, if so then add to the file state reaper
+                    
+                    if ( filesysContext.hasStateCache()) {
+                        
+                        // Register the state cache with the reaper thread
+                        
+                        fsysConfig.addFileStateCache( filesysName, filesysContext.getStateCache());
+                    }
+
                     // Start the filesystem
 
                     filesysContext.startFilesystem(filesys);
@@ -2046,10 +2064,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
             
             if ( fsysConfig.getShares().findShare( storeName, ShareType.DISK, true) == null)
             {
-              // Create the new share for the store
+                    // Create the new share for the store
               
                     AVMContext avmContext = new AVMContext( storeName, storeName + ":/", AVMContext.VERSION_HEAD);
-                    avmContext.enableStateTable( true, avmDriver.getStateReaper());
+                    avmContext.enableStateCache( true);
                   
                     // Create the shared filesystem
                   

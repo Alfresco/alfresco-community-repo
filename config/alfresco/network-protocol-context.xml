@@ -62,7 +62,6 @@
       <property name="sysAdminParams"><ref bean="sysAdminParams"/></property>
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
 	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
-      <property name="stateReaper"><ref bean="fileStateReaper"/></property>
       <property name="nodeMonitorFactory"><ref bean="nodeMonitorFactory"/></property>
       <property name="nodeArchiveService"><ref bean="nodeArchiveService" /></property>
 	  <property name="lockService"><ref bean="lockService" /></property>
@@ -93,7 +92,6 @@
       <property name="authenticationService"><ref bean="authenticationService"/></property>
       <property name="mimetypeService"><ref bean="mimetypeService"/></property>
       <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
-      <property name="stateReaper"><ref bean="fileStateReaper"/></property>
       <property name="nodeService"><ref bean="NodeService"/></property>
       
       <property name="createStoreListener"><ref bean="createStoreTxnListener"/></property>
@@ -101,9 +99,4 @@
       <property name="createVersionListener"><ref bean="createVersionTxnListener"/></property>
       <property name="purgeVersionListener"><ref bean="purgeVersionTxnListener"/></property>
    </bean>
-   
-   <!-- File State Reaper -->
-   <bean id="fileStateReaper" class="org.alfresco.filesys.state.FileStateReaper"
-      destroy-method="shutdownRequest"/>
-   
 </beans>

@@ -24,8 +24,6 @@ import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.config.GlobalDesktopActionConfigBean;
-import org.alfresco.filesys.state.FileStateReaper;
-import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileSystem;
@@ -58,11 +56,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
 	  
 	private static final String m_filesysDebugStr[] = { "FILE", "FILEIO", "SEARCH", "INFO", "LOCK", "PSEUDO", "RENAME" };
 
-    // File state table and associated file state reaper
-    
-    private FileStateTable m_stateTable;
-    private FileStateReaper m_stateReaper;
-    
     // URL pseudo file web path prefix (server/port/webapp) and link file name
     
     private String m_urlFileName;
@@ -147,57 +140,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         return FileSystem.TypeNTFS;
     }
 
-    /**
-     * Determine if the file state table is enabled
-     * 
-     * @return boolean
-     */
-    public final boolean hasStateTable()
-    {
-        return m_stateTable != null ? true : false;
-    }
-    
-    /**
-     * Return the file state table
-     * 
-     * @return FileStateTable
-     */
-    public final FileStateTable getStateTable()
-    {
-        return m_stateTable;
-    }
-    
-    /**
-     * Enable/disable the file state table
-     * 
-     * @param ena boolean
-     * @param stateReaper FileStateReaper
-     */
-    public final void enableStateTable(boolean ena, FileStateReaper stateReaper)
-    {
-        if ( ena == false)
-        {
-        	// Remove the state table from the reaper
-        	
-        	stateReaper.removeStateTable( getShareName());
-            m_stateTable = null;
-        }
-        else if ( m_stateTable == null)
-        {
-        	// Create the file state table
-
-            m_stateTable = new FileStateTable();
-            
-            // Register with the file state reaper
-            
-            stateReaper.addStateTable( getShareName(), m_stateTable);
-        }
-        
-        // Save the reaper, for deregistering when the filesystem is closed
-        
-        m_stateReaper = stateReaper;
-    }
-    
     /**
      * Determine if the pseudo file interface is enabled
      * 
@@ -482,19 +424,4 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
     	return (m_debug & flg) != 0 ? true : false;
     }
-    
-    /**
-     * Close the filesystem context
-     */
-	public void CloseContext() {
-		
-		//	Deregister the file state table from the reaper
-		
-		if ( m_stateTable != null)
-			enableStateTable( false, m_stateReaper);
-		
-		//	Call the base class
-		
-		super.CloseContext();
-	}
 }

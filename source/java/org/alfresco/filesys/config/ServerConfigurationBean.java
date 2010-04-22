@@ -62,6 +62,7 @@ import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.core.ShareMapper;
 import org.alfresco.jlan.server.core.ShareType;
+import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.thread.ThreadRequestPool;
@@ -1559,6 +1560,17 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
                         filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, (AVMContext)filesystem);
 
+                        // Check if the filesystem uses the file state cache, if so then add to the file state reaper
+                        
+                        DiskDeviceContext diskCtx = (DiskDeviceContext) filesystem;
+                        
+                        if ( diskCtx.hasStateCache()) {
+                            
+                            // Register the state cache with the reaper thread
+                            
+                            fsysConfig.addFileStateCache( filesystem.getDeviceName(), diskCtx.getStateCache());
+                        }
+                        
                         // Start the filesystem
 
                         ((AVMContext)filesystem).startFilesystem(filesys);
@@ -1596,6 +1608,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
                         filesys.setAccessControlList(acls);
 
+                        // Check if the filesystem uses the file state cache, if so then add to the file state reaper
+                        
+                        if ( filesysContext.hasStateCache()) {
+                            
+                            // Register the state cache with the reaper thread
+                            
+                            fsysConfig.addFileStateCache( filesystem.getDeviceName(), filesysContext.getStateCache());
+                        }
+                        
                         // Start the filesystem
 
                         filesysContext.startFilesystem(filesys);
@@ -1647,7 +1668,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         // Create the new share for the store
 
                         AVMContext avmContext = new AVMContext(storeName, storeName + ":/", AVMContext.VERSION_HEAD);
-                        avmContext.enableStateTable(true, avmDriver.getStateReaper());
+                        avmContext.enableStateCache(true);
 
                         // Create the shared filesystem
 

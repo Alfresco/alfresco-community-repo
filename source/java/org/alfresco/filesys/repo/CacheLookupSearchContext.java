@@ -21,9 +21,9 @@ package org.alfresco.filesys.repo;
 
 import java.util.List;
 
-import org.alfresco.filesys.state.FileState;
-import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -45,7 +45,7 @@ public class CacheLookupSearchContext extends ContentSearchContext {
     
 	// File state cache
 	
-	private FileStateTable m_stateCache;
+	private FileStateCache m_stateCache;
 	
 	// File information for the '.' and '..' pseduo entries, returned during a wildcard search
 	
@@ -68,7 +68,7 @@ public class CacheLookupSearchContext extends ContentSearchContext {
             String searchStr,
             PseudoFileList pseudoList,
             String relPath,
-            FileStateTable stateCache)
+            FileStateCache stateCache)
     {
         super(cifsHelper, results, searchStr, pseudoList, relPath);
         super.setSearchString(searchStr);

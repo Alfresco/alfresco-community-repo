@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
@@ -130,7 +131,12 @@ public class ThumbnailRenditionConvertor
     {
         Map<String, Serializable> parameters = new HashMap<String, Serializable>();
         
+        // All TransformationOptions-based renditions are considered to be "thumbnails".
+        // Therefore they should be created with a node type of cm:thumbnail
+        parameters.put(RenditionService.PARAM_RENDITION_NODETYPE, ContentModel.TYPE_THUMBNAIL);
+
         // parameters common to all transformations
+        
         putParameterIfNotNull(AbstractRenderingEngine.PARAM_SOURCE_CONTENT_PROPERTY, transformationOptions.getSourceContentProperty(), parameters);
         putParameterIfNotNull(AbstractRenderingEngine.PARAM_TARGET_CONTENT_PROPERTY, transformationOptions.getTargetContentProperty(), parameters);
         putParameterIfNotNull(RenditionService.PARAM_DESTINATION_NODE, transformationOptions.getTargetNodeRef(), parameters);

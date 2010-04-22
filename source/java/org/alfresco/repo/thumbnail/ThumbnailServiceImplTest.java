@@ -261,8 +261,14 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         NodeRef thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT,
                     MimetypeMap.MIMETYPE_IMAGE_JPEG, imageTransformationOptions, "small");
 
+        // Thumbnails should always be of type cm:thumbnail.
+        assertEquals(ContentModel.TYPE_THUMBNAIL, nodeService.getType(thumbnail1));
+
         // Update the thumbnail
         this.thumbnailService.updateThumbnail(thumbnail1, imageTransformationOptions);
+        
+        // ALF-2047. Thumbnails were changing to type cm:content after update.
+        assertEquals(ContentModel.TYPE_THUMBNAIL, nodeService.getType(thumbnail1));
     }
 
     public void testGetThumbnailByName() throws Exception

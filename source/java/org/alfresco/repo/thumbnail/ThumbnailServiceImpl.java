@@ -430,7 +430,6 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Add the other parameters given in this method signature.
         params.put(AbstractRenderingEngine.PARAM_SOURCE_CONTENT_PROPERTY, contentProperty);
         params.put(AbstractRenderingEngine.PARAM_MIME_TYPE, mimetype);
-        params.put(RenditionService.PARAM_RENDITION_NODETYPE, ContentModel.TYPE_THUMBNAIL);
 
         // Set the parameters on the rendition definition.
         definition.addParameterValues(params);

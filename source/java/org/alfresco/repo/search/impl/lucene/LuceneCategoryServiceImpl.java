@@ -324,7 +324,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
         return dictionaryService.getSubAspects(ContentModel.ASPECT_CLASSIFIABLE, true);
     }
 
-    public NodeRef createClassifiction(StoreRef storeRef, QName typeName, String attributeName)
+    public NodeRef createClassification(StoreRef storeRef, QName typeName, String attributeName)
     {
         throw new UnsupportedOperationException();
     }

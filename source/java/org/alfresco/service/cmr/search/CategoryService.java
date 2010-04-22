@@ -120,7 +120,7 @@ public interface CategoryService
      * @param attributeName
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"storeRef", "aspectName", "attributeName"})
-    public NodeRef createClassifiction(StoreRef storeRef, QName aspectName, String attributeName);
+    public NodeRef createClassification(StoreRef storeRef, QName aspectName, String attributeName);
     
     /**
      * Create a new root category in the given classification

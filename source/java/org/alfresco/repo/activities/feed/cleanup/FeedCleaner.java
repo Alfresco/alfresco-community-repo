@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -45,9 +47,16 @@ public class FeedCleaner
     
     private ActivityFeedDAO feedDAO;
     
+    private SiteService siteService;
+    
     public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
         this.feedDAO = feedDAO;
+    }
+    
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
     }
     
     public void setMaxAgeMins(int mins)
@@ -122,10 +131,12 @@ public class FeedCleaner
                 for (ActivityFeedEntity feed : feeds)
                 {
                     String siteId = feed.getSiteNetwork();
-                    String feedUserId = feed.getFeedUserId();
+                    final String feedUserId = feed.getFeedUserId();
                     String format = feed.getActivitySummaryFormat();
                     
                     List<ActivityFeedEntity> feedToClean;
+                    
+                    int feedUserSiteCount = 0;
                     
                     if ((feedUserId == null) || (feedUserId.length() == 0))
                     {
@@ -134,9 +145,22 @@ public class FeedCleaner
                     else
                     {
                         feedToClean = feedDAO.selectUserFeedEntries(feedUserId, format, null, false, false);
+                        
+                        if (siteService != null)
+                        {
+                            // note: allow for fact that Share Activities dashlet currently uses userfeed within site context
+                            feedUserSiteCount = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Integer>()
+                            {
+                                public Integer doWork() throws Exception
+                                {
+                                    return siteService.listSites(feedUserId).size();
+                                }
+                            }, AuthenticationUtil.SYSTEM_USER_NAME);
+                        }
                     }
                     
-                    if (feedToClean.size() > maxFeedSize)
+                    if (((feedUserSiteCount == 0) && (feedToClean.size() > maxFeedSize)) ||
+                        ((feedToClean.size() > (maxFeedSize * feedUserSiteCount))))
                     {
                         Date oldestFeedEntry = feedToClean.get(maxFeedSize-1).getPostDate();
                         

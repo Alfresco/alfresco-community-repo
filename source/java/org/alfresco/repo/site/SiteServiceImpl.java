@@ -680,8 +680,29 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String)
      */
-    public List<SiteInfo> listSites(String userName)
-    {        
+    public List<SiteInfo> listSites(final String userName)
+    {
+        // MT share - for activity service system callback
+        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
+        {
+            final String tenantDomain = tenantService.getUserDomain(userName);
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<SiteInfo>>()
+            {
+                public List<SiteInfo> doWork() throws Exception
+                {
+                    return listSitesImpl(userName);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        else
+        {
+            return listSitesImpl(userName);
+        }
+    }
+    
+    private List<SiteInfo> listSitesImpl(String userName)
+    {
         List<SiteInfo> result = null;
         
         // get the Groups this user is contained within (at any level)

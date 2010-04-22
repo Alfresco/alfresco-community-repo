@@ -162,6 +162,7 @@ public class KeywordSearch extends DeclarativeWebScript
         {
             // construct search statement
             String[] terms = searchTerms.split(" "); 
+            searchTerms = searchTerms.replaceAll("\"", "&quot;"); 
 
             // Escape special characters in the terms, so that they can't confuse the parser 
             for (int i=0; i<terms.length; i++) 

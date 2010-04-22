@@ -219,11 +219,46 @@ public class FileFolderServiceImplTest extends TestCase
 
     public void testDeepFilesAndFoldersSearch() throws Exception
     {
-        List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "?1-*", true, true, true);
-        // check
-        String[] expectedNames = new String[]
-        { NAME_L1_FOLDER_A, NAME_L1_FOLDER_B, NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C };
-        checkFileList(files, 3, 2, expectedNames);
+        // Seach for pattern <Any char>-<AnyChars>
+        {
+            List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "?1-*", true, true, true);
+            // check
+            String[] expectedNames = new String[]
+               { NAME_L1_FOLDER_A, NAME_L1_FOLDER_B, NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C };
+            checkFileList(files, 3, 2, expectedNames);
+        }
+        
+        // Search for a particular file
+        {
+            List<FileInfo> files = fileFolderService.search(workingRootNodeRef, NAME_L1_FILE_B, true, true, true);
+            // check
+            String[] expectedNames = new String[]
+               { NAME_L1_FILE_B };
+            checkFileList(files, 1, 0, expectedNames);
+        }
+        
+        // Search for all files with wildcard
+        {
+            List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "*", true, true, true);
+            // check
+            String[] expectedNames = new String[]
+               { 
+                 NAME_CHECK_FOLDER,       
+                 NAME_L0_FOLDER_A, 
+                 NAME_L0_FOLDER_B, 
+                 NAME_L0_FOLDER_C, 
+                 NAME_L1_FOLDER_A, 
+                 NAME_L1_FOLDER_B,
+                 NAME_CHECK_FILE,
+                 NAME_L0_FILE_A, 
+                 NAME_L0_FILE_B, 
+                 NAME_L1_FILE_A, 
+                 NAME_L1_FILE_B, 
+                 NAME_L1_FILE_C 
+               };
+            checkFileList(files, 6, 6, expectedNames);
+        }
+        
     }
 
     public void testDeepFilesOnlySearch() throws Exception

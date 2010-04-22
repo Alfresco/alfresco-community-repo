@@ -485,7 +485,7 @@ public class FileFolderServiceImpl implements FileFolderService
                     // This is a folder search only;
                     query = XPATH_QUERY_DEEP_FOLDERS;
                 }
-                else if(fileSearch && folderSearch)
+                else if(fileSearch && !folderSearch)
                 {
                     // This is a folder search only;
                     query = XPATH_QUERY_DEEP_FILES;
@@ -617,18 +617,22 @@ public class FileFolderServiceImpl implements FileFolderService
             
             for (ChildAssociationRef folderRef : folderAssocRefs)
             {
+                // Add the folders in the currentDir
                 toSearch.push(folderRef.getChildRef());
+                
                 if(folders)
                 {
                     result.add(folderRef.getChildRef());
                 }
-                if(files)
+            }
+                
+            if(files)
+            {
+                // Add the files in the current dir
+                List<ChildAssociationRef> fileAssocRefs = nodeService.getChildAssocs(currentDir, fileTypeQNames);
+                for (ChildAssociationRef fileRef : fileAssocRefs)
                 {
-                    List<ChildAssociationRef> fileAssocRefs = nodeService.getChildAssocs(currentDir, fileTypeQNames);
-                    for (ChildAssociationRef fileRef : fileAssocRefs)
-                    {
-                        result.add(fileRef.getChildRef());
-                    }
+                    result.add(fileRef.getChildRef());
                 }
             }
         }

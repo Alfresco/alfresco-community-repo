@@ -79,6 +79,9 @@ public interface FileFolderService
      * Searches for all files and folders with the matching name pattern,
      * using wildcard characters <b>*</b> and <b>?</b>.
      * 
+     * Warning: Please avoid using this method with any "namePattern" other than "*".  
+     * Although it works, its performance is poor, which is why this method is deprecated.
+     * 
      * @param contextNodeRef the context of the search.  This node will never be returned
      *      as part of the search results.
      * @param namePattern the name of the file or folder to search for, or a
@@ -88,6 +91,9 @@ public interface FileFolderService
      * @return Returns a list of file or folder matches
      *
      * @see #search(NodeRef, String, boolean, boolean, boolean)
+     * @deprecated for shallow search use list, listFolders, listFiles, searchSimple, alternatives 
+     * for deep search will be provided in later releases. Avoid calling this method with any 
+     * name pattern except for "*".    
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "includeSubFolders"})
     public List<FileInfo> search(
@@ -97,7 +103,10 @@ public interface FileFolderService
     
     /**
      * Perform a search against the name of the files or folders within a hierarchy.
-     * Wildcard characters are <b>*</b> and <b>?</b>.
+     * Wildcard characters are <b>*</b> and <b>?</b>. 
+     * 
+     * Warning: Please avoid using this method with any "namePattern" other than "*".  
+     * Although it works, its performance is poor which is why this method is deprecated.
      * 
      * @param contextNodeRef the context of the search.  This node will never be returned
      *      as part of the search results.
@@ -108,6 +117,9 @@ public interface FileFolderService
      * @param folderSearch true if folder types are to be included in the search results
      * @param includeSubFolders true to search the entire hierarchy below the search context
      * @return Returns a list of file or folder matches
+     * @deprecated for shallow search use list, listFolders, listFiles, searchSimple, alternatives 
+     * for deep search will be provided in later releases.   Avoid calling this method with any 
+     * name pattern except for "*".  
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "fileSearch", "folderSearch", "includeSubFolders"})
     public List<FileInfo> search(

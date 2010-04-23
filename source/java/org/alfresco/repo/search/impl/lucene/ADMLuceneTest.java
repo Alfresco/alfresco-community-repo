@@ -3186,7 +3186,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:\"valueone\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@namespace\\:property\\-1:\"valueone\"", null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -3194,7 +3194,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:\"Valueone\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@namespace\\:property\\-1:\"Valueone\"", null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -3202,7 +3202,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:ValueOne", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@namespace\\:property\\-1:ValueOne", null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());
@@ -3210,7 +3210,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1.0f, results.getScore(1));
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@property\\-1:valueone", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@namespace\\:property\\-1:valueone", null);
         assertEquals(2, results.length());
         assertEquals(n2.getId(), results.getNodeRef(0).getId());
         assertEquals(n1.getId(), results.getNodeRef(1).getId());

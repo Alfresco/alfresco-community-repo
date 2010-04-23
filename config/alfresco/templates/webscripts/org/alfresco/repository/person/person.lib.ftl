@@ -23,6 +23,7 @@
 	"companyemail": <#if person.properties.companyemail??>"${person.properties.companyemail}"<#else>null</#if>,
 	"skype": <#if person.properties.skype??>"${person.properties.skype}"<#else>null</#if>,
 	"instantmsg": <#if person.properties.instantmsg??>"${person.properties.instantmsg}"<#else>null</#if>,
+	"googleusername": <#if person.properties.googleusername??>"${person.properties.googleusername}"<#else>null</#if>,
 	"quota": <#if person.properties.sizeQuota??>${person.properties.sizeQuota?c}<#else>-1</#if>,
 	"sizeCurrent": <#if person.properties.sizeCurrent??>${person.properties.sizeCurrent?c}<#else>0</#if>,
 	"persondescription": <#if person.properties.persondescription??>"${stringUtils.stripUnsafeHTML(person.properties.persondescription.content)}"<#else>null</#if>

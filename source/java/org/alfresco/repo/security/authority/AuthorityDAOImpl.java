@@ -315,7 +315,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 query.append(" AND @").append(
                         LuceneQueryParser.escape("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_USERNAME.getLocalName()))).append(":\"").append(
-                        displayNamePattern).append("\"");
+                                        LuceneQueryParser.escape(displayNamePattern)).append("\"");
 
             }
             if (type == null)
@@ -334,16 +334,16 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 // Allow for the appropriate type prefix in the authority name
                 if (type == null && !displayNamePattern.startsWith("*"))
                 {
-                    query.append("*").append(displayNamePattern);
+                    query.append("*").append(LuceneQueryParser.escape(displayNamePattern));
                 }
                 else
                 {
-                    query.append(getName(type, displayNamePattern));
+                    query.append(getName(type, LuceneQueryParser.escape(displayNamePattern)));
                 }
                 query.append("\" OR @").append(
                         LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getLocalName()))).append(
-                        ":\"").append(displayNamePattern).append("\")");
+                        ":\"").append(LuceneQueryParser.escape(displayNamePattern)).append("\")");
             }
             if (type == null)
             {

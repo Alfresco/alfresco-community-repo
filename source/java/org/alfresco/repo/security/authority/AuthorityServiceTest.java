@@ -239,6 +239,13 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
     }
 
+    public void test_ETWOTWO_400()
+    {
+        String auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, "wo\"of");
+        Set<String> authorities = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, true, "wo\"of*", AuthorityService.ZONE_APP_DEFAULT);
+        assertEquals(1, authorities.size());
+    }
+    
     public void testGroupWildcards()
     {
         long before, after;

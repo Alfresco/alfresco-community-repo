@@ -251,6 +251,9 @@
             <property name="cm:instantmsg">
             	<type>d:text</type>
             </property>
+            <property name="cm:googleusername">
+               <type>d:text</type>
+            </property>
             
             <!-- system maintained values -->
             <property name="cm:sizeCurrent">

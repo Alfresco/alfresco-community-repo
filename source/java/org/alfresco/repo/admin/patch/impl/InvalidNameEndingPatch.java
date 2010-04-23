@@ -34,6 +34,7 @@ import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.TempFileProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -121,7 +122,9 @@ public class InvalidNameEndingPatch extends AbstractPatch
         
         private HibernateHelper() throws IOException
         {
-            logFile = new File("./InvalidNameEndingPatch.log");
+            File tempDir = TempFileProvider.getLongLifeTempDir("patches");
+            logFile = new File(tempDir, "InvalidNameEndingPatch.log");
+            
             // open the file for appending
             RandomAccessFile outputFile = new RandomAccessFile(logFile, "rw");
             channel = outputFile.getChannel();

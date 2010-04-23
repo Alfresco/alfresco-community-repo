@@ -31,6 +31,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.ChildAssoc;
@@ -42,6 +43,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.SQLQuery;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -70,6 +74,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private NodeDaoService nodeDaoService;
     private QNameDAO qnameDAO;
     private RuleService ruleService;
+    
+    private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
     
     public FixNameCrcValuesPatch()
     {
@@ -140,7 +146,10 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         
         private HibernateHelper() throws IOException
         {
-            logFile = new File("./FixNameCrcValuesPatch.log");
+            // put the log file into a long life temp directory
+            File tempDir = TempFileProvider.getLongLifeTempDir("patches");
+            logFile = new File(tempDir, "FixNameCrcValuesPatch.log");
+            
             // open the file for appending
             RandomAccessFile outputFile = new RandomAccessFile(logFile, "rw");
             channel = outputFile.getChannel();

@@ -499,7 +499,7 @@
                 org.alfresco.service.cmr.search.CategoryService.getClassifications=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.search.CategoryService.getRootCategories=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.search.CategoryService.getClassificationAspects=ACL_ALLOW
-                org.alfresco.service.cmr.search.CategoryService.createClassifiction=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.createClassification=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.createRootCategory=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.createCategory=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.deleteClassification=ACL_ALLOW

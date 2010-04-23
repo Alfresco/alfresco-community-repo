@@ -3908,7 +3908,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             }
             
             String sDate = df.format(date);
-            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":\"" + sDate + "\"", null);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "DATE-ista")) + ":\"" + sDate + "\"", null);
             assertEquals(1, results.length());
             results.close();
 
@@ -3929,7 +3929,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             // short and long field ranges
 
             sDate = df.format(date);
-            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null);
+            results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:CrEaTeD:[MIN TO " + sDate + "]", null);
             assertEquals(2, results.length());
             results.close();
 
@@ -4283,6 +4283,26 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
         
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"" + ContentModel.TYPE_CONTENT.toString() + "\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"cm:content\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"cm:CONTENT\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"CM:CONTENT\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"CONTENT\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "TYPE:\"content\"", null);
         assertEquals(1, results.length());
         results.close();
         

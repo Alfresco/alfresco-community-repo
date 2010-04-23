@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -403,9 +404,9 @@ public class LuceneQueryParser extends QueryParser
             }
 
         }
-        else if (dictionaryService.getDataType(QName.createQName(expandFieldName(field))) != null)
+        else if (matchDataTypeDefinition(field) != null)
         {
-            Collection<QName> contentAttributes = dictionaryService.getAllProperties(dictionaryService.getDataType(QName.createQName(expandFieldName(field))).getName());
+            Collection<QName> contentAttributes = dictionaryService.getAllProperties(matchDataTypeDefinition(field).getName());
             BooleanQuery query = new BooleanQuery();
             for (QName qname : contentAttributes)
             {
@@ -423,6 +424,181 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
+    private DataTypeDefinition matchDataTypeDefinition(String string)
+    {
+        QName search = QName.createQName(expandQName(string));
+        DataTypeDefinition dataTypeDefinition = dictionaryService.getDataType(QName.createQName(expandQName(string)));
+        QName match = null;
+        if(dataTypeDefinition == null)
+        {
+            for(QName definition : dictionaryService.getAllDataTypes())
+            {
+                if(definition.getNamespaceURI().equalsIgnoreCase(search.getNamespaceURI()))
+                {
+                    if(definition.getLocalName().equalsIgnoreCase(search.getLocalName()))
+                    {
+                        if(match == null)
+                        {
+                            match = definition;
+                        }
+                        else
+                        {
+                            throw new LuceneIndexException("Ambiguous data datype "+string);
+                        }
+                    }
+                }
+                        
+            }
+        }
+        else
+        {
+            return dataTypeDefinition;
+        }
+        if(match == null)
+        {
+            return null;
+        }
+        else
+        {
+            return dictionaryService.getDataType(match);
+        }
+    }
+    
+    private PropertyDefinition matchPropertyDefinition(String string)
+    {
+        QName search = QName.createQName(expandQName(string));
+        PropertyDefinition propertyDefinition = dictionaryService.getProperty(QName.createQName(expandQName(string)));
+        QName match = null;
+        if(propertyDefinition == null)
+        {
+            for(QName definition : dictionaryService.getAllProperties(null))
+            {
+                if(definition.getNamespaceURI().equalsIgnoreCase(search.getNamespaceURI()))
+                {
+                    if(definition.getLocalName().equalsIgnoreCase(search.getLocalName()))
+                    {
+                        if(match == null)
+                        {
+                            match = definition;
+                        }
+                        else
+                        {
+                            throw new LuceneIndexException("Ambiguous data datype "+string);
+                        }
+                    }
+                }
+                        
+            }
+        }
+        else
+        {
+            return propertyDefinition;
+        }
+        if(match == null)
+        {
+            return null;
+        }
+        else
+        {
+            return dictionaryService.getProperty(match);
+        }
+    }
+    
+    private AspectDefinition matchAspectDefinition(String string)
+    {
+        QName search = QName.createQName(expandQName(string));
+        AspectDefinition aspectDefinition = dictionaryService.getAspect(QName.createQName(expandQName(string)));
+        QName match = null;
+        if(aspectDefinition == null)
+        {
+            for(QName definition : dictionaryService.getAllAspects())
+            {
+                if(definition.getNamespaceURI().equalsIgnoreCase(search.getNamespaceURI()))
+                {
+                    if(definition.getLocalName().equalsIgnoreCase(search.getLocalName()))
+                    {
+                        if(match == null)
+                        {
+                            match = definition;
+                        }
+                        else
+                        {
+                            throw new LuceneIndexException("Ambiguous data datype "+string);
+                        }
+                    }
+                }
+                        
+            }
+        }
+        else
+        {
+            return aspectDefinition;
+        }
+        if(match == null)
+        {
+            return null;
+        }
+        else
+        {
+            return dictionaryService.getAspect(match);
+        }
+    }
+    
+    private TypeDefinition matchTypeDefinition(String string)
+    {
+        QName search = QName.createQName(expandQName(string));
+        TypeDefinition typeDefinition = dictionaryService.getType(QName.createQName(expandQName(string)));
+        QName match = null;
+        if(typeDefinition == null)
+        {
+            for(QName definition : dictionaryService.getAllTypes())
+            {
+                if(definition.getNamespaceURI().equalsIgnoreCase(search.getNamespaceURI()))
+                {
+                    if(definition.getLocalName().equalsIgnoreCase(search.getLocalName()))
+                    {
+                        if(match == null)
+                        {
+                            match = definition;
+                        }
+                        else
+                        {
+                            throw new LuceneIndexException("Ambiguous data datype "+string);
+                        }
+                    }
+                }
+                        
+            }
+        }
+        else
+        {
+            return typeDefinition;
+        }
+        if(match == null)
+        {
+            return null;
+        }
+        else
+        {
+            return dictionaryService.getType(match);
+        }
+    }
+    
+    private ClassDefinition matchClassDefinition(String string)
+    {
+        TypeDefinition match = matchTypeDefinition(string);
+        if(match != null)
+        {
+            return match;
+        }
+        else
+        {
+            return matchAspectDefinition(string);
+        }
+    }
+    
+   
+    
     /**
      * @param field
      * @param queryText
@@ -588,26 +764,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("CLASS"))
             {
-                ClassDefinition target;
-                if (queryText.startsWith("{"))
-                {
-                    target = dictionaryService.getClass(QName.createQName(queryText));
-                }
-                else
-                {
-                    int colonPosition = queryText.indexOf(':');
-                    if (colonPosition == -1)
-                    {
-                        // use the default namespace
-                        target = dictionaryService.getClass(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
-                    }
-                    else
-                    {
-                        // find the prefix
-                        target = dictionaryService.getClass(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
-                                .substring(colonPosition + 1)));
-                    }
-                }
+                ClassDefinition target = matchClassDefinition(queryText);
                 if (target == null)
                 {
                     throw new SearcherException("Invalid type: " + queryText);
@@ -616,26 +773,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("TYPE"))
             {
-                TypeDefinition target;
-                if (queryText.startsWith("{"))
-                {
-                    target = dictionaryService.getType(QName.createQName(queryText));
-                }
-                else
-                {
-                    int colonPosition = queryText.indexOf(':');
-                    if (colonPosition == -1)
-                    {
-                        // use the default namespace
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
-                    }
-                    else
-                    {
-                        // find the prefix
-                        QName qname = QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText.substring(colonPosition + 1));
-                        target = dictionaryService.getType(qname);
-                    }
-                }
+                TypeDefinition target = matchTypeDefinition(queryText);
                 if (target == null)
                 {
                     throw new SearcherException("Invalid type: " + queryText);
@@ -658,26 +796,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("EXACTTYPE"))
             {
-                TypeDefinition target;
-                if (queryText.startsWith("{"))
-                {
-                    target = dictionaryService.getType(QName.createQName(queryText));
-                }
-                else
-                {
-                    int colonPosition = queryText.indexOf(':');
-                    if (colonPosition == -1)
-                    {
-                        // use the default namespace
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
-                    }
-                    else
-                    {
-                        // find the prefix
-                        target = dictionaryService.getType(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
-                                .substring(colonPosition + 1)));
-                    }
-                }
+                TypeDefinition target = matchTypeDefinition(queryText);
                 if (target == null)
                 {
                     throw new SearcherException("Invalid type: " + queryText);
@@ -689,27 +808,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("ASPECT"))
             {
-                AspectDefinition target;
-                if (queryText.startsWith("{"))
-                {
-                    target = dictionaryService.getAspect(QName.createQName(queryText));
-                }
-                else
-                {
-                    int colonPosition = queryText.indexOf(':');
-                    if (colonPosition == -1)
-                    {
-                        // use the default namespace
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
-                    }
-                    else
-                    {
-                        // find the prefix
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
-                                .substring(colonPosition + 1)));
-                    }
-                }
-
+                AspectDefinition target = matchAspectDefinition(queryText);
                 if (target == null)
                 {
                     // failed to find the aspect in the dictionary
@@ -735,25 +834,11 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("EXACTASPECT"))
             {
-                AspectDefinition target;
-                if (queryText.startsWith("{"))
+                AspectDefinition target = matchAspectDefinition(queryText);
+                if (target == null)
                 {
-                    target = dictionaryService.getAspect(QName.createQName(queryText));
-                }
-                else
-                {
-                    int colonPosition = queryText.indexOf(':');
-                    if (colonPosition == -1)
-                    {
-                        // use the default namespace
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
-                    }
-                    else
-                    {
-                        // find the prefix
-                        target = dictionaryService.getAspect(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
-                                .substring(colonPosition + 1)));
-                    }
+                    // failed to find the aspect in the dictionary
+                    throw new AlfrescoRuntimeException("Unknown aspect specified in query: " + queryText);
                 }
 
                 QName targetQName = target.getName();
@@ -809,9 +894,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("ISUNSET"))
             {
-                String qnameString = expandFieldName(queryText);
-                QName qname = QName.createQName(qnameString);
-                PropertyDefinition pd = dictionaryService.getProperty(qname);
+                PropertyDefinition pd = matchPropertyDefinition(queryText);
                 if (pd != null)
                 {
                     ClassDefinition containerClass = pd.getContainerClass();
@@ -819,7 +902,7 @@ public class LuceneQueryParser extends QueryParser
                     BooleanQuery query = new BooleanQuery();
                     String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
                     Query typeQuery = getFieldQuery(classType, container.toString(), analysisMode, luceneFunction);
-                    Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
+                    Query presenceQuery = getWildcardQuery("@" + pd.getName().toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
                         query.add(typeQuery, Occur.MUST);
@@ -835,13 +918,11 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("ISNULL"))
             {
-                String qnameString = expandFieldName(queryText);
-                QName qname = QName.createQName(qnameString);
-                PropertyDefinition pd = dictionaryService.getProperty(qname);
+                PropertyDefinition pd = matchPropertyDefinition(queryText);
                 if (pd != null)
                 {
                     BooleanQuery query = new BooleanQuery();
-                    Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
+                    Query presenceQuery = getWildcardQuery("@" + pd.getName().toString(), "*");
                     if (presenceQuery != null)
                     {
                         query.add(new MatchAllDocsQuery(), Occur.MUST);
@@ -857,9 +938,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.equals("ISNOTNULL"))
             {
-                String qnameString = expandFieldName(queryText);
-                QName qname = QName.createQName(qnameString);
-                PropertyDefinition pd = dictionaryService.getProperty(qname);
+                PropertyDefinition pd = matchPropertyDefinition(queryText);
                 if (pd != null)
                 {
                     ClassDefinition containerClass = pd.getContainerClass();
@@ -867,7 +946,7 @@ public class LuceneQueryParser extends QueryParser
                     BooleanQuery query = new BooleanQuery();
                     String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
                     Query typeQuery = getFieldQuery(classType, container.toString(), analysisMode, luceneFunction);
-                    Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
+                    Query presenceQuery = getWildcardQuery("@" + pd.getName().toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
                         // query.add(typeQuery, Occur.MUST);
@@ -881,9 +960,9 @@ public class LuceneQueryParser extends QueryParser
                 }
 
             }
-            else if (dictionaryService.getDataType(QName.createQName(expandFieldName(field))) != null)
+            else if (matchDataTypeDefinition(field) != null)
             {
-                Collection<QName> contentAttributes = dictionaryService.getAllProperties(dictionaryService.getDataType(QName.createQName(expandFieldName(field))).getName());
+                Collection<QName> contentAttributes = dictionaryService.getAllProperties(matchDataTypeDefinition(field).getName());
                 BooleanQuery query = new BooleanQuery();
                 for (QName qname : contentAttributes)
                 {
@@ -1564,11 +1643,17 @@ public class LuceneQueryParser extends QueryParser
 
         if (field.startsWith("@"))
         {
-            String fieldName = expandAttributeFieldName(field);
-
-            QName propertyQName = QName.createQName(fieldName.substring(1));
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-
+            String fieldName;
+            PropertyDefinition propertyDef = matchPropertyDefinition(field.substring(1));
+            if(propertyDef != null)
+            {
+                fieldName = "@" + propertyDef.getName();
+            }
+            else
+            {
+                fieldName = expandAttributeFieldNamex(field);
+            }
+            
             IndexTokenisationMode tokenisationMode = IndexTokenisationMode.TRUE;
             if (propertyDef != null)
             {
@@ -2596,47 +2681,73 @@ public class LuceneQueryParser extends QueryParser
         }
     }
 
-    private String expandAttributeFieldName(String field)
+    private String expandAttributeFieldNamex(String field)
     {
+        return "@"+expandQName(field.substring(1));
+    }
 
-        String fieldName = field;
+    private String expandQName(String qnameString)
+    {
+        String fieldName = qnameString;
         // Check for any prefixes and expand to the full uri
-        if (field.charAt(1) != '{')
+        if (qnameString.charAt(0) != '{')
         {
-            int colonPosition = field.indexOf(':');
+            int colonPosition = qnameString.indexOf(':');
             if (colonPosition == -1)
             {
                 // use the default namespace
-                fieldName = "@{" + namespacePrefixResolver.getNamespaceURI("") + "}" + field.substring(1);
+                fieldName = "{" + searchParameters.getNamespace() + "}" + qnameString;
             }
             else
             {
-                // find the prefix
-                fieldName = "@{" + namespacePrefixResolver.getNamespaceURI(field.substring(1, colonPosition)) + "}" + field.substring(colonPosition + 1);
+                String prefix = qnameString.substring(0, colonPosition);
+                String uri = matchURI(prefix);
+                if(uri == null)
+                {
+                    fieldName = "{" + searchParameters.getNamespace() + "}" + qnameString;
+                }
+                else
+                {
+                    fieldName = "{" + uri + "}" + qnameString.substring(colonPosition + 1);
+                }
+                
             }
         }
         return fieldName;
     }
-
-    private String expandFieldName(String field)
+    
+    private String matchURI(String prefix)
     {
-        String fieldName = field;
-        // Check for any prefixes and expand to the full uri
-        if (field.charAt(0) != '{')
+        HashSet<String> prefixes = new HashSet<String>(namespacePrefixResolver.getPrefixes());
+        if(prefixes.contains(prefix))
         {
-            int colonPosition = field.indexOf(':');
-            if (colonPosition == -1)
+            return namespacePrefixResolver.getNamespaceURI(prefix);
+        }
+        String match = null;
+        for(String candidate : prefixes)
+        {
+            if(candidate.equalsIgnoreCase(prefix))
             {
-                // use the default namespace
-                fieldName = "{" + namespacePrefixResolver.getNamespaceURI("") + "}" + field;
-            }
-            else
-            {
-                // find the prefix
-                fieldName = "{" + namespacePrefixResolver.getNamespaceURI(field.substring(0, colonPosition)) + "}" + field.substring(colonPosition + 1);
+                if(match == null)
+                {
+                    match = candidate;
+                }
+                else
+                {
+                    
+                    throw new LuceneIndexException("Ambiguous namespace prefix "+prefix);
+                    
+                }
             }
         }
-        return fieldName;
+        if(match == null)
+        {
+            return null;
+        }
+        else
+        {
+            return namespacePrefixResolver.getNamespaceURI(match);
+        }
     }
 
     private String getToken(String field, String value, AnalysisMode analysisMode) throws ParseException
@@ -3065,29 +3176,32 @@ public class LuceneQueryParser extends QueryParser
         // TODO: Fix duplicate token generation for mltext, content and text.
         // -locale expansion here and in tokeisation -> duplicates
 
-        // Expand prefixes
-
-        String expandedFieldName = expandAttributeFieldName(field);
-
         // Get type info etc
-        QName propertyQName = null;
-        if (expandedFieldName.endsWith(".mimetype"))
+        String propertyFieldName = null;
+        String ending = "";
+        if (field.endsWith(".mimetype"))
         {
-            propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 9));
+            propertyFieldName = field.substring(1, field.length() - 9);
+            ending = ".mimetype";
         }
-        else if (expandedFieldName.endsWith(".size"))
+        else if (field.endsWith(".size"))
         {
-            propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 5));
+            propertyFieldName = field.substring(1, field.length() - 5);
+            ending = ".size";
         }
-        else if (expandedFieldName.endsWith(".locale"))
+        else if (field.endsWith(".locale"))
         {
-            propertyQName = QName.createQName(expandedFieldName.substring(1, expandedFieldName.length() - 7));
+            propertyFieldName = field.substring(1, field.length() - 7);
+            ending = ".locale";
         }
         else
         {
-            propertyQName = QName.createQName(expandedFieldName.substring(1));
+            propertyFieldName = field.substring(1);
         }
-        PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+        
+        String expandedFieldName;
+        QName propertyQName;
+        PropertyDefinition propertyDef = matchPropertyDefinition(propertyFieldName);
         IndexTokenisationMode tokenisationMode = IndexTokenisationMode.TRUE;
         if (propertyDef != null)
         {
@@ -3096,7 +3210,15 @@ public class LuceneQueryParser extends QueryParser
             {
                 tokenisationMode = IndexTokenisationMode.TRUE;
             }
+            expandedFieldName = "@"+propertyDef.getName()+ending;
+            propertyQName = propertyDef.getName();
         }
+        else
+        {
+            expandedFieldName = expandAttributeFieldNamex(field);
+            propertyQName = QName.createQName(propertyFieldName);
+        }
+        
 
         if (luceneFunction != LuceneFunction.FIELD)
         {

@@ -171,6 +171,11 @@ public class ExternalAccessServlet extends BaseServlet
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, "dialog:" + OUTCOME_DOCDETAILS);
+         
+         // Do not forward via faces context when AlfrescoNavigationHandler has already called render response phase
+         String viewId = fc.getViewRoot().getViewId();
+         getServletContext().getRequestDispatcher(viewId).forward(req, res);
+         return;
       }
       else if (OUTCOME_SPACEDETAILS.equals(outcome))
       {
@@ -204,6 +209,11 @@ public class ExternalAccessServlet extends BaseServlet
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, "dialog:" + OUTCOME_SPACEDETAILS);
+         
+         // Do not forward via faces context when AlfrescoNavigationHandler has already called render response phase
+         String viewId = fc.getViewRoot().getViewId();
+         getServletContext().getRequestDispatcher(viewId).forward(req, res);
+         return;
       }
       else if (OUTCOME_BROWSE.equals(outcome))
       {

@@ -246,10 +246,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // Adjust the name of the copy
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
             String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
-            if (originalTitle != null && originalTitle.length() > 0)
+            
+            if (originalTitle != null)
             {
-                String newTitle = transformName(this.mimetypeService, originalTitle, mimeType, false);
-                nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, newTitle);
+                nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, originalTitle);
             }
         }
         
@@ -306,10 +306,18 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     }
     
     /**
-     * Transform name from original extension to new extension
+     * Transform a name from original extension to new extension, if appropriate.
+     * If the original name seems to end with a reasonable file extension, then the name
+     * will be transformed such that the old extension is replaced with the new.
+     * Otherwise the name will be returned unaltered.
+     * <P/>
+     * The original name will be deemed to have a reasonable extension if there are one
+     * or more characters after the (required) final dot, none of which are spaces.
      * 
-     * @param original
-     * @param newMimetype
+     * @param mimetypeService the mimetype service
+     * @param original the original name
+     * @param newMimetype the new mime type
+     * @param alwaysAdd if the name has no extension, then add the new one
      * 
      * @return name with new extension as appropriate for the mimetype
      */
@@ -321,26 +329,62 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         if (dotIndex > -1)
         {
             // we found it
-            sb.append(original.substring(0, dotIndex));
+            String nameBeforeDot = original.substring(0, dotIndex);
+            String originalExtension = original.substring(dotIndex + 1, original.length());
             
-            // add the new extension
+            // See ALF-1937, which actually relates to cm:title not cm:name.
+            // It is possible that the text after the '.' is not actually an extension
+            // in which case it should not be replaced.
+            boolean originalExtensionIsReasonable = isExtensionReasonable(originalExtension);
             String newExtension = mimetypeService.getExtension(newMimetype);
-            sb.append('.').append(newExtension);
+            if (originalExtensionIsReasonable)
+            {
+                sb.append(nameBeforeDot);
+                sb.append('.').append(newExtension);
+            }
+            else
+            {
+                sb.append(original);
+                if (alwaysAdd == true)
+                {
+                    if (sb.charAt(sb.length() - 1) != '.')
+                    {
+                        sb.append('.');
+                    }
+                    sb.append(newExtension);
+                }
+            }
         }
         else
         {
-            // no extension so dont add a new one
+            // no extension so don't add a new one
             sb.append(original);
             
             if (alwaysAdd == true)
             {               
-                // add the new extension
+                // add the new extension - defaults to .bin
                 String newExtension = mimetypeService.getExtension(newMimetype);
                 sb.append('.').append(newExtension);
             }
         }
         // done
         return sb.toString();
+    }
+
+    /**
+     * Given a String, this method tries to determine whether it is a reasonable filename extension.
+     * There are a number of checks that could be performed here, including checking whether the characters
+     * in the string are all 'letters'. However these are complicated by unicode and other
+     * considerations. Therefore this method adopts a simple approach and returns true if the
+     * string is of non-zero length and contains no spaces.
+     * 
+     * @param potentialExtensionString the string which may be a file extension.
+     * @return <code>true</code> if it is deemed reasonable, else <code>false</code>
+     * @since 3.3
+     */
+    private static boolean isExtensionReasonable(String potentialExtensionString)
+    {
+        return potentialExtensionString.length() > 0 && potentialExtensionString.indexOf(' ') == -1;
     }
     
 }

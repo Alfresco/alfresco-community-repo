@@ -62,6 +62,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.springframework.context.ApplicationContext;
 
 @SuppressWarnings("unchecked")
@@ -112,6 +114,9 @@ public class AuthenticationTest extends TestCase
     private PersonService personService;
 
     private UserNameMatcher userNameMatcher;
+    
+    // TODO: pending replacement
+    private Dialect dialect;
 
     public AuthenticationTest()
     {
@@ -125,7 +130,8 @@ public class AuthenticationTest extends TestCase
 
     public void setUp() throws Exception
     {
-
+        dialect = (Dialect) ctx.getBean("dialect");
+        
         nodeService = (NodeService) ctx.getBean("nodeService");
         tenantService = (TenantService) ctx.getBean("tenantService");
         searchService = (SearchService) ctx.getBean("searchService");
@@ -369,9 +375,17 @@ public class AuthenticationTest extends TestCase
 
         if (! tenantService.isEnabled())
         {
-            authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|", "".toCharArray());
-            authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|", "".toCharArray());
-            assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|", authenticationService.getCurrentUserName());
+            String un = "Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|";
+            if (dialect instanceof PostgreSQLDialect)
+            {
+                // Note: PostgreSQL does not support \u0000 char embedded in a string
+                // http://archives.postgresql.org/pgsql-jdbc/2007-02/msg00115.php
+                un = "Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n[]{};'#:@~,./<>?|";
+            }
+            
+            authenticationService.createAuthentication(un, "".toCharArray());
+            authenticationService.authenticate(un, "".toCharArray());
+            assertEquals(un, authenticationService.getCurrentUserName());
         }
         else
         {

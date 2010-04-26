@@ -44,6 +44,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO9075;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -63,6 +65,8 @@ public class SearcherComponentTest extends TestCase
     
     private static String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
     
+    private static String COMPLEX_LOCAL_NAME_NO_U0000 = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
+
     
     private ServiceRegistry serviceRegistry;
 
@@ -79,9 +83,20 @@ public class SearcherComponentTest extends TestCase
     private NodeRef rootNodeRef;
 
     private UserTransaction txn;
+    
+    // TODO: pending replacement
+    private Dialect dialect;
 
     public void setUp() throws Exception
     {
+        dialect = (Dialect) ctx.getBean("dialect");
+        if (dialect instanceof PostgreSQLDialect)
+        {
+            // Note: PostgreSQL does not support \u0000 char embedded in a string
+            // http://archives.postgresql.org/pgsql-jdbc/2007-02/msg00115.php
+            COMPLEX_LOCAL_NAME = COMPLEX_LOCAL_NAME_NO_U0000;
+        }
+        
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         dictionaryService = BaseNodeServiceTest.loadModel(ctx);

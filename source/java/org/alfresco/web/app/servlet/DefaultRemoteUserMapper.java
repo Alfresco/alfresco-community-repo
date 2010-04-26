@@ -207,6 +207,10 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
             {
                 userId = matcher.group(1).trim();
             }
+            else
+            {
+                return null;                
+            }
         }
         return userId.length() == 0 ? null : userId;
     }

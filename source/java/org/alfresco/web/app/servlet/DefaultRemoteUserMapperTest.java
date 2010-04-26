@@ -100,26 +100,30 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         // Set the proxy user name
         childApplicationContextFactory.stop();
         childApplicationContextFactory.setProperty("external.authentication.proxyUserName", "bob");
-        
+
         // Mock a request with both a user and a header
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);
         when(mockRequest.getRemoteUser()).thenReturn("bob");
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("AdMiN");
         assertEquals("admin", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
                 "remoteUserMapper")).getRemoteUser(mockRequest));
-        
+
         // Now try header pattern matching
         childApplicationContextFactory.stop();
         childApplicationContextFactory.setProperty("external.authentication.userIdPattern", "abc-(.*)-999");
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("abc-AdMiN-999");
         assertEquals("admin", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
-        "remoteUserMapper")).getRemoteUser(mockRequest));
-        
+                "remoteUserMapper")).getRemoteUser(mockRequest));
+
+        // Try a request with an invalid match
+        when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("abc-AdMiN-998");
+        assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
+                "remoteUserMapper")).getRemoteUser(mockRequest));
+
         // Try a request without the remote user
         when(mockRequest.getRemoteUser()).thenReturn(null);
         assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
-        "remoteUserMapper")).getRemoteUser(mockRequest));
-        
+                "remoteUserMapper")).getRemoteUser(mockRequest));
     }        
     
 }

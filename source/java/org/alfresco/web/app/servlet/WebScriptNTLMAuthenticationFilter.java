@@ -99,4 +99,14 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
             super.doFilter(context, sreq, sresp, chain);
         }
     }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.web.app.servlet.NTLMAuthenticationFilter#onLoginComplete(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, boolean)
+     */
+    protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
+            throws IOException
+    {
+        return true;
+    }
 }

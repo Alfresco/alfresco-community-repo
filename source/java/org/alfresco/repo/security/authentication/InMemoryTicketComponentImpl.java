@@ -145,10 +145,15 @@ public class InMemoryTicketComponentImpl implements TicketComponent
      */
     private String getTicketKey(String ticketString)
     {
-        if (ticketString.length() < GRANTED_AUTHORITY_TICKET_PREFIX.length())
+        if (ticketString == null)
+        {
+            return null;
+        }
+        else if (ticketString.length() < GRANTED_AUTHORITY_TICKET_PREFIX.length())
         {
             throw new AuthenticationException(ticketString + " is an invalid ticket format");
         }
+       
         String key = ticketString.substring(GRANTED_AUTHORITY_TICKET_PREFIX.length());
         return key;
     }

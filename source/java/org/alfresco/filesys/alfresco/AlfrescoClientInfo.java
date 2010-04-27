@@ -1,7 +1,5 @@
 package org.alfresco.filesys.alfresco;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -31,10 +29,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class AlfrescoClientInfo extends ClientInfo {
 
-  // Authentication token
-  
-  private Authentication m_authToken;
-  
   // Authentication ticket, used for web access without having to re-authenticate
   
   private String m_authTicket;
@@ -60,26 +54,6 @@ public class AlfrescoClientInfo extends ClientInfo {
   public AlfrescoClientInfo(String user, byte[] pwd)
   {
     super(user, pwd);
-  }
-
-  /**
-   * Check if the client has an authentication token
-   * 
-   * @return boolean
-   */
-  public final boolean hasAuthenticationToken()
-  {
-      return m_authToken != null ? true : false;
-  }
-  
-  /**
-   * Return the authentication token
-   * 
-   * @return Authentication
-   */
-  public final Authentication getAuthenticationToken()
-  {
-      return m_authToken;
   }
 
   /**
@@ -120,16 +94,6 @@ public class AlfrescoClientInfo extends ClientInfo {
   public final NodeRef getHomeFolder()
   {
       return m_homeNode;
-  }
-
-  /**
-   * Set the authentication toekn
-   * 
-   * @param token Authentication
-   */
-  public final void setAuthenticationToken(Authentication token)
-  {
-      m_authToken = token;
   }
 
   /**

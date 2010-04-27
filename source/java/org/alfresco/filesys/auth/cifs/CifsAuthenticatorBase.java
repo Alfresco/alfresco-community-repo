@@ -18,9 +18,6 @@
  */
 package org.alfresco.filesys.auth.cifs;
 
-import net.sf.acegisecurity.Authentication;
-
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.filesys.repo.ContentContext;
@@ -37,6 +34,8 @@ import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
@@ -51,6 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * CIFS Authenticator Base Class
@@ -309,9 +309,9 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         //  Get a guest authentication token
         
         getAuthenticationService().authenticateAsGuest();
-        Authentication authToken = getAuthenticationComponent().getCurrentAuthentication();
+        String ticket = getAuthenticationService().getCurrentTicket();
         
-        alfClient.setAuthenticationToken( authToken);
+        alfClient.setAuthenticationTicket(ticket);
         
         // Set the home folder for the guest user
         
@@ -374,27 +374,34 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      */
     protected final String mapUserNameToPerson(final String userName)
     {
-        return doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
+        // Do the lookup as the system user
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
         {
-
-            public String execute() throws Throwable
+            public String doWork() throws Exception
             {
-                // Get the home folder for the user
-
-                String personName = getPersonService().getUserIdentifier(userName);
-
-                // Check if the person exists
-
-                if (personName == null)
+                return doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
                 {
-                    // Force creation of a person if possible
-                    getPersonService().getPerson(userName);
-                    personName = getPersonService().getUserIdentifier(userName);
-                    return personName == null ? userName : personName;
-                }
-                return personName;
+
+                    public String execute() throws Throwable
+                    {
+                        // Get the home folder for the user
+
+                        String personName = getPersonService().getUserIdentifier(userName);
+
+                        // Check if the person exists
+
+                        if (personName == null)
+                        {
+                            // Force creation of a person if possible
+                            getPersonService().getPerson(userName);
+                            personName = getPersonService().getUserIdentifier(userName);
+                            return personName == null ? userName : personName;
+                        }
+                        return personName;
+                    }
+                });
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -403,29 +410,52 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * @param client
      *            ClientInfo
      */
-    public void setCurrentUser(ClientInfo client) {
+    public void setCurrentUser(final ClientInfo client) {
 
         // Check the account type and setup the authentication context
 
-        if (client == null || client.isNullSession())
+        doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
         {
-            // Clear the authentication, null user should not be allowed to do any service calls
-
-            getAuthenticationComponent().clearCurrentSecurityContext();
-        }
-        else if (client.isGuest() == false && client instanceof AlfrescoClientInfo)
-        {
-            // Set the authentication context for the request
-
-            AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-            getAuthenticationComponent().setCurrentAuthentication(alfClient.getAuthenticationToken());
-        }
-        else
-        {
-            // Enable guest access for the request
-
-            getAuthenticationComponent().setGuestUserAsCurrentUser();
-        }
+            public Object execute() throws Throwable
+            {
+                if (client == null || client.isNullSession())
+                {
+                    // Clear the authentication, null user should not be allowed to do any service calls
+        
+                    getAuthenticationComponent().clearCurrentSecurityContext();
+                }
+                else if (client.isGuest() == false && client instanceof AlfrescoClientInfo)
+                {
+                    // Set the authentication context for the request
+        
+                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                    if (alfClient.hasAuthenticationTicket())
+                    {
+                        try
+                        {
+                            getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
+                        }
+                        catch (AuthenticationException e)
+                        {
+                            // Ticket no longer valid or maximum tickets exceeded
+                            alfClient.setAuthenticationTicket(null);
+                            getAuthenticationComponent().clearCurrentSecurityContext();
+                        }
+                    }
+                    else
+                    {
+                        getAuthenticationComponent().clearCurrentSecurityContext();
+                    }
+                }
+                else
+                {
+                    // Enable guest access for the request
+        
+                    getAuthenticationComponent().setGuestUserAsCurrentUser();
+                }
+                return null;
+            }
+        });
     }
     
     /**

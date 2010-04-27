@@ -21,8 +21,6 @@ package org.alfresco.filesys.auth.ftp;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.SrvSession;
@@ -178,12 +176,12 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
    */
   protected void doGuestLogon( AlfrescoClientInfo client, SrvSession sess)
   {
-      //  Get a guest authentication token
+      //  Get a guest authentication ticket
       
       getAuthenticationService().authenticateAsGuest();
-      Authentication authToken = getAuthenticationComponent().getCurrentAuthentication();
+      String ticket = getAuthenticationService().getCurrentTicket();
       
-      client.setAuthenticationToken( authToken);
+      client.setAuthenticationTicket( ticket);
       
       // Mark the client as being a guest logon
       

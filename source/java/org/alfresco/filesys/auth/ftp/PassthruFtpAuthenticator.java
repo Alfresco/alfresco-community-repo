@@ -24,9 +24,6 @@ import java.net.InetAddress;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import net.sf.acegisecurity.Authentication;
-
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.ExtendedServerConfigurationAccessor;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
@@ -45,6 +42,7 @@ import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Passthru FTP Authenticator Class
@@ -331,9 +329,9 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
         // Get a guest authentication token
 
         getAuthenticationService().authenticateAsGuest();
-        Authentication authToken = getAuthenticationComponent().getCurrentAuthentication();
+        String ticket = getAuthenticationService().getCurrentTicket();
 
-        client.setAuthenticationToken(authToken);
+        client.setAuthenticationTicket(ticket);
 
         // Mark the client as being a guest logon
 
@@ -395,7 +393,8 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
                     // Set the current user to be authenticated, save the authentication token
 
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    alfClient.setAuthenticationToken(getAuthenticationComponent().setCurrentUser(client.getUserName()));
+                    getAuthenticationComponent().setCurrentUser(client.getUserName());                   
+                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
 
                     // Passwords match, grant access
 

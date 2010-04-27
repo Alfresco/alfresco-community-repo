@@ -39,6 +39,7 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,6 +69,8 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
     private List<UserMapping> userMappings;
 
     private AuthenticationComponent authenticationComponent;
+    
+    private AuthenticationService authenticationService;
 
     private TransactionService transactionService;
 
@@ -79,6 +82,11 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
+    }
+
+    public void setAuthenticationService (AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
     }
 
     public void setTransactionService(TransactionService transactionService)
@@ -289,28 +297,28 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
           
             // Check if the authentication token has been set for the client
             
-            if ( alfClient.hasAuthenticationToken() == false)
+            if ( !alfClient.hasAuthenticationTicket() )
             {
                 // Set the current user and retrieve the authentication token
                 
                 getAuthenticationComponent().setCurrentUser( client.getUserName());
-                alfClient.setAuthenticationToken( getAuthenticationComponent().getCurrentAuthentication());
+                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                 
                 // DEBUG
                 
                 if ( logger.isDebugEnabled())
-                    logger.debug("Set user name=" + client.getUserName() + ", token=" + alfClient.getAuthenticationToken());
+                    logger.debug("Set user name=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
             }
             else
             {
                 // Set the authentication context for the request
                 
-              getAuthenticationComponent().setCurrentAuthentication( alfClient.getAuthenticationToken());
+                getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
                 
                 // DEBUG
                 
                 if ( logger.isDebugEnabled())
-                    logger.debug("Set user using auth token, token=" + alfClient.getAuthenticationToken());
+                    logger.debug("Set user using auth ticket, ticket=" + alfClient.getAuthenticationTicket());
             }
         }
         else
@@ -375,6 +383,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
         
         // Copy over relevant bean properties for backward compatibility
         setAuthenticationComponent(alfrescoConfig.getAuthenticationComponent());
+        setAuthenticationService(alfrescoConfig.getAuthenticationService());
         setTransactionService(alfrescoConfig.getTransactionService());
 
         // Check for the user mappings
@@ -522,6 +531,11 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
     protected AuthenticationComponent getAuthenticationComponent()
     {
         return this.authenticationComponent;
+    }
+    
+    protected AuthenticationService getAuthenticationService()
+    {
+        return this.authenticationService;
     }
     
     protected TransactionService getTransactionService()

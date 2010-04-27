@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.filesys.auth.PassthruServerFactory;
@@ -57,12 +56,14 @@ import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.jlan.util.HexDump;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Passthru Authenticator Class
@@ -183,11 +184,11 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                 {
                     // Check if the client is already authenticated, and it is not a null logon
                     
-                    if ( alfClient.getAuthenticationToken() != null && client.getLogonType() != ClientInfo.LogonNull)
+                    if ( alfClient.hasAuthenticationTicket() && client.getLogonType() != ClientInfo.LogonNull)
                     {
                         // Use the existing authentication token
                         
-                        getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName()));
+                        getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
             
                         // Debug
                         
@@ -276,7 +277,8 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                                 {
                                     // Use the person name as the current user
                                     
-                                    alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser(personName));
+                                    getAuthenticationComponent().setCurrentUser(personName);
+                                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                                     
                                     // DEBUG
                                     
@@ -295,6 +297,10 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                                 else if ( logger.isDebugEnabled())
                                     logger.debug("Failed to find person matching user " + username);
                             }
+                        }
+                        catch (AuthenticationException ex)
+                        {
+                            logger.debug("User invalid or max tickets exceeded", ex);                
                         }
                         catch (Exception ex)
                         {
@@ -1018,7 +1024,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                             // Get the authentication token and store
 
                             AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                            alfClient.setAuthenticationToken(getAuthenticationComponent().getCurrentAuthentication());
+                            alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
 
                             // Indicate that the client is logged on
 

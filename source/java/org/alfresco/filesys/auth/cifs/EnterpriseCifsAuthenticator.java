@@ -36,7 +36,6 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.debug.Debug;
@@ -70,10 +69,12 @@ import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.smb.server.VirtualCircuit;
 import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.jlan.util.HexDump;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.ietf.jgss.Oid;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Enterprise CIFS Authenticator Class
@@ -1491,14 +1492,21 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             		}
             		else
             		{
-                        // Use the system user to do the user name lookup
-                        
-                        getAuthenticationComponent().setSystemUserAsCurrentUser();
-                        
                         // Set the current user to be authenticated, save the authentication token
-                        
-                        AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                        alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(krbDetails.getUserName())));
+
+            		    try
+            		    {
+                            AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                            getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(krbDetails.getUserName()));
+                            alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket() );
+                        }
+                        catch (AuthenticationException e)
+                        {
+                            // Invalid user or max tickets exceeded. Return a logon failure status
+                            
+                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+    
+                        }
                         
                         // Store the full user name in the client information, indicate that this is not a guest logon
                         
@@ -1654,8 +1662,18 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
                 // Setup the Acegi authenticated user
                 
-                AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(userName)));
+                try
+                {
+                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(userName));                
+                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                }
+                catch (AuthenticationException e)
+                {
+                    // Invalid user or max tickets exceeded. Return a logon failure status
+
+                    throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+                }
                 
                 // Store the full user name in the client information, indicate that this is not a guest logon
                 
@@ -1787,9 +1805,18 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
                 // Setup the Acegi authenticated user
                 
-                AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName())));
-                
+                try
+                {
+                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(client.getUserName()));                
+                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                }
+                catch (AuthenticationException e)
+                {
+                    // Invalid user or max tickets exceeded. Return a logon failure status
+
+                    throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+                }
                 // Store the full user name in the client information, indicate that this is not a guest logon
                 
                 client.setGuest( false);
@@ -1900,7 +1927,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     // Setup the Acegi authenticated user
                     
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( userName)));
+                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( userName));                
+                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                     
                     // Store the full user name in the client information, indicate that this is not a guest logon
                     
@@ -1915,7 +1943,14 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 {
                     // Log the error
                     
-                    logger.error(ex);
+                    if (ex instanceof AuthenticationException)
+                    {
+                        logger.debug(ex);
+                    }
+                    else
+                    {
+                        logger.error(ex);                        
+                    }
                     
                     //  Return a logon failure
 
@@ -2024,7 +2059,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     // Setup the Acegi authenticated user
                     
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName())));
+                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName()));                
+                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                     
                     // Store the full user name in the client information, indicate that this is not a guest logon
                     
@@ -2038,7 +2074,14 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 {
                     // Log the error
                     
-                    logger.error(ex);
+                    if (ex instanceof AuthenticationException)
+                    {
+                        logger.debug(ex);
+                    }
+                    else
+                    {
+                        logger.error(ex);                        
+                    }
                     
                     //  Return a logon failure
 
@@ -2187,8 +2230,18 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
                 // Setup the Acegi authenticated user
                
-                AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( userName)));
+                try
+                {
+                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( userName));                
+                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                }
+                catch (AuthenticationException e)
+                {
+                    // Invalid user or max tickets exceeded. Return a logon failure status
+
+                    throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+                }
                
                 // Store the full user name in the client information, indicate that this is not a guest logon
                

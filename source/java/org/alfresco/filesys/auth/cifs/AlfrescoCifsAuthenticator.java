@@ -20,8 +20,6 @@ package org.alfresco.filesys.auth.cifs;
 
 import java.security.NoSuchAlgorithmException;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.AuthContext;
@@ -31,6 +29,7 @@ import org.alfresco.jlan.server.auth.NTLanManAuthContext;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.HexDump;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -111,20 +110,28 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
 
         // Check if the client is already authenticated, and it is not a null logon
         
-        if ( alfClient.getAuthenticationToken() != null && client.getLogonType() != ClientInfo.LogonNull)
+        try
         {
-            // Use the existing authentication token
-            
-            getAuthenticationComponent().setCurrentUser(client.getUserName());
-
-            // Debug
-            
-            if ( logger.isDebugEnabled())
-                logger.debug("Re-using existing authentication token");
-            
-            // Return the authentication status
-            
-            return client.getLogonType() != ClientInfo.LogonGuest ? AUTH_ALLOW : AUTH_GUEST; 
+            if ( alfClient.hasAuthenticationTicket() && client.getLogonType() != ClientInfo.LogonNull)
+            {
+                // Use the existing authentication token
+                
+                getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
+    
+                // Debug
+                
+                if ( logger.isDebugEnabled())
+                    logger.debug("Re-using existing authentication token");
+                
+                // Return the authentication status
+                
+                return client.getLogonType() != ClientInfo.LogonGuest ? AUTH_ALLOW : AUTH_GUEST; 
+            }
+        }
+        catch (AuthenticationException ex)
+        {
+            // Ticket no longer valid or maximum tickets exceeded
+            alfClient.setAuthenticationTicket(null);
         }
         
         // Check if this is a guest logon
@@ -379,7 +386,8 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 // Set the current user to be authenticated, save the authentication token
 
                 AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser(client.getUserName()));
+                getAuthenticationComponent().setCurrentUser(client.getUserName());
+                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                 
                 // Get the users home folder node, if available
                 
@@ -392,6 +400,10 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 // Passwords match, grant access
                 
                 return ICifsAuthenticator.AUTH_ALLOW;
+            }
+            catch (AuthenticationException ex)
+            {
+                // Ticket no longer valid or maximum tickets exceeded
             }
             catch (NoSuchAlgorithmException ex)
             {
@@ -461,13 +473,14 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         
         // Authenticate the user
         
-        Authentication genAuthToken = null;
+        String ticket = null;
         
         try
         {
             // Run the second stage of the passthru authentication
             
-            genAuthToken = getNTLMAuthenticator().authenticate( authToken);
+            getNTLMAuthenticator().authenticate( authToken);
+            ticket = getAuthenticationService().getCurrentTicket();
             
             // Check if the user has been logged on as a guest
 
@@ -500,10 +513,10 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 client.setLogonType( ClientInfo.LogonNormal);
             }
 
-            // Set the current user to be authenticated, save the authentication token
+            // Set the current user to be authenticated, save the authentication ticket
 
             AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-            alfClient.setAuthenticationToken( genAuthToken);
+            alfClient.setAuthenticationTicket(ticket);
             
             // Get the users home folder node, if available
             
@@ -512,7 +525,11 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             // DEBUG
             
             if ( logger.isDebugEnabled())
-                logger.debug("Auth token " + genAuthToken);
+                logger.debug("Auth ticket " + ticket);
+        }
+        catch (AuthenticationException ex)
+        {
+            // Ticket no longer valid or maximum tickets exceeded
         }
         catch ( Exception ex)
         {

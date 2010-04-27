@@ -184,7 +184,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
                                            null);
       }
 
-      final ContentWriter writer = this.getAvmService().getContentWriter(this.createdPath);
+      final ContentWriter writer = this.getAvmService().getContentWriter(this.createdPath, true);
       this.content = XMLUtil.toString(this.getInstanceDataDocument(), false);
       writer.putContent(this.content);
 

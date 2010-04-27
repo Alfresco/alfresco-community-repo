@@ -189,7 +189,7 @@ public class AVMEditBean extends BaseDialogBean
             tx.begin();
             
             // get an updating writer that we can use to modify the content on the current node
-            final ContentWriter writer = this.getAvmService().getContentWriter(node.getPath());
+            final ContentWriter writer = this.getAvmService().getContentWriter(node.getPath(), true);
             
             // also update the mime type in case a different type of file is uploaded
             String mimeType = Repository.getMimeTypeForFileName(context, this.fileName);

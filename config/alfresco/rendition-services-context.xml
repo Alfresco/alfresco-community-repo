@@ -73,7 +73,6 @@
       class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
       <property name="resourceBundles">
          <list>
-            <!-- <value>alfresco.messages.rendition-service</value> -->
             <value>alfresco.messages.rendition-config</value>
          </list>
       </property>

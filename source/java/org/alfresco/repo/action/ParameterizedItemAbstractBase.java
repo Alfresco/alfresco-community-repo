@@ -47,7 +47,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	 */
 	private static final String TITLE = "title";
 	private static final String DESCRIPTION = "description";
-	private static final String DISPLAY_LABEL = "display-label";
+	protected static final String DISPLAY_LABEL = "display-label";
 	
 	/**
 	 * Action service

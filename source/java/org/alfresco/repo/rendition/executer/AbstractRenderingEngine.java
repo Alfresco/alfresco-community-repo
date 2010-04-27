@@ -50,6 +50,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import com.sun.star.lang.NullPointerException;
 
@@ -376,6 +377,30 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     final protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.addAll(getParameterDefinitions());
+    }
+
+    /**
+     * This method gets the parameter definition display label from the properties file.
+     * It looks first for a property whose key has a fixed rendition service-specific
+     * prefix and if that gets null, it then delegates to the standard bean name-based
+     * approach.
+     * 
+     * @param paramName  the name of the parameter
+     * @return           the display label of the parameter
+     */
+    @Override
+    protected String getParamDisplayLabel(String paramName)
+    {
+        // First we try to get the message using a common prefix for all rendering engines.
+        final String commonPropertiesPrefix = "baseRenderingAction";
+        String message = I18NUtil.getMessage(commonPropertiesPrefix + "." + paramName + "." + DISPLAY_LABEL);
+        
+        // And if that doesn't work we delegate to the standard bean name-based approach.
+        if (message == null)
+        {
+            message = super.getParamDisplayLabel(paramName);
+        }
+        return message;
     }
 
     /**

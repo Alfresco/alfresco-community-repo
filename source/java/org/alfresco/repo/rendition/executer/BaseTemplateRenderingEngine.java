@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This abstract class forms a basis for all rendering engines that are built
@@ -198,8 +199,33 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
      */
     protected abstract String getTemplateType();
 
+    /**
+     * This method gets the parameter definition display label from the properties file.
+     * It looks first for a property whose key has a fixed rendition service-specific
+     * prefix and if that gets null, it then delegates to the standard bean name-based
+     * approach.
+     * 
+     * @param paramName  the name of the parameter
+     * @return           the display label of the parameter
+     */
+    @Override
+    protected String getParamDisplayLabel(String paramName)
+    {
+        // First we try to get the message using a common prefix for all template-based rendering engines.
+        final String commonPropertiesPrefix = "baseTemplateRenderingAction";
+        String message = I18NUtil.getMessage(commonPropertiesPrefix + "." + paramName + "." + DISPLAY_LABEL);
+        
+        // And if that doesn't work we delegate to the superclass.
+        if (message == null)
+        {
+            message = super.getParamDisplayLabel(paramName);
+        }
+        return message;
+    }
+
     /*
-     * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine# getParameterDefinitions()
+     * (non-Javadoc)
+     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#getParameterDefinitions()
      */
     @Override
     protected Collection<ParameterDefinition> getParameterDefinitions()

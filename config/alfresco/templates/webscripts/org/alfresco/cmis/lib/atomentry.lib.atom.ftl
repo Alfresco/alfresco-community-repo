@@ -238,15 +238,15 @@
   [#assign propdef = row.getPropertyDefinition(colname)]
   [#if rowvalues[colname]??]
   [#if propdef??]
-  [@propvalue rowvalues[colname] coltype colname propdef.displayName propdef.queryName propdef.propertyId.localName/]
+  [@propvalue rowvalues[colname] coltype propdef.propertyId.id propdef.displayName colname propdef.propertyId.localName/]
   [#else]
-  [@propvalue rowvalues[colname] coltype colname/]
+  [@propvalue rowvalues[colname] coltype queryname=colname/]
   [/#if]
   [#else]
   [#if propdef??]
-  [@propnull coltype colname propdef.displayName propdef.queryName propdef.propertyId.localName/]
+  [@propnull coltype propdef.propertyId.id propdef.displayName colname propdef.propertyId.localName/]
   [#else]
-  [@propnull coltype colname/]
+  [@propnull coltype queryname=colname/]
   [/#if]
   [/#if]
 [/#list]
@@ -306,22 +306,22 @@
   [@propvalue value propdef.dataType.label propdef.propertyId.id propdef.displayName propdef.queryName propdef.propertyId.localName/]
 [/#macro]
 
-[#macro propvalue value type name displayname="" queryname="" localname=""]
+[#macro propvalue value type defid="" displayname="" queryname="" localname=""]
 [#if type == cmisconstants.DATATYPE_STRING]
-<cmis:propertyString [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
+<cmis:propertyString [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@stringvalue v/]</cmis:value>[/@values]</cmis:propertyString>
 [#elseif type == cmisconstants.DATATYPE_INTEGER]
-<cmis:propertyInteger [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
+<cmis:propertyInteger [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@integervalue v/]</cmis:value>[/@values]</cmis:propertyInteger>
 [#elseif type == cmisconstants.DATATYPE_DECIMAL]
-<cmis:propertyDecimal [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
+<cmis:propertyDecimal [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@decimalvalue v/]</cmis:value>[/@values]</cmis:propertyDecimal>
 [#elseif type == cmisconstants.DATATYPE_BOOLEAN]
-<cmis:propertyBoolean [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
+<cmis:propertyBoolean [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@booleanvalue v/]</cmis:value>[/@values]</cmis:propertyBoolean>
 [#elseif type == cmisconstants.DATATYPE_DATETIME]
-<cmis:propertyDateTime [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
+<cmis:propertyDateTime [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@datetimevalue v/]</cmis:value>[/@values]</cmis:propertyDateTime>
 [#elseif type == cmisconstants.DATATYPE_URI]
 [#-- TODO: check validity of abs url prefix --]
-<cmis:propertyUri [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
+<cmis:propertyUri [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@urivalue absurl(url.serviceContext) + v/]</cmis:value>[/@values]</cmis:propertyUri>
 [#elseif type == cmisconstants.DATATYPE_ID]
-<cmis:propertyId [@propargs name displayname queryname localname/]>[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
+<cmis:propertyId [@propargs defid displayname queryname localname/]>[@values value;v]<cmis:value>[@idvalue v/]</cmis:value>[/@values]</cmis:propertyId>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
@@ -330,26 +330,26 @@
   [@propnull propdef.dataType.label propdef.propertyId.id propdef.displayName propdef.queryName propdef.propertyId.localName/]
 [/#macro]
 
-[#macro propnull type name displayname="" queryname="" localname=""]
+[#macro propnull type defid="" displayname="" queryname="" localname=""]
 [#if type == cmisconstants.DATATYPE_STRING]
-<cmis:propertyString [@propargs name displayname queryname localname/]/>
+<cmis:propertyString [@propargs defid displayname queryname localname/]/>
 [#elseif type == cmisconstants.DATATYPE_INTEGER]
-<cmis:propertyInteger [@propargs name displayname queryname localname/]/>
+<cmis:propertyInteger [@propargs defid displayname queryname localname/]/>
 [#elseif type == cmisconstants.DATATYPE_DECIMAL]
-<cmis:propertyDecimal [@propargs name displayname queryname localname/]/>
+<cmis:propertyDecimal [@propargs defid displayname queryname localname/]/>
 [#elseif type == cmisconstants.DATATYPE_BOOLEAN]
-<cmis:propertyBoolean [@propargs name displayname queryname localname/]/>
+<cmis:propertyBoolean [@propargs defid displayname queryname localname/]/>
 [#elseif type == cmisconstants.DATATYPE_DATETIME]
-<cmis:propertyDateTime [@propargs name displayname queryname localname/]/>
+<cmis:propertyDateTime [@propargs defid displayname queryname localname/]/>
 [#elseif type == cmisconstants.DATATYPE_URI]
-<cmis:propertyUri [@propargs name displayname queryname localname/]/>
+<cmis:propertyUri [@propargs defid displayname queryname localname/]/>
 [#elseif type == cmisconstants.DATATYPE_ID]
-<cmis:propertyId [@propargs name displayname queryname localname/]/>
+<cmis:propertyId [@propargs defid displayname queryname localname/]/>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
 
-[#macro propargs name displayname="" queryname="" localname=""]propertyDefinitionId="${name}"[#if displayname != ""] displayName="${displayname}"[/#if][#if queryname != ""] queryName="${queryname}"[/#if][/#macro]
+[#macro propargs defid="" displayname="" queryname="" localname=""][#if defid !=""]propertyDefinitionId="${defid}"[/#if][#if displayname != ""] displayName="${displayname}"[/#if][#if queryname != ""] queryName="${queryname}"[/#if][/#macro]
 
 [#--             --]
 [#-- CMIS Values --]

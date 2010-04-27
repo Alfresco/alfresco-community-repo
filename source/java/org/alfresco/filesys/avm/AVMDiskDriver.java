@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 
 import javax.transaction.UserTransaction;
 
@@ -817,34 +818,35 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @exception java.io.IOException
      *                If an error occurs.
      */
-    public void closeFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws java.io.IOException
+    public void closeFile(final SrvSession sess, final TreeConnection tree, final NetworkFile file) throws java.io.IOException
     {
         // DEBUG
         
         if ( logger.isDebugEnabled())
             logger.debug("Close file " + file.getFullName());
         
-        //  Start a transaction if the file has been updated
-        
-        if ( file.getWriteCount() > 0)
-            beginWriteTransaction( sess);
-        
-        //  Close the file
-        
-        file.closeFile();
+        doInWriteTransaction(sess, new Callable<Void>(){
 
-        // Check if the file/directory is marked for delete
+            public Void call() throws Exception
+            {
+                //  Close the file
+                
+                file.closeFile();
 
-        if (file.hasDeleteOnClose())
-        {
+                // Check if the file/directory is marked for delete
 
-            // Check for a file or directory
+                if (file.hasDeleteOnClose())
+                {
 
-            if (file.isDirectory())
-                deleteDirectory(sess, tree, file.getFullName());
-            else
-                deleteFile(sess, tree, file.getFullName());
-        }
+                    // Check for a file or directory
+
+                    if (file.isDirectory())
+                        deleteDirectory(sess, tree, file.getFullName());
+                    else
+                        deleteFile(sess, tree, file.getFullName());
+                }
+                return null;
+            }});        
     }
 
     /**
@@ -869,11 +871,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Split the path to get the new folder name and relative path
 
-        String[] paths = FileName.splitPath(params.getPath());
+        final String[] paths = FileName.splitPath(params.getPath());
 
         // Convert the relative path to a store path
 
-        AVMPath storePath = buildStorePath(ctx, paths[0], sess);
+        final AVMPath storePath = buildStorePath(ctx, paths[0], sess);
 
         // DEBUG
 
@@ -892,13 +894,18 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Create a new file
 
-        beginWriteTransaction( sess);
-
         try
         {
-            // Create the new file entry
+            doInWriteTransaction(sess, new Callable<Void>(){
 
-            m_avmService.createDirectory(storePath.getAVMPath(), paths[1]);
+                public Void call() throws Exception
+                {
+                    // Create the new file entry
+
+                    m_avmService.createDirectory(storePath.getAVMPath(), paths[1]);
+                    
+                    return null;
+                }});
         }
         catch (AVMExistsException ex)
         {
@@ -939,20 +946,20 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @exception java.io.IOException
      *                If an error occurs.
      */
-    public NetworkFile createFile(SrvSession sess, TreeConnection tree, FileOpenParams params)
+    public NetworkFile createFile(final SrvSession sess, TreeConnection tree, final FileOpenParams params)
             throws java.io.IOException
     {
         // Check if the filesystem is writable
 
-        AVMContext ctx = (AVMContext) tree.getContext();
+        final AVMContext ctx = (AVMContext) tree.getContext();
 
         // Split the path to get the file name and relative path
 
-        String[] paths = FileName.splitPath(params.getPath());
+        final String[] paths = FileName.splitPath(params.getPath());
 
         // Convert the relative path to a store path
 
-        AVMPath storePath = buildStorePath(ctx, paths[0], sess);
+        final AVMPath storePath = buildStorePath(ctx, paths[0], sess);
 
         // DEBUG
 
@@ -973,38 +980,41 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
             throw new AccessDeniedException("Cannot create " + params.getPath() + ", filesys not writable");
         }
 
-        // Create a new file
-
-        beginWriteTransaction( sess);
-
-        AVMNetworkFile netFile = null;
 
         try
         {
-            // Create the new file entry
+            // Create a new file
+            return doInWriteTransaction(sess, new Callable<NetworkFile>(){
 
-            m_avmService.createFile(storePath.getAVMPath(), paths[1]).close();
+                public NetworkFile call() throws Exception
+                {
+                    // Create the new file entry
 
-            // Get the new file details
+                    m_avmService.createFile(storePath.getAVMPath(), paths[1]).close();
 
-            AVMPath fileStorePath = buildStorePath(ctx, params.getPath(), sess);
-            AVMNodeDescriptor nodeDesc = m_avmService.lookup(fileStorePath.getVersion(), fileStorePath.getAVMPath());
+                    // Get the new file details
 
-            if (nodeDesc != null)
-            {
-                // Create the network file object for the new file
+                    AVMPath fileStorePath = buildStorePath(ctx, params.getPath(), sess);
+                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(fileStorePath.getVersion(), fileStorePath.getAVMPath());
 
-                netFile = new AVMNetworkFile(nodeDesc, fileStorePath.getAVMPath(), fileStorePath.getVersion(),
-                        m_avmService);
-                netFile.setGrantedAccess(NetworkFile.READWRITE);
-                netFile.setFullName(params.getPath());
+                    if (nodeDesc != null)
+                    {
+                        // Create the network file object for the new file
 
-                netFile.setFileId(fileStorePath.generateFileId());
+                        AVMNetworkFile netFile = new AVMNetworkFile(nodeDesc, fileStorePath.getAVMPath(), fileStorePath.getVersion(),
+                                m_nodeService, m_avmService);
+                        netFile.setGrantedAccess(NetworkFile.READWRITE);
+                        netFile.setFullName(params.getPath());
 
-                // Set the mime-type for the new file
+                        netFile.setFileId(fileStorePath.generateFileId());
 
-                netFile.setMimeType(m_mimetypeService.guessMimetype(paths[1]));
-            }
+                        // Set the mime-type for the new file
+
+                        netFile.setMimeType(m_mimetypeService.guessMimetype(paths[1]));
+                        return netFile;
+                    }
+                    return null;
+                }});
         }
         catch (AVMExistsException ex)
         {
@@ -1030,10 +1040,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
         	throw new AccessDeniedException(params.getPath());
         }
-
-        // Return the file
-
-        return netFile;
     }
 
     /**
@@ -1048,12 +1054,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @exception java.io.IOException
      *                The exception description.
      */
-    public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir) throws java.io.IOException
+    public void deleteDirectory(SrvSession sess, TreeConnection tree, final String dir) throws java.io.IOException
     {
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, dir, sess);
+        final AVMPath storePath = buildStorePath(ctx, dir, sess);
 
         // DEBUG
 
@@ -1072,30 +1078,34 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Make sure the path is to a folder before deleting it
 
-        beginWriteTransaction( sess);
-
         try
         {
-            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
-            if (nodeDesc != null)
-            {
-                // Check that we are deleting a folder
+            doInWriteTransaction(sess, new Callable<Void>(){
 
-                if (nodeDesc.isDirectory())
+                public Void call() throws Exception
                 {
-                    // Make sure the directory is empty
+                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+                    if (nodeDesc != null)
+                    {
+                        // Check that we are deleting a folder
 
-                    SortedMap<String, AVMNodeDescriptor> fileList = m_avmService.getDirectoryListing(nodeDesc);
-                    if (fileList != null && fileList.size() > 0)
-                        throw new DirectoryNotEmptyException(dir);
+                        if (nodeDesc.isDirectory())
+                        {
+                            // Make sure the directory is empty
 
-                    // Delete the folder
+                            SortedMap<String, AVMNodeDescriptor> fileList = m_avmService.getDirectoryListing(nodeDesc);
+                            if (fileList != null && fileList.size() > 0)
+                                throw new DirectoryNotEmptyException(dir);
 
-                    m_avmService.removeNode(storePath.getAVMPath());
-                }
-                else
-                    throw new IOException("Delete directory path is not a directory, " + dir);
-            }
+                            // Delete the folder
+
+                            m_avmService.removeNode(storePath.getAVMPath());
+                        }
+                        else
+                            throw new IOException("Delete directory path is not a directory, " + dir);
+                    }
+                    return null;
+                }});
         }
         catch (AVMNotFoundException ex)
         {
@@ -1123,12 +1133,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @exception java.io.IOException
      *                The exception description.
      */
-    public void deleteFile(SrvSession sess, TreeConnection tree, String name) throws java.io.IOException
+    public void deleteFile(SrvSession sess, TreeConnection tree, final String name) throws java.io.IOException
     {
         // Convert the relative path to a store path
 
         AVMContext ctx = (AVMContext) tree.getContext();
-        AVMPath storePath = buildStorePath(ctx, name, sess);
+        final AVMPath storePath = buildStorePath(ctx, name, sess);
 
         // DEBUG
 
@@ -1147,24 +1157,28 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Make sure the path is to a file before deleting it
 
-        beginWriteTransaction( sess);
-
         try
         {
-            AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
-            if (nodeDesc != null)
-            {
-                // Check that we are deleting a file
+            doInWriteTransaction(sess, new Callable<Void>(){
 
-                if (nodeDesc.isFile())
+                public Void call() throws Exception
                 {
-                    // Delete the file
+                    AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
+                    if (nodeDesc != null)
+                    {
+                        // Check that we are deleting a file
 
-                    m_avmService.removeNode(storePath.getAVMPath());
-                }
-                else
-                    throw new IOException("Delete file path is not a file, " + name);
-            }
+                        if (nodeDesc.isFile())
+                        {
+                            // Delete the file
+
+                            m_avmService.removeNode(storePath.getAVMPath());
+                        }
+                        else
+                            throw new IOException("Delete file path is not a file, " + name);
+                    }
+                    return null;
+                }});
         }
         catch (AVMNotFoundException ex)
         {
@@ -1545,7 +1559,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                 // Create the network file object for the opened file/folder
 
-                netFile = new AVMNetworkFile(nodeDesc, storePath.getAVMPath(), storePath.getVersion(), m_avmService);
+                netFile = new AVMNetworkFile(nodeDesc, storePath.getAVMPath(), storePath.getVersion(), m_nodeService, m_avmService);
 
                 if (params.isReadOnlyAccess() || storePath.getVersion() != AVMContext.VERSION_HEAD)
                     netFile.setGrantedAccess(NetworkFile.READONLY);
@@ -1651,13 +1665,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         AVMContext ctx = (AVMContext) tree.getContext();
 
-        String[] oldPaths = FileName.splitPath(oldName);
-        String[] newPaths = FileName.splitPath(newName);
+        final String[] oldPaths = FileName.splitPath(oldName);
+        final String[] newPaths = FileName.splitPath(newName);
 
         // Convert the parent paths to store paths
 
-        AVMPath oldAVMPath = buildStorePath(ctx, oldPaths[0], sess);
-        AVMPath newAVMPath = buildStorePath(ctx, newPaths[0], sess);
+        final AVMPath oldAVMPath = buildStorePath(ctx, oldPaths[0], sess);
+        final AVMPath newAVMPath = buildStorePath(ctx, newPaths[0], sess);
 
         // DEBUG
 
@@ -1679,15 +1693,17 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         		throw new AccessDeniedException("Cannot rename folder to read-only folder, " + newName);
         }
 
-        // Start a transaction for the rename
-
-        beginWriteTransaction( sess);
-
         try
         {
-            // Rename the file/folder
+            doInWriteTransaction(sess, new Callable<Void>(){
 
-            m_avmService.rename(oldAVMPath.getAVMPath(), oldPaths[1], newAVMPath.getAVMPath(), newPaths[1]);
+                public Void call() throws Exception
+                {
+                    // Rename the file/folder
+
+                    m_avmService.rename(oldAVMPath.getAVMPath(), oldPaths[1], newAVMPath.getAVMPath(), newPaths[1]);
+                    return null;
+                }});
         }
         catch (AVMNotFoundException ex)
         {
@@ -1973,7 +1989,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @exception java.io.IOException
      *                The exception description.
      */
-    public void truncateFile(SrvSession sess, TreeConnection tree, NetworkFile file, long siz)
+    public void truncateFile(SrvSession sess, TreeConnection tree, final NetworkFile file, final long siz)
             throws java.io.IOException
     {
         // Check if the file is a directory, or only has read access
@@ -1985,13 +2001,25 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
-        if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-            beginWriteTransaction( sess);
-
         // Truncate or extend the file
+        if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
+        {
+            doInWriteTransaction(sess, new Callable<Void>(){
 
-        file.truncateFile(siz);
-        file.flushFile();
+                public Void call() throws Exception
+                {
+                    file.truncateFile(siz);
+                    file.flushFile();
+                    return null;
+                }});
+        }
+        else
+        {
+            file.truncateFile(siz);
+            file.flushFile();
+        }
+
+
     }
 
     /**
@@ -2015,8 +2043,8 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @exception java.io.IOException
      *                The exception description.
      */
-    public int writeFile(SrvSession sess, TreeConnection tree, NetworkFile file, byte[] buf, int bufoff, int siz,
-            long fileoff) throws java.io.IOException
+    public int writeFile(SrvSession sess, TreeConnection tree, final NetworkFile file, final byte[] buf, final int bufoff, final int siz,
+            final long fileoff) throws java.io.IOException
     {
         // Check if the file is a directory, or only has read access
 
@@ -2027,12 +2055,22 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         AVMNetworkFile avmFile = (AVMNetworkFile) file;
 
-        if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
-            beginWriteTransaction( sess);
-
         // Write the data to the file
+        if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
+        {
+            doInWriteTransaction(sess, new Callable<Void>(){
 
-        file.writeFile(buf, siz, bufoff, fileoff);
+                public Void call() throws Exception
+                {
+                    file.writeFile(buf, siz, bufoff, fileoff);            
+                    return null;
+                }});
+        }
+        else
+        {
+            file.writeFile(buf, siz, bufoff, fileoff);            
+        }
+
 
         // Return the actual write length
 

@@ -312,7 +312,7 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
                     throw new AlfrescoRuntimeException("I/O Error.", e);
                 }
             }
-            ContentWriter writer = fAVMService.getContentWriter(childPath);
+            ContentWriter writer = fAVMService.getContentWriter(childPath, true);
             writer.setEncoding(reader.getEncoding());
             writer.setMimetype(reader.getMimetype());
             OutputStream out = writer.getContentOutputStream();

@@ -300,7 +300,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         if (contentUrl != null)
         {
             // We must find or create the ContentUrlEntity
-            contentUrlId = getOrCreateContentUrlEntity(contentUrl, size).getId();
+            contentUrlId = getOrCreateContentUrlEntity(contentUrl, size, contentData.isReferenced()).getId();
         }
         // Resolve the mimetype
         Long mimetypeId = null;
@@ -347,7 +347,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             }
             if (newContentUrl != null)
             {
-                Long contentUrlId = getOrCreateContentUrlEntity(newContentUrl, contentData.getSize()).getId();
+                Long contentUrlId = getOrCreateContentUrlEntity(newContentUrl, contentData.getSize(), contentData.isReferenced()).getId();
                 contentDataEntity.setContentUrlId(contentUrlId);
                 contentDataEntity.setContentUrl(newContentUrl);
             }
@@ -389,8 +389,9 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     /**
      * Method to create (or get an existing) content URL.  The URL will be unorphaned
      * whether it has been created or is being re-used.
+     * @param isReferenced if <code>true</code> we won't worry about eagerly deleting the content on transaction rollback
      */
-    private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size)
+    private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size, boolean isReferenced)
     {
         // Create the content URL entity
         ContentUrlEntity contentUrlEntity = getContentUrlEntity(contentUrl);
@@ -416,7 +417,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         else
         {
             // Create it
-            contentUrlEntity = createContentUrlEntity(contentUrl, size);
+            contentUrlEntity = createContentUrlEntity(contentUrl, size, isReferenced);
         }
         // Done
         return contentUrlEntity;
@@ -424,8 +425,9 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 
     /**
      * @param contentUrl    the content URL to create or search for
+     * @param isReferenced if <code>true</code> we won't worry about eagerly deleting the content on transaction rollback
      */
-    protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size);
+    protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size, boolean isReferenced);
     
     /**
      * @param id            the ID of the <b>content url</b> entity

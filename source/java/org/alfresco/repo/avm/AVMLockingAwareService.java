@@ -288,12 +288,12 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.AVMService#getContentWriter(java.lang.String)
+     * @see org.alfresco.service.cmr.avm.AVMService#getContentWriter(java.lang.String, boolean)
      */
-    public ContentWriter getContentWriter(String path)
+    public ContentWriter getContentWriter(String path, boolean update)
     {
         grabLock(path);
-        return fService.getContentWriter(path);
+        return fService.getContentWriter(path, update);
     }
 
     /* (non-Javadoc)

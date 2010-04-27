@@ -265,11 +265,11 @@ public class MultiTAVMService implements AVMService
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.AVMService#getContentWriter(java.lang.String)
+     * @see org.alfresco.service.cmr.avm.AVMService#getContentWriter(java.lang.String, boolean)
      */
-    public ContentWriter getContentWriter(String path)
+    public ContentWriter getContentWriter(String path, boolean update)
     {
-        return fService.getContentWriter(getTenantPath(path));
+        return fService.getContentWriter(getTenantPath(path), update);
     }
 
     /* (non-Javadoc)

@@ -14,13 +14,22 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.filesys.repo.desk;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopParams;
@@ -31,10 +40,14 @@ import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NotifyChange;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
+import org.alfresco.jlan.smb.server.notify.NotifyChangeHandler;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 
 /**
  * Check In/Out Desktop Action Class
@@ -45,10 +58,6 @@ import org.alfresco.service.cmr.repository.NodeService;
  */
 public class CheckInOutDesktopAction extends DesktopAction {
 
-	// Check in/out service
-	
-	private CheckOutCheckInService m_checkInOutService;
-	
 	/**
 	 * Class constructor
 	 */
@@ -74,109 +83,124 @@ public class CheckInOutDesktopAction extends DesktopAction {
 	 * @return DesktopResponse 
 	 */
 	@Override
-	public DesktopResponse runAction(DesktopParams params) {
+	public DesktopResponse runAction(final DesktopParams params) {
 
 		// Check if there are any files/folders to process
 		
 		if ( params.numberOfTargetNodes() == 0)
 			return new DesktopResponse(StsSuccess);
-		
-		// Get required services
-		
-		NodeService nodeService = getServiceRegistry().getNodeService();
-		
-		// Start a transaction
-		
-		params.getDriver().beginWriteTransaction( params.getSession());
-		
-		// Process the list of target nodes
-
-		DesktopResponse response = new DesktopResponse(StsSuccess);
-		
-		for ( int idx = 0; idx < params.numberOfTargetNodes(); idx++)
+						
+		class WriteTxn implements Callable<DesktopResponse>
 		{
-			// Get the current target node
-			
-			DesktopTarget target = params.getTarget(idx);
-			
-			// Check if the node is a working copy
-			
-            if ( nodeService.hasAspect( target.getNode(), ContentModel.ASPECT_WORKING_COPY))
+		    private List<Pair<Integer, String>> fileChanges;
+		    
+            /* (non-Javadoc)
+             * @see java.util.concurrent.Callable#call()
+             */
+            public DesktopResponse call() throws Exception
             {
-                try
+                // Initialize / reset the list of file changes
+                fileChanges = new LinkedList<Pair<Integer,String>>();
+
+                // Get required services
+                
+                ServiceRegistry serviceRegistry = getServiceRegistry();
+                NodeService nodeService = serviceRegistry.getNodeService();
+                CheckOutCheckInService checkOutCheckInService = serviceRegistry.getCheckOutCheckInService(); 
+
+                // Process the list of target nodes
+
+                DesktopResponse response = new DesktopResponse(StsSuccess);
+                
+                for ( int idx = 0; idx < params.numberOfTargetNodes(); idx++)
                 {
-                    // Check in the file, pass an empty version properties so that versionable nodes create a new version
+                    // Get the current target node
                     
-                	Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-                    getCheckInOutService().checkin( target.getNode(), versionProperties, null, false);
-
-                    // Check if there are any file/directory change notify requests active
-
-                    if ( getContext().hasFileServerNotifications()) {
-                        
-                        // Build the relative path to the checked in file
-
-                        String fileName = null;
-                        
-                        if ( target.getTarget().startsWith(FileName.DOS_SEPERATOR_STR))
+                    DesktopTarget target = params.getTarget(idx);
+                    
+                    // Check if the node is a working copy
+                    
+                    if ( nodeService.hasAspect( target.getNode(), ContentModel.ASPECT_WORKING_COPY))
+                    {
+                        try
                         {
-                        	// Path is already relative to filesystem root
-                        
-                        	fileName = target.getTarget();
+                    // Check in the file, pass an empty version properties so that veriosnable nodes create a new version
+                            
+                            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+                            checkOutCheckInService.checkin( target.getNode(), versionProperties, null, false);
+
+                            // Check if there are any file/directory change notify requests active
+
+                            if ( getContext().hasFileServerNotifications()) {
+                                
+                                // Build the relative path to the checked in file
+
+                                String fileName = null;
+                                
+                                if ( target.getTarget().startsWith(FileName.DOS_SEPERATOR_STR))
+                                {
+                                    // Path is already relative to filesystem root
+                                
+                                    fileName = target.getTarget();
+                                }
+                                else
+                                {
+                                    // Build a root relative path for the file
+                                
+                                    fileName = FileName.buildPath( params.getFolder().getFullName(), null, target.getTarget(), FileName.DOS_SEPERATOR);
+                                }
+                                
+                                // Queue a file deleted change notification
+                                fileChanges.add(new Pair<Integer, String>(NotifyChange.ActionRemoved, fileName));
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                        	// Build a root relative path for the file
-                        
-                        	fileName = FileName.buildPath( params.getFolder().getFullName(), null, target.getTarget(), FileName.DOS_SEPERATOR);
+                            // If this is a 'retryable' exception, pass it on
+                            if (RetryingTransactionHelper.extractRetryCause(ex) != null)
+                            {
+                                throw ex;
+                            }
+
+                            // Dump the error
+                            
+                            if ( logger.isErrorEnabled())
+                                logger.error("Desktop action error", ex);
+                            
+                            // Return an error status and message
+                            
+                            response.setStatus(StsError, "Checkin failed for " + target.getTarget() + ", " + ex.getMessage());
                         }
-                        
-                        // Queue a file deleted change notification
-                        
-                        getContext().getChangeHandler().notifyFileChanged(NotifyChange.ActionRemoved, fileName);
                     }
-                }
-                catch (Exception ex)
-                {
-                	// Dump the error
-                	
-                	if ( logger.isErrorEnabled())
-                		logger.error("Desktop action error", ex);
-                	
-                    // Return an error status and message
-                    
-                	response.setStatus(StsError, "Checkin failed for " + target.getTarget() + ", " + ex.getMessage());
-                }
-            }
-            else
-            {
-                try
-                {
-                	// Check if the file is locked
-                	
-                	if ( nodeService.hasAspect( target.getNode(), ContentModel.ASPECT_LOCKABLE)) {
-                	
-                		// Get the lock type
-                		
-                		String lockTypeStr = (String) nodeService.getProperty( target.getNode(), ContentModel.PROP_LOCK_TYPE);
-                		if ( lockTypeStr != null) {
-                			response.setStatus(StsError, "Checkout failed, file is locked");
-                			return response;
-                		}
-                	}
-                	
-                    // Check out the file
-                    
-                    NodeRef workingCopyNode = getCheckInOutService().checkout( target.getNode());
+                    else
+                    {
+                        try
+                        {
+                            // Check if the file is locked
+                            
+                            if ( nodeService.hasAspect( target.getNode(), ContentModel.ASPECT_LOCKABLE)) {
+                            
+                                // Get the lock type
+                                
+                                String lockTypeStr = (String) nodeService.getProperty( target.getNode(), ContentModel.PROP_LOCK_TYPE);
+                                if ( lockTypeStr != null) {
+                                    response.setStatus(StsError, "Checkout failed, file is locked");
+                                    return response;
+                                }
+                            }
+                            
+                            // Check out the file
+                            
+                            NodeRef workingCopyNode = checkOutCheckInService.checkout( target.getNode());
 
-                    // Get the working copy file name
-                    
-                    String workingCopyName = (String) nodeService.getProperty( workingCopyNode, ContentModel.PROP_NAME);
-                    
-                    // Check out was successful, pack the working copy name
+                            // Get the working copy file name
+                            
+                            String workingCopyName = (String) nodeService.getProperty( workingCopyNode, ContentModel.PROP_NAME);
+                            
+                            // Check out was successful, pack the working copy name
 
-                    response.setStatus(StsSuccess, "Checked out working copy " + workingCopyName);
-                    
+                            response.setStatus(StsSuccess, "Checked out working copy " + workingCopyName);
+                            
                     // Build the relative path to the checked out file
 
                     String fileName = FileName.buildPath( params.getFolder().getFullName(), null, workingCopyName, FileName.DOS_SEPERATOR);
@@ -193,50 +217,63 @@ public class CheckInOutDesktopAction extends DesktopAction {
                     		fstate.setFileStatus( FileStatus.FileExists);
                     }
                     
-                    // Check if there are any file/directory change notify requests active
+                            // Check if there are any file/directory change notify requests active
 
-                    if ( getContext().hasChangeHandler()) {
+                            if ( getContext().hasChangeHandler()) {
                         
-                        // Queue a file added change notification
-                        
-                        getContext().getChangeHandler().notifyFileChanged(NotifyChange.ActionAdded, fileName);
+                        // Build the relative path to the checked in file
+                                
+                                // Queue a file added change notification
+                                fileChanges.add(new Pair<Integer, String>(NotifyChange.ActionAdded, fileName));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // If this is a 'retryable' exception, pass it on
+                            if (RetryingTransactionHelper.extractRetryCause(ex) != null)
+                            {
+                                throw ex;
+                            }
+
+                            // Dump the error
+                            
+                            if ( logger.isErrorEnabled())
+                                logger.error("Desktop action error", ex);
+                            
+                            // Return an error status and message
+
+                            response.setStatus(StsError, "Failed to checkout " + target.getTarget() + ", " + ex.getMessage());
+                        }
                     }
                 }
-                catch (Exception ex)
+                
+                // Return a success status for now
+                
+                return response; 
+            }
+		    
+            
+            /**
+             * Queue the file change notifications resulting from this successfully processed transaction.
+             */
+            public void notifyChanges()
+            {
+                NotifyChangeHandler notifyChangeHandler = getContext().getChangeHandler();
+                for (Pair<Integer, String> fileChange : fileChanges)
                 {
-                	// Dump the error
-                	
-                	if ( logger.isErrorEnabled())
-                		logger.error("Desktop action error", ex);
-                	
-                    // Return an error status and message
-
-                	response.setStatus(StsError, "Failed to checkout " + target.getTarget() + ", " + ex.getMessage());
+                    notifyChangeHandler.notifyFileChanged(fileChange.getFirst(), fileChange.getSecond());
                 }
             }
+
 		}
 		
-		// Return a success status for now
+        // Process the transaction        
+		WriteTxn callback = new WriteTxn();		
+        DesktopResponse response = params.getDriver().doInWriteTransaction(params.getSession(), callback);
+        
+        // Queue file change notifications
+        callback.notifyChanges();
 		
-		return response; 
-	}
-	
-	/**
-	 * Get the check in/out service
-	 * 
-	 * @return CheckOutCheckInService
-	 */
-	protected final CheckOutCheckInService getCheckInOutService()
-	{
-		// Check if the service has been cached
-		
-		if ( m_checkInOutService == null)
-		{
-			m_checkInOutService = getServiceRegistry().getCheckOutCheckInService();
-		}
-		
-		// Return the check in/out service
-		
-		return m_checkInOutService;
-	}
+        return response;		
+	}	
 }

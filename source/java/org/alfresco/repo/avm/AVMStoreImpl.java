@@ -585,7 +585,7 @@ public class AVMStoreImpl implements AVMStore
             file.setProperties(props);
         }
         
-        return createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name));
+        return createContentWriter(AVMNodeConverter.ExtendAVMPath(path, name), true);
     }
 
     /**
@@ -710,14 +710,17 @@ public class AVMStoreImpl implements AVMStore
      * Get a ContentWriter to a file.
      * @param path The path to the file.
      * @return A ContentWriter.
+     * @param update true if the property must be updated atomically when the content write
+     *      stream is closed (attaches a listener to the stream); false if the client code
+     *      will perform the updates itself.
      */
-    public ContentWriter createContentWriter(String path)
+    public ContentWriter createContentWriter(String path, boolean update)
     {
         try
         {
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, getName() + ":" + path);
             ContentWriter writer =
-                RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                RawServices.Instance().getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, update);
             return writer;
         }
         catch (InvalidNodeRefException inre)
@@ -826,7 +829,7 @@ public class AVMStoreImpl implements AVMStore
      */
     public OutputStream getOutputStream(String path)
     {
-        ContentWriter writer = createContentWriter(path);
+        ContentWriter writer = createContentWriter(path, true);
         return writer.getContentOutputStream();
     }
 

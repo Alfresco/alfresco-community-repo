@@ -77,7 +77,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     }
 
     @Override
-    protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size)
+    protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size, boolean isReferenced)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
@@ -85,8 +85,14 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         contentUrlEntity.setOrphanTime(null);
         /* Long id = (Long) */ template.insert(INSERT_CONTENT_URL, contentUrlEntity);
         /*contentUrlEntity.setId(id);*/
-        // Register the url as new
-        registerNewContentUrl(contentUrl);
+        
+        // Don't register this URL for tidy up if it is still referenced by code outside of this transaction
+        if (!isReferenced)
+        {
+            // Register the url as new
+            registerNewContentUrl(contentUrl);
+        }
+
         // Done
         return contentUrlEntity;
     }

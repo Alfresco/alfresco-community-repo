@@ -89,7 +89,7 @@ public class ASRDeploymentTest extends AVMServiceTestBase
             
             String rootText = "Angel is an American television series, a spin-off of the television series Buffy the Vampire Slayer. The series was created by Buffy's creator, Joss Whedon, in collaboration with David Greenwalt, and first aired on October 5, 1999. Like Buffy, it was produced by Whedon's production company, Mutant Enemy.";
             fService.createFile("main:/", "rootFile").close();
-            ContentWriter writer = fService.getContentWriter("main:/rootFile");
+            ContentWriter writer = fService.getContentWriter("main:/rootFile", true);
             
             // Force a conversion
             writer.setEncoding("UTF-16");
@@ -104,13 +104,13 @@ public class ASRDeploymentTest extends AVMServiceTestBase
             
             fService.createFile("main:/a/b/c", "foo").close();
             String fooText="I am main:/a/b/c/foo";
-            writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo");
             
             fService.createFile("main:/a/b/c", "bar").close();
-            writer = fService.getContentWriter("main:/a/b/c/bar");
+            writer = fService.getContentWriter("main:/a/b/c/bar", true);
             // Force a conversion
             writer.setEncoding("UTF-16");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -118,7 +118,7 @@ public class ASRDeploymentTest extends AVMServiceTestBase
             
             String buffyText = "This is test data: Buffy the Vampire Slayer is an Emmy Award-winning and Golden Globe-nominated American cult television series that aired from March 10, 1997 until May 20, 2003. The series was created in 1997 by writer-director Joss Whedon under his production tag, Mutant Enemy Productions with later co-executive producers being Jane Espenson, David Fury, and Marti Noxon. The series narrative follows Buffy Summers (played by Sarah Michelle Gellar), the latest in a line of young women chosen by fate to battle against vampires, demons, and the forces of darkness as the Slayer. Like previous Slayers, Buffy is aided by a Watcher, who guides and trains her. Unlike her predecessors, Buffy surrounds herself with a circle of loyal friends who become known as the Scooby Gang.";
             fService.createFile("main:/a/b", "buffy").close();
-            writer = fService.getContentWriter("main:/a/b/buffy");
+            writer = fService.getContentWriter("main:/a/b/buffy", true);
             
             // Force a conversion
             writer.setEncoding("UTF-16");

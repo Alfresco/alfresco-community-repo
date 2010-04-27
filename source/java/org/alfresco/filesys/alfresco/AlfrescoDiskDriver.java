@@ -18,6 +18,8 @@
 
 package org.alfresco.filesys.alfresco;
 
+import java.util.concurrent.Callable;
+
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
@@ -33,6 +35,7 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.util.DataBuffer;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -58,6 +61,10 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     //  Transaction service
     
     private TransactionService m_transactionService;
+    
+    // Remember whether the current thread is already in a retrying transaction
+    
+    private ThreadLocal<Boolean> m_inRetryingTransaction = new ThreadLocal<Boolean>();
     
     /**
      * Return the service registry
@@ -138,7 +145,7 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     public void beginReadTransaction(SrvSession sess) {
       beginTransaction( sess, true);
     }
-    
+
     /**
      * Begin a writeable transaction
      * 
@@ -148,6 +155,47 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
       beginTransaction( sess, false);
     }
     
+    /**
+     * Perform a retryable operation in a write transaction
+     * 
+     * @param sess
+     *            the server session
+     * @param callback
+     *            callback for the retryable operation
+     * @return the result of the operation
+     */
+    public <T> T doInWriteTransaction(SrvSession sess, final Callable<T> callback)
+    {
+        Boolean wasInRetryingTransaction = m_inRetryingTransaction.get();
+        try
+        {
+            boolean hadTransaction = sess.hasTransaction();
+            if (hadTransaction)
+            {
+                sess.endTransaction();
+            }
+            m_inRetryingTransaction.set(Boolean.TRUE);
+            T result = m_transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionHelper.RetryingTransactionCallback<T>()
+                    {
+
+                        public T execute() throws Throwable
+                        {
+                            return callback.call();
+                        }
+                    });
+            if (hadTransaction)
+            {
+                beginReadTransaction(sess);
+            }
+            return result;
+        }
+        finally
+        {
+            m_inRetryingTransaction.set(wasInRetryingTransaction);
+        }
+    }
+
     /**
      * End an active transaction
      * 
@@ -227,6 +275,14 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     private final void beginTransaction( SrvSession sess, boolean readOnly)
         throws AlfrescoRuntimeException
     {
+        // Do nothing if we are already in a retrying transaction
+        Boolean inRetryingTransaction = m_inRetryingTransaction.get();
+        
+        if (inRetryingTransaction != null && inRetryingTransaction)
+        {
+            return;
+        }
+
         // Initialize the per session thread local that holds the transaction
         
         sess.initializeTransactionObject();

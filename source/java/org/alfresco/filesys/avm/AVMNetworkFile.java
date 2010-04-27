@@ -25,13 +25,23 @@ import java.nio.channels.FileChannel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
+import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.smb.SeekType;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,6 +58,10 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
 	
 	private static final Log logger = LogFactory.getLog(AVMNetworkFile.class);
 
+	// Node Service
+
+	private NodeService m_nodeService;
+	
 	// AVM service
 	
 	private AVMService m_avmService;
@@ -64,6 +78,8 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
 	// Access to the file data, flag to indicate if the file channel is writable
 	
 	private FileChannel m_channel;
+	private ContentWriter m_content;
+
 	private boolean m_writable;
 	
 	// Mime type, if a writer is opened
@@ -76,14 +92,16 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
 	 * @param details AVMNodeDescriptor
 	 * @param avmPath String
 	 * @param avmVersion int
+	 * @param nodeService NodeService
 	 * @param avmService AVMService
 	 */
-	public AVMNetworkFile( AVMNodeDescriptor details, String avmPath, int avmVersion, AVMService avmService)
+	public AVMNetworkFile( AVMNodeDescriptor details, String avmPath, int avmVersion, NodeService nodeService, AVMService avmService)
 	{
 		super( details.getName());
 	
 		// Save the service, apth and version
 		
+		m_nodeService = nodeService;
 		m_avmService = avmService;
 		m_avmPath    = avmPath;
 		m_avmVersion = avmVersion;
@@ -337,20 +355,59 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
     {
     	// If the file is a directory or the file channel has not been opened then there is nothing to do
     	
-    	if ( isDirectory() || m_channel == null)
+    	if ( isDirectory() || m_channel == null && m_content == null)
     		return;
     	
-    	// Close the file channel
-    		
-    	try
-    	{
-    		m_channel.close();
-    		m_channel = null;
-    	}
-    	catch ( IOException ex)
-    	{
-    		logger.error("Failed to close file channel for " + getName(), ex);
-    	}
+        // We may be in a retry block, in which case this section will already have executed and channel will be null
+        if (m_channel != null)
+        {
+            // Close the file channel
+            
+            try
+            {
+                m_channel.close();
+                m_channel = null;
+            }
+            catch ( IOException ex)
+            {
+                if (RetryingTransactionHelper.extractRetryCause(ex) != null)
+                {
+                    throw ex;
+                }
+                logger.error("Failed to close file channel for " + getName(), ex);
+            }
+
+        }
+
+        if (m_content != null)
+        {
+            // Retrieve the content data and stop the content URL from being 'eagerly deleted', in case we need to
+            // retry the transaction
+
+            final ContentData contentData = m_content.getContentData();
+            contentData.reference();
+
+            try
+            {
+                NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, m_avmPath);                
+                m_nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
+            }
+            catch (ContentQuotaException qe)
+            {
+                throw new DiskFullException(qe.getMessage());
+            }
+
+            // Tidy up after ourselves after a successful commit. Otherwise leave things to allow a
+            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+            {
+                @Override
+                public void afterCommit()
+                {
+                    m_content = null;
+                    contentData.deReference();
+                }
+            });
+        }
     }
     
     /**
@@ -412,21 +469,21 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
 
         // Access the content data and get a file channel to the data
         
-        if ( write)
+        if ( write )
         {
         	// Access the content data for write
 
-        	ContentWriter cWriter = null;
+        	m_content = null;
         	
         	try {
         		
         		// Create a writer to access the file data
         		
-        		cWriter = m_avmService.getContentWriter( m_avmPath);
+        	    m_content = m_avmService.getContentWriter(m_avmPath, false);
         		
         		// Set the mime-type
 
-        		cWriter.setMimetype( getMimeType());
+        	    m_content.setMimetype( getMimeType());
         	}
         	catch (Exception ex) {
         		logger.debug( ex);
@@ -439,7 +496,7 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
             
             // Get the writable channel, do not copy existing content data if the file is to be truncated
             
-            m_channel = cWriter.getFileChannel( trunc);
+            m_channel = m_content.getFileChannel( trunc);
             
             // Reset the file position to match the read-only file channel position, unless we truncated the file
             

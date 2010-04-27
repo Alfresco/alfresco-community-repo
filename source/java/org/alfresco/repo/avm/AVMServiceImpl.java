@@ -147,15 +147,18 @@ public class AVMServiceImpl implements AVMService
     /**
      * Get a ContentWriter to a file node.
      * @param path The path to the file.
+     * @param update true if the property must be updated atomically when the content write
+     *      stream is closed (attaches a listener to the stream); false if the client code
+     *      will perform the updates itself.
      * @return A ContentWriter.
      */
-    public ContentWriter getContentWriter(String path)
+    public ContentWriter getContentWriter(String path, boolean update)
     {
         if (path == null)
         {
             throw new AVMBadArgumentException("Null path.");
         }
-        return fAVMRepository.createContentWriter(path);
+        return fAVMRepository.createContentWriter(path, update);
     }
 
     /**

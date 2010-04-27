@@ -198,7 +198,7 @@ public class AssetServiceImpl implements AssetService
         
         String avmPath = avmParentPath + PATH_SEPARATOR + name;
         
-        return avmService.getContentWriter(avmPath);
+        return avmService.getContentWriter(avmPath, true);
     }
     
     /* (non-Javadoc)
@@ -221,7 +221,7 @@ public class AssetServiceImpl implements AssetService
             setProperties(avmPath, properties);
         }
         
-        return avmService.getContentWriter(avmPath);
+        return avmService.getContentWriter(avmPath, true);
     }
     
     private void createFileAVM(String avmParentPath, String name)
@@ -264,7 +264,7 @@ public class AssetServiceImpl implements AssetService
         
         if (! isWebProjectStagingSandbox(asset.getSandboxId()))
         {
-            return avmService.getContentWriter(asset.getAvmPath());
+            return avmService.getContentWriter(asset.getAvmPath(), true);
         }
         else
         {

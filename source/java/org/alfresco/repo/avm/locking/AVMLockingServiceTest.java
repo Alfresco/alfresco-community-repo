@@ -510,13 +510,13 @@ public class AVMLockingServiceTest extends TestCase
         fService.createDirectory("main:/d/e", "f");
         
         fService.createFile("main:/a/b/c", "foo").close();
-        ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo");
+        ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo", true);
         writer.setEncoding("UTF-8");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent("I am main:/a/b/c/foo");
         
         fService.createFile("main:/a/b/c", "bar").close();
-        writer = fService.getContentWriter("main:/a/b/c/bar");
+        writer = fService.getContentWriter("main:/a/b/c/bar", true);
         // Force a conversion
         writer.setEncoding("UTF-16");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);

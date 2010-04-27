@@ -1320,11 +1320,14 @@ public interface AVMService
      * <em>Low-level internal function</em>:&nbsp;&nbsp; Fetch a ContentWriter to a file node.
      *
      * @param path The path to the file.
+     * @param update true if the property must be updated atomically when the content write
+     *      stream is closed (attaches a listener to the stream); false if the client code
+     *      will perform the updates itself.
      * @return A ContentWriter.
      * @throws AVMNotFoundException
      * @throws AVMWrongTypeException
      */
-    public ContentWriter getContentWriter(String path);   
+    public ContentWriter getContentWriter(String path, boolean update);   
 
     /**
      * <em>Low-level internal function</em>:&nbsp;&nbsp; Get the ContentData for 

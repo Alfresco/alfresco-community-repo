@@ -660,9 +660,12 @@ public class AVMRepository
      * 
      * @param path
      *            The path to the file.
+     * @param update true if the property must be updated atomically when the content write
+     *      stream is closed (attaches a listener to the stream); false if the client code
+     *      will perform the updates itself.
      * @return A ContentWriter.
      */
-    public ContentWriter createContentWriter(String path)
+    public ContentWriter createContentWriter(String path, boolean update)
     {
         fLookupCount.set(1);
         try
@@ -674,7 +677,7 @@ public class AVMRepository
                 throw new AVMNotFoundException("Store not found: " + pathParts[0]);
             }
             fLookupCache.onWrite(pathParts[0]);
-            ContentWriter writer = store.createContentWriter(pathParts[1]);
+            ContentWriter writer = store.createContentWriter(pathParts[1], update);
             return writer;
         }
         finally

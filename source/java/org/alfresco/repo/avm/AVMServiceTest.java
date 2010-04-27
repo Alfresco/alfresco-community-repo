@@ -1691,37 +1691,37 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             setupBasicTree();
             
-            ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo");
+            ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V1");
             fService.createSnapshot("main", "v1", null);
             
-            writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V2");
             fService.createSnapshot("main", "v2", null);
             
-            writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V3");
             fService.createSnapshot("main", "v3", null);
             
-            writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V4");
             fService.createSnapshot("main", "v4", null);
             
-            writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo V5");
             fService.createSnapshot("main", "v5", null);
             
-            writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer = fService.getContentWriter("main:/a/b/c/foo", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.putContent("I am main:/a/b/c/foo HEAD");
@@ -3785,7 +3785,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             assertEquals(0, results.length());
             results.close();
 
-            ContentWriter writer = fService.getContentWriter("main:/testdir/testfile");
+            ContentWriter writer = fService.getContentWriter("main:/testdir/testfile", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             PrintStream out = new PrintStream(writer.getContentOutputStream());
@@ -3794,7 +3794,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 
             out = new PrintStream(fService.getFileOutputStream("main:/testfile2"));
 
-            writer = fService.getContentWriter("main:/testfile2");
+            writer = fService.getContentWriter("main:/testfile2", true);
             writer.setEncoding("UTF-8");
             writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             out = new PrintStream(writer.getContentOutputStream());

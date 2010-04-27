@@ -40,6 +40,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -78,7 +80,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     // File content
     
     private ContentAccessor content;
-    private ContentReader preUpdateContentReader;
+    private String preUpdateContentURL;
     
     // Indicate if file has been written to or truncated/resized
     
@@ -319,16 +321,20 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         }
 
         content = null;
-        preUpdateContentReader = null;
+        preUpdateContentURL = null;
         if (write)
         {
         	// Get a writeable channel to the content, along with the original content
         	
             content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
-            
+                        
             // Keep the original content for later comparison
             
-            preUpdateContentReader = contentService.getReader( getNodeRef(), ContentModel.PROP_CONTENT);
+            ContentData preUpdateContentData = (ContentData) nodeService.getProperty( getNodeRef(), ContentModel.PROP_CONTENT);
+            if (preUpdateContentData != null)
+            {
+                preUpdateContentURL = preUpdateContentData.getContentUrl();
+            }
             
             // Indicate that we have a writable channel to the file
             
@@ -388,7 +394,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         	
             return;
         }
-        else if (channel == null)
+        else if (!hasContent())
         {
         	// File was not read/written so channel was not opened
         	
@@ -399,26 +405,37 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         if (modified)
         {
-            // Take a guess at the mimetype
-            channel.position(0);
-            InputStream is = new BufferedInputStream(Channels.newInputStream(channel));
-            ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-            Charset charset = charsetFinder.getCharset(is, content.getMimetype());
-            content.setEncoding(charset.name());
+            // We may be in a retry block, in which case this section will already have executed and channel will be null
+            if (channel != null)
+            {
+                // Take a guess at the mimetype
+                channel.position(0);
+                InputStream is = new BufferedInputStream(Channels.newInputStream(channel));
+                ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                Charset charset = charsetFinder.getCharset(is, content.getMimetype());
+                content.setEncoding(charset.name());
+
+                // Close the channel
+
+                channel.close();
+                channel = null;
+            }
             
-            // Close the channel
-        	
-            channel.close();
-            channel = null;
-            
+            // Retrieve the content data and stop the content URL from being 'eagerly deleted', in case we need to
+            // retry the transaction
+
+            final ContentData contentData = content.getContentData();
+            contentData.reference();
+
             // Update node properties, but only if the binary has changed (ETHREEOH-1861)
             
             ContentReader postUpdateContentReader = ((ContentWriter) content).getReader();
-            boolean contentChanged = !AbstractContentReader.compareContentReaders(preUpdateContentReader, postUpdateContentReader);
+            boolean contentChanged = preUpdateContentURL == null
+                    || !AbstractContentReader.compareContentReaders(contentService.getRawReader(preUpdateContentURL),
+                            postUpdateContentReader);
             
             if (contentChanged)
             {
-                ContentData contentData = content.getContentData();
                 NodeRef contentNodeRef = getNodeRef();
                 nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
                 try
@@ -430,8 +447,20 @@ public class ContentNetworkFile extends NodeRefNetworkFile
                     throw new DiskFullException(qe.getMessage());
                 }
             }
+
+            // Tidy up after ourselves after a successful commit. Otherwise leave things to allow a retry. 
+            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+            {
+                @Override
+                public void afterCommit()
+                {
+                    content = null;
+                    contentData.deReference();
+                    preUpdateContentURL = null;
+                }
+            });
         }
-        else
+        else if (channel != null)
         {
             // Close it - it was not modified
         	

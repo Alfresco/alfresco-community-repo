@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 
 import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
@@ -34,6 +35,7 @@ import org.alfresco.filesys.alfresco.DesktopActionException;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.util.ResourceFinder;
@@ -48,10 +50,6 @@ import org.springframework.core.io.Resource;
  */
 public class JavaScriptDesktopAction extends DesktopAction {
 
-	// Script service
-	
-	private ScriptService m_scriptService;
-	
 	// Script name
 	
 	private String m_scriptName;
@@ -193,40 +191,37 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	@Override
 	public DesktopResponse runAction(DesktopParams params)
 		throws DesktopActionException
-	{
-		// Check if the script file has been changed
-		
-		DesktopResponse response = new DesktopResponse(StsSuccess);
-		
+	{		
 		File scriptFile = new File(m_scriptPath);
-		if ( scriptFile.lastModified() != m_lastModified)
-		{
-			// Reload the script
-
-			m_lastModified = scriptFile.lastModified();
-			
-			try
-			{
-				loadScript( scriptFile);
-			}
-			catch ( IOException ex)
-			{
-				response.setStatus(StsError, "Failed to reload script file, " + getScriptName());
-				return response;
-			}
-		}
-			
-		// Start a transaction
 		
-		params.getDriver().beginWriteTransaction( params.getSession());
+		synchronized (this)
+        {
+            if (scriptFile.lastModified() != m_lastModified)
+            {
+                // Reload the script
 
+                m_lastModified = scriptFile.lastModified();
+
+                try
+                {
+                    loadScript(scriptFile);
+                }
+                catch (IOException ex)
+                {
+                    // Check if the script file has been changed
+                    return new DesktopResponse(StsError, "Failed to reload script file, " + getScriptName());
+                }
+            }
+        }
+			
 		// Access the script service
+		final ScriptService scriptService = getServiceRegistry().getScriptService();
 		
-		if ( getScriptService() != null)
+		if ( scriptService != null)
 		{
-			// Create the objects to be passed to the script
+	        // Create the objects to be passed to the script
 			
-            Map<String, Object> model = new HashMap<String, Object>();
+            final Map<String, Object> model = new HashMap<String, Object>();
             model.put("deskParams", params);
             model.put("out", System.out);
 			
@@ -235,105 +230,95 @@ public class JavaScriptDesktopAction extends DesktopAction {
             if ( hasWebappURL())
             	model.put("webURL", getWebappURL());
             
-            // Start a transaction
-            
-    		params.getDriver().beginWriteTransaction( params.getSession());
+            // Compute the response in a retryable write transaction
+            return params.getDriver().doInWriteTransaction(params.getSession(), new Callable<DesktopResponse>()
+            {
 
-    		// Run the script
-    		
-    		Object result = null;
-    		
-    		try
-    		{
-    			// Run the script
-    			
-    			result = getScriptService().executeScriptString( getScript(), model);
-    			
-    			// Check the result
-    			
-    			if ( result != null)
-    			{
-    				// Check for a full response object
-    				
-    				if ( result instanceof DesktopResponse)
-    				{
-    					response = (DesktopResponse) result;
-    				}
-    				
-    				// Status code only response
-    				
-    				else if ( result instanceof Double)
-    				{
-    					Double jsSts = (Double) result;
-    					response.setStatus( jsSts.intValue(), "");
-    				}
-    				
-    				// Encoded response in the format '<stsCode>,<stsMessage>'
-    				
-    				else if ( result instanceof String)
-    				{
-    					String responseMsg = (String) result;
-    					
-    					// Parse the status message
-    					
-    					StringTokenizer token = new StringTokenizer( responseMsg, ",");
-    					String stsToken = token.nextToken();
-    					String msgToken = token.nextToken();
-    					
-    					int sts = -1;
-    					try
-    					{
-    						sts = Integer.parseInt( stsToken);
-    					}
-    					catch ( NumberFormatException ex)
-    					{
-    						response.setStatus( StsError, "Bad response from script");
-    					}
-    					
-    					// Set the response
-    					
-    					response.setStatus( sts, msgToken != null ? msgToken : "");
-    				}
-    			}
-    		}
-    		catch (ScriptException ex)
-    		{
-    			// Set the error response for the client
-    			
-    			response.setStatus( StsError, ex.getMessage());
-    		}
-		}
-		else
-		{
-			// Return an error response, script service not available
-			
-			response.setStatus( StsError, "Script service not available");
-		}
-		
-		// Return the response
-		
-		return response;
-	}
-	
-	/**
-	 * Get the script service
-	 * 
-	 * @return ScriptService
-	 */
-	protected final ScriptService getScriptService()
-	{
-		// Check if the script service has been initialized
-		
-		if ( m_scriptService == null)
-		{
-			// Get the script service
-			
-			m_scriptService = getServiceRegistry().getScriptService();
-		}
-		
-		// Return the script service
-		
-		return m_scriptService;
+                public DesktopResponse call() throws Exception
+                {
+                    DesktopResponse response = new DesktopResponse(StsSuccess);
+
+                    // Run the script
+
+                    Object result = null;
+
+                    try
+                    {
+                        // Run the script
+
+                        result = scriptService.executeScriptString(getScript(), model);
+
+                        // Check the result
+
+                        if (result != null)
+                        {
+                            // Check for a full response object
+
+                            if (result instanceof DesktopResponse)
+                            {
+                                response = (DesktopResponse) result;
+                            }
+
+                            // Status code only response
+
+                            else if (result instanceof Double)
+                            {
+                                Double jsSts = (Double) result;
+                                response.setStatus(jsSts.intValue(), "");
+                            }
+
+                            // Encoded response in the format '<stsCode>,<stsMessage>'
+
+                            else if (result instanceof String)
+                            {
+                                String responseMsg = (String) result;
+
+                                // Parse the status message
+
+                                StringTokenizer token = new StringTokenizer(responseMsg, ",");
+                                String stsToken = token.nextToken();
+                                String msgToken = token.nextToken();
+
+                                int sts = -1;
+                                try
+                                {
+                                    sts = Integer.parseInt(stsToken);
+                                }
+                                catch (NumberFormatException ex)
+                                {
+                                    response.setStatus(StsError, "Bad response from script");
+                                }
+
+                                // Set the response
+
+                                response.setStatus(sts, msgToken != null ? msgToken : "");
+                            }
+                        }
+                    }
+                    catch (ScriptException ex)
+                    {
+                        if (RetryingTransactionHelper.extractRetryCause(ex) != null)
+                        {
+                            throw ex;
+                        }
+
+                        // Set the error response for the client
+                        response.setStatus(StsError, ex.getMessage());
+                    }
+
+                    // Return the response
+
+                    return response;
+                }
+            });
+        }
+        else
+        {
+            // Return an error response, script service not available
+
+            return new DesktopResponse(StsError, "Script service not available");
+        }
+            
 	}
 	
 	/**

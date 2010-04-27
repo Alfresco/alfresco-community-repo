@@ -24,7 +24,7 @@ function getDoclist()
       parent =
       {
          node: node.parent,
-         userAccess: Evaluator.run(node.parent).actionPermissions
+         userAccess: Evaluator.run(node.parent, true).actionPermissions
       };
 
    var isThumbnailNameRegistered = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME),

@@ -27,7 +27,7 @@ function runAction(p_params)
          return;
       }
 
-      var resultId = assetNode.name,
+      var resultId = originalDoc.name,
          resultNodeRef = originalDoc.nodeRef.toString();
 
       // Construct the result object

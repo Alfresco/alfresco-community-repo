@@ -100,7 +100,7 @@ function getDoclist()
       parent =
       {
          node: parsedArgs.pathNode,
-         userAccess: Evaluator.run(parsedArgs.pathNode).actionPermissions
+         userAccess: Evaluator.run(parsedArgs.pathNode, true).actionPermissions
       };
    }
 

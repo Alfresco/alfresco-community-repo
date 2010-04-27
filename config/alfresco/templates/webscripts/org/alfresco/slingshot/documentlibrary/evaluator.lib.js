@@ -26,6 +26,13 @@ var Evaluator =
    },
    
    /**
+    * Parent container evaluators
+    */
+   parentContainer: function Evaluator_parentContainer(node, permissions)
+   {
+   },
+   
+   /**
     * Document and Folder common evaluators
     */
    documentAndFolder: function Evaluator_documentAndFolder(node, permissions, status, actionLabels)
@@ -50,7 +57,7 @@ var Evaluator =
    /**
     * Node Evaluator - main entrypoint
     */
-   run: function Evaluator_run(node)
+   run: function Evaluator_run(node, isParent)
    {
       var nodeType = Evaluator.getNodeType(node),
          actions = {},
@@ -78,6 +85,12 @@ var Evaluator =
          "permissions": node.hasPermission("ChangePermissions"),
          "cancel-checkout": node.hasPermission("CancelCheckOut")
       };
+      
+      // When evaluating parent container
+      if (isParent)
+      {
+         Evaluator.parentContainer(node, permissions);
+      }
 
       // Get relevant actions set
       switch (nodeType)
@@ -127,16 +140,17 @@ var Evaluator =
             // Working Copy?
             if (node.hasAspect("cm:workingcopy"))
             {
+               var wcStatus = "";
                lockedBy = Common.getPerson(node.properties["cm:workingCopyOwner"]);
                lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
-                  status["editing"] = true;
+                  wcStatus = "editing";
                   actionSet = "workingCopyOwner";
                }
                else
                {
-                  status["locked " + lockedBy.displayName + "|" + lockedBy.userName] = true;
+                  wcStatus = "locked " + lockedBy.displayName + "|" + lockedBy.userName;
                   actionSet = "locked";
                }
                var wcNode = node.properties["source"];
@@ -147,20 +161,40 @@ var Evaluator =
                   custom["workingCopyVersion"] = wcNode.versionHistory[0].label;
                }
                permissions["view-original"] = true;
+
+               // Google Doc?
+               if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+               {
+                  custom["googleDocUrl"] = node.properties["gd:url"];
+                  permissions["view-google-doc"] = true;
+                  if (lockOwnerUser == person.properties.userName)
+                  {
+                     permissions["checkin-from-google"] = true;
+                     wcStatus = "google-docs-owner";
+                     actionSet = "googleDocOwner";
+                  }
+                  else
+                  {
+                     wcStatus = "google-docs-locked " + lockedBy.displayName + "|" + lockedBy.userName;
+                     actionSet = "googleDocLocked";
+                  }
+               }
+               status[wcStatus] = true;
             }
             // Locked?
             else if (node.isLocked)
             {
+               var lockStatus = "";
                lockedBy = Common.getPerson(node.properties["cm:lockOwner"]);
                lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
-                  status["lock-owner"] = true;
+                  lockStatus = "lock-owner";
                   actionSet = "lockOwner";
                }
                else
                {
-                  status["locked " + lockedBy.displayName + "|" + lockedBy.userName] = true;
+                  lockStatus = "locked " + lockedBy.displayName + "|" + lockedBy.userName;
                   actionSet = "locked";
                }
                var srcNodes = search.query(
@@ -177,13 +211,38 @@ var Evaluator =
                   custom["hasWorkingCopy"] = true;
                   custom["workingCopyNode"] = srcNodes[0].nodeRef;
                   permissions["view-working-copy"] = true;
+
+                  // Google Doc?
+                  if (srcNodes[0].hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                  {
+                     custom["googleDocUrl"] = srcNodes[0].properties["gd:url"];
+                     permissions["view-google-doc"] = true;
+                     if (lockOwnerUser == person.properties.userName)
+                     {
+                        permissions["checkin-from-google"] = true;
+                        lockStatus = "google-docs-owner";
+                        actionSet = "googleDocOwner";
+                     }
+                     else
+                     {
+                        lockStatus = "google-docs-locked " + lockedBy.displayName + "|" + lockedBy.userName;
+                        actionSet = "googleDocLocked";
+                     }
+                  }
                }
+               status[lockStatus] = true;
             }
             
             // Inline editable aspect?
             if (node.hasAspect("app:inlineeditable"))
             {
                permissions["inline-edit"] = true;
+            }
+            
+            // Google Docs editable aspect?
+            if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleEditable"))
+            {
+               permissions["googledocs-edit"] = true;
             }
             break;
       }

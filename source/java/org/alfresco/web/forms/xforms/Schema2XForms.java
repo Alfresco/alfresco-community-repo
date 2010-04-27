@@ -118,6 +118,7 @@ public class Schema2XForms implements Serializable
    private final String action;
    private final SubmitMethod submitMethod;
    private final String base;
+   private final boolean formatCaption;
    @SuppressWarnings("unchecked")
    private final Stack parentStack = new Stack();
 
@@ -145,13 +146,15 @@ public class Schema2XForms implements Serializable
     *
     * @param action         _UNDOCUMENTED_
     * @param submitMethod   _UNDOCUMENTED_
+    * @param formatCaption 
     */
    public Schema2XForms(final String action,
                         final SubmitMethod submitMethod,
-                        final String base)
+                        final String base, final boolean formatCaption)
    {
       reset();
 
+      this.formatCaption = formatCaption;
       this.action = action;
       this.submitMethod = submitMethod;
       this.base = base;
@@ -2389,6 +2392,10 @@ public class Schema2XForms implements Serializable
     */
    public String createCaption(String text)
    {
+      if (formatCaption == false)
+      {
+         return text;
+      }
       // if the word is all upper case, then set to lower case and continue
       if (text.equals(text.toUpperCase()))
       {

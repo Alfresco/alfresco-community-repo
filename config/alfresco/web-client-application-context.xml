@@ -155,6 +155,9 @@
             <value>classpath:alfresco/messages/webclient</value>
        </list>
       </property>
+      <property name="formatCaption">
+         <value>${xforms.formatCaption}</value>
+      </property>
    </bean>
    
     <!-- ===================================== -->

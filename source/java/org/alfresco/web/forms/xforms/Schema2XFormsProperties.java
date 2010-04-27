@@ -106,6 +106,7 @@ public class Schema2XFormsProperties
    private final NamespaceService namespaceService;
    private final NodeService nodeService;
    private final SearchService searchService;
+   private boolean formatCaption = true;
    private String[] locations;
 
    public Schema2XFormsProperties(final ContentService contentService,
@@ -195,6 +196,17 @@ public class Schema2XFormsProperties
    public void setLocations(final String[] locations)
    {
       this.locations = locations;
+   }
+
+
+   public boolean isFormatCaption() 
+   {
+      return formatCaption;
+   }
+
+   public void setFormatCaption(boolean formatCaption) 
+   {
+      this.formatCaption = formatCaption;
    }
 
    public String toString()

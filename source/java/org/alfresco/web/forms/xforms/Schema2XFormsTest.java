@@ -643,7 +643,7 @@ public class Schema2XFormsTest
    {
       final Schema2XForms s2xf = new Schema2XForms("/test_action",
                                                    Schema2XForms.SubmitMethod.POST,
-                                                   "echo://fake.base.url");
+                                                   "echo://fake.base.url", true);
       return s2xf.buildXForm(instanceDocument, 
                              schemaDocument, 
                              rootElementName, 

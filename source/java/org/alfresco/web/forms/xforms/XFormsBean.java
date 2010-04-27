@@ -129,14 +129,15 @@ public class XFormsBean implements Serializable
       public XFormsSession(final Document formInstanceData,
                            final String formInstanceDataName,
                            final Form form,
-                           final String baseUrl)
+                           final String baseUrl, 
+                           final boolean formatCaption)
       {
          this.formInstanceData = formInstanceData;
          this.formInstanceDataName = formInstanceDataName;
          this.form = form;
          this.schema2XForms = new Schema2XForms(/* "/ajax/invoke/XFormsBean.handleAction" */ null,
                                                 Schema2XForms.SubmitMethod.POST,
-                                                /* baseUrl */ "alfresco:" + XFormsBean.class.getName());
+                                                /* baseUrl */ "alfresco:" + XFormsBean.class.getName(), formatCaption);
       }
 
       public void destroy()
@@ -314,7 +315,7 @@ public class XFormsBean implements Serializable
                               request.getServerName() + ':' + 
                               request.getServerPort() + 
                               request.getContextPath());
-      return this.new XFormsSession(formInstanceData, formInstanceDataName, form, baseUrl);
+      return this.new XFormsSession(formInstanceData, formInstanceDataName, form, baseUrl, getSchema2XFormsProperties().isFormatCaption());
    }
 
    /**

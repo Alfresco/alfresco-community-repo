@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd ">
+    
+    <bean id="googledocs_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/subsystems/googledocs/default/googledocs-model.xml</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="googleDocsServiceDelegate" class="com.google.gdata.client.docs.DocsService">
+        <constructor-arg>
+            <value>${googledocs.application.name}</value>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="spreadsheetsServiceDelegate" class="com.google.gdata.client.GoogleService">
+        <constructor-arg index="0">
+            <value>${googledocs.spreadsheet.service.name}</value>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <value>${googledocs.application.name}</value>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="googleDocsService" class="org.alfresco.repo.googledocs.GoogleDocsServiceImpl">
+        <property name="googleDocumentService" ref="googleDocsServiceDelegate"/>
+        <property name="spreadsheetsService" ref="spreadsheetsServiceDelegate"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="personService" ref="PersonService"/>    
+        <property name="mimetypeService" ref="mimetypeService"/>
+        <property name="permissionService" ref="PermissionService"/>  
+        <property name="ownableService" ref="OwnableService"/>        
+        <property name="authorityService" ref="AuthorityService"/>      
+        <property name="url" value="${googledocs.url}"/>     
+        <property name="username" value="${googledocs.username}"/>
+        <property name="password" value="${googledocs.password}"/>        
+        <property name="permissionMap">
+        	<map>
+        	    <!--  TODO this is not a complete list, needs to be expanded to cover other use cases -->
+        		<entry key="SiteManager" value="writer"/>
+        		<entry key="SiteCollaborator" value="writer"/>
+        	</map>	
+        </property>
+    </bean>
+    
+    <bean id="googleEditableAspect" class="org.alfresco.repo.googledocs.GoogleEditableAspect" init-method="init">
+    	<property name="policyComponent" ref="policyComponent"/>
+    	<property name="googleDocsService" ref="googleDocsService"/>
+    	<property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>  	
+        <property name="enabled" value="${googledocs.googleeditable.enabled}"/>
+    </bean>
+</beans>

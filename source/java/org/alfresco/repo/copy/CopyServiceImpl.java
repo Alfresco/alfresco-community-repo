@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.copy.CopyBehaviourCallback.ChildAssocCopyAction;
@@ -38,7 +37,6 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -54,17 +52,16 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AccessPermission;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Node operations service implmentation.

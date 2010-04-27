@@ -858,6 +858,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
         }
     }
     
+    /**
+     * Get the site implementation given a short name
+     * 
+     * @param shortName
+     * @return
+     */
     private SiteInfo getSiteImpl(String shortName)
     {
         SiteInfo result = null;
@@ -872,6 +878,45 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
         // Return the site information
         return result;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#getSite(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public SiteInfo getSite(NodeRef nodeRef)
+    {
+        SiteInfo siteInfo = null;
+        NodeRef siteNodeRef = getSiteNodeRef(nodeRef);
+        if (siteNodeRef != null)
+        {
+            siteInfo = createSiteInfo(siteNodeRef);
+        }
+        return siteInfo;
+    }
+    
+    /**
+     * Gets the site node reference for a particular node reference
+     * 
+     * @param nodeRef   node reference
+     * @return NodeRef  site node reference or null if node is not in a site
+     */
+    private NodeRef getSiteNodeRef(NodeRef nodeRef)
+    {
+        NodeRef siteNodeRef = null;        
+        QName nodeRefType = nodeService.getType(nodeRef);
+        if (dictionaryService.isSubClass(TYPE_SITE, nodeRefType) == true)
+        {
+            siteNodeRef = nodeRef;
+        }
+        else
+        {
+            ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
+            if (primaryParent != null && primaryParent.getParentRef() != null)
+            {
+                siteNodeRef = getSiteNodeRef(primaryParent.getParentRef());
+            }
+        }        
+        return siteNodeRef;
     }
 
     /**

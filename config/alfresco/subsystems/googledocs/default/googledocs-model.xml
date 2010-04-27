@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Google Docs Model -->
+
+<model name="gd:googledocs" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->   
+   <description>Google Docs Model</description>
+   <author>unknown</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>            
+   </imports>
+
+   <!-- GoogleDocs Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/googledocs/1.0" prefix="gd"/>
+   </namespaces>
+   
+   <aspects>
+   
+      <aspect name="gd:googleEditable">
+         <title>Google Editable</title>
+         <properties>
+            <property name="gd:googleEditable">
+               <title>Property who's only purpose is to allow the marker aspect to be automatically added.</title>
+               <type>d:boolean</type>
+               <protected>true</protected>
+               <default>true</default>
+            </property>
+         </properties>
+      </aspect>
+   
+      <aspect name="gd:googleResource">
+         <title>Google Document</title>
+         <properties>
+            <property name="gd:url">
+               <title>GoogleDocs URL</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="gd:resourceId">
+               <title>GoogleDocs id</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>            
+            <property name="gd:resourceType">
+               <title>GoogleDocs Type</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      
+  <!--     <aspect name="gd:googlefolder">
+         <title>Google Folder</title>
+         <properties>            
+            <property name="gd:folderId">
+               <title>Google Folder Id</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </aspect>  -->
+      
+   </aspects>
+   
+</model>

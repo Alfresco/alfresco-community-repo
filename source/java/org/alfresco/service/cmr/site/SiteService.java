@@ -99,6 +99,13 @@ public interface SiteService
     SiteInfo getSite(String shortName);
     
     /**
+     * 
+     * @param nodeRef
+     * @return
+     */
+    SiteInfo getSite(NodeRef nodeRef);
+    
+    /**
      * Update the site information.
      * <P>
      * Note that the short name and site preset of a site can not be updated once the site has been created.

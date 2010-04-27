@@ -1152,7 +1152,7 @@
     <!-- CheckOut/CheckIn Service  -->
     <!--                           -->
 
-    <bean id="checkOutCheckInService" class="org.alfresco.repo.coci.CheckOutCheckInServiceImpl">
+    <bean id="checkOutCheckInService" class="org.alfresco.repo.coci.CheckOutCheckInServiceImpl" init-method="init">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
@@ -1176,6 +1176,9 @@
         </property>
         <property name="versionableAspect">
             <ref bean="versionableAspect" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
         </property>
     </bean>
 

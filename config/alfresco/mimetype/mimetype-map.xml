@@ -256,7 +256,7 @@
          <mimetype mimetype="image/x-portable-pixmap" display="Pixmap Image">
             <extension>ppm</extension>
          </mimetype>
-         <mimetype mimetype="application/vnd.powerpoint" display="Microsoft PowerPoint">
+         <mimetype mimetype="application/vnd.ms-powerpoint" display="Microsoft PowerPoint">
             <extension>ppt</extension>
             <extension>pps</extension>
             <extension>pot</extension>
@@ -338,7 +338,7 @@
          <mimetype mimetype="image/x-xbitmap" display="XBitmap Image">
             <extension>xbm</extension>
          </mimetype>
-         <mimetype mimetype="application/vnd.excel" display="Microsoft Excel">
+         <mimetype mimetype="application/vnd.ms-excel" display="Microsoft Excel">
             <extension>xls</extension>
          </mimetype>
          <mimetype mimetype="image/x-xpixmap" display="XPixmap Image">

@@ -506,6 +506,13 @@
         </property>
     </bean>
     
+    <!--  GoogleDocs subsystem -->
+    <bean id="googledocs" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+    </bean>
+    
     <!-- Start the quartz scheduler -->
 
     <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >

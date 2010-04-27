@@ -73,6 +73,9 @@ function main()
             }            
          }
          
+         // make sure we don't return system folders
+         query += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
+         
          if (logger.isLoggingEnabled())
             logger.log("query = " + query);
          

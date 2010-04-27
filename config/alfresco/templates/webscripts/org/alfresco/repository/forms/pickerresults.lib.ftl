@@ -9,6 +9,7 @@
       ${indent}"isContainer": ${node.isContainer?string},
       ${indent}"hasChildren": ${(node.children?size > 0)?string},
       ${indent}"name": "${node.properties.name!""}",
+      ${indent}"title": "${node.properties.title!""}",
       ${indent}"description": "${node.properties.description!""}",
       ${indent}"displayPath": "${node.displayPath!""}",
       ${indent}"nodeRef": "${node.nodeRef}"
@@ -32,6 +33,7 @@
             "isContainer": ${row.item.isContainer?string},
             "hasChildren": ${(row.item.children?size > 0)?string},
             "name": "${row.item.properties.name!""}",
+            "title": "${row.item.properties.title!""}",
             "description": "${row.item.properties.description!""}",
             "displayPath": "${row.item.displayPath!""}",
             "nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,

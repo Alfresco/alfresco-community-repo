@@ -24,6 +24,7 @@ import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.db.NodeDaoService;
@@ -73,6 +75,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private SessionFactory sessionFactory;
     private NodeDaoService nodeDaoService;
     private QNameDAO qnameDAO;
+    private ControlDAO controlDAO;
     private RuleService ruleService;
     
     private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
@@ -101,7 +104,15 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
+    /**
+     * @param controlDAO        used to create Savepoints
+     */
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
+    }
+
     /**
      * @param ruleService the rule service
      */
@@ -236,12 +247,16 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     assoc.setChildNodeNameCrc(childCrc);
                     assoc.setQnameCrc(qnameCrc);
                     // Persist
+                    Savepoint savepoint = controlDAO.createSavepoint("FixNameCrcValuesPatch");
                     try
                     {
                         getSession().flush();
+                        controlDAO.releaseSavepoint(savepoint);
                     }
                     catch (Throwable e)
                     {
+                        controlDAO.releaseSavepoint(savepoint);
+                        
                         String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, childNode.getId(), childName, oldChildCrc,
                                 childCrc, qname, oldQNameCrc, qnameCrc, e.getMessage());
                         // We just log this and add details to the message file

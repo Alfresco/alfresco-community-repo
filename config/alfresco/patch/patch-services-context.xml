@@ -1978,7 +1978,6 @@
                 <ref bean="patch.InvalidNameEnding" />
             </list>
         </property>
-        <!-- helper beans -->
         <property name="sessionFactory">
             <ref bean="sessionFactory" />
         </property>
@@ -1987,6 +1986,9 @@
         </property>
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
+        </property>
+        <property name="controlDAO">
+            <ref bean="controlDAO" />
         </property>
         <property name="ruleService">
             <ref bean="ruleService" />

@@ -22,19 +22,23 @@
       Configure the AVM services to broadcast the content update notifications.
    -->
    <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
-		<property name="dictionaryService">
-			<ref bean="dictionaryService"/>
-		</property>
-		<property name="avmService">
-			<ref bean="avmLockingAwareService"/>
-		</property>
-		<property name="policyComponent">
-			<ref bean="policyComponent"/>
-		</property>
-		<property name="invokePolicies">
-			<value>true</value>
-		</property>
-	</bean>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService"/>
+      </property>
+      <property name="avmService">
+         <ref bean="avmLockingAwareService"/>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService"/>
+      </property>
+      <property name="invokePolicies">
+         <value>true</value>
+      </property>
+   </bean>
+   
    <bean id="avmMetadataExtracter" class="org.alfresco.repo.avm.AvmMetadataExtracter" init-method="init">
       <property name="policyComponent">
          <ref bean="policyComponent"/>

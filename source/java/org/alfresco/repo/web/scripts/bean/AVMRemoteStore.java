@@ -281,7 +281,7 @@ public class AVMRemoteStore extends BaseRemoteStore
             {
                 try
                 {
-                    ContentWriter writer = avmService.getContentWriter(avmPath);
+                    ContentWriter writer = avmService.getContentWriter(avmPath, true);
                     writer.putContent(content);
                     
                     if (logger.isDebugEnabled())

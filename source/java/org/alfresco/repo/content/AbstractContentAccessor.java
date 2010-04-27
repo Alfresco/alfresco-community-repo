@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.AfterReturningAdvice;
@@ -73,6 +74,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
      */
     protected AbstractContentAccessor(String contentUrl)
     {
+        ParameterCheck.mandatoryString("contentUrl", contentUrl);
         if (contentUrl == null || contentUrl.length() == 0)
         {
             throw new IllegalArgumentException("contentUrl is invalid:" + contentUrl);
@@ -147,6 +149,18 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     public String getContentUrl()
     {
         return contentUrl;
+    }
+    
+    /**
+     * Allow derived implementations to set the Content URL.  This allows for implementations
+     * where the URL is not known when the accessor is first constructed.
+     * 
+     * @param contentUrl            the new content URL
+     */
+    protected void setContentUrl(String contentUrl)
+    {
+        ParameterCheck.mandatoryString("contentUrl", contentUrl);
+        this.contentUrl = contentUrl;
     }
     
     public String getMimetype()

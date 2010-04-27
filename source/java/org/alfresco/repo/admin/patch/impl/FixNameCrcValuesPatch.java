@@ -255,7 +255,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     }
                     catch (Throwable e)
                     {
-                        controlDAO.releaseSavepoint(savepoint);
+                        controlDAO.rollbackToSavepoint(savepoint);
                         
                         String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, childNode.getId(), childName, oldChildCrc,
                                 childCrc, qname, oldQNameCrc, qnameCrc, e.getMessage());

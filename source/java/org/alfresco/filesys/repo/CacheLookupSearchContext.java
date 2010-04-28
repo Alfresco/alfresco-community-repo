@@ -109,6 +109,11 @@ public class CacheLookupSearchContext extends ContentSearchContext {
     		if ( fstate.hasModifyDateTime())
     			info.setModifyDateTime( fstate.getModifyDateTime());
     		
+            // File allocation size
+            
+            if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getSize())
+                info.setAllocationSize( fstate.getAllocationSize());
+    		
     		// DEBUG
     		
     		if ( logger.isDebugEnabled())

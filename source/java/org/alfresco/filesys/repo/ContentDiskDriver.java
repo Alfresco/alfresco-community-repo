@@ -896,16 +896,24 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             	finfo.setFileId( path.hashCode());
             
-            	// Copy cached timestamps, if available
+            	// Copy cached file details, if available
             	
                 FileState fstate = getStateForPath(tree, infoPath);
                 if ( fstate != null) {
+                    
+                    // Copy cached timestamps
+                    
                 	if ( fstate.hasAccessDateTime())
                 		finfo.setAccessDateTime(fstate.getAccessDateTime());
                 	if ( fstate.hasChangeDateTime())
                 		finfo.setChangeDateTime(fstate.getChangeDateTime());
                 	if ( fstate.hasModifyDateTime())
                 		finfo.setModifyDateTime(fstate.getModifyDateTime());
+                	
+                	// File allocation size
+                	
+                	if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > finfo.getSize())
+                	    finfo.setAllocationSize( fstate.getAllocationSize());
                 }
                 else {
                 	
@@ -1948,6 +1956,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     fstate.setFileStatus( FileExists);
                     fstate.incrementOpenCount();
                     fstate.setFilesystemObject(result.getSecond());
+                    
+                    // Track the intial allocation size
+                    
+                    fstate.setAllocationSize( params.getAllocationSize());
                     
                     // Store the file state with the file
                     
@@ -3186,6 +3198,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
               releaseSize = file.getFileSize() - size;
             }
+        }
+        
+        //  Check if this is a file extend, update the cached allocation size if necessary
+        
+        if ( file instanceof ContentNetworkFile) {
+            
+            // Get the cached state for the file
+        
+            ContentNetworkFile contentFile = (ContentNetworkFile) file;
+            FileState fstate = contentFile.getFileState();
+            if ( fstate != null && size > fstate.getAllocationSize())
+                fstate.setAllocationSize( size);
         }
         
         //  Set the file length

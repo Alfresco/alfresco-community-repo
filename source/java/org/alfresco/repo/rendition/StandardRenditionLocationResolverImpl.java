@@ -35,19 +35,17 @@ import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.FreeMarkerUtil;
 import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
@@ -100,9 +98,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         {
             
             NodeRef companyHome = getCompanyHomeNode(sourceNode.getStoreRef());
-            NodeService nodeService = serviceRegistry.getNodeService();
-            Serializable companyHomeName = nodeService.getProperty(companyHome, ContentModel.PROP_NAME);
-            String path = renderPathTemplate(pathTemplate, sourceNode, tempRenditionLocation, companyHomeName);
+            String path = renderPathTemplate(pathTemplate, sourceNode, tempRenditionLocation, companyHome);
             if(path!=null)
             {
                 return findOrCreateTemplatedPath(sourceNode, path, companyHome);
@@ -157,14 +153,39 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         return new RenditionLocationImpl(parent, child, fileName);
     }
 
-    private String renderPathTemplate(String pathTemplate, NodeRef sourceNode, NodeRef tempRenditionLocation, Serializable companyHomeName)
+    private String renderPathTemplate(String pathTemplate, NodeRef sourceNode, NodeRef tempRenditionLocation, NodeRef companyHome)
     {
         NodeService nodeService = serviceRegistry.getNodeService();
-        NamespaceService namespaceService = serviceRegistry.getNamespaceService();
+        FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
         
         final Map<String, Object> root = new HashMap<String, Object>();
-        ChildAssociationRef sourceAssoc = nodeService.getPrimaryParent(sourceNode);
-        String fullSourceName = sourceAssoc.getQName().getLocalName();
+
+        List<FileInfo> sourcePathInfo;
+        String fullSourceName;
+        String cwd;
+        try
+        {
+            //Since the root of the store is typically not a folder, we use company home as the root of this tree
+            sourcePathInfo = fileFolderService.getNamePath(companyHome, sourceNode);
+            //Remove the last element (the actual source file name)
+            FileInfo sourceFileInfo = sourcePathInfo.remove(sourcePathInfo.size() - 1);
+            fullSourceName = sourceFileInfo.getName();
+            
+            StringBuilder cwdBuilder = new StringBuilder("/");
+            for (FileInfo file : sourcePathInfo)
+            {
+                cwdBuilder.append(file.getName());
+                cwdBuilder.append('/');
+            }
+            cwd = cwdBuilder.toString();
+        }
+        catch (FileNotFoundException e)
+        {
+            log.warn("Failed to resolve path to source node: " + sourceNode + ". Default to Company Home");
+            fullSourceName = nodeService.getPrimaryParent(sourceNode).getQName().getLocalName();
+            cwd = "/";
+        }
+
         String trimmedSourceName = fullSourceName;
         String sourceExtension = "";
         int extensionIndex = fullSourceName.lastIndexOf('.');
@@ -175,16 +196,11 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
                         .substring(extensionIndex + 1);
         }
 
-        Path sourcePath = nodeService.getPath(sourceNode);
-        
-        StoreRef store = sourceNode.getStoreRef();
-        getCompanyHomeNode( store);
-        
         root.put("name", trimmedSourceName);
         root.put("extension", sourceExtension);
         root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
-        root.put("cwd", sourcePath.toPrefixString(namespaceService));
-        root.put("companyHome", companyHomeName);
+        root.put("cwd", cwd);
+        root.put("companyHome", new TemplateNode(companyHome, serviceRegistry, null));
         root.put("sourceNode", new TemplateNode(sourceNode, serviceRegistry, null));
         root.put("sourceContentType", nodeService.getType(sourceNode).getLocalName());
         root.put("renditionContentType", nodeService.getType(tempRenditionLocation).getLocalName());
@@ -214,7 +230,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         {
             if (log.isDebugEnabled())
             {
-                log.debug("Processing " + pathTemplate + " using source node " + sourcePath);
+                log.debug("Processing " + pathTemplate + " using source node " + cwd + fullSourceName);
             }
             result = serviceRegistry.getTemplateService().processTemplateString("freemarker", pathTemplate,
                         new SimpleHash(root));

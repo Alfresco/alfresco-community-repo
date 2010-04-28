@@ -145,13 +145,14 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         assertTrue("Folder " + fooPath + " should not exist!", childAssocs.isEmpty());
 
         QName renditionKind = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "test");
-        NodeRef sourceNode = makeNode(companyHome, ContentModel.TYPE_CONTENT);
+        NodeRef sourceFolder = makeNode(companyHome, ContentModel.TYPE_FOLDER);
+        NodeRef sourceNode = makeNode(sourceFolder, ContentModel.TYPE_CONTENT);
         NodeRef tempRenditionNode = makeNode(companyHome, ContentModel.TYPE_CONTENT);
 
         RenditionDefinition renditionDef = renditionService.createRenditionDefinition(renditionKind,
                     "nicks_test_engine");
 
-        String pathTemplate = barPath + "/nick.xml";
+        String pathTemplate = barPath + "${cwd}nick.xml";
         renditionDef.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, pathTemplate);
         
         RenditionLocation location = 
@@ -159,8 +160,9 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
 
         NodeRef fooNode = checkFolder(fooName, companyHome, "Foo");
         NodeRef barNode = checkFolder(barName, fooNode, "Bar");
+        NodeRef finalFolderNode = checkFolder(nodeService.getPrimaryParent(sourceFolder).getQName(), barNode, "Final Folder");
 
-        assertEquals("Bar is not the rendition parent!", barNode, location.getParentRef());
+        assertEquals("Final folder is not the rendition parent!", finalFolderNode, location.getParentRef());
         assertEquals("nick.xml", location.getChildName());
     }
 
@@ -202,7 +204,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, uuid);
         ChildAssociationRef assoc = nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                    NamespaceService.APP_MODEL_1_0_URI, uuid), nodeType, props);
+                    NamespaceService.CONTENT_MODEL_1_0_URI, uuid), nodeType, props);
         return assoc.getChildRef();
     }
 

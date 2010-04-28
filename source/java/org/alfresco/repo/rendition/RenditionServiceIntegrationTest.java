@@ -597,7 +597,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 RenditionDefinition definition = makeReformatAction(ContentModel.TYPE_CONTENT,
                             MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 Serializable targetFolderName = nodeService.getProperty(testTargetFolder, ContentModel.PROP_NAME);
-                String path = "${companyHome}/" + targetFolderName +"/test.txt";
+                String path = "${companyHome.name}/" + targetFolderName +"/test.txt";
                 definition.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path);
 
                 // Perform the action with an explicit destination folder

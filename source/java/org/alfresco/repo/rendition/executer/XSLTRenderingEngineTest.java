@@ -112,6 +112,37 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     }
 
 
+    public void testSimplestTemplateWithTargetPath() throws Exception
+    {
+        try
+        {
+            FileInfo file = createXmlFile(companyHome);
+            FileInfo xslFile = createXmlFile(companyHome, verySimpleXSLT);
+
+            RenditionDefinition def = renditionService.createRenditionDefinition(QName.createQName("Test"), XSLTRenderingEngine.NAME);
+            def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
+            def.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, "output/path/for/rendition/output.txt");
+            
+            ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
+            
+            assertNotNull(rendition);
+            assertEquals(2, nodeService.getParentAssocs(rendition.getChildRef()).size());
+            
+            ContentReader reader = contentService.getReader(rendition.getChildRef(), ContentModel.PROP_CONTENT);
+            assertNotNull(reader);
+            String output = reader.getContentString();
+            
+            log.debug("XSLT Processor output: " + output);
+            assertEquals("Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
+        }
+        catch (Exception ex)
+        {
+            log.error("Error!", ex);
+            fail();
+        }
+    }
+
+
     public void testParseXMLDocument() throws Exception
     {
         try

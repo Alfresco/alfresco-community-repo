@@ -31,7 +31,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.rendition.RenditionDefinitionImpl;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext;
@@ -122,20 +121,6 @@ public class AbstractRenderingEngineTest extends TestCase
         assertEquals(contentPropName, props.get(ContentModel.PROP_CONTENT_PROPERTY_NAME));
     }
 
-    public void testCheckActionIsRenditionDefinition()
-    {
-        ActionImpl action = new ActionImpl(null, "actionId", TestRenderingEngine.NAME);
-        try
-        {
-            engine.executeImpl(action, source);
-            fail("Should have thrown an exception here!");
-        } catch(RenditionServiceException e)
-        {
-            String expMsg = "02160000 Cannot execute action as it is not a RenditionDefinition: Action[ id=actionId, node=null ]";
-            assertEquals(expMsg, e.getMessage());
-        }
-    }
-    
     public void testCheckSourceNodeExists()
     {
         when(nodeService.exists(any(NodeRef.class))).thenReturn(false);
@@ -146,8 +131,7 @@ public class AbstractRenderingEngineTest extends TestCase
             fail("Should have thrown an exception here!");
         } catch(RenditionServiceException e)
         {
-            String expMsg = "02160001 Cannot execute action as node does not exist: http://test/sourceId";
-            assertEquals(expMsg, e.getMessage());
+            assertTrue(e.getMessage().endsWith("Cannot execute action as node does not exist: http://test/sourceId"));
         }
     }
     
@@ -201,8 +185,7 @@ public class AbstractRenderingEngineTest extends TestCase
             fail("Should throw an Exception if default value is null!");
         } catch(RenditionServiceException e)
         {
-            String msg = "02160002 The defaultValue cannot be null!";
-            assertEquals(msg, e.getMessage());
+            assertTrue(e.getMessage().endsWith("The defaultValue cannot be null!"));
         }
         
         // Check wrong type of default value throws exception.
@@ -212,8 +195,7 @@ public class AbstractRenderingEngineTest extends TestCase
             fail("Should throw an exception if default value is of incoorect type!");
         } catch (RenditionServiceException e)
         {
-            String msg = "02160003 The parameter: Some-param must be of type: java.lang.Booleanbut was of type: java.lang.String";
-            assertEquals(msg, e.getMessage());
+            assertTrue(e.getMessage().endsWith("The parameter: Some-param must be of type: java.lang.Booleanbut was of type: java.lang.String"));
         }
     }
     
@@ -249,8 +231,7 @@ public class AbstractRenderingEngineTest extends TestCase
             fail("Should throw an exception if type is wrong!");
         } catch(RenditionServiceException e)
         {
-            String msg = "02160004 The parameter: Some param must be of type: java.lang.Booleanbut was of type: java.lang.String";
-            assertEquals(msg, e.getMessage());
+            assertTrue(e.getMessage().endsWith("The parameter: Some param must be of type: java.lang.Booleanbut was of type: java.lang.String"));
         }
         
         // Check throws an exception if value is of wrong type.
@@ -260,8 +241,7 @@ public class AbstractRenderingEngineTest extends TestCase
             fail("Should throw an exception if type is wrong!");
         } catch(RenditionServiceException e)
         {
-            String msg = "02160005 The class must not be null!";
-            assertEquals(msg, e.getMessage());
+            assertTrue(e.getMessage().endsWith("The class must not be null!"));
         }
     }
     

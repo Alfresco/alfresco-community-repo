@@ -32,6 +32,7 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.rendition.RenderingEngineDefinitionImpl;
+import org.alfresco.repo.rendition.RenditionDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -297,9 +298,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef sourceNode)
     {
         checkParameterValues(action);
-        checkActionIsRenditionDefinition(action);
+        RenditionDefinition renditionDefinition = checkActionIsRenditionDefinition(action);
         checkSourceNodeExists(sourceNode);
-        RenditionDefinition renditionDefinition = (RenditionDefinition) action;
 
         ChildAssociationRef renditionAssoc = createRenditionNodeAssoc(sourceNode, renditionDefinition);
         QName targetContentProp = getRenditionContentProperty(renditionDefinition);
@@ -352,13 +352,15 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * @param action
      */
-    protected void checkActionIsRenditionDefinition(Action action)
+    protected RenditionDefinition checkActionIsRenditionDefinition(Action action)
     {
-        if (action instanceof RenditionDefinition == false)
+        if (action instanceof RenditionDefinition)
         {
-            String msg = "Cannot execute action as it is not a RenditionDefinition: " + action;
-            logger.warn(msg);
-            throw new RenditionServiceException(msg);
+            return (RenditionDefinition)action;
+        }
+        else
+        {
+            return new RenditionDefinitionImpl(action);
         }
     }
 

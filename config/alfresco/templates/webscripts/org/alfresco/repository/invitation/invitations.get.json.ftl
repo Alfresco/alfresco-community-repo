@@ -4,7 +4,7 @@
 {
 	"data": [
     	<#list invitations as invitation>	
-    		<@invitationLib.invitationJSON invitation=invitation />	 	   
+    		<@invitationLib.invitationJSON invitation=invitation avatars=avatars/>	 	   
 	   	<#if invitation_has_next>,</#if>
     	</#list>
   	]

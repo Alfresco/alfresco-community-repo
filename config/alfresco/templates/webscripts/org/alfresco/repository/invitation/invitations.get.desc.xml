@@ -1,7 +1,7 @@
 <webscript>
   <shortname>List Invitations</shortname>
   <description><![CDATA[
-  Get a collecton of a invitations.
+  Get a collecton of invitations.
   <BR />
   With no parameters, returns all open invitations (which could be a large number). 
   <BR />

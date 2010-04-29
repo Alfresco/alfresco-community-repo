@@ -18,13 +18,10 @@
  */
 package org.alfresco.repo.avm.wf;
 
-import java.util.List;
-
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.alfresco.wcm.sandbox.SandboxService;

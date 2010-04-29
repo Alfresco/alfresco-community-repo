@@ -26,7 +26,11 @@ import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
+import org.springframework.beans.factory.InitializingBean;
 
 
 /**
@@ -37,11 +41,21 @@ import org.mozilla.javascript.Scriptable;
  * @author Mark Rogers
  */
 public class ScriptInvitationService extends BaseScopableProcessorExtension
+    implements InitializingBean
 {    
 	
     /** The invitation service */
     private InvitationService invitationService;
     
+    /** The node Service */
+    private NodeService nodeService;
+    
+    /** The person Service */
+    private PersonService personService;
+
+    /** The Script Invitation Factory */
+    private ScriptInvitationFactory scriptInvitationFactory;
+
     /**
      * Set the invitation service
      * 
@@ -50,6 +64,26 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
+    }
+    
+    /**
+     * Set the node service
+     * 
+     * @param nodeService the nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * Sets the person service.
+     * 
+     * @param personService the personService to set
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
     
     /**
@@ -64,7 +98,7 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
      * @return the invitations
      */
 
-    public ScriptInvitation[] listInvitations(Scriptable props)
+    public ScriptInvitation<?>[] listInvitations(Scriptable props)
     {	    	
     	InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
 
@@ -87,12 +121,23 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
         }
 
     	List<Invitation> invitations = invitationService.searchInvitation(crit);
-    	ScriptInvitation[] ret = new ScriptInvitation[invitations.size()];
+    	ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
         int i = 0;
 		for(Invitation item : invitations)
 		{
-			ret[i++] = ScriptInvitationFactory.toScriptInvitation(item, invitationService);
+			ret[i++] = scriptInvitationFactory.toScriptInvitation(item);
 		}
     	return ret;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        ParameterCheck.mandatory("nodeService", nodeService);
+        ParameterCheck.mandatory("personService", personService);
+        ParameterCheck.mandatory("invitationService", invitationService);
+        this.scriptInvitationFactory = new ScriptInvitationFactory(invitationService, nodeService, personService);
     }
 }

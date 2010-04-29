@@ -440,7 +440,7 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     GraphSession graphSession = context.getGraphSession();
-                    List<ProcessDefinition> processDefs = (List<ProcessDefinition>)graphSession.findLatestProcessDefinitions();
+                    List<ProcessDefinition> processDefs = graphSession.findLatestProcessDefinitions();
                     List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
                     for (ProcessDefinition processDef : processDefs)
                     {                                              

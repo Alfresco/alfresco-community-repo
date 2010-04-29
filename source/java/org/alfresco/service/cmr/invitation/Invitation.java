@@ -73,5 +73,15 @@ public interface Invitation
 	 */
 	public InvitationType getInvitationType();
 	
-	
+    /**
+     * Who wants to be added 
+     * @return inviteeUserName
+     */
+    public String getInviteeUserName();
+
+    /**
+     * Which role to be added with
+     * @return the roleName
+     */
+    public String getRoleName();
 }

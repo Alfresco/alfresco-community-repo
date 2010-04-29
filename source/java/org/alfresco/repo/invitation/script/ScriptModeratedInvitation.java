@@ -19,52 +19,37 @@
 
 package org.alfresco.repo.invitation.script;
 
-import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
-import org.alfresco.service.cmr.invitation.NominatedInvitation;
 
 /**
  * Java script moderated invitation for the Java Script API
  * 
  * @author mrogers
  */
-public class ScriptModeratedInvitation extends ScriptInvitation implements java.io.Serializable
+public class ScriptModeratedInvitation extends ScriptInvitation<ModeratedInvitation> implements java.io.Serializable
 {
-				
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4285823431857215500L;
 
-	public ScriptModeratedInvitation(Invitation invitation, InvitationService invitationService)
-	{
-		super(invitation, invitationService);			
-	}
+	private final String inviteeEmail;
+	private final String inviteeFirstName;
+	private final String inviteeLastName;
 	
+	public ScriptModeratedInvitation(ModeratedInvitation invitation,
+	            InvitationService invitationService,
+	            String inviteeEmail,
+	            String inviteeFirstName,
+	            String inviteeLastName)
+	{
+		super(invitation, invitationService);
+		this.inviteeEmail = inviteeEmail;
+		this.inviteeFirstName = inviteeFirstName;
+		this.inviteeLastName = inviteeLastName;
+	}
 	
 	public void approve(String reason)
 	{
 		getInvitationService().approve(getInviteId(), reason);
-	}
-	
-	public void reject(String reason)
-	{
-		getInvitationService().reject(getInviteId(), reason);
-	}
-	
-	public void cancel()
-	{
-		getInvitationService().cancel(getInviteId());
-	}
-	
-	/**
-	 * Which role to be added with
-	 * @return the roleName
-	 */
-	public String getRoleName()
-	{
-		return ((ModeratedInvitation)getInvitation()).getRoleName();
 	}
 	
 	/**
@@ -73,15 +58,33 @@ public class ScriptModeratedInvitation extends ScriptInvitation implements java.
 	 */
 	public String getInviteeComments()
 	{
-		return ((ModeratedInvitation)getInvitation()).getInviteeComments();
+		return getInvitation().getInviteeComments();
 	}
-    
-	/**
-	 * The inviteeUserName
-	 * @return the invitee user name
-	 */
-	public String getInviteeUserName() 
-	{
-		return ((ModeratedInvitation)getInvitation()).getInviteeUserName();
-	}
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeEmail()
+     */
+    @Override
+    public String getInviteeEmail()
+    {
+        return inviteeEmail;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeFirstName()
+     */
+    @Override
+    public String getInviteeFirstName()
+    {
+        return inviteeFirstName;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.invitation.script.ScriptInvitation#getInviteeLastName()
+     */
+    @Override
+    public String getInviteeLastName()
+    {
+        return inviteeLastName;
+    }
 }

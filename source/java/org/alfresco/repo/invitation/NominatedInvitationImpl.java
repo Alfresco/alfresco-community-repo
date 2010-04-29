@@ -18,16 +18,12 @@
  */
 package org.alfresco.repo.invitation;
 
-import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.invitation.Invitation;
-import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.service.cmr.invitation.Invitation.InvitationType;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.namespace.QName;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
+
+import org.alfresco.service.cmr.invitation.NominatedInvitation;
+import org.alfresco.service.namespace.QName;
 
 /**
  * NominatedInvitationImpl is a basic Nominated Invitation Request that 
@@ -38,36 +34,23 @@ import java.util.Map;
 /*package scope */ class NominatedInvitationImpl extends InvitationImpl implements NominatedInvitation, Serializable 
 {
     private static final long serialVersionUID = -8800842866845149466L;
+    
     private String inviteeFirstName;
     private String inviteeLastName;
     private String inviteeEmail;
     private String inviterUserName;
     private String resourceDescription;
     private String resourceTitle;
-    private String roleName; 
     private String serverPath;
     private String acceptUrl; 
     private String rejectUrl;
     private Date sentInviteDate;
     private String ticket;
     
-    /**
-     * Who is this invitation for
-     */
-    private String inviteeUserName;
-    
-    /**
-     * create a new nominated invitation
-     */
-    public NominatedInvitationImpl()
-    {
-        super();
-    }
-    
     public NominatedInvitationImpl(Map<QName, Serializable> workflowProps)
     {
-        super();
         setInviteeUserName((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME));
+        setRoleName((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE));
         inviteeFirstName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME);
         inviteeLastName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME);
         inviteeEmail = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL);
@@ -80,7 +63,6 @@ import java.util.Map;
         {
             setResourceType(ResourceType.valueOf((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE)));
         }
-        roleName =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE);
         serverPath =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH);
         acceptUrl =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL);
         rejectUrl =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL);
@@ -176,31 +158,6 @@ import java.util.Map;
     {
         return ticket;
     }
-    
-    public void setRoleName(String roleName)
-    {
-        this.roleName = roleName;
-    }
-
-    public String getRoleName()
-    {
-        return roleName;
-    }
-
-    public InvitationType getInvitationType()
-    {
-        return InvitationType.NOMINATED;
-    }
-    
-    public void setInviteeUserName(String inviteeUserName)
-    {
-        this.inviteeUserName = inviteeUserName;
-    }
-
-    public String getInviteeUserName()
-    {
-        return inviteeUserName;
-    }
 
     public String getInviterUserName()
     {
@@ -211,4 +168,11 @@ import java.util.Map;
     {
         this.inviterUserName= inviterUserName;
     }
+    
+    @Override
+    public InvitationType getInvitationType()
+    {
+        return InvitationType.NOMINATED;
+    }
+
 }

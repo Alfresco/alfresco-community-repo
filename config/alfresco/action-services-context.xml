@@ -422,6 +422,7 @@
         <property name="interfaces">
             <list>
                 <value>org.alfresco.repo.action.executer.ActionExecuter</value>
+                <value>org.alfresco.repo.action.executer.TestModeable</value>
             </list>
         </property>
     </bean>

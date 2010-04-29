@@ -65,6 +65,8 @@
             <value>invitations</value>
         </property>
         <property name="invitationService" ref="InvitationService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="personService" ref="PersonService"/>
     </bean>
     
 </beans>

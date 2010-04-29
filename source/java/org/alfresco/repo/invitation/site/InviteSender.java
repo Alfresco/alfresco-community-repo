@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.service.ServiceRegistry;
@@ -46,6 +47,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -80,7 +82,7 @@ public class InviteSender
     private final SiteService siteService;
     private final TemplateService templateService;
     private final Repository repository;
-
+    
     public InviteSender(ServiceRegistry services, Repository repository)
     {
         this.actionService = services.getActionService();
@@ -130,7 +132,8 @@ public class InviteSender
 
     private String buildSubject(Map<String, String> properties)
     {
-        return "Invitation to join '" + getSiteName(properties) + "' site";
+        String siteName = getSiteName(properties);
+        return I18NUtil.getMessage("invitation.invitesender.email.subject", siteName);
     }
 
     private String buildMailText(Map<String, String> properties, NodeRef inviter, NodeRef invitee)

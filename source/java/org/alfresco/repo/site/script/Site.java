@@ -39,23 +39,20 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationException;
-import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
-import org.alfresco.wcm.asset.AssetInfo;
-import org.alfresco.wcm.sandbox.script.Asset;
-import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Site JavaScript object
@@ -88,6 +85,10 @@ public class Site implements Serializable
     
     /** Indicates whether there are any outstanding changes that need to be saved */
     private boolean isDirty = false;
+
+    private final ScriptInvitationFactory scriptInvitationFactory;
+
+    private final InvitationService invitationService;
     
     /**
      * Constructor 
@@ -100,6 +101,10 @@ public class Site implements Serializable
         this.siteService = siteService;
         this.siteInfo = siteInfo;
         this.scope = scope;
+        this.invitationService = serviceRegistry.getInvitationService();
+        NodeService nodeService = serviceRegistry.getNodeService();
+        PersonService personService = serviceRegistry.getPersonService();
+        this.scriptInvitationFactory = new ScriptInvitationFactory(invitationService, nodeService, personService);
     }
    
     /**
@@ -427,7 +432,7 @@ public class Site implements Serializable
                 QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
                 
                 // Create the container node
-                NodeRef containerNodeRef = Site.this.siteService.createContainer(getShortName(), componentId, folderQName, null);
+                NodeRef containerNode = Site.this.siteService.createContainer(getShortName(), componentId, folderQName, null);
                 
                 // Set any permissions that might have been provided for the container
                 if (permissions != null && permissions instanceof ScriptableObject)
@@ -448,16 +453,16 @@ public class Site implements Serializable
                             if (value instanceof String)
                             {                                   
                                 // Set the permission on the container
-                                Site.this.serviceRegistry.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
+                                Site.this.serviceRegistry.getPermissionService().setPermission(containerNode, key, (String)value, true);
                             }
                         }
                     }
                 }
                 
                 // Make the "admin" the owner of the node
-                serviceRegistry.getOwnableService().setOwner(containerNodeRef, AuthenticationUtil.getAdminUserName());
+                serviceRegistry.getOwnableService().setOwner(containerNode, AuthenticationUtil.getAdminUserName());
         
-                return containerNodeRef;
+                return containerNode;
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
         
@@ -623,46 +628,42 @@ public class Site implements Serializable
      * Create new moderated invitation to this web site
      * @return the new invitation
      */
-    public ScriptInvitation inviteModerated(String inviteeComments, String inviteeUserName, String inviteeRole)
+    public ScriptInvitation<?> inviteModerated(String inviteeComments, String inviteeUserName, String inviteeRole)
     {
-    	InvitationService invitationService = serviceRegistry.getInvitationService();
     	Invitation invitation = invitationService.inviteModerated(inviteeComments, inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole);
-    	return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    	return scriptInvitationFactory.toScriptInvitation(invitation);
     }
     
     /**
      * Create new nominated invitation to this web site
      * @return the new invitation
      */
-    public ScriptInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+    public ScriptInvitation<?> inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
     {    	
-    	InvitationService invitationService = serviceRegistry.getInvitationService();
     	Invitation invitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
-    	return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    	return scriptInvitationFactory.toScriptInvitation(invitation);
     }
     
     /**
      * Create new nominated invitation to this web site
      * @return the new invitation
      */
-    public ScriptInvitation inviteNominated(String inviteeUserName, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+    public ScriptInvitation<?> inviteNominated(String inviteeUserName, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
     {    	
-    	InvitationService invitationService = serviceRegistry.getInvitationService();
     	Invitation invitation = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
-    	return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    	return scriptInvitationFactory.toScriptInvitation(invitation);
     }
     
     /**
      * Get an invitation to this web site
      * @return the invitation or null if it does not exist
      */
-    public ScriptInvitation getInvitation(String invitationId)
+    public ScriptInvitation<?> getInvitation(String invitationId)
     {    	
-    	InvitationService invitationService = serviceRegistry.getInvitationService();
     	try 
     	{
     		Invitation invitation = invitationService.getInvitation(invitationId);
-    		return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    		return scriptInvitationFactory.toScriptInvitation(invitation);
     	} 
     	catch (InvitationException e)
     	{
@@ -675,16 +676,14 @@ public class Site implements Serializable
      * 
      * Map of name / invitation
      */
-    public ScriptInvitation[] listInvitations()
+    public ScriptInvitation<?>[] listInvitations()
     {
-    	InvitationService invitationService = serviceRegistry.getInvitationService();
-    	
     	List<Invitation> invitations = invitationService.listPendingInvitationsForResource(Invitation.ResourceType.WEB_SITE, getShortName());
-    	ScriptInvitation[] ret = new ScriptInvitation[invitations.size()];
+    	ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
         int i = 0;
 		for(Invitation item : invitations)
 		{
-			ret[i++] = ScriptInvitationFactory.toScriptInvitation(item, invitationService);
+			ret[i++] = scriptInvitationFactory.toScriptInvitation(item);
 		}
     	return ret;
     }
@@ -697,11 +696,8 @@ public class Site implements Serializable
      *
      * @return the invitations
      */
-    public ScriptInvitation[] listInvitations(Scriptable props)
+    public ScriptInvitation<?>[] listInvitations(Scriptable props)
     {
-    	
-    	InvitationService invitationService = serviceRegistry.getInvitationService();
-    	
     	InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
     	crit.setResourceName(getShortName());
     	crit.setResourceType(Invitation.ResourceType.WEB_SITE);
@@ -717,11 +713,11 @@ public class Site implements Serializable
         }
 
     	List<Invitation> invitations = invitationService.searchInvitation(crit);
-    	ScriptInvitation[] ret = new ScriptInvitation[invitations.size()];
+    	ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
         int i = 0;
 		for(Invitation item : invitations)
 		{
-			ret[i++] = ScriptInvitationFactory.toScriptInvitation(item, invitationService);
+			ret[i++] = scriptInvitationFactory.toScriptInvitation(item);
 		}
     	return ret;
     }

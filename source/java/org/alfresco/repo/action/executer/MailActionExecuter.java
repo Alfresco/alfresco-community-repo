@@ -62,7 +62,7 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
  * @author Roy Wetherall
  */
 public class MailActionExecuter extends ActionExecuterAbstractBase
-    implements InitializingBean
+    implements InitializingBean, TestModeable
 {
     private static Log logger = LogFactory.getLog(MailActionExecuter.class);
     
@@ -539,7 +539,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         return testMode;
     }
-    
+
     /**
      * Returns the most recent message that wasn't sent
      *  because TestMode had been enabled.

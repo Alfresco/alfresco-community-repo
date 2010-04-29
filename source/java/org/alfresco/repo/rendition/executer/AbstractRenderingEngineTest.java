@@ -66,7 +66,6 @@ public class AbstractRenderingEngineTest extends TestCase
         engine.setNodeService(nodeService);
     }
 
-
     @SuppressWarnings("unchecked")
     public void testCreateRenditionNodeAssoc() throws Exception
     {
@@ -110,7 +109,7 @@ public class AbstractRenderingEngineTest extends TestCase
         props = captor.getValue();
         assertEquals(contentPropName, props.get(ContentModel.PROP_CONTENT_PROPERTY_NAME));
 
-        // Check that settign the rendition node type param works.
+        // Check that setting the rendition node type param works.
         nodeType = ContentModel.TYPE_THUMBNAIL;
         contentPropName = ContentModel.PROP_CONTENT;
         definition.setParameterValue(RenditionService.PARAM_RENDITION_NODETYPE, nodeType);

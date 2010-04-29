@@ -27,16 +27,26 @@ import org.alfresco.service.cmr.invitation.InvitationService;
  * 
  * @author mrogers
  */
-public class ScriptInvitation 
+public abstract class ScriptInvitation<T extends Invitation>
 {
-	private Invitation invitation;
+	private T invitation;
 	private InvitationService invitationService;
-					
-	public ScriptInvitation(Invitation invitation, InvitationService invitationService)
+
+	public ScriptInvitation(T invitation, InvitationService invitationService)
 	{
 		this.invitation = invitation;
 		this.invitationService = invitationService;				
 	}
+	   
+    public void reject(String reason)
+    {
+        invitationService.reject(invitation.getInviteId(), reason);
+    }
+    
+    public void cancel()
+    {
+        invitationService.cancel(invitation.getInviteId());
+    }
 	
 	public String getInviteId() 
 	{
@@ -58,7 +68,7 @@ public class ScriptInvitation
 		return invitation.getResourceType().toString();
 	}
 	
-	protected Invitation getInvitation()
+	protected T getInvitation()
 	{
 		return invitation;
 	}
@@ -67,4 +77,26 @@ public class ScriptInvitation
 	{
 		return invitationService;
 	}
+
+    /**
+     * Which role to be added with
+     * @return the roleName
+     */
+    public String getRoleName()
+    {
+    	return getInvitation().getRoleName();
+    }
+
+    /**
+     * The inviteeUserName
+     * @return the invitee user name
+     */
+    public String getInviteeUserName()
+    {
+    	return getInvitation().getInviteeUserName();
+    }
+    
+    public abstract String getInviteeEmail();
+    public abstract String getInviteeFirstName();
+    public abstract String getInviteeLastName();
 }

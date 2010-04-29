@@ -32,21 +32,9 @@ package org.alfresco.service.cmr.invitation;
 public interface ModeratedInvitation extends Invitation
 {	
 	/**
-	 * Which role to be added with
-	 * @return the roleName
-	 */
-	public String getRoleName();
-	
-	/**
 	 * The invitee comments - why does the invitee want access ?
 	 * @return invitee comments
 	 */
 	public String getInviteeComments();
-	
-	/**
-	 * Who wants to be added 
-	 * @return inviteeUserName
-	 */
-	public String getInviteeUserName();
 
 }

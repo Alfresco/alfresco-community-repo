@@ -57,7 +57,7 @@ public final class ScriptLogger extends BaseProcessorExtension
     
     public static class SystemOut
     {
-        public void out(String str)
+        public void out(Object str)
         {
             System.out.println(str);
         }

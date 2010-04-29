@@ -566,7 +566,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * Return the target associations from this Node. As a Map of assoc name to a JavaScript array of Nodes.
+     * Return the target associations from this Node. As a Map of assoc type to a JavaScript array of Nodes.
      * The Map returned implements the Scriptable interface to allow access to the assoc arrays via JavaScript
      * associative array access. This means associations of this node can be access thus:
      * <code>node.assocs["translations"][0]</code>
@@ -591,8 +591,8 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                 {
                     // first access of the list for this qname
                     nodes = new ArrayList<ScriptNode>(4);
-                    this.targetAssocs.put(ref.getTypeQName().toString(), nodes);
                 }
+                this.targetAssocs.put(ref.getTypeQName().toString(), nodes);
                 nodes.add(newInstance(ref.getTargetRef(), this.services, this.scope));
             }
             

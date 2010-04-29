@@ -19,63 +19,56 @@
 
 package org.alfresco.repo.invitation.script;
 
+import java.util.Date;
 
-import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
-
-import java.util.Date;
 
 /**
  * Java script moderated invitation for the Java Script API
  * 
  * @author mrogers
  */
-public class ScriptNominatedInvitation  extends ScriptInvitation implements java.io.Serializable
+public class ScriptNominatedInvitation  extends ScriptInvitation<NominatedInvitation> implements java.io.Serializable
 {			
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6079656007339750930L;
 
+    public ScriptNominatedInvitation(NominatedInvitation invitation, InvitationService invitationService)
+    {
+        super(invitation, invitationService);
+    }
+
 	/**
-	 * 
-	 */
+     * @see org.alfresco.service.cmr.invitation.NominatedInvitation#getInviteeEmail()
+     */
+    @Override
+    public String getInviteeEmail()
+    {
+        return getInvitation().getInviteeEmail();
+    }
 
-	public ScriptNominatedInvitation(Invitation invitation, InvitationService invitationService)
-	{
-		super(invitation, invitationService);
-	}
+    /**
+     * @see org.alfresco.service.cmr.invitation.NominatedInvitation#getInviteeFirstName()
+     */
+    @Override
+    public String getInviteeFirstName()
+    {
+        return getInvitation().getInviteeFirstName();
+    }
 
-	
+    /**
+     * @see org.alfresco.service.cmr.invitation.NominatedInvitation#getInviteeLastName()
+     */
+    @Override
+    public String getInviteeLastName()
+    {
+        return getInvitation().getInviteeLastName();
+    }
+
 	public void accept(String reason)
 	{
 		getInvitationService().accept(getInviteId(), reason);
-	}
-	
-	public void reject(String reason)
-	{
-		getInvitationService().reject(getInviteId(), reason);
-	}
-	
-	public void cancel()
-	{
-		getInvitationService().cancel(getInviteId());
-	}
-	
-	/**
-	 * Which role to be added with
-	 * @return the roleName
-	 */
-	public String getRoleName()
-	{
-		return ((NominatedInvitation)getInvitation()).getRoleName();
-	}
-	
-	public String getInviteeUserName() 
-	{
-		return ((NominatedInvitation)getInvitation()).getInviteeUserName();
 	}
 	
 	/**
@@ -84,7 +77,7 @@ public class ScriptNominatedInvitation  extends ScriptInvitation implements java
 	 */
 	public Date getSentInviteDate()
 	{
-		return ((NominatedInvitation)getInvitation()).getSentInviteDate();
+		return getInvitation().getSentInviteDate();
 	}
 	
 	public String getSentInviteDateAsISO8601()

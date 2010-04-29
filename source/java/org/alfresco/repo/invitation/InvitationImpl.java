@@ -19,6 +19,7 @@
 package org.alfresco.repo.invitation;
 
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.Invitation.InvitationType;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 
 /* package scope */ abstract class InvitationImpl 
@@ -37,16 +38,17 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
      * What sort of invitation is this invitation for e.g. WEB_SITE or WEB_PROJECT
      */
     private Invitation.ResourceType resourceType;
-     
 
     /**
-     * Create a new InvitationImpl
+     * What role is the invitation for.
      */
-    public InvitationImpl()
-    {
-        super();     
-    }
-    
+    private String roleName;
+
+    /**
+     * Who is this invitation for
+     */
+    private String inviteeUserName;
+     
     /**
      * What sort of resource is it
      * @return the resource type
@@ -79,5 +81,30 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     public String getResourceName()
     {
         return resourceName;
+    }
+
+    public String getRoleName()
+    {
+        return roleName;
+    }
+    
+    /**
+     * @param roleName the roleName to set
+     */
+    public void setRoleName(String roleName)
+    {
+        this.roleName = roleName;
+    }
+
+    public abstract InvitationType getInvitationType();
+
+    public void setInviteeUserName(String inviteeUserName)
+    {
+        this.inviteeUserName = inviteeUserName;
+    }
+
+    public String getInviteeUserName()
+    {
+        return inviteeUserName;
     }
 }

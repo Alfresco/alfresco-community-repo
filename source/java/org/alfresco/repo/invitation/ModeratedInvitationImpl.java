@@ -18,11 +18,11 @@
  */
 package org.alfresco.repo.invitation;
 
-import org.alfresco.service.cmr.invitation.ModeratedInvitation;
-import org.alfresco.service.namespace.QName;
-
 import java.io.Serializable;
 import java.util.Map;
+
+import org.alfresco.service.cmr.invitation.ModeratedInvitation;
+import org.alfresco.service.namespace.QName;
 
 /**
  * InvitationRequestImpl is a basic InvitationRequest that is processed by the 
@@ -30,45 +30,22 @@ import java.util.Map;
  */
 /*package scope */ class ModeratedInvitationImpl extends InvitationImpl implements ModeratedInvitation, Serializable 
 {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = -5557544865169876451L;
 	
-	private String roleName;
 	private String inviteeComments;
-	private String inviteeUserName;
-	
-	public ModeratedInvitationImpl()
-	{
-		super();
-	}
 	
 	public ModeratedInvitationImpl(Map<QName, Serializable> workflowProps)
 	{
-		 super();
-		 
 		 setInviteeUserName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME));
+		 setRoleName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE));
 		 setResourceName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME));
 	     if(workflowProps.containsKey(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE))
 	     {
 	     	 setResourceType(ResourceType.valueOf((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE)));
 	     }
-	     roleName = (String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE);
 	     inviteeComments = (String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS);
 	}
 	
-
-	public void setRoleName(String roleName) 
-	{
-		this.roleName = roleName;
-	}
-
-	public String getRoleName() 
-	{
-		return roleName;
-	}
-
 	public String getInviteeComments() 
 	{
 		return inviteeComments;
@@ -79,16 +56,8 @@ import java.util.Map;
 		this.inviteeComments = inviteeComments;
 	}
 
-	public InvitationType getInvitationType() {
+	@Override
+    public InvitationType getInvitationType() {
 		return InvitationType.MODERATED;
 	}
-	
-	public void setInviteeUserName(String inviteeUserName) {
-		this.inviteeUserName = inviteeUserName;
-	}
-
-	public String getInviteeUserName() {
-		return inviteeUserName;
-	}
-
 }

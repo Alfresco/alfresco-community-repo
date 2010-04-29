@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.GUID;

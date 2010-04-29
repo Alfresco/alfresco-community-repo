@@ -55,30 +55,32 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     private PersonService personService;
     private InvitationService invitationService;
     private MailActionExecuter mailService;
+ 
+    private final static String SITE_SHORT_NAME_INVITE = "InvitationTest";
+    private final static String SITE_SHORT_NAME_RED = "InvitationTestRed";
+    private final static String SITE_SHORT_NAME_BLUE = "InvitationTestBlue";
+    public final static String PERSON_FIRSTNAME = "InvitationFirstName123";
+    public final static String PERSON_FIRSTNAME_SPACES = "Invitation First\tName\n1\r2\r\n3";
+    public final static String PERSON_LASTNAME = "InvitationLastName123";
+    public final static String PERSON_LASTNAME_SPACES = "Invitation Last\tName\n1\r2\r\n3";
+    public final static String PERSON_JOBTITLE = "JobTitle123";
+    public final static String PERSON_ORG = "Organisation123";
 
-    private final String SITE_SHORT_NAME_INVITE = "InvitationTest";
-    private final String SITE_SHORT_NAME_RED = "InvitationTestRed";
-    private final String SITE_SHORT_NAME_BLUE = "InvitationTestBlue";
-    public static String PERSON_FIRSTNAME = "InvitationFirstName123";
-    public static String PERSON_FIRSTNAME_SPACES = "Invitation First\tName\n1\r2\r\n3";
-    public static String PERSON_LASTNAME = "InvitationLastName123";
-    public static String PERSON_LASTNAME_SPACES = "Invitation Last\tName\n1\r2\r\n3";
-    public static String PERSON_JOBTITLE = "JobTitle123";
-    public static String PERSON_ORG = "Organisation123";
-
-    public static String USER_MANAGER = "InvitationServiceManagerOne";
-    public static String USER_ONE = "InvitationServiceAlice";
-    public static String USER_TWO = "InvitationServiceBob";
-    public static String USER_EVE = "InvitationServiceEve";
-    public static String USER_NOEMAIL = "InvitationServiceNoEmail";
-    public static String USER_ONE_FIRSTNAME = "One";
-    public static String USER_ONE_LASTNAME = "Test";
-    public static String USER_ONE_EMAIL = USER_ONE + "@alfrescotesting.com";
-    public static String USER_TWO_EMAIL = USER_TWO + "@alfrescotesting.com";
+    public final static String USER_MANAGER = "InvitationServiceManagerOne";
+    public final static String USER_ONE = "InvitationServiceAlice";
+    public final static String USER_TWO = "InvitationServiceBob";
+    public final static String USER_EVE = "InvitationServiceEve";
+    public final static String USER_NOEMAIL = "InvitationServiceNoEmail";
+    public final static String USER_ONE_FIRSTNAME = "One";
+    public final static String USER_ONE_LASTNAME = "Test";
+    public final static String USER_ONE_EMAIL = USER_ONE + "@alfrescotesting.com";
+    public final static String USER_TWO_EMAIL = USER_TWO + "@alfrescotesting.com";
 
     /**
      * Called during the transaction setup
      */
+    @SuppressWarnings("deprecation")
+    @Override
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
@@ -127,6 +129,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
 
     }
 
+    @Override
     protected void onTearDownInTransaction() throws Exception
     {
         super.onTearDownInTransaction();

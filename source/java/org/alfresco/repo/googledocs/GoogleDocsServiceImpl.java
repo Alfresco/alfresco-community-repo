@@ -68,13 +68,14 @@ import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
 
 /**
- * 
+ * Google docs integration service implementation
  */
 public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
 {    
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(GoogleDocsServiceImpl.class);
 
+    /** Google document types */
     public static final String TYPE_DOCUMENT = "document";
     public static final String TYPE_SPREADSHEET = "spreadsheet";
     public static final String TYPE_PRESENTATION = "presentation";
@@ -99,6 +100,7 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     private String username;
     private String password;
     
+    /** Permission map */
     private Map<String, String> permissionMap;
 
     /**
@@ -157,7 +159,7 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         this.permissionService = permissionService;
     }
     
-    /*
+    /**
      * @param ownableService    ownable service
      */
     public void setOwnableService(OwnableService ownableService)
@@ -340,10 +342,11 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Set a google permission on a specified resource 
      * 
-     * @param nodeRef
-     * @param resourceId
-     * @param permissionContext
+     * @param nodeRef				node reference
+     * @param resource				document resource			
+     * @param permissionContext		permission context
      */
     private void setGoogleResourcePermissions(NodeRef nodeRef, DocumentListEntry resource, GoogleDocsPermissionContext permissionContext)
     {
@@ -387,11 +390,12 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Set a google permission on a specified resource
      * 
-     * @param resourceId
-     * @param authorityType
-     * @param authorityName
-     * @param role
+     * @param resource			document resource
+     * @param authorityType		authority type
+     * @param authorityName		authority name
+     * @param role				role
      */
     private void setGoogleResourcePermission(DocumentListEntry resource, AuthorityType authorityType, String authorityName, String role)
     {
@@ -415,9 +419,10 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Gets the users email used to identify their google account.
      * 
-     * @param userName
-     * @return
+     * @param userName		user name
+     * @return String		google account email, null if none
      */
     private String getUserEMail(String userName)
     {
@@ -425,15 +430,23 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         NodeRef personNodeRef = personService.getPerson(userName);
         if (personNodeRef != null)
         {
-            email = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
+        	// First see if the google user information has been set
+        	email = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_GOOGLEUSERNAME);
+        	
+        	// If no google user information then default back to the user's email
+        	if (email == null || email.length() == 0)
+        	{
+        		email = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL);
+        	}
         }
         return email;
     }
     
     /**
+     * Gets the nodes parent folder google resource.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef					node reference
+     * @return DocumentList Entry		folder resource
      */
     private DocumentListEntry getParentFolder(NodeRef nodeRef)
     {
@@ -636,12 +649,13 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Create a google document
      * 
-     * @param name
-     * @param mimetype
-     * @param parentFolder
-     * @param is
-     * @return
+     * @param name					document name 
+     * @param mimetype				mime type
+     * @param parentFolder      	parent folder resource
+     * @param is					input stream for content
+     * @return DocumentListEntry	resource for created document
      */
     private DocumentListEntry createGoogleDocument(String name, String mimetype, DocumentListEntry parentFolder, InputStream is)
     {
@@ -697,10 +711,11 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Updates the content of a google document
      * 
-     * @param docResourceId
-     * @param mimeType
-     * @param is
+     * @param document		document resource
+     * @param mimeType		mimetype
+     * @param is			input stream
      */
     private void updateGoogleDocContent(DocumentListEntry document, String mimeType, InputStream is)
     {        
@@ -774,6 +789,12 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         ParameterCheck.mandatory("resource", resource);
         ParameterCheck.mandatory("email", email);
         ParameterCheck.mandatory("role", role);
+        
+        // Log details of failure
+    	if (logger.isDebugEnabled() == true)
+    	{
+    		logger.debug("Setting the role " + role + " on the google resource " + resource.getResourceId() + " for email " + email + ".");
+    	}
 
         try
         {   
@@ -801,12 +822,22 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
                 }
             }
             
+            // Set the permission details
             if (aclEntry == null)
             {
                 aclEntry = new AclEntry();
                 aclEntry.setRole(aclRole);
                 aclEntry.setScope(scope);
                 googleDocumentService.insert(aclFeedLinkURL, aclEntry);
+            }
+            else
+            {
+            	// Log details of failure
+            	if (logger.isDebugEnabled() == true)
+            	{
+            		logger.debug("Unable to the role " + role + " on the google resource " + resource.getResourceId() + " for email " + email + "." +
+            				     "  This user already has a role on this document.");
+            	}
             }
             
             // TODO for now we will not 'update' the permissions if they have already been set ....
@@ -823,7 +854,18 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         }
         catch (ServiceException e)
         {
-            throw new AlfrescoRuntimeException("Unable to set premissions on google document", e);
+            // Ignore this exception since we don't want to roll back the entire transaction because
+        	// a single users permissions can not be set.
+        	// It seems the google API will return a server exception if the email does not correspond to 
+        	// a google account, so catching this exception in this indiscriminate way is the best thing to 
+        	// do for now.
+        	
+        	// Log details of failure
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Unable to the role " + role + " on the google resource " + resource.getResourceId() + " for email " + email + "." +
+        				     "  Check that this is a valid google account.");
+        	}
         }
         catch (IOException e)
         {

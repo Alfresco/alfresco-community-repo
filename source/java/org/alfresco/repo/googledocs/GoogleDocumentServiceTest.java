@@ -70,6 +70,10 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
     private static final String USER_TWO = "GoogleDocUserTwo";
     private static final String USER_THREE = "GoogleDocUserThree";
     private static final String USER_FOUR = "GoogleDocUserFour";
+    private static final String USER_FIVE = "GoogleDocUserFive";
+    private static final String USER_SIX = "GoogleDocUserSix";
+    private static final String USER_SEVEN = "GoogleDocUserSeven";
+    
     //private static final String EMAIL_DOMAIN = "@alfresco.com";
     
     private NodeRef folder = null;
@@ -112,10 +116,13 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         googleDocsService = (GoogleDocsService)childContext.getBean("googleDocsService");   
         
         // Create the test users
-        createUser(USER_ONE, "rwetherall@alfresco.com");
-        createUser(USER_TWO, "rwetherall@activiti.com");
-        createUser(USER_THREE, "roy.wetherall@alfresco.com");
-        createUser(USER_FOUR, "roy.wetherall@activiti.com");
+        createUser(USER_ONE, "rwetherall@alfresco.com", null);
+        createUser(USER_TWO, "admin@alfresco.com", "rwetherall@activiti.com");
+        createUser(USER_THREE, "roy.wetherall@alfresco.com", null);
+        createUser(USER_FOUR, "roy.wetherall@activiti.com", null);        
+        createUser(USER_FIVE, "admin@alfresco.com", "admin@alfresco.com");
+        createUser(USER_SIX, "admin@alfresco.com", null);
+        createUser(USER_SEVEN, null, null);
         
         // Authenticate as user one
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -130,13 +137,17 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         siteService.setMembership(id, USER_TWO, SiteServiceImpl.SITE_COLLABORATOR);
         siteService.setMembership(id, USER_THREE, SiteServiceImpl.SITE_CONTRIBUTOR);
         siteService.setMembership(id, USER_FOUR, SiteServiceImpl.SITE_CONSUMER);
+        siteService.setMembership(id, USER_FIVE, SiteServiceImpl.SITE_COLLABORATOR);
+        siteService.setMembership(id, USER_SIX, SiteServiceImpl.SITE_COLLABORATOR);
+        siteService.setMembership(id, USER_SEVEN, SiteServiceImpl.SITE_COLLABORATOR);
         
         // Create a folder in our site container
         folder = fileFolderService.create(container, "myfolder", ContentModel.TYPE_FOLDER).getNodeRef();  
         
         // Create test documents
         nodeRefDoc = createTestDocument("mydoc.docx", "alfresco/subsystems/googledocs/default/test.docx", MimetypeMap.MIMETYPE_WORD);
-        nodeRefSpread = createTestDocument("mydoc.xlsx", "alfresco/subsystems/googledocs/default/test.xlsx", MimetypeMap.MIMETYPE_EXCEL);
+        //nodeRefSpread = createTestDocument("mydoc.xls", "alfresco/subsystems/googledocs/default/testBook.xls", MimetypeMap.MIMETYPE_EXCEL);
+        nodeRefSpread = createTestDocument("mydoc2.docx", "alfresco/subsystems/googledocs/default/test.docx", MimetypeMap.MIMETYPE_WORD);
         
         // Create an empty content node (simulate creation of a new google doc in UI)
         nodeRef2 = fileFolderService.create(folder, "mygoogledoc.doc", ContentModel.TYPE_CONTENT).getNodeRef();
@@ -154,7 +165,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         return nodeRef;
     }
     
-    private void createUser(String userName, String email)
+    private void createUser(String userName, String email, String googleEmail)
     {
         if (authenticationService.authenticationExists(userName) == false)
         {
@@ -163,9 +174,18 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
             PropertyMap ppOne = new PropertyMap(4);
             ppOne.put(ContentModel.PROP_USERNAME, userName);
             ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, email);
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");            
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            if (email != null)
+            {
+            	ppOne.put(ContentModel.PROP_EMAIL, email);
+            }            
+            
+            if (googleEmail != null)
+            {
+            	ppOne.put(ContentModel.PROP_GOOGLEUSERNAME, googleEmail);
+            }
             
             personService.createPerson(ppOne);
         }        
@@ -211,18 +231,18 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
 	        String downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefDoc), ".doc");
 	        System.out.println("Download file: " + downloadFile);
 	        
-	//        googleDocsService.upload(nodeRefSpread, GoogleDocsPermissionContext.SHARE_WRITE);
-	//        
-	//        assertTrue(nodeService.hasAspect(nodeRefSpread, ASPECT_GOOGLERESOURCE));
-	//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_URL));
-	//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));
-	//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
-	//        
-	//        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefSpread, PROP_URL));
-	//        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
-	//        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));                
-	//        downloadFile = downloadFile(googleDocsService.download(nodeRefSpread), ".xls");
-	//        System.out.println("Download file: " + downloadFile);
+	        googleDocsService.createGoogleDoc(nodeRefSpread, GoogleDocsPermissionContext.SHARE_WRITE);
+	        
+	        assertTrue(nodeService.hasAspect(nodeRefSpread, ASPECT_GOOGLERESOURCE));
+	        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_URL));
+	        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));
+	        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
+	        
+	        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefSpread, PROP_URL));
+	        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
+	        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));                
+//	//        downloadFile = downloadFile(googleDocsService.download(nodeRefSpread), ".xls");
+//	//        System.out.println("Download file: " + downloadFile);
     	}
         
     }

@@ -192,6 +192,7 @@ public interface ContentModel
     static final QName PROP_COMPANYFAX = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyfax");
     static final QName PROP_COMPANYEMAIL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "companyemail");
     static final QName PROP_SKYPE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "skype");
+    static final QName PROP_GOOGLEUSERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "googleusername");
     static final QName PROP_INSTANTMSG = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "instantmsg");
     
     static final QName PROP_SIZE_CURRENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "sizeCurrent");

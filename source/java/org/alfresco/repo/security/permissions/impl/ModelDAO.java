@@ -158,5 +158,12 @@ public interface ModelDAO
      * @return
      */
     public Set<PermissionReference> getAllPermissions();
+    
+    /**
+     * Does this permission allow full control?
+     * @param permissionReference
+     * @return
+     */
+    public boolean hasFull(PermissionReference permissionReference);
 
 }

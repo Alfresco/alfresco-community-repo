@@ -167,7 +167,6 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
         this.nodeService = nodeService;
     }
 
-
     /**
      * Adds the {@link #setModel(String) model}.
      */
@@ -520,9 +519,9 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
     public synchronized Set<PermissionReference> getGrantingPermissions(PermissionReference permissionReference)
     {
-        if(permissionReference == null)
+        if (permissionReference == null)
         {
-            return Collections.<PermissionReference>emptySet();
+            return Collections.<PermissionReference> emptySet();
         }
         // Cache the results
         Set<PermissionReference> granters = grantingPermissions.get(permissionReference);
@@ -602,9 +601,9 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
     public synchronized Set<PermissionReference> getGranteePermissions(PermissionReference permissionReference)
     {
-        if(permissionReference == null)
+        if (permissionReference == null)
         {
-            return Collections.<PermissionReference>emptySet();
+            return Collections.<PermissionReference> emptySet();
         }
         // Cache the results
         Set<PermissionReference> grantees = granteePermissions.get(permissionReference);
@@ -700,7 +699,7 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
         }
         return permissions;
     }
-    
+
     private Set<PermissionReference> getImmediateGranteePermissionsImpl(PermissionReference permissionReference)
     {
         // Query the model
@@ -1054,14 +1053,16 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
     private ConcurrentHashMap<RequiredKey, Set<PermissionReference>> requiredPermissionsCache = new ConcurrentHashMap<RequiredKey, Set<PermissionReference>>(1024);
 
+    private PermissionGroup group;
+
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
     {
         // Cache lookup as this is static
-        if((required == null) || (qName == null))
+        if ((required == null) || (qName == null))
         {
-            return Collections.<PermissionReference>emptySet();
+            return Collections.<PermissionReference> emptySet();
         }
-        
+
         RequiredKey key = generateKey(required, qName, aspectQNames, on);
 
         Set<PermissionReference> answer = requiredPermissionsCache.get(key);
@@ -1325,7 +1326,8 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getAllExposedPermissions()
      */
     public Set<PermissionReference> getAllExposedPermissions()
@@ -1335,20 +1337,82 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
         {
             for (PermissionGroup pg : ps.getPermissionGroups())
             {
-                if(pg.isExposed())
+                if (pg.isExposed())
                 {
                     permissions.add(SimplePermissionReference.getPermissionReference(pg.getQName(), pg.getName()));
                 }
             }
             for (Permission p : ps.getPermissions())
             {
-                if(p.isExposed())
+                if (p.isExposed())
                 {
                     permissions.add(SimplePermissionReference.getPermissionReference(p.getQName(), p.getName()));
                 }
             }
         }
         return permissions;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @seeorg.alfresco.repo.security.permissions.impl.ModelDAO#hasFull(org.alfresco.repo.security.permissions.
+     * PermissionReference)
+     */
+    private static PermissionReference ALL = SimplePermissionReference.getPermissionReference(QName.createQName(NamespaceService.SECURITY_MODEL_1_0_URI,
+            PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS);
+    
+    public boolean hasFull(PermissionReference permissionReference)
+    {
+        if (permissionReference == null)
+        {
+            return false;
+        }
+        if(permissionReference.equals(ALL))
+        {
+            return true;
+        }
+        group = getPermissionGroupOrNull(permissionReference);
+        if (group == null)
+        {
+            return false;
+        }
+        else
+        {
+            if (group.isAllowFullControl())
+            {
+                return true;
+            }
+            else
+            {
+                if(group.isExtends())
+                {
+                    if (group.getTypeQName() != null)
+                    {
+                        return hasFull(SimplePermissionReference.getPermissionReference(group.getTypeQName(), group.getName()));
+                    }
+                    else
+                    {
+                        ClassDefinition classDefinition = dictionaryService.getClass(group.getQName());
+                        QName parent;
+                        while ((parent = classDefinition.getParentName()) != null)
+                        {
+                            classDefinition = dictionaryService.getClass(parent);
+                            PermissionGroup attempt = getPermissionGroupOrNull(SimplePermissionReference.getPermissionReference(parent, group.getName()));
+                            if ((attempt != null) && (attempt.isAllowFullControl()))
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
     }
 
 }

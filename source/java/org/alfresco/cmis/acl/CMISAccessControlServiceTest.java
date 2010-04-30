@@ -81,43 +81,48 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
 
         CMISAccessControlReport grandParentReport = cmisAccessControlService.getAcl(grandParent, CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS);
         assertFalse(grandParentReport.isExact());
-        assertEquals(7, grandParentReport.getAccessControlEntries().size());
-        assertTrue(checkCounts(grandParentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 1, 0));
+        assertEquals(10, grandParentReport.getAccessControlEntries().size());
+        assertTrue(checkCounts(grandParentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 1, 2));
         assertTrue(checkCounts(grandParentReport, PermissionService.ALL_AUTHORITIES, 1, 0));
         assertTrue(checkCounts(grandParentReport, "ToMask", 1, 0));
-        assertTrue(checkCounts(grandParentReport, "Full", 1, 0));
+        assertTrue(checkCounts(grandParentReport, "Full", 0, 3));
         assertTrue(checkCounts(grandParentReport, "Reader", 1, 0));
         assertTrue(checkCounts(grandParentReport, "Writer", 1, 0));
-        assertTrue(checkCounts(grandParentReport, "Multi", 1, 0));
+        assertTrue(checkAbsent(grandParentReport, "SplitRead"));
+        assertTrue(checkAbsent(grandParentReport, "SplitWrite"));
+        assertTrue(checkAbsent(grandParentReport, "DuplicateRead"));
+        assertTrue(checkAbsent(grandParentReport, "Writer2"));
+        assertTrue(checkAbsent(grandParentReport, "Multi"));
 
         CMISAccessControlReport parentReport = cmisAccessControlService.getAcl(parent, CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS);
         assertFalse(parentReport.isExact());
-        assertEquals(9, parentReport.getAccessControlEntries().size());
-        assertTrue(checkCounts(parentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 1));
+        assertEquals(10, parentReport.getAccessControlEntries().size());
+        assertTrue(checkCounts(parentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 3));
         assertTrue(checkCounts(parentReport, PermissionService.ALL_AUTHORITIES, 0, 1));
         assertTrue(checkAbsent(parentReport, "ToMask"));
-        assertTrue(checkCounts(parentReport, "Full", 0, 1));
+        assertTrue(checkCounts(parentReport, "Full", 0, 3));
         assertTrue(checkCounts(parentReport, "Reader", 0, 1));
         assertTrue(checkCounts(parentReport, "Writer", 0, 1));
-        assertTrue(checkCounts(parentReport, "SplitRead", 1, 0));
-        assertTrue(checkCounts(parentReport, "SplitWrite", 1, 0));
+        assertTrue(checkAbsent(parentReport, "SplitRead"));
+        assertTrue(checkAbsent(parentReport, "SplitWrite"));
         assertTrue(checkCounts(parentReport, "DuplicateRead", 1, 0));
-        assertTrue(checkCounts(parentReport, "Multi", 1, 0));
+        assertTrue(checkAbsent(parentReport, "Writer2"));
+        assertTrue(checkAbsent(parentReport, "Multi"));
 
         CMISAccessControlReport childReport = cmisAccessControlService.getAcl(child, CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(12, childReport.getAccessControlEntries().size());
-        assertTrue(checkCounts(childReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 1));
+        assertEquals(13, childReport.getAccessControlEntries().size());
+        assertTrue(checkCounts(childReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 3));
         assertTrue(checkCounts(childReport, PermissionService.ALL_AUTHORITIES, 0, 1));
         assertTrue(checkAbsent(childReport, "ToMask"));
-        assertTrue(checkCounts(childReport, "Full", 0, 1));
+        assertTrue(checkCounts(childReport, "Full", 0, 3));
         assertTrue(checkCounts(childReport, "Reader", 0, 1));
         assertTrue(checkCounts(childReport, "Writer", 0, 1));
-        assertTrue(checkCounts(childReport, "SplitRead", 1, 0));
-        assertTrue(checkCounts(childReport, "SplitWrite", 1, 0));
+        assertTrue(checkAbsent(childReport, "SplitRead"));
+        assertTrue(checkAbsent(childReport, "SplitWrite"));
         assertTrue(checkCounts(childReport, "DuplicateRead", 1, 0));
         assertTrue(checkCounts(childReport, "Writer2", 1, 0));
-        assertTrue(checkCounts(childReport, "Multi", 3, 0));
+        assertTrue(checkCounts(childReport, "Multi", 2, 0));
     }
 
     private Set<String> getAllPermissions()
@@ -190,43 +195,49 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
 
         CMISAccessControlReport grandParentReport = cmisAccessControlService.getAcl(grandParent, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(grandParentReport.isExact());
-        assertEquals(7, grandParentReport.getAccessControlEntries().size());
-        assertTrue(checkCounts(grandParentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 1, 0));
-        assertTrue(checkCounts(grandParentReport, PermissionService.ALL_AUTHORITIES, 1, 0));
-        assertTrue(checkCounts(grandParentReport, "ToMask", 1, 0));
-        assertTrue(checkCounts(grandParentReport, "Full", 1, 0));
-        assertTrue(checkCounts(grandParentReport, "Reader", 1, 0));
-        assertTrue(checkCounts(grandParentReport, "Writer", 1, 0));
+        assertEquals(17, grandParentReport.getAccessControlEntries().size());
+        assertTrue(checkCounts(grandParentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 1, 3));
+        assertTrue(checkCounts(grandParentReport, PermissionService.ALL_AUTHORITIES, 1, 1));
+        assertTrue(checkCounts(grandParentReport, "ToMask", 1, 1));
+        assertTrue(checkCounts(grandParentReport, "Full", 1, 3));
+        assertTrue(checkCounts(grandParentReport, "Reader", 1, 1));
+        assertTrue(checkCounts(grandParentReport, "Writer", 1, 1));
+        assertTrue(checkAbsent(grandParentReport, "SplitRead"));
+        assertTrue(checkAbsent(grandParentReport, "SplitWrite"));
+        assertTrue(checkAbsent(grandParentReport, "DuplicateRead"));
+        assertTrue(checkAbsent(grandParentReport, "Writer2"));
         assertTrue(checkCounts(grandParentReport, "Multi", 1, 0));
 
         CMISAccessControlReport parentReport = cmisAccessControlService.getAcl(parent, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(parentReport.isExact());
-        assertEquals(10, parentReport.getAccessControlEntries().size());
-        assertTrue(checkCounts(parentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 1));
-        assertTrue(checkCounts(parentReport, PermissionService.ALL_AUTHORITIES, 0, 1));
+        assertEquals(20, parentReport.getAccessControlEntries().size());
+        assertTrue(checkCounts(parentReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 4));
+        assertTrue(checkCounts(parentReport, PermissionService.ALL_AUTHORITIES, 0, 2));
         assertTrue(checkAbsent(parentReport, "ToMask"));
-        assertTrue(checkCounts(parentReport, "Full", 0, 1));
-        assertTrue(checkCounts(parentReport, "Reader", 0, 1));
-        assertTrue(checkCounts(parentReport, "Writer", 0, 1));
+        assertTrue(checkCounts(parentReport, "Full", 0, 4));
+        assertTrue(checkCounts(parentReport, "Reader", 0, 2));
+        assertTrue(checkCounts(parentReport, "Writer", 0, 2));
         assertTrue(checkCounts(parentReport, "SplitRead", 1, 0));
         assertTrue(checkCounts(parentReport, "SplitWrite", 1, 0));
-        assertTrue(checkCounts(parentReport, "DuplicateRead", 1, 0));
+        assertTrue(checkCounts(parentReport, "DuplicateRead", 1, 1));
+        assertTrue(checkAbsent(grandParentReport, "Writer2"));
         assertTrue(checkCounts(parentReport, "Multi", 1, 1));
 
         CMISAccessControlReport childReport = cmisAccessControlService.getAcl(child, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(16, childReport.getAccessControlEntries().size());
-        assertTrue(checkCounts(childReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 1));
-        assertTrue(checkCounts(childReport, PermissionService.ALL_AUTHORITIES, 0, 1));
+        assertEquals(29, childReport.getAccessControlEntries().size());
+        assertTrue(checkCounts(childReport, PermissionService.ADMINISTRATOR_AUTHORITY, 0, 4));
+        assertTrue(checkCounts(childReport, PermissionService.ALL_AUTHORITIES, 0, 2));
         assertTrue(checkAbsent(childReport, "ToMask"));
-        assertTrue(checkCounts(childReport, "Full", 0, 1));
-        assertTrue(checkCounts(childReport, "Reader", 0, 1));
-        assertTrue(checkCounts(childReport, "Writer", 0, 1));
+        assertTrue(checkCounts(childReport, "Full", 0, 4));
+        assertTrue(checkCounts(childReport, "Reader", 0, 2));
+        assertTrue(checkCounts(childReport, "Writer", 0, 2));
         assertTrue(checkCounts(childReport, "SplitRead", 1, 1));
         assertTrue(checkCounts(childReport, "SplitWrite", 1, 1));
-        assertTrue(checkCounts(childReport, "DuplicateRead", 1, 0));
-        assertTrue(checkCounts(childReport, "Multi", 3, 2));
-        assertTrue(checkCounts(childReport, "Writer2", 1, 0));
+        assertTrue(checkCounts(childReport, "DuplicateRead", 1, 1));
+        assertTrue(checkCounts(childReport, "Writer2", 1, 1));
+        assertTrue(checkCounts(childReport, "Multi", 3, 4));
+        
     }
 
     private void createTestAcls()
@@ -395,7 +406,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         CMISAccessControlReport grandParentReport = cmisAccessControlService.applyAcl(grandParent, null, acesToAdd, CMISAclPropagationEnum.PROPAGATE,
                 CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(grandParentReport.isExact());
-        assertEquals(6, grandParentReport.getAccessControlEntries().size());
+        assertEquals(16, grandParentReport.getAccessControlEntries().size());
 
         List<CMISAccessControlEntry> acesToRemove = new ArrayList<CMISAccessControlEntry>();
         acesToRemove.add(new CMISAccessControlEntryImpl("ToMask", PermissionService.READ));
@@ -403,7 +414,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         grandParentReport = cmisAccessControlService.applyAcl(grandParent, acesToRemove, null, CMISAclPropagationEnum.PROPAGATE,
                 CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(grandParentReport.isExact());
-        assertEquals(5, grandParentReport.getAccessControlEntries().size());
+        assertEquals(14, grandParentReport.getAccessControlEntries().size());
 
         try
         {
@@ -423,7 +434,7 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         CMISAccessControlReport parentReport = cmisAccessControlService.applyAcl(parent, null, acesToAdd, CMISAclPropagationEnum.PROPAGATE,
                 CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(parentReport.isExact());
-        assertEquals(8, parentReport.getAccessControlEntries().size());
+        assertEquals(18, parentReport.getAccessControlEntries().size());
 
         acesToAdd = new ArrayList<CMISAccessControlEntry>();
         acesToAdd.add(new CMISAccessControlEntryImpl("SplitRead", PermissionService.READ_CONTENT));
@@ -434,31 +445,31 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
         CMISAccessControlReport childReport = cmisAccessControlService.applyAcl(child, null, acesToAdd, CMISAclPropagationEnum.PROPAGATE,
                 CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(11, childReport.getAccessControlEntries().size());
+        assertEquals(22, childReport.getAccessControlEntries().size());
 
         grandParentReport = cmisAccessControlService.getAcl(grandParent, CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS);
         assertFalse(grandParentReport.isExact());
-        assertEquals(5, grandParentReport.getAccessControlEntries().size());
+        assertEquals(9, grandParentReport.getAccessControlEntries().size());
 
         parentReport = cmisAccessControlService.getAcl(parent, CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS);
         assertFalse(parentReport.isExact());
-        assertEquals(8, parentReport.getAccessControlEntries().size());
+        assertEquals(10, parentReport.getAccessControlEntries().size());
 
         childReport = cmisAccessControlService.getAcl(child, CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(9, childReport.getAccessControlEntries().size());
+        assertEquals(11, childReport.getAccessControlEntries().size());
 
         grandParentReport = cmisAccessControlService.getAcl(grandParent, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(grandParentReport.isExact());
-        assertEquals(5, grandParentReport.getAccessControlEntries().size());
+        assertEquals(14, grandParentReport.getAccessControlEntries().size());
 
         parentReport = cmisAccessControlService.getAcl(parent, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(parentReport.isExact());
-        assertEquals(8, parentReport.getAccessControlEntries().size());
+        assertEquals(18, parentReport.getAccessControlEntries().size());
 
         childReport = cmisAccessControlService.getAcl(child, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(11, childReport.getAccessControlEntries().size());
+        assertEquals(22, childReport.getAccessControlEntries().size());
 
         acesToAdd = new ArrayList<CMISAccessControlEntry>();
         acesToAdd.add(new CMISAccessControlEntryImpl("CMISReader", CMISAccessControlService.CMIS_READ_PERMISSION));
@@ -467,15 +478,15 @@ public class CMISAccessControlServiceTest extends BaseCMISTest
 
         childReport = cmisAccessControlService.applyAcl(child, null, acesToAdd, CMISAclPropagationEnum.PROPAGATE, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(14, childReport.getAccessControlEntries().size());
+        assertEquals(30, childReport.getAccessControlEntries().size());
 
         childReport = cmisAccessControlService.applyAcl(child, acesToAdd, acesToAdd, CMISAclPropagationEnum.PROPAGATE, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(14, childReport.getAccessControlEntries().size());
+        assertEquals(30, childReport.getAccessControlEntries().size());
 
         childReport = cmisAccessControlService.applyAcl(child, acesToAdd, null, CMISAclPropagationEnum.PROPAGATE, CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS);
         assertFalse(childReport.isExact());
-        assertEquals(11, childReport.getAccessControlEntries().size());
+        assertEquals(22, childReport.getAccessControlEntries().size());
 
         try
         {

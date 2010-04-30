@@ -32,11 +32,19 @@ public class CMISAccessControlEntryImpl implements CMISAccessControlEntry
    
     private int position;
     
-    /*package*/ CMISAccessControlEntryImpl(String principalId, String permission, int position)
+    private boolean direct;
+    
+    /*package*/ CMISAccessControlEntryImpl(String principalId, String permission, int position, boolean direct)
     {
         this.principalId = principalId;
         this.permission = permission;
         this.position = position;
+        this.direct = direct;
+    }
+    
+    /*package*/ CMISAccessControlEntryImpl(String principalId, String permission, int position)
+    {
+        this(principalId, permission, position, position == 0);
     }
     
     /**
@@ -56,7 +64,7 @@ public class CMISAccessControlEntryImpl implements CMISAccessControlEntry
      */
     public boolean getDirect()
     {
-        return position == 0;
+        return direct;
     }
 
     /* (non-Javadoc)
@@ -83,23 +91,18 @@ public class CMISAccessControlEntryImpl implements CMISAccessControlEntry
         return position;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = 1;
+        result = prime * result + (direct ? 1231 : 1237);
         result = prime * result + ((permission == null) ? 0 : permission.hashCode());
         result = prime * result + position;
         result = prime * result + ((principalId == null) ? 0 : principalId.hashCode());
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj)
     {
@@ -109,7 +112,9 @@ public class CMISAccessControlEntryImpl implements CMISAccessControlEntry
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final CMISAccessControlEntryImpl other = (CMISAccessControlEntryImpl) obj;
+        CMISAccessControlEntryImpl other = (CMISAccessControlEntryImpl) obj;
+        if (direct != other.direct)
+            return false;
         if (permission == null)
         {
             if (other.permission != null)

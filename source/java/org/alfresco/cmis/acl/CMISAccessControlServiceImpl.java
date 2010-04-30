@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * @author andyh
@@ -228,7 +230,7 @@ public class CMISAccessControlServiceImpl implements CMISAccessControlService
      */
     public CMISAccessControlReport getAcl(NodeRef nodeRef, CMISAccessControlFormatEnum format)
     {
-        CMISAccessControlReportImpl answer = new CMISAccessControlReportImpl();
+        CMISAccessControlReportImpl merge = new CMISAccessControlReportImpl();
         // Need to compact deny to mask correctly
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
         ArrayList<AccessPermission> ordered = new ArrayList<AccessPermission>();
@@ -246,21 +248,40 @@ public class CMISAccessControlServiceImpl implements CMISAccessControlService
         {
             if (entry.getAccessStatus() == AccessStatus.ALLOWED)
             {
-                answer.addEntry(new CMISAccessControlEntryImpl(entry.getAuthority(), expandPermission(cmisMapping.getReportedPermission(getPermission(entry.getPermission()),
-                        format)), entry.getPosition()));
+                //answer.addEntry(new CMISAccessControlEntryImpl(entry.getAuthority(), expandPermission(cmisMapping.getReportedPermission(getPermission(entry.getPermission()),
+                //        format)), entry.getPosition()));
+                merge.addEntry(new CMISAccessControlEntryImpl(entry.getAuthority(), entry.getPermission(), entry.getPosition()));
             }
             else if (entry.getAccessStatus() == AccessStatus.DENIED)
             {
-                answer.removeEntry(new CMISAccessControlEntryImpl(entry.getAuthority(), expandPermission(cmisMapping.getReportedPermission(getPermission(entry.getPermission()),
-                        format)), entry.getPosition()));
+                //answer.removeEntry(new CMISAccessControlEntryImpl(entry.getAuthority(), expandPermission(cmisMapping.getReportedPermission(getPermission(entry.getPermission()),
+                //        format)), entry.getPosition()));
+                merge.removeEntry(new CMISAccessControlEntryImpl(entry.getAuthority(), entry.getPermission(), entry.getPosition()));
             }
+        }
+        
+        CMISAccessControlReportImpl answer = new CMISAccessControlReportImpl();
+        for(CMISAccessControlEntry entry : merge.getAccessControlEntries())
+        {
+            CMISAccessControlEntryImpl impl = (CMISAccessControlEntryImpl)entry;
+            PermissionReference permissionReference = permissionModelDao.getPermissionReference(null, impl.getPermission());
+            Set<PermissionReference> longForms = permissionModelDao.getGranteePermissions(permissionReference);
+            HashSet<String> shortForms = new HashSet<String>();
+            for(PermissionReference longForm : longForms)
+            {
+                shortForms.add(getPermission(longForm));
+            }
+            for(Pair<String, Boolean> toAdd : cmisMapping.getReportedPermissions(impl.getPermission(), shortForms, permissionModelDao.hasFull(permissionReference), impl.getDirect(), format))
+            {
+                answer.addEntry(new CMISAccessControlEntryImpl(impl.getPrincipalId(), expandPermission(toAdd.getFirst()), impl.getPosition(), toAdd.getSecond()));
+            }
+            
         }
         return answer;
     }
 
-    private String getPermission(String string)
+    private String getPermission(PermissionReference permissionReference)
     {
-        PermissionReference permissionReference = permissionModelDao.getPermissionReference(null, string);
         if (permissionModelDao.isUnique(permissionReference))
         {
             return permissionReference.getName();

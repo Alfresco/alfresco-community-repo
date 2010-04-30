@@ -19,6 +19,8 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -107,10 +110,6 @@ public class CMISMapping implements InitializingBean
     private Map<QName, CMISDataTypeEnum> mapAlfrescoToCmisDataType = new HashMap<QName, CMISDataTypeEnum>();
     private Map<String, AbstractProperty> propertyAccessors = new HashMap<String, AbstractProperty>();
     private Map<CMISScope, Map<CMISAllowedActionEnum, CMISActionEvaluator<? extends Object>>> actionEvaluators = new HashMap<CMISScope, Map<CMISAllowedActionEnum, CMISActionEvaluator<? extends Object>>>();
-    
-    
-    private Set<String> cmisRead = new HashSet<String>();
-    private Set<String> cmisWrite = new HashSet<String>();
     
     
     /*
@@ -276,14 +275,6 @@ public class CMISMapping implements InitializingBean
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, false));
         registerEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, false));
-        
-        cmisRead.add(PermissionService.READ_PROPERTIES);
-        cmisRead.add(PermissionService.READ_CONTENT);
-        cmisRead.add(PermissionService.READ);
-        
-        cmisWrite.add(PermissionService.WRITE_PROPERTIES);
-        cmisWrite.add(PermissionService.WRITE_CONTENT);
-        cmisWrite.add(PermissionService.WRITE);
         
     }
 
@@ -796,35 +787,97 @@ public class CMISMapping implements InitializingBean
             logger.debug("Registered Action Evaluator: scope=" + scope + ", evaluator=" + evaluator);
     }
 
-
-    /**
-     * @param permission
-     * @param format
-     * @return
-     */
-    public String getReportedPermission(String permission, CMISAccessControlFormatEnum format)
+    public Collection<Pair<String, Boolean>> getReportedPermissions(String permission, Set<String> permissions, boolean hasFull, boolean isDirect, CMISAccessControlFormatEnum format)
     {
+        ArrayList<Pair<String, Boolean>> answer = new ArrayList<Pair<String, Boolean>>(20);
+        // indirect
+        
+        if(hasFull)
+        {
+            answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_READ_PERMISSION, false));
+            answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_WRITE_PERMISSION, false));
+            answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_ALL_PERMISSION, false));
+        }
+        
+        for(String perm : permissions)
+        {
+            if(PermissionService.READ.equals(perm))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_READ_PERMISSION, false));
+            }
+            else if(PermissionService.WRITE.equals(perm))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_WRITE_PERMISSION, false));
+            }
+            else if(PermissionService.ALL_PERMISSIONS.equals(perm))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_READ_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_WRITE_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_ALL_PERMISSION, false));
+            }
+            
+            if(hasFull)
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_READ_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_WRITE_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_ALL_PERMISSION, false));
+            }
+        }
+        
+        // permission
+       
         if(format == CMISAccessControlFormatEnum.REPOSITORY_SPECIFIC_PERMISSIONS)
         {
-            return permission;
-        }
-        else
-        {
-            if(cmisRead.contains(permission))
+            if(PermissionService.READ.equals(permission))
             {
-                return CMISAccessControlService.CMIS_READ_PERMISSION;
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_READ_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(permission, isDirect));
             }
-            else if(cmisWrite.contains(permission))
+            else if(PermissionService.WRITE.equals(permission))
             {
-                return CMISAccessControlService.CMIS_WRITE_PERMISSION;
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_WRITE_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(permission, isDirect));
+            }
+            else if(PermissionService.ALL_PERMISSIONS.equals(permission))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_ALL_PERMISSION, false));
+                answer.add(new Pair<String, Boolean>(permission, isDirect));
             }
             else
             {
-                return CMISAccessControlService.CMIS_ALL_PERMISSION;
+                answer.add(new Pair<String, Boolean>(permission, isDirect));
             }
         }
+        else if(format == CMISAccessControlFormatEnum.CMIS_BASIC_PERMISSIONS)
+        {
+            if(PermissionService.READ.equals(permission))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_READ_PERMISSION, isDirect));
+            }
+            else if(PermissionService.WRITE.equals(permission))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_WRITE_PERMISSION, isDirect));
+            }
+            else if(PermissionService.ALL_PERMISSIONS.equals(permission))
+            {
+                answer.add(new Pair<String, Boolean>(CMISAccessControlService.CMIS_ALL_PERMISSION, isDirect));
+            }
+            else
+            {
+               // else nothing
+            }
+        }
+        
+       
+        
+        return answer;
     }
     
+    
+    /**
+     * @param permission
+     * @return permission to set
+     */
     public String getSetPermission(String permission)
     {
         if(permission.equals(CMISAccessControlService.CMIS_READ_PERMISSION))

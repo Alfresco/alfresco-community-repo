@@ -475,9 +475,10 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Sets the resource details on the node reference
      * 
-     * @param nodeRef
-     * @param folderId
+     * @param nodeRef				node reference
+     * @param documentListEntry		document list entry
      */
     private void setResourceDetails(final NodeRef nodeRef, final DocumentListEntry documentListEntry)
     {
@@ -601,9 +602,11 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Gets the document list entry that corresponds to the google resource
+     * related to the node reference provided.
      * 
-     * @param docNodeRef
-     * @return
+     * @param docNodeRef			node reference
+     * @return DocumentListEntry	document list entry	
      */
     private DocumentListEntry getDocumentListEntry(NodeRef docNodeRef)
     {
@@ -613,9 +616,10 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Gets the document resource entry for a document resource id
      * 
-     * @param docResourceId
-     * @return
+     * @param docResourceId			document resource id
+     * @return DocumentListEntry	document list entry
      */
     private DocumentListEntry getDocumentListEntry(String docResourceId)
     {
@@ -623,11 +627,12 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     }
     
     /**
+     * Gets the entry for a given resource id.
      * 
-     * @param <E>
-     * @param resourceId
-     * @param entryClass
-     * @return
+     * @param <E>			Entry class
+     * @param resourceId	resource id
+     * @param entryClass	entry class
+     * @return E			entry instance
      */
     private <E extends IEntry> E getEntry(String resourceId, Class<E> entryClass)
     {
@@ -660,6 +665,12 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     private DocumentListEntry createGoogleDocument(String name, String mimetype, DocumentListEntry parentFolder, InputStream is)
     {
         DocumentListEntry document = null;
+        
+        // Log details 
+        if (logger.isDebugEnabled() == true)
+        {
+        	logger.debug("Creating google document with name " + name);
+        }
         
         try
         { 
@@ -700,10 +711,24 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         }
         catch (IOException e)
         {
+        	// Log details of exception
+            if (logger.isDebugEnabled() == true)
+            {
+            	logger.debug("Unable to create google document with name " + name + ", because " + e.getMessage());
+            }
+            
+            // Rethrow as runtime exception
             throw new AlfrescoRuntimeException("Unable to create google document", e);
         }
         catch (ServiceException e)
         {
+        	// Log details of exception
+            if (logger.isDebugEnabled() == true)
+            {
+            	logger.debug("Unable to create google document with name " + name + ", because " + e.getMessage());
+            }
+            
+            // Rethrow as runtime exception
             throw new AlfrescoRuntimeException("Unable to create google document", e);
         }
         
@@ -718,7 +743,13 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
      * @param is			input stream
      */
     private void updateGoogleDocContent(DocumentListEntry document, String mimeType, InputStream is)
-    {        
+    {     
+    	// Log details
+    	if (logger.isDebugEnabled() == true)
+    	{
+    		logger.debug("Updating content of document " + document.getResourceId());
+    	}
+    	
         try
         {
             // Update the existing content
@@ -729,19 +760,34 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         }
         catch (ServiceException e)
         {
+        	// Log details of the error
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Unable to update the content of document " + document.getResourceId() + ", because " + e.getMessage());
+        	}
+        	
+        	// Rethrow as runtime exception
             throw new AlfrescoRuntimeException("Unable to update documents content in google docs", e);
         }
         catch (IOException e)
         {
+        	// Log details of the error
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Unable to update the content of document " + document.getResourceId() + ", because " + e.getMessage());
+        	}
+        	
+        	// Rethrow as runtime exception
             throw new AlfrescoRuntimeException("Unable to update documents content in google docs", e);
         }
     }
     
     /**
+     * Creates a google folder, returning the folder resource. 
      * 
-     * @param folderName
-     * @param parentFolderId
-     * @return
+     * @param folderName			folder name
+     * @param parentFolder  		parent folder resource
+     * @return DocumentListEntry	created folder resource
      */
     private DocumentListEntry createGoogleFolder(String folderName, DocumentListEntry parentFolder)
     {
@@ -749,6 +795,12 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         
         try
         {
+        	// Log details
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Creating folder " + folderName);
+        	}
+        	
             // Parent folder url
             String parentFolderUrl = url;
             if (parentFolder != null)
@@ -767,10 +819,24 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         }
         catch (IOException e)
         {
+        	// Log details of the failure
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Unable to create folder " + folderName + ", because " + e.getMessage());
+        	}
+        	
+        	// Rethrow as runtime exception
             throw new AlfrescoRuntimeException("Unable to create Google Folder", e);
         }
         catch (ServiceException e)
         {
+        	// Log details of the failure
+        	if (logger.isDebugEnabled() == true)
+        	{
+        		logger.debug("Unable to create folder " + folderName + ", because " + e.getMessage());
+        	}
+        	
+        	// Rethrow as runtime exception
             throw new AlfrescoRuntimeException("Unable to create Google Folder", e);
         }
 
@@ -786,11 +852,12 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
      */
     private void setGoogleResourcePermission(DocumentListEntry resource, String email, String role)
     {
+    	// Check mandatory parameters have been set
         ParameterCheck.mandatory("resource", resource);
         ParameterCheck.mandatory("email", email);
         ParameterCheck.mandatory("role", role);
         
-        // Log details of failure
+        // Log details
     	if (logger.isDebugEnabled() == true)
     	{
     		logger.debug("Setting the role " + role + " on the google resource " + resource.getResourceId() + " for email " + email + ".");

@@ -308,8 +308,8 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
                     throw new AlfrescoRuntimeException("Unable to find google resource to delete for node " + nodeRef.toString());
                 }
                 
-                // Delete the entry
-                entry.delete();
+                // Perminantly delete the entry
+                googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
                 
                 // Remove the aspect from the node
                 nodeService.removeAspect(nodeRef, ASPECT_GOOGLERESOURCE);

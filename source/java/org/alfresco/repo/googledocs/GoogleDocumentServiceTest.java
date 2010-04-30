@@ -31,7 +31,6 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -181,58 +180,78 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         }
     }
     
+    private boolean isGoogleServiceAvailable()
+    {
+    	boolean result = true;
+    	try
+    	{    	
+    		googleDocsService.initialise();
+    	}
+    	catch (GoogleDocsServiceInitException e)
+    	{
+    		result = false;
+    	}
+    	return result;
+    }
+    
     public void testGoogleDocUploadDownload() throws Exception
     {
-        googleDocsService.createGoogleDoc(nodeRefDoc, GoogleDocsPermissionContext.SHARE_WRITE);
-        
-        assertTrue(nodeService.hasAspect(nodeRefDoc, ASPECT_GOOGLERESOURCE));
-        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_URL));
-        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_ID));
-        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_TYPE));
-        
-        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefDoc, PROP_URL));
-        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_TYPE));
-        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_ID));                
-        String downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefDoc), ".doc");
-        System.out.println("Download file: " + downloadFile);
-        
-//        googleDocsService.upload(nodeRefSpread, GoogleDocsPermissionContext.SHARE_WRITE);
-//        
-//        assertTrue(nodeService.hasAspect(nodeRefSpread, ASPECT_GOOGLERESOURCE));
-//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_URL));
-//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));
-//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
-//        
-//        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefSpread, PROP_URL));
-//        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
-//        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));                
-//        downloadFile = downloadFile(googleDocsService.download(nodeRefSpread), ".xls");
-//        System.out.println("Download file: " + downloadFile);
+    	if (isGoogleServiceAvailable() == true)
+    	{
+	        googleDocsService.createGoogleDoc(nodeRefDoc, GoogleDocsPermissionContext.SHARE_WRITE);
+	        
+	        assertTrue(nodeService.hasAspect(nodeRefDoc, ASPECT_GOOGLERESOURCE));
+	        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_URL));
+	        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_ID));
+	        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_TYPE));
+	        
+	        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefDoc, PROP_URL));
+	        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_TYPE));
+	        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_ID));                
+	        String downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefDoc), ".doc");
+	        System.out.println("Download file: " + downloadFile);
+	        
+	//        googleDocsService.upload(nodeRefSpread, GoogleDocsPermissionContext.SHARE_WRITE);
+	//        
+	//        assertTrue(nodeService.hasAspect(nodeRefSpread, ASPECT_GOOGLERESOURCE));
+	//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_URL));
+	//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));
+	//        assertNotNull(nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
+	//        
+	//        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefSpread, PROP_URL));
+	//        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
+	//        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));                
+	//        downloadFile = downloadFile(googleDocsService.download(nodeRefSpread), ".xls");
+	//        System.out.println("Download file: " + downloadFile);
+    	}
         
     }
     
     public void testCheckOutCheckIn() throws Exception
     {
-        ContentReader contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
-        assertNull(contentReader);
-        
-        // Check out the empty google document
-        NodeRef workingCopy = checkOutCheckInService.checkout(nodeRef2);
-        
-        assertTrue(nodeService.hasAspect(workingCopy, ASPECT_GOOGLERESOURCE));
-        assertNotNull(nodeService.getProperty(workingCopy, PROP_URL));
-        assertNotNull(nodeService.getProperty(workingCopy, PROP_RESOURCE_ID));
-        assertNotNull(nodeService.getProperty(workingCopy, PROP_RESOURCE_TYPE));
-
-        System.out.println("Google doc URL: " + nodeService.getProperty(workingCopy, PROP_URL));
-        System.out.println("Google doc type: " + nodeService.getProperty(workingCopy, PROP_RESOURCE_TYPE));
-        System.out.println("Google doc id: " + nodeService.getProperty(workingCopy, PROP_RESOURCE_ID));    
-        
-        checkOutCheckInService.checkin(workingCopy, null);
-        
-        assertFalse(nodeService.hasAspect(nodeRefDoc, ASPECT_GOOGLERESOURCE));
-        contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
-        assertNotNull(contentReader);        
+    	if (isGoogleServiceAvailable() == true)
+    	{
+	        ContentReader contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
+	        assertNull(contentReader);
+	        
+	        // Check out the empty google document
+	        NodeRef workingCopy = checkOutCheckInService.checkout(nodeRef2);
+	        
+	        assertTrue(nodeService.hasAspect(workingCopy, ASPECT_GOOGLERESOURCE));
+	        assertNotNull(nodeService.getProperty(workingCopy, PROP_URL));
+	        assertNotNull(nodeService.getProperty(workingCopy, PROP_RESOURCE_ID));
+	        assertNotNull(nodeService.getProperty(workingCopy, PROP_RESOURCE_TYPE));
+	
+	        System.out.println("Google doc URL: " + nodeService.getProperty(workingCopy, PROP_URL));
+	        System.out.println("Google doc type: " + nodeService.getProperty(workingCopy, PROP_RESOURCE_TYPE));
+	        System.out.println("Google doc id: " + nodeService.getProperty(workingCopy, PROP_RESOURCE_ID));    
+	        
+	        checkOutCheckInService.checkin(workingCopy, null);
+	        
+	        assertFalse(nodeService.hasAspect(nodeRefDoc, ASPECT_GOOGLERESOURCE));
+	        contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
+	        assertNotNull(contentReader);        
+    	}
     }    
     
     /**

@@ -208,7 +208,7 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     /**
      * Initialise google docs services
      */
-    public void initialiseGoogleDocsService()
+    public void initialise() throws GoogleDocsServiceInitException
     {
         if (initialised == false)
         {
@@ -219,7 +219,7 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
             
             if (username == null ||username.length() == 0 || password == null)
             {
-                throw new AlfrescoRuntimeException("No Goolge Docs credentials found. Please set the Google Docs authentication configuration.");
+                throw new GoogleDocsServiceInitException("No Goolge Docs credentials found. Please set the Google Docs authentication configuration.");
             }
             
             try
@@ -230,7 +230,7 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
             }
             catch (AuthenticationException e)
             {
-                throw new AlfrescoRuntimeException("Unable to connect to Google Docs.  Please check the Google Docs authentication configuration.", e);
+                throw new GoogleDocsServiceInitException("Unable to connect to Google Docs.  Please check the Google Docs authentication configuration.", e);
             }
             
             initialised = true;
@@ -250,7 +250,14 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         // Initialise google doc services
-        initialiseGoogleDocsService();
+        try
+        {
+        	initialise();
+        }
+        catch (GoogleDocsServiceInitException e)
+        {
+        	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
+        }
 
         // Get property values
         String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
@@ -295,7 +302,14 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         // Initialise google doc services
-        initialiseGoogleDocsService();
+        try
+        {
+        	initialise();
+        }
+        catch (GoogleDocsServiceInitException e)
+        {
+        	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
+        }
         
         try
         {
@@ -485,7 +499,14 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         // Initialise google doc services
-        initialiseGoogleDocsService();
+        try
+        {
+        	initialise();
+        }
+        catch (GoogleDocsServiceInitException e)
+        {
+        	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
+        }
         
         try
         {

@@ -18,13 +18,37 @@
 */
 package org.alfresco.repo.googledocs;
 
+
 /**
- * Google docs permission context
+ * Google docs service initialisation exception class.
  */
-public enum GoogleDocsPermissionContext
+public class GoogleDocsServiceInitException extends Exception 
 {
-    PRIVATE,
-    SHARE_READ,
-    SHARE_WRITE,
-    SHARE_READWRITE
+	/** Serial version UUID */
+	private static final long serialVersionUID = -2104024155137888545L;
+	
+	/**
+	 * @param message	error message
+	 */
+	public GoogleDocsServiceInitException(String message)
+	{
+		super(message);
+	}
+
+	/**
+	 * @param message	error message
+	 * @param cause		causing exception
+	 */
+	public GoogleDocsServiceInitException(String message, Throwable cause) 
+	{
+		super(message, cause);
+	}
+
+	/**
+	 * @param cause		causing exception
+	 */
+	public GoogleDocsServiceInitException(Throwable cause) 
+	{
+		super(cause);
+	}
 }

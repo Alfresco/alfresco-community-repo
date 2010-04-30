@@ -144,11 +144,16 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         {
             throw new RenditionServiceException("The path must include a valid filename! Path: " + path);
         }
+
         FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
-        FileInfo parentInfo = FileFolderServiceImpl.makeFolders(fileFolderService,
-                    companyHome, folderElements,
-                    ContentModel.TYPE_FOLDER);
-        NodeRef parent = parentInfo.getNodeRef();
+        NodeRef parent = companyHome;
+        if (!folderElements.isEmpty())
+        {
+            FileInfo parentInfo = FileFolderServiceImpl.makeFolders(fileFolderService,
+                        companyHome, folderElements,
+                        ContentModel.TYPE_FOLDER);
+            parent = parentInfo.getNodeRef();
+        }
         NodeRef child = fileFolderService.searchSimple(parent, fileName);
         return new RenditionLocationImpl(parent, child, fileName);
     }
@@ -200,7 +205,9 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         root.put("extension", sourceExtension);
         root.put("date", new SimpleDate(new Date(), SimpleDate.DATETIME));
         root.put("cwd", cwd);
-        root.put("companyHome", new TemplateNode(companyHome, serviceRegistry, null));
+        TemplateNode companyHomeNode = new TemplateNode(companyHome, serviceRegistry, null); 
+        root.put("companyHome", companyHomeNode); 
+        root.put("companyhome", companyHomeNode);   //Added this to be consistent with the script API
         root.put("sourceNode", new TemplateNode(sourceNode, serviceRegistry, null));
         root.put("sourceContentType", nodeService.getType(sourceNode).getLocalName());
         root.put("renditionContentType", nodeService.getType(tempRenditionLocation).getLocalName());

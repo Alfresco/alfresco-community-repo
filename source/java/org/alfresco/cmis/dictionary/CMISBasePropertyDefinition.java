@@ -25,6 +25,7 @@ import java.util.HashSet;
 import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISChoice;
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISTypeDefinition;
@@ -140,7 +141,15 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         }
         required = propDef.isMandatory();
         defaultValue = propDef.getDefaultValue();
-        updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
+        if (propertyId.getId().equals(CMISDictionaryModel.PROP_OBJECT_TYPE_ID))
+        {
+            // Fix http://issues.alfresco.com/jira/browse/ALF-2637
+            updatability = CMISUpdatabilityEnum.ON_CREATE;
+        }
+        else
+        {
+            updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
+        }
         queryable = propDef.isIndexed();
         if (queryable)
         {

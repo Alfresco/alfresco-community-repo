@@ -27,7 +27,8 @@ public enum CMISUpdatabilityEnum implements EnumLabel
 {
     READ_ONLY("readonly"),
     READ_AND_WRITE("readwrite"),
-    READ_AND_WRITE_WHEN_CHECKED_OUT("whencheckedout");
+    READ_AND_WRITE_WHEN_CHECKED_OUT("whencheckedout"),
+    ON_CREATE("oncreate");
 
     
     private String label;

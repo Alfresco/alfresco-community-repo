@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -48,7 +49,8 @@ public class SendInviteAction extends JBPMSpringActionHandler
     {
         Repository repository = (Repository) factory.getBean("repositoryHelper");
         ServiceRegistry services = (ServiceRegistry) factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        inviteSender = new InviteSender(services, repository);
+        MessageService messageService= (MessageService) factory.getBean("MessageService");
+        inviteSender = new InviteSender(services, repository, messageService);
         namespaceService = services.getNamespaceService();
     }
 

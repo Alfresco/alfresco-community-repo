@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.service.ServiceRegistry;
@@ -80,8 +81,9 @@ public class InviteSender
     private final SiteService siteService;
     private final TemplateService templateService;
     private final Repository repository;
-
-    public InviteSender(ServiceRegistry services, Repository repository)
+    private final MessageService messageService;
+    
+    public InviteSender(ServiceRegistry services, Repository repository, MessageService messageService)
     {
         this.actionService = services.getActionService();
         this.nodeService = services.getNodeService();
@@ -90,6 +92,7 @@ public class InviteSender
         this.siteService = services.getSiteService();
         this.templateService = services.getTemplateService();
         this.repository = repository;
+        this.messageService = messageService;
     }
 
     /**
@@ -130,7 +133,7 @@ public class InviteSender
 
     private String buildSubject(Map<String, String> properties)
     {
-        return "Invitation to join '" + getSiteName(properties) + "' site";
+    	return messageService.getMessage("invitation.invitesender.email.subject", getSiteName(properties));
     }
 
     private String buildMailText(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
@@ -159,7 +162,7 @@ public class InviteSender
         args.put("inviteePersonRef", invitee.toString());
         args.put("inviterPersonRef", inviter.toString());
         args.put("siteName", getSiteName(properties));
-        args.put("inviteeSiteRole", properties.get(wfVarRole));
+        args.put("inviteeSiteRole", getRoleName(properties));
         args.put("inviteeUserName", properties.get(wfVarInviteeUserName));
         args.put("inviteeGenPassword", properties.get(wfVarInviteeGenPassword));
         args.put("acceptLink", acceptLink);
@@ -167,7 +170,17 @@ public class InviteSender
         return args;
     }
 
-    private Map<String, Object> makeDefaultModel()
+    private String getRoleName(Map<String, String> properties) {
+    	String roleName = properties.get(wfVarRole);
+    	String role = messageService.getMessage("invitation.invitesender.email.role."+roleName);
+    	if(role == null)
+    	{
+			role = roleName;
+		}
+    	return role;
+	}
+
+	private Map<String, Object> makeDefaultModel()
     {
         NodeRef person = repository.getPerson();
         NodeRef companyHome = repository.getCompanyHome();

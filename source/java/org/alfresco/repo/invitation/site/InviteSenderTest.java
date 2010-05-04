@@ -33,6 +33,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -79,6 +80,7 @@ public class InviteSenderTest extends TestCase
     private static final String packageId = testStore + "/Package";
     private static final String instanceId = "InstanceId";
 
+    private final MessageService messageService = mock(MessageService.class);
     private Action mailAction = mock(Action.class);
     private SiteInfo siteInfo = mock(SiteInfo.class);
     private TemplateService templateService;
@@ -86,12 +88,22 @@ public class InviteSenderTest extends TestCase
 
     public void testSendMailWorkingPath() throws Exception
     {
+    	String rolePropertyName = "invitation.invitesender.email.role.Role";
+    	String subjectPropertyName = "invitation.invitesender.email.subject";
+
+    	String subjectMsg = "Subject message";
+		when(messageService.getMessage(eq(subjectPropertyName), any())).thenReturn(subjectMsg);
+    	
         Map<String, String> properties = buildDefaultProperties();
         sender.sendMail(properties);
+
+        verify(messageService).getMessage(eq(subjectPropertyName), any());
+		verify(messageService).getMessage(eq(rolePropertyName));
+
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_FROM), eq(inviter.email));
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TO), eq(invitee.email));
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_SUBJECT),
-                    eq("Invitation to join '" + siteShortName + "' site"));
+                    eq(subjectMsg));
 
         Map<String, String> argsMap = getArgsMap();
         assertNotNull(argsMap);
@@ -99,7 +111,6 @@ public class InviteSenderTest extends TestCase
         assertEquals(invitee.node.toString(), argsMap.get("inviteePersonRef"));
         assertEquals(inviter.node.toString(), argsMap.get("inviterPersonRef"));
         assertEquals(siteShortName, argsMap.get("siteName"));
-        assertEquals(role, argsMap.get("inviteeSiteRole"));
         assertEquals(invitee.name, argsMap.get("inviteeUserName"));
         assertEquals(password, argsMap.get("inviteeGenPassword"));
         assertEquals(
@@ -108,6 +119,16 @@ public class InviteSenderTest extends TestCase
         assertEquals(
                     "test://test/path/reject?inviteId=InstanceId&inviteeUserName=invitee&siteShortName=Full Site Name&inviteTicket=Ticket",
                     argsMap.get("rejectLink"));
+
+        // When no role message is found then the role name is used.
+        assertEquals(role, argsMap.get("inviteeSiteRole"));
+        
+        reset(templateService, messageService);
+        String roleMsg = "role message";
+        when(messageService.getMessage(rolePropertyName)).thenReturn(roleMsg);
+        sender.sendMail(properties);
+        // Check that when the role message is set then that role message is used.
+        assertEquals(roleMsg, getArgsMap().get("inviteeSiteRole"));
     }
 
     public void testSendMailWithWhitespaceUserName() throws Exception
@@ -175,7 +196,7 @@ public class InviteSenderTest extends TestCase
         super.setUp();
         ServiceRegistry services = mockServices();
         Repository repository = mockRepository();
-        sender = new InviteSender(services, repository);
+        sender = new InviteSender(services, repository, messageService);
     }
 
     /**

@@ -349,7 +349,7 @@
 [/#if]
 [/#macro]
 
-[#macro propargs defid="" displayname="" queryname="" localname=""][#if defid !=""]propertyDefinitionId="${defid}"[/#if][#if displayname != ""] displayName="${displayname}"[/#if][#if queryname != ""] queryName="${queryname}"[/#if][/#macro]
+[#macro propargs defid="" displayname="" queryname="" localname=""][#if defid !=""]propertyDefinitionId="${defid?xml}"[/#if][#if displayname != ""] displayName="${displayname?xml}"[/#if][#if queryname != ""] queryName="${queryname?xml}"[/#if][/#macro]
 
 [#--             --]
 [#-- CMIS Values --]
@@ -719,37 +719,37 @@
 [#if choices?exists]
 [#list choices as choice]
 [#if type == cmisconstants.DATATYPE_STRING]
-<cmis:choiceString displayName="${choice.name}">
+<cmis:choiceString displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceString>
 [#elseif type == cmisconstants.DATATYPE_INTEGER]
-<cmis:choiceInteger displayName="${choice.name}">
+<cmis:choiceInteger displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceInteger>
 [#elseif type == cmisconstants.DATATYPE_DECIMAL]
-<cmis:choiceDecimal displayName="${choice.name}">
+<cmis:choiceDecimal displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceDecimal>
 [#elseif type == cmisconstants.DATATYPE_BOOLEAN]
-<cmis:choiceBoolean displayName="${choice.name}">
+<cmis:choiceBoolean displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceBoolean>
 [#elseif type == cmisconstants.DATATYPE_DATETIME]
-<cmis:choiceDateTime displayName="${choice.name}">
+<cmis:choiceDateTime displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceDateTime>
 [#elseif type == cmisconstants.DATATYPE_URI]
-<cmis:choiceUri displayName="${choice.name}">
+<cmis:choiceUri displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceUri>
 [#elseif type == cmisconstants.DATATYPE_ID]
-<cmis:choiceId displayName="${choice.name}">
+<cmis:choiceId displayName="${choice.name?xml}">
 [@cmisChoices choice.children type/]
 <cmis:value>[@stringvalue choice.value/]</cmis:value>
 </cmis:choiceId>

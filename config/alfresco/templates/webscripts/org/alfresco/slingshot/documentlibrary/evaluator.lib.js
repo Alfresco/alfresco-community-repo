@@ -247,11 +247,15 @@ var Evaluator =
             break;
       }
       
-      // Part of an active workflow?
-      for each (activeWorkflow in node.activeWorkflows)
+      // Part of an active workflow? Guard against stale worklow tasks.
+      try
       {
-         activeWorkflows.push(activeWorkflow.id);
+         for each (activeWorkflow in node.activeWorkflows)
+         {
+            activeWorkflows.push(activeWorkflow.id);
+         }
       }
+      catch {}
 
       return(
       {

@@ -19,6 +19,8 @@
 
 package org.alfresco.repo.rendition;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rendition.RenderCallback;
@@ -38,7 +40,7 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
      */
     private static final long serialVersionUID = 4336392868488634875L;
 
-    protected static final String RENDITION_DEFINITION_NAME = "renderingActionName";
+    public static final String RENDITION_DEFINITION_NAME = "renderingActionName";
 
     public NodeRef renditionParent;
     public QName renditionAssociationType;
@@ -74,7 +76,8 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
      */
     public QName getRenditionName()
     {
-        return (QName) getParameterValue(RENDITION_DEFINITION_NAME);
+        Serializable parameterValue = getParameterValue(RENDITION_DEFINITION_NAME);
+		return (QName) parameterValue;
     }
 
     /*

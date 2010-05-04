@@ -162,6 +162,18 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
             StringBuilder msg = new StringBuilder();
             msg.append("Rendering node ").append(actionedUponNodeRef).append(" with rendition definition ").append(
                         renditionDefinition.getRenditionName());
+            msg.append("\n").append("  parameters:").append("\n");
+            if (renditionDefinition.getParameterValues().isEmpty() == false)
+            {
+            	for (String paramKey : renditionDefinition.getParameterValues().keySet())
+            	{
+            		msg.append("    ").append(paramKey).append("=").append(renditionDefinition.getParameterValue(paramKey)).append("\n");
+            	}
+            }
+            else
+            {
+            	msg.append("    [None]");
+            }
             log.debug(msg.toString());
         }
 
@@ -331,10 +343,19 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
     {
         QName renditionName=renditionDefinition.getRenditionName();
         ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionName);
-        if(renditionAssoc ==null)
-            return null;
-        else
-            return renditionAssoc.getChildRef();
+        
+        NodeRef result = (renditionAssoc == null) ? null : renditionAssoc.getChildRef();
+        if (log.isDebugEnabled())
+        {
+        	StringBuilder msg = new StringBuilder();
+        	msg.append("Existing rendition with name ")
+        	   .append(renditionName)
+        	   .append(": ")
+        	   .append(result);
+        	log.debug(msg.toString());
+        }
+        
+        return result;
     }
 
     private void manageRenditionAspects(NodeRef sourceNode, ChildAssociationRef renditionParentAssoc)

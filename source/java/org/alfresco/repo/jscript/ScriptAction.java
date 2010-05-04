@@ -41,7 +41,7 @@ import org.mozilla.javascript.Wrapper;
  * 
  * @author davidc
  */
-public final class ScriptAction implements Serializable, Scopeable
+public class ScriptAction implements Serializable, Scopeable
 {
     private static final long serialVersionUID = 5794161358406531996L;
 
@@ -52,11 +52,11 @@ public final class ScriptAction implements Serializable, Scopeable
     private ActionValueConverter converter;
 
     /** Action state */
-    private Action action;
+    protected Action action;
 
-    private ActionDefinition actionDef;
+    protected ActionDefinition actionDef;
     
-    private ServiceRegistry services;
+    protected ServiceRegistry services;
     private ActionService actionService;
     private NamespaceService namespaceService;
     private TransactionService transactionService;
@@ -145,13 +145,18 @@ public final class ScriptAction implements Serializable, Scopeable
                 actionParams.put(name, value);
             }
         }
-        actionService.executeAction(action, node.getNodeRef());
+        executeImpl(node);
         
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;
         
         // Reset the actioned upon node
         node.reset();
+    }
+
+    protected void executeImpl(ScriptNode node)
+    {
+        actionService.executeAction(action, node.getNodeRef());
     }
     
     /**
@@ -184,7 +189,7 @@ public final class ScriptAction implements Serializable, Scopeable
         {
             public Object execute() throws Throwable
             {
-                actionService.executeAction(action, node.getNodeRef());
+                executeImpl(node);
                 return null;
             }
         };

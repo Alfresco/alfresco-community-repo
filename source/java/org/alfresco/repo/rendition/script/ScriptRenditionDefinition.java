@@ -18,10 +18,8 @@
  */
 package org.alfresco.repo.rendition.script;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.repo.jscript.ScriptAction;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -35,23 +33,14 @@ import org.mozilla.javascript.Scriptable;
  * @author Neil McErlean
  * @see org.alfresco.service.cmr.rendition.RenditionDefinition
  */
-public final class ScriptRenditionDefinition implements Serializable
+public final class ScriptRenditionDefinition extends ScriptAction
 {
     private static final long serialVersionUID = 8132935577891455490L;
-    private final RenderingEngineDefinition engineDefinition;
-    private final RenditionDefinition renditionDefinition;
-    private final ServiceRegistry serviceRegistry;
-    
-    private final ScriptAction scriptAction;
 
     public ScriptRenditionDefinition(ServiceRegistry serviceRegistry, Scriptable scope,
             RenderingEngineDefinition engineDefinition, RenditionDefinition renditionDefinition)
     {
-        this.serviceRegistry = serviceRegistry;
-        this.engineDefinition = engineDefinition;
-        this.renditionDefinition = renditionDefinition;
-        
-        this.scriptAction = new ScriptAction(serviceRegistry, renditionDefinition, engineDefinition);
+    	super(serviceRegistry, renditionDefinition, engineDefinition);
     }
     
     /**
@@ -61,18 +50,17 @@ public final class ScriptRenditionDefinition implements Serializable
      */
     public String getRenditionName()
     {
-        QName qname = this.renditionDefinition.getRenditionName();
-        return qname.toPrefixString(serviceRegistry.getNamespaceService());
+        QName qname = getRenditionDefinition().getRenditionName();
+        return qname.toPrefixString(services.getNamespaceService());
     }
     
+    /**
+     * Returns the name of the Rendering Engine used by this definition.
+     * @return
+     */
     public String getRenderingEngineName()
     {
-        return this.engineDefinition.getName();
-    }
-
-    public Map<String, Serializable> getParameters()
-    {
-        return this.scriptAction.getParameters();
+        return getRenderingEngineDefinition().getName();
     }
 
     @Override
@@ -87,6 +75,18 @@ public final class ScriptRenditionDefinition implements Serializable
     
     RenditionDefinition getRenditionDefinition()
     {
-        return this.renditionDefinition;
+        return (RenditionDefinition)action;
+    }
+    
+    RenderingEngineDefinition getRenderingEngineDefinition()
+    {
+        return (RenderingEngineDefinition)actionDef;
+    }
+    
+    @Override
+    protected void executeImpl(ScriptNode node)
+    {
+    	RenditionDefinition renditionDefinition = getRenditionDefinition();
+    	this.services.getRenditionService().render(node.getNodeRef(), renditionDefinition);
     }
 }

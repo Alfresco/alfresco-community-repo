@@ -47,6 +47,7 @@ function testCreateRenditionDefinitionAndRender()
 	// As long as we don't save this renditionDefinition, there should be no need to
 	// give it a name which is unique across multiple test executions.
 	var renditionDefName = "cm:adHocRenditionDef";
+	var renditionDefNameLong = "{http://www.alfresco.org/model/content/1.0}adHocRenditionDef";
 	var renderingEngineName = "imageRenderingEngine";
 
 	var renditionDef = renditionService.createRenditionDefinition(renditionDefName, renderingEngineName);
@@ -55,20 +56,42 @@ function testCreateRenditionDefinitionAndRender()
 	test.assertEquals(renditionDefName, renditionDef.renditionName);
 	test.assertEquals(renderingEngineName, renditionDef.renderingEngineName);
 
-	
 	// Set some parameters.
-	renditionDef.parameters['rendition-nodetype'] = "cm:content";
-	renditionDef.parameters['xsize'] = 99;
+	renditionDef.parameters["rendition-nodetype"] = "cm:content";
+	renditionDef.parameters["xsize"] = 99;
 	
 	// Read them back to check
+	test.assertNotNull(renditionDef.parameters, "renditionDef.parameters was null");
 	test.assertEquals("cm:content", renditionDef.parameters['rendition-nodetype']);
 	test.assertEquals(99, renditionDef.parameters['xsize']);
 	
 	// Now execute this rendition definition
-    var rendition = renditionService.render(testSourceNode, renditionDef);
+    renditionDef.execute(testSourceNode);
+
+    // Alternate, equivalent call:
+    // renditionService.render(testSourceNode, renditionDef);
+    
+    var children = testSourceNode.children;
+    
+    // Find the child that is the ad hoc rendition
+    var rendition;
+    for (var i = 0; i < children.length; i++)
+    {
+    	var nextChild = children[i];
+    	var assocName = nextChild.primaryParentAssoc.getQName();
+    	if (assocName == renditionDefNameLong)
+    	{
+    		rendition = nextChild;
+    	}
+    }
     
     test.assertNotNull(rendition, "rendition was null.");
+
     test.assertTrue(rendition.hasAspect("rn:hiddenRendition"));
+    test.assertEquals("{http://www.alfresco.org/model/content/1.0}content", rendition.type);
+    
+    test.assertNotNull(rendition.mimetype, "rendition mimetype was null.");
+    test.assertEquals("image/png", rendition.mimetype);
 }
 
 // Execute tests

@@ -120,7 +120,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected NodeService nodeService;
 
     /* Parameter names common to all Rendering Actions */
-    //TODO javadoc these
     /**
      * This optional {@link String} parameter specifies the location of a
      * classpath resource which can be used as a placeholder while a rendition
@@ -297,6 +296,15 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef sourceNode)
     {
+    	if (logger.isDebugEnabled())
+    	{
+    		StringBuilder msg = new StringBuilder();
+    		msg.append("Executing rendering engine; name:")
+    		   .append(this.name).append(", class:")
+    		   .append(this.getClass().getName());
+    		logger.debug(msg.toString());
+    	}
+    	
         checkParameterValues(action);
         RenditionDefinition renditionDefinition = checkActionIsRenditionDefinition(action);
         checkSourceNodeExists(sourceNode);
@@ -413,6 +421,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
         List<ParameterDefinition> paramList = new ArrayList<ParameterDefinition>();
+        
+        paramList.add(new ParameterDefinitionImpl(RenditionDefinitionImpl.RENDITION_DEFINITION_NAME, DataTypeDefinition.QNAME, true,
+                getParamDisplayLabel(RenditionDefinitionImpl.RENDITION_DEFINITION_NAME)));
+
         paramList.add(new ParameterDefinitionImpl(PARAM_RUN_AS, DataTypeDefinition.TEXT, false,
                 getParamDisplayLabel(PARAM_RUN_AS)));
 

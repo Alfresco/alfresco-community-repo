@@ -31,8 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Script object representing the rendition service.
@@ -78,7 +76,16 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
      */
     public ScriptRenditionDefinition createRenditionDefinition(String renditionName, String renderingEngineName)
     {
-        QName renditionQName = createQName(renditionName);
+    	QName renditionQName = createQName(renditionName);
+    	
+    	if (logger.isDebugEnabled())
+    	{
+    		StringBuilder msg = new StringBuilder();
+    		msg.append("Creating ScriptRenditionDefinition [")
+    		   .append(renditionName).append(", ")
+    		   .append(renderingEngineName).append("]");
+    		logger.debug(msg.toString());
+    	}
 
         RenderingEngineDefinition engineDefinition = renditionService.getRenderingEngineDefinition(renderingEngineName);
         RenditionDefinition rendDef = renditionService.createRenditionDefinition(renditionQName, renderingEngineName);
@@ -123,9 +130,28 @@ public class ScriptRenditionService extends BaseScopableProcessorExtension
     
     public ScriptNode render(ScriptNode sourceNode, ScriptRenditionDefinition renditionDefQName)
     {
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Rendering source node '")
+                .append(sourceNode)
+                .append("' with renditionDefQName '").append(renditionDefQName)
+                .append("'");
+            logger.debug(msg.toString());
+        }
+
         ChildAssociationRef chAssRef = this.renditionService.render(sourceNode.getNodeRef(),
                 renditionDefQName.getRenditionDefinition());
-        return new ScriptNode(chAssRef.getChildRef(), serviceRegistry);
+        
+        NodeRef renditionNode = chAssRef.getChildRef();
+		if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Rendition: ").append(renditionNode);
+            logger.debug(msg.toString());
+        }
+
+        return new ScriptNode(renditionNode, serviceRegistry);
     }
 
 

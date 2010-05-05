@@ -87,6 +87,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.READ_AND_WRITE, EnumUpdatability.READWRITE);
         UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT, EnumUpdatability.WHENCHECKEDOUT);
         UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.READ_ONLY, EnumUpdatability.READONLY);
+        UPDATABILITY_ENUM_MAPPING.put(CMISUpdatabilityEnum.ON_CREATE, EnumUpdatability.ONCREATE);
 
         CARDINALITY_ENUM_MAPPING = new HashMap<CMISCardinalityEnum, EnumCardinality>();
         CARDINALITY_ENUM_MAPPING.put(CMISCardinalityEnum.MULTI_VALUED, EnumCardinality.MULTI);
@@ -450,14 +451,15 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     {
         checkRepositoryId(repositoryId);
 
-        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
         CmisRepositoryInfoType repositoryInfoType = new CmisRepositoryInfoType();
-        repositoryInfoType.setRepositoryId(serverDescriptor.getId());
-        repositoryInfoType.setRepositoryName(serverDescriptor.getName());
+        repositoryInfoType.setRepositoryId(currentDescriptor.getId());
+        repositoryInfoType.setRepositoryName(currentDescriptor.getName());
         repositoryInfoType.setRepositoryDescription("");
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
-        repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
+        repositoryInfoType.setProductVersion(currentDescriptor.getVersion());
         try
         {
             repositoryInfoType.setRootFolderId(propertiesUtil.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID, (String) null));

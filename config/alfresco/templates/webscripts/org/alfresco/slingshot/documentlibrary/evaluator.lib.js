@@ -255,7 +255,7 @@ var Evaluator =
             activeWorkflows.push(activeWorkflow.id);
          }
       }
-      catch {}
+      catch (e) {}
 
       return(
       {

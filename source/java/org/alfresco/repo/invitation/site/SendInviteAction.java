@@ -49,7 +49,7 @@ public class SendInviteAction extends JBPMSpringActionHandler
     {
         Repository repository = (Repository) factory.getBean("repositoryHelper");
         ServiceRegistry services = (ServiceRegistry) factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        MessageService messageService= (MessageService) factory.getBean("MessageService");
+        MessageService messageService= (MessageService) factory.getBean("messageService");
         inviteSender = new InviteSender(services, repository, messageService);
         namespaceService = services.getNamespaceService();
     }

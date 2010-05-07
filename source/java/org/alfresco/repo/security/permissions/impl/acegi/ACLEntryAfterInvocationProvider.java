@@ -553,7 +553,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else
             {
-                for (int i = 0; i < maxSize.intValue(); i++)
+                for (int i = 0; i < returnedObject.length(); i++)
                 {
                     filteringResultSet.setIncluded(i, true);
                 }

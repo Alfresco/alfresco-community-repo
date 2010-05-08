@@ -7,18 +7,18 @@
   </description>
   
   <!-- by object id -->
-  <url>/cmis/i/{id}/content{property}?a={attach?}</url>
-  <url>/cmis/s/{store}/i/{id}/content{property}?a={attach?}</url>
+  <url>/cmis/i/{id}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/cmis/s/{store}/i/{id}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
   <!-- by path -->
-  <url>/cmis/p{path}/content{property}?a={attach?}</url>
-  <url>/cmis/s/{store}/p{path}/content{property}?a={attach?}</url>
+  <url>/cmis/p{path}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/cmis/s/{store}/p{path}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
 
   <!-- alfresco style -->
-  <url>/api/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}</url>
-  <url>/api/path/content{property}/{store_type}/{store_id}/{path}?a={attach?}</url>
-  <url>/api/avmpath/content{property}/{store_id}/{avmpath}?a={attach?}</url>
-  <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
-  <url>/api/path/{store_type}/{store_id}/{path}/content{property}?a={attach?}</url>
+  <url>/api/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/api/path/content{property}/{store_type}/{store_id}/{path}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/api/avmpath/content{property}/{store_id}/{avmpath}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
+  <url>/api/path/{store_type}/{store_id}/{path}/content{property}?a={attach?}&amp;streamId={streamId?}</url>
   
   <args>
     <arg>
@@ -42,6 +42,10 @@
         <shortname>attach</shortname>
         <description>if true, force download of content as attachment</description>
         <default>false</default>
+    </arg>
+    <arg>
+        <shortname>streamId</shortname>
+        <description>if provided, download the rendition of the content as identified by the stream id</description>
     </arg>
   </args>
   

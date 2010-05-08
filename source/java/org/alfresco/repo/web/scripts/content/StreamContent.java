@@ -489,22 +489,7 @@ public class StreamContent extends AbstractWebScript
     protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, 
                 Date modified, String eTag, String attachFileName) throws IOException
     {
-        // handle attachment
-        if (attach == true)
-        {
-            String headerValue = "attachment";
-            if (attachFileName != null && attachFileName.length() > 0)
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("Attaching content using filename: " + attachFileName);
-                
-                headerValue += "; filename=" + attachFileName;
-            }
-            
-            // set header based on filename - will force a Save As from the browse if it doesn't recognize it
-            // this is better than the default response of the browser trying to display the contents
-            res.setHeader("Content-Disposition", headerValue);
-        }
+        setAttachment(res, attach, attachFileName);
 
         // establish mimetype
         String mimetype = reader.getMimetype();
@@ -553,4 +538,31 @@ public class StreamContent extends AbstractWebScript
                 logger.info("Client aborted stream read:\n\tcontent: " + reader);
         }
     }
+
+    /**
+     * Set attachment header
+     * 
+     * @param res
+     * @param attach
+     * @param attachFileName
+     */
+    protected void setAttachment(WebScriptResponse res, boolean attach, String attachFileName)
+    {
+        if (attach == true)
+        {
+            String headerValue = "attachment";
+            if (attachFileName != null && attachFileName.length() > 0)
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Attaching content using filename: " + attachFileName);
+                
+                headerValue += "; filename=" + attachFileName;
+            }
+            
+            // set header based on filename - will force a Save As from the browse if it doesn't recognize it
+            // this is better than the default response of the browser trying to display the contents
+            res.setHeader("Content-Disposition", headerValue);
+        }
+    }
+
 }

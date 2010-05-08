@@ -310,7 +310,9 @@
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />
       <property name="contentService" ref="ContentService" />
+      <property name="dictionaryService" ref="DictionaryService" />
       <property name="mimetypeService" ref="MimetypeService" />
+      <property name="CMISRenditionService" ref="CMISRenditionService" />
    </bean>
    
    <!--  Content Write -->

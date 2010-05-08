@@ -53,7 +53,9 @@
 [@linksLib.linkstream node "enclosure"/]
 [@linksLib.linknodeedit node/]
 [@linksLib.linkstream node "edit-media"/]
-[@documentCMISLinks node=node renditionfilter=renditionfilter/]
+[@documentCMISLinks node=node/]
+[#local renditionsMap=cmisrenditions(node, renditionfilter)/]
+[@renditionLinks node renditionsMap/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>[@contentsummary node/]</summary>
 <title>${node.name?xml}</title>
@@ -65,12 +67,13 @@
 [#if includeallowableactions][@allowableactions node/][/#if]
 [@relationships node includerelationships includeallowableactions propfilter/]
 [#if includeacl][@aclreport node/][/#if]
+[@renditions renditionsMap/]
 </cmisra:object>
 <cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
 [/@entry]
 [/#macro]
 
-[#macro documentCMISLinks node renditionfilter="cmis:none"]
+[#macro documentCMISLinks node]
 [@linksLib.linkallowableactions node/]
 [@linksLib.linkrelationships node/]
 [@linksLib.linkpolicies node/]
@@ -86,10 +89,6 @@
 [/#if]
 [@linksLib.linktype node/]
 [@linksLib.linkservice/]
-[#local nodeMap=cmisrenditions(node, renditionfilter)/]
-[#list nodeMap.renditions as rendition]
-[@linksLib.linkrendition node=node rendition=rendition renditionNode=nodeMap.renditionNodes[rendition_index]/]
-[/#list]
 [/#macro]
 
 [#--                       --]
@@ -103,7 +102,7 @@
 [#macro folder node renditionfilter="cmis:none" propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" includeacl=false ns="" depth=1 maxdepth=1 relativePathSegment="" nestedkind=""]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
-<content>${node.id}</content>  [#-- TODO --]
+[@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 [@linksLib.linknodeself node/]
 [@linksLib.linknodeedit node/]
@@ -205,19 +204,16 @@
 [#if row.nodes?? && row.nodes?size == 1][#assign node = row.nodes?first/][/#if]
 [#if node??]
 <author><name>${node.properties.creator!""}</name></author>
-[#-- TODO: review if consistent with ATOM --]
-[#if node.isDocument]
-  [@contentstream node/]
-[#else]
-  <content>${node.id}</content>  [#-- TODO --]
-[/#if]    
+[@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 [@linksLib.linknodeself node/]
 [@linksLib.linknodeedit node/]
 [#if node.isDocument]
   [@linksLib.linkstream node "enclosure"/]
   [@linksLib.linkstream node "edit-media"/]
-  [@documentCMISLinks node=node renditionfilter=renditionfilter/]
+  [@documentCMISLinks node=node/]
+  [#assign renditionsMap=cmisrenditions(node, renditionfilter)/]
+  [@renditionLinks node renditionsMap/]
 [#else]
   [@folderCMISLinks node=node/]
 [/#if]
@@ -254,6 +250,9 @@
 [#if node??]
 [#if includeallowableactions][@allowableactions node/][/#if]
 [@relationships node includerelationships includeallowableactions/]
+[#if node.isDocument]
+[@renditions renditionsMap/]
+[/#if]
 [/#if]
 </cmisra:object>
 [/@entry]
@@ -283,7 +282,6 @@
 </cmisra:object>
 [/@entry]
 [/#macro]
-
 
 [#--                 --]
 [#-- CMIS Properties --]
@@ -461,6 +459,30 @@
   <cmis:permission>${entry.permission}</cmis:permission>
   <cmis:direct>${entry.direct?string}</cmis:direct>
 </cmis:permission>
+[/#macro]
+
+[#--            --]
+[#-- Renditions --]
+[#--            --]
+
+[#macro renditionLinks node renditionsMap]
+[#list renditionsMap.renditions as rendition]
+[@linksLib.linkrendition node=node rendition=rendition renditionNode=renditionsMap.renditionNodes[rendition_index]/]
+[/#list]
+[/#macro]
+
+[#macro renditions renditionsMap]
+[#list renditionsMap.renditions as rendition]
+<cmis:rendition>
+  <cmis:streamId>${rendition.streamId}</cmis:streamId>
+  <cmis:mimetype>${rendition.mimeType}</cmis:mimetype>
+  <cmis:length>[#if rendition.length??]${rendition.length?c}[#else]-1[/#if]</cmis:length>
+  <cmis:kind>${rendition.kind.label}</cmis:kind>
+  [#if rendition.title??]<cmis:title>${rendition.title}</cmis:title>[/#if]
+  [#if rendition.height??]<cmis:height>${rendition.height?c}</cmis:height>[/#if]
+  [#if rendition.width??]<cmis:width>${rendition.width?c}</cmis:width>[/#if]
+</cmis:rendition>
+[/#list]
 [/#macro]
 
 [#--                                --]
@@ -769,7 +791,7 @@
 [#macro foldersummary node][#if node.properties.description??]${node.properties.description?xml}[#elseif node.properties.title??]${node.properties.title?xml}[#else][/#if][/#macro]
 
 [#-- Helper to render Alfresco content type to Atom content type --]
-[#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text<#else>${type}[/#if][/#macro]
+[#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text[#else]${type}[/#if][/#macro]
 
 [#-- Helper to render atom content element --]
 [#macro contentstream node]<content[#if node.mimetype??] type="${node.mimetype}"[/#if] src="[@linksLib.contenturi node/]"/>[/#macro]

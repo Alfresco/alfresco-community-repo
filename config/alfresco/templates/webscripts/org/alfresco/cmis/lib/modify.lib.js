@@ -29,10 +29,6 @@ function createNode(parent, entry, slug, versioningState)
     if (baseType == DOCUMENT_TYPE_ID)
     {
         node = parent.createFile(name);
-        if (versioningState != null)
-        {
-            node = cmis.applyVersioningState(node, versioningState);
-        }
     }
     else if (baseType == FOLDER_TYPE_ID)
     {
@@ -65,6 +61,12 @@ function createNode(parent, entry, slug, versioningState)
     // update node properties (excluding object type & name)
     var exclude = [ PROP_OBJECT_TYPE_ID, PROP_NAME ];
     var updated = updateNode(node, entry, exclude, function(propDef) {return patchValidator(propDef, true);});
+
+    // apply versioning state
+    if (baseType == DOCUMENT_TYPE_ID && versioningState != null)
+    {
+        node = cmis.applyVersioningState(node, versioningState);
+    }
 
     // only return node if updated successfully
     return (updated == null) ? null : node;

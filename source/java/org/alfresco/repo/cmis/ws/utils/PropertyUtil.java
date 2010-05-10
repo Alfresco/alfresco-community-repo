@@ -612,9 +612,13 @@ public class PropertyUtil
 
             if (value instanceof Collection)
             {
-                for (String propertyValue : (Collection<String>) value)
+                for (Serializable propertyValue : (Collection<Serializable>) value)
                 {
-                    property.getValue().add(propertyValue);
+                    // NOTE: CMIS multi-valued values cannot contain null
+                    if (propertyValue != null)
+                    {
+                        property.getValue().add(propertyValue.toString());
+                    }
                 }
             }
             else

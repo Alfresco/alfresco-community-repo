@@ -386,7 +386,7 @@
 [#macro booleanvalue value]${value?string}[/#macro]
 [#macro datetimevalue value]${xmldate(value)}[/#macro]
 [#macro urivalue value]${value?xml}[/#macro]
-[#macro idvalue value]${value?xml}[/#macro]
+[#macro idvalue value][#if value?is_hash && value.nodeRef??]${value.nodeRef?xml}[#else]${value?xml}[/#if][/#macro]
 
 [#--                    --]
 [#-- CMIS Relationships --]

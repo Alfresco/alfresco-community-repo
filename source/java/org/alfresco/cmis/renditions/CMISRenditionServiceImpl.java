@@ -29,7 +29,6 @@ import java.util.Map.Entry;
 
 import org.alfresco.cmis.CMISFilterNotValidException;
 import org.alfresco.cmis.CMISRendition;
-import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISRenditionService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -65,7 +64,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
 
     /** Kind to thumbnail mapping */
     private Map<String, List<String>> kindToThumbnailNames = new HashMap<String, List<String>>();
-    private Map<String, CMISRenditionKind> thumbnailNamesToKind = new HashMap<String, CMISRenditionKind>();
+    private Map<String, String> thumbnailNamesToKind = new HashMap<String, String>();
 
     /** Custom renditions */
     private CustomRenditionsCache customRenditionsCache;
@@ -200,17 +199,9 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
                 for (String filterElement : filterElements)
                 {
                     filterElement = filterElement.trim();
-                    if (isRenditionKind(filterElement))
+                    if (filterElement.indexOf('/') == -1)
                     {
-                        CMISRenditionKind kind = null;
-                        for (CMISRenditionKind renditionKind : CMISRenditionKind.values())
-                        {
-                            if (renditionKind.getLabel().equals(filterElement))
-                            {
-                                kind = renditionKind;
-                            }
-                        }
-                        result.getKinds().add(kind);
+                        result.getKinds().add(filterElement);
                         List<String> thumbnails = kindToThumbnailNames.get(filterElement);
                         if (thumbnails != null)
                         {
@@ -256,23 +247,6 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
     }
 
     /**
-     * @param filterElement filter element
-     * @return true if filter element is rendition kind
-     */
-    private boolean isRenditionKind(String filterElement)
-    {
-        boolean result = false;
-        for (CMISRenditionKind renditionKind : CMISRenditionKind.values())
-        {
-            if (renditionKind.getLabel().equals(filterElement))
-            {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    /**
      * Create CMISRendition by thumbnailNode and documentNode.
      * 
      * @param thumbnailNode thumbnail node reference
@@ -283,42 +257,40 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
     {
         CMISRenditionImpl rendition = null;
 
-		String thumbnailName = getThumbnailName(thumbnailNode);
-        CMISRenditionKind kind = thumbnailNamesToKind.get(thumbnailName);
-        if (thumbnailName != null && kind != null)
-        {
-            rendition = new CMISRenditionImpl();
-            ContentData contentData = (ContentData) nodeService.getProperty(thumbnailNode, ContentModel.PROP_CONTENT);
-            rendition.setNodeRef(thumbnailNode);
-            rendition.setStreamId(thumbnailNode.toString());
-            rendition.setRenditionDocumentId(documentNode.toString());
-            rendition.setTitle(thumbnailName);
-            rendition.setKind(kind);
-            rendition.setMimeType(contentData.getMimetype());
-            rendition.setLength((int) contentData.getSize());
+        String thumbnailName = getThumbnailName(thumbnailNode);
+        String kind = thumbnailNamesToKind.get(thumbnailName);
+        kind = (kind == null) ? thumbnailName : kind;
+        
+        rendition = new CMISRenditionImpl();
+        ContentData contentData = (ContentData) nodeService.getProperty(thumbnailNode, ContentModel.PROP_CONTENT);
+        rendition.setNodeRef(thumbnailNode);
+        rendition.setStreamId(thumbnailNode.toString());
+        rendition.setRenditionDocumentId(documentNode.toString());
+        rendition.setTitle(thumbnailName);
+        rendition.setKind(kind);
+        rendition.setMimeType(contentData.getMimetype());
+        rendition.setLength((int) contentData.getSize());
 
-            ImageResizeOptions imageAttributes = getImageAttributes(thumbnailName);
-            if (imageAttributes != null)
-            {
-                rendition.setWidth(imageAttributes.getWidth());
-                rendition.setHeight(imageAttributes.getHeight());
-            }
+        ImageResizeOptions imageAttributes = getImageAttributes(thumbnailName);
+        if (imageAttributes != null)
+        {
+            rendition.setWidth(imageAttributes.getWidth());
+            rendition.setHeight(imageAttributes.getHeight());
         }
         return rendition;
     }
 
-	private String getThumbnailName(NodeRef thumbnailNode) {
-		String thumbnailName = null;
-		List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(
-				thumbnailNode, RenditionModel.ASSOC_RENDITION,
-				RegexQNamePattern.MATCH_ALL);
-		if (parentAssocs.size() == 1) 
-		{
-			ChildAssociationRef parentAssoc = parentAssocs.get(0);
-			thumbnailName = parentAssoc.getQName().getLocalName();
-		}
-		return thumbnailName;
-	}
+    private String getThumbnailName(NodeRef thumbnailNode)
+    {
+        String thumbnailName = null;
+        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(thumbnailNode,
+                RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
+        if (parentAssocs.size() == 1) {
+            ChildAssociationRef parentAssoc = parentAssocs.get(0);
+            thumbnailName = parentAssoc.getQName().getLocalName();
+        }
+        return thumbnailName;
+    }
 
     /**
      * Get custom renditions.
@@ -337,7 +309,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
             }
             else
             {
-                for (CMISRenditionKind kind : filter.getKinds())
+                for (String kind : filter.getKinds())
                 {
                     List<CMISRendition> renditions = customRenditionsCache.getRenditionsByKind(kind);
                     if (renditions != null)
@@ -379,10 +351,9 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
         this.kindToThumbnailNames = renditionKinds;
         for (Entry<String, List<String>> entry : renditionKinds.entrySet())
         {
-            CMISRenditionKind kind = CMISRenditionKind.valueOfLabel(entry.getKey());
             for (String thumbnailName : entry.getValue())
             {
-                thumbnailNamesToKind.put(thumbnailName, kind);
+                thumbnailNamesToKind.put(thumbnailName, entry.getKey());
             }
         }
     }
@@ -422,7 +393,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
      */
     private class CustomRenditionsCache
     {
-        private Map<CMISRenditionKind, List<CMISRendition>> renditionsByKind;
+        private Map<String, List<CMISRendition>> renditionsByKind;
         private Map<String, List<CMISRendition>> renditionsByMimeType;
         private Map<String, List<CMISRendition>> renditionsByBaseMimeType;
         private List<CMISRendition> allRenditions;
@@ -430,7 +401,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
         public CustomRenditionsCache(List<CMISRendition> renditions)
         {
             allRenditions = renditions;
-            renditionsByKind = new HashMap<CMISRenditionKind, List<CMISRendition>>(renditions.size());
+            renditionsByKind = new HashMap<String, List<CMISRendition>>(renditions.size());
             renditionsByMimeType = new HashMap<String, List<CMISRendition>>(renditions.size());
             renditionsByBaseMimeType = new HashMap<String, List<CMISRendition>>(renditions.size());
             for (CMISRendition rendition : renditions)
@@ -454,7 +425,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
             }
         }
 
-        public List<CMISRendition> getRenditionsByKind(CMISRenditionKind kind)
+        public List<CMISRendition> getRenditionsByKind(String kind)
         {
             return renditionsByKind.get(kind);
         }
@@ -494,7 +465,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
      */
     private class ThumbnailFilter
     {
-        private List<CMISRenditionKind> kinds = new ArrayList<CMISRenditionKind>();
+        private List<String> kinds = new ArrayList<String>();
 
         private List<String> thumbnailNames = new ArrayList<String>();
 
@@ -512,7 +483,7 @@ public class CMISRenditionServiceImpl implements CMISRenditionService
             return mimetypes;
         }
 
-        public List<CMISRenditionKind> getKinds()
+        public List<String> getKinds()
         {
             return kinds;
         }

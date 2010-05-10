@@ -89,14 +89,14 @@
                 <bean class="org.alfresco.cmis.renditions.CMISRenditionImpl">
                     <property name="streamId"><value>alf:icon16</value></property>
                     <property name="mimeType"><value>image/gif</value></property>
-                    <property name="kind"><value>ICON16</value></property>
+                    <property name="kind"><value>alf:icon16</value></property>
                     <property name="width"><value>16</value></property>
                     <property name="height"><value>16</value></property>
                 </bean>
                 <bean class="org.alfresco.cmis.renditions.CMISRenditionImpl">
                     <property name="streamId"><value>alf:icon32</value></property>
                     <property name="mimeType"><value>image/gif</value></property>
-                    <property name="kind"><value>ICON32</value></property>
+                    <property name="kind"><value>alf:icon32</value></property>
                     <property name="width"><value>32</value></property>
                     <property name="height"><value>32</value></property>
                 </bean>

@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.alfresco.cmis.CMISRendition;
-import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -43,12 +42,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class CMISRenditionServiceTest extends BaseCMISTest
 {
     private static final String[] THUMBNAIL_NAMES = new String[] { "doclib", "webpreview", "imgpreview" };
-    private static final CMISRenditionKind[] THUMBNAIL_KINDS = new CMISRenditionKind[] { CMISRenditionKind.THUMBNAIL, CMISRenditionKind.WEB_PREVIEW, CMISRenditionKind.WEB_PREVIEW };
+    private static final String[] THUMBNAIL_KINDS = new String[] { "cmis:thumbnail", "alf:webpreview", "alf:webpreview" };
 
     private NodeRef document;
     private List<CMISRendition> documentRenditions = new ArrayList<CMISRendition>();
-    private CMISRendition icon16Rendition = new CMISRenditionImpl(null, "alf:icon16", "image/gif", CMISRenditionKind.ICON16, 16, 16, null, null, null);
-    private CMISRendition icon32Rendition = new CMISRenditionImpl(null, "alf:icon32", "image/gif", CMISRenditionKind.ICON32, 32, 32, null, null, null);
+    private CMISRendition icon16Rendition = new CMISRenditionImpl(null, "alf:icon16", "image/gif", "alf:icon16", 16, 16, null, null, null);
+    private CMISRendition icon32Rendition = new CMISRenditionImpl(null, "alf:icon32", "image/gif", "alf:icon32", 32, 32, null, null, null);
 
     public void setUp() throws Exception
     {
@@ -78,13 +77,13 @@ public class CMISRenditionServiceTest extends BaseCMISTest
 
     public void testGetRenditionsByKind() throws Exception
     {
-        testGetRenditionsByKind(CMISRenditionKind.THUMBNAIL);
-        testGetRenditionsByKind(CMISRenditionKind.WEB_PREVIEW);
-        testGetRenditionsByKind(CMISRenditionKind.ICON16);
-        testGetRenditionsByKind(CMISRenditionKind.ICON32);
+        testGetRenditionsByKind("cmis:thumbnail");
+        testGetRenditionsByKind("alf:webpreview");
+        testGetRenditionsByKind("alf:icon16");
+        testGetRenditionsByKind("alf:icon32");
 
-        testGetRenditionsByKind(CMISRenditionKind.WEB_PREVIEW, CMISRenditionKind.ICON32);
-        testGetRenditionsByKind(CMISRenditionKind.THUMBNAIL, CMISRenditionKind.WEB_PREVIEW, CMISRenditionKind.ICON16, CMISRenditionKind.ICON32);
+        testGetRenditionsByKind("alf:webpreview", "alf:icon32");
+        testGetRenditionsByKind("cmis:thumbnail", "alf:webpreview", "alf:icon16", "alf:icon32");
     }
 
     public void testGetRenditionsByMimetype() throws Exception
@@ -136,12 +135,12 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         testGetRenditions(null, mimetypes);
     }
 
-    private void testGetRenditionsByKind(CMISRenditionKind... kinds) throws Exception
+    private void testGetRenditionsByKind(String... kinds) throws Exception
     {
         testGetRenditions(kinds, null);
     }
 
-    private void testGetRenditions(CMISRenditionKind[] kinds, String[] mimetypes) throws Exception
+    private void testGetRenditions(String[] kinds, String[] mimetypes) throws Exception
     {
         String filter = createFilter(kinds, mimetypes);
         List<CMISRendition> receivedRenditions = cmisRenditionService.getRenditions(document, filter);
@@ -149,7 +148,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         List<CMISRendition> expectedRenditions = new ArrayList<CMISRendition>();
         if (kinds != null)
         {
-            for (CMISRenditionKind kind : kinds)
+            for (String kind : kinds)
             {
                 expectedRenditions.addAll(getRenditionsByKind(kind));
             }
@@ -171,7 +170,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         super.tearDown();
     }
 
-    private CMISRendition createRendition(NodeRef nodeRef, String thumbnailName, CMISRenditionKind kind)
+    private CMISRendition createRendition(NodeRef nodeRef, String thumbnailName, String kind)
     {
         ThumbnailDefinition details = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(thumbnailName);
         NodeRef thumbnailNodeRef = thumbnailService.createThumbnail(nodeRef, ContentModel.PROP_CONTENT, details.getMimetype(), details.getTransformationOptions(), details
@@ -260,7 +259,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         }
     };
 
-    private List<CMISRendition> getRenditionsByKind(CMISRenditionKind kind)
+    private List<CMISRendition> getRenditionsByKind(String kind)
     {
         return getRenditions(kind, null);
     }
@@ -270,7 +269,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         return getRenditions(null, mimetype);
     }
 
-    private List<CMISRendition> getRenditions(CMISRenditionKind kind, String mimetype)
+    private List<CMISRendition> getRenditions(String kind, String mimetype)
     {
         List<CMISRendition> result = new ArrayList<CMISRendition>();
 
@@ -287,7 +286,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         return result;
     }
 
-    private boolean isRenditionSatisfyConditions(CMISRendition rendition, CMISRenditionKind kind, String mimetype)
+    private boolean isRenditionSatisfyConditions(CMISRendition rendition, String kind, String mimetype)
     {
         if (kind != null)
         {
@@ -338,14 +337,14 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         return baseMymetype;
     }
 
-    private String createFilter(CMISRenditionKind[] kinds, String[] mimetypes)
+    private String createFilter(String[] kinds, String[] mimetypes)
     {
         StringBuilder filter = new StringBuilder();
         if (kinds != null)
         {
-            for (CMISRenditionKind kind : kinds)
+            for (String kind : kinds)
             {
-                filter.append(kind.getLabel());
+                filter.append(kind);
                 filter.append(",");
             }
         }

@@ -19,7 +19,6 @@
 package org.alfresco.cmis.renditions;
 
 import org.alfresco.cmis.CMISRendition;
-import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -32,7 +31,7 @@ public class CMISRenditionImpl implements CMISRendition
     private NodeRef nodeRef;
     private String streamId;
     private String mimeType;
-    private CMISRenditionKind kind;
+    private String kind;
     private Integer height;
     private Integer width;
     private String title;
@@ -52,7 +51,7 @@ public class CMISRenditionImpl implements CMISRendition
      * @param length the length of the rendition stream in bytes
      * @param renditionDocumentId the rendition document id
      */
-    public CMISRenditionImpl(NodeRef nodeRef, String streamId, String mimeType, CMISRenditionKind kind, Integer height, Integer width, String title, Integer length, String renditionDocumentId)
+    public CMISRenditionImpl(NodeRef nodeRef, String streamId, String mimeType, String kind, Integer height, Integer width, String title, Integer length, String renditionDocumentId)
     {
         super();
         this.nodeRef = nodeRef;
@@ -113,7 +112,7 @@ public class CMISRenditionImpl implements CMISRendition
     /**
      * @see org.alfresco.cmis.CMISRendition#getKind()
      */
-    public CMISRenditionKind getKind()
+    public String getKind()
     {
         return kind;
     }
@@ -123,7 +122,7 @@ public class CMISRenditionImpl implements CMISRendition
      * 
      * @param kind rendition kind
      */
-    public void setKind(CMISRenditionKind kind)
+    public void setKind(String kind)
     {
         this.kind = kind;
     }

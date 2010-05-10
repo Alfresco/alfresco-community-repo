@@ -48,7 +48,7 @@ public interface CMISRendition
      * Get rendition kind.
      * @return
      */
-    public CMISRenditionKind getKind();
+    public String getKind();
 
     /**
      * Get the height of image. Typically used for ‘image’ renditions (expressed as pixels).     

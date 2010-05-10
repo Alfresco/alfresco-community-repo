@@ -35,7 +35,6 @@ import org.alfresco.cmis.CMISConstraintException;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISInvalidArgumentException;
-import org.alfresco.cmis.CMISRenditionKind;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypeDefinition;
@@ -550,11 +549,11 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             if (streamId != null && streamId.length() > 0)
             {
                 FileTypeImageSize streamIcon = null;
-                if (streamId.equals(CMISRenditionKind.ICON16.getLabel()))
+                if (streamId.equals("alf:icon16"))
                 {
                     streamIcon = FileTypeImageSize.Small;
                 }
-                else if (streamId.equals(CMISRenditionKind.ICON32.getLabel()))
+                else if (streamId.equals("alf:icon32"))
                 {
                     streamIcon = FileTypeImageSize.Medium;
                 }

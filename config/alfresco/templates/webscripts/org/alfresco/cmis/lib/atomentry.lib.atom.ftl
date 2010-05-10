@@ -477,7 +477,7 @@
   <cmis:streamId>${rendition.streamId}</cmis:streamId>
   <cmis:mimetype>${rendition.mimeType}</cmis:mimetype>
   <cmis:length>[#if rendition.length??]${rendition.length?c}[#else]-1[/#if]</cmis:length>
-  <cmis:kind>${rendition.kind.label}</cmis:kind>
+  <cmis:kind>${rendition.kind}</cmis:kind>
   [#if rendition.title??]<cmis:title>${rendition.title}</cmis:title>[/#if]
   [#if rendition.height??]<cmis:height>${rendition.height?c}</cmis:height>[/#if]
   [#if rendition.width??]<cmis:width>${rendition.width?c}</cmis:width>[/#if]

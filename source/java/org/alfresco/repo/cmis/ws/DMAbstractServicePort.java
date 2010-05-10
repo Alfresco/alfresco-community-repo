@@ -383,7 +383,7 @@ public class DMAbstractServicePort
     {
         CmisRenditionType cmisRenditionType = new CmisRenditionType();
         cmisRenditionType.setStreamId(rendition.getStreamId());
-        cmisRenditionType.setKind(rendition.getKind().getLabel());
+        cmisRenditionType.setKind(rendition.getKind());
         cmisRenditionType.setMimetype(rendition.getMimeType());
         cmisRenditionType.setTitle(rendition.getTitle());
         cmisRenditionType.setWidth(rendition.getWidth() != null ? BigInteger.valueOf(rendition.getWidth()) : null);

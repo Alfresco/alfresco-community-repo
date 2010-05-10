@@ -146,15 +146,15 @@
 
 [#-- Link to rendition --]
 [#macro linkrendition node rendition renditionNode={}]
-[#switch rendition.kind.label]
+[#switch rendition.kind]
 [#case "alf:icon16"]
-<link rel="${cmisconstants.REL_ALTERNATE}" href="${absurl(url.context)}${node.icon16}"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind.label}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
+<link rel="${cmisconstants.REL_ALTERNATE}" href="${absurl(url.context)}${node.icon16}"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
 [#break]
 [#case "alf:icon32"]
-<link rel="${cmisconstants.REL_ALTERNATE}" href="${absurl(url.context)}${node.icon32}"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind.label}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
+<link rel="${cmisconstants.REL_ALTERNATE}" href="${absurl(url.context)}${node.icon32}"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
 [#break]
 [#default]
-<link rel="${cmisconstants.REL_ALTERNATE}" href="[@contenturi renditionNode/]"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind.label}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
+<link rel="${cmisconstants.REL_ALTERNATE}" href="[@contenturi renditionNode/]"[#if rendition.mimeType??] type="${rendition.mimeType}"[/#if] cmisra:renditionKind="${rendition.kind}"[#if rendition.length??] length="${rendition.length?c}"[/#if][#if rendition.title??] title="${rendition.title}"[/#if]/>
 [/#switch]
 [/#macro]
 

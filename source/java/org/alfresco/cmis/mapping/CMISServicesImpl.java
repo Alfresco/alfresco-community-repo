@@ -998,6 +998,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             return source;
         case CHECKED_OUT:
             validateVersionable(source);
+            if (this.nodeService.hasAspect(source, ContentModel.ASPECT_VERSIONABLE) == false)
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_INITIAL_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                this.nodeService.addAspect(source, ContentModel.ASPECT_VERSIONABLE, props);
+            }
             return this.checkOutCheckInService.checkout(source);
         default:
             validateVersionable(source);

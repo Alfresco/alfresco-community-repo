@@ -85,6 +85,10 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public static final String TYPE_SPREADSHEET = "spreadsheet";
     public static final String TYPE_PRESENTATION = "presentation";
     public static final String TYPE_PDF = "pdf";
+    
+    /** Transaction resource keys */
+    private final static String KEY_MARKED_CREATE = "google_doc_service.marked_resources";
+    private final static String KEY_MARKED_DELETE = "google_doc_service.marked_delete";
 
     /** Services */
     private DocsService googleDocumentService;
@@ -326,33 +330,22 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         {
         	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
         }
-        
-        try
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_GOOGLERESOURCE) == true)
         {
-            if (nodeService.hasAspect(nodeRef, ASPECT_GOOGLERESOURCE) == true)
+            // Get the entry
+            DocumentListEntry entry = getDocumentListEntry(nodeRef);
+            if (entry == null)
             {
-                // Get the entry
-                DocumentListEntry entry = getDocumentListEntry(nodeRef);
-                if (entry == null)
-                {
-                    throw new AlfrescoRuntimeException("Unable to find google resource to delete for node " + nodeRef.toString());
-                }
-                
-                // Perminantly delete the entry
-                googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
-                
-                // Remove the aspect from the node
-                nodeService.removeAspect(nodeRef, ASPECT_GOOGLERESOURCE);
+                throw new AlfrescoRuntimeException("Unable to find google resource to delete for node " + nodeRef.toString());
             }
-        }
-        catch (ServiceException e)
-        {
-            throw new AlfrescoRuntimeException("Unable to delete google resource for the node "+ nodeRef.toString());
-        }
-        catch (IOException e)
-        {
-            throw new AlfrescoRuntimeException("Unable to delete google resource for the node "+ nodeRef.toString());
-        }
+            
+            // Mark the resource for deletion upon completion of the transaction
+            markResource(KEY_MARKED_DELETE, entry.getResourceId());
+            
+            // Remove the aspect from the node
+            nodeService.removeAspect(nodeRef, ASPECT_GOOGLERESOURCE);
+        }        
     }
     
     /**
@@ -743,7 +736,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                         docEntry);
 
             // Mark create entry
-            markCreated(document.getResourceId());
+            markResource(KEY_MARKED_CREATE, document.getResourceId());
         }
         catch (IOException e)
         {
@@ -854,7 +847,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     folder);
             
             // Mark create entry
-            markCreated(folderEntry.getResourceId());
+            markResource(KEY_MARKED_CREATE, folderEntry.getResourceId());
         }
         catch (IOException e)
         {
@@ -979,17 +972,20 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         }
     }    
     
-    private final static String KEY_MARKED_RESOURCES = "GoogleDocService.marked_resources";
-    
+    /**
+     * Marks a resource as created in this transaction
+     * 
+     * @param resourceId    resource id of created resource
+     */
     @SuppressWarnings("unchecked")
-    private void markCreated(String resourceId)
+    private void markResource(String key, String resourceId)
     {
-        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(KEY_MARKED_RESOURCES);
+        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(key);
         if (resources == null)
         {
             // bind pending rules to the current transaction
             resources = new ArrayList<String>();
-            AlfrescoTransactionSupport.bindResource(KEY_MARKED_RESOURCES, resources);
+            AlfrescoTransactionSupport.bindResource(key, resources);
             // bind the rule transaction listener
             AlfrescoTransactionSupport.bindListener(this);
         }
@@ -998,24 +994,61 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         {
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("Marking created resource " + resourceId);
+                logger.debug("Marking resource " + resourceId + " with key " + key);
             }
             
             resources.add(resourceId);
         }
     }
     
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterCommit()
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public void afterCommit()
     {
-        // TODO go ahead and delete any resources that have be queued up for deletion ....
+        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(KEY_MARKED_DELETE);
+        if (resources != null)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Transaction commited, deleting Google resources");
+            }
+            
+            for (String resourceId : resources)
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Deleting resource " + resourceId);
+                }
+                
+                // Delete resource
+                try
+                {
+                    DocumentListEntry entry = getDocumentListEntry(resourceId);                
+                    googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                } 
+                catch (Throwable e)
+                {
+                    // Ignore, but log
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Unable to delete resource " + resourceId + " during commit.", e);
+                    }
+                } 
+            }
+        }
     }
     
+    /**
+     * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterRollback()
+     */
     @SuppressWarnings("unchecked")
     @Override
     public void afterRollback()
     {   
-        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(KEY_MARKED_RESOURCES);
+        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(KEY_MARKED_CREATE);
         if (resources != null)
         {
             if (logger.isDebugEnabled() == true)
@@ -1038,7 +1071,11 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 } 
                 catch (Throwable e)
                 {
-                    // Ignore
+                    // Ignore, but log
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Unable to delete resource " + resourceId + " during rollback.", e);
+                    }
                 } 
             }
         }

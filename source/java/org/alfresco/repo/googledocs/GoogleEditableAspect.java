@@ -27,6 +27,7 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCancelCheckOu
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -45,7 +46,8 @@ import org.alfresco.service.namespace.QName;
 public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPolicy,
                                              CheckOutCheckInServicePolicies.OnCheckOut,
                                              CheckOutCheckInServicePolicies.OnCheckIn,
-                                             CheckOutCheckInServicePolicies.BeforeCancelCheckOut
+                                             NodeServicePolicies.BeforeDeleteNodePolicy
+                                             //CheckOutCheckInServicePolicies.BeforeCancelCheckOut
 {
     /** Indicates whether behaviour is enabled or not */
     boolean enabled = false;
@@ -130,9 +132,9 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
             policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
                                                GoogleDocsModel.ASPECT_GOOGLEEDITABLE, 
                                                new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT));
-            policyComponent.bindClassBehaviour(BeforeCancelCheckOut.QNAME,
-                                               GoogleDocsModel.ASPECT_GOOGLEEDITABLE,
-                                               new JavaBehaviour(this, "beforeCancelCheckOut", NotificationFrequency.FIRST_EVENT));
+            policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
+                                               GoogleDocsModel.ASPECT_GOOGLERESOURCE,
+                                               new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
         }
     }
 
@@ -188,19 +190,30 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
             writer.putContent(is);
             
             // Delete the associated google resource
-            googleDocsService.deleteGoogleResource(nodeRef);
+            //googleDocsService.deleteGoogleResource(nodeRef);
+            
+            nodeService.removeAspect(nodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE);
         }
+    }
+
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+       if (nodeService.exists(nodeRef) == true)
+       {
+          // Delete the associated google resource
+          googleDocsService.deleteGoogleResource(nodeRef);
+       }         
     }
 
     /**
      * @see org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCancelCheckOut#beforeCancelCheckOut(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void beforeCancelCheckOut(NodeRef workingCopyNodeRef)
-    {
-        if (nodeService.exists(workingCopyNodeRef) == true)
-        {
-            // Delete the associated google resource
-            googleDocsService.deleteGoogleResource(workingCopyNodeRef);
-        }        
-    }
+//    public void beforeCancelCheckOut(NodeRef workingCopyNodeRef)
+//    {
+//        if (nodeService.exists(workingCopyNodeRef) == true)
+//        {
+//            // Delete the associated google resource
+//            googleDocsService.deleteGoogleResource(workingCopyNodeRef);
+//        }        
+//    }
 }

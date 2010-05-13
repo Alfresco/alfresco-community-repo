@@ -33,7 +33,8 @@
         <property name="mimetypeService" ref="mimetypeService"/>
         <property name="permissionService" ref="PermissionService"/>  
         <property name="ownableService" ref="OwnableService"/>        
-        <property name="authorityService" ref="AuthorityService"/>      
+        <property name="authorityService" ref="AuthorityService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>       
         <property name="url" value="${googledocs.url}"/>     
         <property name="username" value="${googledocs.username}"/>
         <property name="password" value="${googledocs.password}"/>        

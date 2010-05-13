@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.transaction.UserTransaction;
 
@@ -51,6 +52,10 @@ import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import com.google.gdata.client.DocumentQuery;
+import com.google.gdata.client.docs.DocsService;
+import com.google.gdata.data.docs.DocumentListEntry;
+import com.google.gdata.data.docs.DocumentListFeed;
 import com.google.gdata.util.ServiceException;
 
 public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsModel
@@ -147,7 +152,7 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         // Create test documents
         nodeRefDoc = createTestDocument("mydoc.docx", "alfresco/subsystems/googledocs/default/test.docx", MimetypeMap.MIMETYPE_WORD);
         //nodeRefSpread = createTestDocument("mydoc.xls", "alfresco/subsystems/googledocs/default/testBook.xls", MimetypeMap.MIMETYPE_EXCEL);
-        nodeRefSpread = createTestDocument("mydoc2.docx", "alfresco/subsystems/googledocs/default/test.docx", MimetypeMap.MIMETYPE_WORD);
+        nodeRefSpread = createTestDocument("mydoc2.xlsx", "alfresco/subsystems/googledocs/default/test.xlsx", MimetypeMap.MIMETYPE_EXCEL);
         
         // Create an empty content node (simulate creation of a new google doc in UI)
         nodeRef2 = fileFolderService.create(folder, "mygoogledoc.doc", ContentModel.TYPE_CONTENT).getNodeRef();
@@ -225,11 +230,23 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
 	        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_ID));
 	        assertNotNull(nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_TYPE));
 	        
+	        System.out.println("For node ref " + nodeRefDoc.toString());
 	        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefDoc, PROP_URL));
 	        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_TYPE));
 	        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefDoc, PROP_RESOURCE_ID));                
 	        String downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefDoc), ".doc");
 	        System.out.println("Download file: " + downloadFile);
+	        
+	        DocsService client = new DocsService("Alfresco");
+	        client.setUserCredentials("rwetherall@alfresco.com", "123test123");
+	        
+	        URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/");
+	        DocumentQuery query = new DocumentQuery(feedUri);
+	        query.setTitleExact(true);
+	        query.setTitleQuery((String)nodeService.getProperty(nodeRefDoc, ContentModel.PROP_NAME));
+	        DocumentListFeed feed = client.getFeed(query, DocumentListFeed.class);
+	        printDocuments(feed);
+	        
 	        
 	        googleDocsService.createGoogleDoc(nodeRefSpread, GoogleDocsPermissionContext.SHARE_WRITE);
 	        
@@ -241,11 +258,23 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
 	        System.out.println("Google doc URL: " + nodeService.getProperty(nodeRefSpread, PROP_URL));
 	        System.out.println("Google doc type: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_TYPE));
 	        System.out.println("Google doc id: " + nodeService.getProperty(nodeRefSpread, PROP_RESOURCE_ID));                
-//	//        downloadFile = downloadFile(googleDocsService.download(nodeRefSpread), ".xls");
-//	//        System.out.println("Download file: " + downloadFile);
+            downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefSpread), ".xls");
+            System.out.println("Download file: " + downloadFile);
+	        
+	       
     	}
         
     }
+    
+    public void printDocuments(DocumentListFeed feed) 
+    {
+    	  for (DocumentListEntry entry : feed.getEntries() ) 
+    	  {
+    	    String resourceId = entry.getResourceId();
+    	    System.out.println(" -- Document(" + resourceId + "/" + entry.getTitle().getPlainText() + ") ");
+    	    
+    	  }
+    	}
     
     public void testCheckOutCheckIn() throws Exception
     {

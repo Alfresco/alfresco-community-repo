@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -60,7 +64,7 @@ import com.google.gdata.data.acl.AclScope;
 import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.FolderEntry;
-import com.google.gdata.data.docs.PresentationEntry;
+import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.data.media.MediaStreamSource;
 import com.google.gdata.util.AuthenticationException;
@@ -70,9 +74,10 @@ import com.google.gdata.util.ServiceException;
 /**
  * Google docs integration service implementation
  */
-public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
+public class GoogleDocsServiceImpl extends TransactionListenerAdapter
+                                   implements GoogleDocsService, GoogleDocsModel
 {    
-    @SuppressWarnings("unused")
+    /** Log */
     private static Log logger = LogFactory.getLog(GoogleDocsServiceImpl.class);
 
     /** Google document types */
@@ -91,7 +96,8 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     private PermissionService permissionService;
     private OwnableService ownableService;
     private AuthorityService authorityService;
-
+    private DictionaryService dictionaryService;
+    
     /** GoogleDoc base feed url */
     private String url = "http://docs.google.com/feeds/default/private/full";
     
@@ -174,6 +180,14 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
     {
         this.authorityService = authorityService;
     }
+    
+    /**
+     * @param dictionaryService dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService) 
+    {
+		this.dictionaryService = dictionaryService;
+	}
     
     /**
      * @param url  root googleDoc URL
@@ -448,7 +462,7 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
      * @param nodeRef					node reference
      * @return DocumentList Entry		folder resource
      */
-    private DocumentListEntry getParentFolder(NodeRef nodeRef)
+    private DocumentListEntry getParentFolder(final NodeRef nodeRef)
     {
         DocumentListEntry folder = null;
         
@@ -460,14 +474,32 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
                 String resourceType = (String)nodeService.getProperty(parentNodeRef, PROP_RESOURCE_TYPE);
                 String resourceId = (String)nodeService.getProperty(parentNodeRef, PROP_RESOURCE_ID);
                 folder = getDocumentListEntry(resourceType + ":" + resourceId);
+                
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Found existing google folder + " + resourceId);
+                }
             }
             else
             {
+            	// Get the parent folder
                 DocumentListEntry parentFolder = getParentFolder(parentNodeRef);
-                String name = (String)nodeService.getProperty(parentNodeRef, ContentModel.PROP_NAME);
-                folder = createGoogleFolder(name, parentFolder);
-               
-                setResourceDetails(parentNodeRef, folder);
+                
+                // Determine the name of the new google folder
+                String name = null;
+                QName parentNodeType = nodeService.getType(parentNodeRef);
+                if (dictionaryService.isSubClass(parentNodeType, ContentModel.TYPE_STOREROOT) == true)
+                {
+                	name = parentNodeRef.getStoreRef().getIdentifier();
+                }
+                else
+            	{
+                	name = (String)nodeService.getProperty(parentNodeRef, ContentModel.PROP_NAME);
+            	}
+                
+                // Create the folder and set the meta data in Alfresco
+                folder = createGoogleFolder(name, parentFolder);               
+                setResourceDetails(parentNodeRef, folder);                
             }
         }
         
@@ -694,13 +726,14 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
             DocumentListEntry docEntry = null;
             if (MimetypeMap.MIMETYPE_EXCEL.equals(mimetype) == true)
             {
-                docEntry = new PresentationEntry();
+                docEntry = new SpreadsheetEntry();
             }
             else
             {
                 docEntry = new DocumentEntry();
             }
             
+            // Set the content and the title of the document
             docEntry.setContent(mediaContent);
             docEntry.setTitle(new PlainTextConstruct(name));  
             
@@ -708,6 +741,9 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
             document = googleDocumentService.insert(
                         new URL(parentFolderUrl), 
                         docEntry);
+
+            // Mark create entry
+            markCreated(document.getResourceId());
         }
         catch (IOException e)
         {
@@ -816,6 +852,9 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
             folderEntry = googleDocumentService.insert(
                     new URL(parentFolderUrl), 
                     folder);
+            
+            // Mark create entry
+            markCreated(folderEntry.getResourceId());
         }
         catch (IOException e)
         {
@@ -938,7 +977,70 @@ public class GoogleDocsServiceImpl implements GoogleDocsService, GoogleDocsModel
         {
             throw new AlfrescoRuntimeException("Unable to set premissions on google document", e);  
         }
+    }    
+    
+    private final static String KEY_MARKED_RESOURCES = "GoogleDocService.marked_resources";
+    
+    @SuppressWarnings("unchecked")
+    private void markCreated(String resourceId)
+    {
+        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(KEY_MARKED_RESOURCES);
+        if (resources == null)
+        {
+            // bind pending rules to the current transaction
+            resources = new ArrayList<String>();
+            AlfrescoTransactionSupport.bindResource(KEY_MARKED_RESOURCES, resources);
+            // bind the rule transaction listener
+            AlfrescoTransactionSupport.bindListener(this);
+        }
+        
+        if (resources.contains(resourceId) == false)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Marking created resource " + resourceId);
+            }
+            
+            resources.add(resourceId);
+        }
     }
     
+    @Override
+    public void afterCommit()
+    {
+        // TODO go ahead and delete any resources that have be queued up for deletion ....
+    }
     
+    @SuppressWarnings("unchecked")
+    @Override
+    public void afterRollback()
+    {   
+        List<String> resources = (List<String>)AlfrescoTransactionSupport.getResource(KEY_MARKED_RESOURCES);
+        if (resources != null)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Transaction rolled back, manually deleting created Google Resources");
+            }
+            
+            for (String resourceId : resources)
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Deleting created resource " + resourceId);
+                }
+                
+                // Delete resource
+                try
+                {
+                    DocumentListEntry entry = getDocumentListEntry(resourceId);                
+                    googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                } 
+                catch (Throwable e)
+                {
+                    // Ignore
+                } 
+            }
+        }
+    }    
 }

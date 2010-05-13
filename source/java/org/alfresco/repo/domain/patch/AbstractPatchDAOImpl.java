@@ -99,16 +99,9 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
         {
             String stringValue = (String) prop.get("stringValue");
             
-            try
-            {
-                ContentData contentData = ContentData.createContentProperty(stringValue);
-                Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
-                prop.put("contentDataId", contentDataId);
-            }
-            catch (Throwable e)
-            {
-                // We don't care about this too much as it'll just leak a binary
-            }
+            ContentData contentData = ContentData.createContentProperty(stringValue);
+            Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
+            prop.put("contentDataId", contentDataId);
         }
         
         // Now do the updates in the context of a batch
@@ -124,11 +117,6 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
                 Integer listIndex = (Integer) prop.get("listIndex");
                 Long localeId = (Long) prop.get("localeId");
                 Long contentDataId = (Long) prop.get("contentDataId");
-                if (contentDataId == null)
-                {
-                    // There was a problem with this
-                    continue;
-                }
                 // Update
                 updateAdmOldContentProperty(nodeId, qnameId, listIndex, localeId, contentDataId);
             }

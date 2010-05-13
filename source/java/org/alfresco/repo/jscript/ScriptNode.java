@@ -28,6 +28,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -402,15 +403,13 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             StringTokenizer t = new StringTokenizer(path, "/");
             if (t.hasMoreTokens())
             {
-                List<String> names = new ArrayList<String>(1);
-                names.add(null);        // ensure first element is set
                 result = this.nodeRef;
                 while (t.hasMoreTokens() && result != null)
                 {
-                    names.set(0, t.nextToken());
-                    List<ChildAssociationRef> children = this.nodeService.getChildrenByName(
-                            result, ContentModel.ASSOC_CONTAINS, names);
-                    result = (children.size() == 1 ? children.get(0).getChildRef() : null);
+                    String name = t.nextToken();
+                    List<ChildAssociationRef> results = this.nodeService.getChildrenByName(
+                            result, ContentModel.ASSOC_CONTAINS, Collections.singletonList(name));
+                    result = (results.size() > 0 ? results.get(0).getChildRef() : null);
                 }
             }
             

@@ -2574,7 +2574,7 @@ public class HibernateNodeDaoServiceImpl
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_TYPE_AND_NAME_LIST)
                     .setLong("parentId", parentNodeId)
                     .setLong("typeQNameId", assocTypeQNamePair.getFirst())
-                    .setParameterList("childNodeNames", nameValues);
+                    .setParameterList("childNodeNameCrcs", crcValues);
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
@@ -2590,7 +2590,7 @@ public class HibernateNodeDaoServiceImpl
                     String assocChildNodeName, Long assocChildNodeNameCrc)
             {
                 // The CRC value must be in the list
-                return crcValues.contains(assocChildNodeNameCrc);
+                return nameValues.contains(assocChildNodeName);
             }
             /**
              * Defers to the client's handler
@@ -3081,13 +3081,14 @@ public class HibernateNodeDaoServiceImpl
     /**
      * {@inheritDoc}
      * <p/>
-     * Loads properties, aspects, parent associations and the ID-noderef cache
+     * Loads properties, aspects, parent associations and the ID-noderef cache.
      */
     public void cacheNodes(List<NodeRef> nodeRefs)
     {
-        if (nodeRefs.size() == 0)
+        if (nodeRefs.size() < 2)
         {
-            // Nothing to cache
+            // See ALF-2712: Performance degradation from 3.1.0 to 3.1.2
+            // We only cache where the are multiple results
             return;
         }
         // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance

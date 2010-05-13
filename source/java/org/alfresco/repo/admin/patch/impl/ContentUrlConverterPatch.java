@@ -449,6 +449,12 @@ public class ContentUrlConverterPatch extends AbstractPatch
                 batchProcessorWork, threadCount, 1,
                 applicationEventPublisher, null, 1);
         batchProcessor.process(batchProcessorWorker, true);
+        if (batchProcessor.getTotalErrors() > 0)
+        {
+            // Something went wrong.  We don't advance the start range so that the patch re-execution will
+            // start at the start of the range that failed.
+            throw AlfrescoRuntimeException.create("patch.convertContentUrls.error", batchProcessor.getLastError());
+        }
         
         // Advance
         startId = endId;
@@ -541,6 +547,12 @@ public class ContentUrlConverterPatch extends AbstractPatch
                 nodeIds, threadCount, batchSize,
                 applicationEventPublisher, null, 1);
         batchProcessor.process(batchProcessorWorker, true);
+        if (batchProcessor.getTotalErrors() > 0)
+        {
+            // Something went wrong.  We don't advance the start range so that the patch re-execution will
+            // start at the start of the range that failed.
+            throw AlfrescoRuntimeException.create("patch.convertContentUrls.error", batchProcessor.getLastError());
+        }
 
         // Advance
         startId = endId;

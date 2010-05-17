@@ -19,13 +19,13 @@
 package org.alfresco.repo.action;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.error.StackTraceUtil;
@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -65,7 +64,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     private AuthenticationContext authenticationContext;
     private PolicyComponent policyComponent;
     private Map<String, AbstractAsynchronousActionFilter>
-            actionFilters = new HashMap<String, AbstractAsynchronousActionFilter>();
+            actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
 
 	private NodeService nodeService;
     
@@ -77,7 +76,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     List<OngoingAsyncAction> ongoingActions = new Vector<OngoingAsyncAction>();
     
     // Policy delegates
-    private ClassPolicyDelegate<OnAsyncActionExecute> onAsyncActionExecuteDelegate;
+    private ClassPolicyDelegate<OnAsyncActionExecute> onAsyncActionExecuteDelegate; 
 
     /**
      * Default constructor
@@ -269,16 +268,21 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         	}
         	else
         	{
-        		
         		// Now we've found a registered action that matches the current one.
         		// So we'll go through the actions that are ongoing and consider them for matches with this one.
-        		for (OngoingAsyncAction ongoingAction : this.ongoingActions)
+        		// Need to synchronize to prevent changes to ongoingActions whilst iterating. Assume that ongoingActions
+        		// is not going to be too big and the loop will execute quite quickly, so that the synchronization 
+        		// will not impact concurrency too much.
+        		synchronized(this.ongoingActions)
         		{
-					if (comparator.compare(ongoingAction, nodeBeingNewlyActioned) == 0)
-        			{
-						newActionShouldBeFilteredOut = true;
-        				break;
-        			}
+	        		for (OngoingAsyncAction ongoingAction : this.ongoingActions)
+	        		{
+	        			if (comparator.compare(ongoingAction, nodeBeingNewlyActioned) == 0)
+	        			{
+	        				newActionShouldBeFilteredOut = true;
+	        				break;
+	        			}
+	        		}
         		}
         	}
         }

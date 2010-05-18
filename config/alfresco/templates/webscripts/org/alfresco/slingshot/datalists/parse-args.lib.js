@@ -40,7 +40,7 @@ var Common =
       if (typeof Common.PeopleCache[username] == "undefined")
       {
          var person = people.getPerson(username);
-         if (person == null && username == "System")
+         if (person == null && (username == "System" || username.match("^System@") == "System@"))
          {
             person =
             {

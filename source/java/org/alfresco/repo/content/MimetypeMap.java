@@ -59,9 +59,9 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_PDF = "application/pdf";
     public static final String MIMETYPE_JSON = "application/json";
     public static final String MIMETYPE_WORD = "application/msword";
-    public static final String MIMETYPE_EXCEL = "application/vnd.excel";
+    public static final String MIMETYPE_EXCEL = "application/vnd.ms-excel";
     public static final String MIMETYPE_BINARY = "application/octet-stream";
-    public static final String MIMETYPE_PPT = "application/vnd.powerpoint";
+    public static final String MIMETYPE_PPT = "application/vnd.ms-powerpoint";
     public static final String MIMETYPE_APP_DWG = "application/dwg";
     public static final String MIMETYPE_IMG_DWG = "image/x-dwg";
     public static final String MIMETYPE_FLASH = "application/x-shockwave-flash";

@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -52,10 +53,14 @@ import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.google.gdata.client.DocumentQuery;
 import com.google.gdata.client.docs.DocsService;
-import com.google.gdata.data.docs.DocumentListEntry;
-import com.google.gdata.data.docs.DocumentListFeed;
+import com.google.gdata.data.MediaContent;
+import com.google.gdata.data.PlainTextConstruct;
+import com.google.gdata.data.docs.FolderEntry;
+import com.google.gdata.data.docs.SpreadsheetEntry;
+import com.google.gdata.data.docs.DocumentListEntry.MediaType;
+import com.google.gdata.data.media.MediaStreamSource;
+import com.google.gdata.util.ContentType;
 import com.google.gdata.util.ServiceException;
 
 public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsModel
@@ -151,12 +156,19 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
         
         // Create test documents
         nodeRefDoc = createTestDocument("mydoc.docx", "alfresco/subsystems/googledocs/default/test.docx", MimetypeMap.MIMETYPE_WORD);
-        //nodeRefSpread = createTestDocument("mydoc.xls", "alfresco/subsystems/googledocs/default/testBook.xls", MimetypeMap.MIMETYPE_EXCEL);
-        nodeRefSpread = createTestDocument("mydoc2.xlsx", "alfresco/subsystems/googledocs/default/test.xlsx", MimetypeMap.MIMETYPE_EXCEL);
+        nodeRefSpread = createTestDocument("mydoc.xls", "alfresco/subsystems/googledocs/default/testBook.xls", MimetypeMap.MIMETYPE_EXCEL);
+        //nodeRefSpread = createTestDocument("mydoc2.xlsx", "alfresco/subsystems/googledocs/default/test.xlsx", MimetypeMap.MIMETYPE_EXCEL);
         
         // Create an empty content node (simulate creation of a new google doc in UI)
-        nodeRef2 = fileFolderService.create(folder, "mygoogledoc.doc", ContentModel.TYPE_CONTENT).getNodeRef();
+        nodeRef2 = fileFolderService.create(folder, "mygoogledoc.xls", ContentModel.TYPE_CONTENT).getNodeRef();
         nodeService.addAspect(nodeRef2, ASPECT_GOOGLEEDITABLE, null);
+        ContentWriter contentWriter = contentService.getWriter(nodeRef2, ContentModel.PROP_CONTENT, true);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
+        contentWriter.putContent("");
+        
+        ContentData contentData = (ContentData)nodeService.getProperty(nodeRef2, ContentModel.PROP_CONTENT);
+        System.out.println(" ********** Content data = " + contentData.toString());
     }
     
     private NodeRef createTestDocument(String name, String contentPath, String mimetype)
@@ -219,6 +231,44 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
     	return result;
     }
     
+    public void testCreateSheet() throws Exception
+    {
+        DocsService client = new DocsService("Alfresco");
+        client.setUserCredentials("rwetherall@alfresco.com", "123test123");
+        
+        // Create the folder entry
+        FolderEntry folder = new FolderEntry();
+        folder.setTitle(new PlainTextConstruct("RootFolder" + GUID.generate()));
+        FolderEntry rootFolderEntry = client.insert(
+                new URL("http://docs.google.com/feeds/default/private/full"),
+                folder);   
+        
+        FolderEntry folder2 = new FolderEntry();
+        folder2.setTitle(new PlainTextConstruct("ChildFolder" + GUID.generate()));
+        FolderEntry childFolderEntry = client.insert(
+                new URL(((MediaContent)rootFolderEntry.getContent()).getUri()),
+                folder2);   
+        
+        MediaContent mediaContent = new MediaContent();            
+        mediaContent.setMimeType(new ContentType(MimetypeMap.MIMETYPE_EXCEL));
+        
+        InputStream is = getClass().getClassLoader().getResourceAsStream("alfresco/subsystems/googledocs/default/testBook.xls");
+        mediaContent.setMediaSource(new MediaStreamSource(is, MediaType.XLS.getMimeType()));
+        
+        System.out.println(" **** " + MimetypeMap.MIMETYPE_EXCEL + " = " + MediaType.XLS.getMimeType());
+        
+        
+        SpreadsheetEntry  newEntry = new SpreadsheetEntry();
+        newEntry = new SpreadsheetEntry();
+        
+        
+
+        newEntry.setContent(mediaContent);
+        newEntry.setTitle(new PlainTextConstruct("mytestdoc.xls"));
+
+        client.insert(new URL(((MediaContent)childFolderEntry.getContent()).getUri()), newEntry);            
+    }
+    
     public void testGoogleDocUploadDownload() throws Exception
     {
     	if (isGoogleServiceAvailable() == true)
@@ -237,17 +287,6 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
 	        String downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefDoc), ".doc");
 	        System.out.println("Download file: " + downloadFile);
 	        
-	        DocsService client = new DocsService("Alfresco");
-	        client.setUserCredentials("rwetherall@alfresco.com", "123test123");
-	        
-	        URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/");
-	        DocumentQuery query = new DocumentQuery(feedUri);
-	        query.setTitleExact(true);
-	        query.setTitleQuery((String)nodeService.getProperty(nodeRefDoc, ContentModel.PROP_NAME));
-	        DocumentListFeed feed = client.getFeed(query, DocumentListFeed.class);
-	        printDocuments(feed);
-	        
-	        
 	        googleDocsService.createGoogleDoc(nodeRefSpread, GoogleDocsPermissionContext.SHARE_WRITE);
 	        
 	        assertTrue(nodeService.hasAspect(nodeRefSpread, ASPECT_GOOGLERESOURCE));
@@ -261,27 +300,17 @@ public class GoogleDocumentServiceTest extends TestCase implements GoogleDocsMod
             downloadFile = downloadFile(googleDocsService.getGoogleDocContent(nodeRefSpread), ".xls");
             System.out.println("Download file: " + downloadFile);
 	        
-	       
+            googleDocsService.createGoogleDoc(nodeRef2, GoogleDocsPermissionContext.SHARE_WRITE);
     	}
         
     }
-    
-    public void printDocuments(DocumentListFeed feed) 
-    {
-    	  for (DocumentListEntry entry : feed.getEntries() ) 
-    	  {
-    	    String resourceId = entry.getResourceId();
-    	    System.out.println(" -- Document(" + resourceId + "/" + entry.getTitle().getPlainText() + ") ");
-    	    
-    	  }
-    	}
     
     public void testCheckOutCheckIn() throws Exception
     {
     	if (isGoogleServiceAvailable() == true)
     	{
 	        ContentReader contentReader = contentService.getReader(nodeRef2, ContentModel.PROP_CONTENT);
-	        assertNull(contentReader);
+	        //assertNull(contentReader);
 	        
 	        // Check out the empty google document
 	        NodeRef workingCopy = checkOutCheckInService.checkout(nodeRef2);

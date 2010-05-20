@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -53,6 +52,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.google.gdata.client.GoogleService;
+import com.google.gdata.client.GoogleAuthTokenFactory.UserToken;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.IEntry;
 import com.google.gdata.data.MediaContent;
@@ -64,7 +64,9 @@ import com.google.gdata.data.acl.AclScope;
 import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.FolderEntry;
+import com.google.gdata.data.docs.PresentationEntry;
 import com.google.gdata.data.docs.SpreadsheetEntry;
+import com.google.gdata.data.docs.DocumentListEntry.MediaType;
 import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.data.media.MediaStreamSource;
 import com.google.gdata.util.AuthenticationException;
@@ -297,7 +299,10 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         {
             // Get the mime type and input stream from the content reader
             mimetype = contentReader.getMimetype();
-            is = contentReader.getContentInputStream();
+            if (contentReader.getSize() != 0)
+            {
+                is = contentReader.getContentInputStream();
+            }
         }
         
         // Get the parent folder id
@@ -493,6 +498,9 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 // Create the folder and set the meta data in Alfresco
                 folder = createGoogleFolder(name, parentFolder);               
                 setResourceDetails(parentNodeRef, folder);                
+                
+                // Set the owner of the document
+                setGoogleResourcePermission(folder, AuthorityType.USER, username, "owner");
             }
         }
         
@@ -588,23 +596,23 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         
                 // TODO need to verify that download of a spreadsheet works before we delete this historical code ...
                 
-//                UserToken docsToken = null;
-//                if (isSpreadSheet)
-//                {
-//                    docsToken = (UserToken) googleDocumentService.getAuthTokenFactory().getAuthToken();
-//                    UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
-//                    googleDocumentService.setUserToken(spreadsheetsToken.getValue());
-//        
-//                }
+                UserToken docsToken = null;
+                if (docType.equals(TYPE_SPREADSHEET) == true)
+                {
+                    docsToken = (UserToken) googleDocumentService.getAuthTokenFactory().getAuthToken();
+                    UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
+                    googleDocumentService.setUserToken(spreadsheetsToken.getValue());
+        
+                }
         
                 MediaContent mc = new MediaContent();
                 mc.setUri(downloadUrl);            
                 MediaSource ms = googleDocumentService.getMedia(mc);
         
-             //   if (isSpreadSheet)
-             //   {
-             //       googleDocumentService.setUserToken(docsToken.getValue());
-             //   }
+                if (docType.equals(TYPE_SPREADSHEET) == true)
+                {
+                    googleDocumentService.setUserToken(docsToken.getValue());
+                }
         
                 result = ms.getInputStream();                
             }
@@ -717,9 +725,16 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             
             // Create the document entry object
             DocumentListEntry docEntry = null;
-            if (MimetypeMap.MIMETYPE_EXCEL.equals(mimetype) == true)
+            if (MediaType.XLS.getMimeType().equals(mimetype) == true ||
+                MediaType.XLSX.getMimeType().equals(mimetype) == true ||
+                MediaType.ODS.getMimeType().equals(mimetype) == true)
             {
                 docEntry = new SpreadsheetEntry();
+            }
+            else if (MediaType.PPS.getMimeType().equals(mimetype) == true ||
+                     MediaType.PPT.getMimeType().equals(mimetype) == true)
+            {
+                docEntry = new PresentationEntry();
             }
             else
             {
@@ -771,6 +786,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
      * @param mimeType		mimetype
      * @param is			input stream
      */
+    @SuppressWarnings("unused")
     private void updateGoogleDocContent(DocumentListEntry document, String mimeType, InputStream is)
     {     
     	// Log details

@@ -72,7 +72,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
 
    private static final long serialVersionUID = -4558907921887235967L;
    
-   private static final String POWER_POINT_DOCUMENT_MIMETYPE = "application/vnd.powerpoint";
+   private static final String POWER_POINT_DOCUMENT_MIMETYPE = "application/vnd.ms-powerpoint";
    private static final String POWER_POINT_2007_DOCUMENT_MIMETYPE = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
    
    private static final String MULTIPART_BYTERANGES_BOUNDRY = "<ALF4558907921887235966L>";

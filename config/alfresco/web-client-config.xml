@@ -404,8 +404,8 @@
          <transformer name="image/gif"/>
          <transformer name="image/jpeg"/>
          <transformer name="application/msword"/>
-         <transformer name="application/vnd.excel"/>
-         <transformer name="application/vnd.powerpoint"/>
+         <transformer name="application/vnd.ms-excel"/>
+         <transformer name="application/vnd.ms-powerpoint"/>
       </transformers>
       <image-transformers>
          <transformer name="image/gif"/>

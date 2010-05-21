@@ -21,6 +21,8 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
@@ -52,11 +54,11 @@ public class IsLatestMajorVersionProperty extends AbstractVersioningProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        NodeRef versionSeries;
-        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
+        if (isWorkingCopy(nodeRef))
         {
             return false;
         }
+        NodeRef versionSeries = getVersionSeries(nodeRef);
         ServiceRegistry serviceRegistry = getServiceRegistry();
         VersionService versionService = serviceRegistry.getVersionService();
         VersionHistory versionHistory = versionService.getVersionHistory(versionSeries);
@@ -64,16 +66,33 @@ public class IsLatestMajorVersionProperty extends AbstractVersioningProperty
         {
             return false;
         }
+
+        NodeRef versionNodeRef = nodeRef;
+        if (!nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
+        {
+            String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            if (versionLabel == null)
+            {
+                return false;
+            }
+            Version version = versionHistory.getVersion(versionLabel);
+            if (version == null)
+            {
+                return false;
+            }
+            versionNodeRef = version.getFrozenStateNodeRef();
+        }
+        
         // Go back in time to the last major version
         Version currentVersion = versionService.getCurrentVersion(versionSeries);
         while (currentVersion != null)
         {
             if (currentVersion.getVersionType() == VersionType.MAJOR)
             {
-                return currentVersion.getFrozenStateNodeRef().equals(nodeRef);
+                return currentVersion.getFrozenStateNodeRef().equals(versionNodeRef);
             }
             // We got to the current node and its not major. We failed!
-            else if (currentVersion.getFrozenStateNodeRef().equals(nodeRef))
+            else if (currentVersion.getFrozenStateNodeRef().equals(versionNodeRef))
             {
                 return false;
             }

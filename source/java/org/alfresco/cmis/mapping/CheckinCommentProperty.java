@@ -50,8 +50,7 @@ public class CheckinCommentProperty extends AbstractVersioningProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        NodeRef versionSeries;
-        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
+        if (isWorkingCopy(nodeRef))
         {
             return null;
         }
@@ -60,7 +59,8 @@ public class CheckinCommentProperty extends AbstractVersioningProperty
         if (versionLabel == null)
         {
             return null;
-        }        
+        }
+        NodeRef versionSeries = getVersionSeries(nodeRef);
         VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
         if (versionHistory == null)
         {

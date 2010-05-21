@@ -1097,7 +1097,6 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         {
             objects.add(pwc);
         }
-        objects.add(nodeRef);
         VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
         if (versionHistory != null)
         {
@@ -1107,6 +1106,10 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 objects.add(current.getFrozenStateNodeRef());
                 current = versionHistory.getPredecessor(current);
             }
+        }
+        else if (pwc == null)
+        {
+            objects.add(nodeRef);
         }
         return objects;
     }

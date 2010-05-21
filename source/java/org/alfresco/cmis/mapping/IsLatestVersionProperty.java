@@ -21,8 +21,11 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 
 /**
  * Accesser for CMIS is latest version property
@@ -47,6 +50,32 @@ public class IsLatestVersionProperty extends AbstractVersioningProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        return isWorkingCopy(nodeRef) || getVersionSeries(nodeRef).equals(nodeRef) && !hasWorkingCopy(nodeRef);
+        if (isWorkingCopy(nodeRef) || getVersionSeries(nodeRef).equals(nodeRef) && !hasWorkingCopy(nodeRef))
+        {
+            return true;
+        }
+        NodeRef versionSeries = getVersionSeries(nodeRef);
+        if (hasWorkingCopy(versionSeries))
+        {
+            return false;
+        }
+        
+        ServiceRegistry serviceRegistry = getServiceRegistry();
+        String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+        if (versionLabel == null)
+        {
+            return false;
+        }
+        VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
+        if (versionHistory == null)
+        {
+            return false;
+        }
+        Version version = versionHistory.getVersion(versionLabel);
+        if (version == null)
+        {
+            return false;
+        }
+        return versionHistory.getHeadVersion().getFrozenStateNodeRef().equals(version.getFrozenStateNodeRef());
     }
 }

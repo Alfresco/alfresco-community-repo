@@ -24,6 +24,7 @@ import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 
@@ -50,18 +51,17 @@ public class IsMajorVersionProperty extends AbstractVersioningProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        NodeRef versionSeries;
-        if (isWorkingCopy(nodeRef) || (versionSeries = getVersionSeries(nodeRef)).equals(nodeRef))
+        if (isWorkingCopy(nodeRef))
         {
             return false;
         }
         ServiceRegistry serviceRegistry = getServiceRegistry();
-        String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef,
-                ContentModel.PROP_VERSION_LABEL);
+        String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
         if (versionLabel == null)
         {
             return false;
         }
+        NodeRef versionSeries = getVersionSeries(nodeRef);
         VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
         if (versionHistory == null)
         {

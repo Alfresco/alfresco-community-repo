@@ -50,13 +50,11 @@ public class VersionLabelProperty extends AbstractVersioningProperty
         {
             return "pwc";
         }
-        if (getVersionSeries(nodeRef).equals(nodeRef))
+        Serializable versionLabel = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+        if (versionLabel == null)
         {
-            return "current";
+            return "0.0";
         }
-        else
-        {
-            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-        }
+        return versionLabel;
     }
 }

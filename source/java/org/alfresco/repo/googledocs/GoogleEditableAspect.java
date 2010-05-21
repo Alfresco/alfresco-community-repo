@@ -20,16 +20,13 @@ package org.alfresco.repo.googledocs;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckIn;
-import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -181,38 +178,20 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      */
     public void onCheckOut(NodeRef workingCopy)
     {
-        if (nodeService.exists(workingCopy) == true)
+        if (nodeService.exists(workingCopy) == true  && isUpload() == false)
         {   
             // Upload the content of the working copy to google docs
             googleDocsService.createGoogleDoc(workingCopy, GoogleDocsPermissionContext.SHARE_WRITE);
-
-            // Mark checkout
-            markCheckOut(workingCopy);
         }        
     }
     
-    private static final String KEY_CHECKEDOUT = "googleeditableaspect.checkedout";
-    
-    private void markCheckOut(NodeRef nodeRef)
-    {        
-        List<NodeRef> resources = (List<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_CHECKEDOUT);
-        if (resources == null)
-        {
-            // bind pending rules to the current transaction
-            resources = new ArrayList<NodeRef>();
-            AlfrescoTransactionSupport.bindResource(KEY_CHECKEDOUT, resources);
-        }
-        resources.add(nodeRef);
-    }
-    
-    private boolean isMarkedCheckOut(NodeRef nodeRef)
+    private boolean isUpload()
     {
         boolean result = false;
-        List<NodeRef> resources = (List<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_CHECKEDOUT);
-        if (resources != null &&
-            resources.contains(nodeRef) == true)
+        String value = (String)AlfrescoTransactionSupport.getResource("checkoutforupload");
+        if (value != null)
         {
-            result = true;
+            result = Boolean.parseBoolean(value);
         }
         return result;
     }
@@ -223,7 +202,7 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
     {
         if (nodeService.exists(workingCopyNodeRef) == true && 
             nodeService.hasAspect(workingCopyNodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE) == true &&
-            isMarkedCheckOut(workingCopyNodeRef) == false)
+            isUpload() == false)
         {
             // Get input stream for the google doc
             InputStream is = googleDocsService.getGoogleDocContent(workingCopyNodeRef);
@@ -243,7 +222,7 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-       if (nodeService.exists(nodeRef) == true)
+       if (nodeService.exists(nodeRef) == true && isUpload() == false)
        {
           // Delete the associated google resource
           googleDocsService.deleteGoogleResource(nodeRef);

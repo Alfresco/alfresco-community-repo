@@ -49,6 +49,8 @@ import org.alfresco.repo.thumbnail.CreateThumbnailActionExecuter;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
@@ -1951,6 +1953,17 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         this.aspects = null;
         
         return workingCopy;
+    }
+    
+    /**
+     * Performs a check-out of this document for the purposes of an upload
+     * 
+     * @return
+     */
+    public ScriptNode checkoutForUpload()
+    {
+        AlfrescoTransactionSupport.bindResource("checkoutforupload", Boolean.TRUE.toString());
+        return checkout();
     }
     
     /**

@@ -64,6 +64,7 @@ import com.google.gdata.data.acl.AclScope;
 import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.FolderEntry;
+import com.google.gdata.data.docs.PdfEntry;
 import com.google.gdata.data.docs.PresentationEntry;
 import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.data.docs.DocumentListEntry.MediaType;
@@ -735,6 +736,10 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                      MediaType.PPT.getMimeType().equals(mimetype) == true)
             {
                 docEntry = new PresentationEntry();
+            }
+            else if (MediaType.PDF.getMimeType().equals(mimetype) == true)
+            {
+                docEntry = new PdfEntry();
             }
             else
             {

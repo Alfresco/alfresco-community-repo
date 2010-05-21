@@ -19,24 +19,34 @@
 package org.alfresco.repo.googledocs;
 
 import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
-import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCancelCheckOut;
+import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -45,9 +55,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPolicy,
                                              CheckOutCheckInServicePolicies.OnCheckOut,
-                                             CheckOutCheckInServicePolicies.OnCheckIn,
+                                             CheckOutCheckInServicePolicies.BeforeCheckIn,
                                              NodeServicePolicies.BeforeDeleteNodePolicy
-                                             //CheckOutCheckInServicePolicies.BeforeCancelCheckOut
 {
     /** Indicates whether behaviour is enabled or not */
     boolean enabled = false;
@@ -122,19 +131,31 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
     {
         if (enabled == true)
         {
-            // Register behaviour with policy component
+            // GoogleEditable resource behaviours
             policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, 
                                                GoogleDocsModel.ASPECT_GOOGLEEDITABLE , 
                                                new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));        
             policyComponent.bindClassBehaviour(OnCheckOut.QNAME, 
                                                GoogleDocsModel.ASPECT_GOOGLEEDITABLE, 
                                                new JavaBehaviour(this, "onCheckOut", NotificationFrequency.FIRST_EVENT));
-            policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
-                                               GoogleDocsModel.ASPECT_GOOGLEEDITABLE, 
-                                               new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT));
+           
+            // Google resource behaviours
+            policyComponent.bindClassBehaviour(BeforeCheckIn.QNAME, 
+                                               GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
+                                               new JavaBehaviour(this, "beforeCheckIn", NotificationFrequency.FIRST_EVENT));
             policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
                                                GoogleDocsModel.ASPECT_GOOGLERESOURCE,
                                                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+            
+            // Copy behaviours
+            this.policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                    GoogleDocsModel.ASPECT_GOOGLEEDITABLE,
+                    new JavaBehaviour(this, "getGoogleEditableCopyCallback"));
+            this.policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                    GoogleDocsModel.ASPECT_GOOGLERESOURCE,
+                    new JavaBehaviour(this, "getGoogleResourceCopyCallback"));
         }
     }
 
@@ -161,41 +182,65 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
     public void onCheckOut(NodeRef workingCopy)
     {
         if (nodeService.exists(workingCopy) == true)
-        {
-            // Remove the google editable aspect from the working copy
-            nodeService.removeAspect(workingCopy, GoogleDocsModel.ASPECT_GOOGLEEDITABLE);
-            
+        {   
             // Upload the content of the working copy to google docs
             googleDocsService.createGoogleDoc(workingCopy, GoogleDocsPermissionContext.SHARE_WRITE);
+
+            // Mark checkout
+            markCheckOut(workingCopy);
         }        
     }
-
-    /**
-     * @see org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn#onCheckIn(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public void onCheckIn(NodeRef nodeRef)
+    
+    private static final String KEY_CHECKEDOUT = "googleeditableaspect.checkedout";
+    
+    private void markCheckOut(NodeRef nodeRef)
+    {        
+        List<NodeRef> resources = (List<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_CHECKEDOUT);
+        if (resources == null)
+        {
+            // bind pending rules to the current transaction
+            resources = new ArrayList<NodeRef>();
+            AlfrescoTransactionSupport.bindResource(KEY_CHECKEDOUT, resources);
+        }
+        resources.add(nodeRef);
+    }
+    
+    private boolean isMarkedCheckOut(NodeRef nodeRef)
     {
-        if (nodeService.exists(nodeRef) == true && 
-            nodeService.hasAspect(nodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE) == true)
+        boolean result = false;
+        List<NodeRef> resources = (List<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_CHECKEDOUT);
+        if (resources != null &&
+            resources.contains(nodeRef) == true)
+        {
+            result = true;
+        }
+        return result;
+    }
+
+    public void beforeCheckIn(NodeRef workingCopyNodeRef,
+            Map<String, Serializable> versionProperties, String contentUrl,
+            boolean keepCheckedOut)
+    {
+        if (nodeService.exists(workingCopyNodeRef) == true && 
+            nodeService.hasAspect(workingCopyNodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE) == true &&
+            isMarkedCheckOut(workingCopyNodeRef) == false)
         {
             // Get input stream for the google doc
-            InputStream is = googleDocsService.getGoogleDocContent(nodeRef);
+            InputStream is = googleDocsService.getGoogleDocContent(workingCopyNodeRef);
             if (is == null)
             {
                 throw new AlfrescoRuntimeException("Unable to complete check in, because the working copy content could not be retrieved from google docs.");
             }
             
             // Write the google content into the node
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            writer.putContent(is);
-            
-            // Delete the associated google resource
-            //googleDocsService.deleteGoogleResource(nodeRef);
-            
-            nodeService.removeAspect(nodeRef, GoogleDocsModel.ASPECT_GOOGLERESOURCE);
-        }
+            ContentWriter writer = contentService.getWriter(workingCopyNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.putContent(is);           
+        }        
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
        if (nodeService.exists(nodeRef) == true)
@@ -204,16 +249,42 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
           googleDocsService.deleteGoogleResource(nodeRef);
        }         
     }
+    
+    public CopyBehaviourCallback getGoogleEditableCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return GoogleEditableCopyBehaviourCallback.INSTANCE;
+    }
 
-    /**
-     * @see org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCancelCheckOut#beforeCancelCheckOut(org.alfresco.service.cmr.repository.NodeRef)
-     */
-//    public void beforeCancelCheckOut(NodeRef workingCopyNodeRef)
-//    {
-//        if (nodeService.exists(workingCopyNodeRef) == true)
-//        {
-//            // Delete the associated google resource
-//            googleDocsService.deleteGoogleResource(workingCopyNodeRef);
-//        }        
-//    }
+    private static class GoogleEditableCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new GoogleEditableCopyBehaviourCallback();
+        
+        /**
+         * @return          Returns an empty map
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            return Collections.emptyMap();
+        }
+    }
+    
+    public CopyBehaviourCallback getGoogleResourceCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return GoogleResourceCopyBehaviourCallback.INSTANCE;
+    }
+
+    private static class GoogleResourceCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new GoogleEditableCopyBehaviourCallback();
+        
+        /**
+         * @return          Returns an empty map
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            return Collections.emptyMap();
+        }
+    }
 }

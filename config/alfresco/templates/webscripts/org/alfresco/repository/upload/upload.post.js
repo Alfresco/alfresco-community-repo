@@ -210,7 +210,7 @@ function main()
             }
 
             // It's not a working copy, do a check out to get the actual working copy
-            updateNode = updateNode.checkout();
+            updateNode = updateNode.checkoutForUpload();
          }
 
          // Update the working copy content

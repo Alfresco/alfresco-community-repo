@@ -1048,6 +1048,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         NodeRef nodeRef = getObject(objectId, NodeRef.class, true, true, true);
         try
         {
+            if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_INITIAL_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+            }
             return checkOutCheckInService.checkin(nodeRef, createVersionProperties(checkinComment, isMajor));
         }
         catch (CheckOutCheckInServiceException e)

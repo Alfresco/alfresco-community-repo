@@ -113,6 +113,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
                 CmisProperty property = propertiesUtil.createProperty(column.getName(), column.getCMISDataType(), values.get(column.getName()));
                 if (property != null)
                 {
+                    property.setQueryName(column.getName());
                     properties.getProperty().add(property);
                 }
             }

@@ -221,7 +221,7 @@ public class CMISMapping implements InitializingBean
         // Is CAN_MOVE correct mapping?
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_CONTENT_STREAM, PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKOUT, PermissionService.CHECK_OUT));
+        registerEvaluator(CMISScope.DOCUMENT, new CanCheckOutActionEvaluator(serviceRegistry));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CANCEL_CHECKOUT, PermissionService.CANCEL_CHECK_OUT));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN, PermissionService.CHECK_IN));
         registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_SET_CONTENT_STREAM, PermissionService.WRITE_CONTENT));

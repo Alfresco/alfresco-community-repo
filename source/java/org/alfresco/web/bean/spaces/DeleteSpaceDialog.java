@@ -86,6 +86,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
+      final boolean isAdmin = this.navigator.getCurrentUser().isAdmin();
       // get the space to delete
       Node node = this.browseBean.getActionSpace();
       if (node != null)
@@ -98,7 +99,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
          
          try
          {
-            if (!this.executeRules)
+            if (isAdmin && !this.executeRules)
             {
                Repository.getServiceRegistry(context).getRuleService().disableRules();
             }
@@ -108,7 +109,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
                // Check the node still exists
                if (this.getNodeService().exists(nodeRef))
                {
-                  if (!this.archiveNodes)
+                  if (isAdmin && !this.archiveNodes)
                   {
                      this.getNodeService().addAspect(node.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
                   }
@@ -173,7 +174,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
                      tx = txService.getNonPropagatingUserTransaction();
                      tx.begin();
                      
-                     if (!this.archiveNodes)
+                     if (isAdmin && !this.archiveNodes)
                      {
                         this.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
                      }
@@ -190,7 +191,7 @@ public class DeleteSpaceDialog extends BaseDialogBean
          }
          finally
          {
-            if (!this.executeRules)
+            if (isAdmin && !this.executeRules)
             {
                Repository.getServiceRegistry(context).getRuleService().enableRules();
             }

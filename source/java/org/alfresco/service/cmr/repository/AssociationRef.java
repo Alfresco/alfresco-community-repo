@@ -77,16 +77,21 @@ public class AssociationRef implements EntityRef, Serializable
     }
     
     /**
-     * @param childAssocRefStr a string of the form <b>sourceNodeRef|targetNodeRef|assocTypeQName</b>
+     * @param childAssocRefStr a string of the form <b>id|sourceNodeRef|targetNodeRef|assocTypeQName</b>.
      */
     public AssociationRef(String assocRefStr)
     {
         StringTokenizer tokenizer = new StringTokenizer(assocRefStr, FILLER);
-        if (tokenizer.countTokens() != 3)
+        if (tokenizer.countTokens() != 3 && tokenizer.countTokens() != 4)
         {
             throw new AlfrescoRuntimeException("Unable to parse association string: " + assocRefStr);
         }
-        String idStr = tokenizer.nextToken();
+        
+        String idStr = "0";
+        if (tokenizer.countTokens() == 4)
+        {
+            idStr = tokenizer.nextToken();
+        }
         String sourceNodeRefStr = tokenizer.nextToken();
         String targetNodeRefStr = tokenizer.nextToken();
         String assocTypeQNameStr = tokenizer.nextToken();

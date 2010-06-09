@@ -355,8 +355,8 @@
    <tag>
       <name>linkValidationProgress</name>
       <tag-class>org.alfresco.web.ui.wcm.tag.LinkValidationProgressTag</tag-class>
-      <display-name>Link Validation Progress</display-name>
       <body-content>JSP</body-content>
+      <display-name>Link Validation Progress</display-name>
       <description>Monitors the progress of the current link validation check being executed.</description>
       
       <attribute>

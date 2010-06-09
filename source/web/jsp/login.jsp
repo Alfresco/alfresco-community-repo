@@ -79,16 +79,18 @@
    	session.setAttribute(LoginBean.LOGIN_NOPERMISSIONS, null);
    }
 %>
-   
+
    <%-- load a bundle of properties I18N strings here --%>
    <r:loadBundle var="msg"/>
-   
+
+   <script type="text/javascript" src="<%=request.getContextPath()%>/scripts/validation.js"> </script>
+
    <h:form acceptcharset="UTF-8" id="loginForm" >
-   
+
    <table width=100% height=98% align=center>
       <tr width=100% align=center>
          <td valign=middle align=center width=100%>
-            
+
             <table cellspacing=0 cellpadding=0 border=0>
             <tr><td width=7><img src='<%=request.getContextPath()%>/images/parts/white_01.gif' width=7 height=7 alt=''></td>
             <td background='<%=request.getContextPath()%>/images/parts/white_02.gif'>
@@ -97,30 +99,30 @@
             </tr>
             <tr><td background='<%=request.getContextPath()%>/images/parts/white_04.gif'>
             <img src='<%=request.getContextPath()%>/images/parts/white_04.gif' width=7 height=7 alt=''></td><td bgcolor='white'>
-            
+
             <table border=0 cellspacing=4 cellpadding=2>
                <tr>
                   <td colspan=2>
                      <img src='<%=request.getContextPath()%>/images/logo/AlfrescoLogo200.png' width=200 height=58 alt="Alfresco" title="Alfresco">
                   </td>
                </tr>
-               
+
                <tr>
                   <td colspan=2>
                      <span class='mainSubTitle'><h:outputText value="#{msg.login_details}" />:</span>
                   </td>
                </tr>
-               
+
                <tr>
                   <td>
                      <h:outputText value="#{msg.username}"/>:
                   </td>
                   <td>
                      <%-- input text field, with an example of a nested validator tag --%>
-                     <h:inputText id="user-name" value="#{LoginBean.username}" validator="#{LoginBean.validateUsername}" style="width:150px" />
+                     <h:inputText id="user-name" value="#{LoginBean.username}" validator="#{LoginBean.validateUsername}" onkeyup="updateButtonState();" onchange="updateButtonState();" style="width:150px" />
                   </td>
                </tr>
-               
+
                <tr>
                   <td>
                      <h:outputText value="#{msg.password}"/>:
@@ -131,7 +133,7 @@
                      <h:inputSecret id="user-password" value="#{LoginBean.password}" validator="#{LoginBean.validatePassword}" style="width:150px" />
                   </td>
                </tr>
-               
+
                <tr>
                   <td>
                      <h:outputText value="#{msg.language}:" rendered="#{LoginBean.languageSelect}" />
@@ -143,13 +145,13 @@
                      </h:selectOneMenu>
                   </td>
                </tr>
-               
+
                <tr>
                   <td colspan=2 align=right>
                      <h:commandButton id="submit" action="#{LoginBean.login}" value="#{msg.login}" />
                   </td>
                </tr>
-               
+
                <tr>
                   <td colspan=2>
                      <%-- messages tag to show messages not handled by other specific message tags --%>
@@ -157,7 +159,7 @@
                   </td>
                </tr>
             </table>
-            
+
             </td><td background='<%=request.getContextPath()%>/images/parts/white_06.gif'>
             <img src='<%=request.getContextPath()%>/images/parts/white_06.gif' width=7 height=7 alt=''></td></tr>
             <tr><td width=7><img src='<%=request.getContextPath()%>/images/parts/white_07.gif' width=7 height=7 alt=''></td>
@@ -165,7 +167,7 @@
             <img src='<%=request.getContextPath()%>/images/parts/white_08.gif' width=7 height=7 alt=''></td>
             <td width=7><img src='<%=request.getContextPath()%>/images/parts/white_09.gif' width=7 height=7 alt=''></td></tr>
             </table>
-            
+
             <div id="no-cookies" style="display:none">
                <table cellpadding="0" cellspacing="0" border="0" style="padding-top:16px;">
                   <tr>
@@ -192,25 +194,37 @@
                   document.getElementById("no-cookies").style.display = 'inline';
                }
             </script>
-            
+
          </td>
       </tr>
-      
+
    </table>
-      
+
    </h:form>
 </f:view>
 
 <script>
 
-   if (document.getElementById("loginForm:user-name").value.length == 0)
-   {
-      document.getElementById("loginForm:user-name").focus();
-   }
-   else
-   {
-      document.getElementById("loginForm:user-password").focus();
-   }
+    function validate()
+    {
+        return validateName(document.getElementById("loginForm:user-name"), null, false);
+    }
+
+    function updateButtonState()
+    {
+      document.getElementById("loginForm:submit").disabled = !validate();
+    }
+
+    document.getElementById("loginForm").onsubmit = validate;
+    if (document.getElementById("loginForm:user-name").value.length == 0)
+    {
+       document.getElementById("loginForm:user-name").focus();
+    }
+    else
+    {
+       document.getElementById("loginForm:user-password").focus();
+    }
+    updateButtonState();
 
 </script>
 

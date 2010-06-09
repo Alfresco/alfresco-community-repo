@@ -60,13 +60,13 @@
       if (finishButtonPressed)
       {
          finishButtonPressed = false;
-         var message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
+         var message = $("wizard:wizard-body:validation_invalid_character").textContent ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
          var valid = validateName(document.getElementById("wizard:wizard-body:name"), 
                              message,
                              true);
          if (valid == true)
          {
-            message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_dns_name").textContent : $("wizard:wizard-body:validation_invalid_dns_name").innerText;
+            message = $("wizard:wizard-body:validation_invalid_dns_name").textContent ? $("wizard:wizard-body:validation_invalid_dns_name").textContent : $("wizard:wizard-body:validation_invalid_dns_name").innerText;
             valid = validateRegex(document.getElementById("wizard:wizard-body:dnsname"),
                   "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$", true, null,
                   message, true);

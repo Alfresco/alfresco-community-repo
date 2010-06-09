@@ -58,7 +58,7 @@
       {
          finishButtonPressed = false;
 
-         var message = (window.gecko) ? $("dialog:dialog-body:validation_invalid_character").textContent : $("dialog:dialog-body:validation_invalid_character").innerText;
+         var message = $("dialog:dialog-body:validation_invalid_character").textContent ? $("dialog:dialog-body:validation_invalid_character").textContent : $("dialog:dialog-body:validation_invalid_character").innerText;
          return validateName(document.getElementById("dialog:dialog-body:name"),
                message,
                true);

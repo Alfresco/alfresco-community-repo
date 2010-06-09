@@ -499,6 +499,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
                      label = mimeTypes.get(id);
                   }
                   
+                  // if there is still no label use the raw mimetype
+                  if (label == null)
+                  {
+                      label = id;
+                  }
+                  
                   this.transformers.add(new SelectItem(id, label));
                }
                
@@ -550,6 +556,12 @@ public abstract class BaseActionWizard extends BaseWizardBean
                   if (label == null)
                   {
                      label = mimeTypes.get(id);
+                  }
+                  
+                  // if there is still no label use the raw mimetype
+                  if (label == null)
+                  {
+                      label = id;
                   }
 
                   this.imageTransformers.add(new SelectItem(id, label));

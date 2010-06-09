@@ -77,7 +77,7 @@ function validate()
    {
       finishButtonPressed = false;
 
-      var message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
+      var message = $("wizard:wizard-body:validation_invalid_character").textContent ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
       return validateName(document.getElementById("wizard:wizard-body:userName"),
             message,
             true);

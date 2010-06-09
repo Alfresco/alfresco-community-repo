@@ -175,7 +175,7 @@ function validateDialog()
    if (finishButtonPressed)
    {
       finishButtonPressed = false;
-      var message = (window.gecko) ? $("dialog:dialog-body:validation_invalid_character").textContent : $("dialog:dialog-body:validation_invalid_character").innerText;
+      var message = $("dialog:dialog-body:validation_invalid_character").textContent ? $("dialog:dialog-body:validation_invalid_character").textContent : $("dialog:dialog-body:validation_invalid_character").innerText;
       return validateName($("dialog:dialog-body:name"), message, true);
    }
    else
@@ -189,7 +189,7 @@ function validateWizard()
    if (finishButtonPressed)
    {
       finishButtonPressed = false;
-      var message = (window.gecko) ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
+      var message = $("wizard:wizard-body:validation_invalid_character").textContent ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
       return validateName($("wizard:wizard-body:name"), message, true);
    }
    else

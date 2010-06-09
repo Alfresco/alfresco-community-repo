@@ -753,6 +753,18 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             return filterNodeDescriptions(this.persons, modifiedSince);
         }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties()
+         */
+        public Set<QName> getPersonMappedProperties()
+        {
+            return new HashSet<QName>(Arrays.asList(new QName[]
+            {
+                ContentModel.PROP_USERNAME, ContentModel.PROP_FIRSTNAME, ContentModel.PROP_LASTNAME,
+                ContentModel.PROP_EMAIL, ContentModel.PROP_ORGID, ContentModel.PROP_HOME_FOLDER_PROVIDER
+            }));
+        }
     }
 
     /**

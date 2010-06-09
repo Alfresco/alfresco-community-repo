@@ -20,7 +20,6 @@ package org.alfresco.repo.importer.view;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -43,6 +42,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xmlpull.v1.XmlPullParser;
@@ -662,6 +662,9 @@ public class ViewParser implements Parser
     {
         NodeContext node = peekNodeContext(parserContext.elementStack);
 
+        // decode property name
+        propertyName = QName.createQName(propertyName.getNamespaceURI(), ISO9075.decode(propertyName.getLocalName()));
+        
         // Extract single value
         String value = "";
         int eventType = xpp.next();

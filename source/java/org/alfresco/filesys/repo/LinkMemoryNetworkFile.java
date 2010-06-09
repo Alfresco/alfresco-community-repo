@@ -261,7 +261,7 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
       // Create a dummy file state
           
       if ( super.getFileState() == null)
-          setFileState(new FileState(getFullName()));
+          setFileState(new FileState(getFullName(), false));
       return super.getFileState();
     }
 }

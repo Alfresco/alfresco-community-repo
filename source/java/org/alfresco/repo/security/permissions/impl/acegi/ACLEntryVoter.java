@@ -405,20 +405,26 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 // now we know the node - we can abstain for certain types and aspects (eg. RM)
                 if(abstainForClassQNames.size() > 0)
                 {
-                    // check node exists (note: for AVM deleted nodes, will skip the abstain check, since exists/getType is accessed via AVMNodeService)
-                    if (nodeService.exists(testNodeRef))
+                    // For AVM we can not get type and aspect without going through internal AVM security checks
+                    // AVM is never excluded
+                    if(!testNodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
                     {
-                        QName typeQName = nodeService.getType(testNodeRef);
-                        if(abstainForClassQNames.contains(typeQName))
+                        // check node exists (note: for AVM deleted nodes, will skip the abstain check, since exists/getType is accessed via AVMNodeService)
+                        if (nodeService.exists(testNodeRef))
                         {
-                            return AccessDecisionVoter.ACCESS_ABSTAIN;
-                        }
-                        Set<QName> aspectQNames = nodeService.getAspects(testNodeRef);
-                        for(QName abstain : abstainForClassQNames)
-                        {
-                            if(aspectQNames.contains(abstain))
+                            QName typeQName = nodeService.getType(testNodeRef);
+                            if(abstainForClassQNames.contains(typeQName))
                             {
                                 return AccessDecisionVoter.ACCESS_ABSTAIN;
+                            }
+                           
+                            Set<QName> aspectQNames = nodeService.getAspects(testNodeRef);
+                            for(QName abstain : abstainForClassQNames)
+                            {
+                                if(aspectQNames.contains(abstain))
+                                {
+                                    return AccessDecisionVoter.ACCESS_ABSTAIN;
+                                }
                             }
                         }
                    }

@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,10 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
@@ -133,6 +138,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     
     public static final String AttrLinkNode = "ContentLinkNode";
     
+    // List of properties to copy during rename
+    
+    private static QName[] _copyProperties = { ContentModel.PROP_AUTHOR, ContentModel.PROP_TITLE, ContentModel.PROP_DESCRIPTION };
+    
     // Services and helpers
     
     private CifsHelper cifsHelper;
@@ -145,6 +154,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private FileFolderService fileFolderService;
     private NodeArchiveService nodeArchiveService;
     private LockService lockService;
+    private DictionaryService dictionaryService;
     
     private AuthenticationContext authContext;
     private AuthenticationService authService;
@@ -283,6 +293,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
 
     /**
+     * Return the dictionary service
+     * 
+     * @return DictionaryService
+     */
+    public final DictionaryService getDictionaryService() {
+        return dictionaryService;
+    }
+    
+    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -410,6 +429,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         this.policyBehaviourFilter = policyFilter;
     }
 
+    /**
+     * Set the dictionary service
+     * 
+     * @param dictionaryService DictionaryService
+     */
+    public void setDictionaryService(DictionaryService dictionaryService) {
+        this.dictionaryService = dictionaryService;
+    }
+    
     /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
@@ -664,6 +692,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Enable file state caching
         
         context.enableStateCache( true);
+        context.getStateCache().setCaseSensitive( false);
         
         // Initialize the I/O control handler
         
@@ -2359,7 +2388,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 return;
             }
             else if ( logger.isDebugEnabled())
-                logger.debug("Last reference to file, closing, path=" + file.getFullName() + ", access=" + file.getGrantedAccessAsString() + ", fid=" + file.getProtocolId());
+                logger.debug("Last reference to file, closing, path=" + file.getFullName() + ", access=" + file.getGrantedAccessAsString() + ", fid=" + file.getProtocolId() +
+                        ", modified=" + contentFile.isModified());
         }
         
         // Check if there is a quota manager enabled
@@ -2578,6 +2608,35 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         try
         {
+            // Check if pseudo files are enabled
+            
+            if ( hasPseudoFileInterface(ctx))
+            {
+                // Check if the file name is a pseudo file name
+                
+                if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, name)) {
+                    
+                    // Make sure the parent folder has a file state, and the path exists
+    
+                    String[] paths = FileName.splitPath( name);
+                    FileState fstate = ctx.getStateCache().findFileState( paths[0]);
+                    
+                    if ( fstate != null) {
+
+                        // Check if the path is to a pseudo file
+                        
+                        PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, name);
+                        if ( pfile != null)
+                        {
+                            // Delete the pseudo file
+
+                            getPseudoFileInterface( ctx).deletePseudoFile( sess, tree, name);
+                            return;
+                        }
+                    }
+                }
+            }
+            
             // Check if there is a quota manager enabled, if so then we need to save the current file size
             
             final QuotaManager quotaMgr = ctx.getQuotaManager();
@@ -2768,7 +2827,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             // Get the file state for the old file, if available
 
-            final FileState oldState = ctx.getStateCache().findFileState(oldName);
+            final FileState oldState = ctx.getStateCache().findFileState(oldName, true);
 
             // Check if we are renaming a folder, or the rename is to a different folder
 
@@ -2872,7 +2931,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                     // DEBUG
                                     
                                     if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                                        logger.debug("  Restored node " + targetNodeRef);
+                                        logger.debug("  Restored node " + targetNodeRef + ", version=" + nodeService.getProperty( targetNodeRef, ContentModel.PROP_VERSION_LABEL));
                                     
                                     // Check if the deleted file had a linked node, due to a rename
                                     
@@ -3108,6 +3167,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
                         throw new AccessDeniedException("No delete access to " + name);
+                    
+                    // Inhibit versioning for this transaction
+                    
+                    getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
                     
                     // Check if the file is being marked for deletion, if so then check if the file is locked
                     
@@ -3777,6 +3840,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Removed versionable aspect from temp file");
+        }
+        
+        // Copy over various properties
+        
+        for ( QName propName : _copyProperties) {
+            Serializable nodeProp = nodeService.getProperty( fromNode, propName);
+            if ( nodeProp != null)
+                nodeService.setProperty( toNode, propName, nodeProp);
         }
     } 
     

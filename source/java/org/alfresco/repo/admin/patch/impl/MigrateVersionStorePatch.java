@@ -21,12 +21,23 @@ package org.alfresco.repo.admin.patch.impl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionMigrator;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -36,17 +47,43 @@ public class MigrateVersionStorePatch extends AbstractPatch
 {
     private static Log logger = LogFactory.getLog(MigrateVersionStorePatch.class);
     
+    // Lock key
+    public static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "MigrateVersionStore");
+    
+    // The maximum time this lock will be held for (30 mins) - unless refreshed
+    //public static final long LOCK_TTL = 1000 * 60 * 30;
+    public static final long LOCK_TTL = 30000;
+    
+    
     private static final String MSG_DONE = "patch.migrateVersionStore.done";
     private static final String MSG_INCOMPLETE = "patch.migrateVersionStore.incomplete";
     
     private VersionMigrator versionMigrator;
     private TenantService tenantService;
     private ImporterBootstrap version2ImporterBootstrap;
+    private JobLockService jobLockService;
     
     private int batchSize = 1;
     private int threadCount = 2;
     
+    private int limitPerJobCycle = -1; // if run as scheduled job then can limit the number of version histories to migrate (per job invocation)
+    
+    private boolean migrationComplete = false;
+    
     private boolean deleteImmediately = false;
+    
+    private boolean runAsScheduledJob = false;
+    private boolean useDeprecatedV1 = false;
+    
+    private ThreadLocal<Boolean> runningAsJob = new ThreadLocal<Boolean>();
+    
+    /**
+     * Default constructor
+     */
+    public MigrateVersionStorePatch()
+    {
+        runningAsJob.set(Boolean.FALSE);
+    }
     
     public void setVersionMigrator(VersionMigrator versionMigrator)
     {
@@ -63,6 +100,11 @@ public class MigrateVersionStorePatch extends AbstractPatch
         this.version2ImporterBootstrap = version2ImporterBootstrap;
     }
     
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+    
     public void setBatchSize(int batchSize)
     {
         this.batchSize = batchSize;
@@ -73,9 +115,30 @@ public class MigrateVersionStorePatch extends AbstractPatch
         this.threadCount = threadCount;
     }
     
+    public void setLimitPerJobCycle(int limitPerJobCycle)
+    {
+        this.limitPerJobCycle = limitPerJobCycle;
+    }
+    
     public void setDeleteImmediately(boolean deleteImmediately)
     {
         this.deleteImmediately = deleteImmediately;
+    }
+    
+   /**
+     * Set whether the patch execution should just bypass any actual work i.e. the admin has
+     * chosen to manually trigger the work.
+     * 
+     * @param runAsScheduledJob <tt>true</tt> to leave all work up to the scheduled job
+     */
+    public void setRunAsScheduledJob(boolean runAsScheduledJob)
+    {
+        this.runAsScheduledJob = runAsScheduledJob;
+    }
+    
+    public void setOnlyUseDeprecatedV1(boolean useDeprecatedV1)
+    {
+        this.useDeprecatedV1 = useDeprecatedV1;
     }
     
     public void init()
@@ -97,35 +160,223 @@ public class MigrateVersionStorePatch extends AbstractPatch
         super.init();
     }
     
+    /**
+     * Method called when executed as a scheduled job.
+     */
+    private void executeViaJob()
+    {
+        AuthenticationUtil.RunAsWork<String> patchRunAs = new AuthenticationUtil.RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                RetryingTransactionCallback<String> patchTxn = new RetryingTransactionCallback<String>()
+                {
+                    public String execute() throws Exception
+                    {
+                        try
+                        {
+                            runningAsJob.set(Boolean.TRUE);
+                            String report = applyInternal();
+                            // done
+                            return report;
+                        }
+                        finally
+                        {
+                            runningAsJob.set(Boolean.FALSE);  // Back to default
+                        }
+                    }
+                };
+                return transactionService.getRetryingTransactionHelper().doInTransaction(patchTxn);
+            }
+        };
+        String report = AuthenticationUtil.runAs(patchRunAs, AuthenticationUtil.getSystemUserName());
+        if (report != null)
+        {
+            logger.info(report);
+        }
+    }
+    
+    /**
+     * Gets a set of work to do and executes it within this transaction.
+     * Can be kicked off via a job or called as a patch.
+     */
     @Override
     protected String applyInternal() throws Exception
     {
-        if (tenantService.isEnabled() && tenantService.isTenantUser())
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
         {
-            // bootstrap new version store
-            StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
-            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(), bootstrapStoreRef);
-            version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+            // Nothing to do
+            return null;
+        }
+        
+        if (useDeprecatedV1)
+        {
+            // Nothing to do
+            return null;
+        }
+        
+        if (migrationComplete)
+        {
+            // Nothing to do
+            return null;
+        }
+        
+        boolean isRunningAsJob = runningAsJob.get().booleanValue();
+        
+        // Do we bug out of patch execution
+        if (runAsScheduledJob && !isRunningAsJob)
+        {
+            return I18NUtil.getMessage("patch.migrateVersionStore.bypassingPatch");
+        }
+        
+        // Lock
+        String lockToken = getLock();
+        if (lockToken == null)
+        {
+            // Some other process is busy
+            if (isRunningAsJob)
+            {
+                // Fine, we're doing batches (or lock still present)
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Cannot get lock - an earlier job is still busy (or previous lock has not yet expired after failure - TTL was "+LOCK_TTL+" ms)");
+                }
+                return null;
+            }
+            else
+            {
+                throw new RuntimeException("Unable to get job lock during patch execution.  Only one server should perform the upgrade.");
+            }
+        }
+        
+        if (isRunningAsJob && (! this.deleteImmediately))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("VersionMigrator is running as a background job will immediately delete old versions (after they are migrated");
+            }
             
-            version2ImporterBootstrap.bootstrap();
+            this.deleteImmediately = true;
         }
         
-        if (AuthenticationUtil.getRunAsUser() == null)
+        try
         {
-            logger.info("Set system user");
-            AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+            if (tenantService.isEnabled() && tenantService.isTenantUser())
+            {
+                // bootstrap new version store
+                StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
+                
+                if (! nodeService.exists(bootstrapStoreRef))
+                {
+                    bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(), bootstrapStoreRef);
+                    version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+                    version2ImporterBootstrap.bootstrap();
+                }
+            }
+            
+            if (AuthenticationUtil.getRunAsUser() == null)
+            {
+                logger.info("Set system user");
+                AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+            }
+            
+            Boolean migrated = versionMigrator.migrateVersions(batchSize, threadCount, limitPerJobCycle, deleteImmediately, lockToken, isRunningAsJob);
+            
+            migrationComplete = (migrated != null ? migrated : true);
+            
+            // return the result message
+            if (migrated != null)
+            {
+                if (migrationComplete)
+                {
+                    return I18NUtil.getMessage(MSG_DONE);
+                }
+                else if (! isRunningAsJob)
+                {
+                    return I18NUtil.getMessage(MSG_INCOMPLETE);
+                }
+            }
+            
+            return null;
+        }
+        finally
+        {
+            releaseLock(lockToken);
+        }
+    }
+    
+   /**
+     * Attempts to get the lock.  If the lock couldn't be taken, then <tt>null</tt> is returned.
+     * 
+     * @return          Returns the lock token or <tt>null</tt>
+     */
+    private String getLock()
+    {
+        String lockToken = null;
+        try
+        {
+            lockToken = jobLockService.getLock(LOCK, LOCK_TTL);
+            if (lockToken != null)
+            {
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Got lock: "+lockToken+" with TTL of "+LOCK_TTL+" ms ["+AlfrescoTransactionSupport.getTransactionId()+"]["+Thread.currentThread().getId()+"]");
+                }
+            }
+        }
+        catch (LockAcquisitionException e)
+        {
+            // ignore
+        }
+        return lockToken;
+    }
+    
+    /**
+     * Attempts to release the lock.
+     */
+    private void releaseLock(String lockToken)
+    {
+        if (lockToken == null)
+        {
+            throw new IllegalArgumentException("Must provide existing lockToken");
+        }
+        jobLockService.releaseLock(lockToken, LOCK);
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Released lock: "+lockToken+" ["+AlfrescoTransactionSupport.getTransactionId()+"]["+Thread.currentThread().getId()+"]");
+        }
+    }
+    
+    /**
+     * Job to initiate the {@link MigrateVersionStorePatch}
+     * 
+     * @author janv
+     * @since 3.3.1
+     */
+    public static class MigrateVersionStoreJob implements Job
+    {
+        public MigrateVersionStoreJob()
+        {
         }
         
-        boolean completed = versionMigrator.migrateVersions(batchSize, threadCount, deleteImmediately);
-        
-        // return the result message
-        if (completed)
+        /**
+         * Calls the cleaner to do its work
+         */
+        public void execute(JobExecutionContext context) throws JobExecutionException
         {
-            return I18NUtil.getMessage(MSG_DONE);
-        }
-        else
-        {
-            return I18NUtil.getMessage(MSG_INCOMPLETE);
+            JobDataMap jobData = context.getJobDetail().getJobDataMap();
+            
+            // extract the migrator to use
+            Object migrateVersionStoreObj = jobData.get("migrateVersionStore");
+            if (migrateVersionStoreObj == null || !(migrateVersionStoreObj instanceof MigrateVersionStorePatch))
+            {
+                throw new AlfrescoRuntimeException("'migrateVersionStore' data must contain valid 'MigrateVersionStore' reference");
+            }
+            
+            MigrateVersionStorePatch migrateVersionStore = (MigrateVersionStorePatch) migrateVersionStoreObj;
+            migrateVersionStore.executeViaJob();
         }
     }
 }

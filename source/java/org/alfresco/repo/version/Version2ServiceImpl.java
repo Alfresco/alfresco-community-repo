@@ -65,11 +65,19 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     
     private PermissionService permissionService;
     
+    private VersionServiceImpl version1Service = new VersionServiceImpl();
+    private VersionMigrator versionMigrator;
+    
     private static Comparator<Version> versionComparatorAsc = new VersionComparatorAsc();
     
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    public void setVersionMigrator(VersionMigrator versionMigrator)
+    {
+        this.versionMigrator = versionMigrator;
     }
     
     public void setOnlyUseDeprecatedV1(boolean useDeprecatedV1)
@@ -84,10 +92,15 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     public void initialise()
     {
         super.initialise();
-
+        
         if (useDeprecatedV1)
         {
             logger.warn("version.store.onlyUseDeprecatedV1=true - using deprecated 'lightWeightVersionStore' by default (not 'version2Store')");
+        }
+        else
+        {
+            version1Service.setNodeService(dbNodeService);
+            version1Service.setDbNodeService(dbNodeService);
         }
     }
     
@@ -168,7 +181,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         return result;
     }
-	    
+    
     protected Version createVersion(
             NodeRef nodeRef,
             Map<String, Serializable> origVersionProperties,
@@ -194,10 +207,10 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         {
             this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
         }
-
+        
         // Call the policy behaviour
         invokeBeforeCreateVersion(nodeRef);
-
+        
         // version "description" property is added as a standard version property (if not null) rather than a metadata version property
         String versionDescription = (String)versionProperties.get(Version.PROP_DESCRIPTION);
         versionProperties.remove(Version.PROP_DESCRIPTION);
@@ -207,11 +220,44 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         // Check that the supplied additional version properties do not clash with the reserved ones
         VersionUtil.checkVersionPropertyNames(versionProperties.keySet());
-
+        
         // Check the repository for the version history for this node
         NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
         NodeRef currentVersionRef = null;
-
+        
+        if (versionHistoryRef == null)
+        {
+            // check for lazy migration
+            if (! versionMigrator.isMigrationComplete())
+            {
+                NodeRef oldVHRef = version1Service.getVersionHistoryNodeRef(nodeRef);
+                if (oldVHRef != null)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Lazily migrate old version history (background migration in progress): "+oldVHRef);
+                    }
+                    
+                    try
+                    {
+                        versionMigrator.migrateVersion(oldVHRef, true);
+                    }
+                    catch (Throwable t)
+                    {
+                        throw new AlfrescoRuntimeException("Failed to lazily migrate old version history: "+oldVHRef, t);
+                    }
+                    
+                    // should now be able to get new version history
+                    versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+                    
+                    if (versionHistoryRef == null)
+                    {
+                        throw new AlfrescoRuntimeException("Failed to find lazily migrated version history for node: "+nodeRef);
+                    }
+                }
+            }
+        }
+        
         if (versionHistoryRef == null)
         {
             // Create the version history
@@ -302,6 +348,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     protected NodeRef createVersionHistory(NodeRef nodeRef)
     {
+        long start = System.currentTimeMillis();
+        
         HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, nodeRef.getId());
         props.put(Version2Model.PROP_QNAME_VERSIONED_NODE_ID, nodeRef.getId());
@@ -316,7 +364,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         if (logger.isTraceEnabled())
         {
-            logger.trace("created version history nodeRef: " + childAssocRef.getChildRef() + " for " + nodeRef);
+            logger.trace("created version history nodeRef: " + childAssocRef.getChildRef() + " for " + nodeRef + " in "+(System.currentTimeMillis()-start)+" ms");
         }
         
         return childAssocRef.getChildRef();
@@ -333,14 +381,31 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
         
         VersionHistory versionHistory = null;
-
+        
         // Get the version history regardless of whether the node is still 'live' or not
         NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
         if (versionHistoryRef != null)
         {
             versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
         }
-
+        else
+        {
+            // to allow (optional) lazy migration
+            if (! versionMigrator.isMigrationComplete())
+            {
+                NodeRef oldVHRef = version1Service.getVersionHistoryNodeRef(nodeRef);
+                if (oldVHRef != null)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Get old version history (background migration in progress): "+oldVHRef);
+                    }
+                    
+                    versionHistory = version1Service.getVersionHistory(nodeRef);
+                }
+            }
+        }
+        
         return versionHistory;
     }
 

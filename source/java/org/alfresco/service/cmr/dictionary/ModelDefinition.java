@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.dictionary;
 
+import java.util.Collection;
 import java.util.Date;
 
 import org.alfresco.service.namespace.QName;
@@ -54,5 +55,26 @@ public interface ModelDefinition
      * @return the model version
      */
     public String getVersion();
+    
+    /**
+     * @return  the namespaces defined by this model
+     */
+    public Collection<NamespaceDefinition> getNamespaces();
 
+    /**
+     * @param uri  namespace uri
+     * @return  true => model defines the uri
+     */
+    public boolean isNamespaceDefined(String uri);
+    
+    /**
+     * @return  the namespaces imported by this model
+     */
+    public Collection<NamespaceDefinition> getImportedNamespaces();
+    
+    /**
+     * @param uri  namespace uri
+     * @return  true => model imports the uri
+     */
+    public boolean isNamespaceImported(String uri);
 }

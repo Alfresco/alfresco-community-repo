@@ -28,10 +28,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorkerAdaptor;
 import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
-import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyScope;
@@ -72,6 +73,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     
     private static final String MSG_PATCH_NOOP = "version_service.migration.patch.noop";
     private static final String MSG_PATCH_COMPLETE = "version_service.migration.patch.complete";
+    private static final String MSG_PATCH_IN_PROGRESS = "version_service.migration.patch.in_progress";
     private static final String MSG_PATCH_SKIP1 = "version_service.migration.patch.warn.skip1";
     private static final String MSG_PATCH_SKIP2 = "version_service.migration.patch.warn.skip2";
     
@@ -91,11 +93,15 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     private DictionaryService dictionaryService;
     private TransactionService transactionService;
     private NodeService versionNodeService; // NodeService impl which redirects to appropriate VersionService
-    private QNameDAO qnameDAO;
     private RuleService ruleService;
+    private JobLockService jobLockService;
     private ApplicationEventPublisher applicationEventPublisher;
     
+    private Boolean migrationComplete = null;
+    
     private int loggingInterval = 500;
+    
+    //private String lockToken = null;
     
     public void setVersion2ServiceImpl(Version2ServiceImpl versionService)
     {
@@ -127,14 +133,14 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         this.versionNodeService = versionNodeService;
     }
     
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        this.qnameDAO = qnameDAO;
-    }
-    
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+    
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
     }
     
     public void setLoggingInterval(int loggingInterval)
@@ -158,13 +164,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     
     public NodeRef migrateVersionHistory(NodeRef oldVHNodeRef, NodeRef versionedNodeRef)
     {
-        /*
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("migrateVersionHistory: oldVersionHistoryRef = " + oldVHNodeRef);
-        }
-        */
-        
         VersionHistory vh = v1BuildVersionHistory(oldVHNodeRef, versionedNodeRef);
         
         // create new version history node
@@ -201,13 +200,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
     {
         NodeRef versionedNodeRef = oldVersion.getVersionedNodeRef();     // nodeRef to versioned node in live store
         NodeRef frozenStateNodeRef = oldVersion.getFrozenStateNodeRef(); // nodeRef to version node in version store
-        
-        /*
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("v2CreateNewVersion: oldVersionRef = " + frozenStateNodeRef + " " + oldVersion);
-        }
-        */
         
         String versionLabel = oldVersion.getVersionLabel();
         String versionDescription = oldVersion.getDescription();
@@ -336,7 +328,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         return dbNodeService.getChildAssocs(rootNodeRef);
     }
     
-    private void migrateVersion(NodeRef oldVHNodeRef, boolean deleteImmediately) throws Throwable
+    protected void migrateVersion(NodeRef oldVHNodeRef, boolean deleteImmediately) throws Throwable
     {
         NodeRef versionedNodeRef = v1GetVersionedNodeRef(oldVHNodeRef);
         migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
@@ -353,44 +345,48 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         }
     }
     
+    public boolean isMigrationComplete()
+    {
+        if (migrationComplete == null)
+        {
+            NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
+            final List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
+            
+            migrationComplete = (childAssocRefs.size() == 0);
+        }
+        
+        return migrationComplete;
+    }
+    
+    /**
+     * Attempts to refresh the lock.
+     * 
+     * @return          Returns the lock token
+     */
+    private void refreshLock(String lockToken)
+    {
+        if ((lockToken == null) || (jobLockService == null))
+        {
+            return;
+        }
+        jobLockService.refreshLock(lockToken, MigrateVersionStorePatch.LOCK, MigrateVersionStorePatch.LOCK_TTL);
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Refreshed lock: "+lockToken+" with TTL of "+MigrateVersionStorePatch.LOCK_TTL+" ms ["+AlfrescoTransactionSupport.getTransactionId()+"]["+Thread.currentThread().getId()+"]");
+        }
+    }
+    
     /**
      * Do the Version migration work
-     * @return          Returns <tt>true</tt> if the work is done
+     * @return          Returns null if no work to do, true if the work is done, false is incomplete (or in progress)
      */
-    public boolean migrateVersions(int batchSize, int threadCount, final boolean deleteImmediately)
+    public Boolean migrateVersions(int batchSize, int threadCount, int limit, final boolean deleteImmediately, final String lockToken, boolean isRunningAsJob)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                // pre-create new qnames (rather than retry initial batches)
-                qnameDAO.getOrCreateQName(Version2Model.ASPECT_VERSION_STORE_ROOT);
-                qnameDAO.getOrCreateQName(Version2Model.TYPE_QNAME_VERSION_HISTORY);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_VERSIONED_NODE_ID);
-                qnameDAO.getOrCreateQName(Version2Model.ASPECT_VERSION);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_VERSION_LABEL);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_VERSION_NUMBER);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_NODE_DBID);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_CREATOR);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_CREATED);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_MODIFIER);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_MODIFIED);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_FROZEN_ACCESSED);
-                qnameDAO.getOrCreateQName(Version2Model.ASSOC_SUCCESSOR);
-                qnameDAO.getOrCreateQName(Version2Model.CHILD_QNAME_VERSION_HISTORIES);
-                qnameDAO.getOrCreateQName(Version2Model.CHILD_QNAME_VERSIONS);
-                qnameDAO.getOrCreateQName(Version2Model.CHILD_QNAME_VERSIONED_ASSOCS);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_ASSOC_DBID);
-                qnameDAO.getOrCreateQName(Version2Model.PROP_QNAME_TRANSLATION_VERSIONS);
-                
-                return null;
-            }
-        }, false, true);
-        
         final NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
         final NodeRef newRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_NEW);
         
+        refreshLock(lockToken);
         
         long startTime = System.currentTimeMillis();
         
@@ -400,9 +396,15 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         
         if (toDo == 0)
         {
-            logger.info(I18NUtil.getMessage(MSG_PATCH_NOOP));
-            return true;
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(I18NUtil.getMessage(MSG_PATCH_NOOP));
+            }
+            migrationComplete = true;
+            return null;
         }
+        
+        migrationComplete = false;
         
         if (logger.isInfoEnabled())
         {
@@ -416,14 +418,19 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         
         long splitTime = System.currentTimeMillis();
         
-        final List<ChildAssociationRef> newChildAssocRefs = getVersionHistories(newRootNodeRef);
-        final boolean firstMigration = (newChildAssocRefs.size() == 0);
+        boolean firstMigration = false;
         
-        if (logger.isInfoEnabled())
+        if (! isRunningAsJob)
         {
-            if (! firstMigration)
+            List<ChildAssociationRef> newChildAssocRefs = getVersionHistories(newRootNodeRef);
+            firstMigration = (newChildAssocRefs.size() == 0);
+            
+            if (logger.isInfoEnabled())
             {
-                logger.warn("This is not the first migration attempt. Found "+newChildAssocRefs.size()+" version histories in new version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+                if (! firstMigration)
+                {
+                    logger.warn("This is not the first migration attempt. Found "+newChildAssocRefs.size()+" version histories in new version store (in "+((System.currentTimeMillis()-splitTime)/1000)+" secs)");
+                }
             }
         }
         
@@ -444,15 +451,27 @@ public class VersionMigrator implements ApplicationEventPublisherAware
             
             splitTime = System.currentTimeMillis();
             
+            int toMigrateCount = 0;
             int totalCount = 0;
-            Collection<List<NodeRef>> batchProcessorWork = new ArrayList<List<NodeRef>>(2);
+            
+            List<List<NodeRef>> batchProcessorWork = new ArrayList<List<NodeRef>>(2);
             
             final List<NodeRef> tmpBatch = new ArrayList<NodeRef>(batchSize);
             
+            int maxToDo = childAssocRefs.size();
+            
+            if (limit > -1)
+            {
+                maxToDo = limit;
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Limit this job cycle to max of "+limit+" version histories");
+                }
+            }
+            
             for (final ChildAssociationRef childAssocRef : childAssocRefs)
             {
-                totalCount++;
-                
                 // short-cut if first migration
                 if (!firstMigration)
                 {
@@ -464,16 +483,28 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                     }
                 }
                 
+                toMigrateCount++;
+                
                 if (tmpBatch.size() < batchSize)
                 {
                     tmpBatch.add(childAssocRef.getChildRef());
                 }
                 
-                if ((tmpBatch.size() == batchSize) || (totalCount == childAssocRefs.size()))
+                if ((tmpBatch.size() == batchSize) ||
+                    (toMigrateCount >= maxToDo) ||
+                    (totalCount == childAssocRefs.size()))
                 {
-                    // Each thread gets 1 batch to execute
-                    batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
-                    tmpBatch.clear();
+                    if (tmpBatch.size() > 0)
+                    {
+                        // Each thread gets 1 batch to execute
+                        batchProcessorWork.add(new ArrayList<NodeRef>(tmpBatch));
+                        tmpBatch.clear();
+                    }
+                }
+                
+                if (toMigrateCount >= maxToDo)
+                {
+                    break;
                 }
             }
             
@@ -483,7 +514,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Split into "+batchCount+" batches in "+(System.currentTimeMillis()-splitTime)+" ms");
+                    logger.debug("Split "+toMigrateCount+" into "+batchCount+" batches in "+(System.currentTimeMillis()-splitTime)+" ms");
                 }
                 
                 //
@@ -502,7 +533,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                         // Authentication
                         AuthenticationUtil.setRunAsUser(runAsUser);
                     }
-
+                    
                     public void afterProcess() throws Throwable
                     {
                         // Enable rules
@@ -514,6 +545,8 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                     public void process(List<NodeRef> vhBatch) throws Throwable
                     {
                         long startTime = System.currentTimeMillis();
+                        
+                        refreshLock(lockToken);
                         
                         for (NodeRef oldVHNodeRef : vhBatch)
                         {
@@ -527,16 +560,66 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                     }
                 };
                 
-                BatchProcessor<List<NodeRef>> batchProcessor = new BatchProcessor<List<NodeRef>>(
-                        "MigrateVersionStore",
-                        transactionService.getRetryingTransactionHelper(),
-                        batchProcessorWork, threadCount, 1,
-                        applicationEventPublisher, logger, loggingInterval);
-                
                 boolean splitTxns = true;
-                batchProcessor.process(batchProcessorWorker, splitTxns);
                 
-                batchErrorCount = batchProcessor.getTotalErrors();
+                if (threadCount > 1)
+                {
+                    // process first batch only - to avoid retries on qname, acl
+                    
+                    List<List<NodeRef>> batchProcessorWorkFirst = new ArrayList<List<NodeRef>>(2);
+                    batchProcessorWorkFirst.add(new ArrayList<NodeRef>(batchProcessorWork.get(0)));
+                    
+                    BatchProcessor<List<NodeRef>> batchProcessorFirst = new BatchProcessor<List<NodeRef>>(
+                            "MigrateVersionStore",
+                            transactionService.getRetryingTransactionHelper(),
+                            batchProcessorWorkFirst, threadCount, 1,
+                            applicationEventPublisher, logger, loggingInterval);
+                    
+                    batchProcessorFirst.process(batchProcessorWorker, splitTxns);
+                    
+                    batchErrorCount = batchProcessorFirst.getTotalErrors();
+                    
+                    batchProcessorWork.remove(0);
+                }
+                
+                if (batchProcessorWork.size() > 0)
+                {
+                    // process remaining batches
+                    BatchProcessor<List<NodeRef>> batchProcessor = new BatchProcessor<List<NodeRef>>(
+                            "MigrateVersionStore",
+                            transactionService.getRetryingTransactionHelper(),
+                            batchProcessorWork, threadCount, 1,
+                            applicationEventPublisher, logger, loggingInterval);
+                    
+                    batchProcessor.process(batchProcessorWorker, splitTxns);
+                    
+                    batchErrorCount = batchErrorCount + batchProcessor.getTotalErrors();
+                }
+            }
+            
+            if (alreadyMigratedCount > 0)
+            {
+                logger.warn(I18NUtil.getMessage(MSG_PATCH_SKIP2, alreadyMigratedCount));
+            }
+            
+            if (batchCount > 0)
+            {
+                if (batchErrorCount > 0)
+                {
+                    logger.warn(I18NUtil.getMessage(MSG_PATCH_SKIP1, batchErrorCount, batchCount, ((System.currentTimeMillis()-startTime)/1000)));
+                }
+                else
+                {
+                    if ((limit == -1) || ((toMigrateCount+alreadyMigratedCount) == toDo))
+                    {
+                        logger.info(I18NUtil.getMessage(MSG_PATCH_COMPLETE, toMigrateCount, toDo, ((System.currentTimeMillis()-startTime)/1000), deleteImmediately));
+                        migrationComplete = true;
+                    }
+                    else
+                    {
+                        logger.info(I18NUtil.getMessage(MSG_PATCH_IN_PROGRESS, toMigrateCount, toDo, ((System.currentTimeMillis()-startTime)/1000), deleteImmediately));
+                    }
+                }
             }
         }
         finally
@@ -545,25 +628,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
             SessionSizeResourceManager.setEnableInTransaction();
         }
         
-        
-        if (alreadyMigratedCount > 0)
-        {
-            logger.warn(I18NUtil.getMessage(MSG_PATCH_SKIP2, alreadyMigratedCount));
-        }
-        
-        if (batchCount > 0)
-        {
-            if (batchErrorCount > 0)
-            {
-                logger.warn(I18NUtil.getMessage(MSG_PATCH_SKIP1, batchErrorCount, batchCount, ((System.currentTimeMillis()-startTime)/1000)));
-            }
-            else
-            {
-                logger.info(I18NUtil.getMessage(MSG_PATCH_COMPLETE, (toDo - alreadyMigratedCount), toDo, ((System.currentTimeMillis()-startTime)/1000)));
-            }
-        }
-        
-        return (batchErrorCount == 0);
+        return migrationComplete;
     }
     
     
@@ -583,12 +648,21 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                     {
                         long startTime = System.currentTimeMillis();
                         
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("batchSize="+batchSize+", batchWorkerThreadCount="+threadCount);
+                        }
+                        
                         NodeRef oldRootNodeRef = dbNodeService.getRootNode(VersionMigrator.VERSION_STORE_REF_OLD);
                         List<ChildAssociationRef> childAssocRefs = getVersionHistories(oldRootNodeRef);
                         
                         int toDo = childAssocRefs.size();
                         
-                        if (toDo > 0)
+                        if (toDo == 0)
+                        {
+                            migrationComplete = true;
+                        }
+                        else
                         {
                             if (logger.isInfoEnabled())
                             {
@@ -645,9 +719,9 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                                 
                                 if (batchCount > 0)
                                 {
-                                    if (logger.isInfoEnabled())
+                                    if (logger.isDebugEnabled())
                                     {
-                                        logger.info("Split into "+batchCount+" batches in "+(System.currentTimeMillis()-splitTime)+" ms");
+                                        logger.debug("Split into "+batchCount+" batches in "+(System.currentTimeMillis()-splitTime)+" ms");
                                     }
                                     
                                     //
@@ -674,7 +748,7 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                                     };
                                     
                                     BatchProcessor<List<NodeRef>> batchProcessor = new BatchProcessor<List<NodeRef>>(
-                                            "MigrateVersionStore",
+                                            "CleanOldVersionStore",
                                             transactionService.getRetryingTransactionHelper(),
                                             batchProcessorWork, threadCount, 1,
                                             applicationEventPublisher, logger, loggingInterval);
@@ -705,6 +779,12 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                                 else
                                 {
                                     logger.info(I18NUtil.getMessage(MSG_DELETE_COMPLETE, (toDo - notMigratedCount), toDo, ((System.currentTimeMillis()-startTime)/1000)));
+                                    
+                                    if (notMigratedCount == 0)
+                                    {
+                                        migrationComplete = null;
+                                        isMigrationComplete();
+                                    }
                                 }
                             }
                         }

@@ -145,6 +145,7 @@
         <property name="userNameGenerator">
             <ref bean="userNameGenerator"/>
         </property>
+        <property name="userRegistrySynchronizer" ref="userRegistrySynchronizer" />
     </bean>
 
     <bean id="sessionScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Session">

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.cmr.view.ReferenceType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 import org.apache.commons.lang.ArrayUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -476,7 +477,8 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         try
         {
-            contentHandler.startElement(property.getNamespaceURI(), property.getLocalName(), toPrefixString(property), EMPTY_ATTRIBUTES);
+            QName encodedProperty = QName.createQName(property.getNamespaceURI(), ISO9075.encode(property.getLocalName()));
+            contentHandler.startElement(encodedProperty.getNamespaceURI(), encodedProperty.getLocalName(), toPrefixString(encodedProperty), EMPTY_ATTRIBUTES);
         }
         catch (SAXException e)
         {
@@ -491,7 +493,8 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         try
         {
-            contentHandler.endElement(property.getNamespaceURI(), property.getLocalName(), toPrefixString(property));
+            QName encodedProperty = QName.createQName(property.getNamespaceURI(), ISO9075.encode(property.getLocalName()));
+            contentHandler.endElement(encodedProperty.getNamespaceURI(), encodedProperty.getLocalName(), toPrefixString(encodedProperty));
         }
         catch (SAXException e)
         {

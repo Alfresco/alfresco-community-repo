@@ -963,6 +963,34 @@ public class RuleServiceImpl
         addRulePendingExecution(actionableNodeRef, actionedUponNodeRef, rule, false);
     }
 
+    @SuppressWarnings("unchecked")
+    public void removeRulePendingExecution(NodeRef actionedUponNodeRef)
+    {
+        ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
+        
+        List<PendingRuleData> pendingRules = (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
+        if (pendingRules != null)
+        {
+            boolean listUpdated = false;
+            List<PendingRuleData> temp = new ArrayList<PendingRuleData>(pendingRules);
+            for (PendingRuleData pendingRuleData : temp)
+            {
+                if (pendingRuleData.getActionedUponNodeRef().equals(actionedUponNodeRef) == true)
+                {
+                    // Remove from the pending list
+                    pendingRules.remove(pendingRuleData);
+                    listUpdated = true;
+                }
+            }
+            
+            if (listUpdated == true)
+            {
+                AlfrescoTransactionSupport.bindResource(KEY_RULES_PENDING, pendingRules);
+                AlfrescoTransactionSupport.bindListener(this.ruleTransactionListener);
+            }
+        }
+    }
+    
     /**
      * @see org.alfresco.repo.rule.RuntimeRuleService#addRulePendingExecution(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, boolean)
      */

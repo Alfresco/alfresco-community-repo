@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMTestSuite;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
@@ -99,7 +100,8 @@ public class AVMLockingServiceTest extends TestCase
     {
         if (fContext == null)
         {
-            fContext = ApplicationContextHelper.getApplicationContext();
+            fContext = AVMTestSuite.getContext();
+            
             fLockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
             fService = (AVMService) fContext.getBean("AVMLockingAwareService");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");

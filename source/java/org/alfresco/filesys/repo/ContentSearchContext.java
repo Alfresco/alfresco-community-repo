@@ -132,7 +132,7 @@ public class ContentSearchContext extends SearchContext
      */
     public int getResumeId()
     {
-        return resumeId;
+        return resumeId - 1;
     }
 
     /**
@@ -411,7 +411,7 @@ public class ContentSearchContext extends SearchContext
         	// Reset the index/resume id
         	
             index = index - 1;
-            resumeId = resId - 1;
+            resumeId = resumeId - 1;
             donePseudoFiles = true;
 
             // DEBUG

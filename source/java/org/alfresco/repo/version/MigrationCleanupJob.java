@@ -44,15 +44,41 @@ public class MigrationCleanupJob implements Job
     private static final String KEY_BATCH_SIZE = "batchSize";
     private static final String KEY_THREAD_COUNT = "threadCount";
     private static final String KEY_ONLY_USE_DEPRECATED_V1 = "onlyUseDeprecatedV1";
+    private static final String KEY_MIGRATE_RUN_AS_JOB = "migrateRunAsScheduledJob";
     
     private int batchSize = 1;
     private int threadCount = 2;
     
     private boolean useDeprecatedV1 = false;
+    private boolean migrateRunAsJob = false;
     
     public void execute(JobExecutionContext context) throws JobExecutionException
     { 
         JobDataMap jobData = context.getJobDetail().getJobDataMap();
+        
+        String migrateRunAsJobStr = (String)jobData.get(KEY_MIGRATE_RUN_AS_JOB);
+        if (migrateRunAsJobStr != null)
+        {
+            try
+            {
+                migrateRunAsJob = new Boolean(migrateRunAsJobStr);
+            }
+            catch (Exception e)
+            {
+                logger.warn("Invalid 'migrateRunAsJob' value, using default: " + migrateRunAsJob, e);
+            }
+        }
+        
+        if (migrateRunAsJob)
+        {
+            // skip cleanup
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Skipping migration cleanup since migration is running as a job (which walso performs the delete)");
+            }
+            
+            return;
+        }
         
         String onlyUseDeprecatedV1Str = (String)jobData.get(KEY_ONLY_USE_DEPRECATED_V1);
         if (onlyUseDeprecatedV1Str != null)
@@ -66,6 +92,7 @@ public class MigrationCleanupJob implements Job
                 logger.warn("Invalid 'onlyUseDeprecatedV1' value, using default: " + useDeprecatedV1, e);
             }
         }
+        
         
         if (useDeprecatedV1)
         {
@@ -124,6 +151,12 @@ public class MigrationCleanupJob implements Job
             String errorMessage = "threadCount ("+threadCount+") cannot be less than 1";
             logger.error(errorMessage);
             throw new AlfrescoRuntimeException(errorMessage);
+        }
+        
+        if (AuthenticationUtil.getRunAsUser() == null)
+        {
+            logger.info("Set system user");
+            AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
         }
         
         // perform the cleanup of the old version store

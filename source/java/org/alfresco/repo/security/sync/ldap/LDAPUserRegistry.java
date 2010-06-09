@@ -60,6 +60,7 @@ import org.alfresco.repo.security.sync.NodeDescription;
 import org.alfresco.repo.security.sync.UserRegistry;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -165,11 +166,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     /** Should we error on missing user IDs?. */
     private boolean errorOnMissingUID = false;
 
-    /** An array of all LDAP attributes to be queried from users. */
-    private String[] userAttributeNames;
+    /** An array of all LDAP attributes to be queried from users plus a set of property QNames. */
+    private Pair<String[], Set<QName>> userKeys;
 
-    /** An array of all LDAP attributes to be queried from groups. */
-    private String[] groupAttributeNames;
+    /** An array of all LDAP attributes to be queried from groups plus a set of property QNames. */
+    private Pair<String[], Set<QName>> groupKeys;
 
     /** The LDAP generalized time format. */
     private DateFormat timestampFormat;
@@ -509,8 +510,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         this.personAttributeMapping.put(ContentModel.PROP_USERNAME.toPrefixString(this.namespaceService),
                 this.userIdAttributeName);
-        this.userAttributeNames = getAttributeNames(this.personAttributeMapping);
-
+        this.userKeys = initKeys(this.personAttributeMapping);
+        
         // Include a range restriction for the multi-valued member attribute if this is enabled
         if (this.groupAttributeMapping == null)
         {
@@ -518,9 +519,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         this.groupAttributeMapping.put(ContentModel.PROP_AUTHORITY_NAME.toPrefixString(this.namespaceService),
                 this.groupIdAttributeName);
-        this.groupAttributeNames = getAttributeNames(this.groupAttributeMapping,
+        this.groupKeys = initKeys(this.groupAttributeMapping,
                 this.attributeBatchSize > 0 ? this.memberAttributeName + ";range=0-" + (this.attributeBatchSize - 1)
                         : this.memberAttributeName);
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties()
+     */
+    public Set<QName> getPersonMappedProperties()
+    {
+        return this.userKeys.getSecond();
     }
 
     /*
@@ -619,8 +629,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         final LdapName userDistinguishedNamePrefix;
         try
         {
-            groupDistinguishedNamePrefix = new LdapName(this.groupSearchBase.toLowerCase());
-            userDistinguishedNamePrefix = new LdapName(this.userSearchBase.toLowerCase());
+            groupDistinguishedNamePrefix = fixedLdapName(this.groupSearchBase.toLowerCase());
+            userDistinguishedNamePrefix = fixedLdapName(this.userSearchBase.toLowerCase());
         }
         catch (InvalidNameException e)
         {
@@ -707,14 +717,14 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             {
                                 // Attempt to parse the member attribute as a DN. If this fails we have a fallback
                                 // in the catch block
-                                LdapName distinguishedNameForComparison = new LdapName(attribute.toLowerCase());
+                                LdapName distinguishedNameForComparison = fixedLdapName(attribute.toLowerCase());
                                 Attribute nameAttribute;
 
                                 // If the user and group search bases are different we may be able to recognize user
                                 // and group DNs without a secondary lookup
                                 if (disjoint)
                                 {
-                                    LdapName distinguishedName = new LdapName(attribute);
+                                    LdapName distinguishedName = fixedLdapName(attribute);
                                     Attributes nameAttributes = distinguishedName.getRdn(distinguishedName.size() - 1)
                                             .toAttributes();
 
@@ -853,7 +863,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             {
                 this.ctx.close();
             }
-        }, this.groupSearchBase, query, this.groupAttributeNames);
+        }, this.groupSearchBase, query, this.groupKeys.getFirst());
 
         if (LDAPUserRegistry.logger.isDebugEnabled())
         {
@@ -907,8 +917,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
     }
 
-    private String[] getAttributeNames(Map<String, String> attributeMapping, String... extraAttibutes)
+    private Pair<String[], Set<QName>> initKeys(Map<String, String> attributeMapping,
+            String... extraAttibutes)
     {
+        // Compile a complete array of LDAP attribute names, including operational attributes
         Set<String> attributeSet = new TreeSet<String>();
         attributeSet.addAll(Arrays.asList(extraAttibutes));
         attributeSet.add(this.modifyTimestampAttributeName);
@@ -921,7 +933,15 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         String[] attributeNames = new String[attributeSet.size()];
         attributeSet.toArray(attributeNames);
-        return attributeNames;
+
+        // Create a set with the property names converted to QNames
+        Set<QName> qnames = new HashSet<QName>(attributeMapping.size() * 2);
+        for (String property : attributeMapping.keySet())
+        {
+            qnames.add(QName.createQName(property, this.namespaceService));
+        }
+
+        return new Pair<String[], Set<QName>>(attributeNames, qnames);
     }
 
     private NodeDescription mapToNode(Map<String, String> attributeMapping, Map<String, String> attributeDefaults,
@@ -999,6 +1019,68 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         Name n = new CompositeName();
         n.add(dn);
         return n;
+    }
+    
+    /**
+     * Works around a bug in the JDK DN parsing. If an RDN has trailing escaped whitespace in the format "\\20" then
+     * LdapName would normally strip this. This method works around this by replacing "\\20" with "\\ " and "\\0D" with
+     * "\\\r".
+     * 
+     * @param dn
+     *            the DN
+     * @return the parsed ldap name
+     * @throws InvalidNameException
+     *             if the DN is invalid
+     */
+    private static LdapName fixedLdapName(String dn) throws InvalidNameException
+    {
+        // Optimization for DNs without escapes in them
+        if (dn.indexOf('\\') == -1)
+        {
+            return new LdapName(dn);
+        }
+
+        StringBuilder fixed = new StringBuilder(dn.length());
+        int length = dn.length();
+        for (int i = 0; i < length; i++)
+        {
+            char c = dn.charAt(i);
+            char c1, c2;
+            if (c == '\\')
+            {
+                if (i + 2 < length && Character.isLetterOrDigit(c1 = dn.charAt(i + 1))
+                        && Character.isLetterOrDigit(c2 = dn.charAt(i + 2)))
+                {
+                    if (c1 == '2' && c2 == '0')
+                    {
+                        fixed.append("\\ ");
+                    }
+                    else if (c1 == '0' && c2 == 'D')
+                    {
+                        fixed.append("\\\r");
+                    }
+                    else
+                    {
+                        fixed.append(dn, i, i + 3);
+                    }
+                    i += 2;
+                }
+                else if (i + 1 < length)
+                {
+                    fixed.append(dn, i, i + 2);
+                    i += 1;
+                }
+                else
+                {
+                    fixed.append(c);
+                }
+            }
+            else
+            {
+                fixed.append(c);
+            }
+        }
+        return new LdapName(fixed.toString());
     }
 
     /**
@@ -1257,7 +1339,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
 
                     this.userSearchCtls = new SearchControls();
                     this.userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                    this.userSearchCtls.setReturningAttributes(LDAPUserRegistry.this.userAttributeNames);
+                    this.userSearchCtls.setReturningAttributes(LDAPUserRegistry.this.userKeys.getFirst());
 
                     this.next = fetchNext();
                 }

@@ -66,6 +66,7 @@
       <property name="nodeArchiveService"><ref bean="nodeArchiveService" /></property>
 	  <property name="lockService"><ref bean="lockService" /></property>
       <property name="policyFilter"><ref bean="policyBehaviourFilter" /></property>
+	  <property name="dictionaryService"><ref bean="dictionaryService" /></property>
    </bean>
    
    <bean id="nodeMonitorFactory" class="org.alfresco.filesys.repo.NodeMonitorFactory">

@@ -166,12 +166,12 @@ public class PostLookup
                                 activityPost.setActivityData(activityDataStr);
                             }
                             
-                            if (activityPost.getActivityData().length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA)
+                            if ((activityPost.getActivityData() != null) && (activityPost.getActivityData().length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA))
                             {
                                 throw new IllegalArgumentException("Invalid activity data - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_DATA + " chars: " + activityPost.getActivityData());
                             }
                             
-                            if (activityPost.getSiteNetwork().length() > ActivityPostDAO.MAX_LEN_SITE_ID)
+                            if ((activityPost.getSiteNetwork() != null) && (activityPost.getSiteNetwork().length() > ActivityPostDAO.MAX_LEN_SITE_ID))
                             {
                                 // belts-and-braces - should not get here since checked during post (and not modified)
                                 throw new IllegalArgumentException("Invalid siteId - exceeds " + ActivityPostDAO.MAX_LEN_SITE_ID + " chars: " + activityPost.getSiteNetwork());

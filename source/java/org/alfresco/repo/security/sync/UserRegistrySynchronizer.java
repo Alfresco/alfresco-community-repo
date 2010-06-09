@@ -18,6 +18,10 @@
  */
 package org.alfresco.repo.security.sync;
 
+import java.util.Set;
+
+import org.alfresco.service.namespace.QName;
+
 /**
  * A <code>UserRegistrySynchronizer</code> is responsible for synchronizing Alfresco's local user (person) and group
  * (authority) information with one or more external sources (most typically LDAP directories).
@@ -59,4 +63,13 @@ public interface UserRegistrySynchronizer
      *            calling synchronously (e.g. in response to an authentication event in the same transaction).
      */
     public void synchronize(boolean forceUpdate, boolean allowDeletions, boolean splitTxns);
+    
+    /**
+     * Gets the set of property names that are auto-mapped for the user with the given user name. These should remain
+     * read-only for the user in the UI.
+     * 
+     * @return the person mapped properties
+     */
+    public Set<QName> getPersonMappedProperties(String username);
+    
 }

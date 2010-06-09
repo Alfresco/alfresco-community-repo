@@ -37,9 +37,14 @@ public class AVMTestSuite extends TestSuite
     {
         ApplicationContextHelper.setUseLazyLoading(false);
         ApplicationContextHelper.setNoAutoStart(true);
+        
+        /*
         return ApplicationContextHelper.getApplicationContext(
              new String[] { "classpath:alfresco/minimal-context.xml" }
         );
+        */
+        
+        return ApplicationContextHelper.getApplicationContext();
     }
     
     /**
@@ -82,9 +87,10 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(VersionPathTest.class);
         suite.addTestSuite(WCMInheritPermissionsTest.class);
         
-        // This should go last, as its uses a different
-        //  context to the other tests
+        /*
+        // note:to test remotely need running repo (otherwise effectively repeats AVMServiceLocalTest)
         suite.addTestSuite(AVMServiceRemoteSystemTest.class);
+        */
         
         return suite;
     }

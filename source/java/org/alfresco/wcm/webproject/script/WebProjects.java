@@ -62,7 +62,12 @@ public class WebProjects extends BaseScopableProcessorExtension
     {
     	this.serviceRegistry = serviceRegistry;
     }
-    
+
+    public ServiceRegistry getServiceRegistry()
+    {
+        return serviceRegistry;
+    }
+
     /**
      * Set the wcm web project service 
      * 

@@ -18,9 +18,13 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
@@ -91,5 +95,60 @@ public class M2ModelDefinition implements ModelDefinition
     {
         return model.getVersion();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getNamespaces()
+     */
+    public Collection<NamespaceDefinition> getNamespaces()
+    {
+        List<NamespaceDefinition> namespaces = new ArrayList<NamespaceDefinition>();
+        for (M2Namespace namespace : model.getNamespaces())
+        {
+            namespaces.add(new M2NamespaceDefinition(this, namespace.getUri(), namespace.getPrefix()));
+        }
+        return namespaces;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#isNamespaceDefined(java.lang.String)
+     */
+    public boolean isNamespaceDefined(String uri)
+    {
+        for (M2Namespace namespace : model.getNamespaces())
+        {
+            if (namespace.getUri().equals(uri))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#getImportedNamespaces()
+     */
+    public Collection<NamespaceDefinition> getImportedNamespaces()
+    {
+        List<NamespaceDefinition> namespaces = new ArrayList<NamespaceDefinition>();
+        for (M2Namespace namespace : model.getImports())
+        {
+            namespaces.add(new M2NamespaceDefinition(this, namespace.getUri(), namespace.getPrefix()));
+        }
+        return namespaces;
+    }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ModelDefinition#isNamespaceImported(java.lang.String)
+     */
+    public boolean isNamespaceImported(String uri)
+    {
+        for (M2Namespace namespace : model.getImports())
+        {
+            if (namespace.getUri().equals(uri))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

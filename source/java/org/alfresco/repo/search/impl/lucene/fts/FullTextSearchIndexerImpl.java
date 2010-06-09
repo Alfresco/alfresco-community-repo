@@ -26,7 +26,10 @@ import org.alfresco.repo.search.BackgroundIndexerAware;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -40,6 +43,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer
 {
+    private static Log s_logger = LogFactory.getLog(FullTextSearchIndexerImpl.class);
+    
     private static Set<StoreRef> requiresIndex = new LinkedHashSet<StoreRef>();
 
     private static Set<StoreRef> indexing = new HashSet<StoreRef>();
@@ -50,6 +55,8 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
 
     private boolean paused = false;
 
+    private int batchSize = 1000;
+    
     /**
      * 
      */
@@ -66,6 +73,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      */
     public synchronized void requiresIndex(StoreRef storeRef)
     {
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("FTS index request for "+storeRef);
+        }
         requiresIndex.add(storeRef);
     }
 
@@ -78,6 +89,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     {
         try
         {
+            if(s_logger.isDebugEnabled())
+            {
+                s_logger.debug("FTS index completed for "+storeRef+" ... "+remaining+ " remaining");
+            }
             indexing.remove(storeRef);
             if ((remaining > 0) || (e != null))
             {
@@ -90,7 +105,6 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         }
         finally
         {
-            // System.out.println("..Index Complete: id is "+this);
             this.notifyAll();
         }
     }
@@ -103,10 +117,16 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     public synchronized void pause() throws InterruptedException
     {
         pauseCount++;
-        // System.out.println("..Waiting "+pauseCount+" id is "+this);
+        if(s_logger.isTraceEnabled())
+        {
+            s_logger.trace("..Waiting "+pauseCount+" id is "+this);
+        }
         while ((indexing.size() > 0))
         {
-            // System.out.println("Pause: Waiting with count of "+indexing.size()+" id is "+this);
+            if(s_logger.isTraceEnabled())
+            {
+                s_logger.trace("Pause: Waiting with count of "+indexing.size()+" id is "+this);
+            }
             this.wait();
         }
         pauseCount--;
@@ -115,7 +135,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
             paused = true;
             this.notifyAll(); // only resumers
         }
-        // System.out.println("..Remaining "+pauseCount +" paused = "+paused+" id is "+this);
+        if(s_logger.isTraceEnabled())
+        {
+            s_logger.trace("..Remaining "+pauseCount +" paused = "+paused+" id is "+this);
+        }
     }
 
     /*
@@ -127,14 +150,20 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     {
         if (pauseCount == 0)
         {
-            // System.out.println("Direct resume"+" id is "+this);
+            if(s_logger.isTraceEnabled())
+            {
+                s_logger.trace("Direct resume"+" id is "+this);
+            }
             paused = false;
         }
         else
         {
             while (pauseCount > 0)
             {
-                // System.out.println("Reusme waiting on "+pauseCount+" id is "+this);
+                if(s_logger.isTraceEnabled())
+                {
+                    s_logger.trace("Resume waiting on "+pauseCount+" id is "+this);
+                }
                 this.wait();
             }
             paused = false;
@@ -174,19 +203,36 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
             StoreRef toIndex = getNextRef();
             if (toIndex != null)
             {
-                // System.out.println("Indexing "+toIndex+" at "+(new java.util.Date()));
+                if(s_logger.isDebugEnabled())
+                {
+                    s_logger.debug("FTS Indexing "+toIndex+" at "+(new java.util.Date()));
+                }
                 Indexer indexer = indexerAndSearcherFactory.getIndexer(toIndex);
                 if(indexer instanceof BackgroundIndexerAware)
                 {
                    BackgroundIndexerAware backgroundIndexerAware = (BackgroundIndexerAware)indexer;
                    backgroundIndexerAware.registerCallBack(this);
-                   done += backgroundIndexerAware.updateFullTextSearch(1000);
+                   try
+                   {
+                       done += backgroundIndexerAware.updateFullTextSearch(batchSize);   
+                   }
+                   catch (Exception ex)
+                   {
+                       if(s_logger.isWarnEnabled())
+                       {
+                           s_logger.warn("FTS Job threw exception", ex);
+                       }
+                       done = 1; // better luck next time
+                   }
                 }
             }
             else
             {
+                if(s_logger.isTraceEnabled())
+                {
+                    s_logger.trace("Nothing to FTS index at "+(new java.util.Date()));
+                }
                 break;
-                // System.out.println("Nothing to Indexing at "+(new java.util.Date()));
             }
         }
     }
@@ -195,7 +241,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     {
         if (paused || (pauseCount > 0))
         {
-            // System.out.println("Indexing suspended"+" id is "+this);
+            if(s_logger.isTraceEnabled())
+            {
+                s_logger.trace("Indexing suspended - no store available -  id is "+this);
+            }
             return null;
         }
 
@@ -253,4 +302,15 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         }
         
     }
+
+    /**
+     * The maximum maximum batch size
+     * @param batchSize the batchSize to set
+     */
+    public void setBatchSize(int batchSzie)
+    {
+        this.batchSize = batchSzie;
+    }
+    
+    
 }

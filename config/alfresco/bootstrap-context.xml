@@ -107,6 +107,7 @@
              <ref bean="patch.db-V3.2-PropertyValueTables" />
              <ref bean="patch.db-V3.2-AuditTables" />
              <ref bean="patch.db-V3.2-Child-Assoc-QName-CRC" />
+             <ref bean="patch.db-V3.3-modify-index-permission_id" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

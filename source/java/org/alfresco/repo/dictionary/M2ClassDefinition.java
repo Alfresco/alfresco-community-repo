@@ -83,6 +83,10 @@ import org.alfresco.util.EqualsHelper;
         
         // Resolve Names
         this.name = QName.createQName(m2Class.getName(), resolver);
+        if (!model.isNamespaceDefined(name.getNamespaceURI()))
+        {
+            throw new DictionaryException("Cannot define class " + name.toPrefixString() + " as namespace " + name.getNamespaceURI() + " is not defined by model " + model.getName().toPrefixString());
+        }
         this.archive = m2Class.getArchive();
         this.includedInSuperTypeQuery = m2Class.getIncludedInSuperTypeQuery();
         if (m2Class.getParentName() != null && m2Class.getParentName().length() > 0)
@@ -94,6 +98,10 @@ import org.alfresco.util.EqualsHelper;
         for (M2Property property : m2Class.getProperties())
         {
             PropertyDefinition def = new M2PropertyDefinition(this, property, resolver);
+            if (!model.isNamespaceDefined(def.getName().getNamespaceURI()))
+            {
+                throw new DictionaryException("Cannot define property " + def.getName().toPrefixString() + " as namespace " + def.getName().getNamespaceURI() + " is not defined by model " + model.getName().toPrefixString());
+            }
             if (properties.containsKey(def.getName()))
             {
                 throw new DictionaryException("Found duplicate property definition " + def.getName().toPrefixString() + " within class " + name.toPrefixString());
@@ -123,6 +131,10 @@ import org.alfresco.util.EqualsHelper;
             else
             {
                 def = new M2AssociationDefinition(this, assoc, resolver);
+            }
+            if (!model.isNamespaceDefined(def.getName().getNamespaceURI()))
+            {
+                throw new DictionaryException("Cannot define association " + def.getName().toPrefixString() + " as namespace " + def.getName().getNamespaceURI() + " is not defined by model " + model.getName().toPrefixString());
             }
             if (associations.containsKey(def.getName()))
             {

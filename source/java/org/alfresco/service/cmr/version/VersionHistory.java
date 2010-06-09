@@ -50,7 +50,7 @@ public interface VersionHistory extends Serializable
      * Gets a collection containing all the versions within the
      * version history.
      * <p>
-     * The order of the versions is not guarenteed.
+     * Versions are returned in descending create date order (most recent first).
      * 
      * @return  collection containing all the versions
      */

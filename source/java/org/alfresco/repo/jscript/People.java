@@ -29,6 +29,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.ValueDerivingMapFactory;
@@ -72,6 +74,7 @@ public final class People extends BaseScopableProcessorExtension implements Init
     private ContentUsageService contentUsageService;
     private TenantService tenantService;
     private UserNameGenerator usernameGenerator;
+    private UserRegistrySynchronizer userRegistrySynchronizer;
     private StoreRef storeRef;
     private ValueDerivingMapFactory<ScriptNode, String, Boolean> valueDerivingMapFactory;
     private int numRetries = 10;
@@ -207,7 +210,17 @@ public final class People extends BaseScopableProcessorExtension implements Init
     {
         this.usernameGenerator = userNameGenerator;
     }
-        
+    
+    /**
+     * Set the UserRegistrySynchronizer
+     * 
+     * @param userRegistrySynchronizer
+     */
+    public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
+    {
+        this.userRegistrySynchronizer = userRegistrySynchronizer;
+    }
+    
     /**
      * Delete a Person with the given username
      * 
@@ -779,6 +792,26 @@ public final class People extends BaseScopableProcessorExtension implements Init
         Map<String,Boolean> retVal = new ScriptableHashMap<String, Boolean>();
         retVal.putAll(this.valueDerivingMapFactory.getMap(person));
         return retVal;
+    }
+    
+    /**
+     * Return a map of the Person properties that are marked as immutable for the given user.
+     * This enables a script to interogate which properties are dealt with by an external
+     * system such as LDAP and should not be mutable in any client UI.
+     * 
+     * @param username
+     * 
+     * @return ScriptableHashMap
+     */
+    public ScriptableHashMap getImmutableProperties(String username)
+    {
+        Set<QName> props = userRegistrySynchronizer.getPersonMappedProperties(username);
+        ScriptableHashMap propMap = new ScriptableHashMap();
+        for (QName prop : props)
+        {
+            propMap.put(prop.toString(), Boolean.TRUE);
+        }
+        return propMap;
     }
 
     /**

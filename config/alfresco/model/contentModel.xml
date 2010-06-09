@@ -16,6 +16,7 @@
    
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <namespace uri="http://www.alfresco.org/model/rendition/1.0" prefix="rn"/>
    </namespaces>
 
    <constraints>
@@ -420,6 +421,34 @@
             <aspect>sys:localized</aspect>
          </mandatory-aspects>
       </type>
+
+      <!--              -->
+      <!--  DEPRECATED  -->
+      <!--              -->
+
+      <!-- Thumbnail content type -->
+      <type name="cm:thumbnail">
+         <title>Thumbnail</title>
+         <parent>cm:content</parent>
+         <archive>true</archive>
+         <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
+         <properties>     
+            <property name="cm:thumbnailName">
+                <title>Thumbnail Name</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+            </property>     
+            <property name="cm:contentPropertyName">
+                <title>Thumbnailed Content Property Name</title>
+                <type>d:qname</type>
+                <mandatory>true</mandatory>
+            </property>                
+         </properties>
+      </type>
+
+      <!--                      -->
+      <!--  DEPRECATED (end of) -->
+      <!--                      -->
 
    </types>
    
@@ -1050,6 +1079,102 @@
             </property>
          </properties>
       </aspect>
+      
+      
+      <!--             -->
+      <!--  RENDITIONS -->
+      <!--             -->
+      
+      <!-- This aspect marks a node as a rendition. -->
+      <aspect name="rn:rendition">
+         <title>Rendition</title>
+      </aspect>
+      <!-- A hidden rendition is one which is located directly under its source node. -->
+      <aspect name="rn:hiddenRendition">
+         <title>Hidden Rendition</title>
+         <parent>rn:rendition</parent>
+      </aspect>
+      <!-- A visible rendition is one which is located somewhere other than under its source node. -->
+      <aspect name="rn:visibleRendition">
+         <title>Visible Rendition</title>
+         <parent>rn:rendition</parent>
+      </aspect>
+
+      <!-- This aspect is applied to nodes which have been "rendered" using the rendition service. -->
+      <aspect name="rn:renditioned">
+         <title>Renditioned</title>
+         <associations>
+            <!-- This association links the source content node to the rendition -->
+            <child-association name="rn:rendition">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
+      </aspect>      
+      
+      
+      
+      <!--             -->
+      <!--  DEPRECATED -->
+      <!--             -->
+      
+      <aspect name="cm:localizable">
+         <title>Localizable</title>
+         <properties>
+            <property name="cm:locale">
+               <title>Locale</title>
+               <type>d:category</type>
+            </property>
+         </properties>
+      </aspect>
+
+      <aspect name="cm:translatable">
+         <title>Translatable</title>
+         <parent>cm:localizable</parent>
+         <associations>
+            <association name="cm:translations">
+               <title>Translations</title>
+               <source>
+                  <role>cm:translationOf</role>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <role>cm:hasTranslation</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </aspect>
+      
+      <!-- Thumbnailed aspect relates a content node to it's thumbnails.
+           It is retained here for backwards compatibility reasons -->
+      <aspect name="cm:thumbnailed">
+         <title>Thumbnailed</title>
+            <parent>rn:renditioned</parent>
+         <properties>              
+            <property name="cm:automaticUpdate">
+               <title>Automatic Update</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>true</default>
+            </property> 
+         </properties>
+      </aspect>
+      
+      <!--                      -->
+      <!--  DEPRECATED (end of) -->
+      <!--                      -->
+
    </aspects>
 
 </model>

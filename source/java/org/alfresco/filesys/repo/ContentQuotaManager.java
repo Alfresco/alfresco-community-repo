@@ -31,6 +31,7 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.util.MemorySize;
+import org.alfresco.jlan.util.StringList;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -411,6 +412,8 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	    
         // Loop forever
 
+	    StringList removeNameList = new StringList();
+	    
         m_shutdown = false;
         
         while ( m_shutdown == false)
@@ -449,7 +452,8 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
                     long checkTime = System.currentTimeMillis() - UserQuotaExpireInterval;
                     
                     // Loop through the user quota details
-                    
+
+                    removeNameList.remoteAllStrings();
                     Iterator<String> userNames = m_liveUsage.keySet().iterator();
                     
                     while ( userNames.hasNext()) {
@@ -461,15 +465,25 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
                         
                         if ( quotaDetails.getLastUpdated() < checkTime) {
                             
-                            // Remove the live usage tracking details, inactive
+                            // Add the user name to the remove list, inactive
                             
-                            m_liveUsage.remove( userName);
-                            
-                            // DEBUG
-                            
-                            if ( logger.isDebugEnabled())
-                                logger.debug("Removed inactive usage tracking, " + quotaDetails);
-                        }
+                            removeNameList.addString( userName);
+                        }                            
+                    }
+                    
+                    // Remove inactive records from the live quota tracking
+                    
+                    while ( removeNameList.numberOfStrings() > 0) {
+                        
+                        // Get the current user name and remove the record
+                        
+                        String userName = removeNameList.removeStringAt( 0);
+                        UserQuotaDetails quotaDetails = m_liveUsage.remove( userName);
+                        
+                        // DEBUG
+                        
+                        if ( logger.isDebugEnabled())
+                            logger.debug("Removed inactive usage tracking, " + quotaDetails);
                     }
                 }
                 catch (Exception ex)

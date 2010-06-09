@@ -30,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -68,6 +69,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Dictionary model type behaviour.
@@ -494,7 +496,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             
             if (logger.isTraceEnabled())
             {
-                logger.trace("afterCommit: pendingModelsCnt="+(pendingModels != null ? pendingModels.size() : "0")+
+                logger.trace("afterCommit: "+Thread.currentThread().getName()+" pendingModelsCnt="+(pendingModels != null ? pendingModels.size() : "0")+
                                         ", pendingDeleteModelsCnt="+(pendingDeleteModels != null ? pendingDeleteModels.size() : "0"));
             }
             
@@ -569,11 +571,23 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         {
             if (jobLockService != null)
             {
-                jobLockService.getTransactionalLock(LOCK_QNAME, (1000*60), 3000, 10);
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("beforeCommit: "+Thread.currentThread().getName()+" attempt to get transactional lock ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                }
+                
+                try
+                {
+                    jobLockService.getTransactionalLock(LOCK_QNAME, (1000*60), 3000, 10);
+                }
+                catch (LockAcquisitionException lae)
+                {
+                    throw new ConcurrencyFailureException(lae.getMessage());
+                }
                 
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace(Thread.currentThread().getName()+" got transactional lock ");
+                    logger.trace("beforeCommit: "+Thread.currentThread().getName()+" got transactional lock ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                 }
             }
             
@@ -583,7 +597,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             {
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("beforeCommit: pendingModelsCnt="+pendingModels.size());
+                    logger.trace("beforeCommit: pendingModelsCnt="+pendingModels.size()+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                 }
                 
                 for (NodeRef pendingNodeRef : pendingModels)
@@ -646,7 +660,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         
                                         if (logger.isTraceEnabled())
                                         {
-                                            logger.trace("beforeCommit: activating nodeRef="+nodeRef+" ("+modelDefinition.getName()+")");
+                                            logger.trace("beforeCommit: activating nodeRef="+nodeRef+" ("+modelDefinition.getName()+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                                         }
                                     }
                                 }
@@ -663,7 +677,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         
                                         if (logger.isTraceEnabled())
                                         {
-                                            logger.trace("beforeCommit: deactivating nodeRef="+nodeRef+" ("+modelName+")");
+                                            logger.trace("beforeCommit: deactivating nodeRef="+nodeRef+" ("+modelName+") ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                                         }
                                     }
                                 }
@@ -708,9 +722,15 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         // TODO add model locking during delete (would need to be tenant-aware & cluster-aware) to avoid potential 
         //      for concurrent addition of new content/workflow as model is being deleted
         
+        final Collection<NamespaceDefinition> namespaceDefs;
+        final Collection<TypeDefinition> typeDefs;
+        final Collection<AspectDefinition> aspectDefs;
+        
         try
         {
-        	dictionaryDAO.getModel(modelName); // ignore returned model definition
+            namespaceDefs = dictionaryDAO.getNamespaces(modelName);
+            typeDefs = dictionaryDAO.getTypes(modelName);
+            aspectDefs = dictionaryDAO.getAspects(modelName);
         }
         catch (DictionaryException e)
         {
@@ -722,7 +742,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
         
         // TODO - in case of MT we do not currently allow deletion of an overridden model (with usages) ... but could allow if (re-)inherited model is equivalent to an incremental update only ?
-        validateModelDelete(modelName, false);
+        validateModelDelete(namespaceDefs, typeDefs, aspectDefs, false);
         
         if (tenantService.isEnabled() && tenantService.isTenantUser() == false)
         {
@@ -737,7 +757,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                     {
                         if (dictionaryDAO.isModelInherited(modelName))
                         {
-                            validateModelDelete(modelName, true);
+                            validateModelDelete(namespaceDefs, typeDefs, aspectDefs, true);
                         }
                         return null;
                     }
@@ -746,38 +766,46 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
     }
     
-    private void validateModelDelete(QName modelName, boolean sharedModel)
+    private void validateModelDelete(Collection<NamespaceDefinition> namespaceDefs, Collection<TypeDefinition> typeDefs, Collection<AspectDefinition> aspectDefs, boolean sharedModel)
     {
-        String tenantDomain = TenantService.DEFAULT_DOMAIN;   
+        String tenantDomain = TenantService.DEFAULT_DOMAIN;
         if (sharedModel)
         {
             tenantDomain = " for tenant [" + tenantService.getCurrentUserDomain() + "]";
         }
         
-        // check workflow namespace usage
-        for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
+        List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
+        
+        if (workflowDefs.size() > 0)
         {
-            String workflowDefName = workflowDef.getName();
-            String workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
-            for (NamespaceDefinition namespace : dictionaryDAO.getNamespaces(modelName))
+            if (namespaceDefs.size() > 0)
             {
-                if (workflowNamespaceURI.equals(namespace.getUri()))
+                // check workflow namespace usage
+                for (WorkflowDefinition workflowDef : workflowDefs)
                 {
-                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found workflow process definition " + workflowDefName + " using model namespace '" + namespace.getUri() + "'");
+                    String workflowDefName = workflowDef.getName();
+                    String workflowNamespaceURI = QName.createQName(BPMEngineRegistry.getLocalId(workflowDefName), namespaceService).getNamespaceURI();
+                    for (NamespaceDefinition namespaceDef : namespaceDefs)
+                    {
+                        if (workflowNamespaceURI.equals(namespaceDef.getUri()))
+                        {
+                            throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found workflow process definition " + workflowDefName + " using model namespace '" + namespaceDef.getUri() + "'");
+                        }
+                    }
                 }
             }
         }
- 
+        
         // check for type usages
-        for (TypeDefinition type : dictionaryDAO.getTypes(modelName))
+        for (TypeDefinition type : typeDefs)
         {
-        	validateClass(tenantDomain, type);
+            validateClass(tenantDomain, type);
         }
-
+        
         // check for aspect usages
-        for (AspectDefinition aspect : dictionaryDAO.getAspects(modelName))
+        for (AspectDefinition aspect : aspectDefs)
         {
-        	validateClass(tenantDomain, aspect);
+            validateClass(tenantDomain, aspect);
         }
     }
     

@@ -438,7 +438,47 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#ensureExists(java.lang.String)
+     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#getPersonMappedProperties(java.lang.String)
+     */
+    public Set<QName> getPersonMappedProperties(String username)
+    {
+        Set<String> authorityZones = this.authorityService.getAuthorityZones(username);
+        if (authorityZones == null)
+        {
+            return Collections.emptySet();
+        }
+        Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
+
+        // Visit the user registries in priority order and return the person mapping of the first registry that matches
+        // one of the person's zones
+        for (String id : instanceIds)
+        {
+            String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + id;
+            if (!authorityZones.contains(zoneId))
+            {
+                continue;
+            }
+            ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
+            try
+            {
+                UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
+                if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
+                {
+                    return plugin.getPersonMappedProperties();
+                }
+            }
+            catch (NoSuchBeanDefinitionException e)
+            {
+                // Ignore and continue
+            }
+        }
+
+        return Collections.emptySet();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#createMissingPerson(java.lang.String)
      */
     public boolean createMissingPerson(String userName)
     {
@@ -666,7 +706,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 String groupDisplayName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
                 if (groupDisplayName == null)
                 {
-                    groupDisplayName = groupName;
+                    groupDisplayName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName);
                 }
                 // Update the display name now
                 ChainingUserRegistrySynchronizer.this.authorityService.setAuthorityDisplayName(groupName,
@@ -694,7 +734,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 String groupDisplayName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
                 if (groupDisplayName == null)
                 {
-                    groupDisplayName = groupName;
+                    groupDisplayName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName);
                 }
 
                 synchronized (this)

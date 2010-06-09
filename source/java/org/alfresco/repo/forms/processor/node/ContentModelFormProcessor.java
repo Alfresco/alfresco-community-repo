@@ -1369,6 +1369,18 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             else
             {
                 contentData = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                
+                if (contentData != null)
+                {
+                    // if the ContentData object already exists in propsToPersist extract the mimetype
+                    // and encoding and set on the ContentData object just retrieved
+                    if (propsToPersist.containsKey(ContentModel.PROP_CONTENT))
+                    {
+                        ContentData mimetypeEncoding = (ContentData)propsToPersist.get(ContentModel.PROP_CONTENT);
+                        contentData = ContentData.setMimetype(contentData, mimetypeEncoding.getMimetype());
+                        contentData = ContentData.setEncoding(contentData, mimetypeEncoding.getEncoding());
+                    }
+                }
             }
 
 	        // add the potentially changed content data object back to property map for persistence

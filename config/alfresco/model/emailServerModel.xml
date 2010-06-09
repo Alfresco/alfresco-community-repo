@@ -53,5 +53,32 @@
 			</properties>
 		</aspect>
 
+
+        <!--             -->
+        <!--  DEPRECATED -->
+        <!--             -->
+
+        <aspect name="emailserver:attached">
+            <title>Attached</title>
+            <associations>
+                <association name="emailserver:attachment">
+                    <title>Attachment</title>
+                    <source>    
+                        <mandatory>true</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>cm:content</class>                       
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+        </aspect>
+
+        <!--                      -->
+        <!--  DEPRECATED (end of) -->
+        <!--                      -->
+
 	</aspects>
 </model>

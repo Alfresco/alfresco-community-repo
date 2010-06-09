@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -868,6 +867,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         String username = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+        if (this.authorityService.isGuestAuthority(username))
+        {
+            throw new AlfrescoRuntimeException("The " + username + " user cannot be deleted.");
+        }
         this.personCache.remove(username.toLowerCase());
     }
 

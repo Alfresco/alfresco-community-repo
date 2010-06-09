@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -61,29 +60,30 @@ public class AVMServiceLocalTest extends TestCase
     private static Log logger = LogFactory.getLog(AVMServiceLocalTest.class);
     
     /**
+     * The application context.
+     */
+    protected static ApplicationContext fContext;
+    
+    /**
      * The AVMRemote - can be local (AVMRemoteLocal) or remote (AVMRemote)
      */
-    protected AVMRemote fService;
-
+    protected static AVMRemote fService;
+    
     /**
      * The AVMSyncService - can be local (AVMSyncService) or remote (AVMSyncServiceRemote)
      */
-    protected AVMSyncService fSyncService;
+    protected static AVMSyncService fSyncService;
     
-    /**
-     * The application context.
-     */
-    protected ApplicationContext fContext;
-
-    protected NameMatcher excluder;
-   
+    protected static NameMatcher excluder;
     
+    
+    @Override
     protected void setUp() throws Exception
     {
         if (fContext == null)
         {
             // local (embedded) test setup
-            fContext = ApplicationContextHelper.getApplicationContext();
+            fContext = AVMTestSuite.getContext();
             fService = (AVMRemote)fContext.getBean("avmRemote");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
             excluder = (NameMatcher) fContext.getBean("globalPathExcluder");

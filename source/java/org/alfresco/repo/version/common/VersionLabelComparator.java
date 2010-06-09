@@ -21,21 +21,24 @@ package org.alfresco.repo.version.common;
 import java.util.Comparator;
 
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.util.VersionNumber;
 
 /**
- * A comparator to sort a version list according theires version labels ascending
+ * A comparator to sort a version list according to their version labels in descending order (eg. 2.1, 2.0, 1.1, 1.0)
  *
  * @author Yanick Pignot
+ * 
+ * @deprecated see VersionHistory (getAllVersions, VersionComparatorAsc, VersionComparatorDesc)
  */
-public class VersionLabelComparator implements Comparator
+public class VersionLabelComparator implements Comparator<Version>
 {
 
-    public int compare(Object version1, Object version2)
+    public int compare(Version version1, Version version2)
     {
-        String labelV1 = ((Version) version1).getVersionLabel();
-        String labelV2 = ((Version) version2).getVersionLabel();
+        String labelV1 = version1.getVersionLabel();
+        String labelV2 = version2.getVersionLabel();
 
-        // sort the list ascending
-        return labelV2.compareTo(labelV1);
+        // sort the list descending (ie. most recent first)
+        return new VersionNumber(labelV2).compareTo(new VersionNumber(labelV1));
     }
 }

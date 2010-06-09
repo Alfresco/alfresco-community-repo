@@ -184,7 +184,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         HttpState httpState = new HttpState();
         httpState.setCredentials(new AuthScope(target.getEndpointHost(), target.getEndpointPort(), 
                 AuthScope.ANY_REALM), 
-                new UsernamePasswordCredentials(target.getUsername(), new String(target.getUsername())));
+                new UsernamePasswordCredentials(target.getUsername(), new String(target.getPassword())));
         return httpState;
     }
 

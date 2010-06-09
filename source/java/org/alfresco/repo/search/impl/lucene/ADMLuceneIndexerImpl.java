@@ -527,7 +527,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     }
 
-    private class Pair<F, S>
+    private static class Pair<F, S>
     {
         private F first;
 
@@ -1610,11 +1610,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
                 catch (LuceneIndexException e)
                 {
+                    return 0;
+                }
+                finally
+                {
                     if (writer != null)
                     {
                         closeDeltaWriter();
                     }
-                    return 0;
                 }
             }
             else

@@ -901,6 +901,9 @@
         <property name="onlyUseDeprecatedV1">
             <value>${version.store.onlyUseDeprecatedV1}</value>
         </property>
+        <property name="versionMigrator">
+            <ref bean="versionMigrator"/>
+        </property>
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
@@ -969,11 +972,11 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO"/>
-        </property>
         <property name="ruleService">
             <ref bean="ruleService" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService"/>
         </property>
         <property name="loggingInterval">
             <value>500</value>
@@ -1050,7 +1053,6 @@
 
                 <!-- Content models -->
                 <value>alfresco/model/contentModel.xml</value>
-                <value>alfresco/model/renditionModel.xml</value>
                 <value>alfresco/model/bpmModel.xml</value>
                 <value>alfresco/model/wcmModel.xml</value>
                 <value>alfresco/model/forumModel.xml</value>
@@ -1083,9 +1085,6 @@
                 
                 <!-- Share Data Lists model -->
                 <value>alfresco/model/datalistModel.xml</value>
-
-                <!-- Deprecated types -->
-                <value>alfresco/model/deprecated/deprecated_contentModel.xml</value>
             </list>
         </property>
         <property name="labels">
@@ -1226,6 +1225,9 @@
      <bean id="luceneFullTextSearchIndexer" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl">
         <property name="indexerAndSearcherFactory">
            <ref bean="indexerAndSearcherFactory" />
+        </property>
+        <property name="batchSize">
+           <value>${fts.indexer.batchSize}</value>
         </property>
      </bean>
 
@@ -1416,7 +1418,7 @@
                     <value>10</value>
                 </property>
                 <property name="retryWaitIncrementMs">
-                    <value>0</value>
+                    <value>1</value>
                 </property>
             </bean>
         </property>

@@ -20,8 +20,6 @@ package org.alfresco.repo.model.ml.tools;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +27,6 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
-import org.alfresco.repo.version.common.VersionLabelComparator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -76,7 +73,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
          */
 
         pivot = editionService.createEdition(pivot, versionProperties);
-        editions = orderVersions(editionService.getEditions(mlContainerNodeRef).getAllVersions());
+        editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version firstEdition = editions.get(0);
         // Ensure that the version label is 1.1
         assertTrue("The edition label would be 1.1 and not " + firstEdition.getVersionLabel(), firstEdition.getVersionLabel().equals("1.1"));
@@ -88,7 +85,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         pivot = editionService.createEdition(pivot, versionProperties);
-        editions = orderVersions(editionService.getEditions(mlContainerNodeRef).getAllVersions());
+        editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version secondEdition = editions.get(0);
         // Ensure that the version label is 2.0
         assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition.getVersionLabel().equals("2.0"));
@@ -100,7 +97,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
         pivot = editionService.createEdition(pivot, versionProperties);
-        editions = orderVersions(editionService.getEditions(mlContainerNodeRef).getAllVersions());
+        editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version thirdEdition = editions.get(0);
         // Ensure that the version label is 2.1
         assertTrue("The edition label would be 2.1 and not " + thirdEdition.getVersionLabel(), thirdEdition.getVersionLabel().equals("2.1"));
@@ -202,14 +199,5 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         multilingualContentService.addTranslation(japaneseContentNodeRef, chineseContentNodeRef, Locale.JAPANESE);
 
         return multilingualContentService.getTranslationContainer(chineseContentNodeRef);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Version> orderVersions(Collection<Version> allVersions)
-    {
-        List<Version> versionsAsList = new ArrayList<Version>(allVersions.size());
-        versionsAsList.addAll(allVersions);
-        Collections.sort(versionsAsList, new VersionLabelComparator());
-        return versionsAsList;
     }
 }

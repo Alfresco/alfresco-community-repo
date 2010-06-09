@@ -21,13 +21,11 @@ package org.alfresco.repo.avm;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.avm.AVMDeploymentAttemptCleaner;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -37,7 +35,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class AVMDeploymentAttemptCleanerTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = AVMTestSuite.getContext();
     
     private AVMDeploymentAttemptCleaner cleaner;
     

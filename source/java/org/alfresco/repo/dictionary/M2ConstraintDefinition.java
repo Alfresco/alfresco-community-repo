@@ -99,6 +99,10 @@ import org.springframework.beans.PropertyAccessException;
         else
         {
             this.name = QName.createQName(m2Constraint.getName(), prefixResolver);
+            if (!model.isNamespaceDefined(name.getNamespaceURI()))
+            {
+                throw new DictionaryException("Cannot define constraint " + name.toPrefixString() + " as namespace " + name.getNamespaceURI() + " is not defined by model " + model.getName().toPrefixString());
+            }
         }
     }
 

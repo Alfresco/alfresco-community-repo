@@ -410,6 +410,31 @@
         </property>
     </bean>
    
+    <bean id="migrateVersionStoreJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch$MigrateVersionStoreJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="migrateVersionStore">
+                    <ref bean="patch.migrateVersionStore"/>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="migrateVersionStoreTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="migrateVersionStoreJobDetail"/>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="cronExpression">
+            <value>${version.store.migrateVersionStore.cronExpression}</value>
+        </property>
+    </bean>
+    
     <!-- enable scheduler property to activate -->
     <bean id="versionStoreMigrationCleanupJob" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
@@ -434,6 +459,9 @@
                         <entry key="threadCount">
                             <value>${version.store.migrateCleanupJob.threadCount}</value>
                         </entry>
+                        <entry key="migrateRunAsScheduledJob">
+                            <value>${version.store.migrateVersionStore.runAsScheduledJob}</value>
+                        </entry>
                    </map>
                </property>
             </bean>
@@ -454,4 +482,5 @@
         </property>
           
     </bean>
+    
 </beans>

@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * A <code>UserRegistry</code> is an encapsulation of an external registry from which user and group information can be
  * queried (typically an LDAP directory). Implementations may optional support the ability to query only those users and
@@ -63,4 +65,12 @@ public interface UserRegistry
      *            the candidate authorities for deletion
      */
     public void processDeletions(final Set<String> candidateAuthoritiesForDeletion);
+    
+    /**
+     * Gets the set of property names that are auto-mapped by this user registry. These should remain read-only for this
+     * registry's users in the UI.
+     * 
+     * @return the person mapped properties
+     */
+    public Set<QName> getPersonMappedProperties();
 }

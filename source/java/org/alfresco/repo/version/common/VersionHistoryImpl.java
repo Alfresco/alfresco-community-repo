@@ -125,7 +125,7 @@ public class VersionHistoryImpl implements VersionHistory
      * Gets a collection containing all the versions within the
      * version history.
      * <p>
-     * Versions are returned in descending create date order.
+     * Versions are returned in descending create date order (most recent first).
      * 
      * @return  collection containing all the versions
      */

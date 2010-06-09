@@ -57,6 +57,7 @@ public class TestModel
         bootstrapModels.add("alfresco/model/wcmModel.xml");
         bootstrapModels.add("alfresco/model/applicationModel.xml");
         bootstrapModels.add("alfresco/model/bpmModel.xml");
+        bootstrapModels.add("alfresco/model/wcmAppModel.xml");
 
         // include models specified on command line
         for (String arg: args)

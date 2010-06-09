@@ -45,6 +45,10 @@ import org.alfresco.service.namespace.QName;
     {
         this.model = model;
         this.name = QName.createQName(propertyType.getName(), resolver);
+        if (!model.isNamespaceDefined(name.getNamespaceURI()))
+        {
+            throw new DictionaryException("Cannot define data type " + name.toPrefixString() + " as namespace " + name.getNamespaceURI() + " is not defined by model " + model.getName().toPrefixString());
+        }
         this.dataType = propertyType;
     }
 

@@ -936,14 +936,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     {
         CompiledModel model = getCompiledModel(modelName);
         ModelDefinition modelDef = model.getModelDefinition();
-        
-        List<NamespaceDefinition> namespaces = new ArrayList<NamespaceDefinition>();
-        for (M2Namespace namespace : model.getM2Model().getNamespaces())
-        {
-            namespaces.add(new M2NamespaceDefinition(modelDef, namespace.getUri(), namespace.getPrefix()));
-        }
-        
-        return namespaces;
+        return modelDef.getNamespaces();
     }
     
     /* (non-Javadoc)

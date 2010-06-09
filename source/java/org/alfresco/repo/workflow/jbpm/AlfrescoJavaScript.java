@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -34,9 +35,12 @@ import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
 import org.jbpm.context.def.VariableAccess;
 import org.jbpm.context.exe.ContextInstance;
+import org.jbpm.graph.def.Node;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.jpdl.xml.JpdlXmlReader;
+import org.jbpm.taskmgmt.def.Task;
+import org.jbpm.taskmgmt.exe.TaskInstance;
 import org.springframework.beans.factory.BeanFactory;
 import org.xml.sax.InputSource;
 
@@ -64,7 +68,6 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     private Element script;
     private String runas;
     
-
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
      */
@@ -74,11 +77,9 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
     }
 
-    
     /* (non-Javadoc)
      * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
      */
-    @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
         // validate script
@@ -86,64 +87,13 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         {
             throw new WorkflowException("Script has not been provided");
         }
+        boolean isTextOnly = isScriptOnlyText();
         
-        // extract action configuration
-        String expression = null;
-        List<VariableAccess> variableAccesses = null;        
-
-        // is the script specified as text only, or as explicit expression, variable elements
-        boolean isTextOnly = true;
-        Iterator<Element> iter = script.elementIterator();
-        while (iter.hasNext())
-        {
-           Element element = iter.next();
-           if (element.getNodeType() == org.dom4j.Node.ELEMENT_NODE)
-           {
-              isTextOnly = false;
-           }
-        }
-        
-        // extract script and variables
-        if (isTextOnly)
-        {
-            expression = script.getTextTrim();
-        }
-        else
-        {
-            variableAccesses = jpdlReader.readVariableAccesses(script);
-            Element expressionElement = script.element("expression");
-            if (expressionElement == null)
-            {
-                throw new WorkflowException("Script expression has not been provided");
-            }
-            expression = expressionElement.getTextTrim();
-        }
+        List<VariableAccess> variableAccesses = getVariableAccessors(isTextOnly);
+        String expression = getExpression(isTextOnly);
 
         // execute
-        Object result = null;
-        if (runas == null)
-        {
-             result = executeScript(executionContext, services, expression, variableAccesses);
-        }
-        else
-        {
-            boolean runasExists = services.getPersonService().personExists(runas);
-            if (!runasExists)
-            {
-            	throw new WorkflowException("runas user '" + runas + "' does not exist.");
-            }
-
-            // execute as specified runas user
-        	final String expr = expression;
-        	final List<VariableAccess> varAcc = variableAccesses;
-        	result = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-			{
-            	public Object doWork() throws Exception
-            	{
-            		return executeScript(executionContext, services, expr, varAcc);
-            	}
-			}, runas);
-        }
+        Object result = executeExpression(expression, executionContext, variableAccesses);
 
         // map script return variable to process context
         VariableAccess returnVariable = getWritableVariable(variableAccesses);
@@ -151,9 +101,148 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         {
             ContextInstance contextInstance = executionContext.getContextInstance();
             Token token = executionContext.getToken();
-            contextInstance.setVariable(returnVariable.getVariableName(), result, token);            
+            contextInstance.setVariable(returnVariable.getVariableName(), result, token);
         }
     }
+
+	private Object executeExpression(String expression, ExecutionContext executionContext, List<VariableAccess> variableAccesses) {
+		boolean userChanged = checkFullyAuthenticatedUser(executionContext);
+		Object result = executeScript(expression, executionContext, variableAccesses);
+		if(userChanged)
+		{
+			AuthenticationUtil.clearCurrentSecurityContext();
+		}
+		return result;
+	}
+
+	private Object executeScript(String expression,
+			ExecutionContext executionContext,
+			List<VariableAccess> variableAccesses) 
+	{
+		String user = AuthenticationUtil.getFullyAuthenticatedUser();
+		if (runas == null && user !=null)
+		{
+             return executeScript(executionContext, services, expression, variableAccesses);
+		}
+		else
+        {
+			String runAsUser = runas;
+    		if(runAsUser == null)
+    		{
+    			runAsUser = AuthenticationUtil.getSystemUserName();
+    		} else
+    		{
+    			validateRunAsUser();
+    		}
+        	return executeScriptAs(runAsUser, expression, executionContext, services, variableAccesses);
+        }
+	}
+
+	private static Object executeScriptAs(String runAsUser,
+			final String expression,
+			final ExecutionContext executionContext,
+			final ServiceRegistry services,
+			final List<VariableAccess> variableAccesses) {
+		// execute as specified runAsUser
+		return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+		{
+			public Object doWork() throws Exception
+			{
+				return executeScript(executionContext, services, expression, variableAccesses);
+			}
+		}, runAsUser);
+	}
+
+	/**
+	 * Checks a valid Fully Authenticated User is set.
+	 * If none is set then attempts to set the task assignee as the Fully Authenticated User.
+	 * @param executionContext
+	 * @return <code>true</code> if the Fully Authenticated User was changes, otherwise <code>false</code>.
+	 */
+	private boolean checkFullyAuthenticatedUser(final ExecutionContext executionContext) {
+		if(AuthenticationUtil.getFullyAuthenticatedUser()!= null)
+			return false;
+		TaskInstance taskInstance = executionContext.getTaskInstance();
+	    if(taskInstance!=null)
+	    {
+			String userName = taskInstance.getActorId();
+			if (userName != null)
+			{
+				AuthenticationUtil.setFullyAuthenticatedUser(userName);
+				return true;
+			}
+	    }
+		return false;
+	}
+
+	/**
+	 * Checks that the specified 'runas' field
+	 * specifies a valid username.
+	 */
+	private void validateRunAsUser() {
+		Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+		{	// Validate using System user to ensure sufficient permissions available to access person node.
+			
+			public Boolean doWork() throws Exception {
+				return services.getPersonService().personExists(runas);
+			}
+		}, AuthenticationUtil.getSystemUserName());
+		if (!runAsExists)
+		{
+			throw new WorkflowException("runas user '" + runas + "' does not exist.");
+		}
+	}
+
+    /**
+     * Gets the expression {@link String} from the script.
+     * @param isTextOnly Is the script text only or is it XML?
+     * @return the expression {@link String}.
+     */
+	private String getExpression(boolean isTextOnly) {
+        if (isTextOnly)
+        {
+            return script.getTextTrim();
+        }
+        else
+        {
+            Element expressionElement = script.element("expression");
+            if (expressionElement == null)
+            {
+                throw new WorkflowException("Script expression has not been provided");
+            }
+            return expressionElement.getTextTrim();
+        }
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<VariableAccess> getVariableAccessors(boolean isTextOnly) {
+        if(isTextOnly)
+        {
+        	return null;
+        }
+        else
+        {
+        	return jpdlReader.readVariableAccesses(script);
+        }
+	}
+
+    /**
+     * Is the script specified as text only, or as explicit expression, variable elements
+     * @return
+     */
+	@SuppressWarnings("unchecked")
+	private boolean isScriptOnlyText() {
+        Iterator<Element> iter = script.elementIterator();
+        while (iter.hasNext())
+        {
+           Element element = iter.next();
+           if (element.getNodeType() == org.dom4j.Node.ELEMENT_NODE)
+           {
+              return false;
+           }
+        }
+		return true;
+	}
 
     
     /**
@@ -244,18 +333,16 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @param variableAccesses  the variable configuration
      * @return  the map of script arguments
      */
-    @SuppressWarnings("unchecked")
     private static Map<String, Object> createInputMap(ExecutionContext executionContext, ServiceRegistry services, List<VariableAccess> variableAccesses)
     {
         Map<String, Object> inputMap = new HashMap<String, Object>();
 
         // initialise global script variables
-        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
-        NodeRef person = services.getPersonService().getPerson(userName);
-        if (person != null)
+        JBPMNode personNode = getPersonNode(executionContext, services);
+        if (personNode != null)
         {
-            inputMap.put("person", new JBPMNode(person, services));
-            NodeRef homeSpace = (NodeRef)services.getNodeService().getProperty(person, ContentModel.PROP_HOMEFOLDER);
+            inputMap.put("person", personNode );
+            NodeRef homeSpace = (NodeRef)services.getNodeService().getProperty(personNode.getNodeRef(), ContentModel.PROP_HOMEFOLDER);
             if (homeSpace != null)
             {
                 inputMap.put("userhome", new JBPMNode(homeSpace, services));
@@ -266,17 +353,20 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         Token token = executionContext.getToken();
         inputMap.put("executionContext", executionContext);
         inputMap.put("token", token);
-        if (executionContext.getNode() != null)
+        Node node = executionContext.getNode();
+		if (node != null)
         {
-            inputMap.put("node", executionContext.getNode());
+            inputMap.put("node", node);
         }
-        if (executionContext.getTask() != null)
+        Task task = executionContext.getTask();
+        if (task != null)
         {
-            inputMap.put("task", executionContext.getTask());
+            inputMap.put("task", task);
         }
-        if (executionContext.getTaskInstance() != null)
+        TaskInstance taskInstance = executionContext.getTaskInstance();
+		if (taskInstance != null)
         {
-            inputMap.put("taskInstance", executionContext.getTaskInstance());
+            inputMap.put("taskInstance", taskInstance);
         }
 
         // if no readable variableInstances are specified,
@@ -284,10 +374,10 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         if (!hasReadableVariable(variableAccesses))
         {
             // copy all the variableInstances of the context into the interpreter
-            Map<String, Object> variables = contextInstance.getVariables(token);
+            Map<?, ?> variables = contextInstance.getVariables(token);
             if (variables != null)
             {
-                for (Map.Entry entry : variables.entrySet())
+                for (Map.Entry<?, ?> entry : variables.entrySet())
                 {
                     String variableName = (String) entry.getKey();
                     Object variableValue = entry.getValue();
@@ -312,6 +402,20 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
 
         return inputMap;
     }
+
+
+	private static JBPMNode getPersonNode(ExecutionContext executionContext, ServiceRegistry services) {
+		String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+		if(userName != null)
+		{
+			NodeRef person = services.getPersonService().getPerson(userName);
+			if(person !=null)
+			{
+				return new JBPMNode(person, services);
+			}
+		}
+		return null;
+	}
     
     
     /**
@@ -361,5 +465,13 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         }
         return writable;
     }
+    
+    public void setScript(Element script) {
+		this.script = script;
+	}
+    
+    public void setRunas(String runas) {
+		this.runas = runas;
+	}
     
 }

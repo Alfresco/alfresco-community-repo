@@ -198,6 +198,10 @@ public class RetryingTransactionHelper
 
     public void setRetryWaitIncrementMs(int retryWaitIncrementMs)
     {
+        if (retryWaitIncrementMs <= 0)
+        {
+            throw new IllegalArgumentException("'retryWaitIncrementMs' must be a positive integer.");
+        }
         this.retryWaitIncrementMs = retryWaitIncrementMs;
     }
 

@@ -21,11 +21,7 @@ package org.alfresco.repo.rule.ruletrigger;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -57,20 +53,34 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     
     private static final String POLICY = "onCreateNode";
     
+    private static final QName ASPECT_NO_CONTENT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "noContent");
+    
+    /** Indicates whether this is a class behaviour or not */
     private boolean isClassBehaviour = false;
 	
-	public void setIsClassBehaviour(boolean isClassBehaviour)
-	{
-		this.isClassBehaviour = isClassBehaviour;
-	}
+    /** Runtime rule service */
+	RuntimeRuleService ruleService;
     
-    DictionaryService dictionaryService;
-    
-    public void setDictionaryService(DictionaryService dictionaryService)
+	/**
+	 * Set whether this is a class behaviour or not
+	 * 
+	 * @param isClassBehaviour
+	 */
+    public void setIsClassBehaviour(boolean isClassBehaviour)
     {
-        this.dictionaryService = dictionaryService;
+        this.isClassBehaviour = isClassBehaviour;
     }
 
+    /**
+     * Set the rule service
+     * 
+     * @param ruleService   rule service
+     */
+    public void setRuleService(RuntimeRuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+    
     /**
 	 * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
 	 */
@@ -89,89 +99,95 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 					QName.createQName(NamespaceService.ALFRESCO_URI, POLICY), 
 					this, 
 					new JavaBehaviour(this, POLICY));
-		}
+		}	
 		
-		// Register interest in the addition of the inline editable aspect at the end of the transaction
-		// NOTE: this work around is nessesary because we can't fire the rules directly since CIFS is not transactional
-		policyComponent.bindClassBehaviour(
+		// Register interest in the addition and removal of the sys:noContent aspect
+		this.policyComponent.bindClassBehaviour(
 		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-		        this, 
-		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.TRANSACTION_COMMIT));
-		
-	}
-	
-	// NOTE: this work around is nessesary because we can't fire the rules directly since CIFS is not transactional
-	public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
-	{
-	    if (nodeService.exists(nodeRef) == true)
-	    {
-    	    // See if we have created the node in this transaction
-    	    if (AlfrescoTransactionSupport.getResource(nodeRef.toString()) != null)
-    	    {
-    	        Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
-    	        if (value != null)
-    	        {
-    	            boolean editInline = value.booleanValue();
-    	            if (editInline == true)
-    	            {
-    	                // Then we should be triggering the rules
-    	                NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-    	                triggerRulesImpl(parentNodeRef, nodeRef);
-    	            }
-    	        }
-    	    }
-	    }
+		        ASPECT_NO_CONTENT, 
+		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));
+		this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
+                ASPECT_NO_CONTENT, 
+                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.FIRST_EVENT));
 	}
     
     /**
      * {@inheritDoc}
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        // Only fire the rule if the node is question has no potential to contain content
-        // TODO we need to find a better way to do this .. how can this be resolved in CIFS??
-        boolean triggerRule = false;        
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        QName type = this.nodeService.getType(nodeRef);
-        ClassDefinition classDefinition = this.dictionaryService.getClass(type);
-        if (classDefinition != null)
+    {    
+        if (childAssocRef != null)
         {
-            for (PropertyDefinition propertyDefinition : classDefinition.getProperties().values())
+            NodeRef nodeRef = childAssocRef.getChildRef();
+            if (nodeRef != null && 
+                nodeService.exists(nodeRef) == true &&
+                nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
             {
-                if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT) == true)
+                NodeRef parentNodeRef = childAssocRef.getParentRef();
+                
+                if (logger.isDebugEnabled() == true)
                 {
-                    triggerRule = true;
-                    break;
+                    logger.debug(
+                            "Create node rule trigger fired for parent node " + 
+                            this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
+                            " and child node " +
+                            this.nodeService.getType(nodeRef).toString() + " " + nodeRef);
                 }
+                
+                triggerRules(parentNodeRef, nodeRef);
             }
         }
-        
-        if (triggerRule == false)
+    }
+
+    /**
+     * On add aspect behaviour
+     * 
+     * @param nodeRef
+     * @param aspectTypeQName
+     */
+    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == true)
         {
-            triggerRulesImpl(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(
+                        "Removing the pending rules for the node " + 
+                        nodeRef.toString() + 
+                        " since the noContent aspect has been applied.");
+            }
+            
+            // Removes any rules that have already been triggered for that node
+            ruleService.removeRulePendingExecution(nodeRef);
         }
-        
-        // Regardless of whether the rule is triggered, mark this transaction as having created this node
-        AlfrescoTransactionSupport.bindResource(childAssocRef.getChildRef().toString(), childAssocRef.getChildRef().toString());
     }
     
     /**
-     * Trigger the rules with some log
+     * On remove aspect behaviour
      * 
-     * @param parentNodeRef
-     * @param childNodeRef
+     * @param nodeRef
+     * @param aspectTypeQName
      */
-    private void triggerRulesImpl(NodeRef parentNodeRef, NodeRef childNodeRef)
+    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (logger.isDebugEnabled() == true)
+        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
         {
-            logger.debug(
-                    "Create node rule trigger fired for parent node " + 
-                    this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
-                    " and child node " +
-                    this.nodeService.getType(childNodeRef).toString() + " " + childNodeRef);
+            // We can assume it is the primary parent since it is only in the CIFS use case this aspect
+            // is added.  It's added during create, therefore we must be talking about the primary parent
+            NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+            
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(
+                        "Create node rule trigger fired for parent node " + 
+                        this.nodeService.getType(parentNodeRef).toString() + " " + parentNodeRef + 
+                        " and child node " +
+                        this.nodeService.getType(nodeRef).toString() + " " + nodeRef + 
+                        " (this was triggered on removal of the noContent aspect)");
+            }
+            
+            triggerRules(parentNodeRef, nodeRef);
         }
-        
-        triggerRules(parentNodeRef, childNodeRef);
     }
 }

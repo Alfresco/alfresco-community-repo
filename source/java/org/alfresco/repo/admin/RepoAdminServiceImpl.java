@@ -137,53 +137,51 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         List<RepoModelDefinition> modelsInRepo = new ArrayList<RepoModelDefinition>();
         
-        try
-        {   	
-	        Collection<QName> models = dictionaryDAO.getModels();  
-	        
-	        List<String> dictionaryModels = new ArrayList<String>();
-	        for (QName model : models)
-	        {
-	            dictionaryModels.add(model.toPrefixString());
-	        }
-	
-	        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoModelsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
-
-	        if (nodeRefs.size() > 0)
-	        {
-	            for (NodeRef nodeRef : nodeRefs)
-	            {
-	                String modelFileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-	                String repoVersion = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-	               
-	                String modelName = null;
-	                    
-	
-	                    ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
-	                    InputStream is = cr.getContentInputStream();
-	                              
-	                    M2Model model = M2Model.createModel(is);
-	                    is.close();
-	    
-	                    modelName = model.getName();
-	
-	                
-	                // check against models loaded in dictionary and give warning if not found
-	                if (dictionaryModels.contains(modelName))
-	                {
-	                    // note: uses dictionary model cache, rather than getting content from repo and re-compiling
-	                    modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, dictionaryDAO.getModel(QName.createQName(modelName, namespaceService)), true));
-	                }
-	                else
-	                {
-	                    modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, null, false));
-	                }             
-	            }  
-	        }
-        }
-        catch (Throwable t)
+        Collection<QName> models = dictionaryDAO.getModels();  
+        
+        List<String> dictionaryModels = new ArrayList<String>();
+        for (QName model : models)
         {
-            throw new AlfrescoRuntimeException("Failed to get models " + t);
+            dictionaryModels.add(model.toPrefixString());
+        }
+        
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoModelsLocation.getPath()+CRITERIA_ALL+"["+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
+        
+        if (nodeRefs.size() > 0)
+        {
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                String modelFileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                String repoVersion = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+               
+                String modelName = null;
+                    
+                ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
+                InputStream is = cr.getContentInputStream();
+                
+                try
+                {
+                    M2Model model = M2Model.createModel(is);
+                    is.close();
+                    
+                    modelName = model.getName();
+                    
+                    // check against models loaded in dictionary and give warning if not found
+                    if (dictionaryModels.contains(modelName))
+                    {
+                        // note: uses dictionary model cache, rather than getting content from repo and re-compiling
+                        modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, dictionaryDAO.getModel(QName.createQName(modelName, namespaceService)), true));
+                    }
+                    else
+                    {
+                        modelsInRepo.add(new RepoModelDefinition(modelFileName, repoVersion, null, false));
+                    }
+                }
+                catch (Throwable t)
+                {
+                    logger.warn("Skip model: "+modelFileName+" ("+t.getMessage()+")");
+                }
+            }
         }
         
         return modelsInRepo;

@@ -34,6 +34,7 @@ import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -108,6 +110,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Called during the transaction setup
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
@@ -691,13 +694,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(this.childDoc.toString(), children.get(2));
     }
     
-    public void testGetSelectedFieldsFolderForm() throws Exception
-    {
-        // TODO: attempt to get a form with fields that are not appropriate
-        // for a folder type i.e. mimetype and encoding
-        
-    }
-    
     @SuppressWarnings("unchecked")
     public void testSaveNodeForm() throws Exception
     {
@@ -949,26 +945,14 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expected new node to be created using itemId " + ContentModel.TYPE_CONTENT.toString(), newNode);
     }
     
-    public void testContentCreateForm() throws Exception
+    public void testContentForms() throws Exception
     {
-        // create FormData object containing the values to update
-        FormData data = new FormData();
-        
-        // supply the name
+        // create FormData object 
         String name = "created-" + this.documentName;
-        data.addFieldData("prop_cm_name", name);
-        
-        // supply the title property
         String title = "This is the title property";
-        data.addFieldData("prop_cm_title", title);
-        
-        // specify the mimetype property
         String mimetype = "text/html";
-        data.addFieldData("prop_mimetype", mimetype);
-        
-        // supply the content property
         String content = "This is the content.";
-        data.addFieldData("prop_cm_content", content);
+        FormData data = createContentFormData(name, title, mimetype, content);
         
         // supply the destination
         data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
@@ -976,22 +960,253 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // persist the data
         NodeRef newNode = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
         
-        // retrieve the data directly from the node service to ensure its there
-        Map<QName, Serializable> props = this.nodeService.getProperties(newNode);
-        String newName = (String)props.get(ContentModel.PROP_NAME);
-        String newTitle = (String)props.get(ContentModel.PROP_TITLE);
-        assertEquals(name, newName);
-        assertEquals(title, newTitle);
+        // check the node was created correctly
+        checkContentDetails(newNode, name, title, mimetype, content);
         
-        ContentData contentData = (ContentData) this.nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+        // create another node without supplying the mimetype and check the details
+        String name2 = "created2-" + this.documentName;
+        data = createContentFormData(name2, title, null, content);
+        data.addFieldData(TypeFormProcessor.DESTINATION, this.folder.toString());
+        NodeRef newNode2 = (NodeRef)this.formService.saveForm(new Item(TYPE_FORM_ITEM_KIND, "cm:content"), data);
+        checkContentDetails(newNode2, name2, title, "text/plain", content);
+        
+        // update the content and the mimetype
+        Item item = new Item(NODE_FORM_ITEM_KIND, newNode.toString());
+        String updatedContent = "This is the updated content";
+        String updatedMimetype = "text/plain";
+        data = createContentFormData(name, title, updatedMimetype, updatedContent);
+        this.formService.saveForm(item, data);
+        
+        // check the node was updated correctly
+        checkContentDetails(newNode, name, title, updatedMimetype, updatedContent);
+        
+        // update the content and mimetype again but ensure the content is updated last
+        // to check the mimetype change is not lost
+        updatedContent = "<element>The content is now XML</content>";
+        updatedMimetype = "text/xml";
+        data = createContentFormData(name, title, updatedMimetype, updatedContent);
+        // remove and add content to ensure it's last
+        data.removeFieldData("prop_cm_content");
+        data.addFieldData("prop_cm_content", updatedContent);
+        this.formService.saveForm(item, data);
+        
+        // check the details
+        checkContentDetails(newNode, name, title, updatedMimetype, updatedContent);
+        
+        // update just the content
+        updatedContent = "<element attribute=\"true\">The content is still XML</content>";
+        data = createContentFormData(null, null, null, updatedContent);
+        this.formService.saveForm(item, data);
+        checkContentDetails(newNode, name, title, updatedMimetype, updatedContent);
+    }
+    
+    private FormData createContentFormData(String name, String title, String mimetype, String content)
+    {
+        FormData data = new FormData();
+        
+        if (name != null)
+        {
+            data.addFieldData("prop_cm_name", name);
+        }
+        
+        if (title != null)
+        {
+            data.addFieldData("prop_cm_title", title);
+        }
+        
+        if (content != null)
+        {
+            data.addFieldData("prop_cm_content", content);
+        }
+        
+        if (mimetype != null)
+        {
+            data.addFieldData("prop_mimetype", mimetype);
+        }
+        
+        return data;
+    }
+    
+    private void checkContentDetails(NodeRef node, String expectedName, String expectedTitle, 
+                String expectedMimetype, String expectedContent)
+    {
+        Map<QName, Serializable> props = this.nodeService.getProperties(node);
+        String name = (String)props.get(ContentModel.PROP_NAME);
+        String title = (String)props.get(ContentModel.PROP_TITLE);
+        assertEquals(expectedName, name);
+        assertEquals(expectedTitle, title);
+        
+        ContentData contentData = (ContentData) this.nodeService.getProperty(node, ContentModel.PROP_CONTENT);
         assertNotNull(contentData);
-        String newMimetype = contentData.getMimetype();
-        assertEquals(mimetype, newMimetype);
+        String mimetype = contentData.getMimetype();
+        assertEquals(expectedMimetype, mimetype);
         
-        ContentReader reader = this.contentService.getReader(newNode, ContentModel.PROP_CONTENT);
+        ContentReader reader = this.contentService.getReader(node, ContentModel.PROP_CONTENT);
         assertNotNull(reader);
-        String newContent = reader.getContentString();
-        assertEquals(content, newContent);
+        String content = reader.getContentString();
+        assertEquals(expectedContent, content);
+    }
+    
+    @SuppressWarnings({ "deprecation", "null", "unchecked" })
+    public void disabledTestFDKModel() throws Exception
+    {
+        // NOTE: The FDK is not loaded by default, for this test to work you must
+        //       import and make the "Forms Development Kit" project a dependency 
+        //       of the "Repository" project.
+        
+        DictionaryService dictionary = (DictionaryService)this.applicationContext.getBean("DictionaryService");
+        try
+        {
+            dictionary.getType(QName.createQName("fdk", "everything", this.namespaceService));
+        }
+        catch (NamespaceException ne)
+        {
+            fail("FDK namespace is missing, ensure you've made the 'Forms Development Kit' project a dependency of the 'Repository' project when enabling this test!");
+        }
+        
+        // from the check above we know the 'fdk' namespace is present so we can safely
+        // use the FDK model, firstly create an instance of an everything node
+        String fdkUri = "http://www.alfresco.org/model/fdk/1.0";
+        QName everythingType = QName.createQName(fdkUri, "everything");
+        QName textProperty = QName.createQName(fdkUri, "text");
+        QName underscoreProperty = QName.createQName(fdkUri, "with_underscore");
+        QName dashProperty = QName.createQName(fdkUri, "with-dash");
+        QName duplicateProperty = QName.createQName(fdkUri, "duplicate");
+        
+        String guid = GUID.generate();
+        String name = "everything" + guid + ".txt";
+        String textValue = "This is some text.";
+        String underscoreValue = "Property with an underscore in the name.";
+        String dashValue = "Property with a dash in the name.";
+        String duplicateValue = "Property with the same name as an association.";
+        
+        Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(4);
+        docProps.put(ContentModel.PROP_NAME, name);
+        docProps.put(textProperty, textValue);
+        docProps.put(underscoreProperty, underscoreValue);
+        docProps.put(dashProperty, dashValue);
+        docProps.put(duplicateProperty, duplicateValue);
+        NodeRef everythingNode = this.nodeService.createNode(this.folder, ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), everythingType,
+                    docProps).getChildRef();
+        
+        // define a list of fields to retrieve from the node
+        List<String> fields = new ArrayList<String>(4);
+        fields.add("cm:name");
+        fields.add("fdk:text");
+        fields.add("fdk:with_underscore");
+        fields.add("fdk:with-dash");
+        fields.add("prop:fdk:duplicate");
+        fields.add("assoc:fdk:duplicate");
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, everythingNode.toString()), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check the type is correct
+        assertEquals("fdk:everything", form.getItem().getType());
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find " + fields.size() + " fields", fields.size(), fieldDefs.size());
+        
+        // find the fields, as we have a duplicate we can't use a Map
+        PropertyFieldDefinition nameField = null;
+        PropertyFieldDefinition textField = null;
+        PropertyFieldDefinition underscoreField = null;
+        PropertyFieldDefinition dashField = null;
+        PropertyFieldDefinition duplicatePropField = null;
+        AssociationFieldDefinition duplicateAssocField = null;
+        
+        for (FieldDefinition field : fieldDefs)
+        {
+            if (field.getName().equals("cm:name"))
+            {
+                nameField = (PropertyFieldDefinition)field;
+            }
+            else if (field.getName().equals("fdk:text"))
+            {
+                textField = (PropertyFieldDefinition)field;
+            }
+            else if (field.getName().equals("fdk:with_underscore"))
+            {
+                underscoreField = (PropertyFieldDefinition)field;
+            }
+            else if (field.getName().equals("fdk:with-dash"))
+            {
+                dashField = (PropertyFieldDefinition)field;
+            }
+            else if (field.getName().equals("fdk:duplicate"))
+            {
+                if (field instanceof PropertyFieldDefinition)
+                {
+                    duplicatePropField = (PropertyFieldDefinition)field;
+                }
+                else if (field instanceof AssociationFieldDefinition)
+                {
+                    duplicateAssocField = (AssociationFieldDefinition)field;
+                }
+            }
+        }
+        
+        assertNotNull("Expected to find nameField", nameField);
+        assertNotNull("Expected to find textField", textField);
+        assertNotNull("Expected to find underscoreField", underscoreField);
+        assertNotNull("Expected to find dashField", dashField);
+        assertNotNull("Expected to find duplicatePropField", duplicatePropField);
+        assertNotNull("Expected to find duplicateAssocField", duplicateAssocField);
+        
+        // check the field values
+        FormData values = form.getFormData();
+        assertEquals(name, values.getFieldData(nameField.getDataKeyName()).getValue());
+        assertEquals(textValue, values.getFieldData(textField.getDataKeyName()).getValue());
+        assertEquals(underscoreValue, values.getFieldData(underscoreField.getDataKeyName()).getValue());
+        assertEquals(dashValue, values.getFieldData(dashField.getDataKeyName()).getValue());
+        assertEquals(duplicateValue, values.getFieldData(duplicatePropField.getDataKeyName()).getValue());
+        List assocs = (List)values.getFieldData(duplicateAssocField.getDataKeyName()).getValue();
+        assertNotNull(assocs);
+        assertEquals(0, assocs.size());
+        
+        // update the properties via FormService
+        FormData data = new FormData();
+        
+        // setup the new property values
+        String newText = "This is the new text property";
+        data.addFieldData(textField.getDataKeyName(), newText);
+        
+        String newUnderscore = "This is the new value for the underscore property.";
+        data.addFieldData(underscoreField.getDataKeyName(), newUnderscore);
+        
+        String newDash = "This is the new value for the dash property.";
+        data.addFieldData(dashField.getDataKeyName(), newDash);
+        
+        String newDuplicateProp = "This is the new value for the duplicate property.";
+        data.addFieldData(duplicatePropField.getDataKeyName(), newDuplicateProp);
+        
+        // add new association value
+        data.addFieldData(duplicateAssocField.getDataKeyName() + "_added", this.document.toString());
+        
+        // persist the data
+        this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, everythingNode.toString()), data);
+        
+        // retrieve the data directly from the node service to ensure its been changed
+        Map<QName, Serializable> updatedProps = this.nodeService.getProperties(everythingNode);
+        String updatedText = (String)updatedProps.get(textProperty);
+        String updatedUnderscore = (String)updatedProps.get(underscoreProperty);
+        String updatedDash = (String)updatedProps.get(dashProperty);
+        String updatedDuplicate = (String)updatedProps.get(duplicateProperty);
+        
+        // check values were updated
+        assertEquals(newText, updatedText);
+        assertEquals(newUnderscore, updatedUnderscore);
+        assertEquals(newDash, updatedDash);
+        assertEquals(newDuplicateProp, updatedDuplicate);
+        
+        // retrieve the association that should now be present
+        assocs = this.nodeService.getTargetAssocs(everythingNode, duplicateProperty);
+        assertEquals(1, assocs.size());
     }
     
     public void testNoForm() throws Exception

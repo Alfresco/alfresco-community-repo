@@ -82,7 +82,6 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -120,7 +119,6 @@ public class RuleServiceCoverageTest extends TestCase
     private CopyService copyService;
     private AuthenticationComponent authenticationComponent;
     private FileFolderService fileFolderService;
-    private VersionService versionService;
     
     /**
      * Category related values
@@ -161,7 +159,6 @@ public class RuleServiceCoverageTest extends TestCase
         this.transformerRegistry = (ContentTransformerRegistry)applicationContext.getBean("contentTransformerRegistry");
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         this.fileFolderService = serviceRegistry.getFileFolderService();
-        this.versionService = serviceRegistry.getVersionService();
         
         //authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         //authenticationComponent.setSystemUserAsCurrentUser();
@@ -333,13 +330,12 @@ public class RuleServiceCoverageTest extends TestCase
 
         NodeRef newNodeRef = this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();
+                getContentProperties()).getChildRef();         
         addContentToNode(newNodeRef);
-        assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(newNodeRef).getAllVersions().size());
+        assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));   
         
         Map<String, Serializable> params2 = new HashMap<String, Serializable>(2);
         params2.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ApplicationModel.ASPECT_SIMPLE_WORKFLOW);
@@ -400,6 +396,7 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.TYPE_CONTENT,
                 contentProps).getChildRef();         
         //addContentToNode(newNodeRef);
+        nodeService.removeAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE);
         assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
         
         // Use the file folder to change the name of the node
@@ -453,13 +450,13 @@ public class RuleServiceCoverageTest extends TestCase
         this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);
         
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);
+        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);        
         
         Rule rule = createRule(
-                RuleType.INBOUND,
-                AddFeaturesActionExecuter.NAME,
-                params,
-                NoConditionEvaluator.NAME,
+                RuleType.INBOUND, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
                 null);
         
         this.ruleService.saveRule(this.nodeRef, rule);
@@ -467,24 +464,23 @@ public class RuleServiceCoverageTest extends TestCase
         
         NodeRef newNodeRef = this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();
+                getContentProperties()).getChildRef();         
         addContentToNode(newNodeRef);
-        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));  
         
         this.ruleService.enableRule(rule);
         
         NodeRef newNodeRef2 = this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();
+                getContentProperties()).getChildRef();         
         addContentToNode(newNodeRef2);
-        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(newNodeRef2).getAllVersions().size());
+        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_VERSIONABLE)); 
         
     }
     
@@ -672,8 +668,7 @@ public class RuleServiceCoverageTest extends TestCase
                 }
             };
             NodeRef newNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(callback1);
-            assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
-            assertEquals(1, versionService.getVersionHistory(newNodeRef).getAllVersions().size());
+            assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));  
             
             // Check rule does not get fired when the node has the incorrect category value
             RetryingTransactionCallback<NodeRef> callback3 = new RetryingTransactionCallback<NodeRef>()
@@ -1127,7 +1122,8 @@ public class RuleServiceCoverageTest extends TestCase
      *          condition:  no-condition()
      *          action:     checkin()
      */
-    public void testCheckInAction()
+    @SuppressWarnings("unchecked")
+	public void testCheckInAction()
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(CheckInActionExecuter.PARAM_DESCRIPTION, "The version description.");
@@ -1185,38 +1181,37 @@ public class RuleServiceCoverageTest extends TestCase
     public void testRulesDisabled()
     {
         Map<String, Serializable> actionParams = new HashMap<String, Serializable>(1);
-        actionParams.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);
+        actionParams.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);        
         
         Rule rule = createRule(
-                RuleType.INBOUND,
-                AddFeaturesActionExecuter.NAME,
-                actionParams,
-                NoConditionEvaluator.NAME,
-                null);
+        		RuleType.INBOUND, 
+        		AddFeaturesActionExecuter.NAME, 
+        		actionParams, 
+        		NoConditionEvaluator.NAME, 
+        		null);
         
-        this.ruleService.saveRule(this.nodeRef, rule);
+        this.ruleService.saveRule(this.nodeRef, rule);        
         this.ruleService.disableRules(this.nodeRef);
         
         NodeRef newNodeRef = this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();
+                getContentProperties()).getChildRef();         
         addContentToNode(newNodeRef);
-        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));      
         
         this.ruleService.enableRules(this.nodeRef);
         
         NodeRef newNodeRef2 = this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();
+                getContentProperties()).getChildRef();        
         addContentToNode(newNodeRef2);
-        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(newNodeRef2).getAllVersions().size());
+        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_VERSIONABLE));       
     }
     
     /**
@@ -1418,90 +1413,12 @@ public class RuleServiceCoverageTest extends TestCase
     public void testInboundRuleType()
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);
+        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);              
         Rule rule = createRule(
-                RuleType.INBOUND,
-                AddFeaturesActionExecuter.NAME,
-                params,
-                NoConditionEvaluator.NAME,
-                null);
-        
-        this.ruleService.saveRule(this.nodeRef, rule);
-        
-        // Create a non-content node
-        NodeRef newNodeRef = this.nodeService.createNode(
-                this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, "children"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
-        assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(newNodeRef).getAllVersions().size());
-        
-        // Create a content node
-        NodeRef contentNodeRef = this.nodeService.createNode(
-                this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, "children"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        addContentToNode(contentNodeRef);
-        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(contentNodeRef).getAllVersions().size());
-        
-        // Create a content node in a single txn
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Throwable
-            {
-                NodeRef contentNodeRef = nodeService.createNode(
-                        nodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        QName.createQName(TEST_NAMESPACE, "children"),
-                        ContentModel.TYPE_CONTENT).getChildRef();
-                addContentToNode(contentNodeRef);
-                return contentNodeRef;
-            }
-        };
-        NodeRef contentNodeRef2 = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
-        
-        assertTrue(this.nodeService.hasAspect(contentNodeRef2, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(contentNodeRef2).getAllVersions().size());
-        
-        // Create a node to be moved
-        NodeRef moveNode = this.nodeService.createNode(
-                newNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, "children"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-        addContentToNode(moveNode);
-        assertFalse(this.nodeService.hasAspect(moveNode, ContentModel.ASPECT_VERSIONABLE));
-        
-        this.nodeService.moveNode(
-                moveNode,
-                this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, "children"));
-        assertTrue(this.nodeService.hasAspect(moveNode, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(moveNode).getAllVersions().size());
-        
-        // Ensure the rule type does not get fired when the node is updated
-        this.nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE);
-        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE)); 
-        this.nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, "name.txt");
-        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        addContentToNode(contentNodeRef);
-        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-    }
-    
-    public void testUpdateRuleType()
-    {
-        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);
-        Rule rule = createRule(
-                RuleType.UPDATE,
-                AddFeaturesActionExecuter.NAME,
-                params,
-                NoConditionEvaluator.NAME,
+                RuleType.INBOUND, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
                 null);
         
         this.ruleService.saveRule(this.nodeRef, rule);
@@ -1509,44 +1426,99 @@ public class RuleServiceCoverageTest extends TestCase
         // Create a non-content node
         NodeRef newNodeRef =  this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        
+        // Create a content node
+        NodeRef contentNodeRef = this.nodeService.createNode(
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTENT).getChildRef();        
+        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
+        addContentToNode(contentNodeRef);            
+        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        
+        // Create a node to be moved
+        NodeRef moveNode = this.nodeService.createNode(
+                newNodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"),
+                ContentModel.TYPE_CONTENT).getChildRef(); 
+        addContentToNode(moveNode);
+        assertFalse(this.nodeService.hasAspect(moveNode, ContentModel.ASPECT_VERSIONABLE));
+        this.nodeService.moveNode(
+                moveNode, 
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
+                QName.createQName(TEST_NAMESPACE, "children"));
+        assertTrue(this.nodeService.hasAspect(moveNode, ContentModel.ASPECT_VERSIONABLE)); 
+        
+        // Enusre the rule type does not get fired when the node is updated
+        this.nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE)); 
+        this.nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, "name.txt");
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        addContentToNode(contentNodeRef);
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
+    }
+    
+    public void testUpdateRuleType()
+    {
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);              
+        Rule rule = createRule(
+                RuleType.UPDATE, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+        
+        this.ruleService.saveRule(this.nodeRef, rule);
+        
+        // Create a non-content node
+        NodeRef newNodeRef =  this.nodeService.createNode(
+                this.nodeRef,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_FOLDER).getChildRef();
+        this.nodeService.removeAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE);
         assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
         
         // Update the non-content node
         this.nodeService.setProperty(newNodeRef, ContentModel.PROP_NAME, "testName");
         assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(newNodeRef).getAllVersions().size());
         
         // Create a content node
         NodeRef contentNodeRef = this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
-                ContentModel.TYPE_CONTENT).getChildRef();
+                ContentModel.TYPE_CONTENT).getChildRef();                
+        nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
+        addContentToNode(contentNodeRef);            
         assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        addContentToNode(contentNodeRef);
-        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        addContentToNode(contentNodeRef);
+        addContentToNode(contentNodeRef);            
         assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(contentNodeRef).getAllVersions().size());
         
         // Create a non content node, setting a property at the same time
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NAME, "testName");
         NodeRef nodeRef2 =  this.nodeService.createNode(
                 this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_FOLDER,
                 props).getChildRef();
+        nodeService.removeAspect(nodeRef2, ContentModel.ASPECT_VERSIONABLE);
         assertFalse(this.nodeService.hasAspect(nodeRef2, ContentModel.ASPECT_VERSIONABLE));
         this.nodeService.setProperty(nodeRef2, ContentModel.PROP_NAME, "testName");
         assertFalse(this.nodeService.hasAspect(nodeRef2, ContentModel.ASPECT_VERSIONABLE));
         this.nodeService.setProperty(nodeRef2, ContentModel.PROP_NAME, "testName2");
         assertTrue(this.nodeService.hasAspect(nodeRef2, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(nodeRef2).getAllVersions().size());
         
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
@@ -1554,9 +1526,9 @@ public class RuleServiceCoverageTest extends TestCase
             {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_NAME, "testName");
-                NodeRef nodeRef3 = RuleServiceCoverageTest.this.nodeService.createNode(
+                NodeRef nodeRef3 =  RuleServiceCoverageTest.this.nodeService.createNode(
                         RuleServiceCoverageTest.this.nodeRef,
-                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.ASSOC_CHILDREN,                
                         QName.createQName(TEST_NAMESPACE, "children"),
                         ContentModel.TYPE_FOLDER,
                         props).getChildRef();
@@ -1602,12 +1574,11 @@ public class RuleServiceCoverageTest extends TestCase
         
         // Move the node out of the actionable folder
         this.nodeService.moveNode(
-                newNodeRef,
-                this.rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
+                newNodeRef, 
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"));
         assertTrue(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        assertEquals(1, versionService.getVersionHistory(newNodeRef).getAllVersions().size());
         
         // Check the deletion of a node
         
@@ -1686,7 +1657,6 @@ public class RuleServiceCoverageTest extends TestCase
 			for (NodeRef ref : nodeRefs) 
 			{
 				assertTrue(this.nodeService.hasAspect(ref, ContentModel.ASPECT_VERSIONABLE));
-				assertEquals(1, versionService.getVersionHistory(ref).getAllVersions().size());
 			}
 	        
 	        System.out.println(sw.prettyPrint());

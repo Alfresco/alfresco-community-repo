@@ -145,7 +145,11 @@
             
             <property name="applies" column="applies" type="int" not-null="true"/>
             
-            <many-to-one name="context"
+        </natural-id>
+       
+        <version column="version" name="version" type="long"/>
+
+        <many-to-one name="context"
                 class="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl"
                 column="context_id"
                 foreign-key="fk_alf_ace_ctx"
@@ -153,9 +157,7 @@
                 fetch="select"
                 optimistic-lock="true"
                 not-null="false"/>
-        </natural-id>
         
-        <version column="version" name="version" type="long"/>
     </class>
     
     <class

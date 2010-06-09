@@ -311,6 +311,12 @@
                     <!-- Active Directory: "???" -->
                     <value>${ldap.synchronization.userEmailAttributeName}</value>
                 </entry>
+                <entry key="cm:organization">
+                    <!-- OpenLDAP: "o" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronization.userOrganizationalIdAttributeName}</value>
+                </entry>
+                <!-- This deprecated property has been replaced by "cm:organization". We will use the same mapping -->
                 <entry key="cm:organizationId">
                     <!-- OpenLDAP: "o" -->
                     <!-- Active Directory: "???" -->

@@ -1373,12 +1373,22 @@
         <property name="importerBootstrap">
             <ref bean="version2Bootstrap"/>
         </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService"/>
+        </property>
         <property name="threadCount">
             <value>${version.store.migrateVersionStore.threadCount}</value>
         </property>
         <property name="batchSize">
             <value>${version.store.migrateVersionStore.batchSize}</value>
         </property>
+        <property name="runAsScheduledJob">
+           <value>${version.store.migrateVersionStore.runAsScheduledJob}</value>
+        </property>
+        <property name="limitPerJobCycle">
+           <value>${version.store.migrateVersionStore.limitPerJobCycle}</value>
+        </property>
+        
     </bean>
     
     <bean id="patch.inviteEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
@@ -2197,7 +2207,7 @@
             <ref bean="ruleService" />
         </property>
     </bean>
-    
+
     <bean id="patch.updateMimetypes1" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypes1</value></property>
         <property name="description"><value>patch.updateMimetypes1.description</value></property>
@@ -2233,4 +2243,14 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V3.3-modify-index-permission_id" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.3-modify-index-permission_id</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4102</value></property>
+        <property name="targetSchema"><value>4103</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.3/${db.script.dialect}/modify-index-permission_id.sql</value>
+        </property>
+    </bean>
 </beans>

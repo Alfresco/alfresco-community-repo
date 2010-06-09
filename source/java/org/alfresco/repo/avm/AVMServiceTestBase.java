@@ -43,7 +43,6 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -90,6 +89,7 @@ public class AVMServiceTestBase extends TestCase
     
     protected static AuthenticationService fAuthService;
     
+    
     public void testSetup() throws Exception
     {
         setupBasicTree();
@@ -105,7 +105,8 @@ public class AVMServiceTestBase extends TestCase
     {
         if (fContext == null)
         {
-            fContext = ApplicationContextHelper.getApplicationContext();
+            fContext = AVMTestSuite.getContext();
+            
             fService = (AVMService)fContext.getBean("AVMService");
             fReaper = (OrphanReaper)fContext.getBean("orphanReaper");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");

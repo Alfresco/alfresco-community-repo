@@ -60,7 +60,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
@@ -71,8 +70,8 @@ import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
  */
 public class AVMServicePermissionsTest extends TestCase
 {
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
-
+    private static ApplicationContext applicationContext = AVMTestSuite.getContext();
+    
     protected NodeService nodeService;
 
     protected DictionaryService dictionaryService;

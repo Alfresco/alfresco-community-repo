@@ -93,7 +93,7 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
         //Process "source" peer associations (associations *to* this node)
         requiredPeerAssocs = node.getSourceAssocs();
         currentPeerAssocs = nodeService.getSourceAssocs(correspondingNodeRef, RegexQNamePattern.MATCH_ALL);
-        processPeerAssociations(requiredPeerAssocs, currentPeerAssocs, correspondingNodeRef, true);
+        processPeerAssociations(requiredPeerAssocs, currentPeerAssocs, correspondingNodeRef, false);
 
     }
 

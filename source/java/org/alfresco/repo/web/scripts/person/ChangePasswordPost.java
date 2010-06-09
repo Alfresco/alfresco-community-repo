@@ -117,7 +117,7 @@ public class ChangePasswordPost extends DeclarativeWebScript
         }
         catch (AuthenticationException err)
         {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+            throw new WebScriptException(Status.STATUS_UNAUTHORIZED,
                     "Do not have appropriate auth or wrong auth details provided.");
         }
         catch (JSONException jErr)

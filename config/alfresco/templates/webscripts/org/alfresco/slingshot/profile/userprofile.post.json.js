@@ -25,7 +25,7 @@ function main()
    if (username == null)
    {
       status.code = 400;
-      status.message = "Failed to locate valid user to modify.";
+      status.message = "Username parameter not supplied.";
       status.redirect = true;
       return;
    }
@@ -33,10 +33,10 @@ function main()
    var user = people.getPerson(username);
    // ensure we found a valid user and that it is the current user or we are an admin
    if (user == null ||
-       (people.isAdmin(person) == false && new String(username).toLowerCase != new String(user.properties.userName).toLowerCase))
+       (people.isAdmin(person) == false && user.properties.userName != person.properties.userName))
    {
       status.code = 500;
-      status.message = "Failed to locate valid user to modify.";
+      status.message = "Failed to locate user to modify or permission denied.";
       status.redirect = true;
       return;
    }

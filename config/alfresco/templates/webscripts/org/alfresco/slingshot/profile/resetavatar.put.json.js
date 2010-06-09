@@ -19,10 +19,10 @@ function main()
    
    // ensure we found a valid user and that it is the current user or we are an admin
    if (user == null ||
-       (people.isAdmin(person) == false && new String(userName).toLowerCase != new String(user.properties.userName).toLowerCase))
+       (people.isAdmin(person) == false && user.properties.userName != person.properties.userName))
    {
       status.code = 500;
-      status.message = "Failed to locate valid user to modify.";
+      status.message = "Failed to locate user to modify or permission denied.";
       status.redirect = true;
       return;
    }

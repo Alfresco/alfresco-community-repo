@@ -2,6 +2,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalResults": ${treenode.items?size?c},
+   "resultsTrimmed": ${treenode.resultsTrimmed?string},
    "parent":
    {
       "nodeRef": "${p.nodeRef}",

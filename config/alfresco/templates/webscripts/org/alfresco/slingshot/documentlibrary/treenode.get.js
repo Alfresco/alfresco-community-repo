@@ -18,7 +18,10 @@ function getTreeNode()
             "{http://www.alfresco.org/model/forum/1.0}topic": true,
             "{http://www.alfresco.org/model/content/1.0}systemfolder": true
          },
-         evalChildFolders = args["children"] !== "false";
+         evalChildFolders = args["children"] !== "false",
+         resultsTrimmed = false,
+         argMax = parseInt(args["max"], 10),
+         maxItems = isNaN(argMax) ? -1 : argMax;
    
       // Use helper function to get the arguments
       var parsedArgs = ParseArgs.getParsedArgs();
@@ -43,6 +46,13 @@ function getTreeNode()
                hasSubfolders: hasSubfolders
             });
          }
+         
+         if (maxItems !== -1 && items.length > maxItems)
+         {
+            items.pop();
+            resultsTrimmed = true;
+            break;
+         }
       }
    
       items.sort(sortByName);
@@ -50,6 +60,7 @@ function getTreeNode()
       return (
       {
          parent: parsedArgs.pathNode,
+         resultsTrimmed: resultsTrimmed,
          items: items
       });
    }

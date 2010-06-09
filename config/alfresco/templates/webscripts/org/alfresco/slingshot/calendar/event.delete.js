@@ -28,11 +28,23 @@ function deleteEvent()
    }
 
    var event = eventsFolder.childByNamePath(params.eventname);
+   var editedEvent = event;
+   
    if (event === null)
    {
 	   return status.STATUS_NOT_FOUND;
    }
 
+   if (editedEvent.properties["ia:recurrenceRule"] != null)
+   {
+      var prop = new Array();
+      var fromParts = params.date.split("-");
+      prop["ia:date"] = new Date(fromParts[0],fromParts[1] - 1,fromParts[2]);
+      editedEvent.createNode(null, "ia:ignoreEvent", prop, "ia:ignoreEventList");
+	  
+      return status.STATUS_NO_CONTENT;
+   }
+   
    var whatEvent = event.properties["ia:whatEvent"]; 
 	
    if (!event.remove())
@@ -66,6 +78,7 @@ function getTemplateParams()
      // Grab the URI parameters
      var siteid = "" + url.templateArgs.siteid;
      var eventname = "" + url.templateArgs.eventname;
+     var date = args["date"];
 
      if (siteid === null || siteid.length === 0)
      {
@@ -79,6 +92,7 @@ function getTemplateParams()
 
      return {
 	  		"siteid": siteid,
-	  		"eventname": eventname
+	  		"eventname": eventname,
+	  		"date": date
      };
 }

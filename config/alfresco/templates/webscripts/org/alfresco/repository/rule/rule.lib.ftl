@@ -121,6 +121,8 @@
 		"${parameterValue}" : 
 		<#if val?is_boolean == true>
 		${val?string}
+		<#elseif val?is_number == true>
+		${val?c}
 		<#elseif val?is_date == true>
 		"${val?string("EEE MMM dd HH:mm:ss zzz yyyy")}"		
 		<#elseif val?is_sequence>
@@ -141,9 +143,9 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 	{
 		"name" : "${actionConstraint.name}",		
-		<#if actionConstraint.allowableValues?? && actionConstraint.allowableValues?size &gt; 0>
 		"values" : 
 		[
+		<#if actionConstraint.allowableValues?? && actionConstraint.allowableValues?size &gt; 0>
 			<#list actionConstraint.allowableValues?keys as allowableValue>	
 			<#assign val = actionConstraint.allowableValues[allowableValue]>				
 			{
@@ -151,8 +153,8 @@
 				"displayLabel" : "${val}"
 			}<#if allowableValue_has_next>,</#if>				
 			</#list>
-		]
 		</#if>
+		]
 	}
 </#escape>
 </#macro>

@@ -28,11 +28,23 @@ function getEvents(siteId)
    for (var i=0; i < results.length; i++)
    {
       e = results[i];
+      var ignoreEvents = [];
+      if (e.children != null)
+      {
+         var childrenEvents = e.children; 
+         for (var j=0; j<childrenEvents.length; j++)
+         {
+            var fullDate = childrenEvents[j].properties["ia:date"];
+            ignoreEvents.push((fullDate.getMonth() + 1) + "/" + fullDate.getDate() + "/" + fullDate.getFullYear());
+         }
+      }
+
       events.push(
       {
          "event": e,
          "fromDate": e.properties["ia:fromDate"],
-         "tags": e.tags
+         "tags": e.tags,
+         "ignoreEvents": ignoreEvents
       });
    }
    

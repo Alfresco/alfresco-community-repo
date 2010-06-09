@@ -20,7 +20,8 @@ var props =
    "dateto",
    "end",
    "allday",
-   "tags"
+   "tags",
+   "docfolder"
 ];
 
 var p;
@@ -79,6 +80,10 @@ function createEvent(siteId, params)
    event.properties["ia:whatEvent"] = params["what"];
    event.properties["ia:whereEvent"] = params["where"];
    event.properties["ia:descriptionEvent"] = params["desc"];
+   if (params["docfolder"] != "")
+   {
+   event.properties["ia:docFolder"] = params["docfolder"];
+   }
 
    var fromDate = params["from"];
    var toDate = params["to"];
@@ -145,10 +150,11 @@ function createEvent(siteId, params)
       "name": params["what"],
       "from": from,
       "to": to,
-      "uri": "calendar/event/" + siteId + "/" + event.name,
+      "uri": "calendar/event/" + siteId + "/" + event.name + "?date=" + isoDate,
       "tags": event.tags,
       "desc": params['desc'],
       "where":params['where'],
-      "allday":allday
+      "allday":allday,
+      "docfolder": params['docfolder']
    });
 };

@@ -21,6 +21,13 @@
   "uri" : "calendar/event/${siteId}/${event.name}",
    <#assign tags><#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
   "tags": <#noescape>[${tags}]</#noescape>
+  <#if event.properties["ia:recurrenceRule"] ??>
+  ,"recurrenceRule": "${event.properties["ia:recurrenceRule"]?html}"
+  </#if>
+  <#if event.properties["ia:recurrenceLastMeeting"] ??>
+  ,"recurrenceLastMeeting": "${event.properties["ia:recurrenceLastMeeting"]?string("M/d/yyyy")}"
+  </#if>
+  ,"ignoreEvents": [<#list item.ignoreEvents as ignoreEvent>"${ignoreEvent}"<#if ignoreEvent_has_next>,</#if></#list>]
 }
 <#assign counter = counter + 1>
 <#if !item_has_next>]</#if>

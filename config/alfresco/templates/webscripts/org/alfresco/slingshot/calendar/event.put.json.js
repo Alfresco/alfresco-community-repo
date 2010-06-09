@@ -9,6 +9,8 @@ function getTemplateParams()
    // Grab the URI parameters
    var siteid = "" + url.templateArgs.siteid;
    var eventname = "" + url.templateArgs.eventname;
+   var date = args["date"];
+
 
    if (siteid === null || siteid.length === 0)
    {
@@ -22,7 +24,8 @@ function getTemplateParams()
 
    return {
       "siteid": siteid,
-      "eventname": eventname
+      "eventname": eventname,
+      "date": date
    };
 }
 
@@ -53,13 +56,40 @@ function main()
       };
    }
 
-   var event = eventsFolder.childByNamePath(params.eventname);
+   var editedEvent = eventsFolder.childByNamePath(params.eventname);
+   var event = editedEvent;
+   
    if (event === null)
    {
       return {
          "error": "Could not find specified event to update"
       };
    }
+
+    if (editedEvent.properties["ia:recurrenceRule"] != null)
+    {
+       var prop = new Array();
+       var fromParts = params.date.split("-");
+       prop["ia:date"] = new Date(fromParts[0],fromParts[1] - 1,fromParts[2]);
+       editedEvent.createNode(null, "ia:ignoreEvent", prop, "ia:ignoreEventList");
+
+       var timestamp = new Date().getTime();
+       var random = Math.round(Math.random() * 10000);
+
+       event = eventsFolder.createNode(timestamp + "-" + random + ".ics", "ia:calendarEvent");
+       event.properties["ia:isOutlook"] = true;
+    }
+
+    if (json.get("docfolder")=='*NOT_CHANGE*')
+    {
+       if (editedEvent.properties["ia:docFolder"] != "")
+       event.properties["ia:docFolder"] = editedEvent.properties["ia:docFolder"];
+    }
+    else
+    {
+       if (json.get("docfolder") != "")
+       event.properties["ia:docFolder"] = json.get("docfolder");
+    }
 
    var props = [
       "what",
@@ -158,8 +188,9 @@ function main()
        dtstart : fromIsoDate+ 'T' +json.get('start'),
        dtend : toIsoDate + 'T' +json.get('end'),
        allday : (json.isNull("allday")) ? "" : (json.get('allday')=='on') ? true : "",
-       uri : "calendar/event/" + params.siteid + "/" + event.name,
-       tags : tags
+       uri : "calendar/event/" + params.siteid + "/" + event.name + "?date=" + params.date,
+       tags : tags,
+       docfolder: event.properties["ia:docFolder"] == null ? "" : event.properties["ia:docFolder"]
    }
 
    return savedData;

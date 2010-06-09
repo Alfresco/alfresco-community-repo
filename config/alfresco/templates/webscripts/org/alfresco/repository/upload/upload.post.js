@@ -137,7 +137,22 @@ function main()
          container = site.getContainer(containerId);
          if (container === null)
          {
-            container = site.createContainer(containerId);
+            try
+            {
+               // Create container since it didn't exist
+               container = site.createContainer(containerId);
+            }
+            catch(e)
+            {
+               // Error could be that it already exists (was created exactly after our previous check) but also something else
+               container = site.getContainer(containerId);
+               if (container === null)
+               {
+                  // Container still doesn't exist, then re-throw error
+                  throw e;
+               }
+               // Since the container now exists we can proceed as usual
+            }
          }
 
          if (container === null)
@@ -217,7 +232,7 @@ function main()
          updateNode.properties.content.write(content);
          // Reset working copy mimetype and encoding
          updateNode.properties.content.guessMimetype(filename);
-         updateNode.properties.content.encoding = "UTF-8";
+         updateNode.properties.content.guessEncoding();
          // check it in again, with supplied version history note
          updateNode = updateNode.checkin(description, majorVersion);
 
@@ -254,7 +269,7 @@ function main()
 
                // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
                existingFile.properties.content.guessMimetype(filename);
-               existingFile.properties.content.encoding = "UTF-8";
+               existingFile.properties.content.guessEncoding();
                existingFile.save();
 
                model.document = existingFile;
@@ -305,7 +320,7 @@ function main()
 
          // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
          newFile.properties.content.guessMimetype(filename);
-         newFile.properties.content.encoding = "UTF-8";
+         newFile.properties.content.guessEncoding();
          newFile.save();         
 
          // Create thumbnail?

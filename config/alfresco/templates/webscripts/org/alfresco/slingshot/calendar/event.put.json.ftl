@@ -10,7 +10,8 @@
        "dtend" : "${result.dtend?html}",
        "uri" : "${result.uri}",       
        "allday" : "${result.allday?string}",
-       "tags" : "${result.tags?html}"
+       "tags" : "${result.tags?html}",
+       "docfolder": "${result.docfolder?html}"
    }
    
 </#if>

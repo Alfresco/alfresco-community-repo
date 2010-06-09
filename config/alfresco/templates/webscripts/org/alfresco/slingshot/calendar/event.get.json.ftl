@@ -16,7 +16,10 @@
   start: "${result.from?string("HH:mm")}",
   to: "${result.to?string("M/d/yyyy")}",
   end: "${result.to?string("HH:mm")}",
-  allday: "${result.allday?string}"
+  allday: "${result.allday?string}",
+  docfolder: "${result.docfolder?html}",
+  recurrence: "${result.recurrence?html}",
+  isoutlook: "${result.isoutlook?string}"
 </#if>
 }
 </#escape>

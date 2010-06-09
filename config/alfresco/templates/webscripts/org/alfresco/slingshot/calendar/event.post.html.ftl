@@ -15,7 +15,8 @@
     "where": "${result.where?html}",
     "allday":"${result.allday?html}",
     <#assign tags><#list result.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
-    "tags": <#noescape>[${tags}]</#noescape>
+    "tags": <#noescape>[${tags}]</#noescape>,
+    "docfolder": "${result.docfolder?html}"
   }
 </#if>
 }

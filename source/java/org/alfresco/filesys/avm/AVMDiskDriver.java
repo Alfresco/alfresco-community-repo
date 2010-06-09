@@ -24,11 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
 
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
@@ -80,6 +78,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * AVM Repository Filesystem Driver Class
@@ -825,9 +824,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         if ( logger.isDebugEnabled())
             logger.debug("Close file " + file.getFullName());
         
-        doInWriteTransaction(sess, new Callable<Void>(){
+        doInWriteTransaction(sess, new CallableIO<Void>(){
 
-            public Void call() throws Exception
+            public Void call() throws IOException
             {
                 //  Close the file
                 
@@ -896,9 +895,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         try
         {
-            doInWriteTransaction(sess, new Callable<Void>(){
+            doInWriteTransaction(sess, new CallableIO<Void>(){
 
-                public Void call() throws Exception
+                public Void call() throws IOException
                 {
                     // Create the new file entry
 
@@ -984,9 +983,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         try
         {
             // Create a new file
-            return doInWriteTransaction(sess, new Callable<NetworkFile>(){
+            return doInWriteTransaction(sess, new CallableIO<NetworkFile>(){
 
-                public NetworkFile call() throws Exception
+                public NetworkFile call() throws IOException
                 {
                     // Create the new file entry
 
@@ -1080,9 +1079,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         try
         {
-            doInWriteTransaction(sess, new Callable<Void>(){
+            doInWriteTransaction(sess, new CallableIO<Void>(){
 
-                public Void call() throws Exception
+                public Void call() throws IOException
                 {
                     AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
                     if (nodeDesc != null)
@@ -1159,9 +1158,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         try
         {
-            doInWriteTransaction(sess, new Callable<Void>(){
+            doInWriteTransaction(sess, new CallableIO<Void>(){
 
-                public Void call() throws Exception
+                public Void call() throws IOException
                 {
                     AVMNodeDescriptor nodeDesc = m_avmService.lookup(storePath.getVersion(), storePath.getAVMPath());
                     if (nodeDesc != null)
@@ -1695,9 +1694,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         try
         {
-            doInWriteTransaction(sess, new Callable<Void>(){
+            doInWriteTransaction(sess, new CallableIO<Void>(){
 
-                public Void call() throws Exception
+                public Void call() throws IOException
                 {
                     // Rename the file/folder
 
@@ -2004,9 +2003,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Truncate or extend the file
         if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
         {
-            doInWriteTransaction(sess, new Callable<Void>(){
+            doInWriteTransaction(sess, new CallableIO<Void>(){
 
-                public Void call() throws Exception
+                public Void call() throws IOException
                 {
                     file.truncateFile(siz);
                     file.flushFile();
@@ -2058,9 +2057,9 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         // Write the data to the file
         if (avmFile.hasContentChannel() == false || avmFile.isWritable() == false)
         {
-            doInWriteTransaction(sess, new Callable<Void>(){
+            doInWriteTransaction(sess, new CallableIO<Void>(){
 
-                public Void call() throws Exception
+                public Void call() throws IOException
                 {
                     file.writeFile(buf, siz, bufoff, fileoff);            
                     return null;

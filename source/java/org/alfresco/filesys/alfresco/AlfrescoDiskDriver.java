@@ -18,6 +18,7 @@
 
 package org.alfresco.filesys.alfresco;
 
+import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import javax.transaction.Status;
@@ -163,8 +164,10 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
      * @param callback
      *            callback for the retryable operation
      * @return the result of the operation
+     * @throws Exception
      */
-    public <T> T doInWriteTransaction(SrvSession sess, final Callable<T> callback)
+    public <T> T doInWriteTransaction(SrvSession sess, final CallableIO<T> callback)
+            throws IOException
     {
         Boolean wasInRetryingTransaction = m_inRetryingTransaction.get();
         try
@@ -178,10 +181,17 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
             T result = m_transactionService.getRetryingTransactionHelper().doInTransaction(
                     new RetryingTransactionHelper.RetryingTransactionCallback<T>()
                     {
-
                         public T execute() throws Throwable
                         {
-                            return callback.call();
+                            try
+                            {
+                                return callback.call();
+                            }
+                            catch (IOException e)
+                            {
+                                // Ensure original checked IOExceptions get propagated
+                                throw new PropagatingException(e);
+                            }
                         }
                     });
             if (hadTransaction)
@@ -189,6 +199,11 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
                 beginReadTransaction(sess);
             }
             return result;
+        }
+        catch (PropagatingException e)
+        {
+            // Unwrap checked exceptions
+            throw (IOException) e.getCause();
         }
         finally
         {
@@ -389,5 +404,31 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
         {
             ((AlfrescoContext) ctx).initialize(this);
         }
+    }
+    
+    /**
+     * An extended {@link Callable} that throws {@link IOException}s.
+     *
+     * @param <V>
+     */
+    public interface CallableIO <V> extends Callable<V>
+    {
+        public V call() throws IOException;        
+    }
+
+    /**
+     * A wrapper for checked exceptions to be passed through the retrying transaction handler.
+     */
+    protected static class PropagatingException extends RuntimeException
+    {
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * @param cause
+         */
+        public PropagatingException(Throwable cause)
+        {
+            super(cause);
+        }        
     }
 }

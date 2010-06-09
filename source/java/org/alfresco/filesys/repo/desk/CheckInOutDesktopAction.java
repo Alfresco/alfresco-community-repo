@@ -24,17 +24,19 @@
  */
 package org.alfresco.filesys.repo.desk;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.filesys.alfresco.DesktopTarget;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver.CallableIO;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NotifyChange;
@@ -90,14 +92,14 @@ public class CheckInOutDesktopAction extends DesktopAction {
 		if ( params.numberOfTargetNodes() == 0)
 			return new DesktopResponse(StsSuccess);
 						
-		class WriteTxn implements Callable<DesktopResponse>
+		class WriteTxn implements CallableIO<DesktopResponse>
 		{
 		    private List<Pair<Integer, String>> fileChanges;
 		    
             /* (non-Javadoc)
              * @see java.util.concurrent.Callable#call()
              */
-            public DesktopResponse call() throws Exception
+            public DesktopResponse call() throws IOException
             {
                 // Initialize / reset the list of file changes
                 fileChanges = new LinkedList<Pair<Integer,String>>();
@@ -156,10 +158,17 @@ public class CheckInOutDesktopAction extends DesktopAction {
                         }
                         catch (Exception ex)
                         {
-                            // If this is a 'retryable' exception, pass it on
+                            // Propagate retryable errors. Log the rest.
                             if (RetryingTransactionHelper.extractRetryCause(ex) != null)
                             {
-                                throw ex;
+                                if (ex instanceof RuntimeException)
+                                {
+                                    throw (RuntimeException)ex;
+                                }
+                                else
+                                {
+                                    throw new AlfrescoRuntimeException("Desktop action error", ex);
+                                }
                             }
 
                             // Dump the error
@@ -229,10 +238,17 @@ public class CheckInOutDesktopAction extends DesktopAction {
                         }
                         catch (Exception ex)
                         {
-                            // If this is a 'retryable' exception, pass it on
+                            // Propagate retryable errors. Log the rest.
                             if (RetryingTransactionHelper.extractRetryCause(ex) != null)
                             {
-                                throw ex;
+                                if (ex instanceof RuntimeException)
+                                {
+                                    throw (RuntimeException)ex;
+                                }
+                                else
+                                {
+                                    throw new AlfrescoRuntimeException("Desktop action error", ex);
+                                }
                             }
 
                             // Dump the error
@@ -269,7 +285,16 @@ public class CheckInOutDesktopAction extends DesktopAction {
 		
         // Process the transaction        
 		WriteTxn callback = new WriteTxn();		
-        DesktopResponse response = params.getDriver().doInWriteTransaction(params.getSession(), callback);
+        DesktopResponse response;
+        try
+        {
+            response = params.getDriver().doInWriteTransaction(params.getSession(), callback);
+        }
+        catch (IOException e)
+        {
+            // Should not happen
+            throw new AlfrescoRuntimeException("Desktop action error", e);
+        }
         
         // Queue file change notifications
         callback.notifyChanges();

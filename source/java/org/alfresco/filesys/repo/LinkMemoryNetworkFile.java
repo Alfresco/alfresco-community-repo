@@ -22,6 +22,7 @@ package org.alfresco.filesys.repo;
 import java.io.IOException;
 
 import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.smb.SeekType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -83,7 +84,9 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
      */
     public void closeFile() throws java.io.IOException
     {
-        // Nothing to do
+        // Clear the file state
+        
+        setFileState( null);
     }
 
     /**
@@ -246,5 +249,19 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
     public void writeFile(byte[] buf, int len, int pos, long offset) throws java.io.IOException
     {
         // Allow the write, just do not do anything
+    }
+
+    /**
+     * Return a dummy file state for this file
+     * 
+     * @return FileState
+     */
+    public FileState getFileState() {
+          
+      // Create a dummy file state
+          
+      if ( super.getFileState() == null)
+          setFileState(new FileState(getFullName()));
+      return super.getFileState();
     }
 }

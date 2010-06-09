@@ -32,6 +32,7 @@ import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -217,7 +218,7 @@ public class ImapFoldersPatch extends AbstractPatch
         if (imapConfigFolderNodeRef == null)
         {
             // import the content
-            RunAsWork<Object> importRunAs = new RunAsWork<Object>()
+            final RunAsWork<Object> importRunAs = new RunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -227,7 +228,18 @@ public class ImapFoldersPatch extends AbstractPatch
                     return null;
                 }
             };
-            AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
+            
+            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Throwable 
+                {
+                    AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
+                    return null;
+                }
+         
+            };
+            
+            transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, true);
             msg = I18NUtil.getMessage(MSG_CREATED);
         }
         else

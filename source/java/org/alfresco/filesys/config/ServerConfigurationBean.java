@@ -1559,6 +1559,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         // Create the shared filesystem
 
                         filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, (AVMContext)filesystem);
+                        filesys.setConfiguration( this);
 
                         // Check if the filesystem uses the file state cache, if so then add to the file state reaper
                         
@@ -1603,6 +1604,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         // Create the shared filesystem
 
                         filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, filesysContext);
+                        filesys.setConfiguration( this);
 
                         // Add any access controls to the share
 
@@ -1672,7 +1674,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
                         // Create the shared filesystem
 
-                        fsysConfig.addShare(new DiskSharedDevice(storeName, avmDriver, avmContext));
+                        DiskSharedDevice filesys = new DiskSharedDevice(storeName, avmDriver, avmContext); 
+                        filesys.setConfiguration( this);
+                        
+                        fsysConfig.addShare( filesys);
 
                         // DEBUG
 

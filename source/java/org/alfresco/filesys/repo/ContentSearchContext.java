@@ -404,11 +404,17 @@ public class ContentSearchContext extends SearchContext
             }
         }
         
-        // Check if the resume file name is the last file returned, no need to reposition the file index
+        // Check if the resume file name is the last file returned
         
         if ( m_lastFileName != null && info.getFileName().equalsIgnoreCase( m_lastFileName)) {
+
+        	// Reset the index/resume id
         	
-        	// DEBUG
+            index = index - 1;
+            resumeId = resId - 1;
+            donePseudoFiles = true;
+
+            // DEBUG
         	
         	if ( logger.isDebugEnabled())
         		logger.debug("Fast search restart - " + m_lastFileName);

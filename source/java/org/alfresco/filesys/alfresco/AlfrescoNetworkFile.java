@@ -49,7 +49,7 @@ public abstract class AlfrescoNetworkFile extends NetworkFile implements Network
    * 
    * @return FileState
    */
-  public final FileState getFileState()
+  public FileState getFileState()
   {
     return m_state;
   }

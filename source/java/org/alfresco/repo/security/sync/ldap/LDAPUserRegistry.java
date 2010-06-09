@@ -665,7 +665,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         return;
                     }
                 }
-                String gid = "GROUP_" + gidAttribute.get(0);
+                String groupShortName = gidAttribute.get(0).toString();
+                String gid = "GROUP_" + groupShortName;
 
                 NodeDescription group = lookup.get(gid);
                 if (group == null)
@@ -718,7 +719,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                             .toAttributes();
 
                                     // Recognize user DNs
-                                    if (distinguishedName.startsWith(userDistinguishedNamePrefix)
+                                    if (distinguishedNameForComparison.startsWith(userDistinguishedNamePrefix)
                                             && (nameAttribute = nameAttributes
                                                     .get(LDAPUserRegistry.this.userIdAttributeName)) != null)
                                     {
@@ -727,7 +728,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                     }
 
                                     // Recognize group DNs
-                                    if (distinguishedName.startsWith(groupDistinguishedNamePrefix)
+                                    if (distinguishedNameForComparison.startsWith(groupDistinguishedNamePrefix)
                                             && (nameAttribute = nameAttributes
                                                     .get(LDAPUserRegistry.this.groupIdAttributeName)) != null)
                                     {
@@ -801,20 +802,21 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                         // Unresolvable name
                                         if (LDAPUserRegistry.this.errorOnMissingMembers)
                                         {
-                                            throw new AlfrescoRuntimeException("Failed to resolve distinguished name: "
-                                                    + attribute, e);
+                                            throw new AlfrescoRuntimeException("Failed to resolve member of group '"
+                                                    + groupShortName + "' with distinguished name: " + attribute, e);
                                         }
-                                        LDAPUserRegistry.logger.warn("Failed to resolve distinguished name: "
-                                                + attribute, e);
+                                        LDAPUserRegistry.logger.warn("Failed to resolve member of group '"
+                                                + groupShortName + "' with distinguished name: " + attribute, e);
                                         continue;
                                     }
                                 }
                                 if (LDAPUserRegistry.this.errorOnMissingMembers)
                                 {
-                                    throw new AlfrescoRuntimeException("Failed to resolve distinguished name: "
-                                            + attribute);
+                                    throw new AlfrescoRuntimeException("Failed to resolve member of group '"
+                                            + groupShortName + "' with distinguished name: " + attribute);
                                 }
-                                LDAPUserRegistry.logger.warn("Failed to resolve distinguished name: " + attribute);
+                                LDAPUserRegistry.logger.warn("Failed to resolve member of group '" + groupShortName
+                                        + "' with distinguished name: " + attribute);
                             }
                             catch (InvalidNameException e)
                             {
@@ -1077,19 +1079,22 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      */
     private boolean hasAttributeValue(Attribute attribute, String value) throws NamingException
     {
-        NamingEnumeration<?> values = attribute.getAll();
-        while (values.hasMore())
+        if (attribute != null)
         {
-            try
+            NamingEnumeration<?> values = attribute.getAll();
+            while (values.hasMore())
             {
-                if (value.equalsIgnoreCase((String) values.next()))
+                try
                 {
-                    return true;
+                    if (value.equalsIgnoreCase((String) values.next()))
+                    {
+                        return true;
+                    }
                 }
-            }
-            catch (ClassCastException e)
-            {
-                // Not a string value. ignore and continue
+                catch (ClassCastException e)
+                {
+                    // Not a string value. ignore and continue
+                }
             }
         }
         return false;

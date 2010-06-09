@@ -219,6 +219,9 @@
                 <!--  Installed  AMP modules  -->
                 <value>classpath*:alfresco/module/*/log4j.properties</value>
 
+                <!--  Enterprise extensions  -->
+                <value>classpath*:alfresco/enterprise/*-log4j.properties</value>
+
                 <!--  Other installed extensions  -->
                 <value>classpath*:alfresco/extension/*-log4j.properties</value>
 

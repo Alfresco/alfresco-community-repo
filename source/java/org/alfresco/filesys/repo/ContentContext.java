@@ -23,12 +23,14 @@ import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
+import org.alfresco.jlan.server.config.CoreServerConfigSection;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
+import org.alfresco.jlan.server.thread.ThreadRequestPool;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -65,6 +67,10 @@ public class ContentContext extends AlfrescoContext
     
     private NodeMonitor m_nodeMonitor;
 
+    // Thread pool
+    
+    private ThreadRequestPool m_threadPool;
+    
     /**
      * Default constructor allowing initialization by container.
      */
@@ -252,6 +258,15 @@ public class ContentContext extends AlfrescoContext
     }
 
     /**
+     * Return the thread pool
+     * 
+     * @return ThreadRequestPool
+     */
+    public final ThreadRequestPool getThreadPool() {
+        return m_threadPool;
+    }
+    
+    /**
      * Close the filesystem context
      */
     public void CloseContext() {
@@ -308,6 +323,12 @@ public class ContentContext extends AlfrescoContext
         // Call the base class
         
         super.startFilesystem(share);
+        
+        // Find the thread pool via the configuration
+        
+        CoreServerConfigSection coreConfig = (CoreServerConfigSection) share.getConfiguration().getConfigSection( CoreServerConfigSection.SectionName);
+        if ( coreConfig != null)
+            m_threadPool = coreConfig.getThreadPool();
         
         // Start the node monitor, if enabled
         

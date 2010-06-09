@@ -18,7 +18,6 @@
 package org.alfresco.filesys.repo;
 
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
-import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 
@@ -122,12 +121,12 @@ public abstract class NodeRefNetworkFile extends AlfrescoNetworkFile {
 		return --m_openCount;
 	}
 	
-	/**
-	 * Return the open file count
-	 * 
-	 * @return int
-	 */
-	public final int getOpenCount() {
-		return m_openCount;
-	}
+    /**
+     * Return the open file count
+     * 
+     * @return int
+     */
+    public final int getOpenCount() {
+        return m_openCount;
+    }
 }

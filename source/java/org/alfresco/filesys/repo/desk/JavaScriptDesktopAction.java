@@ -25,21 +25,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopActionException;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver.CallableIO;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.util.ResourceFinder;
 import org.springframework.core.io.Resource;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Javascript Desktop Action Class
@@ -230,23 +230,19 @@ public class JavaScriptDesktopAction extends DesktopAction {
             if ( hasWebappURL())
             	model.put("webURL", getWebappURL());
             
-            // Compute the response in a retryable write transaction
-            return params.getDriver().doInWriteTransaction(params.getSession(), new Callable<DesktopResponse>()
+            try
             {
 
-                public DesktopResponse call() throws Exception
+                // Compute the response in a retryable write transaction
+                return params.getDriver().doInWriteTransaction(params.getSession(), new CallableIO<DesktopResponse>()
                 {
-                    DesktopResponse response = new DesktopResponse(StsSuccess);
-
-                    // Run the script
-
-                    Object result = null;
-
-                    try
+                    public DesktopResponse call() throws IOException
                     {
+                        DesktopResponse response = new DesktopResponse(StsSuccess);
+
                         // Run the script
 
-                        result = scriptService.executeScriptString(getScript(), model);
+                        Object result = scriptService.executeScriptString(getScript(), model);
 
                         // Check the result
 
@@ -294,23 +290,21 @@ public class JavaScriptDesktopAction extends DesktopAction {
                                 response.setStatus(sts, msgToken != null ? msgToken : "");
                             }
                         }
+
+                        // Return the response
+    
+                        return response;
                     }
-                    catch (ScriptException ex)
-                    {
-                        if (RetryingTransactionHelper.extractRetryCause(ex) != null)
-                        {
-                            throw ex;
-                        }
-
-                        // Set the error response for the client
-                        response.setStatus(StsError, ex.getMessage());
-                    }
-
-                    // Return the response
-
-                    return response;
-                }
-            });
+                });
+            }
+            catch (ScriptException ex)
+            {
+                return new DesktopResponse(StsError, ex.getMessage());
+            }
+            catch (IOException ex)
+            {
+                return new DesktopResponse(StsError, ex.getMessage());
+            }
         }
         else
         {

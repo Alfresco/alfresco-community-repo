@@ -29,6 +29,7 @@ import java.nio.charset.Charset;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.FileAttribute;
@@ -36,6 +37,7 @@ import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.smb.SeekType;
+import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
@@ -93,29 +95,27 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     /**
      * Helper method to create a {@link NetworkFile network file} given a node reference.
      */
-    public static ContentNetworkFile createFile(
-            NodeService nodeService,
-            ContentService contentService,
-            MimetypeService mimetypeService,
-            CifsHelper cifsHelper,
-            NodeRef nodeRef,
-            FileOpenParams params)
+    public static ContentNetworkFile createFile( NodeService nodeService, ContentService contentService, MimetypeService mimetypeService,
+            CifsHelper cifsHelper, NodeRef nodeRef, FileOpenParams params, SrvSession sess)
     {
         String path = params.getPath();
-        
-        // Check write access
-        // TODO: Check access writes and compare to write requirements
         
         // Create the file
         
         ContentNetworkFile netFile = null;
         
-        if ( isMSOfficeSpecialFile(path)) {
+        if ( isMSOfficeSpecialFile(path, sess, nodeService, nodeRef)) {
         	
         	// Create a file for special processing
         	
         	netFile = new MSOfficeContentNetworkFile( nodeService, contentService, mimetypeService, nodeRef, path);
         }
+        else if ( isOpenOfficeSpecialFile( path, sess, nodeService, nodeRef)) {
+            
+            // Create a file for special processing
+            
+            netFile = new OpenOfficeContentNetworkFile( nodeService, contentService, mimetypeService, nodeRef, path);
+        }        
         else {
         	
         	// Create a normal content file
@@ -172,6 +172,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         netFile.setAttributes(fileInfo.getFileAttributes());
 
+        // Set the owner process id
+        
+        netFile.setProcessId( params.getProcessId());
+        
         // If the file is read-only then only allow read access
         
         if ( netFile.isReadOnly())
@@ -726,19 +730,61 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     }
     
     /**
+     * Return the modified status
+     * 
+     * @return boolean
+     */
+    public final boolean isModified() {
+        return modified;
+    }
+    
+    /**
      * Check if the file is an MS Office document type that needs special processing
      * 
      * @param path String
+     * @param sess SrvSession
+     * @param nodeService NodeService
+     * @param nodeRef NodeRef
      * @return boolean
      */
-    private static final boolean isMSOfficeSpecialFile(String path) {
+    private static final boolean isMSOfficeSpecialFile( String path, SrvSession sess, NodeService nodeService, NodeRef nodeRef) {
     	
     	// Check if the file extension indicates a problem MS Office format
 
     	path = path.toLowerCase();
     	
-    	if ( path.endsWith( ".xls"))
-    		return true;
+    	if ( path.endsWith( ".xls") && sess instanceof SMBSrvSession) {
+    	    
+            // Check if the file is versionable
+            
+            if ( nodeService.hasAspect( nodeRef, ContentModel.ASPECT_VERSIONABLE))
+                return true;
+    	}
     	return false;
+    }
+
+    /**
+     * Check if the file is an OpenOffice document type that needs special processing
+     * 
+     * @param path String
+     * @param sess SrvSession
+     * @param nodeService NodeService
+     * @param nodeRef NodeRef
+     * @return boolean
+     */
+    private static final boolean isOpenOfficeSpecialFile( String path, SrvSession sess, NodeService nodeService, NodeRef nodeRef) {
+        
+        // Check if the file extension indicates a problem OpenOffice format
+
+        path = path.toLowerCase();
+        
+        if ( path.endsWith( ".odt") && sess instanceof SMBSrvSession) {
+            
+            // Check if the file is versionable
+            
+            if ( nodeService.hasAspect( nodeRef, ContentModel.ASPECT_VERSIONABLE))
+                return true;
+        }
+        return false;
     }
 }

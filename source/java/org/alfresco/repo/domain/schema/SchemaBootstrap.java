@@ -205,6 +205,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private int maximumStringLength;
     
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
+    private File xmlPreSchemaOutputFile;                // This must be set if there are any executed statements
 
     public SchemaBootstrap()
     {
@@ -912,6 +913,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
         {
+            // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
+            xmlPreSchemaOutputFile = dumpSchema(
+                    connection,
+                    this.dialect,
+                    TempFileProvider.createTempFile(
+                            "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
+                            "-Startup.xml").getPath(),
+                    "Failed to dump normalized, pre-upgrade schema to file.");
+
             // There is no lock at this stage.  This process can fall out if the lock can't be applied.
             setBootstrapStarted(connection);
             executedStatements = new StringBuilder(8094);
@@ -1256,15 +1266,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // Update the schema, if required.
             if (updateSchema)
             {
-                // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
-                File xmlPreSchemaOutputFile = dumpSchema(
-                        connection,
-                        this.dialect,
-                        TempFileProvider.createTempFile(
-                                "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
-                                "-Startup.xml").getPath(),
-                        "Failed to dump normalized, pre-upgrade schema to file.");
-                
                 // Retries are required here as the DB lock will be applied lazily upon first statement execution.
                 // So if the schema is up to date (no statements executed) then the LockFailException cannot be
                 // thrown.  If it is thrown, the the update needs to be rerun as it will probably generate no SQL
@@ -1333,34 +1334,37 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     setBootstrapCompleted(connection);
                 }
                 
-                // Dump the normalized, post-upgrade Alfresco schema.
-                File xmlPostSchemaOutputFile = dumpSchema(
-                        connection,
-                        this.dialect,
-                        TempFileProvider.createTempFile(
-                                "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
-                                ".xml").getPath(),
-                        "Failed to dump normalized, post-upgrade schema to file.");
-                
                 // Report normalized dumps
-                if (createdSchema)
+                if (executedStatements != null)
                 {
-                    // This is a new schema
-                    if (xmlPostSchemaOutputFile != null)
+                    // Dump the normalized, post-upgrade Alfresco schema.
+                    File xmlPostSchemaOutputFile = dumpSchema(
+                            connection,
+                            this.dialect,
+                            TempFileProvider.createTempFile(
+                                    "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
+                                    ".xml").getPath(),
+                            "Failed to dump normalized, post-upgrade schema to file.");
+                    
+                    if (createdSchema)
                     {
-                        LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlPostSchemaOutputFile.getPath());
+                        // This is a new schema
+                        if (xmlPostSchemaOutputFile != null)
+                        {
+                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlPostSchemaOutputFile.getPath());
+                        }
                     }
-                }
-                else if (executedStatements != null)
-                {
-                    // We upgraded, so have to report pre- and post- schema dumps
-                    if (xmlPreSchemaOutputFile != null)
+                    else
                     {
-                        LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_PRE, xmlPreSchemaOutputFile.getPath());
-                    }
-                    if (xmlPostSchemaOutputFile != null)
-                    {
-                        LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_POST, xmlPostSchemaOutputFile.getPath());
+                        // We upgraded, so have to report pre- and post- schema dumps
+                        if (xmlPreSchemaOutputFile != null)
+                        {
+                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_PRE, xmlPreSchemaOutputFile.getPath());
+                        }
+                        if (xmlPostSchemaOutputFile != null)
+                        {
+                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_POST, xmlPostSchemaOutputFile.getPath());
+                        }
                     }
                 }
             }

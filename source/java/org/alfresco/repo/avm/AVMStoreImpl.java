@@ -268,34 +268,6 @@ public class AVMStoreImpl implements AVMStore
                 newChild.setAncestor(child);
                 parent.putChild(parentName[1], newChild);
             }
-            
-            // TODO This leaves the behavior of LayeredFiles not quite
-            // right.
-            /*
-            String parentName[] = AVMNodeConverter.SplitBase(entry.getPath());
-            parentName[0] = parentName[0].substring(parentName[0].indexOf(':') + 1);
-            lookup = lookupDirectory(-1, parentName[0], true);
-            DirectoryNode parent = (DirectoryNode)lookup.getCurrentNode();
-            AVMNode child = parent.lookupChild(lookup, parentName[1], false);
-            // TODO For debugging.
-            if (child == null)
-            {
-                System.err.println("Yoiks!");
-            }
-            // TODO This is funky. Need to look carefully to see that this call
-            // does exactly what's needed.
-            lookup.add(child, parentName[1], false);
-            AVMNode newChild = null;
-            if (child.getType() == AVMNodeType.LAYERED_DIRECTORY)
-            {
-                newChild = child.copy(lookup);
-            }
-            else
-            {
-                newChild = ((LayeredFileNode)child).copyLiterally(lookup);
-            }
-            parent.putChild(parentName[1], newChild);
-            */
         }
         
         if (logger.isTraceEnabled())
@@ -305,7 +277,7 @@ public class AVMStoreImpl implements AVMStore
         
         // Clear out the new nodes.
         List<Long> allLayeredNodeIDs = AVMDAOs.Instance().fAVMNodeDAO.getNewLayeredInStoreIDs(me);
-
+        
         AVMDAOs.Instance().fAVMNodeDAO.clearNewInStore(me);
         
         AVMDAOs.Instance().fAVMNodeDAO.clear();
@@ -313,7 +285,13 @@ public class AVMStoreImpl implements AVMStore
         for (Long layeredID : allLayeredNodeIDs)
         {
             Layered layered = (Layered)AVMDAOs.Instance().fAVMNodeDAO.getByID(layeredID);
-            String indirection = layered.getIndirection();
+            
+            String indirection = null;
+            if (layered != null)
+            {
+                indirection = layered.getIndirection();
+            }
+            
             if (indirection == null)
             {
                 continue;

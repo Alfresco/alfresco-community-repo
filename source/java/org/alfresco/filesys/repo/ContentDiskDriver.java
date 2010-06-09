@@ -73,6 +73,7 @@ import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -149,6 +150,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private AuthenticationService authService;
     private SysAdminParams sysAdminParams;
 
+    private BehaviourFilter policyBehaviourFilter;
+    
     // Node monitor factory
     
     private NodeMonitorFactory m_nodeMonitorFactory;
@@ -272,6 +275,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     }
     
     /**
+     * Get the policy behaviour filter, used to inhibit versioning on a per transaction basis
+     */
+    public BehaviourFilter getPolicyFilter()
+    {
+        return policyBehaviourFilter;
+    }
+
+    /**
      * @param contentService the content service
      */
     public void setContentService(ContentService contentService)
@@ -389,6 +400,16 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         this.lockService = lockService;
     }
     
+    /**
+     * Set the policy behaviour filter, used to inhibit versioning on a per transaction basis
+     * 
+     * @param policyFilter PolicyBehaviourFilter
+     */
+    public void setPolicyFilter(BehaviourFilter policyFilter)
+    {
+        this.policyBehaviourFilter = policyFilter;
+    }
+
     /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
@@ -1595,7 +1616,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             			nosharing = false;
 
             		// Check if the caller wants read access, check the sharing mode
-            		// Check if the caller wants write access, check if the sharing mode allows write
             		
                 	else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
                 		nosharing = false;
@@ -1668,7 +1688,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
             	// Check if the file is already opened by this client/process
             	
-            	if ( tree.openFileCount() > 1) {
+            	if ( tree.openFileCount() > 0) {
             	
             		// Search the open file table for this session/virtual circuit
             		
@@ -1703,8 +1723,14 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 	            					// DEBUG
 	            	            	
 	            	            	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-	            	            		logger.debug("Re-use existing file open Path " + params.getPath() + ", PID=" + params.getProcessId());
+	            	            		logger.debug("Re-use existing file open Path " + params.getPath() + ", PID=" + params.getProcessId() + ", params=" +
+	            	            		        ( params.isReadOnlyAccess() ? "ReadOnly" : "Write") + ", file=" + 
+	            	            		        ( contentFile.getGrantedAccess() == NetworkFile.READONLY ? "ReadOnly" : "Write"));
             					}
+            					else if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+            					    logger.debug("Not re-using file path=" + params.getPath() + ", readWrite=" + (params.isReadWriteAccess() ? "true" : "false") +
+            					            ", readOnly=" + (params.isReadOnlyAccess() ? "true" : "false") +
+            					            ", grantedAccess=" + contentFile.getGrantedAccessAsString());
             				}
             			}
             			
@@ -1716,8 +1742,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             	
 	            // Create the network file, if we could not match an existing file open
 	            
-            	if ( netFile == null)
-            		netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params);
+            	if ( netFile == null) {
+            	    
+            	    // Create a new network file for the open request
+            	
+            		netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params, sess);
+            	}
             }
             else
             {
@@ -1861,8 +1891,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         {
 
             // Access the repository in a retryable write transaction
-            Pair<String, NodeRef> result = doInWriteTransaction(sess, new Callable<Pair<String, NodeRef>>(){
-                public Pair<String, NodeRef> call() throws Exception
+            Pair<String, NodeRef> result = doInWriteTransaction(sess, new CallableIO<Pair<String, NodeRef>>(){
+                public Pair<String, NodeRef> call() throws IOException
                 {
                     // Get the device root
 
@@ -1920,7 +1950,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Create the network file
             
-            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params);
+            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params, sess);
             
             // Always allow write access to a newly created file
             
@@ -2037,10 +2067,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         try
         {
             // Access the repository in a retryable write transaction
-            Pair<String, NodeRef> result = doInWriteTransaction(sess, new Callable<Pair<String, NodeRef>>()
+            Pair<String, NodeRef> result = doInWriteTransaction(sess, new CallableIO<Pair<String, NodeRef>>()
             {
 
-                public Pair<String, NodeRef> call() throws Exception
+                public Pair<String, NodeRef> call() throws IOException
                 {
                     // get the device root
 
@@ -2166,9 +2196,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         try
         {
-            NodeRef nodeRef = doInWriteTransaction(sess, new Callable<NodeRef>(){
+            NodeRef nodeRef = doInWriteTransaction(sess, new CallableIO<NodeRef>(){
 
-                public NodeRef call() throws Exception
+                public NodeRef call() throws IOException
                 {
                     // Get the node for the folder                    
         	
@@ -2286,25 +2316,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         final ContentContext ctx = (ContentContext) tree.getContext();
         FileState toUpdate = null;
+
+        // Check for a content file
         
         if ( file instanceof ContentNetworkFile) {
         	
-        	// Decrement the file open count
-        	
-        	ContentNetworkFile contentFile = (ContentNetworkFile) file;
-        	
-        	if ( contentFile.decrementOpenCount() > 0) {
-        		
-        		// DEBUG
-                
-                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                    logger.debug("Deferred file close, path=" + file.getFullName() + ", openCount=" + contentFile.getOpenCount());
-                
-                // Defer the file close to the last reference
-                
-                return;
-        	}
-
+            // Update the file state
+            
             if ( ctx.hasStateCache())
             {
                 FileState fstate = ctx.getStateCache().findFileState(file.getFullName());
@@ -2324,6 +2342,24 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     }
                 }
             }
+
+            // Decrement the file open count
+            
+            ContentNetworkFile contentFile = (ContentNetworkFile) file;
+            
+            if ( contentFile.decrementOpenCount() > 0) {
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                    logger.debug("Deferred file close, path=" + file.getFullName() + ", openCount=" + contentFile.getOpenCount());
+                
+                // Defer the file close to the last reference
+                
+                return;
+            }
+            else if ( logger.isDebugEnabled())
+                logger.debug("Last reference to file, closing, path=" + file.getFullName() + ", access=" + file.getGrantedAccessAsString() + ", fid=" + file.getProtocolId());
         }
         
         // Check if there is a quota manager enabled
@@ -2347,23 +2383,60 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // Perform repository updates in a retryable write transaction
         final FileState finalFileState = toUpdate;
-        Pair<NodeRef, Boolean> result = doInWriteTransaction(sess, new Callable<Pair<NodeRef, Boolean>>()
+        Pair<NodeRef, Boolean> result = doInWriteTransaction(sess, new CallableIO<Pair<NodeRef, Boolean>>()
         {
-            public Pair<NodeRef, Boolean> call() throws Exception
+            public Pair<NodeRef, Boolean> call() throws IOException
             {
-                // Update the modification date on the file/folder node
-                if (finalFileState != null)
-                {
+                // Check if the file is an OpenOffice document and hte truncation flag is set
+                //
+                // Note: Check before the timestamp update
+                
+                if ( file instanceof OpenOfficeContentNetworkFile) {
+                    OpenOfficeContentNetworkFile ooFile = (OpenOfficeContentNetworkFile) file;
+                    if ( ooFile.truncatedToZeroLength()) {
+                        
+                        // Inhibit versioning for this transaction
+                        
+                        getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
 
+                        // Debug
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("OpenOffice file truncation update only, inhibit versioning, " + file.getFullName());
+                    }
+                }
+
+                // Update the modification date on the file/folder node
+                if (finalFileState != null && file instanceof ContentNetworkFile)
+                {
+                    // Check if the file data has been updated, if not then inhibit versioning for this txn
+                    // so the timestamp update does not generate a new file version
+                    
+                    ContentNetworkFile contentFile = (ContentNetworkFile) file;
+                    if ( contentFile.isModified() == false &&
+                            nodeService.hasAspect((NodeRef) finalFileState.getFilesystemObject(), ContentModel.ASPECT_VERSIONABLE)) {
+
+                        // Stop a new file version being generated
+                        
+                        getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
+
+                        // Debug
+                        
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("Timestamp update only, inhibit versioning, " + file.getFullName());
+                    }
+
+                    // Update the modification timestamp
+                    
                     Date modifyDate = new Date(finalFileState.getModifyDateTime());
                     nodeService.setProperty((NodeRef) finalFileState.getFilesystemObject(), ContentModel.PROP_MODIFIED, modifyDate);
 	
 	            	// Debug
 	                
 	                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-	                    logger.debug("Updated modifcation timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
+	                    logger.debug("Updated modification timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
 	            }
-                        
+                
                 // Defer to the network file to close the stream and remove the content
                    
                 file.closeFile();
@@ -2396,9 +2469,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                                 }
                                 catch ( Exception ex)
                                 {
+                                    // Propagate retryable errors. Log the rest.
                                     if (RetryingTransactionHelper.extractRetryCause(ex) != null)
                                     {
-                                        throw ex;
+                                        if (ex instanceof RuntimeException)
+                                        {
+                                            throw (RuntimeException)ex;
+                                        }
+                                        else
+                                        {
+                                            throw new AlfrescoRuntimeException("Error during delete on close, " + file.getFullName(), ex);
+                                        }
                                     }
                                     if ( logger.isWarnEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                         logger.warn("Error during delete on close, " + file.getFullName(), ex);
@@ -2472,8 +2553,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         // DEBUG
         
-        if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME)))
+        if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME))) {
             logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
+            if ( file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile) {
+                ContentNetworkFile cFile = (ContentNetworkFile) file;
+                logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty( cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+            }
+        }
     }
 
     /**
@@ -2497,19 +2583,20 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             final QuotaManager quotaMgr = ctx.getQuotaManager();
 
             // Perform repository updates in a retryable write transaction
-            Callable<Void> postTxn = doInWriteTransaction(sess, new Callable<Callable<Void>>()
+            Callable<Void> postTxn = doInWriteTransaction(sess, new CallableIO<Callable<Void>>()
             {
-                public Callable<Void> call() throws Exception
+                public Callable<Void> call() throws IOException
                 {
-                    // Get the size of the file being deleted
-                    final FileInfo fInfo = quotaMgr == null ? null : getFileInformation(sess, tree, name);
-
                     // Get the node and delete it
                     final NodeRef nodeRef = getNodeForPath(tree, name);
                     
                     Callable<Void> result = null;
                     if (fileFolderService.exists(nodeRef))
                     {
+                        // Get the size of the file being deleted
+                        
+                        final FileInfo fInfo = quotaMgr == null ? null : getFileInformation(sess, tree, name);
+
                         // Check if the node is versionable
 
                         final boolean isVersionable = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
@@ -2517,6 +2604,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         fileFolderService.delete(nodeRef);
 
                         // Return the operations to perform when the transaction succeeds
+                        
                         result = new Callable<Void>()
                         {
 
@@ -2699,10 +2787,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                 // Rename or move the file/folder
 
-                doInWriteTransaction(sess, new Callable<Void>()
+                doInWriteTransaction(sess, new CallableIO<Void>()
                 {
 
-                    public Void call() throws Exception
+                    public Void call() throws IOException
                     {
                         if (sameFolder == true)
                             cifsHelper.rename(nodeToMoveRef, name);
@@ -2727,10 +2815,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 final int newExists = fileExists(sess, tree, newName);
                 final FileState newState = ctx.getStateCache().findFileState(newName, true);
 
-                List<Runnable> postTxn = doInWriteTransaction(sess, new Callable<List<Runnable>>()
+                List<Runnable> postTxn = doInWriteTransaction(sess, new CallableIO<List<Runnable>>()
                 {
 
-                    public List<Runnable> call() throws Exception
+                    public List<Runnable> call() throws IOException
                     {
                         List<Runnable> postTxn = new LinkedList<Runnable>();
 
@@ -3005,9 +3093,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             final FileState fstate = getStateForPath(tree, name);
 
-            doInWriteTransaction(sess, new Callable<Pair<Boolean, Boolean>>(){
+            doInWriteTransaction(sess, new CallableIO<Pair<Boolean, Boolean>>(){
 
-                public Pair<Boolean, Boolean> call() throws Exception
+                public Pair<Boolean, Boolean> call() throws IOException
                 {
                     // Get the file/folder node
                     

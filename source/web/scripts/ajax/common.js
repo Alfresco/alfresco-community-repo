@@ -4,6 +4,34 @@
 //
 
 
+function getIEEngine()
+{
+   var engine = null;
+
+   if (document.documentMode) // IE8
+      engine = document.documentMode;
+   else // IE 5-7
+   {
+      engine = 5; // Assume quirks mode unless proven otherwise
+      if (document.compatMode)
+      {
+         if (document.compatMode == "CSS1Compat")
+            engine = 7; // standards mode
+      }
+   }
+   return engine;
+
+}
+
+function getIEVersion()
+{
+   var rv = -1;
+   var ua = window.navigator.userAgent;
+   var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+   if (re.exec(ua) != null) rv = parseFloat(RegExp.$1);
+   return rv;
+}
+
 // Global Alfresco namespace object
 if (typeof Alfresco == "undefined") 
 {

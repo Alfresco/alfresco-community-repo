@@ -464,11 +464,21 @@ public class CreateWebContentWizard extends CreateContentWizard
 
       if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType) && this.formName != null)
       {
-         this.formInstanceData = getFormsService().getFormInstanceData(-1, this.createdPath);
-         this.renditions = this.formInstanceData.getRenditions();
-         if (logger.isDebugEnabled())
-            logger.debug("reset form instance data " + this.formInstanceData.getName() + 
-                         " and " + this.renditions.size() + " rendition(s) to main store");
+         try
+         {
+            this.formInstanceData = getFormsService().getFormInstanceData(-1, this.createdPath);
+            this.renditions = this.formInstanceData.getRenditions();
+            
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("reset form instance data " + this.formInstanceData.getName() + 
+                            " and " + this.renditions.size() + " rendition(s) to main store");
+            }
+         }
+         catch (FormNotFoundException fnfe)
+         {
+            logger.warn(fnfe);
+         }
       }
       
       this.avmBrowseBean.setAvmActionNode(new AVMNode(this.getAvmService().lookup(-1, this.createdPath)));

@@ -211,7 +211,9 @@ public class PageTag extends TagSupport
                out.write("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n");
                out.write("    \"http://www.w3.org/TR/html4/loose.dtd\">\n");
             }
-            out.write("<html><head><title>");
+            out.write("<html><head>");
+            out.write("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=EmulateIE7\" />\n");
+            out.write("<title>");
             if (this.titleId != null && this.titleId.length() != 0)
             {
                out.write(Utils.encode(Application.getMessage(pageContext.getSession(), this.titleId)));
@@ -228,7 +230,6 @@ public class PageTag extends TagSupport
             out.write("<link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"" + reqPath + 
                       "/wcservice/api/search/keyword/description.xml\" title=\"Alfresco Keyword Search\">\n");
             out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n");
-            out.write("<meta http-equiv=\"X-UA-Compatible\" content=\"Edge\" />\n");
          }
          
          // CSS style includes

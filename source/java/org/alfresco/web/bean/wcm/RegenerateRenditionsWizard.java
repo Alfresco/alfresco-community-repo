@@ -525,7 +525,16 @@ public class RegenerateRenditionsWizard
          {
             final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
             final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-            result.add(getFormsService().getFormInstanceData(-1, previewAvmPath));
+            
+            try
+            {
+                FormInstanceData fid = getFormsService().getFormInstanceData(-1, previewAvmPath);
+                result.add(fid);
+            }
+            catch (final FormNotFoundException fnfe)
+            {
+                // ignore
+            }
          }
          
          return result;
@@ -661,9 +670,10 @@ public class RegenerateRenditionsWizard
             if (this.regenerateScope.equals(REGENERATE_SCOPE_ALL) ||
                   this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
             {
-               final FormInstanceData fid = this.formsService.getFormInstanceData(-1, previewAvmPath);
+               FormInstanceData fid = null;
                try
                {
+                  fid = this.formsService.getFormInstanceData(-1, previewAvmPath);
                   final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
                   for (final FormInstanceData.RegenerateResult rr : regenResults)
                   {
@@ -687,7 +697,7 @@ public class RegenerateRenditionsWizard
                }
                catch (FormNotFoundException fnfe)
                {
-                  logger.warn("regenerating renditions of " + fid.getPath() + ": " + fnfe.getMessage(), fnfe);
+                  logger.warn("regenerating renditions of " + previewAvmPath + ": " + fnfe.getMessage(), fnfe);
                }
             }
             else

@@ -20,6 +20,7 @@ package org.alfresco.web.bean.users;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -975,5 +976,10 @@ public class CreateUserWizard extends BaseWizardBean
         }
         
         return true;
+    }
+    
+    public Map getPersonPropertiesImmutability()
+    {
+        return Collections.EMPTY_MAP;
     }
 }

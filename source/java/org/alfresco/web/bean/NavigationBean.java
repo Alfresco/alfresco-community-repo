@@ -1020,13 +1020,19 @@ public class NavigationBean implements Serializable
    }
    
    /**
-    * @return true if users can configure their own settings and password in the User Console
+    * @return true if users can configure their own settings in the User Console
     */
    public boolean isAllowUserConfig()
    {
-      // For correct behaviour, we ask the authentication chain whether this particular user is mutable
-      return this.clientConfig.getAllowUserConfig()
-            && this.authService.isAuthenticationMutable(this.authService.getCurrentUserName());
+      return this.clientConfig.getAllowUserConfig();
+   }
+   
+   /**
+    * @return true if a users can modify the password set against their authentication
+    */
+   public boolean isAllowUserChangePassword()
+   {
+       return this.authService.isAuthenticationMutable(this.authService.getCurrentUserName());
    }
    
    

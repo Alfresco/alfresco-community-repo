@@ -95,7 +95,7 @@
          <a:actionLink id="change-password" value="#{msg.change_password}"
                action="dialog:changeMyPassword"
                image="/images/icons/change_password.gif"
-               rendered="#{!NavigationBean.isGuest && NavigationBean.allowUserConfig}" />
+               rendered="#{!NavigationBean.isGuest && NavigationBean.allowUserConfig && NavigationBean.allowUserChangePassword}" />
       </a:panel>
    </h:panelGroup>
    

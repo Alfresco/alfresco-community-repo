@@ -645,6 +645,10 @@
          <property-name>contentUsageService</property-name>
          <value>#{ContentUsageService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>userRegistrySynchronizer</property-name>
+         <value>#{userRegistrySynchronizer}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

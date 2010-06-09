@@ -30,6 +30,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -290,32 +291,27 @@ public final class FormsService
       return result;
    }
 
-   public FormInstanceData getFormInstanceData(final int version, final String avmPath)
+   public FormInstanceData getFormInstanceData(final int version, final String avmPath) throws FormNotFoundException
    {
       return this.getFormInstanceData(AVMNodeConverter.ToNodeRef(version, avmPath));
    }
 
-   public FormInstanceData getFormInstanceData(final NodeRef nodeRef)
+   public FormInstanceData getFormInstanceData(final NodeRef nodeRef) throws FormNotFoundException
    {
       final String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
       final WebProject webProject = new WebProject(avmPath);
-      return new FormInstanceDataImpl(nodeRef, this)
+      
+      FormInstanceData fid = null;
+      try
       {
-         @Override
-         public Form getForm()
-            throws FormNotFoundException
-         {
-            final Form f = super.getForm();
-            try
-            {
-               return webProject.getForm(f.getName());
-            }
-            catch (FormNotFoundException fnfne)
-            {
-               throw new FormNotFoundException(f, webProject, this);
-            }
-         }
-      };
+          fid = new FormInstanceDataImpl(nodeRef, this, webProject);
+          return fid;
+      }
+      catch (IllegalArgumentException iae)
+      {
+          // note: FormNotFoundException extends FileNotFoundException
+          throw new FormNotFoundException(iae.getMessage());
+      }
    }
 
    public Rendition getRendition(final int version, final String avmPath)

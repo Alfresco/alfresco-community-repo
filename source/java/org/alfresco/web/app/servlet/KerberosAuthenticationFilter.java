@@ -130,9 +130,10 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
         throws IOException
     {
         // If the original URL requested was the login page then redirect to the browse view
-        if (userInit || req.getRequestURI().endsWith(getLoginPage()))
+        String requestURI = req.getRequestURI();
+        if (requestURI.startsWith(req.getContextPath() + BaseServlet.FACES_SERVLET) && (userInit || requestURI.endsWith(getLoginPage())))
         {
-            if (logger.isDebugEnabled() && req.getRequestURI().endsWith(getLoginPage()))
+            if (logger.isDebugEnabled() && requestURI.endsWith(getLoginPage()))
                 logger.debug("Login page requested - redirecting to initially configured page");
             if (logger.isDebugEnabled() && userInit)
                 logger.debug("Session reinitialised - redirecting to initially configured page");

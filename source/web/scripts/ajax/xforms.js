@@ -31,6 +31,9 @@
 // Initiliaze dojo requirements, tinymce, and add a hook to load the xform.
 ////////////////////////////////////////////////////////////////////////////////
 
+alfresco.ieVersion = getIEVersion();
+alfresco.ieEngine = alfresco.ieVersion == -1 ? -1 : getIEEngine();
+
 djConfig.parseWidgets = false;
 dojo.require("dojo.lfx.html");
 alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
@@ -682,8 +685,8 @@ alfresco.xforms.TextField = alfresco.xforms.Widget.extend({
 
     if (this.isReadonly())
     {
-      this.widget.setAttribute("readonly", this.isReadonly());
-      this.widget.setAttribute("disabled", this.isReadonly());
+      this.widget.setAttribute("readonly", true);
+      this.widget.setAttribute("disabled", true);
     }
     else
     {
@@ -835,12 +838,13 @@ alfresco.xforms.PlainTextEditor = alfresco.xforms.Widget.extend({
     this.widget.appendChild(document.createTextNode(initialValue));
     if (this.isReadonly())
     {
-      this.widget.setAttribute("readonly", this.isReadonly());
+      this.widget.setAttribute("readonly", true);
     }
     var borderWidth = (this.widget.offsetWidth - this.widget.clientWidth);
     var marginRight = 2;
     this.widget.style.marginRight = marginRight + "px";
-    this.widget.style.width = (((attach_point.offsetWidth - borderWidth - marginRight) / attach_point.offsetWidth) * 100) + "%";
+    var ow = attach_point.offsetWidth;
+    this.widget.style.width = (((ow - borderWidth - marginRight) / ow) * 100) + "%";
     this.widget.onchange =this._textarea_changeHandler.bindAsEventListener(this);
   },
 
@@ -2782,7 +2786,10 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
                                                    child.domContainer);
     }
 
-    var contentDiv = new Element("div", { "id":  child.id + "-content", "class": "xformsGroupItem"});
+    var contentDiv = new Element("div", { "id":  child.id + "-content", "class": "xformsGroupItem",
+                                           "styles": {"left": (child instanceof alfresco.xforms.AbstractGroup 
+                                                               ? "0px" 
+                                                               : "30%")}});
     this._contentDivs[child.id] = contentDiv;
     if (!(child instanceof alfresco.xforms.AbstractGroup))
     {
@@ -2791,36 +2798,40 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
     }
 
     child.domContainer.appendChild(contentDiv);
-    contentDiv.style.left = (child instanceof alfresco.xforms.AbstractGroup 
-                             ? "0px" 
-                             : "30%");
 
     var contentDivWidth = "100%";
     // the following does avoid devision by zero ... in contentDiv.offsetLeft / child.domContainer.offsetWidth
-    if (!(child instanceof alfresco.xforms.AbstractGroup) && child.domContainer.offsetWidth != 0)
+    var ow = child.domContainer.offsetWidth;
+    if (!(child instanceof alfresco.xforms.AbstractGroup) && ow != 0)
     {
-    	contentDivWidth = ((1 - (contentDiv.offsetLeft / child.domContainer.offsetWidth)) * 100) + "%";
+    	contentDivWidth = ((1 - (contentDiv.offsetLeft / ow)) * 100) + "%";
     }
     contentDiv.style.width = contentDivWidth;
     child.render(contentDiv);
+    
+    var oh = contentDiv.offsetHeight;
+    var mt = contentDiv.getStyle("margin-top").toInt();
     if (!(child instanceof alfresco.xforms.AbstractGroup))
     {
       child.domContainer.style.height = 
-        Math.max(contentDiv.offsetHeight +
-                 contentDiv.getStyle("margin-top").toInt() +
+        Math.max(oh +
+                 mt +
                  contentDiv.getStyle("margin-bottom").toInt(),
                  20) + "px";
     }
 
-    alfresco.log(contentDiv.getAttribute("id") + " offsetTop is " + contentDiv.offsetTop);
-    contentDiv.style.top = "-" + Math.max(0, contentDiv.offsetTop - contentDiv.getStyle("margin-top").toInt()) + "px";
+    var ot = contentDiv.offsetTop;
+    alfresco.log(contentDiv.getAttribute("id") + " offsetTop is " + ot);
+    var top = Math.max(0, ot - mt);
+    contentDiv.style.top = "-" + top + "px";
+
     if (contentDiv.labelNode)
     {
 //      contentDiv.labelNode.style.top = (contentDiv.offsetTop + ((.5 * contentDiv.offsetHeight) -
 //                                                                (.5 * contentDiv.labelNode.offsetHeight))) + "px";
       contentDiv.labelNode.style.position = "relative";
-      contentDiv.labelNode.style.top = contentDiv.offsetTop + "px";
-      contentDiv.labelNode.style.height = contentDiv.offsetHeight + "px";
+      contentDiv.labelNode.style.top = "0px";
+      contentDiv.labelNode.style.height = oh + "px";
       contentDiv.labelNode.style.lineHeight = contentDiv.labelNode.style.height;
 
     }
@@ -2939,18 +2950,19 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
 
       contentDiv.style.position = "static";
       contentDiv.style.top = "0px";
-      contentDiv.style.left = "0px";
+//      contentDiv.style.left = "0px";
 
       contentDiv.style.position = "relative";
       contentDiv.style.left = (this._children[i] instanceof alfresco.xforms.AbstractGroup
                                ? "0px"
                                : "30%");
-      if (this._children[i].domContainer.parentNode.offsetWidth != 0)
+      parentOffsetWidth = this._children[i].domContainer.parentNode.offsetWidth;                        
+      if (parentOffsetWidth != 0)
       {
       contentDiv.style.width = (this._children[i] instanceof alfresco.xforms.AbstractGroup
                                 ? "100%"
                                 : (1 - (contentDiv.offsetLeft / 
-                                        this._children[i].domContainer.parentNode.offsetWidth)) * 100 + "%");
+                                        parentOffsetWidth)) * 100 + "%");
       }
       else
       {
@@ -2964,26 +2976,17 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
 
       if (!(this._children[i] instanceof alfresco.xforms.AbstractGroup))
       {
+        var contentDivMarginTop = contentDiv.getStyle("margin-top").toInt();
         this._children[i].domContainer.style.height =
           Math.max(contentDiv.offsetHeight +
-                   contentDiv.getStyle("margin-top").toInt() +
+                   contentDivMarginTop +
                    contentDiv.getStyle("margin-bottom").toInt(),
                    20) + "px";
       }
 
-      contentDiv.style.top = "-" + Math.max(0, contentDiv.offsetTop - contentDiv.getStyle("margin-top").toInt()) + "px";
+      contentDiv.style.top = "-" + Math.max(0, contentDiv.offsetTop - 
+                                               (contentDivMarginTop == undefined ? contentDiv.getStyle("margin-top").toInt() : contentDivMarginTop)) + "px";
 
-      var labelNode = contentDiv.labelNode;
-      if (labelNode)
-      {
-//        labelNode.style.position = "static";
-//        labelNode.style.top = "0px";
-//        labelNode.style.left = "0px";
-//        labelNode.style.position = "relative";
-
-//        labelNode.style.top = (contentDiv.offsetTop + ((.5 * contentDiv.offsetHeight) -
-//                                                      (.5 * labelNode.offsetHeight))) + "px";
-      }
     }
   },
   
@@ -3669,7 +3672,9 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
 
   _updateDisplay: function(recursively)
   {
-    this.parent(recursively);
+    var recurseOnChildren = alfresco.ieVersion != -1 && alfresco.ieEngine < 8;
+    this.parent(recursively && !recurseOnChildren);
+
     if (this.getViewRoot().focusedRepeat != null &&
         (this.getViewRoot().focusedRepeat == this ||
          this.getViewRoot().focusedRepeat.isAncestorOf(this)))
@@ -3699,7 +3704,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
 
       this._repeatControls[i].style.backgroundColor = this._children[i].domContainer.getStyle("background-color");
       
-      if (window.navigator.appName == "Microsoft Internet Explorer")
+      if (recurseOnChildren)
       {      	
       	this._children[i]._updateDisplay(true);
       }
@@ -4242,6 +4247,8 @@ alfresco.xforms.XForm = new Class({
     {
       if (xformsNode.childNodes[i].nodeType != document.ELEMENT_NODE)
       {
+         if (alfresco.ieVersion == -1)
+         {
       	// fix for ETWOTWO-490, hide elements after rendering  (Mozila/Firefox)    
 	    if ((i == (xformsNode.childNodes.length - 1)) &&
 	        (parentWidget instanceof alfresco.xforms.SwitchGroup))
@@ -4254,6 +4261,7 @@ alfresco.xforms.XForm = new Class({
 	            }
 	         }
 	      }
+         }	      
         continue;
       }
       alfresco.log("loading " + xformsNode.childNodes[i].nodeName + 

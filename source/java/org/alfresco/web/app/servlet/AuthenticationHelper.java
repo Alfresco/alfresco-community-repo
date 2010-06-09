@@ -37,6 +37,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.webdav.auth.RemoteUserMapper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -273,11 +274,24 @@ public final class AuthenticationHelper
       HttpSession session = httpRequest.getSession();
       try
       {
-         auth.validate(ticket, session.getId());
-         
-         // We may have previously been authenticated via WebDAV so we may need to 'promote' the user object
+          // If we already have a cached user, make sure it is for the right ticket
          SessionUser user = (SessionUser)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-         if (user == null || !(user instanceof User))
+         if (user != null && !user.getTicket().equals(ticket))
+         {
+             session.removeAttribute(AUTHENTICATION_USER);
+             if (!Application.inPortalServer())
+             {
+                session.invalidate();
+                session = httpRequest.getSession();
+             }
+             user = null;
+         }
+         
+         // Validate the ticket and associate it with the session
+         auth.validate(ticket, session.getId());
+
+         // Cache a new user in the session if required
+         if (user == null)
          {
             setUser(context, httpRequest, auth.getCurrentUserName(), ticket, false);
          }
@@ -285,6 +299,10 @@ public final class AuthenticationHelper
       catch (AuthenticationException authErr)
       {
          session.removeAttribute(AUTHENTICATION_USER);
+         if (!Application.inPortalServer())
+         {
+            session.invalidate();
+         }
          return AuthenticationStatus.Failure;
       }
       catch (Throwable e)

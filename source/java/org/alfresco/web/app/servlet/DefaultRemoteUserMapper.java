@@ -28,6 +28,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.security.PersonService;
 
+import org.alfresco.repo.webdav.auth.RemoteUserMapper;
 /**
  * A default {@link RemoteUserMapper} implementation. Extracts a user ID using
  * {@link HttpServletRequest#getRemoteUser()} and optionally from a configured request header. If there is no configured

@@ -36,8 +36,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import javax.faces.context.FacesContext;
+
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.Pair;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
@@ -1930,7 +1933,7 @@ public class Schema2XForms implements Serializable
 
       // add xforms:repeat section if this element re-occurs
       if ((o.isOptional() && (controlType instanceof XSSimpleTypeDefinition || "anyType".equals(controlType.getName()))) ||
-          (o.maximum == 1 && o.minimum == 1))
+          (o.maximum == 1 && o.minimum == 1) || (controlType instanceof XSComplexTypeDefinition && pathToRoot.equals("")))
       {
          return formSection;
       }
@@ -2804,6 +2807,9 @@ public class Schema2XForms implements Serializable
 
       final Map<String, XSAnnotation> enumValues =
          new LinkedHashMap<String, XSAnnotation>(enumFacets.getLength());
+      
+      final String nullValue = Application.getMessage(FacesContext.getCurrentInstance(), "please_select");
+      enumValues.put(nullValue, null);
       for (int i = 0; i < enumFacets.getLength(); i++)
       {
          enumValues.put(enumFacets.item(i),
@@ -2823,29 +2829,6 @@ public class Schema2XForms implements Serializable
       control.setAttributeNS(NamespaceConstants.XFORMS_NS,
                              NamespaceConstants.XFORMS_PREFIX + ":appearance",
                              appearance);
-
-      // add the "Please select..." instruction item for the combobox
-      // and set the isValid attribute on the bind element to check for the "Please select..."
-      // item to indicate that is not a valid value
-      final String pleaseSelect = "[Select1 " + caption + "]";
-      final Element item = this.createXFormsItem(xformsDocument, pleaseSelect, pleaseSelect);
-      choices.appendChild(item);
-      
-      // not(purchaseOrder/state = '[Choose State]')
-      //String isValidExpr = "not(" + bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS,"nodeset") + " = '" + pleaseSelect + "')";
-      // ->no, not(. = '[Choose State]')
-      final String isValidExpr = "not( . = '" + pleaseSelect + "')";
-      
-      //check if there was a constraint
-      String constraint = bindElement.getAttributeNS(NamespaceConstants.XFORMS_NS, "constraint");
-      
-      constraint = (constraint != null && constraint.length() != 0
-                    ? constraint + " and " + isValidExpr
-                    : isValidExpr);
-      
-      bindElement.setAttributeNS(NamespaceConstants.XFORMS_NS,
-                                 NamespaceConstants.XFORMS_PREFIX + ":constraint",
-                                 constraint);
 
       control.appendChild(choices);
       this.addChoicesForSelectControl(xformsDocument, choices, enumValues, resourceBundle);
@@ -3026,7 +3009,12 @@ public class Schema2XForms implements Serializable
          for (int i = 0; lexicalPatterns != null && i < lexicalPatterns.getLength()
                && !SchemaSymbols.ATTVAL_INTEGER.equals(typeName); i++)
          {
-            constraints.add("chiba:match(., '" + lexicalPatterns.item(i) + "',null)");
+            String pattern = lexicalPatterns.item(i);
+            if (o.isOptional())
+            {
+                pattern= "(" + pattern + ")?";
+            }
+            constraints.add("chiba:match(., '" + pattern + "',null)");
          }
       }
 

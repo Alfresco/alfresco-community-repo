@@ -57,31 +57,31 @@ function updateButtonState()
 <h:panelGrid columns="3" cellpadding="2" cellspacing="2" width="100%" columnClasses=",alignTop,">
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.first_name}:"/>
-   <h:inputText id="first-name" value="#{DialogManager.bean.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="first-name" value="#{DialogManager.bean.firstName}" disabled="#{UsersBeanProperties.immutability.firstName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.last_name}:"/>
-   <h:inputText id="last-name" value="#{DialogManager.bean.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="last-name" value="#{DialogManager.bean.lastName}" disabled="#{UsersBeanProperties.immutability.lastName}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.email}"/>
-   <h:inputText id="email" value="#{DialogManager.bean.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+   <h:inputText id="email" value="#{DialogManager.bean.email}" disabled="#{UsersBeanProperties.immutability.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_organization}:"/>
-   <h:inputText id="organisation" value="#{DialogManager.bean.personProperties.organization}" size="35" maxlength="1024" />
+   <h:inputText id="organisation" value="#{DialogManager.bean.personProperties.organization}" disabled="#{UsersBeanProperties.immutability.organization}" size="35" maxlength="1024" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_jobtitle}:"/>
-   <h:inputText id="jobtitle" value="#{DialogManager.bean.personProperties.jobtitle}" size="35" maxlength="1024" />
+   <h:inputText id="jobtitle" value="#{DialogManager.bean.personProperties.jobtitle}" disabled="#{UsersBeanProperties.immutability.jobtitle}" size="35" maxlength="1024" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_location}:"/>
-   <h:inputText id="location" value="#{DialogManager.bean.personProperties.location}" size="35" maxlength="1024" />
+   <h:inputText id="location" value="#{DialogManager.bean.personProperties.location}" disabled="#{UsersBeanProperties.immutability.location}" size="35" maxlength="1024" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.presence_provider}:"/>
-   <h:selectOneMenu value="#{DialogManager.bean.personProperties.presenceProvider}">
+   <h:selectOneMenu value="#{DialogManager.bean.personProperties.presenceProvider}" disabled="#{UsersBeanProperties.immutability.presenceProvider}">
 		<f:selectItem itemValue="" itemLabel="(#{msg.none})"/>
 		<f:selectItem itemValue="skype" itemLabel="Skype"/>
 		<f:selectItem itemValue="yahoo" itemLabel="Yahoo"/>
@@ -89,11 +89,11 @@ function updateButtonState()
 	
 	<f:verbatim/>
 	<h:outputText value="#{msg.presence_username}:"/>
-	<h:inputText value="#{DialogManager.bean.personProperties.presenceUsername}" size="35" maxlength="256" />
+	<h:inputText value="#{DialogManager.bean.personProperties.presenceUsername}" disabled="#{UsersBeanProperties.immutability.presenceUsername}" size="35" maxlength="256" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_description}:"/>
-   <h:inputTextarea id="biography" value="#{DialogManager.bean.personDescription}" rows="6" cols="60" />
+   <h:inputTextarea id="biography" value="#{DialogManager.bean.personDescription}" disabled="#{UsersBeanProperties.immutability.personDescription}" rows="6" cols="60" />
    
    <f:verbatim/>
    <h:outputText value="#{msg.user_avatar}:"/>

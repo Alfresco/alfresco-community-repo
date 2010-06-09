@@ -220,10 +220,17 @@ public class EditUserWizard extends CreateUserWizard
             ReportedException.throwIfNecessary(e);
         }
         
-        if (outcome == null) {
+        if (outcome == null)
+        {
             this.isFinished = false;
         }
         
         return outcome;
+    }
+    
+    @Override
+    public Map getPersonPropertiesImmutability()
+    {
+        return this.properties.getImmutability();
     }
 }

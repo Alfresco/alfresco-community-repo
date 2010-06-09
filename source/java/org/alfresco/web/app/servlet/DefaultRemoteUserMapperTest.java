@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.alfresco.repo.management.subsystems.AbstractChainedSubsystemTest;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
+import org.alfresco.repo.webdav.auth.RemoteUserMapper;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 

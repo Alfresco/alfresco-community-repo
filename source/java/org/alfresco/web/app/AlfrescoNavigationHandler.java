@@ -510,6 +510,21 @@ public class AlfrescoNavigationHandler extends NavigationHandler
       return dispatchNode;
    }
    
+   protected void handleBrowseDispatch(FacesContext context, String fromAction, String outcome)
+   {
+      Node dispatchNode = null;
+
+      NavigationBean navBean = (NavigationBean) context.getExternalContext().getSessionMap()
+              .get(NavigationBean.BEAN_NAME);
+
+      if (navBean != null)
+      {
+         dispatchNode = navBean.getCurrentNode();
+      }
+
+      handleDispatch(context, fromAction, outcome, dispatchNode);
+   }
+
    /**
     * Processes any dispatching that may need to occur
     * 
@@ -520,7 +535,11 @@ public class AlfrescoNavigationHandler extends NavigationHandler
    protected void handleDispatch(FacesContext context, String fromAction, String outcome)
    {
       Node dispatchNode = getDispatchContextNode(context);
-
+      handleDispatch(context, fromAction, outcome, dispatchNode);
+   }
+   
+   private void handleDispatch(FacesContext context, String fromAction, String outcome, Node dispatchNode)
+   {
       if (dispatchNode != null)
       {
          if (logger.isDebugEnabled())
@@ -789,7 +808,7 @@ public class AlfrescoNavigationHandler extends NavigationHandler
             }
             else
             {
-               navigate(context, fromAction, overriddenOutcome);
+               handleBrowseDispatch(context, fromAction, overriddenOutcome);
             }
          }
       }

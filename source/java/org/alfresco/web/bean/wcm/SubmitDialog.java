@@ -59,7 +59,9 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
+import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.web.ui.common.Utils;
@@ -724,7 +726,7 @@ public class SubmitDialog extends BaseDialogBean
             
             for (AVMNodeDescriptor node : selected)
             {
-               if (AVMWorkflowUtil.isInActiveWorkflow(this.avmBrowseBean.getStagingStore(), node))
+               if (AVMWorkflowUtil.isInActiveWorkflow(AVMUtil.getStoreName(node.getPath()), node))
                {
                   this.warningItems.add(new ItemWrapper(node));
                   continue;
@@ -750,42 +752,61 @@ public class SubmitDialog extends BaseDialogBean
                   // item is a form (note: could be deleted) or a rendition
                   
                   FormInstanceData fid = null;
-                  if (isRendition)
+                  try
                   {
-                     // found a generated rendition asset - locate the parent form instance data file
-                     // and use this to find all generated assets that are appropriate
-                     // NOTE: this path value is store relative
-                     fid = getFormsService().getRendition(ref).getPrimaryFormInstanceData(true);
+                      if (isRendition)
+                      {
+                         // found a generated rendition asset - locate the parent form instance data file
+                         // and use this to find all generated assets that are appropriate
+                         // NOTE: this path value is store relative
+                         fid = getFormsService().getRendition(ref).getPrimaryFormInstanceData(true);
+                      }
+                      else
+                      {
+                         fid = getFormsService().getFormInstanceData(ref);
+                      }
                   }
-                  else
+                  catch (FormNotFoundException fnfe)
                   {
-                     fid = getFormsService().getFormInstanceData(ref);
-                  }
-                  
-                  // add the form instance data file to the list for submission
-                  if (!submittedPaths.contains(fid.getPath()))
-                  {
-                     this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, fid.getPath(), true)));
-                     submittedPaths.add(fid.getPath());
-                  }
-                  
-                  // locate renditions for this form instance data file and add to list for submission
-                  for (final Rendition rendition : fid.getRenditions(true))
-                  {
-                     final String renditionPath = rendition.getPath();
-                     if (!submittedPaths.contains(renditionPath))
-                     {
-                        this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, renditionPath, true)));
-                        submittedPaths.add(renditionPath);
-                     }
+                      logger.warn(fnfe);
                   }
                   
-                  // lookup the workflow defaults for that form and store into the list of available workflows
-                  WorkflowDefinition defaultWfDef = fid.getForm().getDefaultWorkflow();
-                  if (defaultWfDef != null)
+                  if (fid != null)
                   {
-                     this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
-                              fid.getForm().getDefaultWorkflowParameters()));
+                      // add the form instance data file to the list for submission
+                      if (!submittedPaths.contains(fid.getPath()))
+                      {
+                         this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, fid.getPath(), true)));
+                         submittedPaths.add(fid.getPath());
+                      }
+                      
+                      // locate renditions for this form instance data file and add to list for submission
+                      for (final Rendition rendition : fid.getRenditions(true))
+                      {
+                         final String renditionPath = rendition.getPath();
+                         if (!submittedPaths.contains(renditionPath))
+                         {
+                            this.submitItems.add(new ItemWrapper(getAvmService().lookup(-1, renditionPath, true)));
+                            submittedPaths.add(renditionPath);
+                         }
+                      }
+                      
+                      // lookup the workflow defaults for that form and store into the list of available workflows
+                      Form f = null;
+                      try
+                      {
+                          f = fid.getForm();
+                          WorkflowDefinition defaultWfDef = f.getDefaultWorkflow();
+                          if (defaultWfDef != null)
+                          {
+                             this.workflows.add(new FormWorkflowWrapper(defaultWfDef.getName(),
+                                      fid.getForm().getDefaultWorkflowParameters()));
+                          }
+                      }
+                      catch (FormNotFoundException fnfe)
+                      {
+                          logger.warn(fnfe);
+                      }
                   }
                   
                   // See WCM-1090 ACT-1551

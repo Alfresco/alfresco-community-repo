@@ -33,6 +33,7 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.*;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -189,7 +190,6 @@ public class DeleteFileDialog extends BaseDialogBean
                                         node.getName(),
                                         fid.getName(),
                                         fid.getRenditions().size() - 1);
-
          }
          catch (FileNotFoundException fnfe)
          {
@@ -198,11 +198,18 @@ public class DeleteFileDialog extends BaseDialogBean
       }
       else if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
-         final FormInstanceData fid = this.getFormsService().getFormInstanceData(node.getNodeRef());
-         return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
-                                                            "delete_form_instance_data_confirm"), 
-                                     fid.getName(),
-                                     fid.getRenditions().size());
+          try
+          {
+              final FormInstanceData fid = this.getFormsService().getFormInstanceData(node.getNodeRef());
+              return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
+                                                                 "delete_form_instance_data_confirm"), 
+                                                                 fid.getName(),
+                                                                 fid.getRenditions().size());
+          }
+          catch (FormNotFoundException fnfe)
+          {
+             // ignore
+          }
       }
       return MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), 
                                                          "delete_avm_file_confirm"), 

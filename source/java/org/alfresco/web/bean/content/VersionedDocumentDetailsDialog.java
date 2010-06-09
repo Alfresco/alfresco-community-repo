@@ -31,9 +31,8 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.version.common.VersionLabelComparator;
+import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorDesc;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
@@ -45,7 +44,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.BrowseBean;
@@ -54,6 +52,8 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Bean with generic function helping the rendering of the versioned properties
@@ -71,7 +71,7 @@ public class VersionedDocumentDetailsDialog implements Serializable
 	 transient private MultilingualContentService multilingualContentService;
 	 transient private ContentFilterLanguagesService contentFilterLanguagesService;
 
-    private static final Comparator VERSION_LABEL_COMPARATOR = new VersionLabelComparator();
+    private static final Comparator<Version> VERSION_COMPARATOR_DESC = new VersionComparatorDesc();
 
     /** Determine if the version is a translation of a old edition */
     private boolean fromPreviousEditon;
@@ -196,7 +196,7 @@ public class VersionedDocumentDetailsDialog implements Serializable
            }
            else
            {
-               Collections.sort(nextVersions, VERSION_LABEL_COMPARATOR);
+               Collections.sort(nextVersions, VERSION_COMPARATOR_DESC);
                this.documentVersion = nextVersions.get(0);
            }
        }
@@ -223,12 +223,10 @@ public class VersionedDocumentDetailsDialog implements Serializable
        {
            Version prevVersion = this.versionHistory.getPredecessor(this.documentVersion);
 
-           // if the version history doesn't contains predecessor, get the last version
+           // if the version history doesn't contains predecessor, get the last version (ie. most recent)
            if(prevVersion == null)
            {
                List<Version> allVersions = new ArrayList<Version>(this.versionHistory.getAllVersions());
-               Collections.sort(allVersions, VERSION_LABEL_COMPARATOR);
-
                this.documentVersion = allVersions.get(0);
            }
            else
@@ -265,14 +263,13 @@ public class VersionedDocumentDetailsDialog implements Serializable
        {
            translationNodeRef = new HashMap<Locale, NodeRef>(translationsList.size());
 
-           // get the last version of the translation in the given lang of the edition
+           // get the last (most recent) version of the translation in the given lang of the edition
            for (VersionHistory history : translationsList)
            {
-               //   get the list of versions and sort them ascending according their version label
+               //   get the list of versions (in descending order - ie. most recent first)
                List<Version> orderedVersions = new ArrayList<Version>(history.getAllVersions());
-               Collections.sort(orderedVersions, VERSION_LABEL_COMPARATOR);
 
-               // the last version is the first version of the list
+               // the last (most recent) version is the first version of the list
                Version lastVersion = orderedVersions.get(0);
 
                // fill the list of translation
@@ -471,7 +468,7 @@ public class VersionedDocumentDetailsDialog implements Serializable
    }
 
    /**
-    * Util method which return the last version of a translation of a given edition of a mlContainer according its language
+    * Util method which return the last (most recent) version of a translation of a given edition of a mlContainer according its language
     */
    @SuppressWarnings("unchecked")
    private Version getBrowsingVersionForMLContainer(NodeRef document, String editionLabel, String lang)
@@ -489,14 +486,13 @@ public class VersionedDocumentDetailsDialog implements Serializable
 	   {
 		   Version versionToReturn = null;
 
-		   // get the last version of the translation in the given lang of the edition
+		   // get the last (most recent) version of the translation in the given lang of the edition
 		   for (VersionHistory history : translations)
 		   {
-			   //	get the list of versions and sort them ascending according their version label
+			   //	get the list of versions (in descending order - ie. most recent first)
 	           List<Version> orderedVersions = new ArrayList<Version>(history.getAllVersions());
-	           Collections.sort(orderedVersions, VERSION_LABEL_COMPARATOR);
 
-	           // the last version is the first version of the list
+	           // the last version (ie. most recent) is the first version of the list
 	           Version lastVersion = orderedVersions.get(0);
 
 			   if(lastVersion != null)

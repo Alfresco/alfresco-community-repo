@@ -144,9 +144,11 @@ public class PromptForWebFormDialog extends BaseDialogBean
                                     WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          // build a status message if this is an error case
-         final FormInstanceData fid = this.getFormsService().getFormInstanceData(this.getAvmNode().getVersion(), avmPath);
+         
+         FormInstanceData fid = null;
          try
          {
+            fid = this.getFormsService().getFormInstanceData(this.getAvmNode().getVersion(), avmPath);
             final Form f = fid.getForm();
             this.formName = f.getName();
             
@@ -162,14 +164,19 @@ public class PromptForWebFormDialog extends BaseDialogBean
                           ? "prompt_for_web_form_form_not_found_error_in_web_project"
                           : "prompt_for_web_form_form_not_found_error");
             msg = Application.getMessage(FacesContext.getCurrentInstance(), msg);
-            msg = (fnfe.getWebProject() != null
-                   ? MessageFormat.format(msg, 
-                                          fnfe.getFormName(), 
-                                          fid.getName(), 
-                                          fnfe.getWebProject().getName())
-                   : MessageFormat.format(msg, 
-                                          fnfe.getFormName(), 
-                                          fid.getName()));
+            
+            if (fid != null)
+            {
+                msg = (fnfe.getWebProject() != null
+                       ? MessageFormat.format(msg, 
+                                              fnfe.getFormName(), 
+                                              fid.getName(), 
+                                              fnfe.getWebProject().getName())
+                       : MessageFormat.format(msg, 
+                                              fnfe.getFormName(), 
+                                              fid.getName()));
+            }
+            
             this.avmBrowseBean.displayStatusMessage(FacesContext.getCurrentInstance(), msg);
          }
       }

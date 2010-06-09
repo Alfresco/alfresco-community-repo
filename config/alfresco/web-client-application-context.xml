@@ -175,7 +175,7 @@
       </property>
       <property name="interfaces">
          <list>
-            <value>org.alfresco.web.app.servlet.RemoteUserMapper</value>
+            <value>org.alfresco.repo.webdav.auth.RemoteUserMapper</value>
             <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
          </list>
       </property>
@@ -270,6 +270,12 @@
             </property>
             <property name="transactionService">
                <ref bean="TransactionService" />
+            </property>
+            <property name="authenticationComponent">
+               <ref bean="AuthenticationComponent" />
+            </property>
+            <property name="remoteUserMapper">
+               <ref bean="RemoteUserMapper" />
             </property>
          </bean>
       </property>

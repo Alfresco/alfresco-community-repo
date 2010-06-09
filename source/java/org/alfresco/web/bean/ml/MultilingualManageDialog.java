@@ -21,7 +21,6 @@ package org.alfresco.web.bean.ml;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +30,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.version.common.VersionLabelComparator;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -427,15 +425,13 @@ public class MultilingualManageDialog extends BaseDialogBean
     *
     * @return List of editions
     */
-   @SuppressWarnings("unchecked")
    private List<SingleEditionBean> initEditionHistory()
    {
       // get the mlContainer
       NodeRef mlContainer = getDocumentMlContainer().getNodeRef();
 
-      // get all editions and sort them ascending according their version label
+      // get all editions (in descending order - ie. most recent first)
       List<Version> orderedEditionList = new ArrayList<Version>(getEditionService().getEditions(mlContainer).getAllVersions());
-      Collections.sort(orderedEditionList, new VersionLabelComparator());
 
       // the list of Single Edition Bean to return
       editionHistory = new ArrayList<SingleEditionBean>(orderedEditionList.size());
@@ -498,11 +494,10 @@ public class MultilingualManageDialog extends BaseDialogBean
                 }
             }
 
-            // get the list of versions and sort them ascending according their version label
+            // get the list of versions (in descending order - ie. most recent first)
             List<Version> orderedVersions = new ArrayList<Version>(versionHistory.getAllVersions());
-            Collections.sort(orderedVersions, new VersionLabelComparator());
 
-            // the last version is the first version of the list
+            // the last version (ie. most recent) is the first version of the list
             Version lastVersion = orderedVersions.get(0);
 
             // get the properties of the lastVersion

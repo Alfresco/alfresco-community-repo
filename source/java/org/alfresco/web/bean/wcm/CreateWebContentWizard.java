@@ -366,6 +366,23 @@ public class CreateWebContentWizard extends CreateContentWizard
          }
       }
       
+      // remove any locks created as a result of uploading files
+      final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
+      if (uploadedFiles != null && uploadedFiles.length > 0)
+      {
+         for (NodeRef uploadedFile : uploadedFiles)
+         {
+            String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
+            String storeId = AVMUtil.getStoreId(path);
+            String storePath = AVMUtil.getStoreRelativePath(path);
+
+            if (logger.isDebugEnabled())
+               logger.debug("Removing lock for uploaded file: " + path);
+            
+            this.getAvmLockingService().removeLock(storeId, storePath);
+         }
+      }
+      
       return super.cancel();
    }
 

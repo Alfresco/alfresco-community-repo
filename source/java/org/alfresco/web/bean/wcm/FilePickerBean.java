@@ -112,10 +112,6 @@ public class FilePickerBean implements Serializable
    // cached reference to the public saved searches folder
    private NodeRef publicSearchesRef = null;
 
-   // initial current folder - the current folder path which the
-   // the file picker opens at when first selected in the form
-   private String initialCurrentPath = null;
-
    public FilePickerBean()
    {
    }
@@ -383,32 +379,20 @@ public class FilePickerBean implements Serializable
                AVMUtil.PathRelation.WEBAPP_RELATIVE);
       }
 
-      // if initial current path not set then set it to the current path
-      if (initialCurrentPath == null)
-      {
-         initialCurrentPath = currentPath;
-
-         // insert '/' at end of initial current path if there isn't one
-         if (initialCurrentPath.charAt(initialCurrentPath.length() - 1) != '/')
-         {
-            initialCurrentPath = initialCurrentPath + "/";
-         }
-      }
-
       // if folder path restriction (relative path) is set,
-      // then calculate the absolute restriction path (in context of file
-      // picker's
-      // initial current path - the path at which it was opened the first time)
-      // and set file picker current path to that
+      // then calculate the absolute restriction path from the root
+      // of the webapp and set the current path to that
       if ((folderPathRestriction != null)
             && (folderPathRestriction.length() != 0))
       {
-         currentPath = initialCurrentPath + folderPathRestriction;
+         currentPath = AVMUtil.getWebappPath(currentPath) + "/" + folderPathRestriction;
       }
 
       if (LOGGER.isDebugEnabled())
       {
          LOGGER.debug(this + ".getFilePickerData(path = " + currentPath
+               + ", folderRestriction = "
+               + folderPathRestriction 
                + ", selectableTypes = ["
                + StringUtils.join(selectableTypes, ",")
                + "], filterMimetypes = ["

@@ -87,6 +87,9 @@
 
    <h:form acceptcharset="UTF-8" id="loginForm" >
 
+   <%-- Propagate the redirect URL parameter --%>
+   <h:inputHidden value="#{LoginOutcomeBean.redirectURL}" id="redirectURL"/>  
+
    <table width=100% height=98% align=center>
       <tr width=100% align=center>
          <td valign=middle align=center width=100%>

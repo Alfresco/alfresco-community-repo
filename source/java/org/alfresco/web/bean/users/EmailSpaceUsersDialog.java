@@ -33,6 +33,8 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -313,46 +315,53 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
             // Return all the permissions set against the current node for any authentication
             // instance (user/group), walking the parent space inheritance chain.
             // Then combine them into a single list for each authentication found.
-            String currentAuthority = Application.getCurrentUser(context).getUserName();
-            Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(8, 1.0f);
-            NodeRef spaceRef = getSpace().getNodeRef();
-            while (spaceRef != null)
+            final String currentAuthority = Application.getCurrentUser(context).getUserName();
+            Map<String, List<String>> permissionMap  = AuthenticationUtil.runAs(new RunAsWork<Map<String, List<String>>>()
             {
-               Set<AccessPermission> permissions = getPermissionService().getAllSetPermissions(spaceRef);
-               for (AccessPermission permission : permissions)
+               public Map<String, List<String>> doWork() throws Exception
                {
-                  // we are only interested in Allow and not Guest/Everyone/owner
-                  if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
-                      (permission.getAuthorityType() == AuthorityType.USER ||
-                       permission.getAuthorityType() == AuthorityType.GROUP))
+                  NodeRef spaceRef = getSpace().getNodeRef();
+                  Map<String, List<String>> permissionMap = new HashMap<String, List<String>>(8, 1.0f);
+                  while (spaceRef != null)
                   {
-                     String authority = permission.getAuthority();
-                     
-                     if (currentAuthority.equals(authority) == false)
+                     Set<AccessPermission> permissions = getPermissionService().getAllSetPermissions(spaceRef);
+                     for (AccessPermission permission : permissions)
                      {
-                        List<String> userPermissions = permissionMap.get(authority);
-                        if (userPermissions == null)
+                        // we are only interested in Allow and not Guest/Everyone/owner
+                        if (permission.getAccessStatus() == AccessStatus.ALLOWED &&
+                            (permission.getAuthorityType() == AuthorityType.USER ||
+                             permission.getAuthorityType() == AuthorityType.GROUP))
                         {
-                           // create for first time
-                           userPermissions = new ArrayList<String>(4);
-                           permissionMap.put(authority, userPermissions);
+                           String authority = permission.getAuthority();
+                     
+                           if (currentAuthority.equals(authority) == false)
+                           {
+                              List<String> userPermissions = permissionMap.get(authority);
+                              if (userPermissions == null)
+                              {
+                                 // create for first time
+                                 userPermissions = new ArrayList<String>(4);
+                                 permissionMap.put(authority, userPermissions);
+                              }
+                              // add the permission name for this authority
+                              userPermissions.add(permission.getPermission());
+                           }
                         }
-                        // add the permission name for this authority
-                        userPermissions.add(permission.getPermission());
+                     }
+             
+                     // walk parent inheritance chain until root or no longer inherits
+                     if (getPermissionService().getInheritParentPermissions(spaceRef))
+                     {
+                        spaceRef = getNodeService().getPrimaryParent(spaceRef).getParentRef();
+                     }
+                     else
+                     {
+                        spaceRef = null;
                      }
                   }
-               }
-               
-               // walk parent inheritance chain until root or no longer inherits
-               if (getPermissionService().getInheritParentPermissions(spaceRef))
-               {
-                  spaceRef = getNodeService().getPrimaryParent(spaceRef).getParentRef();
-               }
-               else
-               {
-                  spaceRef = null;
-               }
-            }
+                  return permissionMap;
+                }
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
             
             // create the structure as a linked list for fast insert/removal of items
             this.usersGroups = new LinkedList<Map>();

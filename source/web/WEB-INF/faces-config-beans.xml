@@ -262,6 +262,19 @@
 
    <managed-bean>
       <description>
+         A request scoped bean that backs up the Login screen
+      </description>
+      <managed-bean-name>LoginOutcomeBean</managed-bean-name>
+      <managed-bean-class>org.alfresco.web.bean.LoginOutcomeBean</managed-bean-class>
+      <managed-bean-scope>request</managed-bean-scope>
+      <managed-property>
+         <property-name>redirectURL</property-name>
+         <value>#{param._alfRedirect}</value>
+      </managed-property>
+   </managed-bean>
+
+   <managed-bean>
+      <description>
          The bean that holds navigation state.
       </description>
       <managed-bean-name>NavigationBean</managed-bean-name>

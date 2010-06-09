@@ -323,17 +323,18 @@ public class LoginBean implements Serializable
             // the app to continue without redirecting to the login page
             Application.setCurrentUser(fc, user);
             
+            // Programatically retrieve the LoginOutcomeBean from JSF
+            LoginOutcomeBean loginOutcomeBean = (LoginOutcomeBean) fc.getApplication().createValueBinding(
+                  "#{LoginOutcomeBean}").getValue(fc);
+            
             // if a redirect URL has been provided then use that
             // this allows servlets etc. to provide a URL to return too after a successful login
-            String redirectURL = (String)session.get(LOGIN_REDIRECT_KEY);
-            if (redirectURL != null)
+            String redirectURL = loginOutcomeBean.getRedirectURL();
+            if (redirectURL != null && redirectURL.length() > 0)
             {
                if (logger.isDebugEnabled())
                   logger.debug("Redirect URL found: " + redirectURL);
-               
-               // remove redirect URL from session
-               session.remove(LOGIN_REDIRECT_KEY);
-               
+                              
                try
                {
                   fc.getExternalContext().redirect(redirectURL);
@@ -472,7 +473,6 @@ public class LoginBean implements Serializable
    public static final String MSG_PASSWORD_LENGTH = "login_err_password_length";
    public static final String MSG_USER_ERR = "user_err_user_name";
    
-   public static final String LOGIN_REDIRECT_KEY  = "_alfRedirect";
    public static final String LOGIN_EXTERNAL_AUTH = "_alfExternalAuth";
    public static final String LOGIN_NOPERMISSIONS = "_alfNoPermissions";
 

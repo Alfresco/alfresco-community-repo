@@ -43,7 +43,6 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.queryParser.QueryParser;
 
 /**
  * Component for selecting content from the repository
@@ -54,7 +53,7 @@ public class UIContentSelector extends UIInput
 {
    private final static Log logger = LogFactory.getLog(UIContentSelector.class);
    
-   private final static String ACTION_SEPARATOR = ";";
+//   private final static String ACTION_SEPARATOR = ";";
    private final static String ACTION_SEARCH = "0";
    
    private final static String FIELD_CONTAINS = "_contains";
@@ -123,8 +122,8 @@ public class UIContentSelector extends UIInput
     */
    public void decode(FacesContext context)
    {
-      Map requestMap = context.getExternalContext().getRequestParameterMap();
-      Map valuesMap = context.getExternalContext().getRequestParameterValuesMap();
+      Map<?, ?> requestMap = context.getExternalContext().getRequestParameterMap();
+      Map<?, ?> valuesMap = context.getExternalContext().getRequestParameterValuesMap();
       String fieldId = getHiddenFieldName();
       String value = (String)requestMap.get(fieldId);
       
@@ -356,7 +355,7 @@ public class UIContentSelector extends UIInput
                   NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
          query.append(nameAttr);
          
-         query.append(":*" + safeContains + "*");
+         query.append(":\"*" + safeContains + "\"*");
       }
 
       int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();

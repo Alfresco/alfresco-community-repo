@@ -19,6 +19,7 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +48,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
+import org.alfresco.web.bean.LoginOutcomeBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -163,32 +165,40 @@ public abstract class BaseServlet extends HttpServlet
     * once the user has successfully completed the authentication process.
     */
    public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
-      throws IOException
+         throws IOException
    {
       // authentication failed - so end servlet execution and redirect to login page
-      res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(sc));
-      
-      // save the full requested URL so the login page knows where to redirect too later
+      StringBuilder redirectURL = new StringBuilder(1024).append(req.getContextPath()).append(FACES_SERVLET).append(
+            Application.getLoginPage(sc));
+
+      // Pass the full requested URL as a parameter so the login page knows where to redirect to later
       String uri = req.getRequestURI();
-      String url = uri;
-      if (req.getQueryString() != null && req.getQueryString().length() != 0)
+
+      // if we find a JSF servlet reference in the URI then we need to check if the rest of the
+      // JSP specified is valid for a redirect operation after Login has occured.
+      int jspIndex;
+      if (uri.indexOf(req.getContextPath() + FACES_SERVLET) == -1
+            || uri.length() > (jspIndex = uri.indexOf(BaseServlet.FACES_SERVLET) + BaseServlet.FACES_SERVLET.length())
+            && BaseServlet.validRedirectJSP(uri.substring(jspIndex)))
       {
-         url += "?" + req.getQueryString();
-      }
-      if (uri.indexOf(req.getContextPath() + FACES_SERVLET) != -1)
-      {
-         // if we find a JSF servlet reference in the URI then we need to check if the rest of the
-         // JSP specified is valid for a redirect operation after Login has occured.
-         int jspIndex = uri.indexOf(BaseServlet.FACES_SERVLET) + BaseServlet.FACES_SERVLET.length();
-         if (uri.length() > jspIndex && BaseServlet.validRedirectJSP(uri.substring(jspIndex)))
+         if (redirectURL.indexOf("?") == -1)
          {
-            req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, url);
+            redirectURL.append('?');
          }
+         else
+         {
+            redirectURL.append('&');
+         }
+         redirectURL.append(LoginOutcomeBean.PARAM_REDIRECT_URL);
+         redirectURL.append('=');
+         String url = uri;
+         if (req.getQueryString() != null && req.getQueryString().length() != 0)
+         {
+            url += "?" + req.getQueryString();
+         }
+         redirectURL.append(URLEncoder.encode(url, "UTF-8"));
       }
-      else
-      {
-         req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, url);
-      }
+      res.sendRedirect(redirectURL.toString());
    }
    
    /**

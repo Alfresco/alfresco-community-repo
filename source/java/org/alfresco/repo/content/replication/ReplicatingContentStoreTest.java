@@ -64,7 +64,7 @@ public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTes
         File tempDir = TempFileProvider.getTempDir();
         // create a primary file store
         String storeDir = tempDir.getAbsolutePath() + File.separatorChar + GUID.generate();
-        primaryStore = new FileContentStore(applicationEventPublisher, storeDir);
+        primaryStore = new FileContentStore(ctx, storeDir);
         // create some secondary file stores
         secondaryStores = new ArrayList<ContentStore>(3);
         for (int i = 0; i < 4; i++)

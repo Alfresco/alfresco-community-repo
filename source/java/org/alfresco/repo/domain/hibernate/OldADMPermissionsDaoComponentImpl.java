@@ -91,4 +91,13 @@ public class OldADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCom
             aclDaoComponent.deleteAccessControlList(acl.getId());
         }
     }
+    
+    public static SimpleAccessControlListProperties getDefaultProperties()
+    {
+        SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+        properties.setAclType(ACLType.OLD);
+        properties.setInherits(true);
+        properties.setVersioned(false);
+        return properties;
+    }
 }

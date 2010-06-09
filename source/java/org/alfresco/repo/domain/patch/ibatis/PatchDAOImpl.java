@@ -45,6 +45,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_avmNodesWithOldContentProperties";
     private static final String SELECT_ADM_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_admOldContentProperties";
     private static final String UPDATE_ADM_OLD_CONTENT_PROPERTY = "alfresco.patch.update_admOldContentProperty";
+    private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
     
     private SqlMapClientTemplate template;
     
@@ -143,5 +144,13 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("localeId", localeId);
         params.put("longValue", longValue);
         template.update(UPDATE_ADM_OLD_CONTENT_PROPERTY, params);
+    }
+
+    public int updateContentMimetypeIds(Long oldMimetypeId, Long newMimetypeId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(11);
+        params.put("newMimetypeId", newMimetypeId);
+        params.put("oldMimetypeId", oldMimetypeId);
+        return template.update(UPDATE_CONTENT_MIMETYPE_ID, params);
     }
 }

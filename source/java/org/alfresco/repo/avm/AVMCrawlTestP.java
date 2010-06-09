@@ -34,18 +34,20 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
  */
 public class AVMCrawlTestP extends AVMServiceTestBase
 {
-    public void testCrawlA()
+    /*
+    public void xtestCrawlA()
     {
         testCrawl(1,
                   "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
                   1,
                   30000); // 30 secs
     }
+    */
     
     public void testCrawlB()
     {
         testCrawl(2,
-                  "source/java/org/alfresco/repo/avm", // relative from .../repository
+                  "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
                   2,
                   30000); // 30 secs
     }

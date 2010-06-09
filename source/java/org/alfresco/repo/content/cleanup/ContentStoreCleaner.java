@@ -19,7 +19,9 @@
 package org.alfresco.repo.content.cleanup;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
@@ -33,12 +35,12 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * This component is responsible cleaning up orphaned content.
@@ -328,26 +330,35 @@ public class ContentStoreCleaner
     
     private int cleanBatch(final int batchSize)
     {
-        final List<Long> idsToDelete = new ArrayList<Long>(batchSize);
+        // Get a bunch of cleanable URLs
+        final Map<Long, String> urlsById = new HashMap<Long, String>(batchSize * 2);
         ContentUrlHandler contentUrlHandler = new ContentUrlHandler()
         {
             public void handle(Long id, String contentUrl, Long orphanTime)
             {
-                // Pass the content URL to the eager cleaner for post-commit handling
-                eagerContentStoreCleaner.registerOrphanedContentUrl(contentUrl, true);
-                idsToDelete.add(id);
+                urlsById.put(id, contentUrl);
             }
         };
         final long maxOrphanTime = System.currentTimeMillis() - (protectDays * 24 * 3600 * 1000);
         contentDataDAO.getContentUrlsOrphaned(contentUrlHandler, maxOrphanTime, batchSize);
-        // All the URLs have been passed off for eventual deletion.
-        // Just delete the DB data
-        int size = idsToDelete.size();
-        if (size > 0)
+        
+        // Shortcut, if necessary
+        if (urlsById.size() == 0)
         {
-            contentDataDAO.deleteContentUrls(idsToDelete);
+            return 0;
+        }
+        // We have the IDs of the URLs to delete.  Let's do it!
+        List<Long> idsToDelete = new ArrayList<Long>(urlsById.keySet());
+        contentDataDAO.deleteContentUrls(idsToDelete);
+        
+        // No problems, so far (ALF-1998: contentStoreCleanerJob leads to foreign key exception)
+        // Schedule the URLs for deletion in the post-commit phase
+        for (String contentUrlToDelete : urlsById.values())
+        {
+            // NOTE: We are forcing eager cleanup so ignore the return value.
+            eagerContentStoreCleaner.registerOrphanedContentUrl(contentUrlToDelete, true);
         }
         // Done
-        return size;
+        return urlsById.size();
     }
 }

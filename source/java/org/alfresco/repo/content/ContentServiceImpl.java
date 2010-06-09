@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
@@ -57,14 +56,16 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Service implementation acting as a level of indirection between the client
@@ -77,7 +78,7 @@ import org.springframework.context.ApplicationEventPublisher;
  * @author Derek Hulley
  * @since 3.2
  */
-public class ContentServiceImpl implements ContentService
+public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(ContentServiceImpl.class);
     
@@ -85,7 +86,7 @@ public class ContentServiceImpl implements ContentService
     private NodeService nodeService;
     private AVMService avmService;
     private RetryingTransactionHelper transactionHelper;
-    private ApplicationEventPublisher applicationEventPublisher;
+    private ApplicationContext applicationContext;
     
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
@@ -153,16 +154,14 @@ public class ContentServiceImpl implements ContentService
     {
         this.imageMagickContentTransformer = imageMagickContentTransformer;
     }
-        
-    /**
-     * Sets the application event publisher.
-     * 
-     * @param applicationEventPublisher
-     *            the new application event publisher
+    
+    
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
-        this.applicationEventPublisher = applicationEventPublisher;
+        this.applicationContext = applicationContext;
     }
 
     /**
@@ -171,8 +170,7 @@ public class ContentServiceImpl implements ContentService
     public void init()
     {
         // Set up a temporary store
-        this.tempStore = new FileContentStore(this.applicationEventPublisher, TempFileProvider.getTempDir()
-                .getAbsolutePath());
+        this.tempStore = new FileContentStore(this.applicationContext, TempFileProvider.getTempDir().getAbsolutePath());
 
         // Bind on update properties behaviour
         this.policyComponent.bindClassBehaviour(

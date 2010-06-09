@@ -277,6 +277,9 @@
 	  <property name="aclCache">
          <ref bean="aclCache" />
       </property>
+      <property name="useOldPermissions">
+         <value>false</value>
+      </property>
    </bean>
    
     <bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.DMAccessControlListDAO">

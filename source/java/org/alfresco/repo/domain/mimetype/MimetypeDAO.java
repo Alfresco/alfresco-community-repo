@@ -49,4 +49,15 @@ public interface MimetypeDAO
      * @return              the Mimetype pair (id, mimetype) (never null)
      */
     Pair<Long, String> getOrCreateMimetype(String mimetype);
+    
+    /**
+     * Update a mimetype if it exists.  This method does not do any conflict resolution
+     * i.e. it will only succeed if the new mimetype does not exist already.  Higher-level
+     * logic is required to handle updates to dependent rows, etc.
+     * 
+     * @param oldMimetype   the old Mimetype
+     * @param newMimetype   the new Mimetype
+     * @return              the number of rows modified
+     */
+    int updateMimetype(String oldMimetype, String newMimetype);
 }

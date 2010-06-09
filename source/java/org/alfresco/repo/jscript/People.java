@@ -495,6 +495,8 @@ public final class People extends BaseScopableProcessorExtension implements Init
                     query.append(term);
                     query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
                     query.append(term);
+                    query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:\"*");
+                    query.append(term);
                     query.append("*\" ");
                 }
                 

@@ -2486,14 +2486,14 @@ public class QueryTest extends BaseCMISTest
         testOrderBy("SELECT  F.cmis:objectId Meep FROM cmis:folder F ORDER BY Meep ASC", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectId");
         testOrderBy("SELECT  F.cmis:objectId Meep FROM cmis:folder F ORDER BY Meep DESC", folder_count, false, Order.DESCENDING, CMISQueryMode.CMS_STRICT, "Meep");
 
-        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
                 "MEEP");
-        testOrderBy("SELECT SCORE(), cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY SEARCH_SCORE", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT SCORE(), cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY SEARCH_SCORE", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
                 "SEARCH_SCORE");
-        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP ASC", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT,
+        testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP ASC", file_count, false, Order.ASCENDING, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS,
                 "MEEP");
         testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:document where CONTAINS('*') ORDER BY MEEP DESC", file_count, false, Order.DESCENDING,
-                CMISQueryMode.CMS_STRICT, "MEEP");
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS, "MEEP");
 
         testOrderBy("SELECT SCORE() AS MEEP, cmis:objectId FROM cmis:folder where CONTAINS('cmis:name:*') ORDER BY MEEP", folder_count, false, Order.ASCENDING,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS, "MEEP");
@@ -2927,7 +2927,7 @@ public class QueryTest extends BaseCMISTest
         testQuery("SELECT D.*, O.cmis:name FROM CMIS:DOCUMENT AS D JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId", 1, false, "cmis:objectId", new String(), true,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT * FROM cmis:document order by cmis:parentId", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
-        testQuery("SELECT * FROM cmis:document where CONTAINS('cmis:parentId:*')", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
+        testQuery("SELECT * FROM cmis:document where CONTAINS('cmis:parentId:*')", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 
     public void testExists() throws Exception
@@ -3354,6 +3354,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testFTSConnectives() throws Exception
     {
+        testQuery("SELECT * FROM cmis:document where contains('\\'one\\' OR \\'zebra\\'')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' or \\'zebra\\'')", 9, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' and \\'zebra\\'')", 1, false, "cmis:objectId", new String(), false,
@@ -5119,7 +5120,6 @@ public class QueryTest extends BaseCMISTest
 
         // escaping
         testExtendedQuery("SELECT * FROM cmis:folder WHERE CONTAINS('cmis:name:\\'Folder 9\\\\\\'\\'')", 1, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE CONTAINS('cmis:name:\\'Folder 9\\\\\\'\\'')", 1, false, "cmis:name", new String(), true);
 
         // precedence
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown one')", 1, false, "cmis:name", new String(), false);
@@ -5127,9 +5127,7 @@ public class QueryTest extends BaseCMISTest
         testExtendedQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR (brown AND one)')", 1, false, "cmis:name", new String(), false);
         testExtendedQuery("SELECT * FROM cmis:document WHERE CONTAINS('(quick OR brown) AND one')", 0, false, "cmis:name", new String(), false);
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown OR one')", 2, false, "cmis:name", new String(), false);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown AND one')", 1, false, "cmis:name", new String(), true);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR (brown AND one)')", 1, false, "cmis:name", new String(), true);
-        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('(quick OR brown) AND one')", 0, false, "cmis:name", new String(), true);
+        testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown one')", 1, false, "cmis:name", new String(), false);
     }
 
     public void testOrderableProperties()

@@ -29,7 +29,9 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Provides methods specific to manipulating {@link org.alfresco.model.ContentModel#TYPE_CONTENT files}
- * and {@link org.alfresco.model.ContentModel#TYPE_FOLDER folders}.
+ * and {@link org.alfresco.model.ContentModel#TYPE_FOLDER folders}.    
+ * 
+ * So this interface provides a simple way of accessing simple trees of files and folders in Alfresco.
  * 
  * @see org.alfresco.model.ContentModel
  * 
@@ -64,9 +66,20 @@ public interface FileFolderService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
     public List<FileInfo> listFolders(NodeRef contextNodeRef);
-
+       
     /**
-     * Get a simple list of nodes that have the given name within the parent node
+     * Lists all folders below the given context node, both immediate and lower levels
+     * 
+     * The filter parameter allows subfolders to be excluded from the search. 
+     * 
+     * @param contextNodeRef the node to start searching in
+     * @param filter - may be null in which case all sub-folders will be searched
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef"})
+    public List<FileInfo> listDeepFolders(NodeRef contextNodeRef, SubFolderFilter filter);
+    
+    /**
+     * Get a node ref of the node that has the name within the parent node
      * 
      * @param contextNodeRef the parent node
      * @param name the name of the node to search for
@@ -74,7 +87,8 @@ public interface FileFolderService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "name"})
     public NodeRef searchSimple(NodeRef contextNodeRef, String name);
-
+    
+    
     /**
      * Searches for all files and folders with the matching name pattern,
      * using wildcard characters <b>*</b> and <b>?</b>.
@@ -91,9 +105,9 @@ public interface FileFolderService
      * @return Returns a list of file or folder matches
      *
      * @see #search(NodeRef, String, boolean, boolean, boolean)
-     * @deprecated for shallow search use list, listFolders, listFiles, searchSimple, alternatives 
-     * for deep search will be provided in later releases. Avoid calling this method with any 
-     * name pattern except for "*".    
+     * @deprecated for shallow search use list, listFolders, listFiles, searchSimple.
+     * For deep listing use listDeepFolders. 
+     * Avoid calling this method with any name pattern except for "*".    
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "includeSubFolders"})
     public List<FileInfo> search(
@@ -117,9 +131,9 @@ public interface FileFolderService
      * @param folderSearch true if folder types are to be included in the search results
      * @param includeSubFolders true to search the entire hierarchy below the search context
      * @return Returns a list of file or folder matches
-     * @deprecated for shallow search use list, listFolders, listFiles, searchSimple, alternatives 
-     * for deep search will be provided in later releases.   Avoid calling this method with any 
-     * name pattern except for "*".  
+     * @deprecated for shallow search use list, listFolders, listFiles, searchSimple.
+     * For deep listing use listDeepFolders.    
+     * Avoid calling this method with any name pattern except for "*".  
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"contextNodeRef", "namePattern", "fileSearch", "folderSearch", "includeSubFolders"})
     public List<FileInfo> search(
@@ -213,24 +227,7 @@ public interface FileFolderService
      */
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public void delete(NodeRef nodeRef);
-    
-    /**
-     * Checks for the presence of, and creates as necessary, the folder structure in the provided path.
-     * <p>
-     * An empty path list is not allowed as it would be impossible to necessarily return file info
-     * for the parent node - it might not be a folder node.
-     * 
-     * @param parentNodeRef the node under which the path will be created
-     * @param pathElements the folder name path to create - may not be empty
-     * @param folderTypeQName the types of nodes to create.  This must be a valid subtype of
-     *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}.
-     * @return Returns the info of the last folder in the path.
-     * 
-     * @deprecated - See the static helper method FileFolderServiceImpl.makeFolders
-     */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"parentNodeRef", "pathElements", "folderTypeQName"})
-    public FileInfo makeFolders(NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName);
-    
+      
     /**
      * Get the file or folder names from the root down to and including the node provided.
      * <ul>

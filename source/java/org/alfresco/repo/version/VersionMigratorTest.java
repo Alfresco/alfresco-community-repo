@@ -358,7 +358,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
             public NodeRef execute() throws Throwable
             {
                 // Migrate (and don't delete old version history) !
-                versionMigrator.migrateVersions(1, false);
+                versionMigrator.migrateVersions(1, 1, false);
                 
                 return null;
             }

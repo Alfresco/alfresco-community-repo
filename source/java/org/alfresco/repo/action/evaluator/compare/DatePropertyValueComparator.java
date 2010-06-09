@@ -21,9 +21,11 @@ package org.alfresco.repo.action.evaluator.compare;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * Date property value comparator
@@ -50,8 +52,8 @@ public class DatePropertyValueComparator implements PropertyValueComparator
             operation = ComparePropertyValueOperation.EQUALS;
         }
         
-        Date propertyDate = (Date)propertyValue;
-        Date compareDate = (Date)compareValue;
+        Date propertyDate = getDate(propertyValue);
+        Date compareDate = getDate(compareValue);
         
         switch (operation)
         {
@@ -92,7 +94,19 @@ public class DatePropertyValueComparator implements PropertyValueComparator
         return result;
     }
 
-    /**
+    private Date getDate(Serializable value) {
+        if(value instanceof Date)
+        {
+        	return (Date) value;
+        } 
+        else if(value instanceof String)
+        {
+        	return ISO8601DateFormat.parse((String) value);
+        } 
+    	throw new AlfrescoRuntimeException("Parameter 'compareValue' must be of type java.util.Date!");
+	}
+
+	/**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#registerComparator(org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator)
      */
     public void registerComparator(ComparePropertyValueEvaluator evaluator)

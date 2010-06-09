@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -150,8 +151,11 @@ public class AuthorityServiceTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        authenticationComponentImpl.clearCurrentSecurityContext();
-        tx.rollback();
+        if ((tx.getStatus() == Status.STATUS_ACTIVE) || (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+        {
+            tx.rollback();
+        }
+        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
 
@@ -585,6 +589,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(4, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
 
+        //System.out.println("Users: "+ pubAuthorityService.getAllAuthorities(AuthorityType.USER));
         checkAuthorityCollectionSize(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER), AuthorityType.USER);
         pubAuthorityService.addAuthority(auth5, "andy");
         assertEquals(7, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());

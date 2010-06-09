@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2010-04-26 13:41:21
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2010-05-01 13:03:38
 
 package org.alfresco.repo.search.impl.parsers;
 
@@ -1380,7 +1380,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: boost, ftsTest
+                    // elements: ftsTest, boost
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1929,7 +1929,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: ftsTerm, fuzzy
+                    // elements: fuzzy, ftsTerm
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1994,7 +1994,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: fuzzy, ftsExactTerm
+                    // elements: ftsExactTerm, fuzzy
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2059,7 +2059,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: slop, ftsPhrase
+                    // elements: ftsPhrase, slop
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2124,7 +2124,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: fuzzy, ftsSynonym
+                    // elements: ftsSynonym, fuzzy
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3261,7 +3261,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: fieldReference, FTSPHRASE
+            // elements: FTSPHRASE, fieldReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3527,7 +3527,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: fieldReference, ftsFieldGroupRange
+            // elements: ftsFieldGroupRange, fieldReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4647,7 +4647,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: boost, ftsFieldGroupTest
+                    // elements: ftsFieldGroupTest, boost
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -5848,7 +5848,7 @@ public class FTSParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: range_right, ftsRangeWord, ftsRangeWord, range_left
+                    // elements: range_right, ftsRangeWord, range_left, ftsRangeWord
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -6220,7 +6220,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: identifier, prefix, uri
+            // elements: prefix, uri, identifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -6369,7 +6369,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: identifier, prefix, uri
+            // elements: identifier, uri, prefix
             // token labels: 
             // rule labels: retval
             // token list labels: 

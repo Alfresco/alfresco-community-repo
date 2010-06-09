@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.poi.hsmf.MAPIMessage;
 
 /**
- * Outlook format email meta-data extractor extracting the following values:
+ * Outlook MAPI format email meta-data extractor extracting the following values:
  * <pre>
  *   <b>sentDate:</b>               --      cm:sentdate
  *   <b>originator:</b>             --      cm:originator,    cm:author

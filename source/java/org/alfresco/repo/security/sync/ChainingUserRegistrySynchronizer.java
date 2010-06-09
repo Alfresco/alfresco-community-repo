@@ -136,9 +136,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     /** The transaction service. */
     private TransactionService transactionService;
 
-    /** The retrying transaction helper. */
-    private RetryingTransactionHelper retryingTransactionHelper;
-
     /** The rule service. */
     private RuleService ruleService;
 
@@ -227,7 +224,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
-        this.retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
     }
 
     /**
@@ -344,7 +340,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 {
                     // If this is an automated sync on startup or scheduled sync, don't even wait around for the lock.
                     // Assume the sync will be completed on another node.
-                    lockToken = this.retryingTransactionHelper.doInTransaction(
+                    lockToken = this.transactionService.getRetryingTransactionHelper().doInTransaction(
                             new RetryingTransactionCallback<String>()
                             {
                                 public String execute() throws Throwable
@@ -426,15 +422,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             if (lockToken != null)
             {
                 final String token = lockToken;
-                this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                {
-                    public Object execute() throws Throwable
-                    {
-                        ChainingUserRegistrySynchronizer.this.jobLockService.releaseLock(token,
-                                ChainingUserRegistrySynchronizer.LOCK_QNAME);
-                        return null;
-                    }
-                }, false, splitTxns);
+                this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                        new RetryingTransactionCallback<Object>()
+                        {
+                            public Object execute() throws Throwable
+                            {
+                                ChainingUserRegistrySynchronizer.this.jobLockService.releaseLock(token,
+                                        ChainingUserRegistrySynchronizer.LOCK_QNAME);
+                                return null;
+                            }
+                        }, false, splitTxns);
             }
         }
     }
@@ -539,14 +536,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
         // First, analyze the group structure. Create maps of authorities to their parents for associations to create
         // and delete. Also deal with 'overlaps' with other zones in the authentication chain.
-        final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
-                zone + " Group Analysis",
-                this.retryingTransactionHelper,
-                userRegistry.getGroups(lastModified),
-                this.workerThreads, 20,
-                this.applicationEventPublisher,
-                ChainingUserRegistrySynchronizer.logger,
-                this.loggingInterval);
+        final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(zone
+                + " Group Analysis", this.transactionService.getRetryingTransactionHelper(), userRegistry
+                .getGroups(lastModified), this.workerThreads, 20, this.applicationEventPublisher,
+                ChainingUserRegistrySynchronizer.logger, this.loggingInterval);
         class Analyzer implements BatchProcessWorker<NodeDescription>
         {
             private final Set<String> allZoneAuthorities = new TreeSet<String>();
@@ -555,7 +548,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             private final Map<String, Set<String>> groupAssocsToDelete = new TreeMap<String, Set<String>>();
             private final Set<String> authoritiesMaintained = new TreeSet<String>();
             private Set<String> deletionCandidates;
-            
+
             private long latestTime;
 
             public Analyzer(final long latestTime)
@@ -567,7 +560,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             {
                 return this.latestTime;
             }
-            
+
             public Set<String> getDeletionCandidates()
             {
                 return this.deletionCandidates;
@@ -581,7 +574,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             public void beforeProcess() throws Throwable
             {
                 // Disable rules
-                ruleService.disableRules();
+                ChainingUserRegistrySynchronizer.this.ruleService.disableRules();
                 // Authentication
                 AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
             }
@@ -589,7 +582,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             public void afterProcess() throws Throwable
             {
                 // Enable rules
-                ruleService.enableRules();
+                ChainingUserRegistrySynchronizer.this.ruleService.enableRules();
                 // Clear authentication
                 AuthenticationUtil.clearCurrentSecurityContext();
             }
@@ -749,47 +742,48 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     parents.add(groupName);
                 }
             }
-            
+
             public void processGroups(UserRegistry userRegistry, boolean allowDeletions, boolean splitTxns)
             {
                 // If we got back some groups, we have to cross reference them with the set of known authorities
-                if (allowDeletions || !groupAssocsToCreate.isEmpty())
+                if (allowDeletions || !this.groupAssocsToCreate.isEmpty())
                 {
                     // Add in current set of known authorities
-                    allZoneAuthorities.addAll(ChainingUserRegistrySynchronizer.this.retryingTransactionHelper.doInTransaction(
-                            new RetryingTransactionCallback<Set<String>>()
-                            {
-                                public Set<String> execute() throws Throwable
-                                {
-                                    return ChainingUserRegistrySynchronizer.this.authorityService.getAllAuthoritiesInZone(
-                                            zoneId, null);
-                                }
-                            }, true, splitTxns));
-
+                    this.allZoneAuthorities.addAll(ChainingUserRegistrySynchronizer.this.transactionService
+                            .getRetryingTransactionHelper().doInTransaction(
+                                    new RetryingTransactionCallback<Set<String>>()
+                                    {
+                                        public Set<String> execute() throws Throwable
+                                        {
+                                            return ChainingUserRegistrySynchronizer.this.authorityService
+                                                    .getAllAuthoritiesInZone(zoneId, null);
+                                        }
+                                    }, true, splitTxns));
 
                     // Prune our set of authorities according to deletions
                     if (allowDeletions)
                     {
-                        deletionCandidates = new TreeSet<String>(allZoneAuthorities);
-                        userRegistry.processDeletions(deletionCandidates);
-                        allZoneAuthorities.removeAll(deletionCandidates);
-                        groupAssocsToCreate.keySet().removeAll(deletionCandidates);
-                        groupAssocsToDelete.keySet().removeAll(deletionCandidates);
+                        this.deletionCandidates = new TreeSet<String>(this.allZoneAuthorities);
+                        userRegistry.processDeletions(this.deletionCandidates);
+                        this.allZoneAuthorities.removeAll(this.deletionCandidates);
+                        this.groupAssocsToCreate.keySet().removeAll(this.deletionCandidates);
+                        this.groupAssocsToDelete.keySet().removeAll(this.deletionCandidates);
                     }
 
-                    if (!groupAssocsToCreate.isEmpty())
+                    if (!this.groupAssocsToCreate.isEmpty())
                     {
-                        // Sort the group associations in depth-first order (root groups first) and filter out non-existent parents
+                        // Sort the group associations in depth-first order (root groups first) and filter out
+                        // non-existent parents
                         Map<String, Set<String>> sortedGroupAssociations = new LinkedHashMap<String, Set<String>>(
-                                groupAssocsToCreate.size() * 2);
+                                this.groupAssocsToCreate.size() * 2);
                         List<String> authorityPath = new ArrayList<String>(5);
-                        for (String authority : groupAssocsToCreate.keySet())
+                        for (String authority : this.groupAssocsToCreate.keySet())
                         {
-                            if (allZoneAuthorities.contains(authority))
+                            if (this.allZoneAuthorities.contains(authority))
                             {
                                 authorityPath.add(authority);
-                                visitGroupAssociations(authorityPath, allZoneAuthorities, groupAssocsToCreate,
-                                        sortedGroupAssociations);
+                                visitGroupAssociations(authorityPath, this.allZoneAuthorities,
+                                        this.groupAssocsToCreate, sortedGroupAssociations);
                                 authorityPath.clear();
                             }
                         }
@@ -797,7 +791,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         // Add the groups and their parent associations in depth-first order
                         BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
                                 zone + " Group Creation and Association",
-                                ChainingUserRegistrySynchronizer.this.retryingTransactionHelper,
+                                ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper(),
                                 sortedGroupAssociations.entrySet(),
                                 ChainingUserRegistrySynchronizer.this.workerThreads, 20,
                                 ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
@@ -813,7 +807,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             public void beforeProcess() throws Throwable
                             {
                                 // Disable rules
-                                ruleService.disableRules();
+                                ChainingUserRegistrySynchronizer.this.ruleService.disableRules();
                                 // Authentication
                                 AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                             }
@@ -821,7 +815,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             public void afterProcess() throws Throwable
                             {
                                 // Enable rules
-                                ruleService.enableRules();
+                                ChainingUserRegistrySynchronizer.this.ruleService.enableRules();
                                 // Clear authentication
                                 AuthenticationUtil.clearCurrentSecurityContext();
                             }
@@ -830,41 +824,41 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             {
                                 String child = entry.getKey();
 
-                                String groupDisplayName = groupsToCreate.get(child);
+                                String groupDisplayName = Analyzer.this.groupsToCreate.get(child);
                                 if (groupDisplayName != null)
                                 {
                                     String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
                                             .getShortName(child);
                                     if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                                     {
-                                        ChainingUserRegistrySynchronizer.logger
-                                                .debug("Creating group '" + groupShortName + "'");
+                                        ChainingUserRegistrySynchronizer.logger.debug("Creating group '"
+                                                + groupShortName + "'");
                                     }
                                     // create the group
-                                    ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                                            .getAuthorityType(child), groupShortName, groupDisplayName, zoneSet);
+                                    ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(
+                                            AuthorityType.getAuthorityType(child), groupShortName, groupDisplayName,
+                                            zoneSet);
                                 }
                                 maintainAssociations(child);
                             }
                         }, splitTxns);
                     }
-                }                
+                }
             }
 
             public void finalizeAssociations(UserRegistry userRegistry, boolean splitTxns)
             {
                 // Remove all the associations we have already dealt with
-                groupAssocsToCreate.keySet().removeAll(authoritiesMaintained);
-                
-                // Filter out associations to authorities that simply can't exist
-                groupAssocsToCreate.keySet().retainAll(allZoneAuthorities);
+                this.groupAssocsToCreate.keySet().removeAll(this.authoritiesMaintained);
 
-                if (!groupAssocsToCreate.isEmpty())
+                // Filter out associations to authorities that simply can't exist
+                this.groupAssocsToCreate.keySet().retainAll(this.allZoneAuthorities);
+
+                if (!this.groupAssocsToCreate.isEmpty())
                 {
                     BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
-                            zone + " Authority Association",
-                            ChainingUserRegistrySynchronizer.this.retryingTransactionHelper,
-                            groupAssocsToCreate.entrySet(),
+                            zone + " Authority Association", ChainingUserRegistrySynchronizer.this.transactionService
+                                    .getRetryingTransactionHelper(), this.groupAssocsToCreate.entrySet(),
                             ChainingUserRegistrySynchronizer.this.workerThreads, 20,
                             ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                             ChainingUserRegistrySynchronizer.logger,
@@ -879,7 +873,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         public void beforeProcess() throws Throwable
                         {
                             // Disable rules
-                            ruleService.disableRules();
+                            ChainingUserRegistrySynchronizer.this.ruleService.disableRules();
                             // Authentication
                             AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                         }
@@ -887,7 +881,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         public void afterProcess() throws Throwable
                         {
                             // Enable rules
-                            ruleService.enableRules();
+                            ChainingUserRegistrySynchronizer.this.ruleService.enableRules();
                             // Clear authentication
                             AuthenticationUtil.clearCurrentSecurityContext();
                         }
@@ -897,7 +891,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                             maintainAssociations(entry.getKey());
                         }
                     }, splitTxns);
-                }                
+                }
             }
 
             private void maintainAssociations(String authorityName) throws BatchUpdateException
@@ -947,7 +941,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, authorityName);
                     }
                 }
-                
+
                 // Remember that this authority's associations have been maintained
                 synchronized (this)
                 {
@@ -958,7 +952,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
         final Analyzer groupAnalyzer = new Analyzer(lastModifiedMillis);
         int groupProcessedCount = groupProcessor.process(groupAnalyzer, splitTxns);
-        
+
         groupAnalyzer.processGroups(userRegistry, allowDeletions, splitTxns);
 
         // Process persons and their parent associations
@@ -978,14 +972,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         + DateFormat.getDateTimeInstance().format(lastModified) + " from user registry '" + zone + "'");
             }
         }
-        final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(
-                zone + " User Creation and Association",
-                this.retryingTransactionHelper,
-                userRegistry.getPersons(lastModified),
-                this.workerThreads, 10,
-                this.applicationEventPublisher,
-                ChainingUserRegistrySynchronizer.logger,
-                this.loggingInterval);
+        final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(zone
+                + " User Creation and Association", this.transactionService.getRetryingTransactionHelper(),
+                userRegistry.getPersons(lastModified), this.workerThreads, 10, this.applicationEventPublisher,
+                ChainingUserRegistrySynchronizer.logger, this.loggingInterval);
         class PersonWorker implements BatchProcessWorker<NodeDescription>
         {
             private long latestTime;
@@ -1008,7 +998,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             public void beforeProcess() throws Throwable
             {
                 // Disable rules
-                ruleService.disableRules();
+                ChainingUserRegistrySynchronizer.this.ruleService.disableRules();
                 // Authentication
                 AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
             }
@@ -1016,7 +1006,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             public void afterProcess() throws Throwable
             {
                 // Enable rules
-                ruleService.enableRules();
+                ChainingUserRegistrySynchronizer.this.ruleService.enableRules();
                 // Clear authentication
                 AuthenticationUtil.clearCurrentSecurityContext();
             }
@@ -1108,7 +1098,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
         PersonWorker persons = new PersonWorker(lastModifiedMillis);
         int personProcessedCount = personProcessor.process(persons, splitTxns);
-        
+
         // Process those associations to persons who themselves have not been updated
         groupAnalyzer.finalizeAssociations(userRegistry, splitTxns);
 
@@ -1130,13 +1120,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         if (allowDeletions)
         {
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
-                    zone + " Authority Deletion",
-                    this.retryingTransactionHelper,
-                    groupAnalyzer.getDeletionCandidates(),
-                    this.workerThreads, 10,
-                    this.applicationEventPublisher,
-                    ChainingUserRegistrySynchronizer.logger,
-                    this.loggingInterval);
+                    zone + " Authority Deletion", this.transactionService.getRetryingTransactionHelper(), groupAnalyzer
+                            .getDeletionCandidates(), this.workerThreads, 10, this.applicationEventPublisher,
+                    ChainingUserRegistrySynchronizer.logger, this.loggingInterval);
             class AuthorityDeleter implements BatchProcessWorker<String>
             {
                 private int personProcessedCount;
@@ -1160,7 +1146,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 public void beforeProcess() throws Throwable
                 {
                     // Disable rules
-                    ruleService.disableRules();
+                    ChainingUserRegistrySynchronizer.this.ruleService.disableRules();
                     // Authentication
                     AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                 }
@@ -1168,7 +1154,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 public void afterProcess() throws Throwable
                 {
                     // Enable rules
-                    ruleService.enableRules();
+                    ChainingUserRegistrySynchronizer.this.ruleService.enableRules();
                     // Clear authentication
                     AuthenticationUtil.clearCurrentSecurityContext();
                 }
@@ -1251,7 +1237,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 Iterator<String> i = associations.iterator();
                 while (i.hasNext())
                 {
-                    String parentAuthority = i.next();                    
+                    String parentAuthority = i.next();
 
                     // Prevent cyclic paths
                     if (authorityPath.contains(parentAuthority))
@@ -1259,8 +1245,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                         {
                             ChainingUserRegistrySynchronizer.logger.warn("Detected cyclic dependencies in group '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(parentAuthority)
-                                    + "'");
+                                    + ChainingUserRegistrySynchronizer.this.authorityService
+                                            .getShortName(parentAuthority) + "'");
                         }
                         i.remove();
                     }
@@ -1292,16 +1278,18 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      */
     private long getMostRecentUpdateTime(final String label, final String zoneId, boolean splitTxns)
     {
-        return this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-        {
+        return this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Long>()
+                {
 
-            public Long execute() throws Throwable
-            {
-                Attribute attribute = ChainingUserRegistrySynchronizer.this.attributeService
-                        .getAttribute(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label + '/' + zoneId);
-                return attribute == null ? -1 : attribute.getLongValue();
-            }
-        }, true, splitTxns);
+                    public Long execute() throws Throwable
+                    {
+                        Attribute attribute = ChainingUserRegistrySynchronizer.this.attributeService
+                                .getAttribute(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label + '/'
+                                        + zoneId);
+                        return attribute == null ? -1 : attribute.getLongValue();
+                    }
+                }, true, splitTxns);
     }
 
     /**
@@ -1322,7 +1310,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             boolean splitTxns)
     {
         final String path = ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label;
-        this.retryingTransactionHelper.doInTransaction(
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
 
@@ -1366,7 +1354,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
     /*
      * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.
+     * ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
@@ -1396,7 +1385,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
     /*
      * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.
+     * ApplicationEvent)
      */
     @Override
     protected void onShutdown(ApplicationEvent event)

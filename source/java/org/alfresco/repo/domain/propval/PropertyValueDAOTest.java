@@ -242,7 +242,7 @@ public class PropertyValueDAOTest extends TestCase
     
     public void testPropertyDoubleValue() throws Exception
     {
-        final Double doubleValue = Double.valueOf(1.7976931348623E+308);
+        final Double doubleValue = Double.valueOf(1.7976931348623E+125);
         RetryingTransactionCallback<Pair<Long, Double>> createValueCallback = new RetryingTransactionCallback<Pair<Long, Double>>()
         {
             public Pair<Long, Double> execute() throws Throwable

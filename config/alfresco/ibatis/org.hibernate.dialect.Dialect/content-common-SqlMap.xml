@@ -13,6 +13,7 @@
     <typeAlias alias="Mimetype" type="org.alfresco.repo.domain.mimetype.MimetypeEntity"/>
     <typeAlias alias="Encoding" type="org.alfresco.repo.domain.encoding.EncodingEntity"/>
     <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
+    <typeAlias alias="ContentUrlUpdate" type="org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity"/>
     <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
     <typeAlias alias="ContentClean" type="org.alfresco.repo.domain.contentclean.ContentCleanEntity"/>
     <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
@@ -185,25 +186,42 @@
     </select>
     
     <!-- Get content URL entities that were orphaned before a give time -->
-    <select id="select_ContentUrlByOrphanTime" parameterClass="ContentUrl" resultMap="result_ContentUrl">
+    <select id="select_ContentUrlsOrphaned" parameterClass="ContentUrl" resultMap="result_ContentUrl">
         <![CDATA[
         select
             cu.*
         from
             alf_content_url cu
+            left outer join alf_content_data cd on (cd.content_url_id = cu.id)
         where
+            cd.id is null and
             cu.orphan_time <= #orphanTime# and cu.orphan_time is not null
         ]]>
     </select>
     
+    <!-- Update a specific mimetype -->
+    <update id="update_Mimetype" parameterClass="Mimetype">
+        update
+            alf_mimetype
+        set
+            mimetype_str = #mimetype#
+        where
+            id = #id#
+        <isGreaterThan property="version" compareValue="1">
+            and version = (#version#-1)
+        </isGreaterThan>
+    </update>
+
     <!-- Mark a content URL entity as orphaned -->
-    <update id="update_ContentUrlOrphanTime" parameterClass="ContentUrl">
+    <update id="update_ContentUrlOrphanTime" parameterClass="ContentUrlUpdate">
         update
             alf_content_url
         set
             orphan_time = #orphanTime#
         where
-            id = #id#
+            id = #id# and
+            <isNull property="oldOrphanTime">orphan_time is null</isNull>
+            <isNotNull property="oldOrphanTime">orphan_time = oldOrphanTime</isNotNull>
     </update>
 
     <!-- Delete ContentUrl entity -->
@@ -216,17 +234,6 @@
         <iterate open="(" close=")" conjunction=",">
             #[]#
         </iterate>
-    </delete>
-
-    <!-- Delete ContentUrl entities orphaned before a given time -->
-    <delete id="delete_ContentUrlByOrphanTime" parameterClass="ContentUrl">
-        <![CDATA[
-        delete
-        from
-            alf_content_url
-        where
-            orphan_time <= #orphanTime# and orphan_time is not null
-        ]]>
     </delete>
 
     <!-- Get the ContentData entity by ID -->

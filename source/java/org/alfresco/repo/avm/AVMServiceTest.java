@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +50,6 @@ import org.alfresco.repo.avm.actions.SimpleAVMSubmitAction;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -71,7 +68,6 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.remote.RepoRemote;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
@@ -767,15 +763,35 @@ public class AVMServiceTest extends AVMServiceTestBase
             ArrayList<Long> times = new ArrayList<Long>();
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
-            times.add(System.currentTimeMillis());
+            
+            assertEquals(1, fService.getStoreVersions("main").size());
+            
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm/actions", "main:/");
+            
+            long time = System.currentTimeMillis();
+            times.add(time);
+            while(! (System.currentTimeMillis() > time)) { }
+            
             assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
-            loader.recursiveLoad("source/java/org/alfresco/repo/action", "main:/");
-            times.add(System.currentTimeMillis());
+            
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm/ibatis", "main:/");
+            
+            time = System.currentTimeMillis();
+            times.add(time);
+            while(! (System.currentTimeMillis() > time)) { }
+            
             assertEquals(2, fService.createSnapshot("main", null, null).get("main").intValue());
-            loader.recursiveLoad("source/java/org/alfresco/repo/audit", "main:/");
-            times.add(System.currentTimeMillis());
+            
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm/locking", "main:/");
+            
+            time = System.currentTimeMillis();
+            times.add(time);
+            while(! (System.currentTimeMillis() > time)) { }
+            
             assertEquals(3, fService.createSnapshot("main", null, null).get("main").intValue());
+            
+            assertEquals(4, fService.getStoreVersions("main").size());
+            
             assertEquals(1, fService.getStoreVersions("main", null, new Date(times.get(0))).size());
             assertEquals(3, fService.getStoreVersions("main", new Date(times.get(0)), null).size());
             assertEquals(2, fService.getStoreVersions("main", new Date(times.get(1)), new Date(System.currentTimeMillis())).size());
@@ -2919,26 +2935,40 @@ public class AVMServiceTest extends AVMServiceTestBase
      */
     public void testVersionUpdate() throws Exception
     {
+        //String LOAD_DIR1 = "config/alfresco/bootstrap";
+        //String LOAD_DIR2 = "config/alfresco/extension";
+        
+        String LOAD_DIR1 = "source/java/org/alfresco/repo/avm/actions";
+        String LOAD_DIR2 = "source/java/org/alfresco/repo/avm/ibatis";
+        
+        String[] split1 = LOAD_DIR1.split("/");
+        String DIR1 = split1[split1.length-1];
+        
+        String[] split2 = LOAD_DIR2.split("/");
+        String DIR2 = split2[split2.length-1];
+        
+        
         try
         {
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             fService.createStore("source");
             fService.createStore("dest");
-            loader.recursiveLoad("config/alfresco/bootstrap", "source:/");
+            
+            loader.recursiveLoad(LOAD_DIR1, "source:/");
             int version1 = fService.createSnapshot("source", null, null).get("source");
-            loader.recursiveLoad("config/alfresco/extension", "source:/");
+            loader.recursiveLoad(LOAD_DIR2, "source:/");
             int version2 = fService.createSnapshot("source", null, null).get("source");
             List<AVMDifference> diffs = fSyncService.compare(version1, "source:/", -1, "dest:/", null);
             fService.createSnapshot("dest", null, null);
             assertEquals(1, diffs.size());
-            assertEquals("[source:/bootstrap[1] > dest:/bootstrap[-1]]", diffs.toString());
+            assertEquals("[source:/"+DIR1+"[1] > dest:/"+DIR1+"[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             diffs = fSyncService.compare(version1, "source:/", -1, "dest:/", null);
             assertEquals(0, diffs.size());
             diffs = fSyncService.compare(version2, "source:/", -1, "dest:/", null);
             assertEquals(1, diffs.size());
-            assertEquals("[source:/extension[2] > dest:/extension[-1]]", diffs.toString());
+            assertEquals("[source:/"+DIR2+"[2] > dest:/"+DIR2+"[-1]]", diffs.toString());
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             fService.createSnapshot("dest", null, null);
             diffs = fSyncService.compare(version2, "source:/", -1, "dest:/", null);

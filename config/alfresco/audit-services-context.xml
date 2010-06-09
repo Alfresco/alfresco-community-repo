@@ -59,9 +59,6 @@
         <constructor-arg>
             <value>${dir.auditcontentstore}</value>
         </constructor-arg>
-        <property name="applicationEventPublisher">
-            <ref bean="applicationEventPublisher"/>
-        </property>
     </bean>
     
     <!-- The audit model -->

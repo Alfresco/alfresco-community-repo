@@ -29,7 +29,8 @@ import org.alfresco.repo.avm.util.BulkLoader;
  */
 public class AVMStressTestP extends AVMServiceTestBase
 {
-    public void testStressA() throws Throwable
+    /*
+    public void xtestStressA() throws Throwable
     {
         testNThreads(   1,  // nThreads
                         "source/java/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
@@ -45,11 +46,12 @@ public class AVMStressTestP extends AVMServiceTestBase
                         0,  // snapshot
                         100); // # ops (for each thread)
     }
+    */
     
     public void testStressB() throws Throwable
     {
         testNThreads(   2,  // nThreads
-                        "source/java/org/alfresco/repo/avm", // relative dir to load from (.../repository)
+                        "source/java/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
                         1,  // nCopies
                         10,  // create file
                         2,  // create dir

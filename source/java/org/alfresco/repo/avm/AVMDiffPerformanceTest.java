@@ -31,20 +31,22 @@ public class AVMDiffPerformanceTest extends AVMServiceTestBase
         super.testSetup();
     }
     
-    public void xtest_1000() throws Exception
+    public void test_1000() throws Exception
     {
         runTest(1000);
     }
     
-    public void ytest_10000() throws Exception
-    {
-        runTest(10000);
-    }
-    
-    public void test_2000() throws Exception
+    public void xtest_2000() throws Exception
     {
         runTest(2000);
     }
+    
+    /*
+    public void xtest_10000() throws Exception
+    {
+        runTest(10000);
+    }
+    */
 
     private void runTest(final int cnt) throws Exception
     {

@@ -56,6 +56,7 @@ import org.alfresco.repo.security.permissions.SimpleAccessControlList;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
+import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -119,6 +120,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
 
+    private boolean useOldPermissions;
+    
     private enum WriteMode
     {
         /**
@@ -2548,4 +2551,28 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
         return createAccessControlListImpl(properties, aces, inherited);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.security.permissions.impl.AclDaoComponent#getDefaultProperties()
+     */
+    public SimpleAccessControlListProperties getDefaultProperties()
+    {
+        if(useOldPermissions)
+        {
+            return OldADMPermissionsDaoComponentImpl.getDefaultProperties();
+        }
+        else
+        {
+            return DMPermissionsDaoComponentImpl.getDefaultProperties();
+        }
+    }
+
+    /**
+     * @param permissionsDaoComponent the permissionsDaoComponent to set
+     */
+    public void setUseOldPermissions(boolean useOldPermissions)
+    {
+        this.useOldPermissions = useOldPermissions;
+    }
+
+    
 }

@@ -25,9 +25,10 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.sql.Savepoint;
-import java.util.ArrayList;
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.Iterator;
 import java.util.zip.CRC32;
 
 import org.alfresco.model.ContentModel;
@@ -53,8 +54,9 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -77,6 +79,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private QNameDAO qnameDAO;
     private ControlDAO controlDAO;
     private RuleService ruleService;
+    private Dialect dialect;
     
     private static Log progress_logger = LogFactory.getLog(PatchExecuter.class);
     
@@ -119,6 +122,11 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+    
+    public void setDialect(Dialect dialect)
+    {
+        this.dialect = dialect;
     }
 
     @Override
@@ -193,7 +201,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
             BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(
                     "FixNameCrcValuesPatch",
                     transactionService.getRetryingTransactionHelper(),
-                    findMismatchedCrcs(),
+                    getChildAssocIdCollection(),
                     2, 20,
                     applicationEventPublisher,
                     logger, 1000);
@@ -287,93 +295,99 @@ public class FixNameCrcValuesPatch extends AbstractPatch
             return msg;
         }
         
-        private List<Long> findMismatchedCrcs() throws Exception
+        private Collection<Long> getChildAssocIdCollection() throws Exception
         {
-            final Long qnameId = qnameDAO.getOrCreateQName(ContentModel.PROP_NAME).getFirst();
-            
-            final List<Long> childAssocIds = new ArrayList<Long>(1000);
-            HibernateCallback callback = new HibernateCallback()
+            HibernateCallback<ScrollableResults> callback = new HibernateCallback<ScrollableResults>()
             {
-                public Object doInHibernate(Session session)
+                public ScrollableResults doInHibernate(Session session)
                 {
                     SQLQuery query = session
                             .createSQLQuery(
-                                    " SELECT " +
-                                    "    ca.id AS child_assoc_id," +
-                                    "    ca.child_node_name_crc AS child_assoc_crc," +
-                                    "    np.string_value AS node_name," +
-                                    "    n.uuid as node_uuid," +
-                                    "    ca.qname_crc AS qname_crc," +
-                                    "    ca.qname_ns_id AS qname_ns_id," +
-                                    "    ca.qname_localname AS qname_localname" +
-                                    " FROM" +
-                                    "    alf_child_assoc ca" +
-                                    "    JOIN alf_node n ON (ca.child_node_id = n.id)" +
-                                    "    LEFT OUTER JOIN alf_node_properties np on (np.node_id = n.id AND np.qname_id = :qnameId)" +
-                                    "");
-                    query.setLong("qnameId", qnameId);
+                                    "SELECT ca.id AS child_assoc_id FROM alf_child_assoc ca");
+
+                    // For MySQL databases we must set this unusual fetch size to force result set paging. See
+                    // http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-implementation-notes.html
+                    if (dialect instanceof MySQLDialect)
+                    {
+                        query.setFetchSize(Integer.MIN_VALUE);
+                    }
                     query.addScalar("child_assoc_id", new LongType());
-                    query.addScalar("child_assoc_crc", new LongType());
-                    query.addScalar("node_name", new StringType());
-                    query.addScalar("node_uuid", new StringType());
-                    query.addScalar("qname_crc", new LongType());
-                    query.addScalar("qname_ns_id", new LongType());
-                    query.addScalar("qname_localname", new StringType());
                     return query.scroll(ScrollMode.FORWARD_ONLY);
                 }
             };
-            ScrollableResults rs = null;
+            final ScrollableResults rs;
             try
             {
-                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
-                while (rs.next())
+                final int sizeEstimate = getHibernateTemplate().execute(new HibernateCallback<Integer>()
                 {
-                    // Compute child name crc
-                    Long assocId = (Long) rs.get(0);
-                    Long dbChildCrc = (Long) rs.get(1);
-                    String name = (String) rs.get(2);
-                    String uuid = (String) rs.get(3);
-                    long utf8ChildCrc;
-                    if (name != null)
+                    public Integer doInHibernate(Session session)
                     {
-                        utf8ChildCrc = getCrc(name);
+                        SQLQuery query = session.createSQLQuery("SELECT COUNT(*) FROM alf_child_assoc");
+                        return ((Number) query.uniqueResult()).intValue();
                     }
-                    else
+                });
+                
+                rs = getHibernateTemplate().execute(callback);                
+                return new AbstractCollection<Long>()
+                {
+                    @Override
+                    public Iterator<Long> iterator()
                     {
-                        utf8ChildCrc = getCrc(uuid);
+                        return new Iterator<Long>(){
+
+                            private Long next = fetchNext();
+
+                            private Long fetchNext()
+                            {
+                                Long next;
+                                if (rs.next())
+                                {
+                                    next = rs.getLong(0);
+                                }
+                                else
+                                {
+                                    next = null;
+                                    rs.close();
+                                }
+                                return next;
+                            }
+
+                            public boolean hasNext()
+                            {
+                                return next != null;
+                            }
+
+                            public Long next()
+                            {
+                                if (!hasNext())
+                                {
+                                    throw new IllegalStateException();
+                                }
+                                Long oldNext = next;
+                                next = fetchNext();
+                                return oldNext;
+                            }
+
+                            public void remove()
+                            {
+                                throw new UnsupportedOperationException();
+                            }};
                     }
 
-                    // Compute qname crc
-                    Long dbQNameCrc = (Long) rs.get(4);
-                    Long namespaceId = (Long) rs.get(5);
-                    String namespace = qnameDAO.getNamespace(namespaceId).getSecond();
-                    String localName = (String) rs.get(6);
-                    QName qname = QName.createQName(namespace, localName);
-                    long utf8QNameCrc = ChildAssocImpl.getCrc(qname);
-
-                    // Check
-                    if (dbChildCrc != null && utf8ChildCrc == dbChildCrc.longValue() && dbQNameCrc != null && utf8QNameCrc == dbQNameCrc.longValue())
+                    @Override
+                    public int size()
                     {
-                        // It is a match, so ignore
-                        continue;
+                        return sizeEstimate;
                     }
-                    childAssocIds.add(assocId);
-                }
+                    
+                };
             }
             catch (Throwable e)
             {
-                logger.error("Failed to query for child name CRCs", e);
-                writeLine("Failed to query for child name CRCs: " + e.getMessage());
-                throw new PatchException("Failed to query for child name CRCs", e);
+                logger.error("Failed to query for child association IDs", e);
+                writeLine("Failed to query for child association IDs: " + e.getMessage());
+                throw new PatchException("Failed to query for child association IDs", e);
             }
-            finally
-            {
-                if (rs != null)
-                {
-                    try { rs.close(); } catch (Throwable e) { writeLine("Failed to close resultset: " + e.getMessage()); }
-                }
-            }
-            return childAssocIds;
         }
         
         /**

@@ -200,7 +200,7 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
                         return;
                     }
                     // Get the old CRCs
-                    long oldCrc = authority.getCrc();
+                    Long oldCrc = authority.getCrc();
                     String authorityName = authority.getAuthority();
                     
                     // Update the CRCs

@@ -385,7 +385,6 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
             // retry the transaction
 
             final ContentData contentData = m_content.getContentData();
-            contentData.reference();
 
             try
             {
@@ -404,7 +403,6 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
                 public void afterCommit()
                 {
                     m_content = null;
-                    contentData.deReference();
                 }
             });
         }

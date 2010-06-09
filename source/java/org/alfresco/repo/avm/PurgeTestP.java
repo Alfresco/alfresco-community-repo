@@ -142,7 +142,7 @@ public class PurgeTestP extends AVMServiceTestBase
     {
         fReaper.activate();
         
-        final int maxCycles = 50;
+        final int maxCycles = 100;
         
         int cycles = 0;
         while (fReaper.isActive() && (cycles <= maxCycles))

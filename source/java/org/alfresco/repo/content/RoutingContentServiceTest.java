@@ -86,8 +86,8 @@ public class RoutingContentServiceTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        transactionService = (TransactionService) ctx.getBean("transactionComponent");
-        nodeService = (NodeService) ctx.getBean("dbNodeService");
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
+        nodeService = (NodeService) ctx.getBean("NodeService");
         contentService = (ContentService) ctx.getBean(ServiceRegistry.CONTENT_SERVICE.getLocalName());
         this.policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
@@ -705,6 +705,7 @@ public class RoutingContentServiceTest extends TestCase
             return isDone;
         }
         
+        @SuppressWarnings("unused")
         public Throwable getError()
         {
             return error;
@@ -826,5 +827,99 @@ public class RoutingContentServiceTest extends TestCase
         
         txn.commit();
         txn = null;
+    }
+    
+    /**
+     * Ensure that content URLs outside of a transaction are not touched on rollback.
+     */
+    public void testRollbackCleanup_ALF2890() throws Exception
+    {
+        ContentWriter updatingWriter = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+        updatingWriter.putContent("STEP 1");
+
+        txn.commit();
+        txn = null;
+        
+        ContentReader readerStep1 = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Incorrect content", "STEP 1", readerStep1.getContentString());
+        
+        ContentWriter simpleWriter = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, false);
+        simpleWriter.putContent("STEP 2");
+        readerStep1 = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Incorrect content", "STEP 1", readerStep1.getContentString());
+        
+        // Update the content
+        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, simpleWriter.getContentData());
+        ContentReader readerStep2 = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Incorrect content", "STEP 2", readerStep2.getContentString());
+        
+        simpleWriter = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, false);
+        simpleWriter.putContent("STEP 3");
+        ContentReader readerStep3 = simpleWriter.getReader();
+        assertEquals("Incorrect content", "STEP 3", readerStep3.getContentString());
+        readerStep2 = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Incorrect content", "STEP 2", readerStep2.getContentString());
+        
+        // Now get a ex-transaction writer but set the content property in a failing transaction
+        // Notice that we have already written "STEP 3" to an underlying binary
+        final ContentData simpleWriterData = simpleWriter.getContentData();
+        RetryingTransactionCallback<Void> failToSetPropCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, simpleWriterData);
+                throw new RuntimeException("aaa");
+            }
+        };
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(failToSetPropCallback);
+        }
+        catch (RuntimeException e)
+        {
+            if (!e.getMessage().equals("aaa"))
+            {
+                throw e;
+            }
+            // Expected
+        }
+        // The writer data should not have been cleaned up
+        readerStep3 = simpleWriter.getReader();
+        assertTrue("Content was cleaned up when it originated outside of the transaction", readerStep3.exists());
+        assertEquals("Incorrect content", "STEP 3", readerStep3.getContentString());
+        // The node's content must be unchanged
+        readerStep2 = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+        assertEquals("Incorrect content", "STEP 2", readerStep2.getContentString());
+
+        // Test that rollback cleanup works for writers fetched in the same transaction
+        final ContentReader[] readers = new ContentReader[1];
+        RetryingTransactionCallback<Void> rollbackCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                writer.putContent("UNLUCKY CONTENT");
+                ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
+                assertEquals("Incorrect content", "UNLUCKY CONTENT", reader.getContentString());
+                assertEquals("Incorrect content", "UNLUCKY CONTENT", writer.getReader().getContentString());
+                readers[0] = reader;
+                
+                throw new RuntimeException("aaa");
+            }
+        };
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(rollbackCallback);
+        }
+        catch (RuntimeException e)
+        {
+            if (!e.getMessage().equals("aaa"))
+            {
+                throw e;
+            }
+            // Expected
+        }
+        // Make sure that the content has been cleaned up
+        assertFalse("Content was not cleaned up after having been created in-transaction", readers[0].exists());
     }
 }

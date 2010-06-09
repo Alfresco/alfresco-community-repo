@@ -461,12 +461,12 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             logger.debug("getMessageCountInternal entry");
         }
         
-        if (messages.size() == 0)
+        if (messages.size() == 0 && folderInfo != null)
         {
-            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
             getMessages(fileInfos);
         }
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled() && folderInfo != null)
         {
             logger.debug(folderInfo.getName() + " - Messages count:" + messages.size());
         }
@@ -481,9 +481,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected long[] getMessageUidsInternal()
     {
-        if (messages == null || messages.size() == 0)
+        if (messages == null || messages.size() == 0 && folderInfo != null)
         {
-            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
             getMessages(fileInfos);
         }
         int len = messages.size();
@@ -505,7 +505,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected List<SimpleStoredMessage> getMessagesInternal()
     {
-        List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+        List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
         return getMessages(fileInfos);
     }
 
@@ -513,6 +513,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (fileInfos == null || fileInfos.size() == 0)
         {
+            logger.debug("getMessages - fileInfos is empty or null");
             return Collections.emptyList();
         }
         if (fileInfos.size() != messages.size())
@@ -569,7 +570,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
         }
         if (messages == null || messages.size() == 0)
         {
-            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
             getMessages(fileInfos);
         }
         List<SimpleStoredMessage> ret = new ArrayList<SimpleStoredMessage>();
@@ -628,9 +629,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         List<SimpleStoredMessage> result = new ArrayList<SimpleStoredMessage>();
 
-        if (messages.size() == 0)
+        if (messages.size() == 0 && folderInfo != null)
         {
-            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
             getMessages(fileInfos);
         }
 
@@ -643,7 +644,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             }
 
         }
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled() && folderInfo != null)
         {
             logger.debug(folderInfo.getName() + " - Non deleted messages count:" + result.size());
         }
@@ -672,9 +673,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected int getRecentCountInternal(boolean reset)
     {
-        if (messages.size() == 0)
+        if (messages.size() == 0 && folderInfo != null)
         {
-            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
             getMessages(fileInfos);
         }
 
@@ -693,7 +694,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
 
         }
 
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled() && folderInfo != null)
         {
             logger.debug(folderInfo.getName() + " - Recent count: " + count + " reset: " + reset);
         }
@@ -731,9 +732,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected int getUnseenCountInternal()
     {
-        if (messages.size() == 0)
+        if (messages.size() == 0 && folderInfo != null)
         {
-            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), "*", viewMode, false);
+            List<FileInfo> fileInfos = imapService.searchMails(folderInfo.getNodeRef(), viewMode);
             getMessages(fileInfos);
         }
 
@@ -747,7 +748,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder
             }
 
         }
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled() && folderInfo != null)
         {
             logger.debug(folderInfo.getName() + " - Unseen count: " + count);
         }

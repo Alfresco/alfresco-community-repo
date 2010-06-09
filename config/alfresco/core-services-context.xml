@@ -969,8 +969,17 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO"/>
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+        <property name="loggingInterval">
+            <value>500</value>
+        </property>
     </bean>
-
+    
     <bean id="versionableAspect" class="org.alfresco.repo.version.VersionableAspect" init-method="init">
         <property name="policyComponent">
             <ref bean="policyComponent" />
@@ -1428,7 +1437,6 @@
       </property>
    </bean>
     
-    <!-- Bean that can be used for publishing events, even when the app is starting up -->
-    <bean id="applicationEventPublisher" class="org.alfresco.repo.management.SafeEventPublisher"/>
-
+    <!-- Replacement for Spring's multicaster, that queues up events until the application is started -->
+    <bean id="applicationEventMulticaster" class="org.alfresco.repo.management.SafeApplicationEventMulticaster"/>
 </beans>

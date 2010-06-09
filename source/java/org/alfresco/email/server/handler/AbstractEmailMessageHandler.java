@@ -317,6 +317,8 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      */
     protected NodeRef addAttachment(NodeService nodeService, NodeRef folder, NodeRef mainContentNode, String fileName)
     {
+        fileName = getAppropriateNodeName(folder, fileName, ContentModel.ASSOC_CONTAINS);
+        
         if (log.isDebugEnabled())
         {
             log.debug("Adding attachment node (name=" + fileName + ").");
@@ -334,6 +336,35 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
             log.debug("Attachment has been added.");
         }
         return attachmentNode;
+    }
+    
+    /**
+     * Return unique content name in passed folder based on provided name
+     * 
+     * @param parent parent folder
+     * @param name name of node
+     * @param assocType assocType between parent and child  
+     * @return Original name or name in format {name}({number})
+     */
+    private String getAppropriateNodeName(NodeRef parent, String name, QName assocType)
+    {
+        if (nodeService.getChildByName(parent, assocType, name) != null)
+        {
+            name = name + "(1)";
+            while (nodeService.getChildByName(parent, assocType, name) != null)
+            {
+
+                int index = name.lastIndexOf("(");
+                if ((index > 0) && name.charAt(name.length() - 1) == ')')
+                {
+                    String posibleNumber = name.substring(index + 1, name.length() - 1);
+                    long num = Long.parseLong(posibleNumber) + 1;
+                    name = name.substring(0, index) + "(" + num + ")";
+                }
+
+            }
+        }
+        return name;
     }
     
     /**

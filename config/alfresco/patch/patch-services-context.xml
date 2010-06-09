@@ -1357,7 +1357,7 @@
         </property>
     </bean>
     
-    <bean id="patch.migrateVersionStore" class="org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch" parent="basePatch" >
+    <bean id="patch.migrateVersionStore" class="org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch" parent="basePatch">
         <property name="id"><value>patch.migrateVersionStore</value></property>
         <property name="description"><value>patch.migrateVersionStore.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1365,16 +1365,22 @@
         <property name="targetSchema"><value>130</value></property>
         <!-- helper beans/properties -->
         <property name="versionMigrator">
-            <ref bean="versionMigrator" />
+            <ref bean="versionMigrator"/>
         </property>
         <property name="tenantService">
-            <ref bean="tenantService" />
+            <ref bean="tenantService"/>
         </property>
         <property name="importerBootstrap">
-            <ref bean="version2Bootstrap" />
+            <ref bean="version2Bootstrap"/>
+        </property>
+        <property name="threadCount">
+            <value>${version.store.migrateVersionStore.threadCount}</value>
+        </property>
+        <property name="batchSize">
+            <value>${version.store.migrateVersionStore.batchSize}</value>
         </property>
     </bean>
-            
+    
     <bean id="patch.inviteEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.inviteEmailTemplate</value></property>
         <property name="description"><value>patch.inviteEmailTemplate.description</value></property>
@@ -1993,6 +1999,9 @@
         <property name="ruleService">
             <ref bean="ruleService" />
         </property>
+        <property name="dialect">
+            <ref bean="dialect" />
+        </property>
     </bean>
     
     <bean id="patch.redeployNominatedInvitationProcessWithPropsForShare" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
@@ -2186,6 +2195,41 @@
         </property>
         <property name="ruleService">
             <ref bean="ruleService" />
+        </property>
+    </bean>
+    
+    <bean id="patch.updateMimetypes1" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypes1</value></property>
+        <property name="description"><value>patch.updateMimetypes1.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4101</value></property>
+        <property name="targetSchema"><value>4102</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="application/vnd.excel" value="application/vnd.ms-excel"></entry>
+                <entry key="application/vnd.powerpoint" value="application/vnd.ms-powerpoint"></entry>
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
         </property>
     </bean>
     

@@ -119,7 +119,9 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
         Pair<Long, ChildAssociationRef> caPair = fNodeDAOService.getPrimaryParentAssoc(nodePair.getFirst());
         if ((caPair != null) && (caPair.getSecond().getParentRef() != null))
         {
-            Long aclId = fNodeDAOService.getNodeAccessControlList(caPair.getFirst());
+            NodeRef parentRef = caPair.getSecond().getParentRef();
+            Long parentNodeId = fNodeDAOService.getNodePair(parentRef).getFirst();
+            Long aclId = fNodeDAOService.getNodeAccessControlList(parentNodeId);
             return aclId;
         }
         else
@@ -150,6 +152,7 @@ public class NodeAccessControlListDAO extends HibernateDaoSupport implements Acc
 
     public void setAccessControlList(NodeRef nodeRef, Long aclId)
     {
-        throw new UnsupportedOperationException();
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        fNodeDAOService.setNodeAccessControlList(nodePair.getFirst(), aclId);
     }
 }

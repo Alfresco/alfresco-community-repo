@@ -41,14 +41,42 @@ public class MigrationCleanupJob implements Job
     
     private static final String KEY_VERSION_MIGRATOR = "versionMigrator";
     private static final String KEY_TENANT_ADMIN_SERVICE = "tenantAdminService";
-    
-    private static final String KEY_BATCHSIZE = "batchSize";
+    private static final String KEY_BATCH_SIZE = "batchSize";
+    private static final String KEY_THREAD_COUNT = "threadCount";
+    private static final String KEY_ONLY_USE_DEPRECATED_V1 = "onlyUseDeprecatedV1";
     
     private int batchSize = 1;
+    private int threadCount = 2;
+    
+    private boolean useDeprecatedV1 = false;
     
     public void execute(JobExecutionContext context) throws JobExecutionException
     { 
         JobDataMap jobData = context.getJobDetail().getJobDataMap();
+        
+        String onlyUseDeprecatedV1Str = (String)jobData.get(KEY_ONLY_USE_DEPRECATED_V1);
+        if (onlyUseDeprecatedV1Str != null)
+        {
+            try
+            {
+                useDeprecatedV1 = new Boolean(onlyUseDeprecatedV1Str);
+            }
+            catch (Exception e)
+            {
+                logger.warn("Invalid 'onlyUseDeprecatedV1' value, using default: " + useDeprecatedV1, e);
+            }
+        }
+        
+        if (useDeprecatedV1)
+        {
+            // skip cleanup
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Skipping migration cleanup since only using deprecated version1 store");
+            }
+            
+            return;
+        }
         
         final VersionMigrator migrationCleanup = (VersionMigrator)jobData.get(KEY_VERSION_MIGRATOR);
         final TenantAdminService tenantAdminService = (TenantAdminService)jobData.get(KEY_TENANT_ADMIN_SERVICE);
@@ -58,7 +86,7 @@ public class MigrationCleanupJob implements Job
             throw new JobExecutionException("Missing job data: " + KEY_VERSION_MIGRATOR);
         }
         
-        String batchSizeStr = (String)jobData.get(KEY_BATCHSIZE);
+        String batchSizeStr = (String)jobData.get(KEY_BATCH_SIZE);
         if (batchSizeStr != null)
         {
             try
@@ -67,7 +95,7 @@ public class MigrationCleanupJob implements Job
             }
             catch (Exception e)
             {
-                logger.warn("Invalid batchsize, using default: " + batchSize, e);
+                logger.warn("Invalid 'batchSize' value, using default: " + batchSize, e);
             }
         }
         
@@ -78,21 +106,41 @@ public class MigrationCleanupJob implements Job
             throw new AlfrescoRuntimeException(errorMessage);
         }
         
-        // perform the cleanup of the old version store
-        migrationCleanup.executeCleanup(batchSize);
-        
-    	if ((tenantAdminService != null) && tenantAdminService.isEnabled())
+        String threadCountStr = (String)jobData.get(KEY_THREAD_COUNT);
+        if (threadCountStr != null)
         {
-        	List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
+            try
+            {
+                threadCount = new Integer(threadCountStr);
+            }
+            catch (Exception e)
+            {
+                logger.warn("Invalid 'threadCount' value, using default: " + threadCount, e);
+            }
+        }
+        
+        if (threadCount < 1)
+        {
+            String errorMessage = "threadCount ("+threadCount+") cannot be less than 1";
+            logger.error(errorMessage);
+            throw new AlfrescoRuntimeException(errorMessage);
+        }
+        
+        // perform the cleanup of the old version store
+        migrationCleanup.executeCleanup(batchSize, threadCount);
+        
+        if ((tenantAdminService != null) && tenantAdminService.isEnabled())
+        {
+            List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
-            {          
-            	String tenantDomain = tenant.getTenantDomain();
-            	AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                String tenantDomain = tenant.getTenantDomain();
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
-            		public Object doWork() throws Exception
+                    public Object doWork() throws Exception
                     {
-            			migrationCleanup.executeCleanup(batchSize);
-            			return null;
+                        migrationCleanup.executeCleanup(batchSize, threadCount);
+                        return null;
                     }
                 }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
             }

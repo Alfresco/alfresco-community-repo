@@ -96,6 +96,13 @@ public interface ContentService
      * <p>
      * If no node is supplied, then the writer will provide a stream into the backing content
      * store, but will not be associated with any new or previous content.
+     * <p/>
+     * <b>NOTE: </b>The content URL provided will be registered for automatic cleanup in the event
+     * that the transaction, in which this method was called, rolls back.  If the transaction
+     * is successful, the writer may still be open and available for use but the underlying binary
+     * will not be cleaned up subsequently.  The recommended pattern is to group calls to retrieve
+     * the writer in the same transaction as the calls to subsequently update and close the
+     * write stream - including setting of the related content properties.
      * 
      * @param nodeRef a reference to a node having a content property, or <tt>null</tt>
      *      to just get a valid writer into a backing content store.

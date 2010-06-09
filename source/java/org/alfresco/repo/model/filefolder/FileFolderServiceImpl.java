@@ -41,8 +41,10 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
+import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -347,6 +349,24 @@ public class FileFolderServiceImpl implements FileFolderService
         return results;
     }
     
+    public List<FileInfo> listDeepFolders(NodeRef contextNodeRef,
+            SubFolderFilter filter)
+    {
+        List<NodeRef> nodeRefs = listSimpleDeep(contextNodeRef, true, false, filter);
+        
+        List<FileInfo> results = toFileInfo(nodeRefs);
+        
+        // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deep search for files: \n" +
+                    "   context: " + contextNodeRef + "\n" +
+                    "   results: " + results);
+        }
+        return results;
+        
+    }
+    
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
         NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
@@ -370,6 +390,7 @@ public class FileFolderServiceImpl implements FileFolderService
     }
 
     private static final String LUCENE_MULTI_CHAR_WILDCARD = "*";
+    
     /**
      * Full search with all options
      */
@@ -443,7 +464,7 @@ public class FileFolderServiceImpl implements FileFolderService
             // This is search for any name
             if(includeSubFolders)
             {
-               nodeRefs = listSimpleDeep(contextNodeRef, folderSearch, fileSearch);   
+               nodeRefs = listSimpleDeep(contextNodeRef, folderSearch, fileSearch, null);   
             }
             else
             {
@@ -552,20 +573,24 @@ public class FileFolderServiceImpl implements FileFolderService
     }
     
     /**
-     * A deep version of listSimple.   Which recursivly walks down the tree from a given starting point, returning 
-     * the node refs found along the way.
+     * A deep version of listSimple.   Which recursively walks down the tree from a given starting point, returning 
+     * the node refs of files or folders found along the way.
      * 
-     * MER: I've added this rather than changeing listSimple to minimise the risk of breaking 
-     * the existing code.   This is a quick performance improvent between using 
+     * MER: I've added this rather than changing listSimple to minimise the risk of breaking 
+     * the existing code.   This is a quick performance improvement between using 
      * XPath which is awful or adding new methods to the NodeService/DB   This is also a dangerous method in that it can return a 
      * lot of data and take a long time. 
+     * 
+     * The folder filter is called for each sub-folder to determine whether to search in that sub-folder, should a subfolder be excluded 
+     * then all its chidren are excluded as well.
      * 
      * @param contextNodeRef the starting point.
      * @param folders return nodes of type folders.
      * @param files return nodes of type files.
-     * @return list of node refs
+     * @param subfolder filter controls which folders to search.  If null then all subfolders are searched.
+     * @return list of node references
      */
-    private List<NodeRef> listSimpleDeep(NodeRef contextNodeRef, boolean folders, boolean files)
+    private List<NodeRef> listSimpleDeep(NodeRef contextNodeRef, boolean folders, boolean files, SubFolderFilter folderFilter)
     {
         Set<QName> folderTypeQNames = new HashSet<QName>(10);
         Set<QName> fileTypeQNames = new HashSet<QName>(10);
@@ -578,7 +603,7 @@ public class FileFolderServiceImpl implements FileFolderService
         folderTypeQNames.addAll(qnames);
         folderTypeQNames.add(ContentModel.TYPE_FOLDER);
         
-        // Remove 'system' folders
+        // Remove 'system' folders and all descendants
         Collection<QName> systemFolderQNames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
         folderTypeQNames.removeAll(systemFolderQNames);
         folderTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
@@ -617,10 +642,24 @@ public class FileFolderServiceImpl implements FileFolderService
             
             for (ChildAssociationRef folderRef : folderAssocRefs)
             {
-                // Add the folders in the currentDir
-                toSearch.push(folderRef.getChildRef());
+                // We have some child folders
+                boolean include = true;
+                if(folderFilter != null)
+                {
+                    include = folderFilter.isEnterSubfolder(folderRef);
+                    if(include)
+                    {
+                        // yes search in these subfolders
+                        toSearch.push(folderRef.getChildRef());
+                    }
+                }
+                else
+                {
+                    // No filter - Add the folders in the currentDir
+                    toSearch.push(folderRef.getChildRef());
+                }
                 
-                if(folders)
+                if(folders && include)
                 {
                     result.add(folderRef.getChildRef());
                 }
@@ -948,9 +987,38 @@ public class FileFolderServiceImpl implements FileFolderService
         }
     }
 
+    /**
+     * Checks for the presence of, and creates as necessary, the folder structure in the provided path.
+     * <p>
+     * An empty path list is not allowed as it would be impossible to necessarily return file info
+     * for the parent node - it might not be a folder node.
+     * @param parentNodeRef the node under which the path will be created
+     * @param pathElements the folder name path to create - may not be empty
+     * @param folderTypeQName the types of nodes to create.  This must be a valid subtype of
+     *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}.
+     * @return Returns the info of the last folder in the path.
+     * @deprecated Use FileFolderUtil.makeFolders rather than directly accessing this implementation class.
+     */
     public FileInfo makeFolders(NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)
     {
-        return FileFolderServiceImpl.makeFolders(this, parentNodeRef, pathElements, folderTypeQName);
+        return FileFolderUtil.makeFolders(this, parentNodeRef, pathElements, folderTypeQName);
+    }
+    
+    /**
+     * Checks for the presence of, and creates as necessary, the folder structure in the provided path.
+     * <p>
+     * An empty path list is not allowed as it would be impossible to necessarily return file info
+     * for the parent node - it might not be a folder node.
+     * @param parentNodeRef the node under which the path will be created
+     * @param pathElements the folder name path to create - may not be empty
+     * @param folderTypeQName the types of nodes to create.  This must be a valid subtype of
+     *      {@link org.alfresco.model.ContentModel#TYPE_FOLDER they folder type}.
+     * @return Returns the info of the last folder in the path.
+     * @deprecated Use FileFolderUtil.makeFolders rather than directly accessing this implementation class.
+     */
+    public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)
+    {
+        return FileFolderUtil.makeFolders(service, parentNodeRef, pathElements, folderTypeQName);
     }
 
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
@@ -1082,82 +1150,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         return contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
     }
-    
-    /**
-     * Helper method to create folders.
-     * 
-     * This uses the provided service for all auditing and permission checks. 
-     * 
-     * @param service
-     * @param parentNodeRef
-     * @param pathElements
-     * @param folderTypeQName
-     * @return FileInfo for the bottom node in pathElements.
-     */
-    public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)
-    {
-        if (pathElements.size() == 0)
-        {
-            throw new IllegalArgumentException("Path element list is empty");
-        }
         
-        // make sure that the folder is correct
-        boolean isFolder = service.getType(folderTypeQName) == FileFolderServiceType.FOLDER;
-        if (!isFolder)
-        {
-            throw new IllegalArgumentException("Type is invalid to make folders with: " + folderTypeQName);
-        }
-        
-        NodeRef currentParentRef = parentNodeRef;
-        // just loop and create if necessary
-        for (String pathElement : pathElements)
-        {
-            // does it exist?
-            // Navigation should not check permissions
-            NodeRef nodeRef = AuthenticationUtil.runAs(new SearchAsSystem(service, currentParentRef, pathElement), AuthenticationUtil.getSystemUserName());
-
-            if (nodeRef == null)
-            {
-                // not present - make it
-                // If this uses the public service it will check create permissions
-                FileInfo createdFileInfo = service.create(currentParentRef, pathElement, folderTypeQName);
-                currentParentRef = createdFileInfo.getNodeRef();
-            }
-            else
-            {
-                // it exists
-                currentParentRef = nodeRef;
-            }
-        }
-        // done
-        // Used to call toFileInfo((currentParentRef, true);
-        // If this uses the public service this will check the final read access
-        FileInfo fileInfo = service.getFileInfo(currentParentRef);
-        
-        // Should we check the type?
-        return fileInfo;
-    }
-    
-    private static class SearchAsSystem implements RunAsWork<NodeRef>
-    {
-        FileFolderService service;
-        NodeRef node;
-        String name;
-
-        SearchAsSystem( FileFolderService service, NodeRef node, String name)
-        {
-            this.service = service;
-            this.node = node;
-            this.name = name;
-        }
-        
-        public NodeRef doWork() throws Exception
-        {
-            return service.searchSimple(node, name);
-        }
-        
-    }
-    
     private String getExtension(String name)
     {
         String result = "";

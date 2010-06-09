@@ -2,14 +2,11 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <beans>
-
+   
    <bean id="fileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
       <constructor-arg>
          <value>${dir.contentstore}</value>
       </constructor-arg>
-      <property name="applicationEventPublisher">
-         <ref bean="applicationEventPublisher" />
-      </property>
    </bean>
    
    <!-- deleted content will get pushed into this store, where it can be cleaned up at will -->
@@ -17,9 +14,6 @@
       <constructor-arg>
          <value>${dir.contentstore.deleted}</value>
       </constructor-arg>
-      <property name="applicationEventPublisher">
-         <ref bean="applicationEventPublisher" />
-      </property>
    </bean>
    <!-- bean to move deleted content into the the backup store -->
    <bean id="deletedContentBackupListener" class="org.alfresco.repo.content.cleanup.DeletedContentBackupCleanerListener" >
@@ -84,9 +78,6 @@
    
    <!-- Abstract bean definition defining base definition for content service -->
    <bean id="baseContentService" class="org.alfresco.repo.content.ContentServiceImpl" abstract="true" init-method="init">
-      <property name="applicationEventPublisher">
-          <ref bean="applicationEventPublisher"/>
-      </property>
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>
       </property>
@@ -222,6 +213,7 @@
       <property name="supportedDateFormats">
          <list>
             <value>EEE, d MMM yyyy HH:mm:ss Z</value>
+            <value>EEE, d MMM yy HH:mm:ss Z</value>
          </list>
       </property>
    </bean>
@@ -391,8 +383,17 @@
 
    <bean id="transformer.HtmlParser"
          class="org.alfresco.repo.content.transform.HtmlParserContentTransformer"
-         parent="baseContentTransformer" />
-         
+         parent="baseContentTransformer" >
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>text/html</value></property>
+                <property name="targetMimetype"><value>text/plain</value></property>
+            </bean>
+         </list>
+      </property> 		 
+   </bean>
+   
    <bean id="transformer.MediaWikiParser"
          class="org.alfresco.repo.content.transform.MediaWikiContentTransformer"
          parent="baseContentTransformer">

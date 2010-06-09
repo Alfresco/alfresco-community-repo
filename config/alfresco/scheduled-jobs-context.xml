@@ -420,10 +420,19 @@
                <property name="jobDataAsMap">
                    <map>
                         <entry key="versionMigrator">
-                            <ref bean="versionMigrator" />
+                            <ref bean="versionMigrator"/>
                         </entry>
                         <entry key="tenantAdminService">
-                            <ref bean="tenantAdminService" />
+                            <ref bean="tenantAdminService"/>
+                        </entry>
+                        <entry key="onlyUseDeprecatedV1">
+                            <value>${version.store.onlyUseDeprecatedV1}</value>
+                        </entry>
+                        <entry key="batchSize">
+                            <value>${version.store.migrateCleanupJob.batchSize}</value>
+                        </entry>
+                        <entry key="threadCount">
+                            <value>${version.store.migrateCleanupJob.threadCount}</value>
                         </entry>
                    </map>
                </property>

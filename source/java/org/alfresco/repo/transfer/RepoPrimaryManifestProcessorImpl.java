@@ -212,6 +212,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 {
                     log.info("Successfully restored node as " + restoredNodeRef + "  - retrying transferred node");
                 }
+                //Check to see if the node we've just restored is the parent of any orphans
+                checkOrphans(restoredNodeRef);
+                //Process the received node information again now that we've restored it
+                //(should be handled as an update now)
                 processTransferManifestNode(node);
                 return;
             }
@@ -293,7 +297,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
         // Is the node that we've just added the parent of any orphans that
         // we've found earlier?
-        List<ChildAssociationRef> orphansToClaim = orphans.get(newNode.getChildRef());
+        checkOrphans(newNode.getChildRef());
+    }
+
+    private void checkOrphans(NodeRef parentNode)
+    {
+        List<ChildAssociationRef> orphansToClaim = orphans.get(parentNode);
         if (orphansToClaim != null)
         {
             // Yes, it is...
@@ -305,7 +314,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
             // We can now remove the record of these orphans, as their parent
             // has been found
-            orphans.remove(newNode.getChildRef());
+            orphans.remove(parentNode);
         }
     }
 

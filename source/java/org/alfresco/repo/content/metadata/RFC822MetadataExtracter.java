@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,20 +41,20 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Metadata extractor for RFC822 mime emails.
+ * 
+ * Default configuration:   (see RFC822MetadataExtractor.properties)
+ * 
  * <pre>
  *   <b>messageFrom:</b>              --      imap:messageFrom, cm:originator
  *   <b>messageTo:</b>                --      imap:messageTo
  *   <b>messageCc:</b>                --      imap:messageCc
  *   <b>messageSubject:</b>           --      imap:messageSubject, cm:title, cm:description, cm:subjectline
  *   <b>messageSent:</b>              --      imap:dateSent, cm:sentdate
+ *   <b>messageReceived:</b>          --      imap:dateReceived
  *   <b>All <code>{@link Header#getName() header names}:</b>
  *      <b>Thread-Index:</b>          --      imap:threadIndex
  *      <b>Message-ID:</b>            --      imap:messageId
- *      <b>date:</b>                  --      imap:dateReceived
- * 
- * TIKA Note - to and cc are missing, and date stuff isn't
- *  great. Thread index is missing, and arbitrary headers
- *  don't seem to be supported
+ * </pre>
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -66,6 +67,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
     protected static final String KEY_MESSAGE_CC = "messageCc";
     protected static final String KEY_MESSAGE_SUBJECT = "messageSubject";
     protected static final String KEY_MESSAGE_SENT = "messageSent";
+    protected static final String KEY_MESSAGE_RECEIVED = "messageReceived";
 
     public static String[] SUPPORTED_MIMETYPES = new String[] { MimetypeMap.MIMETYPE_RFC822 };
 
@@ -87,12 +89,50 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
 
             if (mimeMessage != null)
             {
-                //Extract values that doesn't match to headers and need to be encoded.
+                /**
+                 * Extract RFC822 values that doesn't match to headers and need to be encoded.
+                 * Or those special fields that require some code to extract data 
+                 */
                 putRawValue(KEY_MESSAGE_FROM, InternetAddress.toString(mimeMessage.getFrom()), rawProperties);
                 putRawValue(KEY_MESSAGE_TO, InternetAddress.toString(mimeMessage.getRecipients(RecipientType.TO)), rawProperties);
                 putRawValue(KEY_MESSAGE_CC, InternetAddress.toString(mimeMessage.getRecipients(RecipientType.CC)), rawProperties);
                 putRawValue(KEY_MESSAGE_SENT, mimeMessage.getSentDate(), rawProperties); 
-
+                
+                /**
+                 * Received field from RFC 822
+                 * 
+                 * "Received"    ":"        ; one per relay
+                 *   ["from" domain]        ; sending host
+                 *   ["by"   domain]        ; receiving host
+                 *   ["via"  atom]          ; physical path
+                 *  ("with" atom)           ; link/mail protocol
+                 *   ["id"   msg-id]        ; receiver msg id
+                 *   ["for"  addr-spec]     ; initial form
+                 * ";"    date-time         ; time received
+                 */
+                Date rxDate = mimeMessage.getReceivedDate();
+              
+                if(rxDate != null)
+                {
+                    // The email implementation extracted the received date for us.
+                    putRawValue(KEY_MESSAGE_RECEIVED, rxDate, rawProperties); 
+                }
+                else
+                {
+                    // the email implementation did not parse the received date for us.
+                    String[] rx = mimeMessage.getHeader("received");
+                    if(rx != null && rx.length > 0)
+                    {
+                        String lastReceived = rx[0];    
+                        int x = lastReceived.indexOf(';');
+                        if(x > 0)
+                        {
+                            String dateStr = lastReceived.substring(x + 1).trim();
+                            putRawValue(KEY_MESSAGE_RECEIVED, dateStr, rawProperties); 
+                        }
+                    }
+                }
+                
                 String[] subj = mimeMessage.getHeader("Subject");
                 if (subj != null && subj.length > 0)
                 {
@@ -108,7 +148,9 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                     putRawValue(KEY_MESSAGE_SUBJECT, decodedSubject, rawProperties);
                 }
                 
-                //Extract values from headers
+                /*
+                 * Extract values from all header fields, including extension fields "X-"
+                 */
                 Set<String> keys = getMapping().keySet();
                 Enumeration<Header> headers = mimeMessage.getAllHeaders();
                 while (headers.hasMoreElements())
@@ -148,15 +190,4 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
     {
          return super.getMapping();
     }
-    
-//    /**
-//     * Back door for RM
-//     * @return
-//     */
-//    public void setMapping(Map<String, Set<QName>> mapping)
-//    {
-//        super.setMapping(mapping);
-//    }
-
-
 }

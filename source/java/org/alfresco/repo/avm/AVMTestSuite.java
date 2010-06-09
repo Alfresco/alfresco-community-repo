@@ -24,12 +24,24 @@ import junit.framework.TestSuite;
 import org.alfresco.repo.avm.locking.AVMLockingServiceTest;
 import org.alfresco.repo.avm.util.VersionPathTest;
 import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * AVM test suite
+ * 
+ * @author brittp, janv
  */
 public class AVMTestSuite extends TestSuite
 {
+    public static ApplicationContext getContext() 
+    {
+        ApplicationContextHelper.setUseLazyLoading(false);
+        ApplicationContextHelper.setNoAutoStart(true);
+        return ApplicationContextHelper.getApplicationContext(
+             new String[] { "classpath:alfresco/minimal-context.xml" }
+        );
+    }
+    
     /**
      * Creates the test suite
      *
@@ -37,10 +49,11 @@ public class AVMTestSuite extends TestSuite
      */
     public static Test suite()
     {
+        // Setup the context
+        getContext();
+        
         TestSuite suite = new TestSuite();
         
-        // Ensure that the default context is available
-        ApplicationContextHelper.getApplicationContext();
         
         // Add the tests to be run
         
@@ -68,7 +81,7 @@ public class AVMTestSuite extends TestSuite
         
         suite.addTestSuite(VersionPathTest.class);
         suite.addTestSuite(WCMInheritPermissionsTest.class);
-
+        
         // This should go last, as its uses a different
         //  context to the other tests
         suite.addTestSuite(AVMServiceRemoteSystemTest.class);

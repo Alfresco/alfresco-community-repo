@@ -447,7 +447,15 @@ public class CMISQueryParser
                     mode = FTSParser.Mode.DEFAULT_DISJUNCTION;
                 }
             }
-            Constraint ftsConstraint = FTSQueryParser.buildFTS(ftsExpression, factory, functionEvaluationContext, selector, columnMap, mode, defaultFieldConnective, null, options.getDefaultFieldName());
+            Constraint ftsConstraint;
+            if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
+            {
+                ftsConstraint = CMISFTSQueryParser.buildFTS(ftsExpression, factory, functionEvaluationContext, selector, columnMap, options.getDefaultFieldName());
+            }
+            else
+            {
+                ftsConstraint = FTSQueryParser.buildFTS(ftsExpression, factory, functionEvaluationContext, selector, columnMap, mode, defaultFieldConnective, null, options.getDefaultFieldName());
+            }
             ftsConstraint.setBoost(1000.0f);
             hasContains = true;
             return ftsConstraint;

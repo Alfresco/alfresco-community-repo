@@ -36,6 +36,11 @@
         <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
+    <parameterMap class="map" id="parameter_contentMimetype">
+        <parameter property="newMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="oldMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
     <!--                -->
     <!-- Selects        -->
     <!--                -->
@@ -101,6 +106,15 @@
             and qname_id = ?
             and list_index = ?
             and locale_id = ?
+    </update>
+    
+    <update id="update_contentMimetypeId" parameterMap="parameter_contentMimetype">
+        update
+            alf_content_data
+        set
+            content_mimetype_id = ?
+        where
+            content_mimetype_id = ?
     </update>
 
 </sqlMap>

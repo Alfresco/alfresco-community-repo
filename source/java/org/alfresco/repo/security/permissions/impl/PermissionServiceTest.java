@@ -29,6 +29,7 @@ import net.sf.acegisecurity.GrantedAuthority;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionEntry;
@@ -82,7 +83,13 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
         
         runAs("admin");
-        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        ChildAssociationRef newAssoc = nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertTrue(nodeService.exists(test));
+        assertTrue(nodeService.exists(one));
+        assertTrue(nodeService.exists(two));
+        nodeDaoService.getNodePair(test);
+        nodeDaoService.getNodePair(one);
+        nodeDaoService.getNodePair(two);
         assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
         
         runAs("andy");
@@ -208,9 +215,9 @@ public class PermissionServiceTest extends AbstractPermissionTest
     }
 
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.setUp();
         denyAndyAll = new SimplePermissionEntry(rootNodeRef, permissionService.getAllPermissionReference(), "andy", AccessStatus.DENIED);
         allowAndyAll = new SimplePermissionEntry(rootNodeRef, permissionService.getAllPermissionReference(), "andy", AccessStatus.ALLOWED);
         denyAndyRead = new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.DENIED);
@@ -222,46 +229,92 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     public void testDelete()
     {
-        runAs(AuthenticationUtil.getAdminUserName());
+        if(aclDaoComponent.getDefaultProperties().getAclType() == ACLType.DEFINING)
+        {
+            runAs(AuthenticationUtil.getAdminUserName());
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        NodeRef n2 = nodeService.createNode(n1, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef n2 = nodeService.createNode(n1, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
 
-        assertEquals(0, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(0, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n2).size());
 
-        permissionService.deletePermissions(n1);
-        permissionService.deletePermissions(n2);
+            permissionService.deletePermissions(n1);
+            permissionService.deletePermissions(n2);
 
-        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+            permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
-        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
 
-        permissionService.deletePermissions(n2);
+            permissionService.deletePermissions(n2);
 
-        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
 
-        permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
+            permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
 
-        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(2, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(2, permissionService.getAllSetPermissions(n2).size());
 
-        permissionService.deletePermissions(n2);
+            permissionService.deletePermissions(n2);
 
-        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
 
-        permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
+            permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
 
-        assertEquals(1, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(2, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(2, permissionService.getAllSetPermissions(n2).size());
 
-        permissionService.deletePermissions(n1);
+            permissionService.deletePermissions(n1);
 
-        assertEquals(0, permissionService.getAllSetPermissions(n1).size());
-        assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+        }
+        else
+        {
+            runAs(AuthenticationUtil.getAdminUserName());
+
+            NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef n2 = nodeService.createNode(n1, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+
+            assertEquals(0, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n2).size());
+
+            permissionService.deletePermissions(n1);
+            permissionService.deletePermissions(n2);
+
+            permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
+
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n2).size());
+
+            permissionService.deletePermissions(n2);
+
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n2).size());
+
+            permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
+
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+
+            permissionService.deletePermissions(n2);
+
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(0, permissionService.getAllSetPermissions(n2).size());
+
+            permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
+
+            assertEquals(1, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+
+            permissionService.deletePermissions(n1);
+
+            assertEquals(0, permissionService.getAllSetPermissions(n1).size());
+            assertEquals(1, permissionService.getAllSetPermissions(n2).size());
+        }
     }
 
     /**
@@ -269,82 +322,132 @@ public class PermissionServiceTest extends AbstractPermissionTest
      */
     public void testPositionInformation()
     {
-        runAs(AuthenticationUtil.getAdminUserName());
-        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        NodeRef two = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
-        NodeRef three = nodeService.createNode(two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
-        NodeRef four = nodeService.createNode(three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
-        permissionService.setPermission(one, "andy", PermissionService.ALL_PERMISSIONS, true);
-        permissionService.setPermission(two, "bob", PermissionService.ALL_PERMISSIONS, true);
-        permissionService.setPermission(three, "carol", PermissionService.ALL_PERMISSIONS, true);
-
-        Set<AccessPermission> set = permissionService.getAllSetPermissions(one);
-        assertEquals(1, set.size());
-        for (AccessPermission ap : set)
+        if(aclDaoComponent.getDefaultProperties().getAclType() == ACLType.DEFINING)
         {
-            if (ap.getAuthority().equals("andy"))
+            runAs(AuthenticationUtil.getAdminUserName());
+            NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef two = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef three = nodeService.createNode(two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef four = nodeService.createNode(three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
+            permissionService.setPermission(one, "andy", PermissionService.ALL_PERMISSIONS, true);
+            permissionService.setPermission(two, "bob", PermissionService.ALL_PERMISSIONS, true);
+            permissionService.setPermission(three, "carol", PermissionService.ALL_PERMISSIONS, true);
+
+            Set<AccessPermission> set = permissionService.getAllSetPermissions(one);
+            assertEquals(1, set.size());
+            for (AccessPermission ap : set)
             {
-                assertFalse(ap.isInherited());
-                assertEquals(0, ap.getPosition());
+                if (ap.getAuthority().equals("andy"))
+                {
+                    assertFalse(ap.isInherited());
+                    assertEquals(0, ap.getPosition());
+                }
+            }
+
+            set = permissionService.getAllSetPermissions(two);
+            assertEquals(2, set.size());
+            for (AccessPermission ap : set)
+            {
+                if (ap.getAuthority().equals("andy"))
+                {
+                    assertTrue(ap.isInherited());
+                    assertEquals(2, ap.getPosition());
+                }
+                if (ap.getAuthority().equals("bob"))
+                {
+                    assertFalse(ap.isInherited());
+                    assertEquals(0, ap.getPosition());
+                }
+            }
+
+            set = permissionService.getAllSetPermissions(three);
+            assertEquals(3, set.size());
+            for (AccessPermission ap : set)
+            {
+                if (ap.getAuthority().equals("andy"))
+                {
+                    assertTrue(ap.isInherited());
+                    assertEquals(4, ap.getPosition());
+                }
+                if (ap.getAuthority().equals("bob"))
+                {
+                    assertTrue(ap.isInherited());
+                    assertEquals(2, ap.getPosition());
+                }
+                if (ap.getAuthority().equals("carol"))
+                {
+                    assertFalse(ap.isInherited());
+                    assertEquals(0, ap.getPosition());
+                }
+            }
+
+            set = permissionService.getAllSetPermissions(four);
+            assertEquals(3, set.size());
+            for (AccessPermission ap : set)
+            {
+                if (ap.getAuthority().equals("andy"))
+                {
+                    assertTrue(ap.isInherited());
+                    assertEquals(5, ap.getPosition());
+                }
+                if (ap.getAuthority().equals("bob"))
+                {
+                    assertTrue(ap.isInherited());
+                    assertEquals(3, ap.getPosition());
+                }
+                if (ap.getAuthority().equals("carol"))
+                {
+                    assertTrue(ap.isInherited());
+                    assertEquals(1, ap.getPosition());
+                }
             }
         }
-
-        set = permissionService.getAllSetPermissions(two);
-        assertEquals(2, set.size());
-        for (AccessPermission ap : set)
+        else
         {
-            if (ap.getAuthority().equals("andy"))
-            {
-                assertTrue(ap.isInherited());
-                assertEquals(2, ap.getPosition());
-            }
-            if (ap.getAuthority().equals("bob"))
-            {
-                assertFalse(ap.isInherited());
-                assertEquals(0, ap.getPosition());
-            }
-        }
+            runAs(AuthenticationUtil.getAdminUserName());
+            NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef two = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef three = nodeService.createNode(two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
+            NodeRef four = nodeService.createNode(three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
+            permissionService.setPermission(one, "andy", PermissionService.ALL_PERMISSIONS, true);
+            permissionService.setPermission(two, "bob", PermissionService.ALL_PERMISSIONS, true);
+            permissionService.setPermission(three, "carol", PermissionService.ALL_PERMISSIONS, true);
 
-        set = permissionService.getAllSetPermissions(three);
-        assertEquals(3, set.size());
-        for (AccessPermission ap : set)
-        {
-            if (ap.getAuthority().equals("andy"))
+            Set<AccessPermission> set = permissionService.getAllSetPermissions(one);
+            assertEquals(1, set.size());
+            for (AccessPermission ap : set)
             {
-                assertTrue(ap.isInherited());
-                assertEquals(4, ap.getPosition());
+                if (ap.getAuthority().equals("andy"))
+                {
+                    assertFalse(ap.isInherited());
+                    assertEquals(0, ap.getPosition());
+                }
             }
-            if (ap.getAuthority().equals("bob"))
-            {
-                assertTrue(ap.isInherited());
-                assertEquals(2, ap.getPosition());
-            }
-            if (ap.getAuthority().equals("carol"))
-            {
-                assertFalse(ap.isInherited());
-                assertEquals(0, ap.getPosition());
-            }
-        }
 
-        set = permissionService.getAllSetPermissions(four);
-        assertEquals(3, set.size());
-        for (AccessPermission ap : set)
-        {
-            if (ap.getAuthority().equals("andy"))
+            set = permissionService.getAllSetPermissions(two);
+            assertEquals(1, set.size());
+            for (AccessPermission ap : set)
             {
-                assertTrue(ap.isInherited());
-                assertEquals(5, ap.getPosition());
+                if (ap.getAuthority().equals("bob"))
+                {
+                    assertFalse(ap.isInherited());
+                    assertEquals(0, ap.getPosition());
+                }
             }
-            if (ap.getAuthority().equals("bob"))
+
+            set = permissionService.getAllSetPermissions(three);
+            assertEquals(1, set.size());
+            for (AccessPermission ap : set)
             {
-                assertTrue(ap.isInherited());
-                assertEquals(3, ap.getPosition());
+                if (ap.getAuthority().equals("carol"))
+                {
+                    assertFalse(ap.isInherited());
+                    assertEquals(0, ap.getPosition());
+                }
             }
-            if (ap.getAuthority().equals("carol"))
-            {
-                assertTrue(ap.isInherited());
-                assertEquals(1, ap.getPosition());
-            }
+
+            set = permissionService.getAllSetPermissions(four);
+            assertEquals(0, set.size());
         }
 
     }
@@ -839,6 +942,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         // testUnset();
     }
 
+    @SuppressWarnings("unused")
     private void printPermissions(NodeRef nodeRef, String path)
     {
         Long id = nodeDaoService.getNodePair(nodeRef).getFirst();
@@ -1613,16 +1717,16 @@ public class PermissionServiceTest extends AbstractPermissionTest
         long start;
         long end;
         long time = 0;
-        for (int i = 0; i < 1000; i++)
-        {
-            getSession().flush();
-            // getSession().clear();
-            start = System.nanoTime();
-            assertTrue(permissionService.hasPermission(n10, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
-            end = System.nanoTime();
-            time += (end - start);
-        }
-        System.out.println("Time is " + (time / 1000000000.0));
+//        for (int i = 0; i < 1000; i++)
+//        {
+//            getSession().flush();
+//            // getSession().clear();
+//            start = System.nanoTime();
+//            assertTrue(permissionService.hasPermission(n10, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
+//            end = System.nanoTime();
+//            time += (end - start);
+//        }
+//        System.out.println("Time is " + (time / 1000000000.0));
         // assertTrue((time / 1000000000.0) < 60.0);
 
         time = 0;

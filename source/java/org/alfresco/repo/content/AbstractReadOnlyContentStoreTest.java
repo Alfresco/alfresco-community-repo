@@ -35,7 +35,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * Abstract base class that provides a set of tests for implementations
@@ -53,7 +52,6 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
     
     private static Log logger = LogFactory.getLog(AbstractReadOnlyContentStoreTest.class);
     
-    protected ApplicationEventPublisher applicationEventPublisher;
     protected TransactionService transactionService;
     private UserTransaction txn;
     
@@ -68,7 +66,6 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        applicationEventPublisher = (ApplicationEventPublisher) ctx.getBean("applicationEventPublisher");
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         txn = transactionService.getUserTransaction();
         txn.begin();

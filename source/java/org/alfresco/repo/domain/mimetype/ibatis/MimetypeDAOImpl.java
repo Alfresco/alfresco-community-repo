@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.mimetype.ibatis;
 
 import org.alfresco.repo.domain.mimetype.AbstractMimetypeDAOImpl;
 import org.alfresco.repo.domain.mimetype.MimetypeEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 /**
@@ -33,6 +34,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
     private static final String SELECT_MIMETYPE_BY_ID = "alfresco.content.select_MimetypeById";
     private static final String SELECT_MIMETYPE_BY_KEY = "alfresco.content.select_MimetypeByKey";
     private static final String INSERT_MIMETYPE = "alfresco.content.insert_Mimetype";
+    private static final String UPDATE_MIMETYPE = "alfresco.content.update_Mimetype";
     
     private SqlMapClientTemplate template;
 
@@ -71,5 +73,19 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
         mimetypeEntity.setId(id);
         // Done
         return mimetypeEntity;
+    }
+
+    @Override
+    protected int updateMimetypeEntity(Long id, String newMimetype)
+    {
+        MimetypeEntity mimetypeEntity = getMimetypeEntity(id);
+        if (mimetypeEntity == null)
+        {
+            throw new DataIntegrityViolationException(
+                    "Cannot update mimetype as ID doesn't exist: " + id);
+        }
+        mimetypeEntity.incrementVersion();
+        mimetypeEntity.setMimetype(newMimetype);
+        return template.update(UPDATE_MIMETYPE, mimetypeEntity);
     }
 }

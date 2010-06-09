@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g 2010-04-26 15:09:27
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g 2010-05-17 15:10:38
 
 package org.alfresco.repo.search.impl.parsers;
 
@@ -13,54 +13,23 @@ import org.antlr.runtime.tree.*;
 
 public class CMIS_FTSParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "FTS", "DISJUNCTION", "CONJUNCTION", "NEGATION", "TERM", "EXACT_TERM", "PHRASE", "SYNONYM", "RANGE", "PROXIMITY", "DEFAULT", "MANDATORY", "OPTIONAL", "EXCLUDE", "FIELD_DISJUNCTION", "FIELD_CONJUNCTION", "FIELD_NEGATION", "FIELD_GROUP", "FIELD_DEFAULT", "FIELD_MANDATORY", "FIELD_OPTIONAL", "FIELD_EXCLUDE", "FG_TERM", "FG_EXACT_TERM", "FG_PHRASE", "FG_SYNONYM", "FG_PROXIMITY", "FG_RANGE", "FIELD_REF", "INCLUSIVE", "EXCLUSIVE", "QUALIFIER", "PREFIX", "NAME_SPACE", "BOOST", "FUZZY", "TEMPLATE", "MINUS", "FTSWORD", "FTSPHRASE", "OR", "F_ESC", "WS", "START_WORD", "IN_WORD"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "DISJUNCTION", "CONJUNCTION", "TERM", "PHRASE", "DEFAULT", "EXCLUDE", "MINUS", "FTSWORD", "FTSPHRASE", "OR", "F_ESC", "WS", "START_WORD", "IN_WORD"
     };
-    public static final int TERM=8;
-    public static final int PREFIX=36;
-    public static final int FG_PROXIMITY=30;
-    public static final int FG_TERM=26;
-    public static final int EXACT_TERM=9;
-    public static final int FUZZY=39;
-    public static final int FIELD_DISJUNCTION=18;
-    public static final int MANDATORY=15;
-    public static final int FG_EXACT_TERM=27;
-    public static final int FIELD_EXCLUDE=25;
-    public static final int EXCLUSIVE=34;
+    public static final int TERM=6;
+    public static final int START_WORD=16;
+    public static final int DISJUNCTION=4;
+    public static final int WS=15;
+    public static final int FTSPHRASE=12;
+    public static final int CONJUNCTION=5;
+    public static final int OR=13;
+    public static final int DEFAULT=8;
+    public static final int IN_WORD=17;
+    public static final int MINUS=10;
     public static final int EOF=-1;
-    public static final int NAME_SPACE=37;
-    public static final int BOOST=38;
-    public static final int START_WORD=47;
-    public static final int FIELD_DEFAULT=22;
-    public static final int FIELD_OPTIONAL=24;
-    public static final int F_ESC=45;
-    public static final int SYNONYM=11;
-    public static final int EXCLUDE=17;
-    public static final int QUALIFIER=35;
-    public static final int CONJUNCTION=6;
-    public static final int FIELD_GROUP=21;
-    public static final int DEFAULT=14;
-    public static final int IN_WORD=48;
-    public static final int RANGE=12;
-    public static final int MINUS=41;
-    public static final int PROXIMITY=13;
-    public static final int FIELD_REF=32;
-    public static final int PHRASE=10;
-    public static final int FTSWORD=42;
-    public static final int OPTIONAL=16;
-    public static final int DISJUNCTION=5;
-    public static final int FTS=4;
-    public static final int WS=46;
-    public static final int FG_SYNONYM=29;
-    public static final int NEGATION=7;
-    public static final int TEMPLATE=40;
-    public static final int FTSPHRASE=43;
-    public static final int FIELD_CONJUNCTION=19;
-    public static final int INCLUSIVE=33;
-    public static final int OR=44;
-    public static final int FIELD_MANDATORY=23;
-    public static final int FG_RANGE=31;
-    public static final int FG_PHRASE=28;
-    public static final int FIELD_NEGATION=20;
+    public static final int F_ESC=14;
+    public static final int FTSWORD=11;
+    public static final int PHRASE=7;
+    public static final int EXCLUDE=9;
 
     // delegates
     // delegators
@@ -84,7 +53,7 @@ public class CMIS_FTSParser extends Parser {
     }
 
     public String[] getTokenNames() { return CMIS_FTSParser.tokenNames; }
-    public String getGrammarFileName() { return "W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g"; }
+    public String getGrammarFileName() { return "W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g"; }
 
 
         private Stack<String> paraphrases = new Stack<String>();
@@ -222,7 +191,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "cmisFtsQuery"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:309:1: cmisFtsQuery : ftsCmisDisjunction EOF -> ftsCmisDisjunction ;
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:278:1: cmisFtsQuery : ftsCmisDisjunction EOF -> ftsCmisDisjunction ;
     public final CMIS_FTSParser.cmisFtsQuery_return cmisFtsQuery() throws RecognitionException {
         CMIS_FTSParser.cmisFtsQuery_return retval = new CMIS_FTSParser.cmisFtsQuery_return();
         retval.start = input.LT(1);
@@ -237,16 +206,16 @@ public class CMIS_FTSParser extends Parser {
         RewriteRuleTokenStream stream_EOF=new RewriteRuleTokenStream(adaptor,"token EOF");
         RewriteRuleSubtreeStream stream_ftsCmisDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsCmisDisjunction");
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:310:9: ( ftsCmisDisjunction EOF -> ftsCmisDisjunction )
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:311:9: ftsCmisDisjunction EOF
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:279:9: ( ftsCmisDisjunction EOF -> ftsCmisDisjunction )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:280:9: ftsCmisDisjunction EOF
             {
-            pushFollow(FOLLOW_ftsCmisDisjunction_in_cmisFtsQuery535);
+            pushFollow(FOLLOW_ftsCmisDisjunction_in_cmisFtsQuery194);
             ftsCmisDisjunction1=ftsCmisDisjunction();
 
             state._fsp--;
 
             stream_ftsCmisDisjunction.add(ftsCmisDisjunction1.getTree());
-            EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_cmisFtsQuery537);  
+            EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_cmisFtsQuery196);  
             stream_EOF.add(EOF2);
 
 
@@ -262,7 +231,7 @@ public class CMIS_FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 312:17: -> ftsCmisDisjunction
+            // 281:17: -> ftsCmisDisjunction
             {
                 adaptor.addChild(root_0, stream_ftsCmisDisjunction.nextTree());
 
@@ -294,7 +263,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "ftsCmisDisjunction"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:320:1: ftsCmisDisjunction : ftsCmisConjunction ( or ftsCmisConjunction )* -> ^( DISJUNCTION ( ftsCmisConjunction )+ ) ;
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:289:1: ftsCmisDisjunction : ftsCmisConjunction ( or ftsCmisConjunction )* -> ^( DISJUNCTION ( ftsCmisConjunction )+ ) ;
     public final CMIS_FTSParser.ftsCmisDisjunction_return ftsCmisDisjunction() throws RecognitionException {
         CMIS_FTSParser.ftsCmisDisjunction_return retval = new CMIS_FTSParser.ftsCmisDisjunction_return();
         retval.start = input.LT(1);
@@ -311,16 +280,16 @@ public class CMIS_FTSParser extends Parser {
         RewriteRuleSubtreeStream stream_ftsCmisConjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsCmisConjunction");
         RewriteRuleSubtreeStream stream_or=new RewriteRuleSubtreeStream(adaptor,"rule or");
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:321:9: ( ftsCmisConjunction ( or ftsCmisConjunction )* -> ^( DISJUNCTION ( ftsCmisConjunction )+ ) )
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:322:9: ftsCmisConjunction ( or ftsCmisConjunction )*
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:290:9: ( ftsCmisConjunction ( or ftsCmisConjunction )* -> ^( DISJUNCTION ( ftsCmisConjunction )+ ) )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:291:9: ftsCmisConjunction ( or ftsCmisConjunction )*
             {
-            pushFollow(FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction593);
+            pushFollow(FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction252);
             ftsCmisConjunction3=ftsCmisConjunction();
 
             state._fsp--;
 
             stream_ftsCmisConjunction.add(ftsCmisConjunction3.getTree());
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:322:28: ( or ftsCmisConjunction )*
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:291:28: ( or ftsCmisConjunction )*
             loop1:
             do {
                 int alt1=2;
@@ -333,15 +302,15 @@ public class CMIS_FTSParser extends Parser {
 
                 switch (alt1) {
             	case 1 :
-            	    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:322:29: or ftsCmisConjunction
+            	    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:291:29: or ftsCmisConjunction
             	    {
-            	    pushFollow(FOLLOW_or_in_ftsCmisDisjunction596);
+            	    pushFollow(FOLLOW_or_in_ftsCmisDisjunction255);
             	    or4=or();
 
             	    state._fsp--;
 
             	    stream_or.add(or4.getTree());
-            	    pushFollow(FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction598);
+            	    pushFollow(FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction257);
             	    ftsCmisConjunction5=ftsCmisConjunction();
 
             	    state._fsp--;
@@ -369,9 +338,9 @@ public class CMIS_FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 323:17: -> ^( DISJUNCTION ( ftsCmisConjunction )+ )
+            // 292:17: -> ^( DISJUNCTION ( ftsCmisConjunction )+ )
             {
-                // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:324:25: ^( DISJUNCTION ( ftsCmisConjunction )+ )
+                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:293:25: ^( DISJUNCTION ( ftsCmisConjunction )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -416,7 +385,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "ftsCmisConjunction"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:327:1: ftsCmisConjunction : ( ftsCmisPrefixed )+ -> ^( CONJUNCTION ( ftsCmisPrefixed )+ ) ;
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:296:1: ftsCmisConjunction : ( ftsCmisPrefixed )+ -> ^( CONJUNCTION ( ftsCmisPrefixed )+ ) ;
     public final CMIS_FTSParser.ftsCmisConjunction_return ftsCmisConjunction() throws RecognitionException {
         CMIS_FTSParser.ftsCmisConjunction_return retval = new CMIS_FTSParser.ftsCmisConjunction_return();
         retval.start = input.LT(1);
@@ -428,10 +397,10 @@ public class CMIS_FTSParser extends Parser {
 
         RewriteRuleSubtreeStream stream_ftsCmisPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsCmisPrefixed");
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:328:9: ( ( ftsCmisPrefixed )+ -> ^( CONJUNCTION ( ftsCmisPrefixed )+ ) )
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:329:9: ( ftsCmisPrefixed )+
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:297:9: ( ( ftsCmisPrefixed )+ -> ^( CONJUNCTION ( ftsCmisPrefixed )+ ) )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:298:9: ( ftsCmisPrefixed )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:329:9: ( ftsCmisPrefixed )+
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:298:9: ( ftsCmisPrefixed )+
             int cnt2=0;
             loop2:
             do {
@@ -445,9 +414,9 @@ public class CMIS_FTSParser extends Parser {
 
                 switch (alt2) {
             	case 1 :
-            	    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:329:9: ftsCmisPrefixed
+            	    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:298:9: ftsCmisPrefixed
             	    {
-            	    pushFollow(FOLLOW_ftsCmisPrefixed_in_ftsCmisConjunction682);
+            	    pushFollow(FOLLOW_ftsCmisPrefixed_in_ftsCmisConjunction341);
             	    ftsCmisPrefixed6=ftsCmisPrefixed();
 
             	    state._fsp--;
@@ -479,9 +448,9 @@ public class CMIS_FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 330:17: -> ^( CONJUNCTION ( ftsCmisPrefixed )+ )
+            // 299:17: -> ^( CONJUNCTION ( ftsCmisPrefixed )+ )
             {
-                // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:331:25: ^( CONJUNCTION ( ftsCmisPrefixed )+ )
+                // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:300:25: ^( CONJUNCTION ( ftsCmisPrefixed )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -526,7 +495,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "ftsCmisPrefixed"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:334:1: ftsCmisPrefixed : ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) );
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:303:1: ftsCmisPrefixed : ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) );
     public final CMIS_FTSParser.ftsCmisPrefixed_return ftsCmisPrefixed() throws RecognitionException {
         CMIS_FTSParser.ftsCmisPrefixed_return retval = new CMIS_FTSParser.ftsCmisPrefixed_return();
         retval.start = input.LT(1);
@@ -543,7 +512,7 @@ public class CMIS_FTSParser extends Parser {
         RewriteRuleTokenStream stream_MINUS=new RewriteRuleTokenStream(adaptor,"token MINUS");
         RewriteRuleSubtreeStream stream_cmisTest=new RewriteRuleSubtreeStream(adaptor,"rule cmisTest");
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:335:9: ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:304:9: ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) )
             int alt3=2;
             int LA3_0 = input.LA(1);
 
@@ -561,9 +530,9 @@ public class CMIS_FTSParser extends Parser {
             }
             switch (alt3) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:336:9: cmisTest
+                    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:305:9: cmisTest
                     {
-                    pushFollow(FOLLOW_cmisTest_in_ftsCmisPrefixed765);
+                    pushFollow(FOLLOW_cmisTest_in_ftsCmisPrefixed424);
                     cmisTest7=cmisTest();
 
                     state._fsp--;
@@ -582,9 +551,9 @@ public class CMIS_FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 337:17: -> ^( DEFAULT cmisTest )
+                    // 306:17: -> ^( DEFAULT cmisTest )
                     {
-                        // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:338:25: ^( DEFAULT cmisTest )
+                        // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:307:25: ^( DEFAULT cmisTest )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DEFAULT, "DEFAULT"), root_1);
@@ -600,12 +569,12 @@ public class CMIS_FTSParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:339:11: MINUS cmisTest
+                    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:308:11: MINUS cmisTest
                     {
-                    MINUS8=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsCmisPrefixed825);  
+                    MINUS8=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsCmisPrefixed484);  
                     stream_MINUS.add(MINUS8);
 
-                    pushFollow(FOLLOW_cmisTest_in_ftsCmisPrefixed827);
+                    pushFollow(FOLLOW_cmisTest_in_ftsCmisPrefixed486);
                     cmisTest9=cmisTest();
 
                     state._fsp--;
@@ -624,9 +593,9 @@ public class CMIS_FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 340:17: -> ^( EXCLUDE cmisTest )
+                    // 309:17: -> ^( EXCLUDE cmisTest )
                     {
-                        // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:341:25: ^( EXCLUDE cmisTest )
+                        // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:310:25: ^( EXCLUDE cmisTest )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXCLUDE, "EXCLUDE"), root_1);
@@ -666,7 +635,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "cmisTest"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:344:1: cmisTest : ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) );
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:313:1: cmisTest : ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) );
     public final CMIS_FTSParser.cmisTest_return cmisTest() throws RecognitionException {
         CMIS_FTSParser.cmisTest_return retval = new CMIS_FTSParser.cmisTest_return();
         retval.start = input.LT(1);
@@ -681,7 +650,7 @@ public class CMIS_FTSParser extends Parser {
         RewriteRuleSubtreeStream stream_cmisPhrase=new RewriteRuleSubtreeStream(adaptor,"rule cmisPhrase");
         RewriteRuleSubtreeStream stream_cmisTerm=new RewriteRuleSubtreeStream(adaptor,"rule cmisTerm");
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:345:9: ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:314:9: ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -699,9 +668,9 @@ public class CMIS_FTSParser extends Parser {
             }
             switch (alt4) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:346:9: cmisTerm
+                    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:315:9: cmisTerm
                     {
-                    pushFollow(FOLLOW_cmisTerm_in_cmisTest908);
+                    pushFollow(FOLLOW_cmisTerm_in_cmisTest567);
                     cmisTerm10=cmisTerm();
 
                     state._fsp--;
@@ -720,9 +689,9 @@ public class CMIS_FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 347:17: -> ^( TERM cmisTerm )
+                    // 316:17: -> ^( TERM cmisTerm )
                     {
-                        // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:348:25: ^( TERM cmisTerm )
+                        // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:317:25: ^( TERM cmisTerm )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
@@ -738,9 +707,9 @@ public class CMIS_FTSParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:349:11: cmisPhrase
+                    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:318:11: cmisPhrase
                     {
-                    pushFollow(FOLLOW_cmisPhrase_in_cmisTest968);
+                    pushFollow(FOLLOW_cmisPhrase_in_cmisTest627);
                     cmisPhrase11=cmisPhrase();
 
                     state._fsp--;
@@ -759,9 +728,9 @@ public class CMIS_FTSParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 350:17: -> ^( PHRASE cmisPhrase )
+                    // 319:17: -> ^( PHRASE cmisPhrase )
                     {
-                        // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:351:25: ^( PHRASE cmisPhrase )
+                        // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:320:25: ^( PHRASE cmisPhrase )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
@@ -801,7 +770,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "cmisTerm"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:355:1: cmisTerm : FTSWORD -> FTSWORD ;
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:324:1: cmisTerm : FTSWORD -> FTSWORD ;
     public final CMIS_FTSParser.cmisTerm_return cmisTerm() throws RecognitionException {
         CMIS_FTSParser.cmisTerm_return retval = new CMIS_FTSParser.cmisTerm_return();
         retval.start = input.LT(1);
@@ -814,10 +783,10 @@ public class CMIS_FTSParser extends Parser {
         RewriteRuleTokenStream stream_FTSWORD=new RewriteRuleTokenStream(adaptor,"token FTSWORD");
 
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:356:9: ( FTSWORD -> FTSWORD )
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:357:9: FTSWORD
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:325:9: ( FTSWORD -> FTSWORD )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:326:9: FTSWORD
             {
-            FTSWORD12=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_cmisTerm1058);  
+            FTSWORD12=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_cmisTerm717);  
             stream_FTSWORD.add(FTSWORD12);
 
 
@@ -833,7 +802,7 @@ public class CMIS_FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 358:17: -> FTSWORD
+            // 327:17: -> FTSWORD
             {
                 adaptor.addChild(root_0, stream_FTSWORD.nextNode());
 
@@ -865,7 +834,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "cmisPhrase"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:361:1: cmisPhrase : FTSPHRASE -> FTSPHRASE ;
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:330:1: cmisPhrase : FTSPHRASE -> FTSPHRASE ;
     public final CMIS_FTSParser.cmisPhrase_return cmisPhrase() throws RecognitionException {
         CMIS_FTSParser.cmisPhrase_return retval = new CMIS_FTSParser.cmisPhrase_return();
         retval.start = input.LT(1);
@@ -878,10 +847,10 @@ public class CMIS_FTSParser extends Parser {
         RewriteRuleTokenStream stream_FTSPHRASE=new RewriteRuleTokenStream(adaptor,"token FTSPHRASE");
 
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:362:9: ( FTSPHRASE -> FTSPHRASE )
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:363:9: FTSPHRASE
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:331:9: ( FTSPHRASE -> FTSPHRASE )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:332:9: FTSPHRASE
             {
-            FTSPHRASE13=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_cmisPhrase1111);  
+            FTSPHRASE13=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_cmisPhrase770);  
             stream_FTSPHRASE.add(FTSPHRASE13);
 
 
@@ -897,7 +866,7 @@ public class CMIS_FTSParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 364:17: -> FTSPHRASE
+            // 333:17: -> FTSPHRASE
             {
                 adaptor.addChild(root_0, stream_FTSPHRASE.nextNode());
 
@@ -929,7 +898,7 @@ public class CMIS_FTSParser extends Parser {
     };
 
     // $ANTLR start "or"
-    // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:367:1: or : OR ;
+    // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:336:1: or : OR ;
     public final CMIS_FTSParser.or_return or() throws RecognitionException {
         CMIS_FTSParser.or_return retval = new CMIS_FTSParser.or_return();
         retval.start = input.LT(1);
@@ -941,12 +910,12 @@ public class CMIS_FTSParser extends Parser {
         Object OR14_tree=null;
 
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:368:9: ( OR )
-            // W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:369:9: OR
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:337:9: ( OR )
+            // W:\\alfresco\\BRANCHES\\DEV\\V3.3-BUG-FIX\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS_FTS.g:338:9: OR
             {
             root_0 = (Object)adaptor.nil();
 
-            OR14=(Token)match(input,OR,FOLLOW_OR_in_or1164); 
+            OR14=(Token)match(input,OR,FOLLOW_OR_in_or823); 
             OR14_tree = (Object)adaptor.create(OR14);
             adaptor.addChild(root_0, OR14_tree);
 
@@ -975,19 +944,19 @@ public class CMIS_FTSParser extends Parser {
 
  
 
-    public static final BitSet FOLLOW_ftsCmisDisjunction_in_cmisFtsQuery535 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_cmisFtsQuery537 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction593 = new BitSet(new long[]{0x0000100000000002L});
-    public static final BitSet FOLLOW_or_in_ftsCmisDisjunction596 = new BitSet(new long[]{0x00000E0000000000L});
-    public static final BitSet FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction598 = new BitSet(new long[]{0x0000100000000002L});
-    public static final BitSet FOLLOW_ftsCmisPrefixed_in_ftsCmisConjunction682 = new BitSet(new long[]{0x00000E0000000002L});
-    public static final BitSet FOLLOW_cmisTest_in_ftsCmisPrefixed765 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_MINUS_in_ftsCmisPrefixed825 = new BitSet(new long[]{0x00000C0000000000L});
-    public static final BitSet FOLLOW_cmisTest_in_ftsCmisPrefixed827 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_cmisTerm_in_cmisTest908 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_cmisPhrase_in_cmisTest968 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FTSWORD_in_cmisTerm1058 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FTSPHRASE_in_cmisPhrase1111 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_OR_in_or1164 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsCmisDisjunction_in_cmisFtsQuery194 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_cmisFtsQuery196 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction252 = new BitSet(new long[]{0x0000000000002002L});
+    public static final BitSet FOLLOW_or_in_ftsCmisDisjunction255 = new BitSet(new long[]{0x0000000000001C00L});
+    public static final BitSet FOLLOW_ftsCmisConjunction_in_ftsCmisDisjunction257 = new BitSet(new long[]{0x0000000000002002L});
+    public static final BitSet FOLLOW_ftsCmisPrefixed_in_ftsCmisConjunction341 = new BitSet(new long[]{0x0000000000001C02L});
+    public static final BitSet FOLLOW_cmisTest_in_ftsCmisPrefixed424 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_MINUS_in_ftsCmisPrefixed484 = new BitSet(new long[]{0x0000000000001800L});
+    public static final BitSet FOLLOW_cmisTest_in_ftsCmisPrefixed486 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_cmisTerm_in_cmisTest567 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_cmisPhrase_in_cmisTest627 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FTSWORD_in_cmisTerm717 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_FTSPHRASE_in_cmisPhrase770 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OR_in_or823 = new BitSet(new long[]{0x0000000000000002L});
 
 }

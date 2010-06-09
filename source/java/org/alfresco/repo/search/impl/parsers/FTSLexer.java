@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2010-04-26 13:41:22
+// $ANTLR 3.2 Sep 23, 2009 12:02:23 W:\\alfresco\\HEAD\\root\\projects\\repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2010-05-01 13:03:39
 
 package org.alfresco.repo.search.impl.parsers;
 import org.alfresco.cmis.CMISQueryException;

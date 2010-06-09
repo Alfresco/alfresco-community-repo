@@ -36,30 +36,32 @@ public class AVMServicePerfTest extends AVMServiceTestBase
         add(100, 10);
     }
     
-    public void testAdd100x10b() throws Throwable
+    /*
+    public void xtestAdd100x10b() throws Throwable
     {
         add(100, 10);
     }
     
-    public void testAdd100x10c() throws Throwable
+    public void xtestAdd100x10c() throws Throwable
     {
         add(100, 10);
     }
     
-    public void testAdd100x10d() throws Throwable
+    public void xtestAdd100x10d() throws Throwable
     {
         add(100, 10);
     }
     
-    public void testAdd500x2e() throws Throwable
+    public void xtestAdd500x2e() throws Throwable
     {
         add(500, 2);
     }
     
-    public void testAdd500x4g() throws Throwable
+    public void xtestAdd500x4g() throws Throwable
     {
         add(500, 4);
     }
+    */
     
     /**
      * Test adding 100 files to each of 10 directories.

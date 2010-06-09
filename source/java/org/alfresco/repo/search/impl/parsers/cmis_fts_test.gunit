@@ -63,9 +63,9 @@ FTSPHRASE:
 
 OR:
 "OR" OK
-"or" FAIL
-"Or" FAIL
-"oR" FAIL
+"or" OK
+"Or" OK
+"oR" OK
 
 MINUS:
 "-" OK

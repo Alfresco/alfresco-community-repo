@@ -21,12 +21,14 @@ package org.alfresco.repo.security.permissions.dynamic;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -142,8 +144,11 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        authenticationComponent.clearCurrentSecurityContext();
-        userTransaction.rollback();
+        if ((userTransaction.getStatus() == Status.STATUS_ACTIVE) || (userTransaction.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+        {
+            userTransaction.rollback();
+        }
+        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
 

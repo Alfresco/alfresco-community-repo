@@ -114,6 +114,15 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     
     private static final String ROLE_CONTENT_MANAGER = "ContentManager";
     
+    // File status values used in the file state cache
+    
+    public static final int FileUnknown     = FileStatus.Unknown;
+    public static final int FileNotExist    = FileStatus.NotExist;
+    public static final int FileExists      = FileStatus.FileExists;
+    public static final int DirectoryExists = FileStatus.DirectoryExists;
+    
+    public static final int CustomFileStatus= FileStatus.MaxStatus + 1;
+    
     // Services and helpers
 
     private AVMService m_avmService;
@@ -2376,6 +2385,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     
                     fstate = avmCtx.getStateCache().findFileState( FileName.DOS_SEPERATOR_STR, true);
                     fstate.setExpiryTime( FileState.NoTimeout);
+                    fstate.setFileStatus( DirectoryExists);
                     
                     // Get a list of the available AVM stores
                     
@@ -2609,6 +2619,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     // Create a file state for the store path
                     
                     fstate = avmCtx.getStateCache().findFileState( str.toString(), true);
+                    fstate.setFileStatus( DirectoryExists);
                     
                     // Add a pseudo file for the head version
                     
@@ -2650,6 +2661,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     // Create a file state for the store head folder path
                     
                     fstate = avmCtx.getStateCache().findFileState( str.toString(), true);
+                    fstate.setFileStatus( DirectoryExists);
                     
                     // Add a pseudo file for the data pseudo folder
                     
@@ -2688,6 +2700,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     
                     relPath = str.toString();
                     fstate = avmCtx.getStateCache().findFileState( relPath, true);
+                    fstate.setFileStatus( DirectoryExists);
                     
                     // Add pseudo folders if the list is empty
                     
@@ -2764,6 +2777,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     // Create a file state for the version folder path
                     
                     fstate = avmCtx.getStateCache().findFileState( str.toString(), true);
+                    fstate.setFileStatus( DirectoryExists);
                     
                     // Add a pseudo file for the data pseudo folder
                     

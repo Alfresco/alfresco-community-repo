@@ -209,7 +209,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
             if (existingAcl.getAclType() == ACLType.OLD)
             {
                 result.increment(ACLType.DEFINING);
-                SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
+                SimpleAccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
                 properties.setInherits(existingAcl.getInherits());
                 AccessControlList existing = aclDaoComponent.getAccessControlList(existingAcl.getId());
                 Long actuallyInherited = null;
@@ -240,7 +240,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
             if (isRoot)
             {
                 result.increment(ACLType.DEFINING);
-                SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
+                SimpleAccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
                 Long id = aclDaoComponent.createAccessControlList(properties);
 
                 DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(id);

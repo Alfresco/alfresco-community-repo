@@ -575,6 +575,154 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
     }
 
+    /**
+     * Test for fault raised as ALF-2772
+     * (https://issues.alfresco.com/jira/browse/ALF-2772) When transferring
+     * nodes it shouldn't matter the order in which they appear in the snapshot.
+     * That is to say, it shouldn't matter if a child node is listed before its
+     * parent node.
+     * 
+     * Typically this is true, but in the special case where the parent node is
+     * being restored from the target's archive store then there is a fault. The
+     * process should be:
+     * 
+     * 1. Process child node 
+     * 2. Fail to find parent node 
+     * 3. Place child node in temporary location and mark as an orphan 
+     * 4. Process parent node 
+     * 5. Create node to correspond to parent node 
+     * 6. "Re-parent" orphaned child node with parent node
+     * 
+     * However, in the case where the parent node is found in the target's
+     * archive store, the process is actually:
+     * 
+     * 1. Process child node 
+     * 2. Fail to find parent node 
+     * 3. Place child node in temporary location and mark as an orphan 
+     * 4. Process parent node 
+     * 5. Find corresponding parent node in archive store and restore it 
+     * 6. Update corresponding parent node
+     * 
+     * Note that, in this case, we are not re-parenting the orphan as we should be.
+     * 
+     * @throws Exception
+     */
+    public void testJira_ALF_2772() throws Exception
+    {
+        setDefaultRollback(true);
+        startNewTransaction();
+        String transferId = receiver.start();
+
+        TransferManifestNormalNode node1 = createContentNode(transferId);
+        TransferManifestNormalNode node2 = createContentNode(transferId);
+        TransferManifestNormalNode node11 = createFolderNode(transferId);
+
+        associatePeers(node1, node2);
+        moveNode(node2, node11);
+
+        TransferManifestDeletedNode deletedNode11 = createDeletedNode(node11);
+
+        endTransaction();
+
+        List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+        
+        
+        //First we'll just send a folder node
+        nodes.add(node11);
+        
+        this.setDefaultRollback(false);
+        startNewTransaction();
+        try
+        {
+            String snapshot = createSnapshot(nodes);
+            log.debug(snapshot);
+            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+
+            for (TransferManifestNode node : nodes)
+            {
+                receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+            }
+            receiver.commit(transferId);
+
+            for (TransferManifestNode node : nodes)
+            {
+                assertTrue(nodeService.exists(node.getNodeRef()));
+            }
+        }
+        finally
+        {
+            receiver.end(transferId);
+            endTransaction();
+        }
+
+
+        //Now we delete the folder
+        startNewTransaction();
+        try
+        {
+            transferId = receiver.start();
+            String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { deletedNode11 }));
+            log.debug(snapshot);
+            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+            receiver.commit(transferId);
+        }
+        finally
+        {
+            receiver.end(transferId);
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            log.debug("Test success of transfer...");
+            TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
+            assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
+
+            assertTrue(nodeService.exists(deletedNode11.getNodeRef()));
+            assertTrue(nodeService.hasAspect(deletedNode11.getNodeRef(), ContentModel.ASPECT_ARCHIVED));
+            log.debug("Successfully tested existence of archive node: " + deletedNode11.getNodeRef());
+            
+            log.debug("Successfully tested existence of all archive nodes");
+            
+            log.debug("Testing existence of original node: " + node11.getNodeRef());
+            assertFalse(nodeService.exists(node11.getNodeRef()));
+
+            log.debug("Successfully tested non-existence of all original nodes");
+            
+            log.debug("Progress indication: " + progress.getCurrentPosition() + "/" + progress.getEndPosition());
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+
+        //Finally we transfer node2 and node11 (in that order)
+        String errorMsgId = null;
+        startNewTransaction();
+        try
+        {
+            transferId = receiver.start();
+            String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { node2, node11 }));
+            log.debug(snapshot);
+            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+            receiver.saveContent(transferId, node2.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+            receiver.commit(transferId);
+        }
+        catch (Exception ex)
+        {
+            fail("Test of ALF-2772 failed: " + ex.getMessage());
+        }
+        finally
+        {
+            receiver.end(transferId);
+            endTransaction();
+        }
+
+    }
+    
+    
     public void testAsyncCommit() throws Exception
     {
         log.info("testAsyncCommit");

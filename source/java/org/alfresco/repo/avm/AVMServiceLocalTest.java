@@ -76,7 +76,7 @@ public class AVMServiceLocalTest extends TestCase
     protected ApplicationContext fContext;
 
     protected NameMatcher excluder;
-    
+   
     
     protected void setUp() throws Exception
     {
@@ -880,38 +880,56 @@ public class AVMServiceLocalTest extends TestCase
      */
     public void testBulkUpdateLD() throws Exception
     {
+        //String LOAD_DIR = "config/alfresco/bootstrap";
+        String LOAD_DIR = "source/java/org/alfresco/repo/avm/actions";
+        
+        String[] split = LOAD_DIR.split("/");
+        String DIR = split[split.length-1];
+        
         try
         {
             RemoteBulkLoader loader = new RemoteBulkLoader();
             loader.setAvmRemoteService(fService);
 
             fService.createLayeredDirectory("main:/", "layer:/", "layer");
-            loader.recursiveLoad("config/alfresco/bootstrap", "layer:/layer");
+            
+            loader.recursiveLoad(LOAD_DIR, "layer:/layer");
+            
+            
+            
             List<AVMDifference> diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(1, diffs.size());
-            assertEquals("[layer:/layer/bootstrap[-1] > main:/bootstrap[-1]]", diffs.toString());
+            assertEquals("[layer:/layer/"+DIR+"[-1] > main:/"+DIR+"[-1]]", diffs.toString());
+            
             fService.createSnapshot("layer", null, null);
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             fService.createSnapshot("main", null, null);
+            
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(0, diffs.size());
+            
             fSyncService.flatten("layer:/layer", "main:/");
             recursiveList("layer");
             recursiveList("main");
             fService.createStore("layer2");
             fService.createLayeredDirectory("layer:/layer", "layer2:/", "layer");
-            loader.recursiveLoad("config/alfresco/bootstrap", "layer2:/layer/bootstrap");
+            
+            loader.recursiveLoad(LOAD_DIR, "layer2:/layer/"+DIR);
+            
             fService.createSnapshot("layer2", null, null);
             diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer", null);
             assertEquals(1, diffs.size());
-            assertEquals("[layer2:/layer/bootstrap/bootstrap[-1] > layer:/layer/bootstrap/bootstrap[-1]]", diffs.toString());
+            assertEquals("[layer2:/layer/"+DIR+"/"+DIR+"[-1] > layer:/layer/"+DIR+"/"+DIR+"[-1]]", diffs.toString());
+            
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             diffs = fSyncService.compare(-1, "layer2:/layer", -1, "layer:/layer", null);
             assertEquals(0, diffs.size());
+            
             fSyncService.flatten("layer2:/layer", "layer:/layer");
             diffs = fSyncService.compare(-1, "layer:/layer", -1, "main:/", null);
             assertEquals(1, diffs.size());
-            assertEquals("[layer:/layer/bootstrap/bootstrap[-1] > main:/bootstrap/bootstrap[-1]]", diffs.toString());          
+            assertEquals("[layer:/layer/"+DIR+"/"+DIR+"[-1] > main:/"+DIR+"/"+DIR+"[-1]]", diffs.toString());
+            
             recursiveList("layer2");
             recursiveList("layer");
             recursiveList("main");
@@ -923,7 +941,7 @@ public class AVMServiceLocalTest extends TestCase
         }
         finally
         {
-            fService.purgeStore("layer2");
+            if (fService.getStore("layer2") != null) { fService.purgeStore("layer2"); }
         }
     }
     

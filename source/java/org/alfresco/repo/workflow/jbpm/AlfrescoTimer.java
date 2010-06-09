@@ -67,7 +67,7 @@ public class AlfrescoTimer extends Timer
         
         // establish authentication context
         String username = null;
-        TaskInstance taskInstance = getTaskInstance();
+        final TaskInstance taskInstance = getTaskInstance();
         if (taskInstance != null)
         {
             String actorId = taskInstance.getActorId();
@@ -84,6 +84,15 @@ public class AlfrescoTimer extends Timer
             public Boolean doWork() throws Exception
             {
                 boolean deleteTimer = AlfrescoTimer.super.execute(jbpmContext);
+                
+                // End the task. 
+                // Note the order is a little odd here as the task will be ended
+                // after the token has been signalled to move to the next node.
+                if (taskInstance != null && taskInstance.isOpen())
+                {
+                    taskInstance.setSignalling(false);
+                	taskInstance.end();
+                }
                 return deleteTimer;
             }
         }, (username == null) ? "system" : username);

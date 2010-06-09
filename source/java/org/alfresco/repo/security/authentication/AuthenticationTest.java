@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -205,8 +206,11 @@ public class AuthenticationTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        authenticationComponentImpl.clearCurrentSecurityContext();
-        userTransaction.rollback();
+        if ((userTransaction.getStatus() == Status.STATUS_ACTIVE) || (userTransaction.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+        {
+            userTransaction.rollback();
+        }
+        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
 

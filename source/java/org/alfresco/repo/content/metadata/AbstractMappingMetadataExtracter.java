@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -105,7 +106,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Set<String> supportedMimetypes;
     private OverwritePolicy overwritePolicy;
     private boolean failOnTypeConversion;
-    private Set<DateFormat> supportedDateFormats;
+    private Set<DateFormat> supportedDateFormats = new HashSet<DateFormat>(0);
     private Map<String, Set<QName>> mapping;
     private boolean inheritDefaultMapping;
 
@@ -134,7 +135,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         // Set defaults
         overwritePolicy = OverwritePolicy.PRAGMATIC;
         failOnTypeConversion = true;
-        supportedDateFormats = new HashSet<DateFormat>(0);
         mapping = null;                     // The default will be fetched
         inheritDefaultMapping = false;      // Any overrides are complete 
         initialized = false;
@@ -260,8 +260,22 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             try
             {
+                /**
+                 * Regional date format
+                 */
                 DateFormat df = new SimpleDateFormat(dateFormatStr);
                 this.supportedDateFormats.add(df);
+                
+                /**
+                 * Date format can be locale specific - make sure English format always works
+                 */ 
+                /* 
+                 * TODO MER 25 May 2010 - Added this as a quick fix for IMAP date parsing which is always 
+                 * English regardless of Locale.  Some more thought and/or code is required to configure 
+                 * the relationship between properties, format and locale.
+                 */
+                DateFormat englishFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
+                this.supportedDateFormats.add(englishFormat);
             }
             catch (Throwable e)
             {

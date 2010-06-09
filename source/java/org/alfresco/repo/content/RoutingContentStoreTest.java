@@ -59,13 +59,13 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         File tempDir = TempFileProvider.getTempDir();
         // Create a subdirectory for A
         File storeADir = new File(tempDir, "A");
-        storeA = new FileContentStore(applicationEventPublisher, storeADir);
+        storeA = new FileContentStore(ctx, storeADir);
         // Create a subdirectory for B
         File storeBDir = new File(tempDir, "B");
-        storeB = new FileContentStore(applicationEventPublisher, storeBDir);
+        storeB = new FileContentStore(ctx, storeBDir);
         // Create a subdirectory for C
         File storeCDir = new File(tempDir, "C");
-        storeC = new DumbReadOnlyFileStore(new FileContentStore(applicationEventPublisher, storeCDir));
+        storeC = new DumbReadOnlyFileStore(new FileContentStore(ctx, storeCDir));
         // No subdirectory for D
         storeD = new SupportsNoUrlFormatStore();
         // Create the routing store

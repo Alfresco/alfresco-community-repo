@@ -548,8 +548,9 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 {
                     filteringResultSet.setIncluded(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
                         .getSearchParameters()));
+                return filteringResultSet;
             }
             else
             {
@@ -557,15 +558,17 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 {
                     filteringResultSet.setIncluded(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
                         .getSearchParameters()));
+                return filteringResultSet;
             }
+            
         }
 
         // record the start time
         long startTimeMillis = System.currentTimeMillis();
         // set the default, unlimited resultset type
-        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
                 .getSearchParameters()));
 
         for (int i = 0; i < returnedObject.length(); i++)

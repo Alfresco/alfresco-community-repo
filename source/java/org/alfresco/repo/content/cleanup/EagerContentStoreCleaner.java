@@ -140,28 +140,47 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
 
     /**
      * Queues orphaned content for post-transaction removal
+     * <p/>
+     * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction
+     *            commits and if 'eager' cleanup is turned on.
+     * 
+     * @return  Returns <tt>true</tt> if the content was scheduled for post-transaction deletion.
+     *          If the return value is <tt>true</tt> then the calling code <b>must</b> delete
+     *          the row entry for the content URL provided <b>BEFORE THE TRANSACTION COMMITS!</b>
      */
-    public void registerOrphanedContentUrl(String contentUrl)
+    public boolean registerOrphanedContentUrl(String contentUrl)
     {
-        registerOrphanedContentUrl(contentUrl, false);
+        return registerOrphanedContentUrl(contentUrl, false);
     }
 
     /**
      * Queues orphaned content for post-transaction removal
+     * <p/>
+     * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction
+     *            commits and if 'eager' cleanup is turned on.
      * 
      * @param force         <tt>true</tt> for force the post-commit URL deletion
      *                      regardless of the setting {@link #setEagerOrphanCleanup(boolean)}.
+     * @return  Returns <tt>true</tt> if the content was scheduled for post-transaction deletion.
+     *          If the return value is <tt>true</tt> then the calling code <b>must</b> delete
+     *          the row entry for the content URL provided <b>BEFORE THE TRANSACTION COMMITS!</b>
      */
-    public void registerOrphanedContentUrl(String contentUrl, boolean force)
+    public boolean registerOrphanedContentUrl(String contentUrl, boolean force)
     {
         if (!eagerOrphanCleanup && !force)
         {
-            return;
+            return false;
         }
         Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
         urlsToDelete.add(contentUrl);
         // Register to listen for transaction commit
         AlfrescoTransactionSupport.bindListener(this);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Scheduled content for post-commit eager cleanup: " + contentUrl);
+        }
+        return true;
     }
 
     /**
@@ -218,7 +237,7 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
                 {
                     logger.debug("   " + (urlsToDelete.size() - 10) + " more ...");
                 }
-                else
+                else if (count < 10)
                 {
                     logger.debug("   Deleting content URL: " + contentUrl);
                 }

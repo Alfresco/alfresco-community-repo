@@ -256,7 +256,7 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
 					}
     				
     			}, 
-    			AuthenticationUtil.getAdminUserName());
+    			AuthenticationUtil.getSystemUserName());
         }
         else
         {

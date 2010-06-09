@@ -13,7 +13,7 @@
 
 SELECT SETVAL('hibernate_sequence', GREATEST((MAX(id)+1), NEXTVAL('hibernate_sequence'))) FROM avm_nodes;
 
-insert into avm_nodes
+insert into avm_nodes (id, class_type, vers, version_id, guid, creator, owner, lastModifier, createDate, modDate, accessDate, is_root, store_new_id, acl_id, deletedType, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length)
 select 
 (select max(id)+1 from avm_nodes),
 class_type, vers, version_id, guid, creator, owner, lastModifier, createDate, modDate, accessDate, is_root, store_new_id, acl_id, deletedType, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length

@@ -20,6 +20,7 @@ package org.alfresco.repo.model.filefolder;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +30,8 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -406,7 +409,7 @@ public class FileFolderPerformanceTester extends TestCase
         }
     }
     
-    private static void run(ApplicationContext ctx, String ... args) throws Throwable
+    private static void run(final ApplicationContext ctx, String ... args) throws Throwable
     {
         ArgumentHelper argHelper = new ArgumentHelper(getUsage(), args);
         final int fileCount = argHelper.getIntegerValue("files", true, 1, 10000);
@@ -418,6 +421,7 @@ public class FileFolderPerformanceTester extends TestCase
         final MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         final PermissionService permissionService = serviceRegistry.getPermissionService();
         final NodeService nodeService = serviceRegistry.getNodeService();
+        final SearchService searchService = serviceRegistry.getSearchService();
         final TransactionService transactionService = serviceRegistry.getTransactionService();
         final FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
         
@@ -438,23 +442,42 @@ public class FileFolderPerformanceTester extends TestCase
             public NodeRef execute() throws Throwable
             {
                 AuthenticationUtil.pushAuthentication();
+
+                DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+                M2Model model = M2Model.createModel("tempModel");
+                model.createNamespace("test", "t");
+                model.createNamespace("testx", "");
+                for (int m = 0; m < 30; m++)
+                {
+                    model.createAspect("t:aspect_" + m);
+                }
+                dictionaryDao.putModel(model);
+                
                 NodeRef folderNodeRef = null;
                 try
                 {
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                     if (selectedFolderNodeRef == null)
                     {
-                        // Create a new store
-                        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, GUID.generate());
-                        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-                        // Create a folder
-                        folderNodeRef = nodeService.createNode(
-                                rootNodeRef,
-                                ContentModel.ASSOC_CHILDREN,
-                                ContentModel.ASSOC_CHILDREN,
-                                ContentModel.TYPE_FOLDER,
-                                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, "TOP FOLDER")
-                                ).getChildRef();
+                        // find the guest folder
+                        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+                        ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, "/app:company_home");
+                        try
+                        {
+                            if (rs.length() == 0)
+                            {
+                                throw new AlfrescoRuntimeException("Didn't find Company Home");
+                            }
+                            NodeRef companyHomeNodeRef = rs.getNodeRef(0);
+                            folderNodeRef = fileFolderService.create(
+                                    companyHomeNodeRef,
+                                    "TOP_FOLDER_" + System.currentTimeMillis(),
+                                    ContentModel.TYPE_FOLDER).getNodeRef();
+                        }
+                        finally
+                        {
+                            rs.close();
+                        }
                         // Grant permissions
                         permissionService.setPermission(folderNodeRef, user, PermissionService.ALL_PERMISSIONS, true);
                     }
@@ -472,15 +495,33 @@ public class FileFolderPerformanceTester extends TestCase
                 }
                 if (selectedFolderNodeRef == null)
                 {
+                    List<String> largeCollection = new ArrayList<String>(1000);
+                    for (int i = 0; i < 50; i++)
+                    {
+                        largeCollection.add(String.format("Large-collection-value-%05d", i));
+                    }
+                    
                     // Create the files
                     for (int i = 0; i < fileCount; i++)
                     {
-                        fileFolderService.create(
+                        FileInfo fileInfo = fileFolderService.create(
                                 folderNodeRef,
                                 String.format("FILE-%4d", i),
                                 ContentModel.TYPE_CONTENT);
+                        NodeRef nodeRef = fileInfo.getNodeRef();
+                        nodeService.setProperty(
+                                nodeRef,
+                                QName.createQName("{test}mv"),
+                                (Serializable) largeCollection);
+                        for (int m = 0; m < 30; m++)
+                        {
+                            nodeService.addAspect(
+                                    nodeRef,
+                                    QName.createQName("{test}aspect_"+m), null);
+                        }
                     }
                     System.out.println("Created " + fileCount + " files in folder " + folderNodeRef);
+                    
                 }
                 // Done
                 return folderNodeRef;

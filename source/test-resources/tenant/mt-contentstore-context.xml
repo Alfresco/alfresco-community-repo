@@ -25,9 +25,6 @@
    <!--                                   -->
    
    <bean id="tenantFileContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore" init-method="init">
-      <property name="applicationEventPublisher">
-         <ref bean="applicationEventPublisher" />
-      </property>
       <property name="defaultRootDir">
          <value>${dir.contentstore}</value>
       </property>

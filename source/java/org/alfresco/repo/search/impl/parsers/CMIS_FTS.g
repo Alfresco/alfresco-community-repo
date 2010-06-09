@@ -36,43 +36,12 @@ options
 
 tokens
 {
-        FTS;
         DISJUNCTION;
         CONJUNCTION;
-        NEGATION;
         TERM;
-        EXACT_TERM;
         PHRASE;
-        SYNONYM;
-        RANGE;
-        PROXIMITY;
         DEFAULT;
-        MANDATORY;
-        OPTIONAL;
         EXCLUDE;
-        FIELD_DISJUNCTION;
-        FIELD_CONJUNCTION;
-        FIELD_NEGATION;
-        FIELD_GROUP;
-        FIELD_DEFAULT;
-        FIELD_MANDATORY;
-        FIELD_OPTIONAL;
-        FIELD_EXCLUDE;
-        FG_TERM;
-        FG_EXACT_TERM;
-        FG_PHRASE;
-        FG_SYNONYM;
-        FG_PROXIMITY;
-        FG_RANGE;
-        FIELD_REF;
-        INCLUSIVE;
-        EXCLUSIVE;
-        QUALIFIER;
-        PREFIX;
-        NAME_SPACE;
-        BOOST;
-        FUZZY;
-        TEMPLATE;
 }
 /*
  * Make sure the lexer and parser are generated in the correct package
@@ -403,9 +372,11 @@ OR
         :
         (
                 'O'
+                | 'o'
         )
         (
                 'R'
+                | 'r'
         )
         ;
 

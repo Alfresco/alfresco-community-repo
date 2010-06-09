@@ -28,9 +28,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -44,13 +49,16 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.springframework.context.ApplicationContext;
 
-public class PersonTest extends BaseSpringTest
+public class PersonTest extends TestCase
 {
+    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    
     private TransactionService transactionService;
 
     private PersonService personService;
@@ -63,13 +71,15 @@ public class PersonTest extends BaseSpringTest
 
     private AuthorityService authorityService;
 
+    private UserTransaction testTX;
+
     public PersonTest()
     {
         super();
         // TODO Auto-generated constructor stub
     }
 
-    protected void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         personService = (PersonService) applicationContext.getBean("personService");
@@ -77,27 +87,41 @@ public class PersonTest extends BaseSpringTest
         permissionService = (PermissionService) applicationContext.getBean("permissionService");
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
 
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         for (NodeRef nodeRef : personService.getAllPeople())
         {
             String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
-            if (!uid.equals("admin"))
+            if (!uid.equals("admin") && !uid.equals("guest") )
             {
                 nodeService.deleteNode(nodeRef);
             }
         }
 
         personService.setCreateMissingPeople(true);
+        
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
     }
 
-    protected void onTearDownInTransaction() throws Exception
+    @Override
+    protected void tearDown() throws Exception
     {
-        super.onTearDownInTransaction();
-    }
 
-    public void xtestLazyHomeFolderCreation()
+        if ((testTX.getStatus() == Status.STATUS_ACTIVE) || (testTX.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+        {
+            testTX.rollback();
+        }
+        AuthenticationUtil.clearCurrentSecurityContext();
+        super.tearDown();
+    }
+    public void xtestLazyHomeFolderCreation() throws Exception
     {
         String firstName = "" + System.currentTimeMillis();
         String lastName = String.format("%05d", -1);
@@ -116,9 +140,9 @@ public class PersonTest extends BaseSpringTest
             throw new IllegalStateException("Home folder created eagerly");
         }
 
-        setComplete();
-        endTransaction();
-        startNewTransaction();
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
         
         RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
         helper.doInTransaction(new RetryingTransactionCallback<Void>()
@@ -241,24 +265,24 @@ public class PersonTest extends BaseSpringTest
         }
     }
 
-    public void testDeletePerson()
+    public void testDeletePerson() throws Exception
     {
         personService.getPerson("andy");
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
         permissionService.setPermission(n1, "andy", PermissionService.READ, true);
         permissionService.setPermission(n2, "andy", PermissionService.ALL_PERMISSIONS, true);
-        setComplete();
-        endTransaction();
-        startNewTransaction();
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
         nodeService.deleteNode(n1);
-        setComplete();
-        endTransaction();
-        startNewTransaction();
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
         personService.deletePerson("andy");
-        setComplete();
-        endTransaction();
-        startNewTransaction();
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
     }
 
     public void testCreateAndThenDelete()
@@ -375,7 +399,7 @@ public class PersonTest extends BaseSpringTest
 
         testProperties(personService.getPerson("andy"), "andy", "andy", "", "", "");
 
-        assertEquals(3, personService.getAllPeople().size());
+        assertEquals(4, personService.getAllPeople().size());
         assertTrue(personService.getAllPeople().contains(personService.getPerson("andy")));
         assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
 
@@ -420,7 +444,7 @@ public class PersonTest extends BaseSpringTest
 
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        assertEquals(2, personService.getAllPeople().size());
+        assertEquals(3, personService.getAllPeople().size());
         assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "derek").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
@@ -430,7 +454,7 @@ public class PersonTest extends BaseSpringTest
         assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft").size());
 
         personService.deletePerson("derek");
-        assertEquals(1, personService.getAllPeople().size());
+        assertEquals(2, personService.getAllPeople().size());
         try
         {
             personService.getPerson("derek");
@@ -456,7 +480,7 @@ public class PersonTest extends BaseSpringTest
 
         testProperties(personService.getPerson("Derek"), "Derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        assertEquals(2, personService.getAllPeople().size());
+        assertEquals(3, personService.getAllPeople().size());
         assertTrue(personService.getAllPeople().contains(personService.getPerson("Derek")));
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Derek").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
@@ -469,7 +493,7 @@ public class PersonTest extends BaseSpringTest
         assertEquals(personService.personExists("DEREK"), EqualsHelper.nullSafeEquals(personService.getUserIdentifier("DEREK"), "Derek"));
 
         personService.deletePerson("Derek");
-        assertEquals(1, personService.getAllPeople().size());
+        assertEquals(2, personService.getAllPeople().size());
 
     }
 
@@ -555,8 +579,8 @@ public class PersonTest extends BaseSpringTest
     public void testReadOnlyTransactionHandling() throws Exception
     {
         // Kill the annoying Spring-managed txn
-        super.setComplete();
-        super.endTransaction();
+        testTX.commit();
+        
 
         boolean createMissingPeople = personService.createMissingPeople();
         assertTrue("Default should be to create missing people", createMissingPeople);
@@ -617,8 +641,7 @@ public class PersonTest extends BaseSpringTest
     private void forceSplitPersonCleanup() throws Exception
     {
         // Kill the annoying Spring-managed txn
-        super.setComplete();
-        super.endTransaction();
+        testTX.commit();
 
         boolean createMissingPeople = personService.createMissingPeople();
         assertTrue("Default should be to create missing people", createMissingPeople);
@@ -731,7 +754,7 @@ public class PersonTest extends BaseSpringTest
         }, true, true);        
     }
     
-    public void testSplitDuplicates()
+    public void testSplitDuplicates()  throws Exception
     {
         testProcessDuplicates(true);
 
@@ -744,16 +767,15 @@ public class PersonTest extends BaseSpringTest
         
     }
     
-    public void testDeleteDuplicates()
+    public void testDeleteDuplicates() throws Exception
     {
         testProcessDuplicates(false);        
     }
 
-    private void testProcessDuplicates(final boolean split)
+    private void testProcessDuplicates(final boolean split) throws Exception
     {
         // Kill the annoying Spring-managed txn
-        super.setComplete();
-        super.endTransaction();
+        testTX.commit();
 
         // Set the duplicate processing mode
         ((PersonServiceImpl) personService).setDuplicateMode(split ? "SPLIT" : "DELETE");

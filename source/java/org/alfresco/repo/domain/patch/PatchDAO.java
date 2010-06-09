@@ -59,4 +59,13 @@ public interface PatchDAO
      * @param maxNodeId         the exclusive node ID to limit the updates to
      */
     public void updateAdmV31ContentProperties(Long minNodeId, Long maxNodeId);
+    
+    /**
+     * Update all <b>alf_content_data</b> mimetype references.
+     * 
+     * @param oldMimetypeId     the ID to search for
+     * @param newMimetypeId     the ID to change to
+     * @return                  the number of rows affected
+     */
+    public int updateContentMimetypeIds(Long oldMimetypeId, Long newMimetypeId);
 }

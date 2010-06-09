@@ -29,10 +29,11 @@ import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.repo.domain.contentdata.AbstractContentDataDAOImpl;
 import org.alfresco.repo.domain.contentdata.ContentDataEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
+import org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.util.Pair;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.alfresco.util.Pair;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import com.ibatis.sqlmap.client.event.RowHandler;
@@ -48,7 +49,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_URL_BY_ID = "alfresco.content.select_ContentUrlById";
     private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
     private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
-    private static final String SELECT_CONTENT_URLS_BY_ORPHAN_TIME = "alfresco.content.select_ContentUrlByOrphanTime";
+    private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select_ContentUrlsOrphaned";
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
     private static final String INSERT_CONTENT_URL = "alfresco.content.insert_ContentUrl";
@@ -77,7 +78,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     }
 
     @Override
-    protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size, boolean isReferenced)
+    protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
@@ -86,13 +87,6 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         /* Long id = (Long) */ template.insert(INSERT_CONTENT_URL, contentUrlEntity);
         /*contentUrlEntity.setId(id);*/
         
-        // Don't register this URL for tidy up if it is still referenced by code outside of this transaction
-        if (!isReferenced)
-        {
-            // Register the url as new
-            registerNewContentUrl(contentUrl);
-        }
-
         // Done
         return contentUrlEntity;
     }
@@ -136,7 +130,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         };
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setOrphanTime(maxOrphanTime);
-        template.queryWithRowHandler(SELECT_CONTENT_URLS_BY_ORPHAN_TIME, contentUrlEntity, rowHandler);
+        template.queryWithRowHandler(SELECT_CONTENT_URLS_ORPHANED, contentUrlEntity, rowHandler);
     }
     
     @SuppressWarnings("unchecked")
@@ -145,7 +139,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setOrphanTime(maxOrphanTime);
         List<ContentUrlEntity> results = template.queryForList(
-                SELECT_CONTENT_URLS_BY_ORPHAN_TIME,
+                SELECT_CONTENT_URLS_ORPHANED,
                 contentUrlEntity, 0, maxResults);
         // Pass the result to the callback
         for (ContentUrlEntity result : results)
@@ -157,12 +151,13 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         }
     }
     
-    public int updateContentUrlOrphanTime(Long id, Long orphanTime)
+    public int updateContentUrlOrphanTime(Long id, Long orphanTime, Long oldOrphanTime)
     {
-        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
-        contentUrlEntity.setId(id);
-        contentUrlEntity.setOrphanTime(orphanTime);
-        return template.update(UPDATE_CONTENT_URL_ORPHAN_TIME, contentUrlEntity);
+        ContentUrlUpdateEntity contentUrlUpdateEntity = new ContentUrlUpdateEntity();
+        contentUrlUpdateEntity.setId(id);
+        contentUrlUpdateEntity.setOrphanTime(orphanTime);
+        contentUrlUpdateEntity.setOldOrphanTime(oldOrphanTime);
+        return template.update(UPDATE_CONTENT_URL_ORPHAN_TIME, contentUrlUpdateEntity);
     }
 
     /**

@@ -194,12 +194,40 @@
         nitf: Not Indexed Transformation Failed
         nicm: Not Indexed Content Missing
         nint: Not Indexed No Transformation
-      Use a CronTriggerBean and Quartz scheduler to trigger as required
    -->
    <bean
          id="missingFullTextReindexComponent"
          class="org.alfresco.repo.node.index.MissingContentReindexComponent"
          parent="indexRecoveryComponentBase">
    </bean>
-
+   
+   
+   <!-- This JobDetail and its associated Trigger bean will in practice not be run due to the cron
+        expression used. In order to activate the missing content reindexing, the cron expression
+        can be changed in the properties file or via JMX (Enterprise-only) -->
+    <bean id="missingFullTextReindexTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="indexRecoveryComponent">
+                            <ref bean="missingFullTextReindexComponent" />
+                        </entry>
+                        <entry key="clusterName">
+                            <value>${alfresco.cluster.name}</value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${index.reindexMissingContent.cronExpression}</value>
+        </property>
+    </bean>
 </beans>

@@ -22,6 +22,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -42,12 +47,15 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
-public class AbstractPermissionTest extends BaseSpringTest
+public class AbstractPermissionTest extends TestCase
 {
-
+    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    
     protected static final String ROLE_AUTHENTICATED = "ROLE_AUTHENTICATED";
 
     protected NodeService nodeService;
@@ -86,13 +94,17 @@ public class AbstractPermissionTest extends BaseSpringTest
 
     protected RetryingTransactionHelper retryingTransactionHelper;
 
+    private TransactionService transactionService;
+
+    private UserTransaction testTX;
+
     public AbstractPermissionTest()
     {
         super();
         // TODO Auto-generated constructor stub
     }
 
-    protected void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE
@@ -114,6 +126,11 @@ public class AbstractPermissionTest extends BaseSpringTest
         aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
         
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+        
+        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
+        
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
         
         
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
@@ -153,19 +170,18 @@ public class AbstractPermissionTest extends BaseSpringTest
         authenticationComponent.clearCurrentSecurityContext();
     }
 
-    protected void onTearDownInTransaction() throws Exception
+    @Override
+    protected void tearDown() throws Exception
     {
-        try
+
+        if ((testTX.getStatus() == Status.STATUS_ACTIVE) || (testTX.getStatus() == Status.STATUS_MARKED_ROLLBACK))
         {
-            flushAndClear();
+            testTX.rollback();
         }
-        catch (Throwable e)
-        {
-            // don't absorb the exception
-            e.printStackTrace();
-        }
-        super.onTearDownInTransaction();
+        AuthenticationUtil.clearCurrentSecurityContext();
+        super.tearDown();
     }
+
 
     protected void runAs(String userName)
     {

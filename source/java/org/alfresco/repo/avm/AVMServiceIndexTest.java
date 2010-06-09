@@ -26,13 +26,42 @@ import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.TriggerBean;
 
 /**
  * Test AVMService indexing
  */
 public class AVMServiceIndexTest extends AVMServiceTestBase
 {
-    private final static long SLEEP = 180000;
+    /*
+    private final static long SLEEP = 180000; // 3 mins (default, where startDelay & repeatInterval are both 1 min)
+    private final static long START_DELAY_MSECS = 1000 * 60;
+    private final static long REPEAT_INTERVAL_MSECS = 1000 * 60;
+    */
+    
+    private final static long SLEEP = 10000;
+    private final static long START_DELAY_MSECS = 2000;
+    private final static long REPEAT_INTERVAL_MSECS = 2000;
+    
+    @Override
+    protected void setUp() throws Exception
+    {
+        super.setUp();
+        
+        //
+        // override default schedule to speed up this unit test (by reducing the sleep time)
+        //
+        
+        TriggerBean ftsIndexerTrigger = (TriggerBean)fContext.getBean("ftsIndexerTrigger");
+        
+        ftsIndexerTrigger.destroy(); // unschedule
+        
+        ftsIndexerTrigger.setStartDelay(START_DELAY_MSECS);
+        ftsIndexerTrigger.setRepeatInterval(REPEAT_INTERVAL_MSECS);
+        
+        ftsIndexerTrigger.afterPropertiesSet(); // re-schedule
+    }
+    
     /**
      * Test async indexing.
      *

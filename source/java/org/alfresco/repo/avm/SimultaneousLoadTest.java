@@ -26,10 +26,12 @@ import org.alfresco.repo.avm.util.BulkLoader;
  */
 public class SimultaneousLoadTest extends AVMServiceTestBase
 {
-    public void testSimulLoadA() throws Throwable
+    /*
+    public void xtestSimulLoadA() throws Throwable
     {
         testSimultaneousLoad(1,1);
     }
+    */
     
     public void testSimulLoadB() throws Throwable
     {
@@ -53,7 +55,7 @@ public class SimultaneousLoadTest extends AVMServiceTestBase
             for (int i = 0; i < n; i++)
             {
                 //Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
-                Loader loader = new Loader("source/java/org/alfresco/repo/avm", "main:/d" + i, m);
+                Loader loader = new Loader("source/java/org/alfresco/repo/avm/actions", "main:/d" + i, m);
                 
                 threads[i] = new Thread(loader);
                 threads[i].start();

@@ -136,4 +136,27 @@ public class MimetypeDAOTest extends TestCase
                 "Upper and lowercase mimetype instance IDs were not the same",
                 lowercasePair.getFirst(), uppercasePair.getFirst());
     }
+    
+    public void testUpdate() throws Exception
+    {
+        final String oldMimetype = GUID.generate();
+        final String newMimetype = GUID.generate();
+        Pair<Long, String> oldMimetypePair = get(oldMimetype, true, true);
+        // Update it
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
+        {
+            public Pair<Long, String> execute() throws Throwable
+            {
+                int count = mimetypeDAO.updateMimetype(oldMimetype, newMimetype);
+                assertEquals("Incorrect number updated", 1, count);
+                return mimetypeDAO.getMimetype(newMimetype);
+            }
+        };
+        Pair<Long, String> newMimetypePair = txnHelper.doInTransaction(callback, false, false);
+        // Check
+        assertEquals("ID should remain the same if the old mimetype existed",
+                oldMimetypePair.getFirst(), newMimetypePair.getFirst());
+        get(oldMimetype, false, false);
+        get(newMimetype, false, true);
+    }
 }

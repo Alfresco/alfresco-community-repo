@@ -28,6 +28,7 @@ import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
+import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.transaction.TransactionalDao;
 
 /**
@@ -253,4 +254,10 @@ public interface AclDaoComponent extends TransactionalDao
      */
     @DirtySessionAnnotation(markDirty=false)
     Long getNewInStore();
+
+    /**
+     * @return
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    SimpleAccessControlListProperties getDefaultProperties();
 }

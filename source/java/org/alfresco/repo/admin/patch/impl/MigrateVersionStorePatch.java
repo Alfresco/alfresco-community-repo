@@ -19,7 +19,6 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -28,6 +27,7 @@ import org.alfresco.repo.version.VersionMigrator;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Migrate version store from workspace://lightWeightVersionStore to workspace://version2Store
@@ -36,13 +36,16 @@ public class MigrateVersionStorePatch extends AbstractPatch
 {
     private static Log logger = LogFactory.getLog(MigrateVersionStorePatch.class);
     
-    private static final String MSG_SUCCESS = "patch.migrateVersionStore.result";
+    private static final String MSG_DONE = "patch.migrateVersionStore.done";
+    private static final String MSG_INCOMPLETE = "patch.migrateVersionStore.incomplete";
     
     private VersionMigrator versionMigrator;
     private TenantService tenantService;
     private ImporterBootstrap version2ImporterBootstrap;
     
     private int batchSize = 1;
+    private int threadCount = 2;
+    
     private boolean deleteImmediately = false;
     
     public void setVersionMigrator(VersionMigrator versionMigrator)
@@ -65,6 +68,11 @@ public class MigrateVersionStorePatch extends AbstractPatch
         this.batchSize = batchSize;
     }
     
+    public void setThreadCount(int threadCount)
+    {
+        this.threadCount = threadCount;
+    }
+    
     public void setDeleteImmediately(boolean deleteImmediately)
     {
         this.deleteImmediately = deleteImmediately;
@@ -79,28 +87,45 @@ public class MigrateVersionStorePatch extends AbstractPatch
             throw new AlfrescoRuntimeException(errorMessage);
         }
         
+        if (threadCount < 1)
+        {
+            String errorMessage = "threadCount ("+threadCount+") cannot be less than 1";
+            logger.error(errorMessage);
+            throw new AlfrescoRuntimeException(errorMessage);
+        }
+        
         super.init();
     }
     
     @Override
     protected String applyInternal() throws Exception
     {
-    	if (tenantService.isEnabled() && tenantService.isTenantUser())
-    	{
-    		// bootstrap new version store
+        if (tenantService.isEnabled() && tenantService.isTenantUser())
+        {
+            // bootstrap new version store
             StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
-            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(),  bootstrapStoreRef);
+            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(), bootstrapStoreRef);
             version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
-        
+            
             version2ImporterBootstrap.bootstrap();
-    	}
-    	
-        int vhCount = versionMigrator.migrateVersions(batchSize, deleteImmediately);
-
-        // build the result message
-        String msg = I18NUtil.getMessage(MSG_SUCCESS, vhCount);
+        }
         
-        // done
-        return msg;
+        if (AuthenticationUtil.getRunAsUser() == null)
+        {
+            logger.info("Set system user");
+            AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+        }
+        
+        boolean completed = versionMigrator.migrateVersions(batchSize, threadCount, deleteImmediately);
+        
+        // return the result message
+        if (completed)
+        {
+            return I18NUtil.getMessage(MSG_DONE);
+        }
+        else
+        {
+            return I18NUtil.getMessage(MSG_INCOMPLETE);
+        }
     }
 }

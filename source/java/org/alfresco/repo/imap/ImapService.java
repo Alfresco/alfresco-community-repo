@@ -118,26 +118,26 @@ public interface ImapService
      */
     public void unsubscribe(AlfrescoImapUser user, String mailbox);
 
-    /**
-     * Search for files in specified context
-     * 
-     * @param contextNodeRef context folder for search
-     * @param namePattern name pattern for search
-     * @param includeSubFolders include SubFolders
-     * @return list of files
-     */
-    public List<FileInfo> searchFiles(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders);
+//    /**
+//     * Search for files in specified context
+//     * 
+//     * @param contextNodeRef context folder for search
+//     * @param namePattern name pattern for search
+//     * @param includeSubFolders include SubFolders
+//     * @return list of files
+//     */
+//    public List<FileInfo> searchFiles(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders);
 
-    /**
-     * Search for mailboxes in specified context
-     * 
-     * @param contextNodeRef context folder for search
-     * @param namePattern name pattern for search
-     * @param includeSubFolders include SubFolders
-     * @param viewMode (ARCHIVE, MIXED or VIRTUAL)
-     * @return list of mailboxes that are visible from specified view
-     */
-    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, ImapViewMode viewMode);
+//    /**
+//     * Search for mailboxes in specified context
+//     * 
+//     * @param contextNodeRef context folder for search
+//     * @param namePattern name pattern for search
+//     * @param includeSubFolders include SubFolders
+//     * @param viewMode (ARCHIVE, MIXED or VIRTUAL)
+//     * @return list of mailboxes that are visible from specified view
+//     */
+//    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, ImapViewMode viewMode);
 
     /**
      * Search for emails in specified folder depend on view mode.
@@ -148,7 +148,7 @@ public interface ImapService
      * @param includeSubFolders includeSubFolders
      * @return list of emails that context folder contains.
      */
-    public List<FileInfo> searchMails(NodeRef contextNodeRef, String namePattern, ImapViewMode viewMode, boolean includeSubFolders);
+    public List<FileInfo> searchMails(NodeRef contextNodeRef, ImapViewMode viewMode);
 
     /**
      * Return flags that belong to the specified imap folder.

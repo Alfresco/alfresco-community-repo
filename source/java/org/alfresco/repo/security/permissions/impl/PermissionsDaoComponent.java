@@ -18,16 +18,12 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessPermission;
 
 /**
  * The API for accessing persisted Alfresco permissions.

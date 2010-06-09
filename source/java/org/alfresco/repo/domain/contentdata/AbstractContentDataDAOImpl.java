@@ -19,6 +19,8 @@
 package org.alfresco.repo.domain.contentdata;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -34,11 +36,11 @@ import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.alfresco.util.Pair;
 
 /**
  * Abstract implementation for ContentData DAO.
@@ -119,14 +121,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                 contentDataCache,
                 CACHE_REGION_CONTENT_DATA,
                 contentDataCallbackDAO);
-    }
-    
-    /**
-     * Register new content for post-rollback handling
-     */
-    protected void registerNewContentUrl(String contentUrl)
-    {
-        contentStoreCleaner.registerNewContentUrl(contentUrl);
     }
     
     /**
@@ -300,7 +294,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         if (contentUrl != null)
         {
             // We must find or create the ContentUrlEntity
-            contentUrlId = getOrCreateContentUrlEntity(contentUrl, size, contentData.isReferenced()).getId();
+            contentUrlId = getOrCreateContentUrlEntity(contentUrl, size).getId();
         }
         // Resolve the mimetype
         Long mimetypeId = null;
@@ -347,7 +341,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             }
             if (newContentUrl != null)
             {
-                Long contentUrlId = getOrCreateContentUrlEntity(newContentUrl, contentData.getSize(), contentData.isReferenced()).getId();
+                Long contentUrlId = getOrCreateContentUrlEntity(newContentUrl, contentData.getSize()).getId();
                 contentDataEntity.setContentUrlId(contentUrlId);
                 contentDataEntity.setContentUrl(newContentUrl);
             }
@@ -391,7 +385,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * whether it has been created or is being re-used.
      * @param isReferenced if <code>true</code> we won't worry about eagerly deleting the content on transaction rollback
      */
-    private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size, boolean isReferenced)
+    private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size)
     {
         // Create the content URL entity
         ContentUrlEntity contentUrlEntity = getContentUrlEntity(contentUrl);
@@ -408,16 +402,21 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                         "   Existing: " + contentUrlEntity);
             }
             // Check orphan state
-            if (contentUrlEntity.getOrphanTime() != null)
+            Long oldOrphanTime = contentUrlEntity.getOrphanTime();
+            if (oldOrphanTime != null)
             {
                 Long id = contentUrlEntity.getId();
-                updateContentUrlOrphanTime(id, null);
+                int updated = updateContentUrlOrphanTime(id, null, oldOrphanTime);
+                if (updated == 0)
+                {
+                    throw new ConcurrencyFailureException("Failed to remove orphan time: " + contentUrlEntity);
+                }
             }
         }
         else
         {
             // Create it
-            contentUrlEntity = createContentUrlEntity(contentUrl, size, isReferenced);
+            contentUrlEntity = createContentUrlEntity(contentUrl, size);
         }
         // Done
         return contentUrlEntity;
@@ -425,9 +424,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 
     /**
      * @param contentUrl    the content URL to create or search for
-     * @param isReferenced if <code>true</code> we won't worry about eagerly deleting the content on transaction rollback
      */
-    protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size, boolean isReferenced);
+    protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size);
     
     /**
      * @param id            the ID of the <b>content url</b> entity
@@ -453,9 +451,10 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * 
      * @param id            the unique ID of the entity 
      * @param orphanTime    the time (ms since epoch) that the entity was orphaned
+     * @param oldOrphanTime the orphan time we expect to update for optimistic locking (may be <tt>null</tt>)
      * @return              Returns the number of rows updated
      */
-    protected abstract int updateContentUrlOrphanTime(Long id, Long orphanTime);
+    protected abstract int updateContentUrlOrphanTime(Long id, Long orphanTime, Long oldOrphanTime);
     
     /**
      * Create the row for the <b>alf_content_data<b>
@@ -512,11 +511,36 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                     // It is still referenced, so ignore it
                     continue;
                 }
-                // We mark the URL as orphaned.
-                Long contentUrlId = contentUrlEntity.getId();
-                updateContentUrlOrphanTime(contentUrlId, orphanTime);
                 // Pop this in the queue for deletion from the content store
-                contentStoreCleaner.registerOrphanedContentUrl(contentUrl);
+                boolean isEagerCleanup = contentStoreCleaner.registerOrphanedContentUrl(contentUrl);
+                if (!isEagerCleanup)
+                {
+                    // We mark the URL as orphaned.
+                    // The content binary is not scheduled for immediate removal so just mark the
+                    // row's orphan time.  Concurrently, it is possible for multiple references
+                    // to be made WHILE the orphan time is set, but we handle that separately.
+                    Long contentUrlId = contentUrlEntity.getId();
+                    Long oldOrphanTime = contentUrlEntity.getOrphanTime();
+                    int updated = updateContentUrlOrphanTime(contentUrlId, orphanTime, oldOrphanTime);
+                    if (updated != 1)
+                    {
+                        throw new ConcurrencyFailureException(
+                                "Failed to update content URL orphan time: " + contentUrlEntity);
+                    }
+                }
+                else
+                {
+                    // ALERT!!!
+                    // The content is scheduled for deletion once this transaction commits.
+                    // We need to make sure that the URL is not re-referenced by another transaction.
+                    List<Long> contentUrlId = Collections.singletonList(contentUrlEntity.getId());
+                    int deleted = deleteContentUrls(contentUrlId);
+                    if (deleted != 1)
+                    {
+                        throw new ConcurrencyFailureException(
+                                "Failed to delete eagerly-reaped content URL: " + contentUrlEntity);
+                    }
+                }
             }
             contentUrls.clear();
         }

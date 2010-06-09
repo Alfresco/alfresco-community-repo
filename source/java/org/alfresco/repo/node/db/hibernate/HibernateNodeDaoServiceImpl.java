@@ -118,6 +118,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -741,7 +742,7 @@ public class HibernateNodeDaoServiceImpl
         parentAssocsCache.remove(rootNode.getId());
         
         // Assign permissions to the root node
-        SimpleAccessControlListProperties properties = DMPermissionsDaoComponentImpl.getDefaultProperties();
+        SimpleAccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
         Long id = aclDaoComponent.createAccessControlList(properties);
         DbAccessControlList acl = aclDaoComponent.getDbAccessControlList(id);
         rootNode.setAccessControlList(acl);
@@ -3085,16 +3086,54 @@ public class HibernateNodeDaoServiceImpl
      */
     public void cacheNodes(List<NodeRef> nodeRefs)
     {
-        if (nodeRefs.size() < 2)
+        /*
+         * ALF-2712: Performance degradation from 3.1.0 to 3.1.2
+         * ALF-2784: Degradation of performance between 3.1.1 and 3.2x (observed in JSF)
+         * 
+         * There is an obvious cost associated with querying the database to pull back nodes,
+         * and there is additional cost associated with putting the resultant entries into the
+         * caches.  It is NO MORE expensive to check the cache than it is to put an entry into it
+         * - and probably cheaper considering cache replication - so we start checking nodes to see
+         * if they have entries before passing them over for batch loading.
+         * 
+         * However, when running against a cold cache or doing a first-time query against some
+         * part of the repo, we will be checking for entries in the cache and consistently getting
+         * no results.  To avoid unnecessary checking when the cache is PROBABLY cold, we
+         * examine the ratio of hits/misses at regular intervals.
+         */
+        if (nodeRefs.size() < 10)
         {
-            // See ALF-2712: Performance degradation from 3.1.0 to 3.1.2
-            // We only cache where the are multiple results
+            // We only cache where the number of results is potentially
+            // a problem for the N+1 loading that might result.
             return;
         }
+        int foundCacheEntryCount = 0;
+        int missingCacheEntryCount = 0;
+        boolean forceBatch = false;
+
         // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance
         Map<StoreRef, List<String>> uuidsByStore = new HashMap<StoreRef, List<String>>(3);
         for (NodeRef nodeRef : nodeRefs)
         {
+            if (!forceBatch)
+            {
+                // Is this node in the cache?
+                if (this.storeAndNodeIdCache.contains(nodeRef))
+                {
+                    foundCacheEntryCount++;                             // Don't add it to the batch
+                    continue;
+                }
+                else
+                {
+                    missingCacheEntryCount++;                           // Fall through and add it to the batch
+                }
+                if (foundCacheEntryCount + missingCacheEntryCount % 100 == 0)
+                {
+                    // We force the batch if the number of hits drops below the number of misses
+                    forceBatch = foundCacheEntryCount < missingCacheEntryCount;
+                }
+            }
+
             StoreRef storeRef = nodeRef.getStoreRef();
             List<String> uuids = (List<String>) uuidsByStore.get(storeRef);
             if (uuids == null)
@@ -3151,10 +3190,22 @@ public class HibernateNodeDaoServiceImpl
     @SuppressWarnings("unchecked")
     private void cacheNodesNoBatch(Store store, List<String> uuids)
     {
+        // Get nodes and properties
         Criteria criteria = getSession().createCriteria(NodeImpl.class, "node");
         criteria.setResultTransformer(Criteria.ROOT_ENTITY);
         criteria.add(Restrictions.eq("store.id", store.getId()));
         criteria.add(Restrictions.in("uuid", uuids));
+        criteria.setFetchMode("aspects", FetchMode.SELECT);                 // Don't join to aspects
+        criteria.setCacheMode(CacheMode.PUT);
+        criteria.setFlushMode(FlushMode.MANUAL);
+        criteria.list();
+
+        // Get nodes and aspects
+        criteria = getSession().createCriteria(NodeImpl.class, "node");
+        criteria.setResultTransformer(Criteria.ROOT_ENTITY);
+        criteria.add(Restrictions.eq("store.id", store.getId()));
+        criteria.add(Restrictions.in("uuid", uuids));
+        criteria.setFetchMode("properties", FetchMode.SELECT);              // Don't join to properties
         criteria.setCacheMode(CacheMode.PUT);
         criteria.setFlushMode(FlushMode.MANUAL);
 
@@ -3984,9 +4035,19 @@ public class HibernateNodeDaoServiceImpl
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Long contentTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_CONTENT).getFirst();
-        final Long ownerPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_OWNER).getFirst();
-        final Long contentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_CONTENT).getFirst();
+        Pair<Long, QName> contentTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_CONTENT);
+        Pair<Long, QName> contentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_CONTENT);
+        // Shortcut
+        if (contentTypeQNamePair == null || contentPropQNamePair == null)
+        {
+            return;
+        }
+        final Long contentTypeQNameEntityId = contentTypeQNamePair.getFirst();
+        final Long contentPropQNameEntityId = contentPropQNamePair.getFirst();
+        // Note, we do a left join on owner, so it may be null
+        Pair<Long, QName> ownerPropQNamePair = qnameDAO.getQName(ContentModel.PROP_OWNER);
+        final Long ownerPropQNameEntityId = 
+            ownerPropQNamePair == null ? new Long(-1L) : ownerPropQNamePair.getFirst();
 
         // Query for the 'old' style content properties stored in 'string_value'
         HibernateCallback callbackOld = new HibernateCallback()
@@ -4082,19 +4143,28 @@ public class HibernateNodeDaoServiceImpl
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT);
-        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON);
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        if (personTypeQNamePair == null)
+        {
+            return;             // Shortcut as we join on this
+        }
         
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
+                Long personTypeQNameId = personTypeQNamePair.getFirst();
+                // We LEFT JOIN on this
+                Long sizeCurrentPropQNameId =
+                    sizeCurrentPropQNamePair == null ? new Long(-1L) : sizeCurrentPropQNamePair.getFirst();
+                
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_USERS_WITHOUT_USAGE_PROP)
                   .setString("storeProtocol", storeRef.getProtocol())
                   .setString("storeIdentifier", storeRef.getIdentifier())
-                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNamePair.getFirst()) // cm:sizeCurrent
-                    .setParameter("personTypeQNameID", personTypeQNamePair.getFirst()) // cm:person
+                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNameId) // cm:sizeCurrent
+                    .setParameter("personTypeQNameID", personTypeQNameId) // cm:person
                     .setParameter("isDeleted", false);
                   ;
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
@@ -4129,9 +4199,13 @@ public class HibernateNodeDaoServiceImpl
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Pair<Long, QName> usernamePropQNamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME);
-        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT);
-        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON);
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        final Pair<Long, QName> usernamePropQNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        if (personTypeQNamePair == null || usernamePropQNamePair == null || sizeCurrentPropQNamePair == null)
+        {
+            return;             // All joins
+        }
         
         HibernateCallback callback = new HibernateCallback()
         {
@@ -4139,8 +4213,8 @@ public class HibernateNodeDaoServiceImpl
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_USERS_WITHOUT_USAGE)
-                  .setString("storeProtocol", storeRef.getProtocol())
-                  .setString("storeIdentifier", storeRef.getIdentifier())
+                    .setString("storeProtocol", storeRef.getProtocol())
+                    .setString("storeIdentifier", storeRef.getIdentifier())
                     .setParameter("usernamePropQNameID", usernamePropQNamePair.getFirst()) // cm:username
                     .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNamePair.getFirst()) // cm:sizeCurrent
                     .setParameter("personTypeQNameID", personTypeQNamePair.getFirst()) // cm:person
@@ -4180,9 +4254,13 @@ public class HibernateNodeDaoServiceImpl
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Long personTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
-        final Long usernamePropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
-        final Long sizeCurrentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        final Pair<Long, QName> usernamePropQNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        if (personTypeQNamePair == null || usernamePropQNamePair == null || sizeCurrentPropQNamePair == null)
+        {
+            return;             // All joins
+        }
         
         HibernateCallback callback = new HibernateCallback()
         {
@@ -4192,9 +4270,9 @@ public class HibernateNodeDaoServiceImpl
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_USERS_WITH_USAGE)
                     .setString("storeProtocol", storeRef.getProtocol())
                     .setString("storeIdentifier", storeRef.getIdentifier())
-                    .setParameter("usernamePropQNameID", usernamePropQNameEntityId) // cm:username
-                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNameEntityId) // cm:sizeCurrent
-                    .setParameter("personTypeQNameID", personTypeQNameEntityId) // cm:person
+                    .setParameter("usernamePropQNameID", usernamePropQNamePair.getFirst()) // cm:username
+                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNamePair.getFirst()) // cm:sizeCurrent
+                    .setParameter("personTypeQNameID", personTypeQNamePair.getFirst()) // cm:person
                     ;
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);

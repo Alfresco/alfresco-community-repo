@@ -20,6 +20,7 @@ package org.alfresco.repo.imap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,12 +40,15 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.preference.PreferenceService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -370,12 +374,13 @@ public class ImapServiceImpl implements ImapService
         NodeRef parentNodeRef = root; // it is used for hierarhy deep search.
         for (String folderName : getMailPathInRepo(mailboxName).split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)))
         {
-            List<FileInfo> folders = searchFolders(parentNodeRef, folderName, false, ImapViewMode.MIXED);
+            NodeRef child = fileFolderService.searchSimple(parentNodeRef, folderName);
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("Trying to create folder '" + folderName + "'");
             }
-            if (folders.size() == 0)
+            if (child == null)
             {
                 // folder doesn't exist
                 AccessStatus status = permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN);
@@ -402,7 +407,7 @@ public class ImapServiceImpl implements ImapService
                     logger.debug("Folder '" + folderName + "' already exists");
                 }
                 // next search from new parent
-                parentNodeRef = folders.get(0).getNodeRef();
+                parentNodeRef = child;
             }
         }
         throw new AlfrescoRuntimeException(ERROR_FOLDER_ALREADY_EXISTS);
@@ -410,19 +415,19 @@ public class ImapServiceImpl implements ImapService
 
     public void deleteMailbox(AlfrescoImapUser user, String mailboxName)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Delete mailbox: mailboxName=" + mailboxName);
+        }
         if (mailboxName == null)
         {
             throw new IllegalArgumentException(I18NUtil.getMessage(ERROR_MAILBOX_NAME_IS_MANDATORY));
         }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Deleting folder: mailboxName=" + mailboxName);
-        }
 
         AlfrescoImapFolder folder = getFolder(user, mailboxName);
         NodeRef nodeRef = folder.getFolderInfo().getNodeRef();
-
-        List<FileInfo> childFolders = searchFolders(nodeRef, "*", false, folder.getViewMode());
+        
+        List<FileInfo> childFolders = fileFolderService.listFolders(nodeRef);
 
         if (childFolders.isEmpty())
         {
@@ -436,7 +441,7 @@ public class ImapServiceImpl implements ImapService
             {
                 // Delete all messages for this folder
                 // Don't delete subfolders and their messages
-                List<FileInfo> messages = searchFiles(nodeRef, "*", false);
+                List<FileInfo> messages = fileFolderService.listFiles(nodeRef);
                 for (FileInfo message : messages)
                 {
                     fileFolderService.delete(message.getNodeRef());
@@ -489,10 +494,11 @@ public class ImapServiceImpl implements ImapService
                     }
                 }
                 else
-                // not last element than checks if it exists and creates if doesn't
                 {
-                    List<FileInfo> folders = searchFolders(parentNodeRef, folderName, false, sourceNode.getViewMode());
-                    if (folders.size() == 0)
+                    // not last element than checks if it exists and creates if doesn't
+                    NodeRef child = fileFolderService.searchSimple(parentNodeRef, folderName);
+                                      
+                    if (child == null)
                     {
                         // check creation permission
                         AccessStatus status = permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN);
@@ -509,7 +515,7 @@ public class ImapServiceImpl implements ImapService
                     }
                     else
                     {
-                        parentNodeRef = folders.get(0).getNodeRef();
+                        parentNodeRef = child;
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("Folder '" + folderName + "' already exists");
@@ -531,12 +537,17 @@ public class ImapServiceImpl implements ImapService
         }
     }
 
+    /**
+     * Get Folder
+     * @param user
+     * @param mailboxName
+     */
     public AlfrescoImapFolder getFolder(AlfrescoImapUser user, String mailboxName)
     {
         mailboxName = Utf7.decode(mailboxName, Utf7.UTF7_MODIFIED);
         if (logger.isDebugEnabled())
         {
-            logger.debug("Getting folder '" + mailboxName + "'");
+            logger.debug("Get folder '" + mailboxName + "'");
         }
         // If MailFolder object is used to obtain hierarchy delimiter by LIST command:
         // Example:
@@ -552,36 +563,65 @@ public class ImapServiceImpl implements ImapService
             return new AlfrescoImapFolder(user.getQualifiedMailboxName(), serviceRegistry);
         }
 
-        NodeRef root = getMailboxRootRef(mailboxName, user.getLogin());
-        String mountPointName = getMountPointName(mailboxName);
-        NodeRef nodeRef = root; // initial top folder
         ImapViewMode viewMode = getViewMode(mailboxName);
-
+        String mountPointName = getMountPointName(mailboxName);
+        
+        NodeRef root = getMailboxRootRef(mailboxName, user.getLogin());
+        NodeRef nodeRef = root; // initial top folder
+        
         String[] folderNames = getMailPathInRepo(mailboxName).split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER));
-
+        
+        if(folderNames.length == 1 && folderNames[0].length() == 0)
+        {
+            // This is the root of the mount point e.g "Alfresco IMAP" which has a path from root of ""
+            FileInfo folderFileInfo = fileFolderService.getFileInfo(root);
+            
+            AlfrescoImapFolder folder = new AlfrescoImapFolder(
+                    user.getQualifiedMailboxName(),
+                    folderFileInfo,
+                    mountPointName,
+                    viewMode,
+                    root,
+                    mountPointName,
+                    isExtractionEnabled(folderFileInfo.getNodeRef()),
+                    serviceRegistry);
+        
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Returning root folder '" + mailboxName + "'");
+            }
+            return folder;
+        }
+      
         for (int i = 0; i < folderNames.length; i++)
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug("Processing of " + folderNames[i]);
-            }            
-            NodeRef targetNode = nodeService.getChildByName(nodeRef, ContentModel.ASSOC_CONTAINS, folderNames[i]);
+            } 
+            
+            NodeRef targetNode = fileFolderService.searchSimple(nodeRef, folderNames[i]);
+            
             if (targetNode == null)
             {
-                List<FileInfo> folderList = searchFolders(nodeRef, folderNames[i], false, viewMode);
-                if (folderList != null && !folderList.isEmpty() && folderList.get(0) != null)
+                AlfrescoImapFolder folder = new AlfrescoImapFolder(user.getQualifiedMailboxName(), serviceRegistry);
+                if (logger.isDebugEnabled())
                 {
-                    targetNode = folderList.get(0).getNodeRef();
+                    logger.debug("Returning empty folder '" + folderNames[i]);
                 }
+                return folder;
             }
-            if (targetNode == null)
-            {
-                return new AlfrescoImapFolder(user.getQualifiedMailboxName(), serviceRegistry);
-            }             
+            
             if (i == (folderNames.length - 1)) // is last
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("found folder to list ");
+                }
+                
                 FileInfo folderFileInfo = fileFolderService.getFileInfo(targetNode);
-                return new AlfrescoImapFolder(
+                
+                AlfrescoImapFolder folder = new AlfrescoImapFolder(
                         user.getQualifiedMailboxName(),
                         folderFileInfo,
                         folderFileInfo.getName(),
@@ -590,146 +630,245 @@ public class ImapServiceImpl implements ImapService
                         mountPointName,
                         isExtractionEnabled(folderFileInfo.getNodeRef()),
                         serviceRegistry);
+            
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Returning folder '" + mailboxName + "'");
+                }
+                return folder;
             }
-            else
-            {
-                nodeRef = targetNode; // next parent
-            }
+  
+            /**
+             * End of loop - next element in path
+             */
+            nodeRef = targetNode;
         }
-
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Cannot get a folder '" + mailboxName + "'");
+        }
         throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName });
     }
+    
+    /**
+     * Deep search for mailboxes/folders in the specified context
+     * 
+     * Certain folders are excluded depending upon the view mode.
+     * - For ARCHIVE mode all Share Sites are excluded.
+     * - For MIXED and VIRTUAL non favourite sites are excluded.
+     * 
+     * @param contextNodeRef context folder for search
+     * @param viewMode is folder in "Virtual" View
+     * @return list of mailboxes/folders
+     */
+    private List<FileInfo> searchDeep(final NodeRef contextNodeRef, final ImapViewMode viewMode)
+    {     
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("searchDeep start " + contextNodeRef + ", " + viewMode);
+        }
+        
+        /**
+         * Exclude Share Sites of TYPE_SITE
+         */
+        final Collection<QName> typesToExclude = getServiceRegistry().getDictionaryService().getSubTypes(SiteModel.TYPE_SITE, true);
+        
+        /**
+         * Share Site Exclusion Filter
+         */
+        SubFolderFilter filter =  new SubFolderFilter()
+        {
+            List<NodeRef> favs = null;
+            public boolean isEnterSubfolder(ChildAssociationRef subfolderRef)
+            {
+              
+               NodeRef folder = subfolderRef.getChildRef();
+               QName typeOfFolder = nodeService.getType(folder);
+               if(typesToExclude.contains(typeOfFolder))
+               {
+                   if (viewMode == ImapViewMode.VIRTUAL || viewMode == ImapViewMode.MIXED)
+                   {
+                       /**
+                        * In VIRTUAL and MIXED MODE WE SHOULD ONLY DISPLAY FOLDERS FROM FAVOURITE SITES
+                        */
+                       if(favs == null)
+                       {
+                           favs = getFavouriteSites(getCurrentUser());
+                       }
+                       
+                       if(favs.contains(folder))
+                       {
+                           logger.debug("searchDeep (VIRTUAL) including fav site folder :" + subfolderRef.getQName());
+                           return true;
+                       }
+                       else
+                       {
+                           logger.debug("searchDeep (VIRTUAL) excluding non fav site folder :" + subfolderRef.getQName());
+                           return false;
+                       }
+                   }
+                   else
+                   {
+                       /**
+                        * IN ARCHIVE MODE we don't display folders for any SITES, regardless of whether they are favourites.
+                        */
+                       logger.debug("searchDeep (ARCHIVE) excluding site folder :" + subfolderRef.getQName());
+                       return false;
+                   }
+               }
+               return true;
+            }
+       }; 
+            
+        
+        List<FileInfo> searchResult = fileFolderService.listDeepFolders(contextNodeRef, filter);        
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("SearchDeep folders return at end");
+        }
+        return new ArrayList<FileInfo>(searchResult);
+    }
+
 
     /**
-     * Search for mailboxes in specified context
+     * Shallow search for mailboxes in specified context
      * 
      * @param contextNodeRef context folder for search
      * @param namePattern name pattern for search
-     * @param includeSubFolders include SubFolders
-     * @param isVirtualView is folder in "Virtual" View
+     * @param viewMode is folder in "Virtual" View
      * @return list of mailboxes
      */
-    public List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders, ImapViewMode viewMode)
+    private List<FileInfo> searchFolders(NodeRef contextNodeRef, String namePattern, ImapViewMode viewMode)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Search folders namePattern" + namePattern);
+            logger.debug("Search folders, contextNodeRef" + contextNodeRef + " namePattern, " + namePattern);
         }
-           
-        List<FileInfo> searchResult = fileFolderService.search(contextNodeRef, namePattern, false, true, includeSubFolders);
-        Set<FileInfo> result = new HashSet<FileInfo>(searchResult);
-        if (viewMode == ImapViewMode.VIRTUAL || viewMode == ImapViewMode.MIXED)
+        
+        List<FileInfo> searchResult; 
+        
+        /**
+         * Shallow search for all folders below contextNodeRef
+         */
+        if("*".equals(namePattern))
         {
-            List<SiteInfo> nonFavSites = getNonFavouriteSites(getCurrentUser());
-            for (SiteInfo siteInfo : nonFavSites)
-            {
-                FileInfo nonFavSite = fileFolderService.getFileInfo(siteInfo.getNodeRef());
-                List<FileInfo> siteChilds = fileFolderService.search(nonFavSite.getNodeRef(), namePattern, false, true, true);
-                result.removeAll(siteChilds);
-                result.remove(nonFavSite);
-            }
-
+            /**
+             * This is a simple listing of all folders below contextNodeRef
+             */
+            searchResult = fileFolderService.listFolders(contextNodeRef);
         }
         else
         {
-            // Remove folders from Sites
-            List<SiteInfo> sites = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<SiteInfo>>()
-            {
-                public List<SiteInfo> execute() throws Exception
-                {
-                    List<SiteInfo> res = new ArrayList<SiteInfo>();
-                    try
-                    {
-
-                        res = serviceRegistry.getSiteService().listSites(getCurrentUser());
-                    }
-                    catch (SiteServiceException e)
-                    {
-                        // Do nothing. Root sites folder was not created.
-                        if (logger.isWarnEnabled())
-                        {
-                            logger.warn("Root sites folder was not created.");
-                        }
-                    }
-                    catch (InvalidNodeRefException e)
-                    {
-                        // Do nothing. Root sites folder was deleted.
-                        if (logger.isWarnEnabled())
-                        {
-                            logger.warn("Root sites folder was deleted.");
-                        }
-                    }
-                    
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Search folders return ");
-                    }
-
-                    return res;
-                }
-            }, false, true);
-            for (SiteInfo siteInfo : sites)
-            {
-                List<FileInfo> siteChilds = fileFolderService.search(siteInfo.getNodeRef(), namePattern, false, true, true);
-                result.removeAll(siteChilds);
-                // remove site
-                result.remove(fileFolderService.getFileInfo(siteInfo.getNodeRef()));
-            }
-
+            // MER TODO I'm not sure we ever get here in real use of IMAP.   But if we do then the use of this 
+            // deprecated method needs to be re-worked. 
+            searchResult = fileFolderService.search(contextNodeRef, namePattern, false, true, false);
         }
+        
+        
+// DO WE NEED TO WORRY ABOUT THE STUFF BELOW ?  
+// WOULD ONLY BE RELEVANT if ContextNodeRef is site root.        
+// IF contextNodeRef is the imap home or the contextNodeRef is in the depths of a non favourite site.
+//        
+//        Set<FileInfo> result = new HashSet<FileInfo>(searchResult);
+//        if (viewMode == ImapViewMode.VIRTUAL || viewMode == ImapViewMode.MIXED)
+//        {
+//            /**
+//             * In VIRTUAL and MIXED MODE WE SHOULD ONLY DISPLAY FAVOURITE SITES
+//             */
+//            List<SiteInfo> nonFavSites = getNonFavouriteSites(getCurrentUser());
+//            for (SiteInfo siteInfo : nonFavSites)
+//            {
+//                FileInfo nonFavSite = fileFolderService.getFileInfo(siteInfo.getNodeRef());
+//                
+//                // search deep for all folders in the site
+//                List<FileInfo> siteChilds = fileFolderService.search(nonFavSite.getNodeRef(), namePattern, false, true, true);
+//                result.removeAll(siteChilds);
+//                result.remove(nonFavSite);
+//            }
+//
+//        }
+//        else
+//        {
+//            /**
+//             * IN ARCHIVE MODE we don't display folders any SITES
+//             */
+//            // Remove folders from Sites
+//            List<SiteInfo> sites = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<SiteInfo>>()
+//            {
+//                public List<SiteInfo> execute() throws Exception
+//                {
+//                    List<SiteInfo> res = new ArrayList<SiteInfo>();
+//                    try
+//                    {
+//
+//                        res = serviceRegistry.getSiteService().listSites(getCurrentUser());
+//                    }
+//                    catch (SiteServiceException e)
+//                    {
+//                        // Do nothing. Root sites folder was not created.
+//                        if (logger.isWarnEnabled())
+//                        {
+//                            logger.warn("Root sites folder was not created.");
+//                        }
+//                    }
+//                    catch (InvalidNodeRefException e)
+//                    {
+//                        // Do nothing. Root sites folder was deleted.
+//                        if (logger.isWarnEnabled())
+//                        {
+//                            logger.warn("Root sites folder was deleted.");
+//                        }
+//                    }
+//                    
+//                    if (logger.isDebugEnabled())
+//                    {
+//                        logger.debug("Search folders return ");
+//                    }
+//
+//                    return res;
+//                }
+//            }, false, true);
+//            
+//            for (SiteInfo siteInfo : sites)
+//            {
+//                List<FileInfo> siteChilds = fileFolderService.search(siteInfo.getNodeRef(), namePattern, false, true, true);
+//                result.removeAll(siteChilds);
+//                // remove site
+//                result.remove(fileFolderService.getFileInfo(siteInfo.getNodeRef()));
+//            }
+//
+//        }
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("Search folders return at end");
+            logger.debug("Search folders return at end, namePattern:" + namePattern);
         }
-        return new ArrayList<FileInfo>(result);
+       
+        return searchResult;
     }
 
     /**
-     * Search for files in specified context
+     * Search for emails in specified folder depending on view mode.
+     * 
+     * Shallow list of files
      * 
      * @param contextNodeRef context folder for search
-     * @param namePattern name pattern for search
-     * @param searchType type for search
-     * @param includeSubFolders include SubFolders
-     * @return list of files with specifed type
-     */
-    public List<FileInfo> searchFiles(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders)
-    {
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Search files namePattern," + contextNodeRef + ", " + namePattern + ", " + includeSubFolders);
-        }
-        
-        List<FileInfo> files = fileFolderService.search(contextNodeRef, namePattern, true, false, includeSubFolders);
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Search files return");
-        }
-        
-        return files;
-    }
-
-    /**
-     * Search for emails in specified folder depend on view mode.
-     * 
-     * @param contextNodeRef context folder for search
-     * @param namePattern name pattern for search
      * @param viewMode context folder view mode
-     * @param includeSubFolders includeSubFolders
      * @return list of emails that context folder contains.
      */
-    public List<FileInfo> searchMails(NodeRef contextNodeRef, String namePattern, ImapViewMode viewMode, boolean includeSubFolders)
+    public List<FileInfo> searchMails(NodeRef contextNodeRef, ImapViewMode viewMode)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Search mails namePattern," + contextNodeRef + ", " + namePattern + ", " + viewMode + ", " + includeSubFolders);
+            logger.debug("Search mails namePattern," + contextNodeRef + ", " + viewMode );
         }
         
+        List<FileInfo> searchResult = fileFolderService.listFiles(contextNodeRef);
+        
         List<FileInfo> result = new LinkedList<FileInfo>();
-        List<FileInfo> searchResult = fileFolderService.search(contextNodeRef, namePattern, true, false, includeSubFolders);
+        //List<FileInfo> searchResult = fileFolderService.search(contextNodeRef, namePattern, true, false, includeSubFolders);
         switch (viewMode)
         {
         case MIXED:
@@ -755,6 +894,7 @@ public class ImapServiceImpl implements ImapService
             break;
         }
 
+        logger.debug("found files:" + result.size());
         return result;
     }
 
@@ -762,7 +902,7 @@ public class ImapServiceImpl implements ImapService
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Subscribing: " + mailbox);
+            logger.debug("Subscribing: " + user + ", " + mailbox);
         }
         AlfrescoImapFolder mailFolder = getFolder(user, mailbox);
         nodeService.removeAspect(mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED);
@@ -772,10 +912,19 @@ public class ImapServiceImpl implements ImapService
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Unsubscribing: " + mailbox);
+            logger.debug("Unsubscribing: " + user + ", " + mailbox);
         }
         AlfrescoImapFolder mailFolder = getFolder(user, mailbox);
-        nodeService.addAspect(mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED, null);
+        if(mailFolder.getFolderInfo() != null)
+        {
+            logger.debug("unsubscribing by ASPECT_IMAP_FOLDER_NONSUBSCRIBED");
+            nodeService.addAspect(mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED, null);
+        }
+        else
+        {
+            // perhaps the folder has been deleted by another async process?
+            logger.debug("Unable to find folder to unsubscribe");
+        }
     }
 
     /**
@@ -811,6 +960,8 @@ public class ImapServiceImpl implements ImapService
     public synchronized void setFlags(FileInfo messageInfo, Flags flags, boolean value)
     {
         checkForFlaggableAspect(messageInfo.getNodeRef());
+        
+
         for (Flags.Flag flag : flags.getSystemFlags())
         {
             setFlag(messageInfo, flag, value);
@@ -826,8 +977,18 @@ public class ImapServiceImpl implements ImapService
      */
     public void setFlag(FileInfo messageInfo, Flag flag, boolean value)
     {
-        checkForFlaggableAspect(messageInfo.getNodeRef());
-        nodeService.setProperty(messageInfo.getNodeRef(), flagToQname.get(flag), value);
+        NodeRef nodeRef = messageInfo.getNodeRef();
+        checkForFlaggableAspect(nodeRef);
+        AccessStatus status = permissionService.hasPermission(nodeRef, PermissionService.WRITE_PROPERTIES);
+        if (status == AccessStatus.DENIED)
+        {
+            logger.debug("checkForFlaggableAspect - no permissions to add FLAG " + nodeRef);
+            //TODO should we throw an exception here?
+        }
+        else
+        {
+            nodeService.setProperty(messageInfo.getNodeRef(), flagToQname.get(flag), value);
+        }
     }
 
     /**
@@ -835,6 +996,10 @@ public class ImapServiceImpl implements ImapService
      */
     private List<AlfrescoImapFolder> listMailboxes(AlfrescoImapUser user, String mailboxPattern, boolean listSubscribed)
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("listMailboxes" + user + ", mailboxPattern:" + mailboxPattern + ", listSubscribed:" + listSubscribed);
+        }
         List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
 
         Map<String, NodeRef> mountPoints = getMountPoints();
@@ -900,7 +1065,8 @@ public class ImapServiceImpl implements ImapService
                                     isExtractionEnabled(mountPointFileInfo.getNodeRef())));
                 }
             }
-
+            
+            
         }
 
         // List mailboxes that are in user IMAP Home
@@ -917,11 +1083,24 @@ public class ImapServiceImpl implements ImapService
             }
             result.addAll(imapFolders);
         }
+        
+        logger.debug("listMailboxes returning size:" + result.size());
 
         return result;
 
     }
 
+    /**
+     * Get the list of folders
+     * 
+     * @param mailboxRoot
+     * @param root
+     * @param user
+     * @param mailboxPattern
+     * @param listSubscribed
+     * @param viewMode
+     * @return
+     */
     private List<AlfrescoImapFolder> listFolder(
             NodeRef mailboxRoot,
             NodeRef root,
@@ -932,7 +1111,7 @@ public class ImapServiceImpl implements ImapService
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Listing mailboxes: mailboxPattern=" + mailboxPattern);
+            logger.debug("List folder: mailboxPattern=" + mailboxPattern);
         }
 
         int index = mailboxPattern.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
@@ -957,9 +1136,12 @@ public class ImapServiceImpl implements ImapService
 
         if (index < 0)
         {
+            // This is the last level
+            
             if ("*".equals(name))
             {
-                Collection<FileInfo> list = searchFolders(root, name, true, viewMode);
+                // Deep listing of all folders
+                Collection<FileInfo> list = searchDeep(root, viewMode);
                 if (listSubscribed)
                 {
                     list = getSubscribed(list, user.getLogin());
@@ -973,8 +1155,9 @@ public class ImapServiceImpl implements ImapService
             }
             else if (name.endsWith("*"))
             {
+                // Ends with wildcard
                 List<FileInfo> fullList = new LinkedList<FileInfo>();
-                List<FileInfo> list = searchFolders(root, name.replace('%', '*'), false, viewMode);
+                List<FileInfo> list = searchFolders(root, name.replace('%', '*'), viewMode);
                 Collection<FileInfo> subscribedList = list;
                 if (listSubscribed)
                 {
@@ -986,7 +1169,7 @@ public class ImapServiceImpl implements ImapService
                     fullList.addAll(subscribedList);
                     for (FileInfo fileInfo : list)
                     {
-                        List<FileInfo> childList = searchFolders(fileInfo.getNodeRef(), "*", true, viewMode);
+                        List<FileInfo> childList = searchDeep(fileInfo.getNodeRef(), viewMode);
                         if (listSubscribed)
                         {
                             fullList.addAll(getSubscribed(childList, user.getLogin()));
@@ -1002,7 +1185,8 @@ public class ImapServiceImpl implements ImapService
             }
             else if ("%".equals(name))
             {
-                List<FileInfo> list = searchFolders(root, "*", false, viewMode);
+                // Non recursive listing
+                List<FileInfo> list = searchFolders(root, "*", viewMode);
                 LinkedList<AlfrescoImapFolder> subscribedList = new LinkedList<AlfrescoImapFolder>();
 
                 if (listSubscribed)
@@ -1050,7 +1234,8 @@ public class ImapServiceImpl implements ImapService
             }
             else if (name.contains("%") || name.contains("*"))
             {
-                List<FileInfo> list = searchFolders(root, name.replace('%', '*'), false, viewMode);
+                // wild cards in the middle of the name
+                List<FileInfo> list = searchFolders(root, name.replace('%', '*'), viewMode);
                 Collection<FileInfo> subscribedList = list;
                 if (listSubscribed)
                 {
@@ -1065,7 +1250,8 @@ public class ImapServiceImpl implements ImapService
             }
             else
             {
-                List<FileInfo> list = searchFolders(root, name, false, viewMode);
+                // No wild cards
+                List<FileInfo> list = searchFolders(root, name, viewMode);
                 Collection<FileInfo> subscribedList = list;
                 if (listSubscribed)
                 {
@@ -1083,7 +1269,7 @@ public class ImapServiceImpl implements ImapService
         // If (index != -1) this is not the last level
         List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
 
-        List<FileInfo> list = searchFolders(root, name.replace('%', '*'), false, viewMode);
+        List<FileInfo> list = searchFolders(root, name.replace('%', '*'), viewMode);
         for (FileInfo folder : list)
         {
             Collection<AlfrescoImapFolder> childFolders = listFolder(mailboxRoot, folder.getNodeRef(), user, remainName, listSubscribed, viewMode);
@@ -1104,35 +1290,51 @@ public class ImapServiceImpl implements ImapService
 
     /**
      * Convert mailpath from IMAP client representation to the alfresco representation view 
-     * (e.g. with default settings "getMailPathInRepo(Repository_virtual.Imap Home)" will return "Company Home.Imap Home")
+     * (e.g. with default settings 
+     * "getMailPathInRepo(Repository_virtual/Imap Home)" will return "Company Home/Imap Home")
      * 
      * @param mailPath mailbox path in IMAP client
      * @return mailbox path in alfresco
      */
     private String getMailPathInRepo(String mailPath)
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getMailPathInRepo :" + mailPath);
+        }
         String rootFolder;
         String remain = "";
         int index = mailPath.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
         if (index > 0)
         {
+            // mail path contains a /
             rootFolder = mailPath.substring(0, index);
-            remain = mailPath.substring(index);
+            remain = mailPath.substring(index + 1);
         }
         else
         {
+            //mail path is a root folder
             rootFolder = mailPath;
         }
         if (imapConfigMountPoints.keySet().contains(rootFolder))
         {
             Map<String, NodeRef> mountPoints = getMountPoints();
             NodeRef rootRef = mountPoints.get(rootFolder);
-            String rootName = nodeService.getProperty(rootRef, ContentModel.PROP_NAME).toString();
+            String path = remain;
+            
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("getMailPathInRepo mounted point returning :" + path);
+            }
 
-            return rootName + remain;
+            return path;
         }
         else
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("getMailPathInRepo not mounted returning path as is:" + mailPath);
+            }
             return mailPath;
         }
     }
@@ -1219,11 +1421,16 @@ public class ImapServiceImpl implements ImapService
         {
             Map<String, NodeRef> mountPoints = getMountPoints();
             NodeRef mountRef = mountPoints.get(rootFolder);
-            return nodeService.getParentAssocs(mountRef).get(0).getParentRef();
+            logger.debug("getMailboxRootRef mounted, " + mountRef);
+            return mountRef;
+            // MER EXPERIMENT
+            //return nodeService.getParentAssocs(mountRef).get(0).getParentRef();
         }
         else
         {
-            return getUserImapHomeRef(userName);
+            NodeRef ret = getUserImapHomeRef(userName);
+            logger.debug("getMailboxRootRef using userImapHome, " + ret);
+            return ret;
         }
     }
 
@@ -1269,21 +1476,14 @@ public class ImapServiceImpl implements ImapService
     private boolean isSubscribed(FileInfo fileInfo, String userName)
     {
         return !nodeService.hasAspect(fileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED);
-        // This is a multiuser support. Commented due new requirements
-
-        // Map<QName, Serializable> properties = fileInfo.getProperties();
-        // String subscribedList = (String) properties.get(ImapModel.PROP_IMAP_FOLDER_SUBSCRIBED);
-        // if (subscribedList == null)
-        // {
-        // return false;
-        // }
-        // else
-        // {
-        // return subscribedList.contains(imapHelper.formatUserEntry(userName));
-        // }
-
     }
 
+    /**
+     * getSubscribed filters out folders which are not subscribed.
+     * @param list
+     * @param userName
+     * @return collection of subscribed folders.
+     */
     private Collection<FileInfo> getSubscribed(Collection<FileInfo> list, String userName)
     {
         Collection<FileInfo> result = new LinkedList<FileInfo>();
@@ -1301,7 +1501,7 @@ public class ImapServiceImpl implements ImapService
 
     private boolean hasSubscribedChild(FileInfo parent, String userName, ImapViewMode viewMode)
     {
-        List<FileInfo> list = searchFolders(parent.getNodeRef(), "*", true, viewMode);
+        List<FileInfo> list = searchDeep(parent.getNodeRef(), viewMode);
 
         for (FileInfo fileInfo : list)
         {
@@ -1314,6 +1514,7 @@ public class ImapServiceImpl implements ImapService
         return false;
     }
 
+    
     private List<AlfrescoImapFolder> createMailFolderList(AlfrescoImapUser user, Collection<FileInfo> list, NodeRef imapUserHomeRef)
     {
         List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
@@ -1371,71 +1572,101 @@ public class ImapServiceImpl implements ImapService
     }
 
     /**
-     * Return list of sites, that belong to the specified user and not marked as "Imap favourite"
+     * Return list of "favourite" sites, that belong to the specified user and are marked as "Imap favourite"
      * 
      * @param userName name of user
-     * @return List of nonFavourite sites.
+     * @return List of favourite sites.
      */
-    private List<SiteInfo> getNonFavouriteSites(final String userName)
+    private List<NodeRef> getFavouriteSites(final String userName)
     {
-        List<SiteInfo> nonFavSites = new LinkedList<SiteInfo>();
+        List<NodeRef> favSites = new LinkedList<NodeRef>();
 
-        PreferenceService preferenceService = (PreferenceService) serviceRegistry.getService(ServiceRegistry.PREFERENCE_SERVICE);
-        Map<String, Serializable> prefs = preferenceService.getPreferences(userName, AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES);
+        PreferenceService preferenceService = (PreferenceService) serviceRegistry
+                .getService(ServiceRegistry.PREFERENCE_SERVICE);
+        Map<String, Serializable> prefs = preferenceService.getPreferences(
+                userName, AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES);
 
-        List<SiteInfo> sites = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<SiteInfo>>()
-        {
-            public List<SiteInfo> execute() throws Exception
-           {
-                List<SiteInfo> res = new ArrayList<SiteInfo>();
-                try
-               {
+        /**
+         * List the user's sites
+         */
+        List<SiteInfo> sites = serviceRegistry.getTransactionService()
+                .getRetryingTransactionHelper().doInTransaction(
+                        new RetryingTransactionCallback<List<SiteInfo>>()
+                        {
+                            public List<SiteInfo> execute() throws Exception
+                            {
+                                List<SiteInfo> res = new ArrayList<SiteInfo>();
+                                try
+                                {
 
-                    res = serviceRegistry.getSiteService().listSites(userName);
-        }
-        catch (SiteServiceException e)
-        {
-            //Do nothing. Root sites folder was not created.
-            if (logger.isDebugEnabled())
-            {
-                logger.warn("Root sites folder was not created.");
-            }
-        }
-        catch (InvalidNodeRefException e)
-        {
-            //Do nothing. Root sites folder was deleted.
-            if (logger.isDebugEnabled())
-            {
-                logger.warn("Root sites folder was deleted.");
-            }
-        }
+                                    res = serviceRegistry.getSiteService()
+                                            .listSites(userName);
+                                } 
+                                catch (SiteServiceException e)
+                                {
+                                    // Do nothing. Root sites folder was not
+                                    // created.
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.warn("Root sites folder was not created.");
+                                    }
+                                } 
+                                catch (InvalidNodeRefException e)
+                                {
+                                    // Do nothing. Root sites folder was
+                                    // deleted.
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.warn("Root sites folder was deleted.");
+                                    }
+                                }
 
-                return res;
-            }
-        }, false, true);
+                                return res;
+                            }
+                        }, false, true);
 
         for (SiteInfo siteInfo : sites)
         {
-            String key = AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES + "." + siteInfo.getShortName();
+            String key = AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES + "."
+                    + siteInfo.getShortName();
             Boolean isImapFavourite = (Boolean) prefs.get(key);
-            if (isImapFavourite == null || !isImapFavourite)
+            if (isImapFavourite != null && isImapFavourite)
             {
-                nonFavSites.add(siteInfo);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("favourite site user:" + userName + "site:" + siteInfo.getShortName());
+                }
+                favSites.add(siteInfo.getNodeRef());
             }
         }
+        
+        logger.debug("at end of getFavouriteSites user:" + userName);
 
-        return nonFavSites;
+        return favSites;
     }
 
+    /**
+     * Checks for the existence of the flaggable aspect and adds it if it is not already present on the folder. 
+     * @param nodeRef
+     */
     private void checkForFlaggableAspect(NodeRef nodeRef)
     {
         if (!nodeService.hasAspect(nodeRef, ImapModel.ASPECT_FLAGGABLE))
         {
-            Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
-            nodeService.addAspect(nodeRef, ImapModel.ASPECT_FLAGGABLE, aspectProperties);
+            AccessStatus status = permissionService.hasPermission(nodeRef, PermissionService.WRITE_PROPERTIES);
+            if (status == AccessStatus.DENIED)
+            {
+                logger.debug("checkForFlaggableAspect - no permissions to add FLAGGABLE aspect" + nodeRef);
+            }
+            else
+            {    
+                logger.debug("adding flaggable aspect nodeRef:" + nodeRef);
+                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+                nodeService.addAspect(nodeRef, ImapModel.ASPECT_FLAGGABLE, aspectProperties);
+            }
         }
     }
-
+    
     private boolean isExtractionEnabled(NodeRef nodeRef)
     {
         return extractAttachmentsEnabled && !ignoreExtractionFolders.contains(nodeRef);

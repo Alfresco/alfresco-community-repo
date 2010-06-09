@@ -208,7 +208,7 @@
    </bean>
    
    <!-- ===================================== -->
-   <!-- ID lookup for Encoding entities       -->
+   <!-- ID lookup for ContentData entities       -->
    <!-- ===================================== -->
 
    <!-- The cross-transaction shared cache for ContentData -->
@@ -239,7 +239,7 @@
          <value>org.alfresco.cache.contentDataTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>1000</value>
+         <value>10000</value>
       </property>
    </bean>
    

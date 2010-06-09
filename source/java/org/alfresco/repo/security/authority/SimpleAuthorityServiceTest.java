@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -94,8 +95,11 @@ public class SimpleAuthorityServiceTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
+        if ((tx.getStatus() == Status.STATUS_ACTIVE) || (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+        {
+            tx.rollback();
+        }
         AuthenticationUtil.clearCurrentSecurityContext();
-        tx.rollback();
         super.tearDown();
     }
 

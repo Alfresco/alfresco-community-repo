@@ -90,9 +90,11 @@ public interface DictionaryService
     Collection<QName> getAllTypes();
     
     /**
-     * @param type
+     * Get the sub types of the type.   The returned list includes the base type which is passed in as a parameter.
+     * 
+     * @param type, the qualified name of the type
      * @param follow  true => all sub-type descendants, false => immediate sub-type children
-     * @return the sub types of specified type
+     * @return the names of the sub types of the specified type, including the value passed in.
      */
     @NotAuditable
     Collection<QName> getSubTypes(QName type, boolean follow);

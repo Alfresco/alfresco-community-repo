@@ -170,7 +170,7 @@ public class AclDaoComponentTest extends TestCase
     protected void tearDown() throws Exception
     {
 
-        if (testTX.getStatus() == Status.STATUS_ACTIVE)
+        if ((testTX.getStatus() == Status.STATUS_ACTIVE) || (testTX.getStatus() == Status.STATUS_MARKED_ROLLBACK))
         {
             testTX.rollback();
         }

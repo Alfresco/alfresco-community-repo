@@ -43,7 +43,6 @@ public class ContentData implements Serializable
     private final long size;
     private final String encoding;
     private final Locale locale;
-    private int refCount;
     
     /**
      * Construct a content property from a string
@@ -223,32 +222,6 @@ public class ContentData implements Serializable
                 EqualsHelper.nullSafeEquals(this.locale, that.locale));
     }
     
-    /**
-     * Use to 'hold on' to content data outside of a transaction (e.g. on transaction retry).
-     */
-    public void reference()
-    {
-        this.refCount++;
-    }
-
-    /**
-     * Use to release a content data previously held on to by {@link #reference()}.
-     */
-    public void deReference()
-    {
-        this.refCount--;
-    }
-    
-    /**
-     * Determines whether this content data should be deleted on rollback.
-     * 
-     * @return <code>false</code> if this content data should be deleted on rollback.
-     */
-    public boolean isReferenced()
-    {
-        return this.refCount > 0;
-    }
-
     /**
      * @return Returns a string of form: <code>contentUrl=xxx;mimetype=xxx;size=xxx;encoding=xxx</code>
      */

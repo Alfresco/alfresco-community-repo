@@ -257,7 +257,7 @@ public class ModuleComponentHelper
 		                        return null;
 		                    }
 		                };
-		                transactionService.getRetryingTransactionHelper().doInTransaction(startModuleWork);
+                        transactionService.getRetryingTransactionHelper().doInTransaction(startModuleWork, transactionService.isReadOnly());
 		            }
 		            
 		            // Check for missing modules.

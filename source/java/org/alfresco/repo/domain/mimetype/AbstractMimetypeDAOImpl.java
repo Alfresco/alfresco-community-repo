@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.util.Pair;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -125,6 +126,35 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
         return result;
     }
     
+    public int updateMimetype(String oldMimetype, String newMimetype)
+    {
+        ParameterCheck.mandatory("oldMimetype", oldMimetype);
+        ParameterCheck.mandatory("newMimetype", newMimetype);
+        
+        Pair<Long, String> oldMimetypePair = getMimetype(oldMimetype);
+        if (oldMimetypePair == null)
+        {
+            // There is no mimetype currently, so there is nothing to update.
+            // Just do a create
+            getOrCreateMimetype(newMimetype);
+            return 0;
+        }
+        // The ID will remain the same
+        Long id = oldMimetypePair.getFirst();
+        // We have to update it
+        int count = updateMimetypeEntity(id, newMimetype);
+        if (count != 1)
+        {
+            throw new ConcurrencyFailureException("Concurrent update of mimetype: " + oldMimetype);
+        }
+        // Cache it
+        mimetypeEntityCache.remove(oldMimetype);
+        mimetypeEntityCache.put(id, newMimetype);
+        mimetypeEntityCache.put(newMimetype, id);
+        // Done
+        return count;
+    }
+
     /**
      * @param id            the ID of the mimetype entity
      * @return              Return the entity or <tt>null</tt> if it doesn't exist
@@ -132,4 +162,5 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     protected abstract MimetypeEntity getMimetypeEntity(Long id);
     protected abstract MimetypeEntity getMimetypeEntity(String mimetype);
     protected abstract MimetypeEntity createMimetypeEntity(String mimetype);
+    protected abstract int updateMimetypeEntity(Long id, String newMimetype);
 }

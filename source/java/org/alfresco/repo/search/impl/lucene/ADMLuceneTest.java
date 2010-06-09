@@ -1289,7 +1289,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         luceneFTS.resume();
         testTX.commit();
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 50; i++)
         {
             testTX = transactionService.getUserTransaction();
             testTX.begin();
@@ -2183,7 +2183,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             public Object execute() throws Throwable
             {
                 SessionSizeResourceManager.setDisableInTransaction();
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 100; i+=10)
                 {
                     HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
                     for (int j = 0; j < i; j++)

@@ -429,7 +429,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             // retry the transaction
 
             final ContentData contentData = content.getContentData();
-            contentData.reference();
 
             // Update node properties, but only if the binary has changed (ETHREEOH-1861)
             
@@ -459,7 +458,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
                 public void afterCommit()
                 {
                     content = null;
-                    contentData.deReference();
                     preUpdateContentURL = null;
                 }
             });

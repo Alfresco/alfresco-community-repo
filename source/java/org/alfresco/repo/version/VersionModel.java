@@ -23,7 +23,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Version1 Model Constants used by lightWeightVersionStore implementation
  *
- * @author Roy Wetherall
+ * @author Roy Wetherall, janv
  * 
  * NOTE: deprecated since 3.1 (migrate and useVersion2 Model)
  */
@@ -168,7 +168,6 @@ public interface VersionModel extends VersionBaseModel
     /**
      * Versioned assoc type
      */
-    public static final String TYPE_VERSIONED_ASSOC = "versionedAssoc";
     public static final QName TYPE_QNAME_VERSIONED_ASSOC = QName.createQName(NAMESPACE_URI, TYPE_VERSIONED_ASSOC);
 
     /**
@@ -176,7 +175,6 @@ public interface VersionModel extends VersionBaseModel
      */
     public static final String CHILD_VERSIONED_ATTRIBUTES = "versionedAttributes";
     public static final String CHILD_VERSIONED_CHILD_ASSOCS = "versionedChildAssocs";
-    public static final String CHILD_VERSIONED_ASSOCS = "versionedAssocs";
     public static final String CHILD_VERSION_META_DATA = "versionMetaData";
 
     public static final QName CHILD_QNAME_VERSION_HISTORIES = QName.createQName(NAMESPACE_URI, CHILD_VERSION_HISTORIES);

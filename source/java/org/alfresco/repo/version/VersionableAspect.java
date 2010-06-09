@@ -75,6 +75,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     /** The Version service */
     private VersionService versionService;
     
+    /** Behaviours */
+    JavaBehaviour onUpdatePropertiesBehaviour;
+    
     /** 
      * Optional list of excluded props 
      * - only applies if cm:autoVersionOnUpdateProps=true (and cm:autoVersion=true)
@@ -147,10 +150,11 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 ContentModel.ASPECT_VERSIONABLE,
                 new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
         
+        onUpdatePropertiesBehaviour = new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT);
         this.policyComponent.bindClassBehaviour(
             QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
             ContentModel.ASPECT_VERSIONABLE,
-            new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+            onUpdatePropertiesBehaviour);
         
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
@@ -322,75 +326,89 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false) &&
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == false))
         {
-            Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
-            if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)
+        	onUpdatePropertiesBehaviour.disable();
+        	try
+        	{
+	            Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
+	            if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)
+	            {
+	                // Determine whether the node is auto versionable (for property only updates) or not
+	                boolean autoVersion = false;
+	                Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
+	                if (value != null)
+	                {
+	                    // If the value is not null then 
+	                    autoVersion = value.booleanValue();
+	                }
+	                
+	                boolean autoVersionProps = false;
+	                value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION_PROPS);
+	                if (value != null)
+	                {
+	                    // If the value is not null then 
+	                    autoVersionProps = value.booleanValue();
+	                }
+	                
+	                if ((autoVersion == true) && (autoVersionProps == true))
+	                {
+	                    // Check for explicitly excluded props - if one or more excluded props changes then do not auto-version on this event (even if other props changed)
+	                    if (excludedOnUpdateProps.size() > 0)
+	                    {
+	                        Map<String, QName> propNames = new HashMap<String, QName>(after.size());
+	                        for (QName afterProp : after.keySet())
+	                        {
+	                            if (excludedOnUpdateProps.contains(afterProp.getPrefixString()))
+	                            {
+	                                propNames.put(afterProp.getPrefixString(), afterProp);
+	                            }
+	                        }
+	                        for (QName beforeProp : before.keySet())
+	                        {
+	                            if (excludedOnUpdateProps.contains(beforeProp.getPrefixString()))
+	                            {
+	                                propNames.put(beforeProp.getPrefixString(), beforeProp);
+	                            }
+	                        }
+	                        
+	                        if (propNames.size() > 0)
+	                        {
+	                            for (QName prop : propNames.values())
+	                            {
+	                                Serializable beforeValue = before.get(prop);
+	                                Serializable afterValue = after.get(prop);
+	                                
+	                                if (EqualsHelper.nullSafeEquals(beforeValue, afterValue) != true)
+	                                {
+	                                    // excluded - do not version
+	                                    return;
+	                                }
+	                            }
+	                        }
+	                        
+	                        // drop through and auto-version
+	                    }
+	                    
+	                    // Create the auto-version
+	                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+	                    versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION_PROPS));
+	                    
+	                    createVersionImpl(nodeRef, versionProperties);
+	                }
+	            }
+	        }
+            finally
             {
-                // Determine whether the node is auto versionable (for property only updates) or not
-                boolean autoVersion = false;
-                Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
-                if (value != null)
-                {
-                    // If the value is not null then 
-                    autoVersion = value.booleanValue();
-                }
-                
-                boolean autoVersionProps = false;
-                value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION_PROPS);
-                if (value != null)
-                {
-                    // If the value is not null then 
-                    autoVersionProps = value.booleanValue();
-                }
-                
-                if ((autoVersion == true) && (autoVersionProps == true))
-                {
-                    // Check for explicitly excluded props - if one or more excluded props changes then do not auto-version on this event (even if other props changed)
-                    if (excludedOnUpdateProps.size() > 0)
-                    {
-                        Map<String, QName> propNames = new HashMap<String, QName>(after.size());
-                        for (QName afterProp : after.keySet())
-                        {
-                            if (excludedOnUpdateProps.contains(afterProp.getPrefixString()))
-                            {
-                                propNames.put(afterProp.getPrefixString(), afterProp);
-                            }
-                        }
-                        for (QName beforeProp : before.keySet())
-                        {
-                            if (excludedOnUpdateProps.contains(beforeProp.getPrefixString()))
-                            {
-                                propNames.put(beforeProp.getPrefixString(), beforeProp);
-                            }
-                        }
-                        
-                        if (propNames.size() > 0)
-                        {
-                            for (QName prop : propNames.values())
-                            {
-                                Serializable beforeValue = before.get(prop);
-                                Serializable afterValue = after.get(prop);
-                                
-                                if (EqualsHelper.nullSafeEquals(beforeValue, afterValue) != true)
-                                {
-                                    // excluded - do not version
-                                    return;
-                                }
-                            }
-                        }
-                        
-                        // drop through and auto-version
-                    }
-                    
-                    // Create the auto-version
-                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
-                    versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION_PROPS));
-                    
-                    createVersionImpl(nodeRef, versionProperties);
-                }
+            	onUpdatePropertiesBehaviour.enable();
             }
         }
     }
     
+    /**
+     * On create version implementation method
+     * 
+     * @param nodeRef
+     * @param versionProperties
+     */
     private void createVersionImpl(NodeRef nodeRef, Map<String, Serializable> versionProperties)
     {
         recordCreateVersion(nodeRef, null);

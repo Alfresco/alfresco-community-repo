@@ -110,6 +110,9 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="permissionService">
+            <ref bean="PermissionService"/>
+        </property>
         
         <property name="imapConfigMountPoints">
             <ref bean="imap.config.server.mountPoints" />

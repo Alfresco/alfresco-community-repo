@@ -80,6 +80,7 @@ public class ImapServiceImpl implements ImapService
     private SysAdminParams sysAdminParams;
     private FileFolderService fileFolderService;
     private NodeService nodeService;
+    private PermissionService permissionService;
     private ServiceRegistry serviceRegistry;
 
     private Map<String, ImapConfigMountPointsBean> imapConfigMountPoints;
@@ -179,6 +180,16 @@ public class ImapServiceImpl implements ImapService
     {
         this.nodeService = nodeService;
     }
+    
+    public PermissionService getPermissionService()
+    {
+        return permissionService;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
 
     public ServiceRegistry getServiceRegistry()
     {
@@ -249,6 +260,7 @@ public class ImapServiceImpl implements ImapService
         
         PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "permissionService", permissionService);
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         PropertyCheck.mandatory(this, "defaultFromAddress", defaultFromAddress);
         PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
@@ -352,7 +364,7 @@ public class ImapServiceImpl implements ImapService
         mailboxName = Utf7.decode(mailboxName, Utf7.UTF7_MODIFIED);
         if (logger.isDebugEnabled())
         {
-            logger.debug("Creating folder: " + mailboxName);
+            logger.debug("Create mailbox: " + mailboxName);
         }
         NodeRef root = getMailboxRootRef(mailboxName, user.getLogin());
         NodeRef parentNodeRef = root; // it is used for hierarhy deep search.
@@ -366,7 +378,7 @@ public class ImapServiceImpl implements ImapService
             if (folders.size() == 0)
             {
                 // folder doesn't exist
-                AccessStatus status = serviceRegistry.getPermissionService().hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN);
+                AccessStatus status = permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN);
                 if (status == AccessStatus.DENIED)
                 {
                     throw new AlfrescoRuntimeException(ERROR_PERMISSION_DENIED);
@@ -483,7 +495,7 @@ public class ImapServiceImpl implements ImapService
                     if (folders.size() == 0)
                     {
                         // check creation permission
-                        AccessStatus status = serviceRegistry.getPermissionService().hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN);
+                        AccessStatus status = permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN);
                         if (status == AccessStatus.DENIED)
                         {
                             throw new AlfrescoRuntimeException(ERROR_PERMISSION_DENIED);
@@ -1216,27 +1228,41 @@ public class ImapServiceImpl implements ImapService
     }
 
     /**
+     * Get the node ref of the user's imap home.   Will create it on demand if it 
+     * does not already exist.
+     * 
      * @param userName user name
      * @return user IMAP home reference and create it if it doesn't exist.
      */
     private NodeRef getUserImapHomeRef(final String userName)
     {
-        NodeRef userHome = fileFolderService.searchSimple(imapHomeNodeRef, userName);
-        if (userHome == null)
+
+        NodeRef userHome = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            // create user home
-            userHome = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            public NodeRef doWork() throws Exception
             {
-                public NodeRef doWork() throws Exception
+                // Look for user imap home
+                NodeRef userHome = fileFolderService.searchSimple(imapHomeNodeRef, userName);
+                if (userHome == null)
                 {
+                    // user imap home does not exist
                     NodeRef result = fileFolderService.create(imapHomeNodeRef, userName, ContentModel.TYPE_FOLDER).getNodeRef();
                     nodeService.setProperty(result, ContentModel.PROP_DESCRIPTION, userName);
-                    // create inbox
+                    
+                    // create user inbox
                     fileFolderService.create(result, AlfrescoImapConst.INBOX_NAME, ContentModel.TYPE_FOLDER);
+                    
+                    // Set permissions on user's imap home
+                    permissionService.setInheritParentPermissions(result, false);
+                    permissionService.setPermission(result, PermissionService.OWNER_AUTHORITY, PermissionService.ALL_PERMISSIONS, true);
+                    
                     return result;
                 }
-            }, AuthenticationUtil.getSystemUserName());
-        }
+
+                return userHome;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
         return userHome;
     }
 

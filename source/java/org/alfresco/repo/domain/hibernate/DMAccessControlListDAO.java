@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 
 /**
@@ -255,7 +257,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
             }
         }
 
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         if (children.size() > 0)
         {
             hibernateSessionHelper.reset();
@@ -353,7 +355,7 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                 setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(mergeFrom));
             }
 
-            List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
+            List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
 
             for (ChildAssociationRef child : children)
             {

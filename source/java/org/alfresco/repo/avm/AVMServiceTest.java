@@ -2276,35 +2276,131 @@ public class AVMServiceTest extends AVMServiceTestBase
     }
 
     /**
-     * Test cyclic lookup behavior.
+     * Test cyclic behaviour (when creating layered directories)
      */
-    public void testCyclicLookup() throws Exception
+    public void testCircularLayering() throws Exception
     {
         try
         {
-            fService.createDirectory("main:/", "a");
-            fService.createFile("main:/a", "foo").close();
-            for (int i = 0; i < 1000; i++)
-            {
-                fService.lookup(-1, "main:/a/bar");
-            }
-            fService.lookup(-1, "main:/a/foo");
-            fService.createLayeredDirectory("main:/c", "main:/", "b");
+            fService.createLayeredDirectory("main:/c", "main:/", "b"); // note: unbacked
+            
             fService.createLayeredDirectory("main:/b", "main:/", "c");
-            try
-            {
-                fService.lookup(-1, "main:/b/bar");
-                fail();
-            }
-            catch (AVMCycleException ce)
-            {
-                // Do nothing; this means success.
-            }
+            fail();
         }
-        catch (Exception e)
+        catch (AVMCycleException e)
         {
-            e.printStackTrace(System.err);
-            throw e;
+            // expected
+        }
+        
+        try
+        {
+            fService.createDirectory("main:/", "a");
+            fService.createDirectory("main:/a", "b");
+            
+            fService.createLayeredDirectory("main:/a", "main:/a/b", "c");
+            fail();
+        }
+        catch (AVMCycleException e)
+        {
+            // expected
+        }
+        
+        try
+        {
+            fService.createStore("a");
+            fService.createStore("b");
+            
+            fService.createDirectory("a:/", "a");
+            
+            fService.createDirectory("b:/", "a");
+            fService.createLayeredDirectory("a:/a/b", "b:/a", "b"); // note: unbacked
+            
+            fService.createLayeredDirectory("b:/a/b", "a:/a", "b");
+            fail();
+        }
+        catch (AVMCycleException e)
+        {
+            // expected
+        }
+        finally
+        {
+            fService.purgeStore("a");
+            fService.purgeStore("b");
+        }
+        
+        try
+        {
+            fService.createStore("test1");
+            fService.createStore("test2");
+            
+            fService.createDirectory("test1:/", "test1folder");
+            fService.createDirectory("test2:/", "test2folder");
+            
+            fService.createLayeredDirectory("test2:/test2folder", "test1:/test1folder", "test2");
+            
+            fService.createLayeredDirectory("test1:/test1folder", "test2:/test2folder", "test1");
+            fail();
+        }
+        catch (AVMCycleException e)
+        {
+            // expected
+        }
+        finally
+        {
+            fService.purgeStore("test1");
+            fService.purgeStore("test2");
+        }
+        
+        try
+        {
+            fService.createStore("a");
+            fService.createStore("b");
+            fService.createStore("c");
+            
+            fService.createDirectory("a:/", "a");
+            
+            fService.createDirectory("b:/", "a");
+            fService.createLayeredDirectory("a:/a/b", "b:/a", "b"); // note: unbacked
+            
+            fService.createDirectory("c:/", "a");
+            fService.createLayeredDirectory("b:/a/b", "c:/a", "b");
+            
+            fService.createLayeredDirectory("c:/a/b", "a:/a", "b");
+            fail();
+        }
+        catch (AVMCycleException e)
+        {
+            // expected
+        }
+        finally
+        {
+            fService.purgeStore("a");
+            fService.purgeStore("b");
+            fService.purgeStore("c");
+        }
+        
+        try
+        {
+            fService.createStore("a");
+            fService.createStore("b");
+            
+            fService.createDirectory("a:/", "a");
+            fService.createDirectory("a:/a", "b");
+            
+            fService.createDirectory("b:/", "a");
+            fService.createLayeredDirectory("a:/a", "b:/a", "b");
+            
+            fService.createLayeredDirectory("b:/a", "a:/a/b", "c");
+            fail();
+        }
+        catch (AVMCycleException e)
+        {
+            // expected
+        }
+        finally
+        {
+            fService.purgeStore("a");
+            fService.purgeStore("b");
         }
     }
 

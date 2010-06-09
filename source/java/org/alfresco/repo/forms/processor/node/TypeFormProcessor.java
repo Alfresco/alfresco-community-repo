@@ -31,6 +31,7 @@ import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -53,6 +54,8 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(TypeFormProcessor.class);
+    
+    private static QName ASPECT_FILE_PLAN_COMPONENT = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "filePlanComponent");
 
     protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm"
                 + DATA_KEY_SEPARATOR + "name";
@@ -233,15 +236,33 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
      * (java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
-    protected NodeRef internalPersist(TypeDefinition item, FormData data)
+    protected NodeRef internalPersist(TypeDefinition item, final FormData data)
     {
         if (logger.isDebugEnabled()) logger.debug("Persisting form for: " + item);
 
         // create a new instance of the type
-        NodeRef nodeRef = createNode(item, data);
+        final NodeRef nodeRef = createNode(item, data);
 
-        // persist the form data
-        persistNode(nodeRef, data);
+        if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
+        {
+        	// persist the form data as the admin user
+        	AuthenticationUtil.runAs(
+    			new AuthenticationUtil.RunAsWork<Object>()
+    			{
+					public Object doWork() throws Exception 
+					{
+						persistNode(nodeRef, data);
+						return null;
+					}
+    				
+    			}, 
+    			AuthenticationUtil.getAdminUserName());
+        }
+        else
+        {
+	        // persist the form data	     
+        	persistNode(nodeRef, data);
+        }
 
         // return the newly created node
         return nodeRef;

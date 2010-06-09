@@ -18,12 +18,14 @@
  */
 package org.alfresco.repo.security.sync;
 
+import java.io.Serializable;
 import java.sql.BatchUpdateException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -551,6 +553,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
             private final Map<String, Set<String>> groupAssocsToCreate = new TreeMap<String, Set<String>>();
             private final Map<String, Set<String>> groupAssocsToDelete = new TreeMap<String, Set<String>>();
+            private final Set<String> authoritiesMaintained = new TreeSet<String>();
+            private Set<String> deletionCandidates;
+            
             private long latestTime;
 
             public Analyzer(final long latestTime)
@@ -562,25 +567,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             {
                 return this.latestTime;
             }
-
-            public Set<String> getAllZoneAuthorities()
+            
+            public Set<String> getDeletionCandidates()
             {
-                return this.allZoneAuthorities;
-            }
-
-            public Map<String, String> getGroupsToCreate()
-            {
-                return this.groupsToCreate;
-            }
-
-            public Map<String, Set<String>> getGroupAssocsToCreate()
-            {
-                return this.groupAssocsToCreate;
-            }
-
-            public Map<String, Set<String>> getGroupAssocsToDelete()
-            {
-                return this.groupAssocsToDelete;
+                return this.deletionCandidates;
             }
 
             public String getIdentifier(NodeDescription entry)
@@ -759,155 +749,217 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     parents.add(groupName);
                 }
             }
-        }
-
-        Analyzer groupAnalyzer = new Analyzer(lastModifiedMillis);
-        int groupProcessedCount = groupProcessor.process(groupAnalyzer, splitTxns);
-        final Map<String, Set<String>> groupAssocsToCreate = groupAnalyzer.getGroupAssocsToCreate();
-        final Map<String, Set<String>> groupAssocsToDelete = groupAnalyzer.getGroupAssocsToDelete();
-        Set<String> deletionCandidates = null;
-
-        // If we got back some groups, we have to cross reference them with the set of known authorities
-        if (allowDeletions || !groupAssocsToCreate.isEmpty())
-        {
-            // Get current set of known authorities
-            Set<String> allZoneAuthorities = this.retryingTransactionHelper.doInTransaction(
-                    new RetryingTransactionCallback<Set<String>>()
-                    {
-                        public Set<String> execute() throws Throwable
-                        {
-                            return ChainingUserRegistrySynchronizer.this.authorityService.getAllAuthoritiesInZone(
-                                    zoneId, null);
-                        }
-                    }, true, splitTxns);
-            // Add in those that will be created or moved
-            allZoneAuthorities.addAll(groupAnalyzer.getAllZoneAuthorities());
-
-            // Prune our set of authorities according to deletions
-            if (allowDeletions)
+            
+            public void processGroups(UserRegistry userRegistry, boolean allowDeletions, boolean splitTxns)
             {
-                deletionCandidates = new TreeSet<String>(allZoneAuthorities);
-                userRegistry.processDeletions(deletionCandidates);
-                allZoneAuthorities.removeAll(deletionCandidates);
-                groupAssocsToCreate.keySet().removeAll(deletionCandidates);
-                groupAssocsToDelete.keySet().removeAll(deletionCandidates);
+                // If we got back some groups, we have to cross reference them with the set of known authorities
+                if (allowDeletions || !groupAssocsToCreate.isEmpty())
+                {
+                    // Add in current set of known authorities
+                    allZoneAuthorities.addAll(ChainingUserRegistrySynchronizer.this.retryingTransactionHelper.doInTransaction(
+                            new RetryingTransactionCallback<Set<String>>()
+                            {
+                                public Set<String> execute() throws Throwable
+                                {
+                                    return ChainingUserRegistrySynchronizer.this.authorityService.getAllAuthoritiesInZone(
+                                            zoneId, null);
+                                }
+                            }, true, splitTxns));
+
+
+                    // Prune our set of authorities according to deletions
+                    if (allowDeletions)
+                    {
+                        deletionCandidates = new TreeSet<String>(allZoneAuthorities);
+                        userRegistry.processDeletions(deletionCandidates);
+                        allZoneAuthorities.removeAll(deletionCandidates);
+                        groupAssocsToCreate.keySet().removeAll(deletionCandidates);
+                        groupAssocsToDelete.keySet().removeAll(deletionCandidates);
+                    }
+
+                    if (!groupAssocsToCreate.isEmpty())
+                    {
+                        // Sort the group associations in depth-first order (root groups first) and filter out non-existent parents
+                        Map<String, Set<String>> sortedGroupAssociations = new LinkedHashMap<String, Set<String>>(
+                                groupAssocsToCreate.size() * 2);
+                        List<String> authorityPath = new ArrayList<String>(5);
+                        for (String authority : groupAssocsToCreate.keySet())
+                        {
+                            if (allZoneAuthorities.contains(authority))
+                            {
+                                authorityPath.add(authority);
+                                visitGroupAssociations(authorityPath, allZoneAuthorities, groupAssocsToCreate,
+                                        sortedGroupAssociations);
+                                authorityPath.clear();
+                            }
+                        }
+
+                        // Add the groups and their parent associations in depth-first order
+                        BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
+                                zone + " Group Creation and Association",
+                                ChainingUserRegistrySynchronizer.this.retryingTransactionHelper,
+                                sortedGroupAssociations.entrySet(),
+                                ChainingUserRegistrySynchronizer.this.workerThreads, 20,
+                                ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
+                                ChainingUserRegistrySynchronizer.logger,
+                                ChainingUserRegistrySynchronizer.this.loggingInterval);
+                        groupCreator.process(new BatchProcessWorker<Map.Entry<String, Set<String>>>()
+                        {
+                            public String getIdentifier(Map.Entry<String, Set<String>> entry)
+                            {
+                                return entry.getKey() + " " + entry.getValue();
+                            }
+
+                            public void beforeProcess() throws Throwable
+                            {
+                                // Disable rules
+                                ruleService.disableRules();
+                                // Authentication
+                                AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+                            }
+
+                            public void afterProcess() throws Throwable
+                            {
+                                // Enable rules
+                                ruleService.enableRules();
+                                // Clear authentication
+                                AuthenticationUtil.clearCurrentSecurityContext();
+                            }
+
+                            public void process(Map.Entry<String, Set<String>> entry) throws Throwable
+                            {
+                                String child = entry.getKey();
+
+                                String groupDisplayName = groupsToCreate.get(child);
+                                if (groupDisplayName != null)
+                                {
+                                    String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
+                                            .getShortName(child);
+                                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                                    {
+                                        ChainingUserRegistrySynchronizer.logger
+                                                .debug("Creating group '" + groupShortName + "'");
+                                    }
+                                    // create the group
+                                    ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
+                                            .getAuthorityType(child), groupShortName, groupDisplayName, zoneSet);
+                                }
+                                maintainAssociations(child);
+                            }
+                        }, splitTxns);
+                    }
+                }                
             }
 
-            if (!groupAssocsToCreate.isEmpty())
+            public void finalizeAssociations(UserRegistry userRegistry, boolean splitTxns)
             {
-                // Sort the group associations in depth-first order (root groups first)
-                Map<String, Set<String>> sortedGroupAssociations = new LinkedHashMap<String, Set<String>>(
-                        groupAssocsToCreate.size() * 2);
-                List<String> authorityPath = new ArrayList<String>(5);
-                for (String authority : groupAssocsToCreate.keySet())
+                // Remove all the associations we have already dealt with
+                groupAssocsToCreate.keySet().removeAll(authoritiesMaintained);
+                
+                // Filter out associations to authorities that simply can't exist
+                groupAssocsToCreate.keySet().retainAll(allZoneAuthorities);
+
+                if (!groupAssocsToCreate.isEmpty())
                 {
-                    if (allZoneAuthorities.contains(authority))
+                    BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
+                            zone + " Authority Association",
+                            ChainingUserRegistrySynchronizer.this.retryingTransactionHelper,
+                            groupAssocsToCreate.entrySet(),
+                            ChainingUserRegistrySynchronizer.this.workerThreads, 20,
+                            ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
+                            ChainingUserRegistrySynchronizer.logger,
+                            ChainingUserRegistrySynchronizer.this.loggingInterval);
+                    groupCreator.process(new BatchProcessWorker<Map.Entry<String, Set<String>>>()
                     {
-                        authorityPath.add(authority);
-                        visitGroupAssociations(authorityPath, allZoneAuthorities, groupAssocsToCreate,
-                                sortedGroupAssociations);
-                        authorityPath.clear();
+                        public String getIdentifier(Map.Entry<String, Set<String>> entry)
+                        {
+                            return entry.getKey() + " " + entry.getValue();
+                        }
+
+                        public void beforeProcess() throws Throwable
+                        {
+                            // Disable rules
+                            ruleService.disableRules();
+                            // Authentication
+                            AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+                        }
+
+                        public void afterProcess() throws Throwable
+                        {
+                            // Enable rules
+                            ruleService.enableRules();
+                            // Clear authentication
+                            AuthenticationUtil.clearCurrentSecurityContext();
+                        }
+
+                        public void process(Map.Entry<String, Set<String>> entry) throws Throwable
+                        {
+                            maintainAssociations(entry.getKey());
+                        }
+                    }, splitTxns);
+                }                
+            }
+
+            private void maintainAssociations(String authorityName) throws BatchUpdateException
+            {
+                Set<String> parents = this.groupAssocsToCreate.get(authorityName);
+                if (parents != null && !parents.isEmpty())
+                {
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                    {
+                        for (String groupName : parents)
+                        {
+                            ChainingUserRegistrySynchronizer.logger.debug("Adding '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService
+                                            .getShortName(authorityName) + "' to group '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName)
+                                    + "'");
+                        }
+                    }
+                    try
+                    {
+                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, authorityName);
+                    }
+                    catch (UnknownAuthorityException e)
+                    {
+                        // Let's force a transaction retry if a parent doesn't exist. It may be because we are
+                        // waiting for another worker thread to create it
+                        BatchUpdateException e1 = new BatchUpdateException();
+                        e1.initCause(e);
+                        throw e1;
                     }
                 }
-
-                // Add the groups and their parent associations in depth-first order
-                final Map<String, String> groupsToCreate = groupAnalyzer.getGroupsToCreate();
-                BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
-                        zone + " Group Creation and Association",
-                        this.retryingTransactionHelper,
-                        sortedGroupAssociations.entrySet(),
-                        this.workerThreads, 20,
-                        this.applicationEventPublisher,
-                        ChainingUserRegistrySynchronizer.logger,
-                        this.loggingInterval);
-                groupCreator.process(new BatchProcessWorker<Map.Entry<String, Set<String>>>()
+                Set<String> parentsToDelete = this.groupAssocsToDelete.get(authorityName);
+                if (parentsToDelete != null && !parentsToDelete.isEmpty())
                 {
-                    public String getIdentifier(Map.Entry<String, Set<String>> entry)
+                    for (String parent : parentsToDelete)
                     {
-                        return entry.getKey() + " " + entry.getValue();
-                    }
-
-                    public void beforeProcess() throws Throwable
-                    {
-                        // Disable rules
-                        ruleService.disableRules();
-                        // Authentication
-                        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-                    }
-
-                    public void afterProcess() throws Throwable
-                    {
-                        // Enable rules
-                        ruleService.enableRules();
-                        // Clear authentication
-                        AuthenticationUtil.clearCurrentSecurityContext();
-                    }
-
-                    public void process(Map.Entry<String, Set<String>> entry) throws Throwable
-                    {
-                        Set<String> parents = entry.getValue();
-                        String child = entry.getKey();
-
-                        String groupDisplayName = groupsToCreate.get(child);
-                        if (groupDisplayName != null)
+                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                         {
-                            String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
-                                    .getShortName(child);
-                            if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                            {
-                                ChainingUserRegistrySynchronizer.logger
-                                        .debug("Creating group '" + groupShortName + "'");
-                            }
-                            // create the group
-                            ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(AuthorityType
-                                    .getAuthorityType(child), groupShortName, groupDisplayName, zoneSet);
-                        }
-                        if (!parents.isEmpty())
-                        {
-                            if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                            {
-                                for (String groupName : parents)
-                                {
-                                    ChainingUserRegistrySynchronizer.logger.debug("Adding '"
+                            ChainingUserRegistrySynchronizer.logger
+                                    .debug("Removing '"
                                             + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(child)
-                                            + "' to group '"
-                                            + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(groupName) + "'");
-                                }
-                            }
-                            try
-                            {
-                                ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, child);
-                            }
-                            catch (UnknownAuthorityException e)
-                            {
-                                // Let's force a transaction retry if a parent doesn't exist. It may be because we are
-                                // waiting for another worker thread to create it
-                                throw new BatchUpdateException().initCause(e);
-                            }
-                        }
-                        Set<String> parentsToDelete = groupAssocsToDelete.get(child);
-                        if (parentsToDelete != null && !parentsToDelete.isEmpty())
-                        {
-                            for (String parent : parentsToDelete)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger.debug("Removing '"
-                                            + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(child)
+                                                    .getShortName(authorityName)
                                             + "' from group '"
                                             + ChainingUserRegistrySynchronizer.this.authorityService
                                                     .getShortName(parent) + "'");
-                                }
-                                ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, child);
-                            }
                         }
+                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, authorityName);
                     }
-                }, splitTxns);
+                }
+                
+                // Remember that this authority's associations have been maintained
+                synchronized (this)
+                {
+                    this.authoritiesMaintained.add(authorityName);
+                }
             }
         }
+
+        final Analyzer groupAnalyzer = new Analyzer(lastModifiedMillis);
+        int groupProcessedCount = groupProcessor.process(groupAnalyzer, splitTxns);
+        
+        groupAnalyzer.processGroups(userRegistry, allowDeletions, splitTxns);
 
         // Process persons and their parent associations
 
@@ -971,7 +1023,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
             public void process(NodeDescription person) throws Throwable
             {
-                PropertyMap personProperties = person.getProperties();
+                // Make a mutable copy of the person properties, since they get written back to by person service
+                HashMap<QName, Serializable> personProperties = new HashMap<QName, Serializable>(person.getProperties());
                 String personName = (String) personProperties.get(ContentModel.PROP_USERNAME);
                 Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService
                         .getAuthorityZones(personName);
@@ -1037,41 +1090,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         ChainingUserRegistrySynchronizer.this.personService.createPerson(personProperties, zoneSet);
                     }
                 }
+
                 // Maintain associations
-                Set<String> parents = groupAssocsToCreate.get(personName);
-                if (parents != null && !parents.isEmpty())
-                {
-                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                    {
-                        for (String groupName : parents)
-                        {
-                            ChainingUserRegistrySynchronizer.logger.debug("Adding '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(personName)
-                                    + "' to group '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName)
-                                    + "'");
-                        }
-                    }
-                    ChainingUserRegistrySynchronizer.this.authorityService.addAuthority(parents, personName);
-                }
-                Set<String> parentsToDelete = groupAssocsToDelete.get(personName);
-                if (parentsToDelete != null && !parentsToDelete.isEmpty())
-                {
-                    for (String parent : parentsToDelete)
-                    {
-                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .debug("Removing '"
-                                            + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(personName)
-                                            + "' from group '"
-                                            + ChainingUserRegistrySynchronizer.this.authorityService
-                                                    .getShortName(parent) + "'");
-                        }
-                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthority(parent, personName);
-                    }
-                }
+                groupAnalyzer.maintainAssociations(personName);
 
                 synchronized (this)
                 {
@@ -1087,6 +1108,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
         PersonWorker persons = new PersonWorker(lastModifiedMillis);
         int personProcessedCount = personProcessor.process(persons, splitTxns);
+        
+        // Process those associations to persons who themselves have not been updated
+        groupAnalyzer.finalizeAssociations(userRegistry, splitTxns);
 
         // Only now that the whole tree has been processed is it safe to persist the last modified dates
         long latestTime = groupAnalyzer.getLatestTime();
@@ -1108,7 +1132,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
                     zone + " Authority Deletion",
                     this.retryingTransactionHelper,
-                    deletionCandidates,
+                    groupAnalyzer.getDeletionCandidates(),
                     this.workerThreads, 10,
                     this.applicationEventPublisher,
                     ChainingUserRegistrySynchronizer.logger,

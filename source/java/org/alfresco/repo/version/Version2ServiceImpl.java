@@ -38,6 +38,7 @@ import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorAsc;
 import org.alfresco.service.cmr.repository.AspectMissingException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -452,15 +453,15 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                         PermissionService.ALL_PERMISSIONS, true);
             }
             
-        	// add aspect with the standard version properties to the 'version' node
-        	nodeService.addAspect(versionNodeRef, Version2Model.ASPECT_VERSION, standardVersionProperties);
-        	
+            // add aspect with the standard version properties to the 'version' node
+            nodeService.addAspect(versionNodeRef, Version2Model.ASPECT_VERSION, standardVersionProperties);
+            
             // store the meta data
             storeVersionMetaData(versionNodeRef, versionProperties);
             
             freezeChildAssociations(versionNodeRef, nodeDetails.getChildAssociations());
+            freezeAssociations(versionNodeRef, nodeDetails.getAssociations());
             freezeAspects(nodeDetails, versionNodeRef, nodeDetails.getAspects());
-            
         }
         finally
         {
@@ -557,22 +558,62 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
     }
     
+    /**
+     * Freeze child associations
+     *
+     * @param versionNodeRef       the version node reference
+     * @param childAssociations    the child associations
+     */
     private void freezeChildAssociations(NodeRef versionNodeRef, List<ChildAssociationRef> childAssociations)
     {
         for (ChildAssociationRef childAssocRef : childAssociations)
         {
             HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
-
-            QName sourceTypeRef = nodeService.getType(childAssocRef.getChildRef());
+            
+            NodeRef childRef = childAssocRef.getChildRef();
+            
+            QName sourceTypeRef = nodeService.getType(childRef);
             
             // Set the reference property to point to the child node
-            properties.put(ContentModel.PROP_REFERENCE, childAssocRef.getChildRef());
-
+            properties.put(ContentModel.PROP_REFERENCE, childRef);
+            
             // Create child version reference
-            this.dbNodeService.createNode(
+            dbNodeService.createNode(
                     versionNodeRef,
                     childAssocRef.getTypeQName(),
                     childAssocRef.getQName(),
+                    sourceTypeRef,
+                    properties);
+        }
+    }
+    
+    /**
+     * Freeze associations
+     *
+     * @param versionNodeRef   the version node reference
+     * @param associations     the list of associations
+     * 
+     * @since 3.3 (Ent)
+     */
+    private void freezeAssociations(NodeRef versionNodeRef, List<AssociationRef> associations)
+    {
+        for (AssociationRef targetAssocRef : associations)
+        {
+            HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
+            
+            QName sourceTypeRef = nodeService.getType(targetAssocRef.getSourceRef());
+            
+            NodeRef targetRef = targetAssocRef.getTargetRef();
+            
+            // Set the reference property to point to the target node
+            properties.put(ContentModel.PROP_REFERENCE, targetRef);
+            properties.put(Version2Model.PROP_QNAME_ASSOC_DBID, targetAssocRef.getId());
+            
+            // Create peer version reference
+            dbNodeService.createNode(
+                    versionNodeRef,
+                    Version2Model.CHILD_QNAME_VERSIONED_ASSOCS,
+                    targetAssocRef.getTypeQName(),
                     sourceTypeRef,
                     properties);
         }
@@ -891,7 +932,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     {
                         if (this.nodeService.exists(versionedChild.getChildRef()) == true)
                         {
-                            // The node was a primary child of the parent, but that is no longer the case.  Dispite this
+                            // The node was a primary child of the parent, but that is no longer the case.  Despite this
                             // the node still exits so this means it has been moved.
                             // The best thing to do in this situation will be to re-add the node as a child, but it will not
                             // be a primary child.
@@ -901,7 +942,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                         {
                             if (versionedChild.isPrimary() == true)
                             {
-                                // Only try to resotre missing children if we are doing a deep revert
+                                // Only try to restore missing children if we are doing a deep revert
                                 // Look and see if we have a version history for the child node
                                 if (deep == true && getVersionHistoryNodeRef(versionedChild.getChildRef()) != null)
                                 {
@@ -915,7 +956,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                                 // else the deleted child did not have a version history so we can't restore the child
                                 // and so we can't revert the association
                             }
-    
+                            
                             // else
                             // Since this was never a primary assoc and the child has been deleted we won't recreate
                             // the missing node as it was never owned by the node and we wouldn't know where to put it.
@@ -929,6 +970,22 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 for (ChildAssociationRef ref : children)
                 {
                     this.nodeService.removeChild(nodeRef, ref.getChildRef());
+                }
+                
+                // Add/remove the target associations
+                for (AssociationRef assocRef : this.nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL))
+                {
+                    this.nodeService.removeAssociation(assocRef.getSourceRef(), assocRef.getTargetRef(), assocRef.getTypeQName());
+                }
+                for (AssociationRef versionedAssoc : this.nodeService.getTargetAssocs(versionNodeRef, RegexQNamePattern.MATCH_ALL))
+                {
+                    if (this.nodeService.exists(versionedAssoc.getTargetRef()) == true)
+                    {
+                        this.nodeService.createAssociation(nodeRef, versionedAssoc.getTargetRef(), versionedAssoc.getTypeQName());
+                    }
+                    
+                    // else
+                    // Since the target of the assoc no longer exists we can't recreate the assoc
                 }
             }
             finally

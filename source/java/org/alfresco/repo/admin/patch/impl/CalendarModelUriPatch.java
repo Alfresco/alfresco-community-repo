@@ -69,6 +69,8 @@ public class CalendarModelUriPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
+        // Make sure the old name spaces exists before we update it ...
+        qnameDAO.getOrCreateNamespace(URI_BEFORE);
         // modify namespace for all calendar entries
         qnameDAO.updateNamespace(URI_BEFORE, URI_AFTER);
         

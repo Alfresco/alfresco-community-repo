@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -44,6 +45,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
@@ -155,7 +157,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newGroup("G1")
         }), new MockUserRegistry("Z1", new NodeDescription[]
         {
-            newPerson("U1"), newPerson("U2")
+            newPerson("U1"), newPerson("U2"), newPerson("U7")
         }, new NodeDescription[]
         {
             newGroup("G2", "U1", "G3"), newGroup("G3", "U2", "G4", "G5"), newGroup("G4"), newGroup("G5")
@@ -215,6 +217,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertNotExists("U4");
                 assertNotExists("U5");
                 assertNotExists("U6");
+                assertNotExists("U7");
                 assertNotExists("G1");
                 assertNotExists("G2");
                 assertNotExists("G3");
@@ -247,19 +250,21 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public void testDifferentialUpdate() throws Exception
     {
         setUpTestUsersAndGroups();
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
+        this.applicationContextManager.removeZone("Z0");
+        this.applicationContextManager.updateZone("Z1", new NodeDescription[]
         {
-            newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6")
+            newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6"), newPerson("U7")
         }, new NodeDescription[]
         {
-            newGroup("G1", "U1", "U6"), newGroup("G2", "U1"), newGroupWithDisplayName("G5", "Amazing Group", "U6")
-        }), new MockUserRegistry("Z2", new NodeDescription[]
+            newGroup("G1", "U1", "U6", "UDangling"), newGroup("G2", "U1", "GDangling"), newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
+        });
+        this.applicationContextManager.updateZone("Z2", new NodeDescription[]
         {
             newPerson("U1", "shouldbeignored@alfresco.com"), newPerson("U5", "u5email@alfresco.com"), newPerson("U6")
         }, new NodeDescription[]
         {
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G7")
-        }));
+        });
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -272,11 +277,12 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertEmailEquals("U1", "changeofemail@alfresco.com");
                 assertExists("Z1", "U2");
                 assertExists("Z1", "U6");
+                assertExists("Z1", "U7");
                 assertExists("Z1", "G1", "U1", "U6");
                 assertExists("Z1", "G2", "U1");
                 assertExists("Z1", "G3", "U2", "G4", "G5");
                 assertExists("Z1", "G4");
-                assertExists("Z1", "G5", "U6");
+                assertExists("Z1", "G5", "U6", "U7", "G4");
                 assertGroupDisplayNameEquals("G5", "Amazing Group");
                 assertExists("Z2", "U3");
                 assertExists("Z2", "U4");
@@ -326,7 +332,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6")
         }, new NodeDescription[]
         {
-            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"), newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5")
+            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"),
+            newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5")
         }));
         this.synchronizer.synchronize(true, true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
@@ -438,7 +445,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         group.setLastModified(new Date());
         return group;
     }
-    
+
     /**
      * Constructs a description of a test person with default email (userName@alfresco.com)
      * 
@@ -603,6 +610,64 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         }
 
         /**
+         * Modifies the state to match the arguments. Compares new with old and records new modification dates only for
+         * changes.
+         * 
+         * @param persons
+         *            the persons
+         * @param groups
+         *            the groups
+         */
+        public void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups)
+        {
+            List<NodeDescription> newPersons = new ArrayList<NodeDescription>(this.persons);
+            mergeNodeDescriptions(newPersons, persons, ContentModel.PROP_USERNAME);
+            this.persons = newPersons;
+
+            List<NodeDescription> newGroups = new ArrayList<NodeDescription>(this.groups);
+            mergeNodeDescriptions(newGroups, groups, ContentModel.PROP_AUTHORITY_NAME);
+            this.groups = newGroups;
+        }
+
+        /**
+         * Merges together an old and new list of node descriptions. Retains the old node with its old modification date
+         * if it is the same in the new list, otherwises uses the node from the new list.
+         * 
+         * @param oldNodes
+         *            the old node list
+         * @param newNodes
+         *            the new node list
+         * @param idProp
+         *            the name of the ID property
+         */
+        private void mergeNodeDescriptions(List<NodeDescription> oldNodes, Collection<NodeDescription> newNodes,
+                QName idProp)
+        {
+            Map<String, NodeDescription> nodeMap = new LinkedHashMap<String, NodeDescription>(newNodes.size() * 2);
+            for (NodeDescription node : newNodes)
+            {
+                nodeMap.put((String) node.getProperties().get(idProp), node);
+            }
+            for (int i = 0; i < oldNodes.size(); i++)
+            {
+                NodeDescription oldNode = oldNodes.get(i);
+                String id = (String) oldNode.getProperties().get(idProp);
+                NodeDescription newNode = nodeMap.remove(id);
+                if (newNode == null)
+                {
+                    oldNodes.remove(i);
+                    i--;
+                }
+                else if (!oldNode.getProperties().equals(newNode.getProperties())
+                        || !oldNode.getChildAssociations().equals(newNode.getChildAssociations()))
+                {
+                    oldNodes.set(i, newNode);
+                }
+            }
+            oldNodes.addAll(nodeMap.values());
+        }
+
+        /**
          * Instantiates a new mock user registry.
          * 
          * @param zoneId
@@ -649,7 +714,35 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
          */
         public Collection<NodeDescription> getGroups(Date modifiedSince)
         {
-            return this.groups;
+            return filterNodeDescriptions(this.groups, modifiedSince);
+        }
+
+        /**
+         * Filters the given list of node descriptions, retaining only those with a modification date greater than the
+         * given date.
+         * 
+         * @param nodes
+         *            the list of nodes
+         * @param modifiedSince
+         *            the modified date
+         * @return the filter list of nodes
+         */
+        private Collection<NodeDescription> filterNodeDescriptions(Collection<NodeDescription> nodes, Date modifiedSince)
+        {
+            if (modifiedSince == null)
+            {
+                return nodes;
+            }
+            List<NodeDescription> filteredNodes = new LinkedList<NodeDescription>();
+            for (NodeDescription node : nodes)
+            {
+                Date modified = node.getLastModified();
+                if (modifiedSince.compareTo(modified) < 0)
+                {
+                    filteredNodes.add(node);
+                }
+            }
+            return filteredNodes;
         }
 
         /*
@@ -658,7 +751,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
          */
         public Collection<NodeDescription> getPersons(Date modifiedSince)
         {
-            return this.persons;
+            return filterNodeDescriptions(this.persons, modifiedSince);
         }
     }
 
@@ -686,6 +779,34 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 context.getDefaultListableBeanFactory().registerSingleton("userRegistry", registry);
                 this.contexts.put(registry.getZoneId(), context);
             }
+        }
+
+        /**
+         * Removes the application context for the given zone ID (simulating a change in the authentication chain).
+         * 
+         * @param zoneId
+         *            the zone id
+         */
+        public void removeZone(String zoneId)
+        {
+            this.contexts.remove(zoneId);
+        }
+
+        /**
+         * Updates the state of the given zone ID, oopying in new modification dates only where changes have been made.
+         * 
+         * @param zoneId
+         *            the zone id
+         * @param persons
+         *            the new list of persons
+         * @param groups
+         *            the new list of groups
+         */
+        public void updateZone(String zoneId, NodeDescription[] persons, NodeDescription[] groups)
+        {
+            ApplicationContext context = this.contexts.get(zoneId);
+            MockUserRegistry registry = (MockUserRegistry) context.getBean("userRegistry");
+            registry.updateState(Arrays.asList(persons), Arrays.asList(groups));
         }
 
         /*
@@ -850,7 +971,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                     }
                     NodeDescription group = newGroup("G" + GUID.generate(), authorityNames);
                     // Make this group a candidate for adding to other groups
-                    RandomGroupCollection.this.authorities.add((String) group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
+                    RandomGroupCollection.this.authorities.add((String) group.getProperties().get(
+                            ContentModel.PROP_AUTHORITY_NAME));
                     return group;
                 }
 

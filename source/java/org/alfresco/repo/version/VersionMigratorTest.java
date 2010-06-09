@@ -21,6 +21,7 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,6 +32,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -38,6 +41,8 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -511,5 +516,110 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         }
         
         logger.info("testMigrateOneCheckoutVersion: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
-    }    
+    }
+    
+    /**
+     * Test migration of a single versioned node with versioned child assocs & peer assocs
+     * 
+     * @since 3.3 Ent - applies only to direct upgrade from 2.x to 3.3 Ent or higher
+     */
+    public void testMigrateVersionWithAssocs() throws Exception
+    {
+        if (version2Service.useDeprecatedV1 == true)
+        {
+            logger.info("testMigrateVersionWithAssocs: skip");
+            return;
+        }
+        
+        NodeRef versionableNode = createNewVersionableNode();
+        NodeRef targetNode = createNewNode();
+        
+        nodeService.createAssociation(versionableNode, targetNode, TEST_ASSOC);
+        
+        // Get the next version label and snapshot the date-time
+        String nextVersionLabel1 = peekNextVersionLabel(versionableNode, versionProperties);
+        
+        // Snap-shot the node created date-time
+        long beforeVersionTime1 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
+        
+        Version version1 = createVersion(versionableNode);
+        logger.info(version1);
+        
+        VersionHistory vh1 = version1Service.getVersionHistory(versionableNode);
+        assertEquals(1, vh1.getAllVersions().size());
+        
+        List<ChildAssociationRef> oldChildAssocs = nodeService.getChildAssocs(version1.getFrozenStateNodeRef());
+        List<AssociationRef> oldAssocs = nodeService.getTargetAssocs(version1.getFrozenStateNodeRef(), RegexQNamePattern.MATCH_ALL);
+        
+        logger.info("testMigrateVersionWithAssocs: versionedNodeRef = " + versionableNode);
+        
+        NodeRef oldVHNodeRef = version1Service.getVersionHistoryNodeRef(versionableNode);
+        
+        // Migrate and delete old version history !
+        NodeRef versionedNodeRef = versionMigrator.v1GetVersionedNodeRef(oldVHNodeRef);
+        NodeRef newVHNodeRef = versionMigrator.migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
+        versionMigrator.v1DeleteVersionHistory(oldVHNodeRef);
+        
+        VersionHistory vh2 = version2Service.getVersionHistory(versionableNode);
+        assertEquals(1, vh2.getAllVersions().size());
+        
+        // check new version - switch to new version service to do the check
+        super.setVersionService(version2Service);
+        
+        Version[] newVersions = vh2.getAllVersions().toArray(new Version[]{});
+        
+        Version newVersion1 = newVersions[0];
+        
+        checkVersion(beforeVersionTime1, nextVersionLabel1, newVersion1, versionableNode);
+        
+        List<ChildAssociationRef> newChildAssocs = nodeService.getChildAssocs(newVersion1.getFrozenStateNodeRef());
+        assertEquals(oldChildAssocs.size(), newChildAssocs.size());
+        for (ChildAssociationRef oldChildAssoc : oldChildAssocs)
+        {
+            boolean found = false;
+            for (ChildAssociationRef newChildAssoc : newChildAssocs)
+            {
+                if (newChildAssoc.getParentRef().getId().equals(oldChildAssoc.getParentRef().getId()) &&
+                    newChildAssoc.getChildRef().equals(oldChildAssoc.getChildRef()) &&
+                    newChildAssoc.getTypeQName().equals(oldChildAssoc.getTypeQName()) &&
+                    newChildAssoc.getQName().equals(oldChildAssoc.getQName()) &&
+                    (newChildAssoc.isPrimary() == oldChildAssoc.isPrimary()) &&
+                    (newChildAssoc.getNthSibling() == oldChildAssoc.getNthSibling()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                fail(oldChildAssoc.toString()+ " not found");
+            }
+        }
+        
+        List<AssociationRef> newAssocs = nodeService.getTargetAssocs(newVersion1.getFrozenStateNodeRef(), RegexQNamePattern.MATCH_ALL);
+        assertEquals(oldAssocs.size(), newAssocs.size());
+        for (AssociationRef oldAssoc : oldAssocs)
+        {
+            boolean found = false;
+            for (AssociationRef newAssoc : newAssocs)
+            {
+                if (newAssoc.getSourceRef().getId().equals(oldAssoc.getSourceRef().getId()) &&
+                    newAssoc.getTargetRef().equals(oldAssoc.getTargetRef()) &&
+                    newAssoc.getTypeQName().equals(oldAssoc.getTypeQName()) &&
+                    EqualsHelper.nullSafeEquals(newAssoc.getId(), oldAssoc.getId()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (! found)
+            {
+                fail(oldAssoc.toString()+ " not found");
+            }
+        }
+        
+        logger.info("testMigrateVersionWithAssocs: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
+    }
 }

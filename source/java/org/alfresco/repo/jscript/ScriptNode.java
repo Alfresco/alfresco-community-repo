@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3219,9 +3220,45 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
         
+        /**
+         * Guess the mimetype for the given filename - uses the extension to match on system mimetype map
+         */
         public void guessMimetype(String filename)
         {
             setMimetype(services.getMimetypeService().guessMimetype(filename));
+        }
+        
+        /**
+         * Guess the character encoding of a file. For non-text files UTF-8 default is applied, otherwise
+         * the appropriate encoding (such as UTF-16 or similar) will be appiled if detected.
+         */
+        public void guessEncoding()
+        {
+            String encoding = "UTF-8";
+            InputStream in = null;
+            try
+            {
+                in = getInputStream();
+                if (in != null)
+                {
+                    Charset charset = services.getMimetypeService().getContentCharsetFinder().getCharset(in, getMimetype());
+                    encoding = charset.name();
+                }
+            }
+            finally
+            {
+                try
+                {
+                    if (in != null)
+                    {
+                        in.close();
+                    }
+                }
+                catch (IOException ioErr)
+                {
+                }
+            }
+            setEncoding(encoding);
         }
         
         private ContentData contentData;

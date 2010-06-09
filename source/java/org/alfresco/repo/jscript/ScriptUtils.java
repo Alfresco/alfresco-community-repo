@@ -21,12 +21,12 @@ package org.alfresco.repo.jscript;
 import java.util.Date;
 
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -175,5 +175,17 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
             qname = QName.createQName(s, this.services.getNamespaceService());
         }
         return qname;
+    }
+    
+    /**
+     * Get a localized message string, parameterized using standard MessageFormatter.
+     * 
+     * @param messageKey message key
+     * @param params format parameters
+     * @return the localized string, null if not found
+     */
+    public String toLocalizedString(String messageId, Object... params)
+    {
+        return I18NUtil.getMessage(messageId, params);
     }
 }

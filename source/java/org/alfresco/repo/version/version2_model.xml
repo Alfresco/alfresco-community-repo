@@ -2,8 +2,8 @@
 
    <description>Alfresco Version2 Store Model</description>
    <author>Alfresco</author>
-   <published>2008-07-18</published>
-   <version>2.0</version>
+   <published>2010-04-29</published>
+   <version>2.1</version>
    
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
@@ -14,7 +14,7 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/versionstore/2.0" prefix="ver2"/>
    </namespaces>
-
+   
    <types>
       
       <type name="ver2:versionHistory">
@@ -26,7 +26,7 @@
                <type>d:text</type>
             </property>
          </properties>
-       
+         
          <associations>
             <child-association name="ver2:version">
                <target>
@@ -38,7 +38,20 @@
                   <class>sys:base</class>
                </target>
             </association>
-         </associations>  
+         </associations>
+      </type>
+      
+      <!-- since 3.3 (Ent) -->
+      <type name="ver2:versionedAssoc">
+         <parent>sys:reference</parent>
+         <properties>
+            <property name="ver2:assocDbId">
+               <type>d:long</type>
+            </property>
+            <property name="ver2:targetVersionRef">
+               <type>d:noderef</type>
+            </property>
+         </properties>
       </type>
       
    </types>
@@ -109,9 +122,9 @@
                <title>Created</title>
                <type>d:datetime</type>
                <protected>true</protected>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+                  <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -124,9 +137,9 @@
                <title>Modified</title>
                <type>d:datetime</type>
                <protected>true</protected>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -139,14 +152,25 @@
                <title>Accessed</title>
                <type>d:datetime</type>
                <protected>true</protected>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+                  <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
             
          </properties>
+         
+         <associations>
+            
+            <!-- since 3.3 (Ent) -->
+            <child-association name="ver2:versionedAssocs">
+               <target>
+                  <class>ver2:versionedAssoc</class>
+               </target>
+            </child-association>
+            
+         </associations>
          
       </aspect>
       

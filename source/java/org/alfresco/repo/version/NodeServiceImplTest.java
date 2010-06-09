@@ -46,53 +46,53 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
 {
     private static Log logger = LogFactory.getLog(NodeServiceImplTest.class);
     
-	/**
-	 * Light weight version store node service
-	 */
-	protected NodeService lightWeightVersionStoreNodeService = null;
-	
-	/**
-	 * Error message
-	 */
-	private final static String MSG_ERR = 
+    /**
+     * version store node service
+     */
+    protected NodeService versionStoreNodeService = null;
+    
+    /**
+     * Error message
+     */
+    private final static String MSG_ERR = 
         "This operation is not supported by a version store implementation of the node service.";
-	
-	/**
-	 * Dummy data used in failure tests
-	 */
-	private NodeRef dummyNodeRef = null;
-	private QName dummyQName = null;
-	
-	/**
+    
+    /**
+     * Dummy data used in failure tests
+     */
+    private NodeRef dummyNodeRef = null;
+    private QName dummyQName = null;
+    
+    /**
      * Called during the transaction setup
      */
     protected void onSetUpInTransaction() throws Exception
     {
-		super.onSetUpInTransaction();
-		
+        super.onSetUpInTransaction();
+        
         // Get the node service by name
-        this.lightWeightVersionStoreNodeService = (NodeService)this.applicationContext.getBean("versionNodeService");
+        this.versionStoreNodeService = (NodeService)this.applicationContext.getBean("versionNodeService");
         
         // Create some dummy data used during the tests
         this.dummyNodeRef = new NodeRef(
-				this.versionService.getVersionStoreReference(),
-				"dummy");
-		this.dummyQName = QName.createQName("{dummy}dummy");
+                this.versionService.getVersionStoreReference(),
+                "dummy");
+        this.dummyQName = QName.createQName("{dummy}dummy");
     }
-	
+    
     /**
      * Test getType
      */
-	public void testGetType()
+    public void testGetType()
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
         
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-	
+        
         // Get the type from the versioned state
-        QName versionedType = this.lightWeightVersionStoreNodeService.getType(version.getFrozenStateNodeRef());
+        QName versionedType = this.versionStoreNodeService.getType(version.getFrozenStateNodeRef());
         assertNotNull(versionedType);
         assertEquals(this.dbNodeService.getType(versionableNode), versionedType);
     }
@@ -112,7 +112,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         Version version = createVersion(versionableNode, this.versionProperties);
         
         // Get the properties of the versioned state 
-        Map<QName, Serializable> versionedProperties = this.lightWeightVersionStoreNodeService.getProperties(version.getFrozenStateNodeRef());
+        Map<QName, Serializable> versionedProperties = this.versionStoreNodeService.getProperties(version.getFrozenStateNodeRef());
         
         if (logger.isDebugEnabled())
         {
@@ -147,7 +147,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         Version version = createVersion(versionableNode, this.versionProperties);
         
         // Check the property values can be retrieved
-        Serializable value1 = this.lightWeightVersionStoreNodeService.getProperty(
+        Serializable value1 = this.versionStoreNodeService.getProperty(
                 version.getFrozenStateNodeRef(),
                 PROP_1);
         assertEquals(VALUE_1, value1);
@@ -156,7 +156,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         // TODO
         
         // Check the multi values property specifically
-        Collection<String> multiValue = (Collection<String>)this.lightWeightVersionStoreNodeService.getProperty(version.getFrozenStateNodeRef(), MULTI_PROP);
+        Collection<String> multiValue = (Collection<String>)this.versionStoreNodeService.getProperty(version.getFrozenStateNodeRef(), MULTI_PROP);
         assertNotNull(multiValue);
         assertEquals(2, multiValue.size());
         String[] array = multiValue.toArray(new String[multiValue.size()]);
@@ -203,7 +203,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         }
         
         // Get the children of the versioned node
-        Collection<ChildAssociationRef> versionedChildren = this.lightWeightVersionStoreNodeService.getChildAssocs(version.getFrozenStateNodeRef());
+        Collection<ChildAssociationRef> versionedChildren = this.versionStoreNodeService.getChildAssocs(version.getFrozenStateNodeRef());
         assertNotNull(versionedChildren);
         assertEquals(originalChildren.size(), versionedChildren.size());
         
@@ -226,42 +226,25 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     
     /**
      * Test getAssociationTargets
-     * 
-     * @deprecated
      */
     public void testGetAssociationTargets()
     {
-        // Switch VersionStore depending on configured impl
-        if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
-        {
-        	// V2 version store (eg. workspace://version2Store)
-            // See ETHREEOH-3632: method now doesn't blow up.
-            List<AssociationRef> assocs = this.lightWeightVersionStoreNodeService.getTargetAssocs(
-                    dummyNodeRef,
-                    RegexQNamePattern.MATCH_ALL);
-            assertEquals("Currently the assocs will be empty", 0, assocs.size());
-        }
-        else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-        	// Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
-        	
-            // Create a new versionable node
-            NodeRef versionableNode = createNewVersionableNode();
-            
-            // Store the current details of the target associations
-            List<AssociationRef> origAssocs = this.dbNodeService.getTargetAssocs(
-                    versionableNode,
-                    RegexQNamePattern.MATCH_ALL);
-            
-            // Create a new version
-            Version version = createVersion(versionableNode, this.versionProperties);
-    
-            List<AssociationRef> assocs = this.lightWeightVersionStoreNodeService.getTargetAssocs(
-                    version.getFrozenStateNodeRef(), 
-                    RegexQNamePattern.MATCH_ALL);
-            assertNotNull(assocs);
-            assertEquals(origAssocs.size(), assocs.size());
-        }
+        // Create a new versionable node
+        NodeRef versionableNode = createNewVersionableNode();
+        
+        // Store the current details of the target associations
+        List<AssociationRef> origAssocs = this.dbNodeService.getTargetAssocs(
+                versionableNode,
+                RegexQNamePattern.MATCH_ALL);
+        
+        // Create a new version
+        Version version = createVersion(versionableNode, this.versionProperties);
+        
+        List<AssociationRef> assocs = this.versionStoreNodeService.getTargetAssocs(
+                version.getFrozenStateNodeRef(), 
+                RegexQNamePattern.MATCH_ALL);
+        assertNotNull(assocs);
+        assertEquals(origAssocs.size(), assocs.size());
     }
     
     /**
@@ -275,12 +258,12 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
         
-        boolean test1 = this.lightWeightVersionStoreNodeService.hasAspect(
+        boolean test1 = this.versionStoreNodeService.hasAspect(
                 version.getFrozenStateNodeRef(), 
                 ApplicationModel.ASPECT_UIFACETS);
         assertFalse(test1);
         
-        boolean test2 = this.lightWeightVersionStoreNodeService.hasAspect(
+        boolean test2 = this.versionStoreNodeService.hasAspect(
                 version.getFrozenStateNodeRef(),
                 ContentModel.ASPECT_VERSIONABLE);
         assertTrue(test2);
@@ -298,7 +281,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
         
-        Set<QName> aspects = this.lightWeightVersionStoreNodeService.getAspects(version.getFrozenStateNodeRef());
+        Set<QName> aspects = this.versionStoreNodeService.getAspects(version.getFrozenStateNodeRef());
         assertEquals(origAspects.size(), aspects.size());
         
         for (QName origAspect : origAspects)
@@ -319,7 +302,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         Version version = createVersion(versionableNode, this.versionProperties);
         NodeRef nodeRef = version.getFrozenStateNodeRef();
         
-        List<ChildAssociationRef> results = this.lightWeightVersionStoreNodeService.getParentAssocs(nodeRef);
+        List<ChildAssociationRef> results = this.versionStoreNodeService.getParentAssocs(nodeRef);
         assertNotNull(results);
         assertEquals(1, results.size());
         ChildAssociationRef childAssoc = results.get(0);
@@ -340,7 +323,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         Version version = createVersion(versionableNode, this.versionProperties);
         NodeRef nodeRef = version.getFrozenStateNodeRef();
         
-        ChildAssociationRef childAssoc = this.lightWeightVersionStoreNodeService.getPrimaryParent(nodeRef);
+        ChildAssociationRef childAssoc = this.versionStoreNodeService.getPrimaryParent(nodeRef);
         assertNotNull(childAssoc);
         assertEquals(nodeRef, childAssoc.getChildRef());
         NodeRef versionStoreRoot = this.dbNodeService.getRootNode(this.versionService.getVersionStoreReference());
@@ -359,7 +342,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
 		try
 		{
-			this.lightWeightVersionStoreNodeService.createNode(
+			this.versionStoreNodeService.createNode(
 					dummyNodeRef,
 					null,
 					dummyQName,
@@ -382,7 +365,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         try
         {
-            this.lightWeightVersionStoreNodeService.addAspect(
+            this.versionStoreNodeService.addAspect(
                     dummyNodeRef,
                     TEST_ASPECT_QNAME,
                     null);
@@ -404,7 +387,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         try
         {
-            this.lightWeightVersionStoreNodeService.removeAspect(
+            this.versionStoreNodeService.removeAspect(
                     dummyNodeRef,
                     TEST_ASPECT_QNAME);
             fail("This operation is not supported.");
@@ -425,7 +408,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
 		try
 		{
-			this.lightWeightVersionStoreNodeService.deleteNode(this.dummyNodeRef);
+			this.versionStoreNodeService.deleteNode(this.dummyNodeRef);
 			fail("This operation is not supported.");
 		}
 		catch (UnsupportedOperationException exception)
@@ -444,7 +427,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
 		try
 		{
-			this.lightWeightVersionStoreNodeService.addChild(
+			this.versionStoreNodeService.addChild(
 					this.dummyNodeRef,
 					this.dummyNodeRef,
                     this.dummyQName,
@@ -467,7 +450,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
 		try
 		{
-			this.lightWeightVersionStoreNodeService.removeChild(
+			this.versionStoreNodeService.removeChild(
 					this.dummyNodeRef, 
 					this.dummyNodeRef);
 			fail("This operation is not supported.");
@@ -488,7 +471,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         try
         {
-            this.lightWeightVersionStoreNodeService.setProperties(
+            this.versionStoreNodeService.setProperties(
                     this.dummyNodeRef,
                     new HashMap<QName, Serializable>());
             fail("This operation is not supported.");
@@ -509,7 +492,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
 	{
         try
         {
-            this.lightWeightVersionStoreNodeService.setProperty(
+            this.versionStoreNodeService.setProperty(
                     this.dummyNodeRef,
                     this.dummyQName,
                     "dummy");
@@ -531,7 +514,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         try
         {
-            this.lightWeightVersionStoreNodeService.createAssociation(
+            this.versionStoreNodeService.createAssociation(
                     this.dummyNodeRef,
                     this.dummyNodeRef,
                     this.dummyQName);
@@ -553,7 +536,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         try
         {
-            this.lightWeightVersionStoreNodeService.removeAssociation(
+            this.versionStoreNodeService.removeAssociation(
                     this.dummyNodeRef,
                     this.dummyNodeRef,
                     this.dummyQName);
@@ -575,7 +558,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         try
         {
-            this.lightWeightVersionStoreNodeService.getSourceAssocs(
+            this.versionStoreNodeService.getSourceAssocs(
                     this.dummyNodeRef,
                     this.dummyQName);
             fail("This operation is not supported.");
@@ -594,7 +577,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
      */
     public void testGetPath()
     {
-        Path path = this.lightWeightVersionStoreNodeService.getPath(this.dummyNodeRef);
+        Path path = this.versionStoreNodeService.getPath(this.dummyNodeRef);
     }
     
     /**
@@ -602,6 +585,6 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
      */
     public void testGetPaths()
     {
-        List<Path> paths = this.lightWeightVersionStoreNodeService.getPaths(this.dummyNodeRef, false);
+        List<Path> paths = this.versionStoreNodeService.getPaths(this.dummyNodeRef, false);
     }
 }

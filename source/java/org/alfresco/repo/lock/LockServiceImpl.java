@@ -40,6 +40,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.version.VersionServicePolicies;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -86,12 +87,10 @@ public class LockServiceImpl implements LockService,
      * The policy component
      */
     private PolicyComponent policyComponent;
-
-    /**
-     * List of node ref's to ignore when checking for locks
-     */
-    private Set<NodeRef> ignoreNodeRefs = new HashSet<NodeRef>();
-
+    
+    /** Key to the nodes ref's to ignore when checking for locks */
+    private static final String KEY_IGNORE_NODES = "lockService.ignoreNodes";
+    
     /**
      * The authentication service
      */
@@ -209,6 +208,39 @@ public class LockServiceImpl implements LockService,
                 new JavaBehaviour(this, "onCreateVersion"));
     }
     
+    @SuppressWarnings("unchecked")
+    private void addToIgnoreSet(NodeRef nodeRef)
+    {
+        Set<NodeRef> ignoreNodeRefs = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_IGNORE_NODES);
+        if (ignoreNodeRefs == null)
+        {
+            ignoreNodeRefs = new HashSet<NodeRef>();
+            AlfrescoTransactionSupport.bindResource(KEY_IGNORE_NODES, ignoreNodeRefs);
+        }
+        ignoreNodeRefs.add(nodeRef);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void removeFromIgnoreSet(NodeRef nodeRef)
+    {
+        Set<NodeRef> ignoreNodeRefs = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_IGNORE_NODES);
+        if (ignoreNodeRefs != null)
+        {
+            ignoreNodeRefs.remove(nodeRef);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private boolean ignore(NodeRef nodeRef)
+    {
+        Set<NodeRef> ignoreNodeRefs = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_IGNORE_NODES);
+        if (ignoreNodeRefs != null)
+        {
+            return ignoreNodeRefs.contains(nodeRef);
+        }
+        return false;
+    }
+    
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType)
      */
@@ -243,21 +275,21 @@ public class LockServiceImpl implements LockService,
             // Error since we are trying to lock a locked node
             throw new UnableToAquireLockException(nodeRef);
         }
-        else if (LockStatus.NO_LOCK.equals(currentLockStatus) == true || 
+        else if (LockStatus.NO_LOCK.equals(currentLockStatus) == true ||
                  LockStatus.LOCK_EXPIRED.equals(currentLockStatus) == true ||
                  LockStatus.LOCK_OWNER.equals(currentLockStatus) == true)
         {
-            this.ignoreNodeRefs.add(nodeRef);
+            addToIgnoreSet(nodeRef);
             try
             {
                 // Set the current user as the lock owner
                 this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_OWNER, userName);
-                this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, lockType.toString());                
+                this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, lockType.toString());
                 setExpiryDate(nodeRef, timeToExpire);
             } 
             finally
             {
-                this.ignoreNodeRefs.remove(nodeRef);
+                removeFromIgnoreSet(nodeRef);
             }
         }
     }
@@ -325,16 +357,15 @@ public class LockServiceImpl implements LockService,
         // Check for lock aspect
         checkForLockApsect(nodeRef);
         
-        this.ignoreNodeRefs.add(nodeRef);
+        addToIgnoreSet(nodeRef);
         try
         {
-            // Clear the lock owner
-            this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_OWNER, null);
-            this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, null);
+            // Clear the lock
+            this.nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
         }
         finally
         {
-            this.ignoreNodeRefs.remove(nodeRef);
+            removeFromIgnoreSet(nodeRef);
         }
     }
 
@@ -474,7 +505,7 @@ public class LockServiceImpl implements LockService,
         {
             String effectiveUserName = AuthenticationUtil.getRunAsUser();
             // Check to see if should just ignore this node - note: special MT System due to AuditableAspect
-            if (!(this.ignoreNodeRefs.contains(nodeRef) || tenantService.getBaseNameUser(effectiveUserName).equals(AuthenticationUtil.getSystemUserName())))
+            if (! (ignore(nodeRef) || tenantService.getBaseNameUser(effectiveUserName).equals(AuthenticationUtil.getSystemUserName())))
             {
                 try
                 {

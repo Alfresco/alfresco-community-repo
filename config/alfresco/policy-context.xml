@@ -65,6 +65,7 @@
       <property name="tenantService" ref="tenantService"/>
       <property name="tenantAdminService" ref="tenantAdminService"/>
       <property name="transactionService" ref="TransactionService"/>
+      <property name="jobLockService" ref="jobLockService"/>
       
       <property name="storeUrls">
             <list>

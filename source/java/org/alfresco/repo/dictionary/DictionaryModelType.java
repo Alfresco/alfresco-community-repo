@@ -29,6 +29,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -92,6 +93,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     /** Key to the removed "workingcopy" aspect */
     private static final String KEY_WORKING_COPY = "dictionaryModelType.workingCopy";
     
+    /** The name of the lock used to ensure that DictionaryModelType updates do not run on more than one thread/node at the same time. */
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "DictionaryModelType");
+    
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
     
@@ -123,6 +127,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     private TenantAdminService tenantAdminService;
     
     private TransactionService transactionService;
+    
+    private JobLockService jobLockService;
     
     /** Transaction listener */
     private DictionaryModelTypeTransactionListener transactionListener;
@@ -218,6 +224,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         this.transactionService = transactionService;
     }
     
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+    
     public void setStoreUrls(List<String> storeUrls)
     {
         this.storeUrls = storeUrls;
@@ -231,38 +242,38 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         // Register interest in the onContentUpdate policy for the dictionary model type
         policyComponent.bindClassBehaviour(
-                ContentServicePolicies.OnContentUpdatePolicy.QNAME, 
+                ContentServicePolicies.OnContentUpdatePolicy.QNAME,
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onContentUpdate"));
         
         // Register interest in the onUpdateProperties policy for the dictionary model type
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onUpdateProperties"));
         
         // Register interest in the beforeDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "beforeDeleteNode"));
         
         // Register interest in the onDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onDeleteNode"));
         
         // Register interest in the onRemoveAspect policy
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
-                this,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
+                ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onRemoveAspect"));
         
         // Register interest in the onCreateNode policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                this,
+                ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onCreateNode"));
         
         // Create the transaction listener
@@ -555,7 +566,17 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         @SuppressWarnings("unchecked")
         @Override
         public void beforeCommit(boolean readOnly)
-        { 
+        {
+            if (jobLockService != null)
+            {
+                jobLockService.getTransactionalLock(LOCK_QNAME, (1000*60), 3000, 10);
+                
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace(Thread.currentThread().getName()+" got transactional lock ");
+                }
+            }
+            
             Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
             
             if (pendingModels != null)

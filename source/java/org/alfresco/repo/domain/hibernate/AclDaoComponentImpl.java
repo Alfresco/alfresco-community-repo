@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1564,15 +1565,22 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
 
     private long getCrc(String str)
     {
-        CRC32 crc = new CRC32();
-        crc.update(str.getBytes());
-        return crc.getValue();
+        try
+        {
+            CRC32 crc = new CRC32();
+            crc.update(str.getBytes("UTF-8"));
+            return crc.getValue();
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException("UTF-8 encoding is not supported");
+        }  
     }
 
     public List<AclChange> enableInheritance(Long id, Long parent)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
-
+        
         DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, id);
 
         switch (acl.getAclType())

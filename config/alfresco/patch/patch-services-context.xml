@@ -2170,5 +2170,23 @@
             <value>classpath:alfresco/dbscripts/upgrade/3.3/${db.script.dialect}/fix-Repo-seqs_1.sql</value>
         </property>
     </bean>
-
+    
+    <bean id="patch.fixAuthoritiesCrcValues" class="org.alfresco.repo.admin.patch.impl.FixAuthoritiesCrcValuesPatch" parent="basePatch" >
+        <property name="id"><value>patch.fixAuthoritiesCrcValues</value></property>
+        <property name="description"><value>patch.fixAuthoritiesCrcValues.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4100</value></property>
+        <property name="targetSchema"><value>4101</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="sessionFactory">
+            <ref bean="sessionFactory" />
+        </property>
+        <property name="controlDAO">
+            <ref bean="controlDAO" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+    </bean>
+    
 </beans>

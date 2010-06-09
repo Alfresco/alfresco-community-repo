@@ -24,6 +24,8 @@ import org.alfresco.service.cmr.version.VersionService;
 /**
  * Base Version Model interface containing the common local names (and other constants) 
  * used by the lightWeightVersionStore and version2Store implementations
+ *
+ * @author Roy Wetherall, janv
  */
 public interface VersionBaseModel
 {
@@ -53,6 +55,7 @@ public interface VersionBaseModel
      * Version history type
      */
     public static final String TYPE_VERSION_HISTORY = "versionHistory";
+    public static final String TYPE_VERSIONED_ASSOC = "versionedAssoc";
 
     /**
      * Version history properties and associations
@@ -66,6 +69,7 @@ public interface VersionBaseModel
      */
     public static final String CHILD_VERSION_HISTORIES = "versionHistory";
     public static final String CHILD_VERSIONS = "version";
+    public static final String CHILD_VERSIONED_ASSOCS = "versionedAssocs";
 
     // Used by ML service
     

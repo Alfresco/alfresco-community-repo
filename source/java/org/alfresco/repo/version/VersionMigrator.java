@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.MLPropertyInterceptor;
@@ -39,6 +38,7 @@ import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -46,9 +46,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Version2 Migrator
@@ -189,6 +191,8 @@ public class VersionMigrator
         QName sourceType = versionNodeService.getType(frozenStateNodeRef);
         Set<QName> nodeAspects = versionNodeService.getAspects(frozenStateNodeRef);
         Map<QName, Serializable> nodeProperties = versionNodeService.getProperties(frozenStateNodeRef);
+        List<ChildAssociationRef> nodeChildAssocs = versionNodeService.getChildAssocs(frozenStateNodeRef);
+        List<AssociationRef> nodeAssocs = versionNodeService.getTargetAssocs(frozenStateNodeRef, RegexQNamePattern.MATCH_ALL);
         
         long nodeDbId = (Long)nodeProperties.get(ContentModel.PROP_NODE_DBID);
         
@@ -198,13 +202,14 @@ public class VersionMigrator
         int versionNumber = 0;
         
         // get oldVersion auditable properties (of the version node itself, rather than the live versioned node)
-        Date versionCreated = (Date)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_CREATED);
-        String versionCreator = (String)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_CREATOR);
-        Date versionModified = (Date)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_MODIFIED);
-        String versionModifier = (String)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_MODIFIER);
-        Date versionAccessed = (Date)dbNodeService.getProperty(VersionUtil.convertNodeRef(frozenStateNodeRef), ContentModel.PROP_ACCESSED);
+        NodeRef versionNode = VersionUtil.convertNodeRef(frozenStateNodeRef);
+        Date versionCreated = (Date)dbNodeService.getProperty(versionNode, ContentModel.PROP_CREATED);
+        String versionCreator = (String)dbNodeService.getProperty(versionNode, ContentModel.PROP_CREATOR);
+        Date versionModified = (Date)dbNodeService.getProperty(versionNode, ContentModel.PROP_MODIFIED);
+        String versionModifier = (String)dbNodeService.getProperty(versionNode, ContentModel.PROP_MODIFIER);
+        Date versionAccessed = (Date)dbNodeService.getProperty(versionNode, ContentModel.PROP_ACCESSED);
         
-        Map<String, Serializable> versionMetaDataProperties = version1Service.getVersionMetaData(VersionUtil.convertNodeRef(frozenStateNodeRef));
+        Map<String, Serializable> versionMetaDataProperties = version1Service.getVersionMetaData(versionNode);
         
         // Create the node details
         PolicyScope nodeDetails = new PolicyScope(sourceType);
@@ -222,7 +227,7 @@ public class VersionMigrator
             nodeDetails.addAspect(aspect);
             
             // copy the aspect properties
-            ClassDefinition classDefinition = dictionaryService.getClass(aspect); 
+            ClassDefinition classDefinition = dictionaryService.getClass(aspect);
             if (classDefinition != null)
             {  
                 Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
@@ -232,6 +237,18 @@ public class VersionMigrator
                     nodeDetails.addProperty(aspect, propertyName, propValue);
                 }
             }
+        }
+        
+        // add child assocs (since 3.3 Ent - applies only to direct upgrade from 2.x to 3.3 Ent or higher)
+        for (ChildAssociationRef childAssoc : nodeChildAssocs)
+        {
+            nodeDetails.addChildAssociation(sourceType, childAssoc);
+        }
+        
+        // add target assocs (since 3.3 Ent - applies only to direct upgrade from 2.x to 3.3 Ent or higher)
+        for (AssociationRef assoc : nodeAssocs)
+        {
+            nodeDetails.addAssociation(sourceType, assoc);
         }
         
         NodeRef newVersionRef = version2Service.createNewVersion(

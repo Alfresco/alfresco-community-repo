@@ -600,6 +600,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             {
                 // Delete the working copy
                 this.nodeService.deleteNode(workingCopyNodeRef);
+                
+                // Remove the lock aspect (copied from working copy)
+                this.nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
             }
             else
             {
@@ -608,7 +611,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             }
                 
            // Invoke policy
-           invokeOnCheckIn(nodeRef);            
+           invokeOnCheckIn(nodeRef);
         }
         else
         {

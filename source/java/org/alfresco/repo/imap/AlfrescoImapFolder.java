@@ -75,6 +75,7 @@ import com.icegreen.greenmail.store.SimpleStoredMessage;
  */
 public class AlfrescoImapFolder extends AbstractImapFolder
 {
+    private final static long YEAR_2005 = 1101765600000L;
 
     private static Log logger = LogFactory.getLog(AlfrescoImapFolder.class);
 
@@ -718,7 +719,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     @Override
     protected long getUidValidityInternal()
     {
-       return ((Date) serviceRegistry.getNodeService().getProperty(folderInfo.getNodeRef(), ContentModel.PROP_MODIFIED)).getTime();
+       long modifDate = ((Date) serviceRegistry.getNodeService().getProperty(folderInfo.getNodeRef(), ContentModel.PROP_MODIFIED)).getTime();
+       return (modifDate - YEAR_2005)/1000;
     }
 
     /**
@@ -830,7 +832,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder
     {
         if (serviceRegistry.getNodeService().getType(fileInfo.getNodeRef()).equals(ContentModel.TYPE_FOLDER))
         {
-            return ((Date) serviceRegistry.getNodeService().getProperty(fileInfo.getNodeRef(), ContentModel.PROP_MODIFIED)).getTime();
+            long modifDate = ((Date) serviceRegistry.getNodeService().getProperty(fileInfo.getNodeRef(), ContentModel.PROP_MODIFIED)).getTime();
+            return (modifDate - YEAR_2005)/1000;
         }
         
         return (Long) serviceRegistry.getNodeService().getProperty(fileInfo.getNodeRef(), ContentModel.PROP_NODE_DBID);

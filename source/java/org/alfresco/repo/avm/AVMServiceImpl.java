@@ -29,12 +29,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.alfresco.config.JNDIConstants;
+import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -51,6 +54,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileNameValidator;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,8 +66,7 @@ public class AVMServiceImpl implements AVMService
 {
     public static final String SYSTEM = "system";
     
-    @SuppressWarnings("unused")
-    private static Log    fgLogger = LogFactory.getLog(AVMServiceImpl.class);
+    private static Log logger = LogFactory.getLog(AVMServiceImpl.class);
     
     /**
      * The AVMRepository for each service thread.
@@ -475,8 +478,48 @@ public class AVMServiceImpl implements AVMService
             throw new AVMBadArgumentException("Illegal argument.");
         }
         fAVMRepository.createLayeredDirectory(srcPath, parent, name);
+        
+        // check for cycle (note: optimised to skip when creating WCM sandbox layer)
+        String[] pathParts = AVMUtil.splitPath(parent);
+        if ((WCMUtil.getWebProject(this, pathParts[0]) == null) || 
+            (! (pathParts[1].equals("/") && name.equals(JNDIConstants.DIR_DEFAULT_WWW))))
+        {
+            long start = System.currentTimeMillis();
+            
+            if (checkForLDCycle(srcPath, AVMUtil.extendAVMPath(parent, name)))
+            {
+                throw new AVMCycleException("Cycle in lookup.");
+            }
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("createLayeredDirectory: cycle check: "+parent+"/"+name+" -> "+srcPath+" (in "+(System.currentTimeMillis()-start)+" msecs)");
+            }
+        }
     }
-
+    
+    private boolean checkForLDCycle(String srcPath, String dstDirPath)
+    {
+        boolean found = false;
+        SortedMap<String, AVMNodeDescriptor> listing = getDirectoryListing(-1, dstDirPath, false);
+        for (AVMNodeDescriptor node : listing.values())
+        {
+            if (node.isDirectory())
+            {
+                if (node.isLayeredDirectory() && node.isPrimary() && node.getIndirection().equals(srcPath))
+                {
+                    return true;
+                }
+                if (checkForLDCycle(srcPath, node.getPath()))
+                {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        return found;
+    }
+    
     /**
      * Create an AVMStore with the given name (it must not exist).
      * @param name The name to give the AVMStore.   

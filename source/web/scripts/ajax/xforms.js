@@ -1034,6 +1034,10 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
                   ? 	tinyMCE.get(this.widget.id).getContent() 
                   : this.widget.innerHTML);
     result = result.replace(new RegExp(alfresco.constants.AVM_WEBAPP_URL, "g"), "");
+    if (result.length == 0) 
+    {
+      result = null;
+    }
     return result;
   },
 

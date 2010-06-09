@@ -18,66 +18,30 @@
  */
 package org.alfresco.repo.web.scripts.portlet;
 
+import java.io.IOException;
+
+import javax.portlet.PortletContext;
+import javax.portlet.PortletException;
 import javax.portlet.PortletSession;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.SessionUser;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.web.app.servlet.AuthenticationHelper;
-import org.alfresco.web.bean.repository.User;
+import org.alfresco.repo.web.scripts.servlet.AuthenticatorServlet;
+import org.alfresco.web.app.servlet.AuthenticationStatus;
 import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.portlet.PortletAuthenticatorFactory;
-import org.springframework.extensions.webscripts.portlet.WebScriptPortletRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 /**
  * Portlet authenticator which synchronizes with the Alfresco Web Client authentication
  * 
  * @author davidc
+ * @author dward
  */
 public class WebClientPortletAuthenticatorFactory implements PortletAuthenticatorFactory
 {
-    // Logger
-    private static final Log logger = LogFactory.getLog(WebClientPortletAuthenticatorFactory.class);
-
-    // dependencies
-    private AuthenticationService authenticationService;
-    private TransactionService transactionService;
-    private Repository repository;
-    
-    /**
-     * @param authenticationService
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-    
-    /**
-     * @param scriptContext
-     */
-    public void setRepository(Repository repository)
-    {
-        this.repository = repository;
-    }
-    
-    /**
-     * @param transactionService
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.portlet.PortletAuthenticatorFactory#create(javax.portlet.RenderRequest, javax.portlet.RenderResponse)
      */
@@ -112,54 +76,23 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
         public boolean authenticate(RequiredAuthentication required, boolean isGuest)
         {
             PortletSession session = req.getPortletSession();
-            
-            // first look for the username key in the session - we add this by hand for some portals
-            // when the WebScriptPortletRequest is created
-            String portalUser = (String)req.getPortletSession().getAttribute(WebScriptPortletRequest.ALFPORTLETUSERNAME);
-            if (portalUser == null)
+            req.setAttribute(AuthenticatorServlet.ATTR_REQUIRED_AUTH, required);
+            req.setAttribute(AuthenticatorServlet.ATTR_IS_GUEST, isGuest);
+            PortletContext context = session.getPortletContext();
+            try
             {
-                portalUser = req.getRemoteUser();
+                context.getNamedDispatcher(AuthenticatorServlet.SERVLET_NAME).include(req, res);
             }
-            
-            if (logger.isDebugEnabled())
-            {   
-                logger.debug("JSR-168 Remote user: " + portalUser);
-            }
-    
-            if (isGuest || portalUser == null)
+            catch (PortletException e)
             {
-                if (logger.isDebugEnabled())
-                    logger.debug("Authenticating as Guest");
-                
-                // authenticate as guest
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
-    
-                if (logger.isDebugEnabled())
-                    logger.debug("Setting Web Client authentication context for guest");
-                
-                createWebClientUser(session);
-                removeSessionInvalidated(session);
+                throw new WebScriptException("Failed to authenticate", e);
             }
-            else
+            catch (IOException e)
             {
-                if (logger.isDebugEnabled())
-                    logger.debug("Authenticating as user " + portalUser);
-                
-                AuthenticationUtil.setFullyAuthenticatedUser(portalUser);
-    
-                // determine if Web Client context needs to be updated
-                User user = getWebClientUser(session);
-                if (user == null || !portalUser.equals(user.getUserName()))
-                {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Setting Web Client authentication context for user " + portalUser);
-                    
-                    createWebClientUser(session);
-                    removeSessionInvalidated(session);
-                }
+                throw new WebScriptException("Failed to authenticate", e);
             }
-            
-            return true;
+            AuthenticationStatus status = (AuthenticationStatus) req.getAttribute(AuthenticatorServlet.ATTR_AUTH_STATUS);
+            return !(status == null || status == AuthenticationStatus.Failure);
         }
         
         /* (non-Javadoc)
@@ -167,66 +100,8 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
          */
         public boolean emptyCredentials()
         {
-            String portalUser = (String)req.getPortletSession().getAttribute(WebScriptPortletRequest.ALFPORTLETUSERNAME);
-            if (portalUser == null)
-            {
-                portalUser = req.getRemoteUser();
-            }
-            return (portalUser == null);
-        }
-        
-        /**
-         * Helper.  Remove Web Client session invalidated flag
-         * 
-         * @param session
-         */
-        private void removeSessionInvalidated(PortletSession session)
-        {
-            session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED, PortletSession.APPLICATION_SCOPE);
-        }
-        
-        /**
-         * Helper.  Create Web Client session user
-         * 
-         * @param session
-         */
-        private void createWebClientUser(PortletSession session)
-        {
-            UserTransaction tx = null;
-            try
-            {
-                // start a txn as this method interacts with public services
-                tx = transactionService.getUserTransaction();
-                tx.begin();
-   
-                NodeRef personRef = repository.getPerson();
-                User user = new User(authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), personRef);
-                NodeRef homeRef = repository.getUserHome(personRef);
-                if (homeRef != null)
-                {
-                    user.setHomeSpaceId(homeRef.getId());
-                }
-                session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user, PortletSession.APPLICATION_SCOPE);
-    
-                tx.commit();
-            }
-            catch (Throwable e)
-            {
-                try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-            }
-        }
-        
-        /**
-         * Helper.  Get Web Client session user
-         * 
-         * @param session
-         * @return
-         */
-        private User getWebClientUser(PortletSession session)
-        {
-            SessionUser user = (SessionUser)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
-            return user instanceof User ? (User)user : null;
-        }
+            // Ticket - based authentication not supported
+            return true;
+        }        
     }
-
 }

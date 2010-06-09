@@ -471,6 +471,11 @@
       </init-param>
    </servlet>
 
+   <servlet>
+      <servlet-name>authenticatorServlet</servlet-name>
+      <servlet-class>org.alfresco.repo.web.scripts.servlet.AuthenticatorServlet</servlet-class>
+   </servlet>
+
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>/faces/*</url-pattern>

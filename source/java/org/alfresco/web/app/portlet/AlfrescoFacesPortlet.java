@@ -30,13 +30,19 @@ import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.MimeResponse;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletSession;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
+import javax.portlet.ResourceURL;
 import javax.portlet.UnavailableException;
 import javax.servlet.ServletRequest;
 
@@ -92,15 +98,14 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
    public void processAction(ActionRequest request, ActionResponse response) 
       throws PortletException, IOException 
    {
-      Application.setInPortalServer(true);
-
-      // Set the current locale
-      I18NUtil.setLocale(getLanguage(request.getPortletSession()));
-      
-      boolean isMultipart = PortletFileUpload.isMultipartContent(request);
-      
+      Application.setInPortalServer(true);      
       try
       {
+         // Set the current locale
+         I18NUtil.setLocale(getLanguage(request.getPortletSession()));
+         
+         boolean isMultipart = PortletFileUpload.isMultipartContent(request);
+
          // NOTE: Due to filters not being called within portlets we can not make use
          //       of the MyFaces file upload support, therefore we are using a pure
          //       portlet request/action to handle file uploads until there is a 
@@ -163,8 +168,9 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
          }
          else
          {
-            SessionUser sessionUser = (SessionUser)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-            User user = sessionUser instanceof User ? (User)sessionUser : null;
+            SessionUser sessionUser = (SessionUser) request.getPortletSession().getAttribute(
+                  AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
+            User user = sessionUser instanceof User ? (User) sessionUser : null;
             if (user != null)
             {
                // setup the authentication context
@@ -199,7 +205,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                catch (AuthenticationException authErr)
                {
                   // remove User object as it's now useless
-                  request.getPortletSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+                  request.getPortletSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
                }
             }
             else
@@ -233,7 +239,30 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
             }
          }
       }
+      finally
+      {
+         Application.setInPortalServer(false);
+      }
    }
+
+   
+   /* (non-Javadoc)
+    * @see javax.portlet.GenericPortlet#serveResource(javax.portlet.ResourceRequest, javax.portlet.ResourceResponse)
+    */
+   @Override
+   public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException
+   {
+      Application.setInPortalServer(true);
+      try
+      {
+         super.serveResource(request, response);
+      }
+      finally
+      {
+         Application.setInPortalServer(false);
+      }
+   }
+
 
    /**
     * @see org.apache.myfaces.portlet.MyFacesGenericPortlet#facesRender(javax.portlet.RenderRequest, javax.portlet.RenderResponse)
@@ -243,137 +272,145 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
    {
       Application.setInPortalServer(true);
       
-      // Set the current locale
-      I18NUtil.setLocale(getLanguage(request.getPortletSession()));
-      
-      if (request.getParameter(ERROR_OCCURRED) != null)
-      {
-         String errorPage = getErrorPage();
+      try
+      {      
+         // Set the current locale
+         I18NUtil.setLocale(getLanguage(request.getPortletSession()));
          
-         if (logger.isDebugEnabled())
-            logger.debug("An error has occurred, redirecting to error page: " + errorPage);
-         
-         response.setContentType("text/html");
-         PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher(errorPage);
-         dispatcher.include(request, response);
-      }
-      else
-      {
-         WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
-               WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-         AuthenticationService auth = (AuthenticationService)ctx.getBean("AuthenticationService");
-         
-         // if we have no User object in the session then an HTTP Session timeout must have occured
-         // use the viewId to check that we are not already on the login page
-         PortletSession session = request.getPortletSession();
-         String viewId = request.getParameter(VIEW_ID);
-         // keep track of last view id so we can use it as return page from multi-part requests
-         request.getPortletSession().setAttribute(SESSION_LAST_VIEW_ID, viewId);
-         SessionUser sessionUser = (SessionUser)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-         User user = sessionUser instanceof User ? (User)sessionUser : null;
-         if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
+         if (request.getParameter(ERROR_OCCURRED) != null)
          {
-            if (portalGuestAuthenticate(ctx, session, auth) != null)
+            String errorPage = getErrorPage();
+            
+            if (logger.isDebugEnabled())
+               logger.debug("An error has occurred, redirecting to error page: " + errorPage);
+            
+            response.setContentType("text/html");
+            PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher(errorPage);
+            dispatcher.include(request, response);
+         }
+         else
+         {
+            WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
+                  WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+            AuthenticationService auth = (AuthenticationService)ctx.getBean("AuthenticationService");
+            
+            // if we have no User object in the session then an HTTP Session timeout must have occured
+            // use the viewId to check that we are not already on the login page
+            PortletSession session = request.getPortletSession();
+            String viewId = request.getParameter(VIEW_ID);
+            // keep track of last view id so we can use it as return page from multi-part requests
+            request.getPortletSession().setAttribute(SESSION_LAST_VIEW_ID, viewId);
+            SessionUser sessionUser = (SessionUser) request.getPortletSession().getAttribute(
+                  AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
+            User user = sessionUser instanceof User ? (User)sessionUser : null;
+            if (user == null && (viewId == null || viewId.equals(getLoginPage()) == false))
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("Guest access successful.");
-               
-               // perform the forward to the page processed by the Faces servlet
-               response.setContentType("text/html");
-               request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
-               
-               // get the start location as configured by the web-client config
-               ConfigService configService = (ConfigService)ctx.getBean("webClientConfigService");
-               ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
-               if (NavigationBean.LOCATION_MYALFRESCO.equals(configElement.getInitialLocation()))
+               if (portalGuestAuthenticate(ctx, session, auth) != null)
                {
-                  nonFacesRequest(request, response, "/jsp/dashboards/container.jsp");
+                  if (logger.isDebugEnabled())
+                     logger.debug("Guest access successful.");
+                  
+                  // perform the forward to the page processed by the Faces servlet
+                  response.setContentType("text/html");
+                  request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
+                  
+                  // get the start location as configured by the web-client config
+                  ConfigService configService = (ConfigService)ctx.getBean("webClientConfigService");
+                  ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
+                  if (NavigationBean.LOCATION_MYALFRESCO.equals(configElement.getInitialLocation()))
+                  {
+                     nonFacesRequest(request, response, "/jsp/dashboards/container.jsp");
+                  }
+                  else
+                  {
+                     nonFacesRequest(request, response, FacesHelper.BROWSE_VIEW_ID);
+                  }
                }
                else
                {
-                  nonFacesRequest(request, response, FacesHelper.BROWSE_VIEW_ID);
+                  if (logger.isDebugEnabled())
+                     logger.debug("No valid User login, requesting login page. ViewId: " + viewId);
+                  
+                  // set last used username as special session value used by the LoginBean
+                  session.setAttribute(AuthenticationHelper.SESSION_USERNAME,
+                        request.getPreferences().getValue(PREF_ALF_USERNAME, null));
+                  
+                  // login page is the default portal page
+                  response.setContentType("text/html");
+                  request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
+                  nonFacesRequest(request, response);
                }
             }
             else
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("No valid User login, requesting login page. ViewId: " + viewId);
-               
-               // set last used username as special session value used by the LoginBean
-               session.setAttribute(AuthenticationHelper.SESSION_USERNAME,
-                     request.getPreferences().getValue(PREF_ALF_USERNAME, null));
-               
-               // login page is the default portal page
-               response.setContentType("text/html");
-               request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
-               nonFacesRequest(request, response);
-            }
-         }
-         else
-         {
-            if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) != null)
-            {
-               // remove the username preference value as explicit logout was requested by the user
-               if (request.getPreferences().isReadOnly(PREF_ALF_USERNAME) == false)
+               if (session.getAttribute(AuthenticationHelper.SESSION_INVALIDATED) != null)
                {
-                  request.getPreferences().reset(PREF_ALF_USERNAME);
-               }
-               session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
-            }
-            
-            try
-            {
-               if (user != null)
-               {
-                  if (logger.isDebugEnabled())
-                     logger.debug("Validating ticket: " + user.getTicket());
-                  
-                  // setup the authentication context
-                  auth.validate(user.getTicket(), null);
-               }
-               
-               // do the normal JSF processing
-               super.facesRender(request, response);
-            }
-            catch (AuthenticationException authErr)
-            {
-               // ticket is no longer valid!
-               if (logger.isDebugEnabled())
-                  logger.debug("Invalid ticket, requesting login page.");
-               
-               // remove User object as it's now useless
-               request.getPortletSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-               
-               // login page is the default portal page
-               response.setContentType("text/html");
-               request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
-               nonFacesRequest(request, response);
-            }
-            catch (Throwable e)
-            {
-               if (getErrorPage() != null)
-               {
-                  handleError(request, response, e);
-               }
-               else
-               {
-                  logger.warn("No error page configured, re-throwing exception");
-                  
-                  if (e instanceof PortletException)
+                  // remove the username preference value as explicit logout was requested by the user
+                  if (request.getPreferences().isReadOnly(PREF_ALF_USERNAME) == false)
                   {
-                     throw (PortletException)e;
+                     request.getPreferences().reset(PREF_ALF_USERNAME);
                   }
-                  else if (e instanceof IOException)
+                  session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+               }
+               
+               try
+               {
+                  if (user != null)
                   {
-                     throw (IOException)e;
+                     if (logger.isDebugEnabled())
+                        logger.debug("Validating ticket: " + user.getTicket());
+                     
+                     // setup the authentication context
+                     auth.validate(user.getTicket(), null);
+                  }
+                  
+                  // do the normal JSF processing
+                  super.facesRender(request, response);
+               }
+               catch (AuthenticationException authErr)
+               {
+                  // ticket is no longer valid!
+                  if (logger.isDebugEnabled())
+                     logger.debug("Invalid ticket, requesting login page.");
+                  
+                  // remove User object as it's now useless
+                  session.removeAttribute(AuthenticationHelper.AUTHENTICATION_USER, PortletSession.APPLICATION_SCOPE);
+                  
+                  // login page is the default portal page
+                  response.setContentType("text/html");
+                  request.getPortletSession().setAttribute(PortletUtil.PORTLET_REQUEST_FLAG, "true");
+                  nonFacesRequest(request, response);
+               }
+               catch (Throwable e)
+               {
+                  if (getErrorPage() != null)
+                  {
+                     handleError(request, response, e);
                   }
                   else
                   {
-                     throw new PortletException(e);
+                     logger.warn("No error page configured, re-throwing exception");
+                     
+                     if (e instanceof PortletException)
+                     {
+                        throw (PortletException)e;
+                     }
+                     else if (e instanceof IOException)
+                     {
+                        throw (IOException)e;
+                     }
+                     else
+                     {
+                        throw new PortletException(e);
+                     }
                   }
                }
             }
          }
+      }
+      finally
+      {
+         Application.setInPortalServer(false);
       }
    }
    
@@ -406,13 +443,16 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
     */
    public static ErrorBean getErrorBean(ServletRequest request)
    {
-      PortletRequest portletReq  = (PortletRequest) request.getAttribute("javax.portlet.request");
+      PortletRequest portletReq = (PortletRequest) request.getAttribute("javax.portlet.request");
       if (portletReq != null)
       {
-         PortletSession session = portletReq.getPortletSession();
-         return (ErrorBean)session.getAttribute(ErrorBean.ERROR_BEAN_NAME);
+         PortletSession session = portletReq.getPortletSession(false);
+         if (session != null)
+         {
+            return (ErrorBean)session.getAttribute(ErrorBean.ERROR_BEAN_NAME);
+         }
       }
-      return null;      
+      return null;
    }
 
    /**
@@ -454,6 +494,90 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       }
       return renderResp.createActionURL().toString();
 
+   }
+   
+    /**
+     * Creates a resource URL from the given faces context.
+     * 
+     * @param context
+     *            the faces context
+     * @return the resource URL
+     */
+    public static String getResourceURL(FacesContext context, String path)
+    {
+        MimeResponse portletResponse = (MimeResponse) context.getExternalContext().getResponse();
+        ResourceURL resourceURL = portletResponse.createResourceURL();
+        resourceURL.setResourceID(path);
+        return resourceURL.toString();
+    }
+
+   /**
+     * Gets a session attribute.
+     * 
+     * @param context
+     *            the faces context
+     * @param attributeName
+     *            the attribute name
+     * @param shared
+     *            get the attribute from shared (application) scope?
+     * @return the portlet session attribute
+     */
+   public static Object getPortletSessionAttribute(FacesContext context, String attributeName, boolean shared)
+   {
+      Object portletReq = context.getExternalContext().getRequest();
+      if (portletReq != null && portletReq instanceof PortletRequest)
+      {
+         PortletSession session = ((PortletRequest) portletReq).getPortletSession(false);
+         if (session != null)
+         {
+            return session.getAttribute(attributeName, shared ? PortletSession.APPLICATION_SCOPE
+                  : PortletSession.PORTLET_SCOPE);
+         }
+      }
+      return null;
+   }
+   
+   /**
+     * Sets a session attribute.
+     * 
+     * @param context
+     *            the faces context
+     * @param attributeName
+     *            the attribute name
+     * @param value
+     *            the value
+     * @param shared
+     *            set the attribute with shared (application) scope?
+     */
+   public static void setPortletSessionAttribute(FacesContext context, String attributeName, Object value,
+         boolean shared)
+   {
+      Object portletReq = context.getExternalContext().getRequest();
+      if (portletReq != null && portletReq instanceof PortletRequest)
+      {
+         PortletSession session = ((PortletRequest) portletReq).getPortletSession();
+         session.setAttribute(attributeName, value, shared ? PortletSession.APPLICATION_SCOPE
+               : PortletSession.PORTLET_SCOPE);
+      }
+      else
+      {
+         context.getExternalContext().getSessionMap().put(attributeName, value);
+      }
+   }
+
+   /**
+     * Initializes a new faces context using the portlet objects from a 'wrapped' servlet request.
+     * 
+     * @param request
+     *            the servlet request
+     * @return the faces context
+     */
+   public static FacesContext getFacesContext(ServletRequest request)
+   {
+      PortletRequest portletReq  = (PortletRequest) request.getAttribute("javax.portlet.request");
+      PortletResponse portletRes = (PortletResponse) request.getAttribute("javax.portlet.response");
+      PortletConfig portletConfig = (PortletConfig) request.getAttribute("javax.portlet.config");
+      return FacesHelper.getFacesContext(portletReq, portletRes, portletConfig.getPortletContext());      
    }
    
    /**
@@ -522,7 +646,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       if (user != null)
       {
          // store the User object in the Session - the authentication servlet will then proceed
-         session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
+         session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user, PortletSession.APPLICATION_SCOPE);
       
          // Set the current locale
          I18NUtil.setLocale(getLanguage(session));

@@ -30,8 +30,15 @@ function handle_upload_helper(fileInputElement,
   form.encoding = "multipart/form-data";
   form.enctype = "multipart/form-data";
   form.target = iframe.name;
-  actionUrl = actionUrl || "/uploadFileServlet";
-  form.action = contextPath + actionUrl;
+  if (actionUrl != undefined && actionUrl != null)
+  {
+    actionUrl = contextPath + actionUrl;
+  }
+  else
+  {
+    actionUrl = contextPath + "/uploadFileServlet"
+  }
+  form.action = actionUrl;
   form.appendChild(fileInputElement);
 
   var id = d.createElement("input");

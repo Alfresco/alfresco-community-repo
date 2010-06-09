@@ -48,7 +48,14 @@ public class WebScriptRepoPortlet extends WebScriptPortlet
     public void processAction(ActionRequest req, ActionResponse res) throws PortletException, PortletSecurityException, IOException
     {
         Application.setInPortalServer(true);
-        super.processAction(req, res);
+        try
+        {
+            super.processAction(req, res);
+        }
+        finally
+        {
+            Application.setInPortalServer(false);
+        }
     }
 
     /* (non-Javadoc)
@@ -58,7 +65,14 @@ public class WebScriptRepoPortlet extends WebScriptPortlet
     public void render(RenderRequest req, RenderResponse res) throws PortletException, PortletSecurityException, IOException
     {
         Application.setInPortalServer(true);
-        super.render(req, res);
+        try
+        {
+            super.render(req, res);
+        }
+        finally
+        {
+            Application.setInPortalServer(false);
+        }
     }
     
 }

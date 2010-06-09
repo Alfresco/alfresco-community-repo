@@ -157,39 +157,15 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
       if (logger.isDebugEnabled())
          logger.debug("HTTP session destroyed: " + event.getSession().getId());
       
-      String userKey = null;
-      if (Application.inPortalServer() == false)
+      SessionUser user = (SessionUser)event.getSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+      if (user != null)
       {
-         userKey = AuthenticationHelper.AUTHENTICATION_USER;
-      }
-      else
-      {
-         // search for the user object in the portlet wrapped session keys
-         // each vendor uses a different naming scheme so we search by hand
-         String userKeyPostfix = "?" + AuthenticationHelper.AUTHENTICATION_USER; 
-         Enumeration enumNames = event.getSession().getAttributeNames();
-         while (enumNames.hasMoreElements())
-         {
-            String name = (String)enumNames.nextElement();
-            if (name.endsWith(userKeyPostfix))
-            {
-               userKey = name;
-               break;
-            }
-         }
-      }
-      if (userKey != null)
-      {
-         SessionUser user = (SessionUser)event.getSession().getAttribute(userKey);
-         if (user != null)
-         {
-            // invalidate ticket and clear the Security context for this thread
-            WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-            AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
-            authService.invalidateTicket(user.getTicket(), event.getSession().getId());
-            authService.clearCurrentSecurityContext();
-            event.getSession().removeAttribute(userKey);
-         }
+         // invalidate ticket and clear the Security context for this thread
+         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+         AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
+         authService.invalidateTicket(user.getTicket(), event.getSession().getId());
+         authService.clearCurrentSecurityContext();
+         event.getSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
       }
    }
 }

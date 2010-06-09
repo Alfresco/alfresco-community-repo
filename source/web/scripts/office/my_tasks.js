@@ -243,9 +243,11 @@ var OfficeMyTasks =
          onComplete: function(textResponse, xmlResponse)
          {
             // Remove any trailing hash
-            var href = window.location.href.replace("#", "");
+            var href = window.location.href.replace("#", ""),
+               success = Json.evaluate(textResponse).statusCode;
+            
             // Remove any previous "st", "w" or "wd" parameters
-            href = OfficeAddin.removeParameters(href, "st|w|wd");
+            href = OfficeAddin.removeParameters(href, success ? "st|w|wd" : "st");
             // Optionally add a status string
             if (textResponse !== "")
             {

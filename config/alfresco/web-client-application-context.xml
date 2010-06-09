@@ -167,11 +167,7 @@
    <!--  Alfresco Web Client Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
    
-   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory" lazy-init="true">
-      <property name="repository" ref="repositoryHelper" />
-      <property name="authenticationService" ref="AuthenticationService" />
-      <property name="transactionService" ref="TransactionService" />
-   </bean>
+   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory" lazy-init="true"/>
 
    <bean id="RemoteUserMapper" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">

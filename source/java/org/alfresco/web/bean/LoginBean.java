@@ -321,7 +321,7 @@ public class LoginBean implements Serializable
             
             // put the User object in the Session - the authentication servlet will then allow
             // the app to continue without redirecting to the login page
-            session.put(AuthenticationHelper.AUTHENTICATION_USER, user);
+            Application.setCurrentUser(fc, user);
             
             // if a redirect URL has been provided then use that
             // this allows servlets etc. to provide a URL to return too after a successful login
@@ -427,7 +427,7 @@ public class LoginBean implements Serializable
       else
       {
          Map session = context.getExternalContext().getSessionMap();
-         SessionUser user = (SessionUser)session.get(AuthenticationHelper.AUTHENTICATION_USER);
+         SessionUser user = Application.getCurrentUser(context);
          if (user != null)
          {
              // invalidate ticket and clear the Security context for this thread

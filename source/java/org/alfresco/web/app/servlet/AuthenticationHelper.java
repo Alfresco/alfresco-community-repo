@@ -20,7 +20,6 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
@@ -45,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.users.UserPreferencesBean;
@@ -105,7 +105,8 @@ public final class AuthenticationHelper
    public static void setupThread(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
    {
       // setup faces context
-      FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
+      FacesContext fc = Application.inPortalServer() ? AlfrescoFacesPortlet.getFacesContext(req) : FacesHelper
+            .getFacesContext(req, res, sc);
    
       // Set the current locale and language
       if (Application.getClientConfig(fc).isLanguageSelect())
@@ -437,7 +438,6 @@ public final class AuthenticationHelper
      *            The HTTP response
      * @return The User object representing the current user or null if it could not be found
      */
-   @SuppressWarnings("unchecked")
    public static User getUser(final ServletContext sc, final HttpServletRequest httpRequest, HttpServletResponse httpResponse)
    {
       String userId = null;
@@ -454,32 +454,11 @@ public final class AuthenticationHelper
       User user = null;
 
       // examine the appropriate session to try and find the User object
-      SessionUser sessionUser = null;
-      String sessionUserAttrib = null;
-      if (Application.inPortalServer() == false)
-      {
-         sessionUserAttrib = AUTHENTICATION_USER;
-      }
-      else
-      {
-         // naff solution as we need to enumerate all session keys until we find the one that
-         // should match our User objects - this is weak but we don't know how the underlying
-         // Portal vendor has decided to encode the objects in the session
-         Enumeration<String> enumNames = (Enumeration<String>) session.getAttributeNames();
-         while (enumNames.hasMoreElements())
-         {
-            String name = enumNames.nextElement();
-            if (name.endsWith(AUTHENTICATION_USER))
-            {
-               sessionUserAttrib = name;
-               break;
-            }
-         }
-      }
+      SessionUser sessionUser = Application.getCurrentUser(session);
 
       // Make sure the ticket is valid, the person exists, and the cached user is of the right type (WebDAV users have
       // been known to leak in but shouldn't now)
-      if (sessionUserAttrib != null && (sessionUser = (SessionUser) session.getAttribute(sessionUserAttrib)) != null)
+      if (sessionUser != null)
       {
          AuthenticationService auth = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
          try
@@ -497,7 +476,7 @@ public final class AuthenticationHelper
          }
          catch (AuthenticationException authErr)
          {
-            session.removeAttribute(sessionUserAttrib);
+            session.removeAttribute(AUTHENTICATION_USER);
             if (!Application.inPortalServer())
             {
                session.invalidate();
@@ -511,7 +490,7 @@ public final class AuthenticationHelper
          // We have a previously-cached user with the wrong identity - replace them
          if (user != null && !user.getUserName().equals(userId))
          {
-             session.removeAttribute(sessionUserAttrib);
+             session.removeAttribute(AUTHENTICATION_USER);
              if (!Application.inPortalServer())
              {
                 session.invalidate();

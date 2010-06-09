@@ -20,6 +20,7 @@ package org.alfresco.web.app.portlet;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
+import javax.portlet.PortletSession;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -39,7 +40,8 @@ public class AlfrescoDefaultViewSelector implements DefaultViewSelector
     */
    public String selectViewId(RenderRequest request, RenderResponse response) throws PortletException
    {
-      User user = (User)request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
+      User user = (User) request.getPortletSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER,
+            PortletSession.APPLICATION_SCOPE);
       if (user != null && user.getUserName().equals(AuthenticationUtil.getGuestUserName()))
       {
          return FacesHelper.BROWSE_VIEW_ID;

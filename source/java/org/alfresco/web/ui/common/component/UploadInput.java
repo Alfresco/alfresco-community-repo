@@ -25,6 +25,9 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.web.app.Application;
+import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
+
 public class UploadInput extends UIInput implements NamingContainer
 {
    private static final long serialVersionUID = 4064734856565167835L;
@@ -34,16 +37,18 @@ public class UploadInput extends UIInput implements NamingContainer
    public void encodeBegin(FacesContext context) throws IOException
    {
       ResponseWriter writer = context.getResponseWriter();
-      String path = context.getExternalContext().getRequestContextPath();
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      String path = Application.inPortalServer() ? AlfrescoFacesPortlet.getResourceURL(context, "/uploadFileServlet")
+            : contextPath + "/uploadFileServlet";
       
       writer.write("<script type='text/javascript' src='");
-      writer.write(path);
+      writer.write(contextPath);
       writer.write("/scripts/upload_helper.js'></script>\n");
       
       writer.write("<script type='text/javascript'>");
       writer.write("function handle_upload(target)\n");
       writer.write("{\n");
-      writer.write("handle_upload_helper(target, '', upload_complete, '"+path+"')\n");
+      writer.write("handle_upload_helper(target, '', upload_complete, '"+path+"', '')\n");
       writer.write("}\n");
    
       writer.write("function upload_complete(id, path, filename)\n");

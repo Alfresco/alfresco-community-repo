@@ -20,16 +20,16 @@ package org.alfresco.web.app.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.util.TempFileProvider;
@@ -45,6 +45,7 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigService;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -77,6 +78,7 @@ public class UploadFileServlet extends BaseServlet
    /**
     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
+   @SuppressWarnings("unchecked")
    protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException
    {
@@ -102,7 +104,8 @@ public class UploadFileServlet extends BaseServlet
          if (logger.isDebugEnabled())
             logger.debug("Uploading servlet servicing...");
          
-         HttpSession session = request.getSession();
+         FacesContext context = FacesContext.getCurrentInstance();
+         Map<Object, Object> session = context.getExternalContext().getSessionMap();
          ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
          
          // ensure that the encoding is handled correctly
@@ -162,29 +165,7 @@ public class UploadFileServlet extends BaseServlet
             }
          }
 
-         // examine the appropriate session to try and find the User object
-         if (Application.inPortalServer() == false)
-         {
-            session.setAttribute(FileUploadBean.getKey(uploadId), bean);
-         }
-         else
-         {
-            // naff solution as we need to enumerate all session keys until we find the one that
-            // should match our User objects - this is weak but we don't know how the underlying
-            // Portal vendor has decided to encode the objects in the session
-            Enumeration enumNames = session.getAttributeNames();
-            while (enumNames.hasMoreElements())
-            {
-               String name = (String)enumNames.nextElement();
-               // find an Alfresco value we know must be there...
-               if (name.startsWith("javax.portlet.p") && name.endsWith(AuthenticationHelper.AUTHENTICATION_USER))
-               {
-                  String key = name.substring(0, name.lastIndexOf(AuthenticationHelper.AUTHENTICATION_USER));
-                  session.setAttribute(key + FileUploadBean.getKey(uploadId), bean);
-                  break;
-               }
-            }
-         }
+         session.put(FileUploadBean.getKey(uploadId), bean);
          
          if (bean.getFile() == null && uploadId != null && logger.isWarnEnabled())
          {

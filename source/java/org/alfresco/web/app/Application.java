@@ -34,6 +34,7 @@ import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
@@ -71,7 +72,7 @@ public class Application
    
    public static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
    
-   private static boolean inPortalServer = false;
+   private static ThreadLocal<Boolean> inPortalServer = new ThreadLocal<Boolean>();
    private static StoreRef repoStoreRef;
    private static String rootPath;
    private static String companyRootId;
@@ -79,8 +80,8 @@ public class Application
    private static String spaceTemplatesFolderName;
    private static String contentTemplatesFolderName;
    private static String emailTemplatesFolderName;
-    private static String inviteEmailTemplatesFolderName;
-    private static String notifyEmailTemplatesFolderName;
+   private static String inviteEmailTemplatesFolderName;
+   private static String notifyEmailTemplatesFolderName;
    private static String rssTemplatesFolderName;
    private static String savedSearchesFolderName;
    private static String scriptsFolderName;
@@ -107,7 +108,7 @@ public class Application
     */
    public static void setInPortalServer(boolean inPortal)
    {
-      inPortalServer = inPortal;
+      inPortalServer.set(inPortal ? Boolean.TRUE : null);
    }
    
    /**
@@ -117,7 +118,8 @@ public class Application
     */
    public static boolean inPortalServer()
    {
-      return inPortalServer;
+      Boolean result = inPortalServer.get();
+      return result == null ? false : result;
    }
    
    /**
@@ -263,7 +265,28 @@ public class Application
     */
    public static User getCurrentUser(FacesContext context)
    {
-      return (User)context.getExternalContext().getSessionMap().get(AuthenticationHelper.AUTHENTICATION_USER);
+      if (inPortalServer())
+      {
+         User user = (User) AlfrescoFacesPortlet.getPortletSessionAttribute(context,
+               AuthenticationHelper.AUTHENTICATION_USER, true);
+         if (user != null)
+         {
+            return user;
+         }
+      }
+      return (User) context.getExternalContext().getSessionMap().get(AuthenticationHelper.AUTHENTICATION_USER);
+   }
+
+   public static void setCurrentUser(FacesContext context, User user)
+   {
+      if (inPortalServer())
+      {
+         AlfrescoFacesPortlet.setPortletSessionAttribute(context, AuthenticationHelper.AUTHENTICATION_USER, user, true);
+      }
+      else
+      {
+         context.getExternalContext().getSessionMap().put(AuthenticationHelper.AUTHENTICATION_USER, user);
+      }
    }
    
    /**

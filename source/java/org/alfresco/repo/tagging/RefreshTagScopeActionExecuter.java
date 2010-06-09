@@ -113,10 +113,14 @@ public class RefreshTagScopeActionExecuter extends ActionExecuterAbstractBase
                     
                     // Write new content back to tag scope
                     String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
-                    ContentWriter contentWriter = contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
-                    contentWriter.setEncoding("UTF-8");
-                    contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                    contentWriter.putContent(tagContent);    
+                    if(tagContent.length() > 0)
+                    {
+                    	// Write out tag content only if non-zero in size
+	                    ContentWriter contentWriter = contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
+	                    contentWriter.setEncoding("UTF-8");
+	                    contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+	                    contentWriter.putContent(tagContent);
+                    }
 
                     return null;
                 }

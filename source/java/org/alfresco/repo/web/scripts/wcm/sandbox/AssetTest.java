@@ -20,6 +20,8 @@
 package org.alfresco.repo.web.scripts.wcm.sandbox;
 
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
@@ -68,7 +71,18 @@ public class AssetTest  extends BaseWebScriptTest {
 	private static final String WEBAPP_ROOT = "ROOT";
 	private static final String WEBAPP_YELLOW = "YELLOW";
 	private static final String WEBAPP_GREEN = "GREEN";
-	
+
+	private static final String ROOT_FILE = "index.htm";
+
+	private static final String FIELD_DATA = "data";
+    private static final String FIELD_PROPERTIES = "properties";
+    private static final String FIELD_CONTENT = "content";
+
+    private static final String PROP_NAME = "cm:name";
+    private static final String PROP_TITLE = "cm:title";
+
+    private static final String TEST_CONTENT_ENTRY = "This is test content entry for an Asset";
+
     // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
 	private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
 	private static final long SUBMIT_DELAY = 15000L; // (in millis) 15s - to allow time for async submit workflow to complete (as per 5s idleInterval above)
@@ -133,7 +147,7 @@ public class AssetTest  extends BaseWebScriptTest {
         Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
         
         JSONObject result = new JSONObject(response.getContentAsString());
-        JSONObject data = result.getJSONObject("data");
+        JSONObject data = result.getJSONObject(FIELD_DATA);
         String webProjectRef = data.getString("webprojectref");
         
         assertNotNull("webproject ref is null", webProjectRef);
@@ -171,7 +185,7 @@ public class AssetTest  extends BaseWebScriptTest {
     		String validURL = "/api/wcm/webprojects/" + webprojref + "/sandboxes";
     		Response response = sendRequest(new PostRequest(validURL, box.toString(), "application/json"), Status.STATUS_OK); 
     		JSONObject result = new JSONObject(response.getContentAsString());
-    		JSONObject data = result.getJSONObject("data");
+    		JSONObject data = result.getJSONObject(FIELD_DATA);
     		sandboxref = data.getString("sandboxref");
     		assertNotNull("sandboxref is null", sandboxref);
     	}
@@ -184,7 +198,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
     	Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
     	JSONObject result = new JSONObject(list.getContentAsString());
-    	JSONArray lookupResult = result.getJSONArray("data");    
+    	JSONArray lookupResult = result.getJSONArray(FIELD_DATA);    
         assertTrue("sandbox is not empty", lookupResult.length() == 0); 
 	}
     
@@ -246,7 +260,7 @@ public class AssetTest  extends BaseWebScriptTest {
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
        	    System.out.println(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 1);
     	    
@@ -289,7 +303,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 0);
     	}
@@ -322,7 +336,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 1);
     	    
@@ -359,7 +373,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 2);
     	}    
@@ -379,7 +393,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 3);
     	}    	
@@ -472,7 +486,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    
         	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
         	} 
@@ -518,7 +532,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    
         	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
         	    
@@ -555,7 +569,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    
         	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
         	    
@@ -598,7 +612,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    JSONArray assets = new JSONArray();
                 JSONArray paths = new JSONArray();
                 JSONArray omitted = new JSONArray();
@@ -638,7 +652,7 @@ public class AssetTest  extends BaseWebScriptTest {
                 
            	    Response listTwo = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject resultTwo = new JSONObject(listTwo.getContentAsString());
-        	    JSONArray lookupResultTwo = resultTwo.getJSONArray("data");
+        	    JSONArray lookupResultTwo = resultTwo.getJSONArray(FIELD_DATA);
         	    assertTrue("testListUserSandbox", lookupResultTwo.length() == 2);
                 
                 /**
@@ -701,7 +715,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertEquals("testListUserSandbox", lookupResult.length(), 1);
     	    
@@ -771,7 +785,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    
         	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
         	} 
@@ -808,7 +822,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    
         	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
         	    
@@ -838,7 +852,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    
         	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
         	    
@@ -897,7 +911,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
            	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject result = new JSONObject(list.getContentAsString());
-        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
         	    JSONArray assets = new JSONArray();
                 JSONArray paths = new JSONArray();
                 JSONArray omitted = new JSONArray();
@@ -933,7 +947,7 @@ public class AssetTest  extends BaseWebScriptTest {
                 
            	    Response listTwo = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject resultTwo = new JSONObject(listTwo.getContentAsString());
-        	    JSONArray lookupResultTwo = resultTwo.getJSONArray("data");
+        	    JSONArray lookupResultTwo = resultTwo.getJSONArray(FIELD_DATA);
         	    assertTrue("testListUserSandbox", lookupResultTwo.length() == 2);
                 
                 /**
@@ -992,7 +1006,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
-    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    JSONArray lookupResult = result.getJSONArray(FIELD_DATA);
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 1);
     	    
@@ -1008,7 +1022,6 @@ public class AssetTest  extends BaseWebScriptTest {
     public void testGetAsset() throws Exception
     {
     	final String YELLOW_FILE = "YellowFile.xyz";
-    	final String ROOT_FILE = "index.htm";
     	
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
@@ -1036,7 +1049,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	Response root = sendRequest(new GetRequest(rootURL), Status.STATUS_OK);
         	JSONObject result = new JSONObject(root.getContentAsString());
         	System.out.println(root.getContentAsString());
-        	JSONObject rootDir = result.getJSONObject("data"); 
+        	JSONObject rootDir = result.getJSONObject(FIELD_DATA); 
         	String name = rootDir.getString("name");
         	JSONArray children = rootDir.getJSONArray("children");
         	assertEquals("name is wrong", WEBAPP_ROOT, name);
@@ -1050,7 +1063,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
         	Response yellow = sendRequest(new GetRequest(yellowURL), Status.STATUS_OK);
         	JSONObject result = new JSONObject(yellow.getContentAsString());
-        	JSONObject yellowFile = result.getJSONObject("data");  
+        	JSONObject yellowFile = result.getJSONObject(FIELD_DATA);  
         	String name = yellowFile.getString("name");
         	long version = yellowFile.getLong("version");
         	long fileSize = yellowFile.getLong("fileSize");
@@ -1064,7 +1077,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/" + YELLOW_FILE +"?webApp="+ WEBAPP_YELLOW;
         	Response yellow = sendRequest(new GetRequest(yellowURL), Status.STATUS_OK);
         	JSONObject result = new JSONObject(yellow.getContentAsString());
-        	JSONObject yellowFile = result.getJSONObject("data");  
+        	JSONObject yellowFile = result.getJSONObject(FIELD_DATA);  
         	String name = yellowFile.getString("name");
         	long version = yellowFile.getLong("version");
         	long fileSize = yellowFile.getLong("fileSize");
@@ -1110,7 +1123,6 @@ public class AssetTest  extends BaseWebScriptTest {
     {
     	final String YELLOW_FILE = "YellowFile.xyz";
     	final String YELLOW_FILE2 = "Buffy.jpg";
-    	final String ROOT_FILE = "index.htm";
     	
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
@@ -1197,7 +1209,6 @@ public class AssetTest  extends BaseWebScriptTest {
     public void testCreateAsset() throws Exception
     {
     	final String YELLOW_FILE = "YellowFile.xyz";
-    	final String ROOT_FILE = "index.htm";
     	
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
@@ -1215,7 +1226,7 @@ public class AssetTest  extends BaseWebScriptTest {
         
         	Response response = sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
        	    JSONObject result = new JSONObject(response.getContentAsString());
-    	    JSONObject lookupResult = result.getJSONObject("data");
+    	    JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
         	String name = lookupResult.getString("name");
         	boolean isFolder = lookupResult.getBoolean("isFolder");
         	boolean isFile = lookupResult.getBoolean("isFile");
@@ -1234,10 +1245,10 @@ public class AssetTest  extends BaseWebScriptTest {
         	JSONObject submitForm = new JSONObject();
         	submitForm.put("name", ROOT_FILE);
         	submitForm.put("type", "file");
-        	submitForm.put("content", "Hello World");
+        	submitForm.put(FIELD_CONTENT, "Hello World");
         	Response response = sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
             JSONObject result = new JSONObject(response.getContentAsString());
-        	JSONObject lookupResult = result.getJSONObject("data");
+        	JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
         	String name = lookupResult.getString("name");
         	long fileSize = lookupResult.getLong("fileSize");
         	assertEquals("name is wrong", ROOT_FILE, name);
@@ -1281,7 +1292,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	submitForm.put("type", "file");
         	Response response = sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
         	JSONObject result = new JSONObject(response.getContentAsString());
-         	JSONObject lookupResult = result.getJSONObject("data");
+         	JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
          	String name = lookupResult.getString("name");
         	String path = lookupResult.getString("path");
          	assertEquals("name not correct", name, "dawn.jpg");
@@ -1299,7 +1310,6 @@ public class AssetTest  extends BaseWebScriptTest {
     public void testRenameAsset() throws Exception
     {
     	final String YELLOW_FILE = "buffy.jpg";
-    	final String ROOT_FILE = "index.htm";
     	final String PURPLE_FILE = "buffy.htm";
     	final String PURPLE_FILE2 = "willow.htm";
     	final String ROOT_MOVED_FILE = "smashing.htm";
@@ -1321,7 +1331,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	submitForm.put("name", WEBAPP_GREEN);
         	Response response = sendRequest(new PutRequest(yellowURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
-    	    JSONObject lookupResult = result.getJSONObject("data");
+    	    JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
         	String name = lookupResult.getString("name");
         	assertEquals("name is wrong", WEBAPP_GREEN, name);
         }
@@ -1337,7 +1347,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	submitForm.put("name", ROOT_MOVED_FILE);
         	Response response = sendRequest(new PutRequest(yellowURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
-        	JSONObject lookupResult = result.getJSONObject("data");
+        	JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
         	String name = lookupResult.getString("name");
         	assertEquals("name is wrong", ROOT_MOVED_FILE, name);
         
@@ -1358,7 +1368,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	submitForm.put("name", PURPLE_FILE2);
         	Response response = sendRequest(new PutRequest(purpleURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
-        	JSONObject lookupResult = result.getJSONObject("data");
+        	JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
         	String name = lookupResult.getString("name");
         	assertEquals("name is wrong", PURPLE_FILE2, name);
     	}
@@ -1382,7 +1392,6 @@ public class AssetTest  extends BaseWebScriptTest {
     public void testMoveAsset() throws Exception
     {
     	final String YELLOW_FILE = "buffy.jpg";
-    	final String ROOT_FILE = "index.htm";
     	
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
@@ -1403,7 +1412,7 @@ public class AssetTest  extends BaseWebScriptTest {
         	Response response = sendRequest(new PutRequest(myURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
         	System.out.println(response.getContentAsString());
         	JSONObject result = new JSONObject(response.getContentAsString());
-        	JSONObject lookupResult = result.getJSONObject("data");
+        	JSONObject lookupResult = result.getJSONObject(FIELD_DATA);
         	String name = lookupResult.getString("name");
         	assertEquals("name is wrong", ROOT_FILE, name);
         
@@ -1413,7 +1422,84 @@ public class AssetTest  extends BaseWebScriptTest {
         	sendRequest(new PutRequest(myURL, submitForm.toString(), "application/json"), Status.STATUS_NOT_FOUND);
         }	
     }
-    
+
+    /**
+     * Tests updating properties of an Asset
+     * 
+     * @throws Exception
+     */
+    public void testUpdateAssetProperties() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        String webprojref = createWebProject();
+        createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+        String sandboxref = createSandbox(webprojref, AuthenticationUtil.getAdminUserName());
+
+        // Update properties for the File object
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", ROOT_FILE);
+        updatePropertiesAndAssert(webprojref, sandboxref, ROOT_FILE, ("Renamed_" + ROOT_FILE));
+
+        // Update properties for the Folder object
+        createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", WEBAPP_GREEN);
+        updatePropertiesAndAssert(webprojref, sandboxref, WEBAPP_GREEN, ("Renamed_" + WEBAPP_GREEN));
+    }
+
+    private void updatePropertiesAndAssert(String webprojref, String sandboxref, String oldName, String updatedName) throws JSONException, IOException,
+            UnsupportedEncodingException
+    {
+        String propertiesUrl = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/properties/www/avm_webapps/" + WEBAPP_ROOT + "/" + oldName;
+        JSONObject properties = new JSONObject();
+        properties.put(ContentModel.PROP_TITLE.getLocalName(), updatedName);
+        properties.put(ContentModel.PROP_NAME.getLocalName(), updatedName);
+        JSONObject submitForm = new JSONObject();
+        submitForm.put(FIELD_PROPERTIES, properties);
+        Response response = sendRequest(new PostRequest(propertiesUrl, submitForm.toString(), "application/json"), Status.STATUS_ACCEPTED);
+        assertUpdatedProperties(updatedName, response);
+        // Check whether the updated File is allowable
+        String assetRequestUrl = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/www/avm_webapps/" + WEBAPP_ROOT + "/" + updatedName;
+        response = sendRequest(new GetRequest(assetRequestUrl), Status.STATUS_OK);
+        assertUpdatedProperties(updatedName, response);
+        // Negative test
+        assetRequestUrl = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/www/avm_webapps" + WEBAPP_ROOT + "/" + oldName;
+        response = sendRequest(new GetRequest(assetRequestUrl), Status.STATUS_NOT_FOUND);
+    }
+
+    private void assertUpdatedProperties(String updatedName, Response response) throws JSONException, UnsupportedEncodingException
+    {
+        JSONObject result = new JSONObject(response.getContentAsString());
+        JSONObject properties = (JSONObject) result.get(FIELD_DATA);
+        properties = (JSONObject) properties.get(FIELD_PROPERTIES);
+        assertEquals(updatedName, properties.get(PROP_TITLE));
+        assertEquals(updatedName, properties.get(PROP_NAME));
+    }
+
+    /**
+     * Tests updating of Content of an File Asset
+     * 
+     * @throws Exception
+     */
+    public void testGetAndUpdateAssetContent() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        String webprojref = createWebProject();
+        createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+        String sandboxref = createSandbox(webprojref, USER_ONE);
+
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", ROOT_FILE);
+        String contentRequestUrl = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/content/www/avm_webapps/" + WEBAPP_ROOT + "/" + ROOT_FILE;
+        sendRequest(new GetRequest(contentRequestUrl), Status.STATUS_INTERNAL_SERVER_ERROR);
+
+        String propertiesRequestUrl = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/properties/www/avm_webapps/" + WEBAPP_ROOT + "/" + ROOT_FILE;
+        JSONObject contentEntry = new JSONObject();
+        String content = TEST_CONTENT_ENTRY;
+        contentEntry.put(FIELD_CONTENT, content);
+        sendRequest(new PostRequest(propertiesRequestUrl, contentEntry.toString(), "application/json"), Status.STATUS_ACCEPTED);
+
+        Response response = sendRequest(new GetRequest(contentRequestUrl), Status.STATUS_OK);
+        contentEntry = new JSONObject(response.getContentAsString());
+        assertEquals(content, contentEntry.get(FIELD_CONTENT));
+    }
+
     /**
      * Utility method to create a folder
      * @param webprojref

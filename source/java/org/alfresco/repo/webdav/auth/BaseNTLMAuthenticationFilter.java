@@ -214,7 +214,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         		
         		// Restart the authentication
         		
-            	restartLoginChallenge(resp, req.getSession());
+            	restartLoginChallenge(req, resp, req.getSession());
         		return;
         	}
         }
@@ -263,7 +263,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             if ( hasLoginPage())
             	redirectToLoginPage(req, resp);
             else
-            	restartLoginChallenge(resp, httpSess);
+            	restartLoginChallenge(req, resp, httpSess);
             return;
         }
         
@@ -293,7 +293,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                         req.getRemoteAddr() + ":" + req.getRemotePort() + ") SID:" + req.getSession().getId());
             
             // Send back a request for NTLM authentication
-            restartLoginChallenge(resp, httpSess);
+            restartLoginChallenge(req, resp, httpSess);
         }
         else
         {
@@ -639,7 +639,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             }
             else
             {
-                restartLoginChallenge(res, session);
+                restartLoginChallenge(req, res, session);
             }
         }
     }
@@ -1005,7 +1005,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      * @param httpSess
      * @throws IOException
      */
-    protected void restartLoginChallenge(HttpServletResponse res, HttpSession session) throws IOException
+    protected void restartLoginChallenge(HttpServletRequest req, HttpServletResponse res, HttpSession session) throws IOException
     {
         // Remove any existing session and NTLM details from the session
         session.removeAttribute(NTLM_AUTH_SESSION);
@@ -1014,6 +1014,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         // Force the logon to start again
         res.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        writeLoginPageLink(req, res);
         res.flushBuffer();
     }
     

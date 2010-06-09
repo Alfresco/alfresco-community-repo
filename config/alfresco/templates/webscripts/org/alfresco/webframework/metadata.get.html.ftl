@@ -86,6 +86,11 @@
 	{
 		<@serializeHash hash=capabilities/>
 	}
+	,
+	"immutableProperties":
+	{
+		<@serializeHash hash=immutableProperties/>
+	}
 </#if>
 </#escape>
 </#macro>

@@ -19,9 +19,11 @@
 package org.alfresco.repo.webservice.repository;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.webservice.AbstractQuery;
 import org.alfresco.repo.webservice.Utils;
 import org.alfresco.repo.webservice.types.NamedValue;
@@ -113,10 +115,8 @@ public class AssociationQuery extends AbstractQuery<ResultSet>
             }
         }
 
-        int totalRows = assocRefs.size();
-
         ResultSet results = new ResultSet();
-        ResultSetRow[] rows = new ResultSetRow[totalRows];
+        List<ResultSetRow> rows = new ArrayList<ResultSetRow>(assocRefs.size());
 
         int index = 0;
         NodeRef childNodeRef = null;
@@ -130,42 +130,55 @@ public class AssociationQuery extends AbstractQuery<ResultSet>
         	{
         		childNodeRef = assocRef.getTargetRef();
         	}
-            ResultSetRowNode rowNode = createResultSetRowNode(childNodeRef, nodeService);
-
-            // create columns for all the properties of the node
-            // get the data for the row and build up the columns structure
-            Map<QName, Serializable> props = nodeService.getProperties(childNodeRef);
-            NamedValue[] columns = new NamedValue[props.size()+2];
-            int col = 0;
-            for (QName propName : props.keySet())
+            
+            Map<QName, Serializable> props = null;
+            try
             {
-                columns[col] = Utils.createNamedValue(dictionaryService, propName, props.get(propName)); 
-                col++;
+                props = nodeService.getProperties(childNodeRef);
+            }
+            catch (AccessDeniedException e)
+            {
+                // user has no access to associated node
             }
             
-            // Now add the system columns containing the association details
-            columns[col] = new NamedValue(SYS_COL_ASSOC_TYPE, Boolean.FALSE, assocRef.getTypeQName().toString(), null);
-            
-            // Add one more column for the node's path
-            col++;
-            columns[col] = Utils.createNamedValue(
-                    dictionaryService,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "path"),
-                    nodeService.getPath(childNodeRef).toString());
-            
-            ResultSetRow row = new ResultSetRow();
-            row.setRowIndex(index);
-            row.setNode(rowNode);
-            row.setColumns(columns);
+            if (props != null)
+            {
+                ResultSetRowNode rowNode = createResultSetRowNode(childNodeRef, nodeService);
 
-            // add the row to the overall results
-            rows[index] = row;
-            index++;
+                // create columns for all the properties of the node
+                // get the data for the row and build up the columns structure                
+                NamedValue[] columns = new NamedValue[props.size()+2];
+                int col = 0;
+                for (QName propName : props.keySet())
+                {
+                    columns[col] = Utils.createNamedValue(dictionaryService, propName, props.get(propName)); 
+                    col++;
+                }
+            
+                // Now add the system columns containing the association details
+                columns[col] = new NamedValue(SYS_COL_ASSOC_TYPE, Boolean.FALSE, assocRef.getTypeQName().toString(), null);
+            
+                // Add one more column for the node's path
+                col++;
+                columns[col] = Utils.createNamedValue(
+                        dictionaryService,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "path"),
+                        nodeService.getPath(childNodeRef).toString());
+            
+                ResultSetRow row = new ResultSetRow();
+                row.setRowIndex(index);
+                row.setNode(rowNode);
+                row.setColumns(columns);
+
+                // add the row to the overall results
+                rows.add(row);
+                index++;
+            }
         }
 
         // add the rows to the result set and set the total row count
-        results.setRows(rows);
-        results.setTotalRowCount(totalRows);
+        results.setRows(rows.toArray(new ResultSetRow[0]));
+        results.setTotalRowCount(rows.size());
 
         return results;
     }

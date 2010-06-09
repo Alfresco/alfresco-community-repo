@@ -10,16 +10,35 @@ function getPerson(username)
    if (typeof PeopleCache[username] == "undefined")
    {
       var person = people.getPerson(username);
-      if (person == null && (username == "System" || username.match("^System@") == "System@"))
+      if (person == null)
       {
-         person =
+         if (username == "System" || username.match("^System@") == "System@")
          {
-            properties:
+            // special case for the System users
+            person =
             {
-               userName: "System",
-               firstName: "System",
-               lastName: "User"
-            }
+               properties:
+               {
+                  userName: "System",
+                  firstName: "System",
+                  lastName: "User"
+               },
+               assocs: {}
+            };
+         }
+         else
+         {
+            // missing person - may have been deleted from the database
+            person =
+            {
+               properties:
+               {
+                  userName: username,
+                  firstName: "",
+                  lastName: ""
+               },
+               assocs: {}
+            };
          }
       }
       PeopleCache[username] =

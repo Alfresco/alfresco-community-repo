@@ -175,7 +175,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
 
             boolean localPath = true;
 
-            if (url.getPort() != -1 && url.getPort() != m_request.getLocalPort())
+            if (url.getPort() != -1 && url.getPort() != m_request.getServerPort())
             {
                 // Debug
 
@@ -184,7 +184,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
 
                 localPath = false;
             }
-            else if (url.getHost().equalsIgnoreCase( m_request.getLocalName()) == false
+            else if (url.getHost().equalsIgnoreCase( m_request.getServerName()) == false
                     && url.getHost().equals(m_request.getLocalAddr()) == false)
             {
             	// The target host may contain a domain or be specified as a numeric IP address
@@ -193,7 +193,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
             	
             	if ( IPAddress.isNumericAddress( targetHost) == false)
             	{
-	            	String localHost  = m_request.getLocalName();
+	            	String localHost  = m_request.getServerName();
 	            	
 	            	int pos = targetHost.indexOf( ".");
 	            	if ( pos != -1)
@@ -234,7 +234,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
                 if (localPath == false && logger.isDebugEnabled())
                 {
                     logger.debug("Destination path, different server name/address");
-                    logger.debug("  URL host=" + url.getHost() + ", localName=" + m_request.getLocalName() + ", localAddr=" + m_request.getLocalAddr());
+                    logger.debug("  URL host=" + url.getHost() + ", ServerName=" + m_request.getServerName() + ", localAddr=" + m_request.getLocalAddr());
                 }
             }
             else if (url.getPath().indexOf(m_request.getServletPath()) == -1)

@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Get the content of the specified asset within the specified web project and sandbox.</shortname>
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/content/{path}</url>
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/content/{path}?webApp={webApp?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <family>WCM/Asset</family>
+  <lifecycle>draft_public_api</lifecycle>
+</webscript>

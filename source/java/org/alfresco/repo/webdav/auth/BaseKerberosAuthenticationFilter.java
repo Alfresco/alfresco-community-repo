@@ -279,7 +279,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		
         		// Restart the authentication
         		
-            	restartLoginChallenge(resp, req.getSession());
+            	restartLoginChallenge(req, resp, req.getSession());
 
             	chain.doFilter(sreq, sresp);
         		return;
@@ -349,7 +349,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             // Send back a request for SPNEGO authentication
             
-            restartLoginChallenge( resp, httpSess);
+            restartLoginChallenge(req,  resp, httpSess);
         }
         else
         {
@@ -366,7 +366,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             	
         		// Restart the authentication
         		
-            	restartLoginChallenge(resp, httpSess);
+            	restartLoginChallenge(req, resp, httpSess);
         		return;
             }
             	
@@ -419,7 +419,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             {
                                 // Send back a request for SPNEGO authentication
                                 
-                            	restartLoginChallenge( resp, httpSess);
+                            	restartLoginChallenge(req,  resp, httpSess);
                             }
                         }
                         catch (AuthenticationException ex)
@@ -448,7 +448,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
 
                 // Send back a request for SPNEGO authentication
                 
-            	restartLoginChallenge( resp, httpSess);
+            	restartLoginChallenge(req,  resp, httpSess);
             }
         }
     }
@@ -578,12 +578,13 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
      * @param httpSess HttpSession
      * @throws IOException
      */
-    protected void restartLoginChallenge(HttpServletResponse resp, HttpSession session) throws IOException
+    protected void restartLoginChallenge(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws IOException
     {
         // Force the logon to start again
 
         resp.setHeader("WWW-Authenticate", "Negotiate");
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        writeLoginPageLink(req, resp);
         
         resp.flushBuffer();
     }

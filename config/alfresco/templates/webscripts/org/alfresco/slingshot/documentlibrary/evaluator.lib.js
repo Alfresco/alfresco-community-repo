@@ -108,8 +108,11 @@ var Evaluator =
              */
             linkNode = node;
             node = linkNode.properties.destination;
-            // Re-evaluate the nodeType based on the link's destination node
-            nodeType = Evaluator.getNodeType(node);
+            if (node !== null)
+            {
+               // Re-evaluate the nodeType based on the link's destination node
+               nodeType = Evaluator.getNodeType(node);
+            }
             break;
          
          /**
@@ -247,32 +250,39 @@ var Evaluator =
             break;
       }
       
-      // Part of an active workflow? Guard against stale worklow tasks.
-      try
+      if (node !== null)
       {
-         for each (activeWorkflow in node.activeWorkflows)
+         // Part of an active workflow? Guard against stale worklow tasks.
+         try
          {
-            activeWorkflows.push(activeWorkflow.id);
+            for each (activeWorkflow in node.activeWorkflows)
+            {
+               activeWorkflows.push(activeWorkflow.id);
+            }
          }
+         catch (e) {}
+   
+         return(
+         {
+            node: node,
+            type: nodeType,
+            linkNode: linkNode,
+            isLink: isLink,
+            status: status,
+            actionSet: actionSet,
+            actionPermissions: permissions,
+            createdBy: createdBy,
+            modifiedBy: modifiedBy,
+            lockedBy: lockedBy,
+            tags: node.tags,
+            activeWorkflows: activeWorkflows,
+            custom: jsonUtils.toJSONString(custom),
+            actionLabels: actionLabels
+         });
       }
-      catch (e) {}
-
-      return(
+      else
       {
-         node: node,
-         type: nodeType,
-         linkNode: linkNode,
-         isLink: isLink,
-         status: status,
-         actionSet: actionSet,
-         actionPermissions: permissions,
-         createdBy: createdBy,
-         modifiedBy: modifiedBy,
-         lockedBy: lockedBy,
-         tags: node.tags,
-         activeWorkflows: activeWorkflows,
-         custom: jsonUtils.toJSONString(custom),
-         actionLabels: actionLabels
-      });
+         return null;
+      }
    }
 };

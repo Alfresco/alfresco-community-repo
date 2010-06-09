@@ -114,42 +114,45 @@ function getDoclist()
    {
       // Get evaluated properties.
       item = Evaluator.run(node);
-      item.isFavourite = (favourites[item.node.nodeRef] === true);
-
-      // Does this collection of nodes have potentially differering paths?
-      if (filterParams.variablePath || item.isLink)
+      if (item !== null)
       {
-         locationNode = (item.isLink && item.type == "document") ? item.linkNode : item.node;
-         location = Common.getLocation(locationNode);
-      }
-      else
-      {
-         location =
+         item.isFavourite = (favourites[item.node.nodeRef] === true);
+   
+         // Does this collection of nodes have potentially differering paths?
+         if (filterParams.variablePath || item.isLink)
          {
-            site: parsedArgs.location.site,
-            siteTitle: parsedArgs.location.siteTitle,
-            container: parsedArgs.location.container,
-            path: parsedArgs.location.path,
-            file: node.name
-         };
-      }
-      
-      // Resolved location
-      item.location = location;
-      
-      // Is our thumbnail type registered?
-      if (isThumbnailNameRegistered)
-      {
-         // Make sure we have a thumbnail.
-         thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
-         if (thumbnail === null)
-         {
-            // No thumbnail, so queue creation
-            item.node.createThumbnail(THUMBNAIL_NAME, true);
+            locationNode = (item.isLink && item.type == "document") ? item.linkNode : item.node;
+            location = Common.getLocation(locationNode);
          }
+         else
+         {
+            location =
+            {
+               site: parsedArgs.location.site,
+               siteTitle: parsedArgs.location.siteTitle,
+               container: parsedArgs.location.container,
+               path: parsedArgs.location.path,
+               file: node.name
+            };
+         }
+         
+         // Resolved location
+         item.location = location;
+         
+         // Is our thumbnail type registered?
+         if (isThumbnailNameRegistered)
+         {
+            // Make sure we have a thumbnail.
+            thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
+            if (thumbnail === null)
+            {
+               // No thumbnail, so queue creation
+               item.node.createThumbnail(THUMBNAIL_NAME, true);
+            }
+         }
+         
+         items.push(item);
       }
-      
-      items.push(item);
    }
 
    return (

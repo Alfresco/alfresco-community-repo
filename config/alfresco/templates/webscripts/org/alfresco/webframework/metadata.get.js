@@ -21,6 +21,7 @@ else if (args["user"] != null)
    model.isUser = true; 
    model.includeChildren = false;
    model.capabilities = people.getCapabilities(object);
+   model.immutableProperties = people.getImmutableProperties(userId);
 }
 
 // load content by relative path

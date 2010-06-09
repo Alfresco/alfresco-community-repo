@@ -29,6 +29,8 @@ import javax.servlet.http.HttpSession;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -69,8 +71,16 @@ public abstract class BaseAuthenticationFilter
     /** The transaction service. */
     protected TransactionService transactionService;
     
+    /** The authentication component. */
+    protected AuthenticationComponent authenticationComponent;
+    
+    /** The remote user mapper. */
+    protected RemoteUserMapper remoteUserMapper;
+
     /** The configured user attribute name. */
     private String userAttributeName = AUTHENTICATION_USER;
+
+    
 
     /**
      * Sets the authentication service.
@@ -117,6 +127,28 @@ public abstract class BaseAuthenticationFilter
     }
 
     /**
+     * Sets the authentication component.
+     * 
+     * @param authenticationComponent
+     *            the authentication component
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
+
+    /**
+     * Sets the remote user mapper.
+     * 
+     * @param remoteUserMapper
+     *            the remote user mapper
+     */
+    public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
+    {
+        this.remoteUserMapper = remoteUserMapper;
+    }
+
+    /**
      * Create the user object that will be stored in the session.
      * 
      * @param userName
@@ -150,6 +182,15 @@ public abstract class BaseAuthenticationFilter
     protected SessionUser getSessionUser(ServletContext servletContext, final HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse, final boolean externalAuth)
     {
+        String userId = null;
+
+        // If the remote user mapper is configured, we may be able to map in an externally authenticated user
+        if (remoteUserMapper != null
+                && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
+        {
+            userId = remoteUserMapper.getRemoteUser(httpServletRequest);
+        }
+        
         String sessionAttrib = getUserAttributeName(); 
         HttpSession session = httpServletRequest.getSession();
         SessionUser sessionUser = (SessionUser) session.getAttribute(sessionAttrib);
@@ -167,6 +208,36 @@ public abstract class BaseAuthenticationFilter
                 sessionUser = null;
             }
         }
+        
+        if (userId != null)
+        {
+            // We have a previously-cached user with the wrong identity - replace them
+            if (sessionUser != null && !sessionUser.getUserName().equals(userId))
+            {
+                session.removeAttribute(sessionAttrib);
+                session.invalidate();
+                sessionUser = null;
+            }
+
+            if (sessionUser == null)
+            {
+               // If we have been authenticated by other means, just propagate through the user identity
+               authenticationComponent.setCurrentUser(userId);
+               session = httpServletRequest.getSession();
+               String sessionId = session.getId();
+
+               try
+               {
+                   sessionUser = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(sessionId), true);
+               }
+               catch (Throwable e)
+               {
+                   if (getLogger().isDebugEnabled())
+                       getLogger().debug("Error during ticket validation and user creation: " + e.getMessage(), e);
+               }
+            }
+        }
+        
         return sessionUser;
     }
 
@@ -277,6 +348,32 @@ public abstract class BaseAuthenticationFilter
         {
            session.removeAttribute(LOGIN_EXTERNAL_AUTH);
         }
+    }
+
+    /**
+     * Callback to create the User environment as appropriate for a filter impl
+     * 
+     * @param session
+     *            HttpSession
+     * @param userName
+     *            String
+     * @return SessionUser
+     * @throws IOException
+     * @throws ServletException
+     */
+    protected SessionUser createUserEnvironment(final HttpSession session, final String userName) throws IOException,
+            ServletException
+    {
+        return this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
+                {
+
+                    public SessionUser execute() throws Throwable
+                    {
+                        authenticationComponent.setCurrentUser(userName);
+                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(session.getId()), true);
+                    }
+                });
     }
 
     /**

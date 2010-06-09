@@ -46,7 +46,7 @@
 }
 </#macro>
 
-<#macro personGroupsJSON person groups capabilities>
+<#macro personGroupsJSON person groups capabilities immutability>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
 <@personJSONinner person=person/>,
@@ -61,7 +61,11 @@
 	{
 		"itemName": "${authName}",
 		"displayName": "${displayName}"
-	}<#if g_has_next>,</#if></#list>]
+	}<#if g_has_next>,</#if></#list>],
+	"immutability":
+	{
+	   <@serializeHash hash=immutability/>
+	}
 }
 </#escape>
 </#macro>

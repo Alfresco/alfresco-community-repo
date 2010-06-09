@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Update a  WCM asset</shortname>  
+   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/properties/{path}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <family>WCM/Asset</family>
+   <lifecycle>draft_public_api</lifecycle>
+</webscript>

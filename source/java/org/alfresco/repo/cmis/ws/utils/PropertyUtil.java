@@ -568,12 +568,26 @@ public class PropertyUtil
             {
                 for (Object propertyValue : (Collection<Object>) value)
                 {
-                    property.getValue().add(BigInteger.valueOf((Long) propertyValue));
+                    if(propertyValue instanceof Long)
+                    {
+                        property.getValue().add(BigInteger.valueOf((Long) propertyValue));
+                    }
+                    else
+                    {
+                        property.getValue().add(BigInteger.valueOf((Integer) propertyValue));
+                    }
                 }
             }
             else
             {
-                property.getValue().add(BigInteger.valueOf((Long) value));
+                if(value instanceof Long)
+                {
+                    property.getValue().add(BigInteger.valueOf((Long) value));
+                }
+                else
+                {
+                    property.getValue().add(BigInteger.valueOf((Integer) value));
+                }
             }
 
             return property;

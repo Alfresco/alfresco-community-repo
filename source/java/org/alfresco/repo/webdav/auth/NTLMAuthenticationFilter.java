@@ -62,7 +62,7 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
     {
         // Restart the login challenge process if validation fails
     	
-        restartLoginChallenge(res, session);
+        restartLoginChallenge(req, res, session);
     }
     
     /* (non-Javadoc)

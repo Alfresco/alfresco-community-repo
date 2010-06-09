@@ -19,6 +19,7 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -37,9 +38,7 @@ import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -65,7 +64,6 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     
     // Various services required by NTLM authenticator
 
-	protected AuthenticationComponent authenticationComponent;
     private String m_loginPage;
     
     // Indicate whether ticket based logons are supported
@@ -87,13 +85,6 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         this.serverConfiguration = serverConfiguration;
     }
     
-    /**
-     * @param authenticationComponent the authenticationComponent to set
-     */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        this.authenticationComponent = authenticationComponent;
-    }
 
     /**
      * Activates or deactivates the bean
@@ -136,31 +127,6 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     {
     }
     
-    /**
-     * Callback to create the User environment as appropriate for a filter impl
-     * 
-     * @param session
-     *            HttpSession
-     * @param userName
-     *            String
-     * @return SessionUser
-     * @throws IOException
-     * @throws ServletException
-     */
-    protected SessionUser createUserEnvironment(final HttpSession session, final String userName) throws IOException,
-            ServletException
-    {
-        return this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
-                {
-
-                    public SessionUser execute() throws Throwable
-                    {
-                        authenticationComponent.setCurrentUser(userName);
-                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(session.getId()), true);
-                    }
-                });
-    }
     
     
     /**
@@ -517,4 +483,32 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     {
         return serverConfiguration == null ? null : (SecurityConfigSection) serverConfiguration.getConfigSection(SecurityConfigSection.SectionName);
     }
+    
+    /**
+     * Writes link to login page and refresh tag which cause user
+     * to be redirected to the login page.
+     * 
+     * @param resp HttpServletResponse
+     * @param httpSess HttpSession
+     * @throws IOException
+     */
+    protected void writeLoginPageLink(HttpServletRequest req, HttpServletResponse resp) throws IOException
+    {
+        if ( hasLoginPage())
+        {
+            final PrintWriter out = resp.getWriter();
+            out.println("<html><head>");
+            out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + 
+                    req.getContextPath() + "/faces" + getLoginPage() +
+                    "\">");
+            out.println("</head><body><p>Please <a href=\"" +
+                    req.getContextPath() + "/faces" + getLoginPage() +
+                    "\">log in</a>.</p>");
+            out.println("</body></html>");
+            out.close();
+        }
+    }
+
+    
+    
 }

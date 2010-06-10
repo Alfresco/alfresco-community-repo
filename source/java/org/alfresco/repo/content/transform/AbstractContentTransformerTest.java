@@ -229,7 +229,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
                     transformer.transform(sourceReader.getReader(), targetWriter);
                     
                     // if the target format is any type of text, then it must contain the 'quick' phrase
-                    if (targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    if (isQuickPhraseExpected(targetMimetype))
                     {
                         ContentReader targetReader = targetWriter.getReader();
                         String checkContent = targetReader.getContentString();
@@ -239,7 +239,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
                                 "   target: " + targetWriter,
                                 checkContent.contains(QUICK_CONTENT));
                     }
-                    else if (targetMimetype.startsWith(StringExtractingContentTransformer.PREFIX_TEXT))
+                    else if (isQuickWordsExpected(targetMimetype))
                     {
                         ContentReader targetReader = targetWriter.getReader();
                         String checkContent = targetReader.getContentString();
@@ -280,7 +280,33 @@ public abstract class AbstractContentTransformerTest extends TestCase
         outputWriter.setEncoding("UTF8");
         outputWriter.putContent(sb.toString());
     }
-    
+
+    /**
+     * This method is an extension point for enabling/disabling an assertion that the "quick brown fox"
+     * phrase is present in the transformed content.
+     * By default, the phrase is expected in all text/plain outputs.
+     * 
+     * @param targetMimetype mimetype of the target of the transformation
+     * @return <code>true</code> if phrase is expected else <code>false</code>.
+     */
+    protected boolean isQuickPhraseExpected(String targetMimetype)
+    {
+        return targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+    }
+         
+    /**
+     * This method is an extension point for enabling/disabling an assertion that the "quick brown fox"
+     * words are <i>each</i> present in the transformed content.
+     * By default, the words in the phrase are expected in all text/* outputs.
+     * 
+     * @param targetMimetype mimetype of the target of the transformation
+     * @return <code>true</code> if each word is expected else <code>false</code>.
+     */
+     protected boolean isQuickWordsExpected(String targetMimetype)
+     {
+         return targetMimetype.startsWith(StringExtractingContentTransformer.PREFIX_TEXT);
+     }
+
     /**
      * This method is an extension point for excluding certain transformations in a subclass.
      * The default implementation returns <code>false</code> for all mime type pairs.

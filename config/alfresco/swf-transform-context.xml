@@ -57,4 +57,23 @@
       </property>
    </bean>
 
+   <!-- This transformer allows for the webpreviewing of zip archive files. -->
+   <bean id="transformer.complex.Archive.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.Archive" />
+            <ref bean="transformer.PdfBox.TextToPdf" />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>text/plain</value>
+            <value>application/pdf</value>
+         </list>
+      </property>
+   </bean>
+
 </beans>

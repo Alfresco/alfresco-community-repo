@@ -165,7 +165,7 @@
       </property>
    </bean>
    
-   <!-- Metadata Extraction Regisitry -->
+   <!-- Metadata Extraction Registry -->
    <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
    
    <!-- Abstract bean definition defining base definition for all metadata extracters -->
@@ -468,6 +468,20 @@
    <bean id="transformer.ImageMagick" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
       <property name="worker">
          <ref bean="transformer.worker.ImageMagick" />
+      </property>
+   </bean>
+
+   <!-- This transformer allows for the indexing and therefore searching of zip files. -->   
+   <bean id="transformer.Archive"
+         class="org.alfresco.repo.content.transform.ArchiveContentTransformer"
+         parent="baseContentTransformer" >
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/zip</value></property>
+                <property name="targetMimetype"><value>text/plain</value></property>
+            </bean>
+         </list>
       </property>
    </bean>
 

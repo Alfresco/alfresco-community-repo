@@ -655,6 +655,12 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     public void purgeStore(String name)
     {
         fService.purgeStore(name);
+        
+        String webProject = WCMUtil.getWebProject(fService, name);
+        if (webProject != null)
+        {
+            fLockingService.removeStoreLocks(name);
+        }
     }
 
     /* (non-Javadoc)

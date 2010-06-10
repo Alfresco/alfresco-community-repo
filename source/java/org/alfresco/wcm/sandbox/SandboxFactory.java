@@ -313,6 +313,17 @@ public final class SandboxFactory extends WCMUtil
            name = WCMUtil.getWorkflowId(sandboxId);
            storeNames = new String[] {WCMUtil.getCorrespondingMainStoreName(sandboxId), sandboxId};
        }
+       else if (props.containsKey(SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN))
+       {
+          sandboxType = SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN;
+          name = WCMUtil.getWorkflowId(sandboxId);
+          storeNames = new String[] {sandboxId, previewSandboxId};
+       }
+       else if (props.containsKey(SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW))
+       {
+          sandboxType = SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW;
+          name = WCMUtil.getWorkflowId(sandboxId);
+       }
        else if (WCMUtil.isLocalhostDeployedStore(wpStoreId, sandboxId))
        {
            // TODO refactor - pending explicit WCM services support for deployment config

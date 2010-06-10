@@ -187,6 +187,8 @@ public class UploadFileServlet extends BaseServlet
             }
             response.setContentType(MimetypeMap.MIMETYPE_HTML);
             response.setCharacterEncoding("utf-8");
+            // work-around for WebKit protection against embedded javascript on POST body response
+            response.setHeader("X-XSS-Protection", "0");
             final PrintWriter out = response.getWriter();
             out.println("<html><body><script type=\"text/javascript\">");
             out.println(returnPage);

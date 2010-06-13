@@ -49,15 +49,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author kroast
  */
 public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter, ActivateableBean, InitializingBean
-{
-	// Constants
-	//
-	// Session value names
-	//
-	// Note: These values are copied from the AuthenticationHelper and LoginBean classes to avoid project dependencies
-	
-    protected static final String NO_AUTH_REQUIRED = "alfNoAuthRequired"; 
-    
+{   
     // Allow an authentication ticket to be passed as part of a request to bypass authentication
 
     private ExtendedServerConfigurationAccessor serverConfiguration;

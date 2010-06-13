@@ -50,6 +50,9 @@ import org.json.JSONObject;
  */
 public abstract class BaseAuthenticationFilter
 {
+    /** Indication by an up-stream filter that no authentication checks are required. */
+    protected static final String NO_AUTH_REQUIRED = "alfNoAuthRequired"; 
+
     /** The default session attribute used to cache the user. Subclasses may override this with {@link #setUserAttributeName(String)}. */
     public static final String AUTHENTICATION_USER = "_alfDAVAuthTicket";
     

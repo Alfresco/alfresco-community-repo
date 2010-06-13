@@ -28,24 +28,34 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
+import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.RuntimeContainer;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 
 /**
- * WebScript aware NTLM Authentication Filter Class.
- * 
- * Takes into account the authentication setting in the descriptor for the webscript.
- * If authentication is not required then simply chains. Otherwise will delegate
- * back to the usual web-client NTLM filter code path.
+ * WebScript aware Authentication Filter Class. Takes into account the authentication setting in the descriptor for the
+ * webscript before chaining to the downstream authentication filters. If authentication is not required then chains
+ * with the NO_AUTH_REQUIRED request attribute set, which should cause any downstream authentication filter to bypass
+ * authentication checks. Also directly handles login script calls, allowing Surf to establish a cookie for a manual log
+ * in, rather than the usual stateless ticket based logins used in non-SSO mode.
  * 
  * @author Kevin Roast
+ * @author dward
  */
-public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
+public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter,
+        ActivateableBean
 {
     private static final String API_LOGIN = "/api/login";
+    private static final Log logger = LogFactory.getLog(WebScriptSSOAuthenticationFilter.class);
     private RuntimeContainer container;        
+    private boolean isActive = true;
+    
     
     /**
      * @param container the container to set
@@ -56,10 +66,29 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
     }
 
     
+    /**
+     * Activates or deactivates the bean
+     * 
+     * @param active
+     *            <code>true</code> if the bean is active and initialization should complete
+     */
+    public final void setActive(boolean active)
+    {
+        this.isActive = active;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
+     */
+    public final boolean isActive()
+    {
+        return isActive;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#doFilter(javax.servlet.ServletContext, javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
-    @Override
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
             throws IOException, ServletException
     {
@@ -84,7 +113,7 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
             {
                 if (getLogger().isDebugEnabled())
                     getLogger().debug("Found webscript with no authentication - set NO_AUTH_REQUIRED flag.");
-                req.setAttribute(AbstractAuthenticationFilter.NO_AUTH_REQUIRED, Boolean.TRUE);
+                req.setAttribute(NO_AUTH_REQUIRED, Boolean.TRUE);
             }
         }
 
@@ -96,17 +125,16 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
         }
         else
         {
-            super.doFilter(context, sreq, sresp, chain);
+            chain.doFilter(sreq, sresp);
         }
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.app.servlet.NTLMAuthenticationFilter#onLoginComplete(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, boolean)
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
      */
-    protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
-            throws IOException
+    @Override
+    protected Log getLogger()
     {
-        return true;
+        return logger;
     }
 }

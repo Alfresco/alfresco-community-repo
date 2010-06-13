@@ -38,12 +38,9 @@
       </property>
    </bean>
 
-   <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptNTLMAuthenticationFilter">
+   <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">
       <property name="active">
          <value>${ntlm.authentication.sso.enabled}</value>
-      </property>
-      <property name="serverConfiguration">
-         <ref bean="fileServerConfiguration" />
       </property>
       <property name="authenticationService">
          <ref bean="AuthenticationService" />
@@ -59,12 +56,6 @@
       </property>
       <property name="transactionService">
          <ref bean="TransactionService" />
-      </property>
-      <property name="mapUnknownUserToGuest">
-         <value>${ntlm.authentication.mapUnknownUserToGuest}</value>
-      </property>
-      <property name="configService">
-         <ref bean="webClientConfigService" />
       </property>
       <property name="container">
          <ref bean="webscripts.container" />

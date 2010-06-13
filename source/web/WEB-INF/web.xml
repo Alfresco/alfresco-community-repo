@@ -99,24 +99,11 @@
          <param-name>beanName</param-name>
          <param-value>AuthenticationFilter</param-value>
       </init-param>
-
-      <!-- For Novell IChain support use the following filter -->
-      <!--
-      <filter-class>org.alfresco.web.app.servlet.HTTPRequestAuthenticationFilter</filter-class>
-      <init-param>
-         <param-name>httpServletRequestAuthHeaderName</param-name>
-         <param-value>x-user</param-value>
-      </init-param>
-      <init-param>
-         <param-name>authPatternString</param-name>
-         <param-value>.*</param-value>
-      </init-param>
-      -->
    </filter>
    
    <filter>
       <filter-name>Global Authentication Filter</filter-name>
-      <description>Authentication filter mapped to all authenticated URLs (except web scripts). Mainly for NTLM support</description>
+      <description>Authentication filter mapped to all authenticated URLs. Mainly for SSO support</description>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
@@ -126,7 +113,7 @@
 
    <filter>
       <filter-name>WebScript Authentication Filter</filter-name>
-      <description>Authentication filter mapped to web script URLs. Mainly for NTLM support</description>
+      <description>Authentication filter mapped to web script URLs. Mainly for SSO support</description>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
@@ -199,6 +186,7 @@
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
    
+   <!-- The WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->
    <filter-mapping>
       <filter-name>WebScript Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
@@ -209,6 +197,16 @@
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
    
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/wcs/*</url-pattern>
+   </filter-mapping>
+
    <filter-mapping>
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/ajax/*</url-pattern>

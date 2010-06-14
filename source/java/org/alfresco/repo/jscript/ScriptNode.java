@@ -391,9 +391,14 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     }
     
     /**
-     * @return Returns the Node at the specified 'cm:name' based Path walking the children of this Node.
+     * childByNamePath returns the Node at the specified 'cm:name' based Path walking the children of this Node.
      *         So a valid call might be:
      *         <code>mynode.childByNamePath("/QA/Testing/Docs");</code>
+     *         
+     *         is a leading / required? No, but it can be specified.
+     *         are wild-cards supported? Does not seem to be used anywhere
+     * 
+     * @return The ScriptNode or null if the node is not found.
      */
     public ScriptNode childByNamePath(String path)
     {
@@ -401,7 +406,10 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         
         if (this.services.getDictionaryService().isSubClass(getQNameType(), ContentModel.TYPE_FOLDER))
         {
-            // optimized code path for cm:folder and sub-types supporting getChildrenByName() method
+            /**
+             * The current node is a folder.
+             * optimized code path for cm:folder and sub-types supporting getChildrenByName() method
+             */ 
             NodeRef result = null;
             StringTokenizer t = new StringTokenizer(path, "/");
             if (t.hasMoreTokens())
@@ -420,6 +428,9 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         }
         else
         {
+            /**
+             * The current node is not a folder.   Perhaps it is Company Home ?
+             */
             // convert the name based path to a valid XPath query
             StringBuilder xpath = new StringBuilder(path.length() << 1);
             StringTokenizer t = new StringTokenizer(path, "/");

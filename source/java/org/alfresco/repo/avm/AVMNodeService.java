@@ -76,7 +76,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMNodeService extends AbstractNodeServiceImpl implements NodeService
 {
-    private static Log    fgLogger = LogFactory.getLog(AVMNodeService.class);
+    private static Log    logger = LogFactory.getLog(AVMNodeService.class);
     
     /**
      * Flag for whether policy callbacks are made.
@@ -1299,7 +1299,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         else
         {
-            fgLogger.error("Invalid Built In Property: " + qName);
+            logger.error("Invalid Built In Property: " + qName);
             return null;
         }
     }
@@ -1710,11 +1710,51 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         return result;
     }
-
+    
+    /**
+     * getChildrenByName
+     */
     public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)
     {
-        throw new UnsupportedOperationException();
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
+        
+        if (!assocTypeQName.equals(ContentModel.ASSOC_CONTAINS))
+        {
+            throw new UnsupportedOperationException("AVM getChildrenByName only supports ASSOCS_CONTAINS.");
+        }
+        
+        Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+        try
+        {
+            for(String childName : childNames)
+            {
+                AVMNodeDescriptor child = fAVMService.lookup(avmVersionPath.getFirst(),
+                     AVMUtil.extendAVMPath(avmVersionPath.getSecond(), childName));
+                      
+                if (child != null)
+                {
+                    NodeRef childRef = AVMNodeConverter.ToNodeRef(avmVersionPath.getFirst(),
+                            child.getPath());
+                    QName childQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            childName);
+                    ChildAssociationRef ref = new ChildAssociationRef(assocTypeQName, nodeRef, childQName, childRef);
+                    
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("got a child node :" + ref);
+                    }
+                    results.add(ref);
+                }
+            }
+            return results;
+        }
+        catch (AVMException e)
+        {
+            logger.debug("exception in getChildrenByName ", e);
+            return results;
+        }
     }
+
 
     /**
      * Get a child NodeRef by name.

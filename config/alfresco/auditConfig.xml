@@ -212,4 +212,22 @@
         <Method name="getPooledTasks" mode="none"/>
     </Service>
     
+    <Service name="ActivityService" mode="none" enabled="false"/>
+    
+    <Service name="AttributeService" mode="none" enabled="false"/>
+    
+    <Service name="DeploymentService" mode="none" enabled="false"/>
+    
+    <Service name="RenditionService" mode="none" enabled="false"/>
+    
+    <Service name="SiteService" mode="none" enabled="false"/>
+    
+    <Service name="TransferService" mode="none" enabled="false"/>
+    
+    <Service name="AssetService" mode="none" enabled="false"/>
+    
+    <Service name="SandboxService" mode="none" enabled="false"/>
+    
+    <Service name="WebProjectService" mode="none" enabled="false"/>
+    
 </Audit>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Antti Jokipii
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -49,7 +49,6 @@ import org.xml.sax.ContentHandler;
  * 
  * TIKA Note - this has been converted to deep-call into Tika.
  *  This will be replaced with proper calls to Tika at a later date.
- *  Everything except some Print info has been ported to Tika.
  * 
  * @author Nick Burch
  */

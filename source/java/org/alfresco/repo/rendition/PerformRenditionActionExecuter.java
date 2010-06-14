@@ -72,6 +72,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
 {
     private static final Log log = LogFactory.getLog(PerformRenditionActionExecuter.class);
+    private static final String LINE_BREAK = System.getProperty("line.separator", "\n");
 
     /** Action name and parameters */
     public static final String NAME = "perform-rendition";
@@ -220,6 +221,12 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         }, runAsName);
     }
 
+    /**
+     * This method gets the (mandatory) rendition definition parameter from the containing action.
+     * @param containingAction the containing action.
+     * @return the rendition definition.
+     * @throws IllegalArgumentException if the rendition definition is missing.
+     */
     private RenditionDefinition getRenditionDefinition(final Action containingAction)
     {
         Serializable rendDefObj = containingAction.getParameterValue(PARAM_RENDITION_DEFINITION);
@@ -266,10 +273,11 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * This method sets the renditionParent and rendition assocType.
+     * This method sets the temporary rendition parent node and the rendition assocType on the
+     * rendition definition.
      * 
      * @param sourceNode
-     * @param definition
+     * @param definition the rendition definition.
      */
     private void setTemporaryRenditionProperties(NodeRef sourceNode, RenditionDefinition definition)
     {
@@ -281,9 +289,10 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
+     * This method delegates to the action service for the execution of the rendition.
      * @param sourceNode
      * @param definition
-     * @return
+     * @return the ChildAssociationRef result.
      */
     private ChildAssociationRef executeRendition(NodeRef sourceNode, RenditionDefinition definition)
     {
@@ -297,21 +306,22 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
                 RenditionDefinition renditionDefinition)
     {
         NodeRef tempRenditionNode = tempRendition.getChildRef();
-        RenditionLocation location = getDestinationParentAssoc(sourceNode, renditionDefinition, tempRenditionNode);
+        RenditionLocation renditionLocation = resolveRenditionLocation(sourceNode, renditionDefinition, tempRenditionNode);
         QName renditionQName = renditionDefinition.getRenditionName();
         if (log.isDebugEnabled())
         {
-            final String lineBreak = System.getProperty("line.separator", "\n");
             StringBuilder msg = new StringBuilder();
-            msg.append("Creating/updating rendition based on:").append(lineBreak).append("    sourceNode: ").append(
-                        sourceNode).append(lineBreak).append("    tempRendition: ").append(tempRendition).append(
-                        lineBreak).append("    parentNode: ").append(location.getParentRef()).append(lineBreak).append(
-                        "    childName: ").append(location.getChildName()).append(lineBreak).append(
+            msg.append("Creating/updating rendition based on:").append(LINE_BREAK).append("    sourceNode: ").append(
+                        sourceNode).append(LINE_BREAK).append("    tempRendition: ").append(tempRendition).append(
+                        LINE_BREAK).append("    parentNode: ").append(renditionLocation.getParentRef()).append(LINE_BREAK).append(
+                        "    childName: ").append(renditionLocation.getChildName()).append(LINE_BREAK).append(
                         "    renditionDefinition.name: ").append(renditionQName);
             log.debug(msg.toString());
         }
         NodeRef oldRendition=getOldRenditionIfExists(sourceNode, renditionDefinition);
-        RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, oldRendition, location, renditionDefinition, nodeService);
+        
+        RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, oldRendition,
+                renditionLocation, renditionDefinition, nodeService);
         ChildAssociationRef primaryAssoc = renditionNodeManager.findOrCreateRenditionNode();
 
         // Copy relevant properties from the temporary node to the new rendition
@@ -321,7 +331,7 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
 
         // Set the name property on the rendition if it has not already been
         // set.
-        String renditionName = getRenditionName(tempRenditionNode, location, renditionDefinition);
+        String renditionName = getRenditionName(tempRenditionNode, renditionLocation, renditionDefinition);
         nodeService.setProperty(renditionNode, ContentModel.PROP_NAME, renditionName);
 
         // Delete the temporary rendition.
@@ -339,6 +349,14 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         return renditionAssoc;
     }
 
+    /**
+     * This method returns the rendition on the given sourceNode with the given renditionDefinition, if such
+     * a rendition exists.
+     * 
+     * @param sourceNode
+     * @param renditionDefinition
+     * @return the rendition node if one exists, else null.
+     */
     private NodeRef getOldRenditionIfExists(NodeRef sourceNode, RenditionDefinition renditionDefinition)
     {
         QName renditionName=renditionDefinition.getRenditionName();
@@ -358,6 +376,11 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         return result;
     }
 
+    /**
+     * This method manages the <code>rn:rendition</code> aspects on the rendition node. It applies the
+     * correct rendition aspect based on the rendition node's location and removes any out-of-date rendition
+     * aspect.
+     */
     private void manageRenditionAspects(NodeRef sourceNode, ChildAssociationRef renditionParentAssoc)
     {
         NodeRef renditionNode = renditionParentAssoc.getChildRef();
@@ -381,6 +404,20 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         }
     }
 
+    /**
+     * This method calculates the name for a rendition node. The following approaches are attempted in
+     * the order given below.
+     * <ol>
+     *    <li>If a name is defined in the {@link RenditionLocation} then that is used.</li>
+     *    <li>If the temporary rendition has a <code>cm:name</code> value, then that is used.</li>
+     *    <li>Otherwise use the rendition definition's rendition name.</li>
+     * </ol>
+     * 
+     * @param tempRenditionNode the temporary rendition node.
+     * @param location a RenditionLocation struct.
+     * @param renditionDefinition the rendition definition.
+     * @return the name for the rendition.
+     */
     private String getRenditionName(NodeRef tempRenditionNode, RenditionLocation location,
                 RenditionDefinition renditionDefinition)
     {
@@ -400,6 +437,13 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         return renditionDefinition.getRenditionName().getLocalName();
     }
 
+    /**
+     * This method copies properties from the sourceNode onto the targetNode as well as the node type.
+     * {@link PerformRenditionActionExecuter#unchangedProperties Some properties} are not copied.
+     * 
+     * @param sourceNode the node from which the type and properties should be copied.
+     * @param targetNode the node to which the type and properties are copied.
+     */
     private void transferNodeProperties(NodeRef sourceNode, NodeRef targetNode)
     {
         if (log.isDebugEnabled())
@@ -419,7 +463,11 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
         nodeService.setProperties(targetNode, newProps);
     }
 
-    private RenditionLocation getDestinationParentAssoc(NodeRef sourceNode, RenditionDefinition definition,
+    /**
+     * Given a rendition definition, a source node and a temporary rendition node, this method uses a
+     * {@link RenditionLocationResolver} to calculate the {@link RenditionLocation} of the rendition.
+     */
+    private RenditionLocation resolveRenditionLocation(NodeRef sourceNode, RenditionDefinition definition,
                 NodeRef tempRendition)
     {
         return renditionLocationResolver.getRenditionLocation(sourceNode, definition, tempRendition);

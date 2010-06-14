@@ -20,6 +20,9 @@ package org.alfresco.repo.rendition;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * This simple class is a struct containing a rendition node, its parent and its name.
+ */
 public class RenditionLocationImpl implements RenditionLocation
 {
     private final NodeRef parentRef;

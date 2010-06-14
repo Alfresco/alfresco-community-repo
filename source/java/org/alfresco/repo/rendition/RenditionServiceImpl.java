@@ -194,6 +194,15 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         return;
     }
 
+    /**
+     * This methods creates a containing 'perform-rendition' action, within which the renditions
+     * will be performed.
+     * 
+     * @param sourceNode the source node which is to be rendered.
+     * @param definition the rendition definition to be used.
+     * @param asynchronous
+     * @return
+     */
     private ChildAssociationRef createAndExecuteRenditionAction(NodeRef sourceNode,
             RenditionDefinition definition, boolean asynchronous)
     {

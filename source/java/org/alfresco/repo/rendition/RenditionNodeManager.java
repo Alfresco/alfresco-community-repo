@@ -62,6 +62,13 @@ public class RenditionNodeManager
         this.nodeService = nodeService;
     }
 
+    /**
+     * This method returns the {@link ChildAssociationRef} for the rendition node. In doing this
+     * it may reuse an existing rendition node, move an existing rendition node or create a new rendition node
+     * as appropriate.
+     * 
+     * @return the {@link ChildAssociationRef} of the rendition node.
+     */
     public ChildAssociationRef findOrCreateRenditionNode()
     {
         QName renditionName = renditionDefinition.getRenditionName();
@@ -79,7 +86,7 @@ public class RenditionNodeManager
         }
         // If the old rendition is in the wrong location and the 'orphan
         // existing rendition' param is set to true or the RenditionLocation
-        // specifies a destination NodeRef then ldelete the old
+        // specifies a destination NodeRef then delete the old
         // rendition association and create a new rendition node.
         if (orphanExistingRendition())
         {

@@ -42,6 +42,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.ContentAccessor;
@@ -433,8 +435,18 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             // Update node properties, but only if the binary has changed (ETHREEOH-1861)
             
             ContentReader postUpdateContentReader = ((ContentWriter) content).getReader();
+
+            RunAsWork<ContentReader> getReader = new RunAsWork<ContentReader>()
+            {
+                public ContentReader doWork() throws Exception
+                {
+                	return preUpdateContentURL == null ? null : contentService.getRawReader(preUpdateContentURL);
+                }
+            };
+            ContentReader preUpdateContentReader = AuthenticationUtil.runAs(getReader, AuthenticationUtil.getSystemUserName());
+            
             boolean contentChanged = preUpdateContentURL == null
-                    || !AbstractContentReader.compareContentReaders(contentService.getRawReader(preUpdateContentURL),
+                    || !AbstractContentReader.compareContentReaders(preUpdateContentReader,
                             postUpdateContentReader);
             
             if (contentChanged)

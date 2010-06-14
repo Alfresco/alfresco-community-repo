@@ -26,6 +26,8 @@ import java.util.Map;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 
 /**
@@ -46,6 +48,7 @@ public interface SandboxService
      * @param wpStoreId     web project store id
      * @return SandboxInfo  the created user sandbox info
      */
+    @Auditable(parameters={"wpStoreId"})
     public SandboxInfo createAuthorSandbox(String wpStoreId);
     
     /**
@@ -59,6 +62,7 @@ public interface SandboxService
      * @param userName      user name
      * @return SandboxInfo  the created user sandbox info
      */
+    @Auditable(parameters={"wpStoreId", "userName"})
     public SandboxInfo createAuthorSandbox(String wpStoreId, String userName);
     
     /**
@@ -67,6 +71,7 @@ public interface SandboxService
      * @param wpStoreId           web project store id
      * @return List<SandboxInfo>  list of sandbox info
      */
+    @NotAuditable
     public List<SandboxInfo> listSandboxes(String wpStoreId);
     
     /**
@@ -78,6 +83,7 @@ public interface SandboxService
      * @param userName            user name
      * @return List<SandboxInfo>  list of sandbox info
      */
+    @NotAuditable
     public List<SandboxInfo> listSandboxes(String wpStoreId, String userName);
     
     /**
@@ -89,6 +95,7 @@ public interface SandboxService
      * @param sandboxType  sandbox type (see SandboxConstants)
      * @return boolean     true, if sandbox exists with given type
      */
+    @NotAuditable
     public boolean isSandboxType(String sbStoreId, QName sandboxType);
     
     /**
@@ -97,6 +104,7 @@ public interface SandboxService
      * @param sbStoreId     sandbox store id
      * @return SandboxInfo  null if sandbox does not exist or is not visible to the current user
      */
+    @NotAuditable
     public SandboxInfo getSandbox(String sbStoreId);
     
     /**
@@ -107,6 +115,7 @@ public interface SandboxService
      * @param wpStoreId      web project store id
      * @return SandboxInfo   author sandbox info
      */
+    @NotAuditable
     public SandboxInfo getAuthorSandbox(String wpStoreId);
     
     /**
@@ -120,6 +129,7 @@ public interface SandboxService
      * @param userName       userName
      * @return SandboxInfo   author sandbox info
      */
+    @NotAuditable
     public SandboxInfo getAuthorSandbox(String wpStoreId, String userName);
     
     /**
@@ -130,6 +140,7 @@ public interface SandboxService
      * @param wpStoreId      web project store id
      * @return SandboxInfo   staging sandbox info
      */
+    @NotAuditable
     public SandboxInfo getStagingSandbox(String wpStoreId);
     
     /**
@@ -141,6 +152,7 @@ public interface SandboxService
      * 
      * @param sbStoreId  sandbox store id
      */
+    @Auditable(parameters={"sbStoreId"})
     public void deleteSandbox(String sbStoreId);
     
     /**
@@ -152,6 +164,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AssetInfo>          list of all changed assets
      */
+    @NotAuditable
     public List<AssetInfo> listChangedAll(String sbStoreId, boolean includeDeleted);
     
     /**
@@ -164,6 +177,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AssetInfo>          list of changed assets
      */
+    @NotAuditable
     public List<AssetInfo> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted);
     
     /**
@@ -176,6 +190,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AssetInfo>          list of changed assets
      */
+    @NotAuditable
     public List<AssetInfo> listChanged(String sbStoreId, String relativePath, boolean includeDeleted);
     
     /**
@@ -188,6 +203,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AssetInfo>          list of changed assets
      */
+    @NotAuditable
     public List<AssetInfo> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted);
     
     /**
@@ -199,6 +215,7 @@ public interface SandboxService
      * @param submitLabel        label for submitted snapshot
      * @param submitDescription  description for submitted snapshot
      */
+    @Auditable(parameters={"sbStoreId", "submitLabel", "submitDescription"})
     public void submitAll(String sbStoreId, String submitLabel, String submitDescription);
     
     /**
@@ -211,6 +228,7 @@ public interface SandboxService
      * @param submitLabel        label for submitted snapshot
      * @param submitDescription  description for submitted snapshot
      */
+    @Auditable(parameters={"sbStoreId", "webApp", "submitLabel", "submitDescription"})
     public void submitWebApp(String sbStoreId, String webApp, String submitLabel, String submitDescription);
     
     /**
@@ -223,6 +241,7 @@ public interface SandboxService
      * @param submitLabel        label for submitted snapshot
      * @param submitDescription  description for submitted snapshot
      */
+    @Auditable(parameters={"sbStoreId", "relativePath", "submitLabel", "submitDescription"})
     public void submit(String sbStoreId, String relativePath, String submitLabel, String submitDescription);
     
     /**
@@ -233,6 +252,7 @@ public interface SandboxService
      * @param submitLabel        label for submitted snapshot
      * @param submitDescription  description for submitted snapshot
      */
+    @Auditable(parameters={"sbStoreId", "relativePath", "submitLabel", "submitDescription"})
     public void submitList(String sbStoreId, List<String> relativePaths, String submitLabel, String submitDescription);
     
     /**
@@ -243,6 +263,7 @@ public interface SandboxService
      * @param submitLabel        label for submitted snapshot
      * @param submitDescription  description for submitted snapshot
      */
+    @Auditable(parameters={"sbStoreId", "assets", "submitLabel", "submitDescription"})
     public void submitListAssets(String sbStoreId, List<AssetInfo> assets, String submitLabel, String submitDescription);
     
     /**
@@ -263,6 +284,7 @@ public interface SandboxService
      * 
      * @deprecated subject to change
      */
+    @NotAuditable
     public void submitListAssets(String sbStoreId, List<String> relativePaths,
                                  String workflowName, Map<QName, Serializable> workflowParams, 
                                  String submitLabel, String submitDescription,
@@ -275,6 +297,7 @@ public interface SandboxService
      *
      * @param sbStoreId  sandbox store id
      */
+    @Auditable(parameters={"sbStoreId"})
     public void revertAll(String sbStoreId);
     
     /**
@@ -285,6 +308,7 @@ public interface SandboxService
      * @param sbStoreId  sandbox store id
      * @param webApp     web app to filter by
      */
+    @Auditable(parameters={"sbStoreId", "webApp"})
     public void revertWebApp(String sbStoreId, String webApp);
     
     /**
@@ -295,6 +319,7 @@ public interface SandboxService
      * @param sbStoreId     sandbox store id
      * @param relativePath  relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
      */
+    @NotAuditable
     public void revert(String sbStoreId, String relativePath);
     
     /**
@@ -303,6 +328,7 @@ public interface SandboxService
      * @param sbStoreId      sandbox store id
      * @param assetPaths     list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
      */
+    @NotAuditable
     public void revertList(String sbStoreId, List<String> relativePaths);
     
     /**
@@ -310,6 +336,7 @@ public interface SandboxService
      * 
      * @param assets         list of assets
      */
+    @NotAuditable
     public void revertListAssets(String sbStoreId, List<AssetInfo> assets);
     
     /**
@@ -320,6 +347,7 @@ public interface SandboxService
      * @param sbStoreId  staging sandbox store id
      * @param version    version
      */
+    @NotAuditable
     public void revertSnapshot(String sbStoreId, int version);
     
     /**
@@ -331,6 +359,7 @@ public interface SandboxService
      * @param includeSystemGenerated    if false will ignore system generated snapshots else true to get all snapshots
      * @return List<SandboxVersion>     list of sandbox versions
      */
+    @NotAuditable
     public List<SandboxVersion> listSnapshots(String sbStoreId, boolean includeSystemGenerated);
     
     /**
@@ -344,5 +373,6 @@ public interface SandboxService
      * @param includeSystemGenerated    if false will ignore system generated snapshots else true to get all snapshots
      * @return List<SandboxVersion>     list of sandbox versions
      */
+    @NotAuditable
     public List<SandboxVersion> listSnapshots(String sbStoreId, Date from, Date to, boolean includeSystemGenerated);
 }

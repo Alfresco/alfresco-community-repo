@@ -25,6 +25,8 @@ import java.util.Map;
 import org.alfresco.repo.attributes.Attribute;
 import org.alfresco.service.PublicService;
 import org.alfresco.util.Pair;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 /**
  * This provides services for reading, writing, and querying global attributes.
@@ -70,6 +72,7 @@ public interface AttributeService
      * @param path The path of the Attribute
      * @return The value of the attribute or null.
      */
+    @NotAuditable
     public Attribute getAttribute(String path);
     
     /**
@@ -78,6 +81,7 @@ public interface AttributeService
      * @param keys List of attribute path keys (path components).
      * @return The value of the attribute or null.
      */
+    @NotAuditable
     public Attribute getAttribute(List<String> keys);
     
     /**
@@ -86,6 +90,7 @@ public interface AttributeService
      * @param name The name of the Attribute.
      * @param value The value to set.
      */
+    @NotAuditable
     public void setAttribute(String path, String name, Attribute value);
     
     /**
@@ -95,6 +100,7 @@ public interface AttributeService
      * @param name The name of the attribute to set.
      * @param value The Attribute to set.
      */
+    @NotAuditable
     public void setAttribute(List<String> keys, String name, Attribute value);
     
     /**
@@ -102,6 +108,7 @@ public interface AttributeService
      * @param path The path to the map.
      * @param entries The entries to set.
      */
+    @NotAuditable
     public void setAttributes(String path, Map<String, Attribute> entries);
     
     /**
@@ -109,6 +116,7 @@ public interface AttributeService
      * @param keys The List of path keys to the map.
      * @param entries The entries to set.
      */
+    @NotAuditable
     public void setAttributes(List<String> keys, Map<String, Attribute> entries);
     
     /**
@@ -118,6 +126,7 @@ public interface AttributeService
      * @param index The list index.
      * @param value The Attribute to set.
      */
+    @NotAuditable
     public void setAttribute(String path, int index, Attribute value);
     
     /**
@@ -126,6 +135,7 @@ public interface AttributeService
      * @param index The list index.
      * @param value The Attribute to set within the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
      */
+    @NotAuditable
     public void setAttribute(List<String> keys, int index, Attribute value);
     
     /**
@@ -134,6 +144,7 @@ public interface AttributeService
      * @param path The path to the list.
      * @param value The Attribute to add to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
      */
+    @NotAuditable
     public void addAttribute(String path, Attribute value);
     
     /**
@@ -142,6 +153,7 @@ public interface AttributeService
      * @param keys List of attribute path keys (path components).
      * @param value The Attribute to add to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
      */
+    @NotAuditable
     public void addAttribute(List<String> keys, Attribute value);
     
     /**
@@ -149,6 +161,7 @@ public interface AttributeService
      * @param path The path to the list.
      * @param values The values to add.
      */
+    @NotAuditable
     public void addAttributes(String path, List<Attribute> values);
     
     /**
@@ -156,12 +169,14 @@ public interface AttributeService
      * @param keys The List of path keys to the list.
      * @param values The values to add.
      */
+    @NotAuditable
     public void addAttributes(List<String> keys, List<Attribute> values);
     
     /**
      * Remove an Attribute.
      * @param name The name of the Attribute.
      */
+    @NotAuditable
     public void removeAttribute(String path, String name);
     
     /**
@@ -169,6 +184,7 @@ public interface AttributeService
      * @param keys List of attribute path keys (path components).
      * @param name The name of the attribute to remove.
      */
+    @NotAuditable
     public void removeAttribute(List<String> keys, String name);
     
     /**
@@ -177,6 +193,7 @@ public interface AttributeService
      * @param index The index to remove from the  
      *              {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
      */
+    @NotAuditable
     public void removeAttribute(String path, int index);
 
     /**
@@ -185,6 +202,7 @@ public interface AttributeService
      * @param index The index to remove from the  
      *              {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
      */
+    @NotAuditable
     public void removeAttribute(List<String> keys, int index);
     
     /**
@@ -192,6 +210,7 @@ public interface AttributeService
      * @param keys The list of attribute path entries.
      * @param query The attribute query.
      */
+    @NotAuditable
     public void removeEntries(List<String> keys, AttrQuery query);
     
     /**
@@ -199,6 +218,7 @@ public interface AttributeService
      * @param path The path to the map.
      * @param query The attribute query.
      */
+    @NotAuditable
     public void removeEntries(String path, AttrQuery query);
     
     /**
@@ -226,6 +246,7 @@ public interface AttributeService
      * @param query
      * @return A List of matching attributes.
      */
+    @NotAuditable
     public List<Pair<String, Attribute>> query(String path, AttrQuery query);
     
     /**
@@ -235,6 +256,7 @@ public interface AttributeService
      * @param query
      * @return A list of matching attributes.
      */
+    @NotAuditable
     public List<Pair<String, Attribute>> query(List<String> keys, AttrQuery query);
     
     /**
@@ -267,6 +289,7 @@ public interface AttributeService
      * @param path The attribute path.
      * @return A list of all keys.
      */
+    @NotAuditable
     public List<String> getKeys(String path);
     
     /**
@@ -274,6 +297,7 @@ public interface AttributeService
      * @param keys List of attribute path keys (path components).
      * @return A list of all keys at the specified Attribute location
      */
+    @NotAuditable
     public List<String> getKeys(List<String> keys);
 
     /**
@@ -281,6 +305,7 @@ public interface AttributeService
      * @param keys List of attribute path keys.
      * @return The size of of the list or map.
      */
+    @NotAuditable
     public int getCount(List<String> keys);
     
     /**
@@ -288,6 +313,7 @@ public interface AttributeService
      * @param path The path to the map or list.
      * @return The size of the list or map.
      */
+    @NotAuditable
     public int getCount(String path);
     
     /**
@@ -295,6 +321,7 @@ public interface AttributeService
      * @param keys List of attribute path keys.
      * @return Whether the attribute exists.
      */
+    @NotAuditable
     public boolean exists(List<String> keys);
  
     /**
@@ -302,5 +329,6 @@ public interface AttributeService
      * @param path The path to the attribute.
      * @return Whether the attribute exists.
      */
+    @NotAuditable
     public boolean exists(String path);
 }

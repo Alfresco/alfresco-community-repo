@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 
 /**
@@ -50,6 +52,7 @@ public interface WebProjectService
      * @param description      description
      * @return WebProjectInfo  the created web project info
      */
+    @NotAuditable
     public WebProjectInfo createWebProject(String dnsName, String name, String title, String description);
     
     /**
@@ -66,6 +69,7 @@ public interface WebProjectService
      * 
      * @deprecated see createWebProject(String dnsName, WebProjectInfo wpInfo)
      */
+    @NotAuditable
     public WebProjectInfo createWebProject(String dnsName, String name, String title, String description, NodeRef sourceNodeRef);
     
     /**
@@ -82,6 +86,7 @@ public interface WebProjectService
      * @param sourceNodeRef    web project node ref to branch from (can be null)
      * @return WebProjectInfo  the created web project info
      */
+    @NotAuditable
     public WebProjectInfo createWebProject(String dnsName, String name, String title, String description, String defaultWebApp, boolean useAsTemplate, NodeRef sourceNodeRef);
     
     /**
@@ -104,6 +109,7 @@ public interface WebProjectService
      * 
      * @return WebProjectInfo  the created web project info
      */
+    @NotAuditable
     public WebProjectInfo createWebProject(WebProjectInfo wpInfo);
     
     /**
@@ -111,6 +117,7 @@ public interface WebProjectService
      * 
      * @return NodeRef        the node ref of the "Web Projects" container node
      */
+    @NotAuditable
     public NodeRef getWebProjectsRoot();
     
     /**
@@ -119,6 +126,7 @@ public interface WebProjectService
      * @param absoluteAVMPath the AVM path from which to determine the Web Project
      * @return NodeRef        the web project node ref for the path or null if it could not be determined
      */
+    @NotAuditable
     public NodeRef getWebProjectNodeFromPath(String absoluteAVMPath);
     
     /**
@@ -127,6 +135,7 @@ public interface WebProjectService
      * @param storeName       the AVM store name (sandbox store id) from which to determine the Web Project
      * @return NodeRef        the web project node ref for the path or null if it could not be determined
      */
+    @NotAuditable
     public NodeRef getWebProjectNodeFromStore(String storeName);
     
     /**
@@ -134,6 +143,7 @@ public interface WebProjectService
      * 
      * @return List<WebProjectInfo>  list of web project info
      */
+    @NotAuditable
     public List<WebProjectInfo> listWebProjects();
     
     /**
@@ -142,6 +152,7 @@ public interface WebProjectService
      * @param userName               user name
      * @return List<WebProjectInfo>  list of web project info
      */
+    @NotAuditable
     public List<WebProjectInfo> listWebProjects(String userName);
     
     /**
@@ -150,6 +161,7 @@ public interface WebProjectService
      * @param wpNodeRef  web project store id
      * @return boolean   true, if web project
      */
+    @NotAuditable
     public boolean isWebProject(String wpStoreId);
     
     /**
@@ -158,6 +170,7 @@ public interface WebProjectService
      * @param wpNodeRef  web project node ref
      * @return boolean   true, if web project
      */
+    @NotAuditable
     public boolean isWebProject(NodeRef wpNodeRef);
     
     /**
@@ -168,6 +181,7 @@ public interface WebProjectService
      * @param wpStoreId        web project store id
      * @return WebProjectInfo  web project info
      */
+    @NotAuditable
     public WebProjectInfo getWebProject(String wpStoreId);
     
     /**
@@ -178,6 +192,7 @@ public interface WebProjectService
      * @param wpNodeRef        web project node ref
      * @return WebProjectInfo  web project info
      */
+    @NotAuditable
     public WebProjectInfo getWebProject(NodeRef wpNodeRef);
     
     /**
@@ -185,6 +200,7 @@ public interface WebProjectService
      * @param wpStoreId             web project store id
      * @return previewProviderName  preview URI service provide name
      */
+    @NotAuditable
     public String getPreviewProvider(String wpStoreId);
     
     /**
@@ -194,6 +210,7 @@ public interface WebProjectService
      * 
      * @param wpInfo  web project info
      */
+    @NotAuditable
     public void updateWebProject(WebProjectInfo wpInfo);
     
     /**
@@ -205,6 +222,7 @@ public interface WebProjectService
      * 
      * @param name  web project store id
      */
+    @NotAuditable
     public void deleteWebProject(String wpStoreId);
     
     /**
@@ -218,6 +236,7 @@ public interface WebProjectService
      * 
      * @param name  web project node ref
      */
+    @NotAuditable
     public void deleteWebProject(NodeRef wpNodeRef);
     
     //
@@ -233,6 +252,7 @@ public interface WebProjectService
      * @param name         webapp name (must be unique within a web project)
      * @param description  webapp description
      */
+    @NotAuditable
     public void createWebApp(String wpStoreId, String name, String description);
     
     /**
@@ -244,6 +264,7 @@ public interface WebProjectService
      * @param name        webapp name (must be unique within a web project)
      * @param description webapp description
      */
+    @NotAuditable
     public void createWebApp(NodeRef wpNodeRef, String name, String description);
     
     /**
@@ -252,6 +273,7 @@ public interface WebProjectService
      * @param wpStoreId      web project store id
      * @return List<String>  list of webapp names
      */
+    @NotAuditable
     public List<String> listWebApps(String wpStoreId);
     
     /**
@@ -260,6 +282,7 @@ public interface WebProjectService
      * @param wpNodeRef      web project node ref
      * @return List<String>  list of webapp names
      */
+    @NotAuditable
     public List<String> listWebApps(NodeRef wpNodeRef);
     
     /**
@@ -272,6 +295,7 @@ public interface WebProjectService
      * @param wpStoreId   web project store id
      * @param name        webapp name
      */
+    @NotAuditable
     public void deleteWebApp(String wpStoreId, String name);
     
     /**
@@ -284,6 +308,7 @@ public interface WebProjectService
      * @param wpNodeRef   web project node ref
      * @param name        webapp name
      */
+    @NotAuditable
     public void deleteWebApp(NodeRef wpNodeRef, String name);
     
     //
@@ -298,6 +323,7 @@ public interface WebProjectService
      * @param wpStoreId   web project store id
      * @return boolean    <tt>true</tt> if the user is a manager (role = WCMUtil.ROLE_CONTENT_MANAGER), <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isContentManager(String wpStoreId);
     
     /**
@@ -306,6 +332,7 @@ public interface WebProjectService
      * @param  wpNodeRef   web project node ref
      * @return boolean     <tt>true</tt> if the user is a manager (role = WCMUtil.ROLE_CONTENT_MANAGER), <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isContentManager(NodeRef wpNodeRef);
     
     /**
@@ -317,6 +344,7 @@ public interface WebProjectService
      * @param username    user name
      * @return boolean    <tt>true</tt> if the user is a manager, <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isContentManager(String wpStoreId, String username);
     
     /**
@@ -328,6 +356,7 @@ public interface WebProjectService
      * @param userName     user name
      * @return boolean     <tt>true</tt> if the user is a manager (role = WCMUtil.ROLE_CONTENT_MANAGER), <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isContentManager(NodeRef wpNodeRef, String userName);
     
     /**
@@ -338,6 +367,7 @@ public interface WebProjectService
      * @param wpStoreId    web project store id
      * @return Map<String, String> map of <authority name, role name> pairs
      */
+    @NotAuditable
     public Map<String, String> listWebUsers(String wpStoreId);
     
     /**
@@ -348,6 +378,7 @@ public interface WebProjectService
      * @param wpNodeRef    web project node ref
      * @return Map<String, String> map of <authority name, role name> pairs
      */
+    @NotAuditable
     public Map<String, String> listWebUsers(NodeRef wpNodeRef);
     
     /**
@@ -356,6 +387,7 @@ public interface WebProjectService
      * @param wpNodeRef    web project node ref
      * @return int         number of invited web users
      */
+    @NotAuditable
     public int getWebUserCount(NodeRef wpNodeRef);
     
     /**
@@ -365,6 +397,7 @@ public interface WebProjectService
      * @param userName      user name
      * @return String       web project role for this user, null if no assigned role
      */
+    @NotAuditable
     public String getWebUserRole(String wpStoreId, String userName);
     
     /**
@@ -374,6 +407,7 @@ public interface WebProjectService
      * @param userName      user name
      * @return String       web project role for this user, null if no assigned role
      */
+    @NotAuditable
     public String getWebUserRole(NodeRef wpNodeRef, String userName);
     
     /**
@@ -382,6 +416,7 @@ public interface WebProjectService
      * @param store id      web project store id
      * @return boolean      <tt>true</tt> if the current user is a web user of the web project, <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isWebUser(String wpStoreId);
     
     /**
@@ -390,6 +425,7 @@ public interface WebProjectService
      * @param wpNodeRef     web project node ref
      * @return boolean      <tt>true</tt> if the current user is a web user of the web project, <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isWebUser(NodeRef wpNodeRef);
     
     /**
@@ -399,6 +435,7 @@ public interface WebProjectService
      * @param userName      user name
      * @return boolean      <tt>true</tt> if the user is a web user of the web project, <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isWebUser(String wpStoreId, String userName);
     
     /**
@@ -408,6 +445,7 @@ public interface WebProjectService
      * @param userName      user name
      * @return boolean      <tt>true</tt> if the user is a web user of the web project, <tt>false</tt> otherwise
      */
+    @NotAuditable
     public boolean isWebUser(NodeRef wpNodeRef, String userName);
     
     /**
@@ -420,6 +458,7 @@ public interface WebProjectService
      * @param wpStoreId                web project store id
      * @param userGroupRoles           map of <authority name, role name> pairs
      */
+    @NotAuditable
     public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles);
     
     /**
@@ -431,6 +470,7 @@ public interface WebProjectService
      * @param userGroupRoles           map of <authority name, role name> pairs
      * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create an author sandbox for each invited user
      */
+    @NotAuditable
     public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox);
     
     /**
@@ -442,6 +482,7 @@ public interface WebProjectService
      * @param userGroupRoles           map of <authority name, role name> pairs
      * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create the author sandbox for each invited user
      */
+    @NotAuditable
     public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox);
   
     /**
@@ -453,6 +494,7 @@ public interface WebProjectService
      * @param userName                 user name (not a group)
      * @param userRole                 web project role
      */
+    @NotAuditable
     public void inviteWebUser(String wpStoreId, String userName, String userRole);
     
     /**
@@ -463,6 +505,7 @@ public interface WebProjectService
      * @param userRole                 web project role
      * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create the author sandbox for each invited user
      */
+    @NotAuditable
     public void inviteWebUser(String wpStoreId, String userName, String userRole, boolean autoCreateAuthorSandbox);
     
     /**
@@ -473,6 +516,7 @@ public interface WebProjectService
      * @param userRole                 web project role
      * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create the author sandbox for each invited user
      */
+    @NotAuditable
     public void inviteWebUser(NodeRef wpNodeRef, String userName, String userRole, boolean autoCreateAuthorSandbox);
     
     /**
@@ -483,6 +527,7 @@ public interface WebProjectService
      * @param wpStoreId                web project store id
      * @param userName                 user name
      */
+    @NotAuditable
     public void uninviteWebUser(String wpStoreId, String userName);
     
     /**
@@ -494,6 +539,7 @@ public interface WebProjectService
      * @param userName                 user name
      * @param autoDeleteAuthorSandbox  if <tt>true</tt> then auto delete the author sandbox
      */
+    @NotAuditable
     public void uninviteWebUser(String wpStoreId, String userName, boolean autoDeleteAuthorSandbox);
     
     /**
@@ -505,5 +551,6 @@ public interface WebProjectService
      * @param userName                 user name
      * @param autoDeleteAuthorSandbox  if <tt>true</tt> then auto delete the author sandbox
      */
+    @NotAuditable
     public void uninviteWebUser(NodeRef wpNodeRef, String userName, boolean autoDeleteAuthorSandbox);
 }

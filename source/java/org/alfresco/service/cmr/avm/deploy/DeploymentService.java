@@ -24,6 +24,8 @@ import java.util.List;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.util.NameMatcher;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 /**
  * A service to handle WCM AVM repository to remote AVM repository deployment.
@@ -47,6 +49,7 @@ public interface DeploymentService
      * @param dontDo If this is set then this is a dry run.
      * @param callback A possibly null callback.
      */
+    @Auditable
     public void deployDifference(int version, String srcPath,
                                              String hostName, 
                                              int port,
@@ -67,6 +70,7 @@ public interface DeploymentService
      * @param password
      * @return
      */
+    @NotAuditable
     public ActionService getRemoteActionService(String hostName, int port,
                                                 String userName, String password);
 
@@ -86,6 +90,7 @@ public interface DeploymentService
      * @param dontDo If this is set, this is a dry run.
      * @param callback A possibly null callback.
      */
+    @Auditable
     public void deployDifferenceFS(int version, 
     		String srcPath,
             String adapterName,
@@ -105,6 +110,7 @@ public interface DeploymentService
      * 
      * @return the adapters
      */
+    @NotAuditable
     public Set<String> getAdapterNames(); 
 
 }

@@ -28,6 +28,8 @@ import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 
 
@@ -49,6 +51,7 @@ public interface AssetService
      * @param parentFolderPathRelativeToWebApp
      * @param name
      */
+    @NotAuditable
     public void createFolderWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, String name);
     
     /**
@@ -59,6 +62,7 @@ public interface AssetService
      * @param name
      * @param properties
      */
+    @NotAuditable
     public void createFolder(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties);
     
     /**
@@ -70,6 +74,7 @@ public interface AssetService
      * @param name
      * @return
      */
+    @NotAuditable
     public ContentWriter createFileWebApp(String sbStoreId, String webApp, String parentFolderPath, String name);
     
     /**
@@ -81,6 +86,7 @@ public interface AssetService
      * @param properties
      * @return
      */
+    @NotAuditable
     public ContentWriter createFile(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties);
     
     /**
@@ -93,6 +99,7 @@ public interface AssetService
      * @param pathRelativeToWebApp
      * @return
      */
+    @NotAuditable
     public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp);
     
     /**
@@ -106,6 +113,7 @@ public interface AssetService
      * @param includeDeleted
      * @return AssetInfo  asset info
      */
+    @NotAuditable
     public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp, boolean includeDeleted);
     
     /**
@@ -117,6 +125,7 @@ public interface AssetService
      * @param path        asset path (eg. /www/avm_webapps/ROOT/myFile)
      * @return AssetInfo  asset info
      */
+    @NotAuditable
     public AssetInfo getAsset(String sbStoreId, String path);
     
     /**
@@ -130,6 +139,7 @@ public interface AssetService
      * @param includeDeleted
      * @return AssetInfo  asset info
      */
+    @NotAuditable
     public AssetInfo getAsset(String sbStoreId, int version, String path, boolean includeDeleted);
     
     /**
@@ -138,6 +148,7 @@ public interface AssetService
      * @param asset
      * @return
      */
+    @NotAuditable
     public ContentWriter getContentWriter(AssetInfo fileAsset);
     
     /**
@@ -146,6 +157,7 @@ public interface AssetService
      * @param asset
      * @return
      */
+    @NotAuditable
     public ContentReader getContentReader(AssetInfo fileAsset);
     
     /**
@@ -154,6 +166,7 @@ public interface AssetService
      * @param asset
      * @return
      */
+    @NotAuditable
     public Map<QName, Serializable> getAssetProperties(AssetInfo asset);
     
     /**
@@ -162,6 +175,7 @@ public interface AssetService
      * @param asset
      * @param properties
      */
+    @NotAuditable
     public void setAssetProperties(AssetInfo asset, Map<QName, Serializable> properties);
     
     /**
@@ -170,6 +184,7 @@ public interface AssetService
      * @param asset
      * @param properties
      */
+    @NotAuditable
     public void updateAssetProperties(AssetInfo asset, Map<QName, Serializable> properties);
     
     /**
@@ -179,6 +194,7 @@ public interface AssetService
      * @param aspectName
      * @param properties
      */
+    @NotAuditable
     public void addAspect(AssetInfo asset, QName aspectName, Map<QName, Serializable> properties);
     
     /**
@@ -187,6 +203,7 @@ public interface AssetService
      * @param asset
      * @param aspectName
      */
+    @NotAuditable
     public void removeAspect(AssetInfo asset, QName aspectName);
     
     /**
@@ -195,6 +212,7 @@ public interface AssetService
      * @param asset
      * @return list of aspects
      */
+    @NotAuditable
     public Set<QName> getAspects(AssetInfo asset);
     
     /**
@@ -204,6 +222,7 @@ public interface AssetService
      * @param aspectName
      * @return
      */
+    @NotAuditable
     public boolean hasAspect(AssetInfo asset, QName aspectName);
     
     /**
@@ -215,6 +234,7 @@ public interface AssetService
      * @param includeDeleted
      * @return list of assets
      */
+    @NotAuditable
     public List<AssetInfo> listAssetsWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, boolean includeDeleted);
     
     /**
@@ -225,6 +245,7 @@ public interface AssetService
      * @param includeDeleted
      * @return list of assets
      */
+    @NotAuditable
     public List<AssetInfo> listAssets(String sbStoreId, String parentFolderPath, boolean includeDeleted);
     
     /**
@@ -236,6 +257,7 @@ public interface AssetService
      * @param includeDeleted
      * @return list of assets
      */
+    @NotAuditable
     public List<AssetInfo> listAssets(String sbStoreId, int version, String parentFolderPath, boolean includeDeleted);
     
     /**
@@ -243,6 +265,7 @@ public interface AssetService
      * 
      * @param asset
      */
+    @NotAuditable
     public void deleteAsset(AssetInfo asset);
     
     /**
@@ -252,6 +275,7 @@ public interface AssetService
      * @param newName
      * @return AssetInfo  asset info
      */
+    @NotAuditable
     public AssetInfo renameAsset(AssetInfo asset, String newName);
     
     /**
@@ -264,6 +288,7 @@ public interface AssetService
      * @param parentFolderPath
      * @return AssetInfo  asset info
      */
+    @NotAuditable
     public AssetInfo copyAsset(AssetInfo asset, String parentFolderPath);
     
     // TODO - copy asset to different sandbox ?
@@ -275,6 +300,7 @@ public interface AssetService
      * @param parentFolderPath
      * @return AssetInfo  asset info
      */
+    @NotAuditable
     public AssetInfo moveAsset(AssetInfo asset, String parentFolderPath);
     
     /**
@@ -284,6 +310,7 @@ public interface AssetService
      * @param parentFolderPath
      * @param zipFile
      */
+    @NotAuditable
     public void bulkImport(String sbStoreId, String parentFolderPath, File zipFile, boolean isHighByteZip);
     
     /**
@@ -292,6 +319,7 @@ public interface AssetService
      * @param asset
      * @return String lock owner (null if path not locked)
      */
+    @NotAuditable
     public String getLockOwner(AssetInfo fileAsset);
     
     /**
@@ -300,5 +328,6 @@ public interface AssetService
      * @param asset
      * @return boolean  true if current user has write access
      */
+    @NotAuditable
     public boolean hasLockAccess(AssetInfo fileAsset);
 }

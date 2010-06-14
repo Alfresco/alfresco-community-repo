@@ -25,6 +25,8 @@ import java.util.Map;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 /**
  * Site service fundamental API.
@@ -47,6 +49,7 @@ public interface SiteService
      * @return SiteInfo     information about the created site
      * @deprecated          since version 3.2, replaced by {@link #createSite(String, String, String, String, SiteVisibility)}
      */
+    @Auditable(parameters = {"sitePreset", "shortName"})
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic);
     
     /**
@@ -59,6 +62,7 @@ public interface SiteService
      * @param visibility    site visibility (public|moderated|private)
      * @return SiteInfo     information about the created site
      */
+    @Auditable(parameters = {"sitePreset", "shortName"})
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility);
     
     /**
@@ -69,6 +73,7 @@ public interface SiteService
      * @param size                  list maximum size or zero for all
      * @return List<SiteInfo>       list of site information
      */
+    @NotAuditable
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter, int size);
     
     /**
@@ -78,6 +83,7 @@ public interface SiteService
      * @param sitePresetFilter      site preset filter
      * @return List<SiteInfo>       list of site information
      */
+    @NotAuditable
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);
     
     /**
@@ -86,6 +92,7 @@ public interface SiteService
      * @param userName          user name
      * @return List<SiteInfo>   list of site information
      */
+    @NotAuditable
     List<SiteInfo> listSites(String userName);
     
     /**
@@ -96,6 +103,7 @@ public interface SiteService
      * @param shortName     the site short name
      * @return SiteInfo     the site information
      */
+    @NotAuditable
     SiteInfo getSite(String shortName);
     
     /**
@@ -103,6 +111,7 @@ public interface SiteService
      * @param nodeRef
      * @return
      */
+    @NotAuditable
     SiteInfo getSite(NodeRef nodeRef);
     
     /**
@@ -112,6 +121,7 @@ public interface SiteService
      * 
      * @param siteInfo  site information
      */
+    @Auditable
     void updateSite(SiteInfo siteInfo);
     
     /**
@@ -119,6 +129,7 @@ public interface SiteService
      * 
      * @param shortName     site short name
      */
+    @Auditable(parameters = {"shortName"})
     void deleteSite(String shortName);
     
     /**
@@ -132,6 +143,7 @@ public interface SiteService
      * @param size          max results size crop if >0
      * @return Map<String, String>  the authority name and their role
      */
+    @NotAuditable
     Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, int size);
     
     /**
@@ -145,6 +157,7 @@ public interface SiteService
      * @param collapseGroups    true if collapse member groups into user list, false otherwise
      * @return Map<String, String>  the authority name and their role
      */
+    @NotAuditable
     Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups);
     
     /**
@@ -154,6 +167,7 @@ public interface SiteService
      * @param authorityName full authority name (so if it's a group then its prefixed with 'GROUP_')
      * @return String       site role, null if none
      */
+    @NotAuditable
     String getMembersRole(String shortName, String authorityName);
     
     /**
@@ -163,6 +177,7 @@ public interface SiteService
      * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      * @return boolean      true if the authority is a member of the site, false otherwise
      */
+    @NotAuditable
     boolean isMember(String shortName, String authorityName);
     
     /**
@@ -172,6 +187,7 @@ public interface SiteService
      * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      * @param role          site role
      */
+    @Auditable(parameters = {"shortName", "authorityName", "role"})
     void setMembership(String shortName, String authorityName, String role);
     
     /**
@@ -180,6 +196,7 @@ public interface SiteService
      * @param shortName     site short name
      * @param authorityName authority name (so if it's a group then its prefixed with 'GROUP_')
      */
+    @Auditable(parameters = {"shortName", "authorityName"})
     void removeMembership(String shortName, String authorityName);
     
     /**
@@ -196,6 +213,7 @@ public interface SiteService
      * @param containerProperties       container property values (can be null)
      * @return noderef of container or null if a container can't be created.
      */
+    @NotAuditable
     NodeRef createContainer(String shortName, String componentId, QName containerType, Map<QName, Serializable> containerProperties);
     
     /**
@@ -207,6 +225,7 @@ public interface SiteService
      * @param folderType  type of folder to create (if null, creates standard folder)
      * @return  noderef of container
      */
+    @NotAuditable
     NodeRef getContainer(String shortName, String componentId);
 
     /**
@@ -216,6 +235,7 @@ public interface SiteService
      * @param componentId  component id
      * @return  true => "container" folder exists for component
      */
+    @NotAuditable
     boolean hasContainer(String shortName, String componentId);
     
     /**
@@ -223,6 +243,7 @@ public interface SiteService
      * 
      * @return  List<String>    list of available roles
      */
+    @NotAuditable
     List<String> getSiteRoles();
      
     /**
@@ -231,6 +252,7 @@ public interface SiteService
      * @param shortName     site short name
      * @return String       group name
      */
+    @NotAuditable
     String getSiteGroup(String shortName);
     
     /**
@@ -241,6 +263,7 @@ public interface SiteService
      * @param role          membership role
      * @return String       group name
      */
+    @NotAuditable
     String getSiteRoleGroup(String shortName, String role);
     
 }

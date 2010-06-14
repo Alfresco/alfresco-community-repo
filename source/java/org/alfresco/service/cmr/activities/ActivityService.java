@@ -21,6 +21,8 @@ package org.alfresco.service.cmr.activities;
 import java.util.List;
 
 import org.alfresco.service.PublicService;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 
 /**
@@ -43,6 +45,7 @@ public interface ActivityService extends ActivityPostService
      * @param siteId - optional, if set then will filter by given siteId else return all sites
      * @return list of JSON feed entries
      */
+    @NotAuditable
     public List<String> getUserFeedEntries(String userId, String format, String siteId);
     
     /**
@@ -63,6 +66,7 @@ public interface ActivityService extends ActivityPostService
      * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
      * @return list of JSON feed entries
      */
+    @NotAuditable
     public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers);
     
     /**
@@ -72,6 +76,7 @@ public interface ActivityService extends ActivityPostService
      * @param format - required
      * @return list of JSON feed entries
      */
+    @NotAuditable
     public List<String> getSiteFeedEntries(String siteId, String format);
     
     
@@ -84,6 +89,7 @@ public interface ActivityService extends ActivityPostService
      *
      * @param feedControl - required
      */
+    @NotAuditable
     public void setFeedControl(FeedControl feedControl);
     
     /**
@@ -92,6 +98,7 @@ public interface ActivityService extends ActivityPostService
      * @param userId - required (must match
      * @return list of user feed controls
      */
+    @NotAuditable
     public List<FeedControl> getFeedControls(String userId);
     
     /**
@@ -99,6 +106,7 @@ public interface ActivityService extends ActivityPostService
      *
      * @return list of user feed controls
      */
+    @NotAuditable
     public List<FeedControl> getFeedControls();
     
     /**
@@ -106,6 +114,7 @@ public interface ActivityService extends ActivityPostService
      *
      * @param feedControl - required
      */
+    @NotAuditable
     public void unsetFeedControl(FeedControl feedControl);
     
     /**
@@ -114,5 +123,6 @@ public interface ActivityService extends ActivityPostService
      * @param feedControl - required
      * @return true, if user feed control exists
      */
+    @NotAuditable
     public boolean existsFeedControl(FeedControl feedControl);
 }

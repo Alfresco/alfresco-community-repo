@@ -26,6 +26,8 @@ import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 /**
  * The Rendition service.
@@ -78,12 +80,14 @@ public interface RenditionService extends RenditionDefinitionPersister
      * @param name The rendering engine name.
      * @return The {@link RenderingEngineDefinition} or null.
      */
+    @NotAuditable
     RenderingEngineDefinition getRenderingEngineDefinition(String name);
 
     /**
      * @return A {@link List} of all available {@link RenderingEngineDefinition}
      *         s.
      */
+    @NotAuditable
     List<RenderingEngineDefinition> getRenderingEngineDefinitions();
 
     /**
@@ -96,6 +100,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      *            with this {@link RenditionDefinition}.
      * @return the created {@link RenditionDefinition}.
      */
+    @NotAuditable
     RenditionDefinition createRenditionDefinition(QName renditionName, String renderingEngineName);
 
     /**
@@ -106,6 +111,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      *            {@link RenditionDefinition}.
      * @return the created {@link CompositeRenditionDefinition}.
      */
+    @NotAuditable
     CompositeRenditionDefinition createCompositeRenditionDefinition(QName renditionName);
 
     /**
@@ -114,6 +120,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * @return a list of ChildAssociationRefs which link the source node to the
      *         renditions.
      */
+    @NotAuditable
     List<ChildAssociationRef> getRenditions(NodeRef node);
 
     /**
@@ -127,6 +134,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * @return a list of ChildAssociationRefs which link the source node to the
      *         filtered renditions.
      */
+    @NotAuditable
     List<ChildAssociationRef> getRenditions(NodeRef node, String mimeTypePrefix);
 
     /**
@@ -138,6 +146,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * @return the ChildAssociationRef which links the source node to the
      *         rendition or <code>null</code> if there is no such rendition.
      */
+    @NotAuditable
     ChildAssociationRef getRenditionByName(NodeRef node, QName renditionName);
 
     /**
@@ -148,6 +157,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * @param node
      * @return <code>true</code> if a rendition, else <code>false</code>
      */
+    @NotAuditable
     boolean isRendition(NodeRef node);
     
     /**
@@ -160,6 +170,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * 
      * @see RenditionService#isRendition(NodeRef)
      */
+    @NotAuditable
     ChildAssociationRef getSourceNode(NodeRef renditionNode);
     
     /**
@@ -175,6 +186,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * @throws RenditionServiceException if there is a problem in rendering the
      *             given sourceNode
      */
+    @NotAuditable
     ChildAssociationRef render(NodeRef sourceNode, RenditionDefinition renditionDefinition);
 
     /**
@@ -187,6 +199,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      *            be performed.
      * @param callback a callback object to handle the ultimate result of the rendition.
      */
+    @NotAuditable
     void render(NodeRef sourceNode, RenditionDefinition renditionDefinition,
             RenderCallback callback);
 }

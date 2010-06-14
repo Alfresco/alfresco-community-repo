@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 
 /**
  * The transfer service is responsible for transfering nodes between one instance of Alfresco and another remote instance.
@@ -45,7 +47,8 @@ public interface TransferService
       * @param definition, the definition of the transfer. Specifies which nodes to transfer. 
       * @throws TransferException
       * @return the node reference of the transfer report
-      */       
+      */
+    @Auditable(parameters={"targetName"})
     public NodeRef transfer(String targetName, TransferDefinition definition) throws TransferException;
     
     /**
@@ -59,7 +62,8 @@ public interface TransferService
      * @param callback - a set of callback handlers that will be called as transfer proceeds.  May be null.
      * @throws TransferException
      * @return the node reference of the transfer report
-     */       
+     */
+   @Auditable(parameters={"targetName"})
    public NodeRef transfer(String targetName, TransferDefinition definition, Collection<TransferCallback> callback) throws TransferException;
    
    /**
@@ -73,7 +77,8 @@ public interface TransferService
     * @param callbacks - a list of callback handlers that will be called as transfer proceeds.  May be null.
     * @throws TransferException
     * @return the node reference of the transfer report
-    */       
+    */
+  @Auditable(parameters={"targetName"})
   public NodeRef transfer(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
   
   /**
@@ -90,7 +95,8 @@ public interface TransferService
    * @param callback - a collection of callback handlers that will be called as transfer proceeds.  May be null.
    * 
    * @throws TransferException
-   */       
+   */
+  @Auditable(parameters={"targetName"})
   public void transferAsync(String targetName, TransferDefinition definition, Collection<TransferCallback> callback) throws TransferException;
 
   /**
@@ -107,13 +113,15 @@ public interface TransferService
    * @param callbacks - a collection of callback handlers that will be called as transfer proceeds.  May be null.
    * 
    * @throws TransferException
-   */       
+   */  
+   @Auditable(parameters={"targetName"})
    public void transferAsync(String targetName, TransferDefinition definition, TransferCallback... callbacks) throws TransferException;
 
    /**
     * Verify a target is available and that the configured credentials are valid.     
     * @throws TransferException  
     */
+   @NotAuditable
    public void verify(TransferTarget target) throws TransferException;
     
     /**
@@ -130,6 +138,7 @@ public interface TransferService
      * @param password,
      * @return the newly created transfer target.
      */
+    @Auditable
     public TransferTarget createAndSaveTransferTarget(String name, String title, String description, String endpointProtocol, 
             String endpointHost, int endpointPort, String endpointPath, String username, char[] password) throws TransferException;
     
@@ -148,23 +157,27 @@ public interface TransferService
      * </ul>
      * @return an in memory transfer target
      */
+    @Auditable(parameters={"name"})
     public TransferTarget createTransferTarget(String name);
 
     /**
       * Get all the transfer targets
       */
+    @NotAuditable
     public Set<TransferTarget>getTransferTargets() throws TransferException;
 
     /**
       * Get All the transfer targets for a particular transfer target group.
       * @param groupName, the name of the transfer group
       */
+    @NotAuditable
     public Set<TransferTarget>getTransferTargets(String groupName) throws TransferException;
     
     /**
      * Get a transfer target by its name
      * @throws TransferException - target does not exist
      */
+    @NotAuditable
     public TransferTarget getTransferTarget(String name) throws TransferException;
     
     /**
@@ -172,6 +185,7 @@ public interface TransferService
      * @param name
      * @return true if the specified target exists, and false otherwise
      */
+    @NotAuditable
     public boolean targetExists(String name);
     
     /**
@@ -179,6 +193,7 @@ public interface TransferService
      * @throws TransferException - target does not exist
      * @param name, the name of this transfer target,
      */
+    @Auditable(parameters={"name"})
     public void deleteTransferTarget(String name) throws TransferException;
     
     /**
@@ -200,6 +215,7 @@ public interface TransferService
      *    
      *    @param update
      */
+    @Auditable
     public TransferTarget saveTransferTarget(TransferTarget update) throws TransferException;
     
     /**
@@ -207,6 +223,7 @@ public interface TransferService
      * @param name the name of the transfer target
      * @param enable (or false=disable)
      */
+    @Auditable(parameters={"name", "enable"})
     public void enableTransferTarget(String name, boolean enable) throws TransferException;
     
     /**
@@ -227,6 +244,7 @@ public interface TransferService
      * 
      * @see TransferEventBegin;
      */
+    @Auditable(parameters={"transferId"})
     public void cancelAsync(String transferId);
     
 }

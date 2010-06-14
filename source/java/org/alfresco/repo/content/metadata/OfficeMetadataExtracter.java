@@ -21,19 +21,15 @@ package org.alfresco.repo.content.metadata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.apache.poi.hpsf.PropertySet;
-import org.apache.poi.hpsf.PropertySetFactory;
-import org.apache.poi.hpsf.SummaryInformation;
-import org.apache.poi.poifs.eventfilesystem.POIFSReader;
-import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
-import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.microsoft.OfficeParser;
 
 /**
  * Office file format Metadata Extracter.  This extracter uses the POI library to extract
@@ -56,95 +52,63 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
  *   <b>wordCount:</b>
  * </pre>
  * 
- * TIKA Note - everything we currently have should be present
- *  in the metadata.
- * 
- * @author Jesper Steen Møller
+ * Uses Apache Tika
+
  * @author Derek Hulley
+ * @author Nick Burch
  */
-public class OfficeMetadataExtracter extends AbstractMappingMetadataExtracter
+public class OfficeMetadataExtracter extends TikaPoweredMetadataExtracter
 {
-    public static final String KEY_AUTHOR = "author";
-    public static final String KEY_TITLE = "title";
-    public static final String KEY_SUBJECT = "subject";
     public static final String KEY_CREATE_DATETIME = "createDateTime";
     public static final String KEY_LAST_SAVE_DATETIME = "lastSaveDateTime";
-    public static final String KEY_COMMENTS = "comments";
     public static final String KEY_EDIT_TIME = "editTime";
     public static final String KEY_FORMAT = "format";
     public static final String KEY_KEYWORDS = "keywords";
     public static final String KEY_LAST_AUTHOR = "lastAuthor";
     public static final String KEY_LAST_PRINTED = "lastPrinted";
-    public static final String KEY_OS_VERSION = "osVersion";
-    public static final String KEY_THUMBNAIL = "thumbnail";
+    public static final String KEY_OS_VERSION = "osVersion"; // TODO
+    public static final String KEY_THUMBNAIL = "thumbnail"; // TODO
     public static final String KEY_PAGE_COUNT = "pageCount";
+    public static final String KEY_PARAGRAPH_COUNT = "paragraphCount";
     public static final String KEY_WORD_COUNT = "wordCount";
     
-    public static String[] SUPPORTED_MIMETYPES = new String[] {
-        MimetypeMap.MIMETYPE_WORD,
-        MimetypeMap.MIMETYPE_EXCEL,
-        MimetypeMap.MIMETYPE_PPT};
+    public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes(
+          new String[] {
+              MimetypeMap.MIMETYPE_WORD,
+              MimetypeMap.MIMETYPE_EXCEL,
+              MimetypeMap.MIMETYPE_PPT},
+          new OfficeParser()
+    );
+    static {
+       // Outlook has it's own one!
+       SUPPORTED_MIMETYPES.remove(MimetypeMap.MIMETYPE_OUTLOOK_MSG);
+    }
 
     public OfficeMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
+        super(SUPPORTED_MIMETYPES);
+    }
+    
+    @Override
+    protected Parser getParser() {
+      return new OfficeParser();
     }
 
     @Override
-    protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
-    {
-        final Map<String, Serializable> rawProperties = newRawMap();
-        
-        POIFSReaderListener readerListener = new POIFSReaderListener()
-        {
-            public void processPOIFSReaderEvent(final POIFSReaderEvent event)
-            {
-                try
-                {
-                    PropertySet ps = PropertySetFactory.create(event.getStream());
-                    if (ps instanceof SummaryInformation)
-                    {
-                        SummaryInformation si = (SummaryInformation) ps;
-                        
-                        putRawValue(KEY_AUTHOR, si.getAuthor(), rawProperties);
-                        putRawValue(KEY_TITLE, si.getTitle(), rawProperties);
-                        putRawValue(KEY_SUBJECT, si.getSubject(), rawProperties);
-                        putRawValue(KEY_CREATE_DATETIME, si.getCreateDateTime(), rawProperties);
-                        putRawValue(KEY_LAST_SAVE_DATETIME, si.getLastSaveDateTime(), rawProperties);
-                        putRawValue(KEY_COMMENTS, si.getComments(), rawProperties);
-                        putRawValue(KEY_EDIT_TIME, si.getEditTime(), rawProperties);
-                        putRawValue(KEY_FORMAT, si.getFormat(), rawProperties);
-                        putRawValue(KEY_KEYWORDS, si.getKeywords(), rawProperties);
-                        putRawValue(KEY_LAST_AUTHOR, si.getLastAuthor(), rawProperties);
-                        putRawValue(KEY_LAST_PRINTED, si.getLastPrinted(), rawProperties);
-                        putRawValue(KEY_OS_VERSION, si.getOSVersion(), rawProperties);
-                        putRawValue(KEY_THUMBNAIL, si.getThumbnail(), rawProperties);
-                        putRawValue(KEY_PAGE_COUNT, si.getPageCount(), rawProperties);
-                        putRawValue(KEY_WORD_COUNT, si.getWordCount(), rawProperties);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new ContentIOException("Property set stream: " + event.getPath() + event.getName(), ex);
-                }
-            }
-        };
-        
-        InputStream is = null;
-        try
-        {
-            is = reader.getContentInputStream();
-            POIFSReader poiFSReader = new POIFSReader();
-            poiFSReader.registerListener(readerListener, SummaryInformation.DEFAULT_STREAM_NAME);
-            poiFSReader.read(is);
-        }
-        finally
-        {
-            if (is != null)
-            {
-                try { is.close(); } catch (IOException e) {}
-            }
-        }
-        return rawProperties;
+    protected Map<String, Serializable> extractSpecific(Metadata metadata,
+         Map<String, Serializable> properties) {
+       putRawValue(KEY_CREATE_DATETIME, metadata.get(Metadata.CREATION_DATE), properties); 
+       putRawValue(KEY_LAST_SAVE_DATETIME, metadata.get(Metadata.LAST_SAVED), properties);
+       putRawValue(KEY_EDIT_TIME, metadata.get(Metadata.EDIT_TIME), properties);
+       putRawValue(KEY_FORMAT, metadata.get(Metadata.FORMAT), properties);
+       putRawValue(KEY_KEYWORDS, metadata.get(Metadata.KEYWORDS), properties);
+       putRawValue(KEY_LAST_AUTHOR, metadata.get(Metadata.LAST_AUTHOR), properties);
+       putRawValue(KEY_LAST_PRINTED, metadata.get(Metadata.LAST_PRINTED), properties);
+//       putRawValue(KEY_OS_VERSION, metadata.get(Metadata.OS_VERSION), properties);
+//       putRawValue(KEY_THUMBNAIL, metadata.get(Metadata.THUMBNAIL), properties);
+       putRawValue(KEY_PAGE_COUNT, metadata.get(Metadata.PAGE_COUNT), properties);
+       putRawValue(KEY_PARAGRAPH_COUNT, metadata.get(Metadata.PARAGRAPH_COUNT), properties);
+       putRawValue(KEY_WORD_COUNT, metadata.get(Metadata.WORD_COUNT), properties);
+       return properties;
     }
 }

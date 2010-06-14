@@ -21,6 +21,7 @@ package org.alfresco.repo.content.metadata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -45,7 +46,7 @@ import org.apache.poi.hsmf.MAPIMessage;
  * @since 2.1
  * @author Kevin Roast
  */
-public class MailMetadataExtracter extends AbstractMappingMetadataExtracter
+public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     private static final String KEY_SENT_DATE = "sentDate";
     private static final String KEY_ORIGINATOR = "originator";
@@ -53,11 +54,14 @@ public class MailMetadataExtracter extends AbstractMappingMetadataExtracter
     private static final String KEY_ADDRESSEES = "addressees";
     private static final String KEY_SUBJECT = "subjectLine";
 
-    public static String[] SUPPORTED_MIMETYPES = new String[] {MimetypeMap.MIMETYPE_OUTLOOK_MSG};
+    public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes( 
+          new String[] {MimetypeMap.MIMETYPE_OUTLOOK_MSG},
+          null
+    );
     
     public MailMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
+        super(SUPPORTED_MIMETYPES);
     }
 
     @Override

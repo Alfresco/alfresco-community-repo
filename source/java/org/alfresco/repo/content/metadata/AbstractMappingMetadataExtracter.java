@@ -47,9 +47,10 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xmlbeans.impl.xb.xsdschema.All;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Support class for metadata extracters that support dynamic and config-driven
@@ -106,7 +107,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Set<String> supportedMimetypes;
     private OverwritePolicy overwritePolicy;
     private boolean failOnTypeConversion;
-    private Set<DateFormat> supportedDateFormats = new HashSet<DateFormat>(0);
+    protected Set<DateFormat> supportedDateFormats = new HashSet<DateFormat>(0);
     private Map<String, Set<QName>> mapping;
     private boolean inheritDefaultMapping;
 
@@ -265,6 +266,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                  */
                 DateFormat df = new SimpleDateFormat(dateFormatStr);
                 this.supportedDateFormats.add(df);
+                
+                /**
+                 * 
+                 */
                 
                 /**
                  * Date format can be locale specific - make sure English format always works
@@ -846,7 +851,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Convert a date <tt>String</tt> to a <tt>Date</tt> object
      */
-    private Date makeDate(String dateStr)
+    protected Date makeDate(String dateStr)
     {
         Date date = null;
         try

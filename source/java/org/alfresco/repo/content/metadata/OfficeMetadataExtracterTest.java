@@ -133,15 +133,16 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
        
        // Now check the non-standard ones we added in at test time
        assertTrue( 
-             "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
-             properties.containsKey(WORD_COUNT_TEST_PROPERTY)
-       );
-       assertTrue( 
              "Test Property " + LAST_AUTHOR_TEST_PROPERTY + " not found for mimetype " + mimetype,
              properties.containsKey(LAST_AUTHOR_TEST_PROPERTY)
        );
        
        if(mimetype.equals(MimetypeMap.MIMETYPE_WORD)) {
+          assertTrue( 
+                "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
+                properties.containsKey(WORD_COUNT_TEST_PROPERTY)
+          );
+          
           assertEquals(
                 "Test Property " + WORD_COUNT_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
                 "9",
@@ -152,14 +153,15 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(LAST_AUTHOR_TEST_PROPERTY)));
        } else if(mimetype.equals(MimetypeMap.MIMETYPE_EXCEL)) {
           assertEquals(
-                "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
-                "0",
-                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(WORD_COUNT_TEST_PROPERTY)));
-          assertEquals(
                 "Test Property " + LAST_AUTHOR_TEST_PROPERTY + " not found for mimetype " + mimetype,
                 AbstractMetadataExtracterTest.QUICK_PREVIOUS_AUTHOR,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(LAST_AUTHOR_TEST_PROPERTY)));
        } else if(mimetype.equals(MimetypeMap.MIMETYPE_PPT)) {
+          assertTrue( 
+                "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
+                properties.containsKey(WORD_COUNT_TEST_PROPERTY)
+          );
+
           assertEquals(
                 "Test Property " + WORD_COUNT_TEST_PROPERTY + " not found for mimetype " + mimetype,
                 "9",

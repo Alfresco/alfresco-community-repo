@@ -65,6 +65,7 @@ public class DWGMetadataExtracter extends AbstractMappingMetadataExtracter
     public static String[] SUPPORTED_MIMETYPES = new String[] {
             MimetypeMap.MIMETYPE_APP_DWG,
             MimetypeMap.MIMETYPE_IMG_DWG,
+            "image/x-dwg", // Was used before IANA registration
     };
     
     public DWGMetadataExtracter()

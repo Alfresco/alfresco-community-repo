@@ -117,6 +117,7 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      * Version which also tries the ISO-8601 formats (in order..),
      *  and similar formats, which Tika makes use of
      */
+    @Override
     protected Date makeDate(String dateStr) {
        // Try our formats first, in order
        for(DateFormat df : this.tikaDateFormats) {
@@ -168,11 +169,25 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
 
             parser.parse(is, handler, metadata, context);
             
+            // First up, copy all the Tika metadata over
+            // This allows people to map any of the Tika
+            //  keys onto their own content model
+            for(String tikaKey : metadata.names()) {
+               putRawValue(tikaKey, metadata.get(tikaKey), rawProperties);
+            }
+            
+            // Now, map the common Tika metadata keys onto
+            //  the common Alfresco metadata keys. This allows
+            //  existing mapping properties files to continue
+            //  to work without needing any changes
+            
+            // The simple ones
             putRawValue(KEY_AUTHOR, metadata.get(Metadata.AUTHOR), rawProperties);
             putRawValue(KEY_TITLE, metadata.get(Metadata.TITLE), rawProperties);
             putRawValue(KEY_COMMENTS, metadata.get(Metadata.COMMENTS), rawProperties);
             
-            // Not everything is as consisent about these two as you might hope
+            // Get the subject and description, despite things not
+            //  being nearly as consistent as one might hope
             String subject = metadata.get(Metadata.SUBJECT);
             String description = metadata.get(Metadata.DESCRIPTION);
             if(subject != null && description != null) {
@@ -193,6 +208,11 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
                putRawValue(KEY_CREATED, metadata.get(Metadata.DATE), rawProperties);
             }
             
+            // If people created a specific instance 
+            //  (eg OfficeMetadataExtractor), then allow that
+            //  instance to map the Tika keys onto its 
+            //  existing namespace so that older properties
+            //  files continue to map correctly
             rawProperties = extractSpecific(metadata, rawProperties);
         }
         finally

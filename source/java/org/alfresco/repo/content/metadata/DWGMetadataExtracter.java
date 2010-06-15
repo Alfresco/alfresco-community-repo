@@ -69,7 +69,6 @@ public class DWGMetadataExtracter extends TikaPoweredMetadataExtracter
          Map<String, Serializable> properties) {
        putRawValue(KEY_KEYWORD, metadata.get(Metadata.KEYWORDS), properties);
        putRawValue(KEY_LAST_AUTHOR, metadata.get(Metadata.LAST_AUTHOR), properties);
-       System.err.println(properties);
        return properties;
     }
 

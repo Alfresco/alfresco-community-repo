@@ -291,13 +291,11 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
           new HashMap<String, String>();
        private StringBuffer text;
 
-      @Override
       public void characters(char[] ch, int start, int len) {
          if(text != null) {
             text.append(ch, start, len);
          }
       }
-      @Override
       public void endElement(String namespace, String localname,
             String qname) {
          if(text != null && text.length() > 0) {
@@ -305,7 +303,6 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
          }
          text = null;
       }
-      @Override
       public void startElement(String namespace, String localname,
             String qname, Attributes attrs) {
          for(int i=0; i<attrs.getLength(); i++) {
@@ -314,23 +311,15 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
          text = new StringBuffer();
       }
       
-      @Override
       public void endDocument() throws SAXException {}
-      @Override
       public void endPrefixMapping(String paramString) throws SAXException {}
-      @Override
       public void ignorableWhitespace(char[] paramArrayOfChar, int paramInt1,
             int paramInt2) throws SAXException {}
-      @Override
       public void processingInstruction(String paramString1, String paramString2)
             throws SAXException {}
-      @Override
       public void setDocumentLocator(Locator paramLocator) {}
-      @Override
       public void skippedEntity(String paramString) throws SAXException {}
-      @Override
       public void startDocument() throws SAXException {}
-      @Override
       public void startPrefixMapping(String paramString1, String paramString2)
             throws SAXException {}
     }
@@ -340,33 +329,22 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      *  care about the file contents.
      */
     protected static class NullContentHandler implements ContentHandler {
-      @Override
       public void characters(char[] paramArrayOfChar, int paramInt1,
             int paramInt2) throws SAXException {}
-      @Override
       public void endDocument() throws SAXException {}
-      @Override
       public void endElement(String paramString1, String paramString2,
             String paramString3) throws SAXException {}
-      @Override
       public void endPrefixMapping(String paramString) throws SAXException {}
-      @Override
       public void ignorableWhitespace(char[] paramArrayOfChar, int paramInt1,
             int paramInt2) throws SAXException {}
-      @Override
       public void processingInstruction(String paramString1, String paramString2)
             throws SAXException {}
-      @Override
       public void setDocumentLocator(Locator paramLocator) {}
-      @Override
       public void skippedEntity(String paramString) throws SAXException {}
-      @Override
       public void startDocument() throws SAXException {}
-      @Override
       public void startElement(String paramString1, String paramString2,
             String paramString3, Attributes paramAttributes)
             throws SAXException {}
-      @Override
       public void startPrefixMapping(String paramString1, String paramString2)
             throws SAXException {}
     }

@@ -26,6 +26,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -35,11 +36,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.ContentHandlerDecorator;
+import org.apache.tika.sax.XHTMLContentHandler;
+import org.apache.tika.sax.xpath.Matcher;
+import org.apache.tika.sax.xpath.MatchingContentHandler;
+import org.apache.tika.sax.xpath.XPathParser;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 
 /**
  * The parent of all Metadata Extractors which use
@@ -146,10 +153,19 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
     protected abstract Parser getParser();
     
     /**
+     * Do we care about the contents of the
+     *  extracted header, or nothing at all?
+     */
+    protected boolean needHeaderContents() {
+       return false;
+    }
+    
+    /**
      * Allows implementation specific mappings
      *  to be done.
      */
-    protected Map<String, Serializable> extractSpecific(Metadata metadata, Map<String, Serializable> properties) {
+    protected Map<String, Serializable> extractSpecific(Metadata metadata, 
+          Map<String, Serializable> properties, Map<String,String> headers) {
        return properties;
     }
     
@@ -163,9 +179,19 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         {
             is = reader.getContentInputStream();
             Parser parser = getParser();
-            ContentHandler handler = new BodyContentHandler() ;
             Metadata metadata = new Metadata();
             ParseContext context = new ParseContext();
+            
+            ContentHandler handler;
+            Map<String,String> headers = null;
+            if(needHeaderContents()) {
+               MapCaptureContentHandler headerCapture = 
+                  new MapCaptureContentHandler();
+               headers = headerCapture.tags;
+               handler = new HeadContentHandler(headerCapture);
+            } else {
+               handler = new NullContentHandler(); 
+            }
 
             parser.parse(is, handler, metadata, context);
             
@@ -213,7 +239,7 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
             //  instance to map the Tika keys onto its 
             //  existing namespace so that older properties
             //  files continue to map correctly
-            rawProperties = extractSpecific(metadata, rawProperties);
+            rawProperties = extractSpecific(metadata, rawProperties, headers);
         }
         finally
         {
@@ -224,5 +250,124 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         }
 
         return rawProperties;
+    }
+    
+    /**
+     * This content handler will capture entries from within
+     *  the header of the Tika content XHTML, but ignore the
+     *  rest.
+     */
+    protected static class HeadContentHandler extends ContentHandlerDecorator {
+       /**
+        * XHTML XPath parser.
+        */
+       private static final XPathParser PARSER =
+           new XPathParser("xhtml", XHTMLContentHandler.XHTML);
+
+       /**
+        * The XPath matcher used to select the XHTML body contents.
+        */
+       private static final Matcher MATCHER =
+           PARSER.parse("/xhtml:html/xhtml:head/descendant:node()");
+
+       /**
+        * Creates a content handler that passes all XHTML body events to the
+        * given underlying content handler.
+        *
+        * @param handler content handler
+        */
+       protected HeadContentHandler(ContentHandler handler) {
+           super(new MatchingContentHandler(handler, MATCHER));
+       }
+    }
+    /**
+     * This content handler will grab all tags and attributes,
+     *  and record the textual content of the last seen one
+     *  of them.
+     * Normally only used with {@link HeadContentHandler} 
+     */
+    protected static class MapCaptureContentHandler implements ContentHandler {
+       protected Map<String,String> tags =
+          new HashMap<String, String>();
+       private StringBuffer text;
+
+      @Override
+      public void characters(char[] ch, int start, int len) {
+         if(text != null) {
+            text.append(ch, start, len);
+         }
+      }
+      @Override
+      public void endElement(String namespace, String localname,
+            String qname) {
+         if(text != null && text.length() > 0) {
+            tags.put(qname, text.toString());
+         }
+         text = null;
+      }
+      @Override
+      public void startElement(String namespace, String localname,
+            String qname, Attributes attrs) {
+         for(int i=0; i<attrs.getLength(); i++) {
+            tags.put(attrs.getQName(i), attrs.getValue(i));
+         }
+         text = new StringBuffer();
+      }
+      
+      @Override
+      public void endDocument() throws SAXException {}
+      @Override
+      public void endPrefixMapping(String paramString) throws SAXException {}
+      @Override
+      public void ignorableWhitespace(char[] paramArrayOfChar, int paramInt1,
+            int paramInt2) throws SAXException {}
+      @Override
+      public void processingInstruction(String paramString1, String paramString2)
+            throws SAXException {}
+      @Override
+      public void setDocumentLocator(Locator paramLocator) {}
+      @Override
+      public void skippedEntity(String paramString) throws SAXException {}
+      @Override
+      public void startDocument() throws SAXException {}
+      @Override
+      public void startPrefixMapping(String paramString1, String paramString2)
+            throws SAXException {}
+    }
+    /**
+     * A content handler that ignores all the content it finds.
+     * Normally used when we only want the metadata, and don't
+     *  care about the file contents.
+     */
+    protected static class NullContentHandler implements ContentHandler {
+      @Override
+      public void characters(char[] paramArrayOfChar, int paramInt1,
+            int paramInt2) throws SAXException {}
+      @Override
+      public void endDocument() throws SAXException {}
+      @Override
+      public void endElement(String paramString1, String paramString2,
+            String paramString3) throws SAXException {}
+      @Override
+      public void endPrefixMapping(String paramString) throws SAXException {}
+      @Override
+      public void ignorableWhitespace(char[] paramArrayOfChar, int paramInt1,
+            int paramInt2) throws SAXException {}
+      @Override
+      public void processingInstruction(String paramString1, String paramString2)
+            throws SAXException {}
+      @Override
+      public void setDocumentLocator(Locator paramLocator) {}
+      @Override
+      public void skippedEntity(String paramString) throws SAXException {}
+      @Override
+      public void startDocument() throws SAXException {}
+      @Override
+      public void startElement(String paramString1, String paramString2,
+            String paramString3, Attributes paramAttributes)
+            throws SAXException {}
+      @Override
+      public void startPrefixMapping(String paramString1, String paramString2)
+            throws SAXException {}
     }
 }

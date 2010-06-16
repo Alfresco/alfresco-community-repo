@@ -30,8 +30,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.apache.tika.metadata.Metadata;
@@ -39,7 +40,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.dwg.DWGParser;
 import org.apache.tika.parser.microsoft.OfficeParser;
 import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 import org.apache.tika.parser.mp3.Mp3Parser;
@@ -181,5 +181,53 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
 //            mimetype,
 //            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(TIKA_MIMETYPE_TEST_PROPERTY)));
    }
-    
+
+   /**
+    * We don't have explicit extractors for most image and video formats.
+    * Instead, these will be handled by the Auto Tika Parser, and
+    *  this test ensures that they are
+    */
+   public void testImageVideo() throws Throwable {
+      Map<String, Serializable> p;
+      
+      // Image
+      p = openAndCheck(".jpg", "image/jpeg");
+      assertEquals("409 pixels", p.get("Image Width"));
+      assertEquals("92 pixels", p.get("Image Height"));
+      assertEquals("8 bits", p.get("Data Precision"));
+      
+      p = openAndCheck(".gif", "image/gif");
+      assertEquals("409", p.get("width"));
+      assertEquals("92", p.get("height"));
+      
+      p = openAndCheck(".png", "image/png");
+      assertEquals("409", p.get("width"));
+      assertEquals("92", p.get("height"));
+      assertEquals("8 8 8", p.get("Data BitsPerSample"));
+      assertEquals("none", p.get("Transparency Alpha"));
+      
+      p = openAndCheck(".bmp", "image/bmp");
+      assertEquals("409", p.get("width"));
+      assertEquals("92", p.get("height"));
+      assertEquals("8 8 8", p.get("Data BitsPerSample"));
+   }
+   private Map<String, Serializable> openAndCheck(String fileBase, String expMimeType) throws Throwable {
+      String filename = "quick" + fileBase;
+      URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/" + filename);
+      File file = new File(url.getFile());
+      
+      // Cheat and ask Tika for the mime type!
+      AutoDetectParser ap = new AutoDetectParser();
+      Metadata metadata = new Metadata();
+      metadata.set(Metadata.RESOURCE_NAME_KEY, filename);
+      MediaType mt = ap.getDetector().detect(
+            new BufferedInputStream(new FileInputStream(file)), metadata);
+      String mimetype = mt.toString();
+
+      assertEquals("Wrong mimetype for " + fileBase, mimetype, expMimeType);
+      
+      ContentReader sourceReader = new FileContentReader(file);
+      sourceReader.setMimetype(mimetype);
+      return extracter.extractRaw(sourceReader);
+   }
 }

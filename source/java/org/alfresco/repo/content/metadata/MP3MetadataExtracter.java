@@ -81,7 +81,7 @@ public class MP3MetadataExtracter extends TikaPoweredMetadataExtracter
 
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties) {
+         Map<String, Serializable> properties, Map<String,String> headers) {
        putRawValue(KEY_ALBUM_TITLE, metadata.get(XMPDM.ALBUM), properties);
        putRawValue(KEY_SONG_TITLE, metadata.get(Metadata.TITLE), properties);
        putRawValue(KEY_ARTIST, metadata.get(XMPDM.ARTIST), properties);

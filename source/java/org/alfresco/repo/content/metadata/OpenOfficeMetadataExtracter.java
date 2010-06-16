@@ -35,8 +35,8 @@ import org.alfresco.util.PropertyCheck;
  *   <b>description:</b>            --      cm:description
  * </pre>
  * 
- * TIKA Note - this probably won't be ported to TIKA. There's currently
- *  no support for these old formats in tika.
+ * Note - not converted to Apache Tika, as currently Tika
+ *  lacks support for these older formats
  * 
  * @author Jesper Steen Møller
  */

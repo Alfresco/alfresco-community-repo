@@ -18,20 +18,14 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.apache.poi.hsmf.MAPIMessage;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.Parser;
-//import org.apache.tika.parser.microsoft.OutlookExtractor; // TODO fix import
+import org.apache.tika.parser.microsoft.OfficeParser;
 
 /**
  * Outlook MAPI format email meta-data extractor extracting the following values:
@@ -41,6 +35,9 @@ import org.apache.tika.parser.Parser;
  *   <b>addressee:</b>              --      cm:addressee
  *   <b>addressees:</b>             --      cm:addressees
  *   <b>subjectLine:</b>            --      cm:subjectline,   cm:description
+ *   <b>toNames:</b>                --
+ *   <b>ccNames:</b>                --
+ *   <b>bccNames:</b>               --
  * </pre>
  * 
  * TIKA note - to/cc/bcc go into the html part, not the metadata.
@@ -56,6 +53,9 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
     private static final String KEY_ADDRESSEE = "addressee";
     private static final String KEY_ADDRESSEES = "addressees";
     private static final String KEY_SUBJECT = "subjectLine";
+    private static final String KEY_TO_NAMES = "toNames";
+    private static final String KEY_CC_NAMES = "ccNames";
+    private static final String KEY_BCC_NAMES = "bccNames";
 
     public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes( 
           new String[] {MimetypeMap.MIMETYPE_OUTLOOK_MSG},
@@ -69,58 +69,29 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
     
     @Override
     protected Parser getParser() {
-       //return new OutlookExtractor(); // TODO fix import
-       return null;
+       // The office parser does Outlook as well as Word, Excel etc
+       return new OfficeParser();
     }
     
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties) {
-       // TODO move things from extractRaw to here
+         Map<String, Serializable> properties, Map<String,String> headers) {
+       putRawValue(KEY_ORIGINATOR, metadata.get(Metadata.AUTHOR), properties);
+       putRawValue(KEY_SUBJECT, metadata.get(Metadata.TITLE), properties);
+       putRawValue(KEY_DESCRIPTION, metadata.get(Metadata.SUBJECT), properties);
+       putRawValue(KEY_SENT_DATE, metadata.get(Metadata.LAST_SAVED), properties);
+       
+       // Store the TO, but not cc/bcc in the addressee field
+       putRawValue(KEY_ADDRESSEE, metadata.get(Metadata.MESSAGE_TO), properties); 
+       
+       // Store each of To, CC and BCC in their own fields
+       putRawValue(KEY_TO_NAMES, metadata.get(Metadata.MESSAGE_TO), properties);
+       putRawValue(KEY_CC_NAMES, metadata.get(Metadata.MESSAGE_CC), properties);
+       putRawValue(KEY_BCC_NAMES, metadata.get(Metadata.MESSAGE_BCC), properties);
+       
+       // But store all email addresses (to/cc/bcc) in the addresses field
+       putRawValue(KEY_ADDRESSEES, metadata.get(Metadata.MESSAGE_RECIPIENT_ADDRESS), properties); 
+       
        return properties;
-    }
-
-    @Override
-    public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
-    {
-        // TODO remove this in favour of extractSpecific
-        final Map<String, Serializable> rawProperties = newRawMap();
-        
-        InputStream is = null;
-        try
-        {
-            is = reader.getContentInputStream();
-            MAPIMessage msg;
-            
-            try
-            {
-               msg  = new MAPIMessage(is);
-               msg.setReturnNullOnMissingChunk(true);
-               
-               putRawValue(KEY_ORIGINATOR, msg.getDisplayFrom(), rawProperties);
-               putRawValue(KEY_SUBJECT, msg.getSubject(), rawProperties);
-               putRawValue(KEY_SENT_DATE, msg.getMessageDate().getTime(), rawProperties);
-               
-               // Store the TO, but not cc/bcc in the addressee field
-               putRawValue(KEY_ADDRESSEE, msg.getDisplayTo(), rawProperties);
-               // But store all email addresses (to/cc/bcc) in the addresses field
-               putRawValue(KEY_ADDRESSEES, msg.getRecipientEmailAddressList(), rawProperties);
-            }
-            catch (IOException err)
-            {
-                // probably not an Outlook format MSG - ignore for now
-                if (logger.isWarnEnabled())
-                    logger.warn("Unable to extract meta-data from message: " + err.getMessage());
-            }
-        }
-        finally
-        {
-            if (is != null)
-            {
-                try { is.close(); } catch (IOException e) {}
-            }
-        }
-        // Done
-        return rawProperties;
     }
 }

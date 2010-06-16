@@ -113,19 +113,14 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ADDRESSEE)));
       
       // Addressees
-      Collection<String> addressees = (Collection<String>)properties.get(ContentModel.PROP_ADDRESSEES);  
       assertTrue(
             "Property " + ContentModel.PROP_ADDRESSEES + " not found for mimetype " + mimetype,
-            addressees != null
+            properties.get(ContentModel.PROP_ADDRESSEES) != null
       );
-      assertEquals(
-            "Property " + ContentModel.PROP_ADDRESSEES + " wrong size for mimetype " + mimetype,
-            1,
-            addressees.size());
       assertEquals(
             "Property " + ContentModel.PROP_ADDRESSEES + " wrong content for mimetype " + mimetype,
             "kevin.roast@alfresco.org",
-            DefaultTypeConverter.INSTANCE.convert(String.class, addressees.iterator().next()));
+            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ADDRESSEES)));
       
       // Subject Line  
       assertEquals(

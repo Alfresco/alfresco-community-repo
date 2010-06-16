@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
@@ -136,14 +137,13 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
     }
     
     /**
-     * Does auto-detection to select the best Tika
-     *  Parser.
-     * Implementations can override this if they
-     *  know their specific implementations.
+     * Returns the correct Tika Parser to process
+     *  the document.
+     * If you don't know which you want, use
+     *  {@link TikaAutoMetadataExtracter} which
+     *  makes use of the Tika auto-detection.
      */
-    protected Parser getParser() {
-       return null;
-    }
+    protected abstract Parser getParser();
     
     /**
      * Allows implementation specific mappings

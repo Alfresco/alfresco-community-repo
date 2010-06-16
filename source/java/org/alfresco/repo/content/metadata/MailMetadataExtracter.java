@@ -29,6 +29,9 @@ import java.util.Map;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.poi.hsmf.MAPIMessage;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.Parser;
+//import org.apache.tika.parser.microsoft.OutlookExtractor; // TODO fix import
 
 /**
  * Outlook MAPI format email meta-data extractor extracting the following values:
@@ -63,10 +66,24 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
     {
         super(SUPPORTED_MIMETYPES);
     }
+    
+    @Override
+    protected Parser getParser() {
+       //return new OutlookExtractor(); // TODO fix import
+       return null;
+    }
+    
+    @Override
+    protected Map<String, Serializable> extractSpecific(Metadata metadata,
+         Map<String, Serializable> properties) {
+       // TODO move things from extractRaw to here
+       return properties;
+    }
 
     @Override
     public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
+        // TODO remove this in favour of extractSpecific
         final Map<String, Serializable> rawProperties = newRawMap();
         
         InputStream is = null;

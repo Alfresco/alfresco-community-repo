@@ -20,46 +20,54 @@ package org.alfresco.repo.content.metadata;
 
 import java.util.ArrayList;
 
-import org.alfresco.repo.content.MimetypeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 
 /**
- * POI-based metadata extractor for Office 07 documents.
- * See http://poi.apache.org/ for information on POI.
+ * A Metadata Extractor which makes use of the Apache
+ *  Tika auto-detection to select the best parser
+ *  to extract the metadata from your document.
+ * This will be used for all files which Tika can
+ *  handle, but where no other more explicit
+ *  extractor is defined. 
+
  * <pre>
  *   <b>author:</b>                 --      cm:author
  *   <b>title:</b>                  --      cm:title
  *   <b>subject:</b>                --      cm:description
  *   <b>created:</b>                --      cm:created
- *   <b>Any custom property:</b>    --      [not mapped]
+ *   <b>comments:</b>
  * </pre>
  * 
- * Uses Apache Tika
- * 
  * @author Nick Burch
- * @author Neil McErlean
  */
-public class PoiMetadataExtracter extends TikaPoweredMetadataExtracter
+public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
 {
-    protected static Log logger = LogFactory.getLog(PoiMetadataExtracter.class);
+    protected static Log logger = LogFactory.getLog(TikaAutoMetadataExtracter.class);
 
-    public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes( 
-       new String[] {MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING,
-    	               MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET,
-    	               MimetypeMap.MIMETYPE_OPENXML_PRESENTATION},
-    	 new OOXMLParser() 
-    );
-
-    public PoiMetadataExtracter()
-    {
-        super(SUPPORTED_MIMETYPES);
+    public static ArrayList<String> SUPPORTED_MIMETYPES;
+    static {
+       SUPPORTED_MIMETYPES = new ArrayList<String>();
+       AutoDetectParser p = new AutoDetectParser();
+       for(MediaType mt : p.getParsers().keySet()) {
+          SUPPORTED_MIMETYPES.add( mt.toString() );
+       }
     }
     
+    public TikaAutoMetadataExtracter()
+    {
+       super(SUPPORTED_MIMETYPES);
+    }
+    
+    /**
+     * Does auto-detection to select the best Tika
+     *  Parser.
+     */
     @Override
     protected Parser getParser() {
-        return new OOXMLParser();
+       return new AutoDetectParser();
     }
 }

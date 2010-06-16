@@ -18,12 +18,8 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;

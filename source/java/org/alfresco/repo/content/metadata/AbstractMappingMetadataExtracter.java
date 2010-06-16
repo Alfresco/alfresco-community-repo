@@ -199,6 +199,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
     
     /**
+     * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
      * @return      Returns <code>1.0</code> if the mimetype is supported, otherwise <tt>0.0</tt>
      * 
      * @see #isSupported(String)
@@ -209,10 +210,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the policy to use when existing values are encountered.  Depending on how the extracer
+     * Set the policy to use when existing values are encountered.  Depending on how the extractor
      * is called, this may not be relevant, i.e an empty map of existing properties may be passed
      * in by the client code, which may follow its own overwrite strategy.
      * 
+     * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
      * @param overwritePolicy       the policy to apply when there are existing system properties
      */
     public void setOverwritePolicy(OverwritePolicy overwritePolicy)
@@ -221,10 +223,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the policy to use when existing values are encountered.  Depending on how the extracer
+     * Set the policy to use when existing values are encountered.  Depending on how the extractor
      * is called, this may not be relevant, i.e an empty map of existing properties may be passed
      * in by the client code, which may follow its own overwrite strategy.
      * 
+     * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
      * @param overwritePolicyStr    the policy to apply when there are existing system properties
      */
     public void setOverwritePolicy(String overwritePolicyStr)

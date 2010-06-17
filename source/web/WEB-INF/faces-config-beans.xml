@@ -3613,10 +3613,6 @@
          <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
-         <property-name>linkValidationService</property-name>
-         <value>#{LinkValidationService}</value>
-      </managed-property>
-      <managed-property>
          <property-name>permissionService</property-name>
          <value>#{PermissionService}</value>
       </managed-property>
@@ -4454,27 +4450,6 @@
       </managed-property>
    </managed-bean>
 
-   <managed-bean>
-      <description>
-         The bean that backs up the Link Validation Dialog
-      </description>
-      <managed-bean-name>LinkValidationDialog</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wcm.LinkValidationDialog</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>avmBrowseBean</property-name>
-         <value>#{AVMBrowseBean}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>actionService</property-name>
-         <value>#{ActionService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>avmService</property-name>
-         <value>#{AVMLockingAwareService}</value>
-      </managed-property>
-   </managed-bean>
-
    <!-- ==================== COMPONENT GENERATOR BEANS ==================== -->
    <managed-bean>
       <description>
@@ -4947,21 +4922,8 @@
       <managed-bean-scope>request</managed-bean-scope>
    </managed-bean>
 
+   <!-- This is the bean for managing the profiles of one IG -->
    <managed-bean>
-      <description>
-         Bean that returns link validation progress status
-      </description>
-      <managed-bean-name>LinkValidationProgressBean</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.wcm.LinkValidationProgressBean</managed-bean-class>
-      <managed-bean-scope>session</managed-bean-scope>
-      <managed-property>
-         <property-name>avmBrowseBean</property-name>
-         <value>#{AVMBrowseBean}</value>
-      </managed-property>
-   </managed-bean>
-
-     	<!-- This is the bean for managing the profiles of one IG -->
-    <managed-bean>
       <description>
         The bean that backs up the view of the Versioned Properties
       </description>

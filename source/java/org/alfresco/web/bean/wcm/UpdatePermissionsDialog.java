@@ -18,15 +18,14 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.bean.repository.Repository;
 
 /**
@@ -86,31 +85,29 @@ public class UpdatePermissionsDialog extends BasePermissionsDialog
 
     /**
      * Create lock for node if it is necessary. Also create lock for children, if they inherit parent permissions.
-     * 
-     * @param node
      */
     protected void createLock(AVMNode node)
     {
-        String webProject = AVMUtil.getStoreId(AVMUtil.getStoreName(node.getPath()));
+        String avmPath = node.getPath();
+        String webProject = WCMUtil.getWebapp(avmPath);
+        String avmStore = WCMUtil.getStoreName(avmPath);
+        String relativePath = WCMUtil.getStoreRelativePath(avmPath);
 
-        if (getAvmLockingService().getLock(webProject, node.getPath().substring(node.getPath().indexOf("/"))) == null && !node.isDirectory())
+        /*
+         * The logic doesn't look correct here.  If the lock is held by another user, then the
+         * action is to DO NOTHING!
+         * TODO: Examine and fix - or remove this class completely
+         */
+        if (getAvmLockingService().getLockOwner(webProject, relativePath) == null && !node.isDirectory())
         {
             String userName = getAuthenticationService().getCurrentUserName();
-            List<String> owners = new ArrayList<String>(1);
-            owners.add(userName);
-
-            String[] storePath = node.getPath().split(":");
-
-            AVMLock lock = new AVMLock(webProject, storePath[0], storePath[1], AVMLockingService.Type.DISCRETIONARY, owners);
-            getAvmLockingService().lockPath(lock);
+            Map<String, String> lockAttributes = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, avmStore);
+            getAvmLockingService().lock(webProject, relativePath, userName, lockAttributes);
         }
-
     }
 
     /**
      * Getter for active node property
-     * 
-     * @return activeNode
      */
     public AVMNode getActiveNode()
     {
@@ -119,12 +116,9 @@ public class UpdatePermissionsDialog extends BasePermissionsDialog
 
     /**
      * Setter for active node property
-     * 
-     * @param activeNode
      */
     public void setActiveNode(final AVMNode activeNode)
     {
         this.activeNode = activeNode;
     }
-
 }

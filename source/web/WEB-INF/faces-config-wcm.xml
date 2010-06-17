@@ -45,21 +45,6 @@
    </component>
    
    <component>
-      <component-type>org.alfresco.faces.LinkValidationProgress</component-type>
-      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationProgress</component-class>
-   </component>
-   
-   <component>
-      <component-type>org.alfresco.faces.LinkValidationSummary</component-type>
-      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationSummary</component-class>
-   </component>
-   
-   <component>
-      <component-type>org.alfresco.faces.LinkValidationReport</component-type>
-      <component-class>org.alfresco.web.ui.wcm.component.UILinkValidationReport</component-class>
-   </component>
-   
-   <component>
       <component-type>org.alfresco.faces.AVMList</component-type>
       <component-class>org.alfresco.web.ui.wcm.component.UIAVMList</component-class>
    </component>

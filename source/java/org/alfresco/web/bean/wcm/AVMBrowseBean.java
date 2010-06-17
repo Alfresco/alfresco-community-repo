@@ -36,11 +36,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.config.JNDIConstants;
-import org.alfresco.linkvalidation.HrefValidationProgress;
-import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
@@ -66,7 +62,6 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.wcm.asset.AssetInfo;
-import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
@@ -99,7 +94,8 @@ import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Bean backing up the AVM specific browse screens
@@ -162,12 +158,6 @@ public class AVMBrowseBean implements IContextListener
    
    /** List of expired paths to submit */
    private List<AVMNodeDescriptor> nodesForSubmit = Collections.<AVMNodeDescriptor>emptyList();
-   
-   /** Object used by link validation service to monitor the status of a link check  */
-   private HrefValidationProgress linkValidationMonitor;
-   
-   /** Link validation state instance used by link validation dialogs  */
-   private LinkValidationState linkValidationState;
    
    /* component references */
    private UIRichList foldersRichList;
@@ -236,9 +226,6 @@ public class AVMBrowseBean implements IContextListener
    /** The SearchService reference */
    transient private SearchService searchService;
    
-   /** The LinkValidationService */
-   transient private LinkValidationService linkValidationService;
-
    /** The PermissionService reference */
    transient protected PermissionService permissionService;
    
@@ -362,21 +349,6 @@ public class AVMBrowseBean implements IContextListener
          workflowService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWorkflowService();
       }
       return workflowService;
-   }
-   
-   public void setLinkValidationService(LinkValidationService service)
-   {
-      this.linkValidationService = service;
-   }
-   
-   protected LinkValidationService getLinkValidationService()
-   {
-      if (linkValidationService == null)
-      {
-         linkValidationService = (LinkValidationService)FacesContextUtils.getRequiredWebApplicationContext(
-                  FacesContext.getCurrentInstance()).getBean("LinkValidationService");
-      }
-      return this.linkValidationService;
    }
    
    /**
@@ -686,46 +658,6 @@ public class AVMBrowseBean implements IContextListener
       this.deploymentMonitorIds = deploymentMonitorIds;
    }
    
-   /**
-    * @return Returns the link validation monitor instance
-    */
-   public HrefValidationProgress getLinkValidationMonitor()
-   {
-      return this.linkValidationMonitor;
-   }
-   
-   /**
-    * @param monitor The link validation monitor instance to use
-    */
-   public void setLinkValidationMonitor(HrefValidationProgress monitor)
-   {
-      this.linkValidationMonitor = monitor;
-   }
-   
-   /**
-    * @return Returns the link validation state instance
-    */
-   public LinkValidationState getLinkValidationState()
-   {
-      return this.linkValidationState;
-   }
-   
-   /**
-    * @param monitor The link validation state instance to use
-    */
-   public void setLinkValidationState(LinkValidationState state)
-   {
-      this.linkValidationState = state;
-   }
-   
-   /**
-    * @return Determines whether the link validation service is enabled
-    */
-   public boolean isLinkValidationEnabled()
-   {
-      return (this.getLinkValidationService().getPollInterval() > 0);
-   }
-
    public List<AVMNodeDescriptor> getNodesForSubmit()
    {
       return this.nodesForSubmit;
@@ -1398,23 +1330,6 @@ public class AVMBrowseBean implements IContextListener
    public boolean getIsStagingStore()
    {
       return AVMUtil.isMainStore(this.sandbox);
-   }
-   
-   /**
-    *  Indicates whether link validation is available (virtualization server is accessible).
-    *  It can be used in the 'rendered' attribute in some tags. 
-    *  @see org.alfresco.linkvalidation.LinkValidationServiceImpl#isLinkValidationDisabled()
-    *  
-    *  @return TRUE if link validation is ENABLED (virtualization server IS ACCESSIBLE)
-    */
-   public boolean getLinkValidationEnabled()
-   {
-       boolean enabled = !linkValidationService.isLinkValidationDisabled();
-       if (logger.isDebugEnabled())
-       {
-           logger.debug("Link validation enabled:" + String.valueOf(enabled).toUpperCase());
-       }
-       return enabled;
    }
    
    // ------------------------------------------------------------------------------

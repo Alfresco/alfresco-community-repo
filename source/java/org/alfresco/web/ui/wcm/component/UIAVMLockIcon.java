@@ -19,14 +19,11 @@
 package org.alfresco.web.ui.wcm.component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.wcm.asset.AssetInfo;
@@ -66,7 +63,7 @@ public class UIAVMLockIcon extends UILockIcon
       boolean locked = false;
       boolean lockedOwner = false;
       Object val = getValue();
-      List<String> lockUsers = null;
+      String lockUser = null;
       
       if (val != null) 
       {
@@ -81,9 +78,8 @@ public class UIAVMLockIcon extends UILockIcon
             String assetLockOwner = asset.getLockOwner();
             if (assetLockOwner != null)
             {
-               lockUsers = new ArrayList<String>(1);
-               lockUsers.add(assetLockOwner);
-               lockedOwner = assetLockOwner.equals(Application.getCurrentUser(context).getUserName());
+               lockUser = assetLockOwner;
+               lockedOwner = lockUser.equals(Application.getCurrentUser(context).getUserName());
             }
          }
          else
@@ -104,20 +100,20 @@ public class UIAVMLockIcon extends UILockIcon
             if (avmPath != null)
             {
                String[] pathParts = WCMUtil.splitPath(avmPath);
-               AVMLock lock = null;
+               String lockOwner = null;
                try
                {
-                  lock = avmLockingService.getLock(WCMUtil.getWebProjectStoreId(pathParts[0]), pathParts[1]);
+                   lockOwner = avmLockingService.getLockOwner(WCMUtil.getWebProjectStoreId(pathParts[0]), pathParts[1]);
                }
                catch (AVMNotFoundException nfe)
                {
                   // ignore
                }
-               if (lock != null)
+               if (lockOwner != null)
                {
                   locked = true;
-                  lockUsers = lock.getOwners();
-                  lockedOwner = (lockUsers.contains(Application.getCurrentUser(context).getUserName()));
+                  lockUser = lockOwner;
+                  lockedOwner = lockUser.equals(Application.getCurrentUser(context).getUserName());
                }
             }
          }
@@ -125,7 +121,7 @@ public class UIAVMLockIcon extends UILockIcon
          this.encodeBegin(context,
                           locked,
                           lockedOwner,
-                          lockUsers == null ? new String[0] : (String[])lockUsers.toArray(new String[lockUsers.size()]));
+                          lockUser == null ? new String[0] : new String[]{lockUser});
       }
    }
 }

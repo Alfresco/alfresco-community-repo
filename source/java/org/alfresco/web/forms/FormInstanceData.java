@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -46,30 +45,25 @@ public interface FormInstanceData
       private final String path;
       private final Rendition r;
       private final Exception e;
-      private final AVMLock lock; // existing lock otherwise null
 
       public RegenerateResult(final RenderingEngineTemplate ret, 
               final String path,
-              final Rendition r,
-              final AVMLock lock)
+              final Rendition r)
       {
          this.ret = ret;
          this.r = r;
          this.e = null;
          this.path = path;
-         this.lock = lock;
       }
       
       public RegenerateResult(final RenderingEngineTemplate ret,
                               final String path,
-                              final Exception e,
-                              final AVMLock lock)
+                              final Exception e)
       {
          this.ret = ret;
          this.e = e;
          this.r = null;
          this.path = path;
-         this.lock = lock;
       }
 
       public RenderingEngineTemplate getRenderingEngineTemplate()
@@ -90,11 +84,6 @@ public interface FormInstanceData
       public Exception getException()
       {
          return this.e;
-      }
-      
-      public AVMLock getExistingLock()
-      {
-         return this.lock;
       }
    }
 

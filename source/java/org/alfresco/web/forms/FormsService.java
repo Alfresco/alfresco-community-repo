@@ -30,7 +30,6 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -298,13 +297,10 @@ public final class FormsService
 
    public FormInstanceData getFormInstanceData(final NodeRef nodeRef) throws FormNotFoundException
    {
-      final String avmPath = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
-      final WebProject webProject = new WebProject(avmPath);
-      
       FormInstanceData fid = null;
       try
       {
-          fid = new FormInstanceDataImpl(nodeRef, this, webProject);
+          fid = new FormInstanceDataImpl(nodeRef, this);
           return fid;
       }
       catch (IllegalArgumentException iae)

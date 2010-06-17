@@ -88,7 +88,6 @@ public class SubmitDialog extends BaseDialogBean
    private String[] workflowSelectedValue;
    private boolean enteringExpireDate = false;
    private boolean loadSelectedNodesFromBrowseBean = false;
-   private boolean validateLinks = false;
    private boolean autoDeploy = false;
    private Date defaultExpireDate;
    private Date launchDate;
@@ -262,7 +261,6 @@ public class SubmitDialog extends BaseDialogBean
       this.defaultExpireDate = new Date();
       this.workflowSelectedValue = null;
       this.launchDate = null;
-      this.validateLinks = this.avmBrowseBean.getLinkValidationEnabled();
       this.autoDeploy = false;
       this.workflowParams = null;
 
@@ -370,7 +368,7 @@ public class SubmitDialog extends BaseDialogBean
                     getSandboxService().submitListAssets(sbStoreId, relativePaths,
                             finalWorkflowName, workflowParams, 
                             finalSubmitLabel, finalSubmitComment, 
-                            expirationDates, launchDate, validateLinks, autoDeploy);
+                            expirationDates, launchDate, autoDeploy);
                     return null;
                 }
                  
@@ -495,22 +493,6 @@ public class SubmitDialog extends BaseDialogBean
    }
 
    /**
-    * @return Flag to indicate whether links should be validated
-    */
-   public boolean isValidateLinks()
-   {
-      return this.validateLinks;
-   }
-
-   /**
-    * @param validateLinks Flag to indicate whether links should be validated
-    */
-   public void setValidateLinks(boolean validateLinks)
-   {
-      this.validateLinks = validateLinks;
-   }
-   
-   /**
     * @return Flag to indicate whether the changes should be deployed upon approval
     */
    public boolean isAutoDeploy()
@@ -526,17 +508,6 @@ public class SubmitDialog extends BaseDialogBean
       this.autoDeploy = autoDeploy;
    }
 
-   /**
-    * 
-    * @return linkValidationEnabled flag to indicate whether link validation is turned on
-    *         and virtualization server is available.
-    *  
-    */
-   public boolean getLinkValidationEnabled()
-   {
-       return this.avmBrowseBean.getLinkValidationEnabled();
-   }
-   
    /**
     * @return List of UIListItem object representing the available workflows for the website
     */

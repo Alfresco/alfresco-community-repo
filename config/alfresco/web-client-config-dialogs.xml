@@ -316,12 +316,6 @@
                  managed-bean="ReleaseTestServerDialog" icon="/images/icons/release_server_large.gif"
                  title-id="release_server_title" description-id="release_server_info" />
                  
-         <dialog name="linkValidation" page="/jsp/wcm/link-validation.jsp" 
-                 managed-bean="LinkValidationDialog"
-                 icon="/images/icons/link_validation_report_large.gif" 
-                 title-id="link_validaton_dialog_title" 
-                 description-id="link_validaton_dialog_desc" />
-                 
          <!-- AVM Compare -->              
          <dialog name="compareToCurrentSnapshot" page="/jsp/wcm/compare-to-current-snapshot.jsp"
                  managed-bean="CompareToCurrentSnapshot" icon="/images/icons/comparetocurrent_large.png"

@@ -35,16 +35,13 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.bean.wcm.WebProject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -62,22 +59,11 @@ import org.xml.sax.SAXException;
    private static final Log logger = LogFactory.getLog(RenditionImpl.class);
 
    private final NodeRef nodeRef;
-   private final WebProject webProject;
-   
    private transient FormsService formsService;
 
    /* package */ FormInstanceDataImpl(final NodeRef nodeRef,
                                       final FormsService formsService)
    {
-        this(nodeRef, formsService, null);
-   }
-   
-   /* package */ FormInstanceDataImpl(final NodeRef nodeRef,
-                                      final FormsService formsService,
-                                      final WebProject webProject)
-   {
-      this.webProject = webProject;
-      
       if (nodeRef == null)
       {
          throw new NullPointerException();
@@ -165,10 +151,6 @@ import org.xml.sax.SAXException;
       }
       catch (FormNotFoundException fnfe)
       {
-         if (webProject != null)
-         {
-             throw new FormNotFoundException(parentFormName, webProject, this);
-         }
          throw new FormNotFoundException(parentFormName, this);
       }
    }
@@ -206,6 +188,7 @@ import org.xml.sax.SAXException;
          new HashSet<RenderingEngineTemplate>(this.getForm().getRenderingEngineTemplates());
       final List<RegenerateResult> result = new LinkedList<RegenerateResult>();
       // regenerate existing renditions
+      boolean renditionLockedBefore = false;
       String path = null;
       
       for (final Rendition r : this.getRenditions())
@@ -223,15 +206,13 @@ import org.xml.sax.SAXException;
                      continue;
                  }
              }
+
          }
-         
          final RenderingEngineTemplate ret = r.getRenderingEngineTemplate();
          if (ret == null || !allRets.contains(ret))
          {
             continue;
          }
-         
-         AVMLock lock = null;
          try
          {
             if (logger.isDebugEnabled())
@@ -239,10 +220,13 @@ import org.xml.sax.SAXException;
                logger.debug("regenerating rendition " + r + " using template " + ret);
             }
             
+            renditionLockedBefore = false;
             path = r.getPath();
-            lock = avmLockService.getLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
-            if (lock != null)
+            String lockOwner = avmLockService.getLockOwner(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
+            if (lockOwner != null)
             {
+               renditionLockedBefore = true;
+               
                if (logger.isDebugEnabled())
                {
                   logger.debug("Lock already exists for " + path);
@@ -251,14 +235,14 @@ import org.xml.sax.SAXException;
             
             ret.render(this, r);
             allRets.remove(ret);
-            result.add(new RegenerateResult(ret, path, r, lock));
+            result.add(new RegenerateResult(ret, path, r));
          }
          catch (Exception e)
          {
-            result.add(new RegenerateResult(ret, path, e, lock));
+            result.add(new RegenerateResult(ret, path, e));
             
             // remove lock if there wasn't one before
-            if (lock == null)
+            if (renditionLockedBefore == false)
             {
                avmLockService.removeLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
                
@@ -270,83 +254,46 @@ import org.xml.sax.SAXException;
          }
       }
       
-      // get current username for lock checks
-      String username = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
-      
       // render all renditions for newly added templates
       for (final RenderingEngineTemplate ret : allRets)
       {
-         AVMLock lock = null;
-         boolean lockModified = false;
-         
          try
          {
-            path = ret.getOutputPathForRendition(this, originalParentAvmPath, getName().replaceAll("(.+)\\..*", "$1"));
-
+            renditionLockedBefore = false;
+            path = ret.getOutputPathForRendition(this, originalParentAvmPath, getName());
+            
             if (logger.isDebugEnabled())
             {
                logger.debug("regenerating rendition of " + this.getPath() + 
                             " at " + path + " using template " + ret);
             }
             
-            String storeId = AVMUtil.getStoreId(path);
-            String storePath = AVMUtil.getStoreRelativePath(path);
-            String storeName = AVMUtil.getStoreName(path);
-            
-            lock = avmLockService.getLock(storeId, storePath);
-            
-            if (lock != null)
+            String lockOwner = avmLockService.getLockOwner(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
+            if (lockOwner != null)
             {
+               renditionLockedBefore = true;
+               
                if (logger.isDebugEnabled())
                {
                   logger.debug("Lock already exists for " + path);
                }
-               
-               if (lock.getStore().equals(storeName) == false)
-               {
-                  if (lock.getOwners().contains(username))
-                  {
-                     lockModified = true;
-                     
-                     // lock already exists on path, check it's owned by the current user
-                     if (logger.isDebugEnabled())
-                     {
-                        logger.debug("transferring lock from " + lock.getStore() + " to " + storeName + " for path: " + path);
-                     }
-                     
-                     avmLockService.modifyLock(storeId, storePath, null, storeName, null, null);
-                  }
-               }
             }
             
-            result.add(new RegenerateResult(ret, path, ret.render(this, path), lock));
+            result.add(new RegenerateResult(ret, path, ret.render(this, path)));
          }
          catch (Exception e)
          {
-            result.add(new RegenerateResult(ret, path, e, lock));
+            result.add(new RegenerateResult(ret, path, e));
             
-            String storeId = AVMUtil.getStoreId(path);
-            String storePath = AVMUtil.getStoreRelativePath(path);
-            String storeName = AVMUtil.getStoreName(path);
-            
-            if (lock == null)
+            // remove lock if there wasn't one before
+            if (renditionLockedBefore == false)
             {
-               // remove lock if there wasn't one before
-               avmLockService.removeLock(storeId, storePath);
+               avmLockService.removeLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path));
                
                if (logger.isDebugEnabled())
                {
                   logger.debug("Removed lock for " + path + " as it failed to generate");
                }
-            }
-            else if (lockModified)
-            {
-                if (logger.isDebugEnabled())
-                {
-                   logger.debug("transferring lock from " + storeName + " to " + lock.getStore() + " for path: " + path);
-                }
-                
-                avmLockService.modifyLock(storeId, storePath, null, lock.getStore(), null, null);
             }
          }
       }

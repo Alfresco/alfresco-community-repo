@@ -133,13 +133,6 @@
                               </td>
                               <td align=left><h:outputText value="#{msg.staging_sandbox}" styleClass="mainSubTitle" /></td>
                               <td align=right>
-                                 <a:actionLink id="actLinks" rendered="#{AVMBrowseBean.linkValidationEnabled}" value="#{msg.check_links}" image="/images/icons/run_link_validation.gif" 
-                                               actionListener="#{DialogManager.setupParameters}" action="dialog:linkValidation"
-                                               rendered="#{AVMBrowseBean.linkValidationEnabled}">
-                                    <f:param name="store" value="#{AVMBrowseBean.stagingStore}" />
-                                    <f:param name="webapp" value="#{AVMBrowseBean.webapp}" />
-                                    <f:param name="mode" value="runReport" />
-                                 </a:actionLink>
                                  &nbsp;
                                  <a:actionLink id="actBrowse" value="#{msg.sandbox_browse}" image="/images/icons/space_small.gif" 
                                                actionListener="#{AVMBrowseBean.setupSandboxAction}" action="browseSandbox" />

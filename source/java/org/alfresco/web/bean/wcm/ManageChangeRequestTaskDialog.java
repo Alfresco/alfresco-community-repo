@@ -20,6 +20,7 @@ package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,10 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -132,25 +133,32 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
          // move locks
          for (AVMDifference diff : diffs)
          {
-            String sourcePath = diff.getSourcePath();
-            String destPath = diff.getDestinationPath();
-            
             // move the lock for this path from the user workflow sandbox to the users main store
-            AVMLock lock = this.getAvmLockingService().getLock(AVMUtil.getStoreId(sourcePath), 
-                     AVMUtil.getStoreRelativePath(sourcePath));
-            if (lock != null)
+            String diffSourcePath = diff.getSourcePath();
+            String diffSourceAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffSourcePath);
+            String sourceWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
+            String diffTargetPath = diff.getDestinationPath();
+            String diffTargetAvmStore = WCMUtil.getWebProjectStoreIdFromPath(diffTargetPath);
+            String targetWebProject = WCMUtil.getWebProjectStoreId(diffSourceAvmStore);
+            if (!sourceWebProject.equals(targetWebProject))
             {
-               this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(sourcePath), 
-                        AVMUtil.getStoreRelativePath(sourcePath), null,
-                        AVMUtil.getStoreName(destPath), lock.getOwners(),
-                        newLockOwners);
-               
-               if (logger.isDebugEnabled())
-               {
-                  logger.debug("Moved lock: " + lock + " to: " + 
-                           this.getAvmLockingService().getLock(AVMUtil.getStoreId(destPath), 
-                                    AVMUtil.getStoreRelativePath(destPath)));
-               }
+               throw new AlfrescoRuntimeException(
+                     "The source web project does not match the target web project: \n" +
+                     "   Source: " + diffSourcePath + "\n" +
+                     "   Target: " + diffTargetPath);
+            }
+            // Modify the lock
+            Map<String, String> lockAttributes = Collections.singletonMap(
+                  WCMUtil.LOCK_KEY_STORE_NAME, diffTargetAvmStore);
+            boolean modified = this.getAvmLockingService().modifyLock(
+                     sourceWebProject, AVMUtil.getStoreRelativePath(diffSourcePath), username,
+                     sourceWebProject, null, lockAttributes);
+            if (modified && logger.isDebugEnabled())
+            {
+               logger.debug(
+                     "Moved lock: " + AVMUtil.getStoreId(diffSourcePath) + "-" +
+                     AVMUtil.getStoreRelativePath(diffSourcePath) +
+                     " to user: " + username);
             }
          }
          

@@ -19,7 +19,6 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.ByteArrayInputStream;
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,9 +34,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -50,7 +46,6 @@ import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -76,6 +71,9 @@ import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 import org.w3c.dom.Document;
 
 /**
@@ -93,7 +91,6 @@ public class CreateWebContentWizard extends CreateContentWizard
    protected FormInstanceData formInstanceData = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
-   protected List<String> locksToReturnToMainStoreOnCancel = null;
    protected String formDescriptionAttribute;
 
    transient private AVMLockingService avmLockingService;
@@ -206,7 +203,6 @@ public class CreateWebContentWizard extends CreateContentWizard
       this.createMimeTypes = null;
       this.formChoices = null;
       this.filePickerBean.clearUploadedFiles();
-      this.locksToReturnToMainStoreOnCancel = new ArrayList<String>(4);
 
       // check for a form ID being passed in as a parameter
       if (this.parameters.get(UIUserSandboxes.PARAM_FORM_NAME) != null)
@@ -344,49 +340,6 @@ public class CreateWebContentWizard extends CreateContentWizard
    }
    
    @Override
-   public String cancel()
-   {
-      if (this.formInstanceData != null && this.renditions != null)
-      {
-         if (this.locksToReturnToMainStoreOnCancel.size() > 0)
-         {
-            for (String path : this.locksToReturnToMainStoreOnCancel)
-            {
-               String storeId = AVMUtil.getStoreId(path);
-               String storePath = AVMUtil.getStoreRelativePath(path);
-               String storeName = AVMUtil.getStoreName(path);
-               String mainStore = AVMUtil.getCorrespondingMainStoreName(storeName);
-               
-               if (logger.isDebugEnabled())
-                  logger.debug("transferring lock from " + storeName + " to " + mainStore + 
-                        " for path: " + path + " as user chose to cancel");
-               
-               this.getAvmLockingService().modifyLock(storeId, storePath, null, mainStore, null, null);
-            }
-         }
-      }
-      
-      // remove any locks created as a result of uploading files
-      final NodeRef[] uploadedFiles = this.filePickerBean.getUploadedFiles();
-      if (uploadedFiles != null && uploadedFiles.length > 0)
-      {
-         for (NodeRef uploadedFile : uploadedFiles)
-         {
-            String path = AVMNodeConverter.ToAVMVersionPath(uploadedFile).getSecond();
-            String storeId = AVMUtil.getStoreId(path);
-            String storePath = AVMUtil.getStoreRelativePath(path);
-
-            if (logger.isDebugEnabled())
-               logger.debug("Removing lock for uploaded file: " + path);
-            
-            this.getAvmLockingService().removeLock(storeId, storePath);
-         }
-      }
-      
-      return super.cancel();
-   }
-
-   @Override
    protected String finishImpl(final FacesContext context, String outcome)
       throws Exception
    {
@@ -418,19 +371,6 @@ public class CreateWebContentWizard extends CreateContentWizard
          }
       }
       this.getAvmSyncService().update(diffList, null, true, true, true, true, null, null);
-      for (final AVMDifference diff : diffList)
-      {
-         final String path = diff.getDestinationPath();
-         if (logger.isDebugEnabled())
-         {
-            logger.debug("modifying lock on " + path + 
-                         ".  chaging store from " + 
-                         this.getAvmLockingService().getLock(AVMUtil.getStoreId(path), 
-                                                             AVMUtil.getStoreRelativePath(path)).getStore() +
-                         " to " + AVMUtil.getStoreName(path));
-         }
-         this.getAvmLockingService().modifyLock(AVMUtil.getStoreId(path), AVMUtil.getStoreRelativePath(path), null, AVMUtil.getStoreName(path), null, null);
-      }
       if (this.startWorkflow)
       {
          final List<AVMNodeDescriptor> submitNodes = new ArrayList<AVMNodeDescriptor>(1 + this.getUploadedFiles().size() + this.getRenditions().size());
@@ -543,31 +483,10 @@ public class CreateWebContentWizard extends CreateContentWizard
       if (logger.isDebugEnabled())
          logger.debug("creating file " + fileName + " in " + path);
 
-      // get current username for lock checks
-      String username = Application.getCurrentUser(FacesContext.getCurrentInstance()).getUserName();
-      
       // put the content of the file into the AVM store
       String filePath = AVMNodeConverter.ExtendAVMPath(path, fileName); 
       try
       {
-         String storeId = AVMUtil.getStoreId(filePath);
-         String storePath = AVMUtil.getStoreRelativePath(filePath);
-         String storeName = AVMUtil.getStoreName(filePath);
-         AVMLock lock = this.getAvmLockingService().getLock(storeId, storePath);
-         if (lock != null && lock.getStore().equals(storeName) == false)
-         {
-            if (lock.getOwners().contains(username))
-            {
-               // lock already exists on path, check it's owned by the current user
-               if (logger.isDebugEnabled())
-                  logger.debug("transferring lock from " + lock.getStore() + " to " + storeName + " for path: " + filePath);
-            
-               // add the path to the list of locks to return to the preview store if cancel is pressed
-               this.locksToReturnToMainStoreOnCancel.add(filePath);
-               this.getAvmLockingService().modifyLock(storeId, storePath, null, storeName, null, null);
-            }
-         } 
-         
          /**
           *  create the new file 
           */
@@ -605,24 +524,6 @@ public class CreateWebContentWizard extends CreateContentWizard
                
                if (logger.isDebugEnabled())
                   logger.debug("About to render path: " + path);
-               
-               String storeId = AVMUtil.getStoreId(path);
-               String storePath = AVMUtil.getStoreRelativePath(path);
-               String storeName = AVMUtil.getStoreName(path);
-               AVMLock lock = this.getAvmLockingService().getLock(storeId, storePath);
-               if (lock != null && lock.getStore().equals(storeName) == false)
-               {
-                  // see if the lock belongs to the current user, if it does modify the lock to point to the preview store
-                  if (lock.getOwners().contains(username))
-                  {
-                     if (logger.isDebugEnabled())
-                        logger.debug("transferring lock from " + lock.getStore() + " to " + storeName + " for path: " + path);
-                        
-                     // add the path to the list of locks to return to the main store if cancel is pressed
-                     this.locksToReturnToMainStoreOnCancel.add(path);
-                     this.getAvmLockingService().modifyLock(storeId, storePath, null, storeName, null, null);
-                  }
-               }
                
                // generate the rendition
                this.renditions.add(ret.render(this.formInstanceData, path));

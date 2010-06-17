@@ -22,7 +22,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -66,8 +65,8 @@ public class WCMUnlockEvaluator extends BaseActionEvaluator
           }
           
           // determine if the item is locked
-          AVMLock lock = avmLockingService.getLock(webProject.getStoreId(), AVMUtil.getStoreRelativePath(path));
-          proceed = (lock != null);
+          String lockOwner = avmLockingService.getLockOwner(webProject.getStoreId(), AVMUtil.getStoreRelativePath(path));
+          proceed = (lockOwner != null);
       }
       
       return proceed;

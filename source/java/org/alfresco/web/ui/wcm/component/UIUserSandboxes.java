@@ -109,7 +109,6 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    private static final String ACT_CREATE_FORM_CONTENT = "create_form_content";
    private static final String ACT_SANDBOX_REVERTSELECTED = "sandbox_revertselected";
    private static final String ACT_SANDBOX_SUBMITSELECTED = "sandbox_submitselected";
-   private static final String ACT_SANDBOX_CHECK_LINKS = "check_links";
    private static final String ACT_SANDBOX_BROWSE = "sandbox_browse";
    private static final String ACT_SANDBOX_REVERTALL = "sandbox_revertall";
    private static final String ACT_SANDBOX_SUBMITALL = "sandbox_submitall";
@@ -361,13 +360,6 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
             userRoleWrappers = buildCurrentUserRole(wpService, websiteRef, currentUserName);
          }
          
-         // determine whether the check links action should be shown
-         boolean linkValidationEnabled = true;
-         if (avmBrowseBean != null)
-         {
-            linkValidationEnabled = avmBrowseBean.isLinkValidationEnabled();
-         }
-         
          // determine whether the deploy action should be shown
          boolean deployServersConfigured = false;
          List<NodeRef> deployToServers = DeploymentUtil.findTestServers(websiteRef, false);
@@ -493,22 +485,6 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   
                   // clear current menu actions then add relevant ones
                   menu.getChildren().clear();
-                  
-                  // Check Links action
-                  if (linkValidationEnabled)
-                  {
-                     Map<String, String> params = new HashMap<String, String>(6);
-                     params.put("store", mainStore);
-                     params.put("username", username);
-                     params.put("webapp", this.getWebapp());
-                     params.put("mode", "runReport");
-                     params.put("compareToStaging", "true");
-                     UIActionLink checkLinks = createAction(context, mainStore, username, 
-                              ACT_SANDBOX_CHECK_LINKS, "/images/icons/run_link_validation.gif",
-                              "#{DialogManager.setupParameters}", "dialog:linkValidation", 
-                              null, params, false);
-                     menu.getChildren().add(checkLinks);
-                  }
                   
                   // Deploy action
                   if (deployServersConfigured)

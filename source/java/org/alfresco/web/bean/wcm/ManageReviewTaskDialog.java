@@ -27,7 +27,6 @@ import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.linkvalidation.LinkValidationReport;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -79,10 +78,6 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         // reset any previous link validation state
-         this.avmBrowseBean.setLinkValidationState(null);
-         this.avmBrowseBean.setLinkValidationMonitor(null);
-         
          // try and retrieve the link validation report from the workflow
          // store, if present setup the validation state on AVMBrowseBean
          this.store = this.workflowPackage.getStoreRef().getIdentifier();
@@ -97,28 +92,6 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
              throw new AlfrescoRuntimeException(mesg);
          }
          
-         PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
-                  SandboxConstants.PROP_LINK_VALIDATION_REPORT);
-         if (val != null)
-         {
-            LinkValidationReport report = (LinkValidationReport)val.getSerializableValue();
-            if (report != null)
-            {
-               String reportStore = report.getStore();
-               this.webapp = report.getWebapp();
-               
-               if (logger.isDebugEnabled())
-                  logger.debug("Found link validation report for webapp '" + 
-                               AVMUtil.buildStoreWebappPath(reportStore, this.webapp) + "'");
-               
-               LinkValidationState state = new LinkValidationState(report);
-               this.avmBrowseBean.setLinkValidationState(state);
-               
-               if (logger.isDebugEnabled())
-                  logger.debug("Stored link validation state: " + state);
-            }
-         }
-
          // commit the changes
          tx.commit();
       }

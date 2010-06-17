@@ -29,12 +29,12 @@ import java.util.Set;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService.LockState;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -47,9 +47,9 @@ import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.URLEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.xml.sax.InputSource;
 
 import freemarker.ext.dom.NodeModel;
@@ -66,11 +66,10 @@ import freemarker.ext.dom.NodeModel;
  * 
  * @author Kevin Roast
  */
+@SuppressWarnings("serial")
 public class AVMTemplateNode extends BasePermissionsNode implements NamespacePrefixResolverProvider
 {
     private static Log logger = LogFactory.getLog(AVMTemplateNode.class);
-    
-    private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     
     /** Cached values */
     private NodeRef nodeRef;
@@ -273,9 +272,10 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
      */
     public boolean getIsLocked()
     {
-        AVMLock lock = this.services.getAVMLockingService().getLock(
-                getWebProject(), path.substring(path.indexOf("/")));
-        return (lock != null);
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        LockState lockStatus = this.services.getAVMLockingService().getLockState(
+                getWebProject(), path.substring(path.indexOf("/")), currentUser);
+        return lockStatus != LockState.NO_LOCK;
     }
     
     /**
@@ -283,17 +283,10 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
      */
     public boolean getIsLockOwner()
     {
-        boolean lockOwner = false;
-        
-        AVMLock lock = this.services.getAVMLockingService().getLock(
-                getWebProject(), path.substring(path.indexOf("/")));
-        if (lock != null)
-        {
-            List<String> lockUsers = lock.getOwners();
-            lockOwner = (lockUsers.contains(this.services.getAuthenticationService().getCurrentUserName()));
-        }
-        
-        return lockOwner;
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        LockState lockStatus = this.services.getAVMLockingService().getLockState(
+                getWebProject(), path.substring(path.indexOf("/")), currentUser);
+        return lockStatus == LockState.LOCK_OWNER;
     }
     
     /**
@@ -369,6 +362,7 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
     /**
      * @see org.alfresco.repo.template.TemplateProperties#getProperties()
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Serializable> getProperties()
     {
         if (!this.propsRetrieved)

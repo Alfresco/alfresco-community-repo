@@ -18,11 +18,8 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.attributes.AttributeDAO;
-import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
-import org.alfresco.repo.attributes.ListEntryDAO;
-import org.alfresco.repo.attributes.MapEntryDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.permissions.AclDAO;
 
 /**
  * This is the (shudder) global context for AVM.  It a rendezvous
@@ -92,15 +89,9 @@ public class AVMDAOs
      */
     public AVMStorePropertyDAO fAVMStorePropertyDAO;
     
-    public AttributeDAO fAttributeDAO;
-    
-    public MapEntryDAO fMapEntryDAO;
-    
-    public GlobalAttributeEntryDAO fGlobalAttributeEntryDAO;
-    
-    public ListEntryDAO fListEntryDAO;
-    
     public VersionLayeredNodeEntryDAO fVersionLayeredNodeEntryDAO;
+    
+    public AclDAO fAclDAO;
     
     /**
      * @param nodeDAO the fAVMNodeDAO to set
@@ -180,28 +171,13 @@ public class AVMDAOs
         fAVMStorePropertyDAO = avmStorePropertyDAO;
     }
     
-    public void setAttributeDAO(AttributeDAO dao)
-    {
-        fAttributeDAO = dao;
-    }
-    
-    public void setMapEntryDAO(MapEntryDAO dao)
-    {
-        fMapEntryDAO = dao;
-    }
-    
-    public void setGlobalAttributeEntryDAO(GlobalAttributeEntryDAO dao)
-    {
-        fGlobalAttributeEntryDAO = dao;
-    }
-    
-    public void setListEntryDAO(ListEntryDAO dao)
-    {
-        fListEntryDAO = dao;
-    }
-    
     public void setVersionLayeredNodeEntryDAO(VersionLayeredNodeEntryDAO dao)
     {
         fVersionLayeredNodeEntryDAO = dao;
+    }
+    
+    public void setAclDAO(AclDAO dao)
+    {
+        fAclDAO = dao;
     }
 }

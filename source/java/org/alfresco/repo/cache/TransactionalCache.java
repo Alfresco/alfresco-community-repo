@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.ehcache.CacheException;
-import net.sf.ehcache.CacheManager;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -139,13 +138,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     public void setSharedCache(SimpleCache<Serializable, Object> sharedCache)
     {
         this.sharedCache = sharedCache;
-    }
-
-    /**
-     * No-op
-     */
-    public void setCacheManager(CacheManager cacheManager)
-    {
     }
 
     /**
@@ -370,6 +362,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Where a transaction is present, a cache of updated items is lazily added to the
      * thread and the <tt>Object</tt> put onto that. 
      */
+    @SuppressWarnings("unchecked")
     public void put(K key, V value)
     {
         // are we in a transaction?
@@ -417,20 +410,25 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         txnData.haveIssuedFullWarning = true;
                     }
                 }
+                Object existingValueObj = sharedCache.get(key);
                 CacheBucket<V> bucket = null;
-                if (sharedCache.contains(key))
-                {
-                    V existingValue = getSharedCacheValue(key);
-                    // The value needs to be kept for later checks
-                    bucket = new UpdateCacheBucket<V>(existingValue, value);
-                }
-                else
+                if (existingValueObj == null)
                 {
                     // Insert a 'null' marker into the shared cache
                     NullValueMarker nullMarker = new NullValueMarker();
                     sharedCache.put(key, nullMarker);
                     // The value didn't exist before
                     bucket = new NewCacheBucket<V>(nullMarker, value);
+                }
+                else if (existingValueObj instanceof NullValueMarker)
+                {
+                    // Record the null as is
+                    bucket = new NewCacheBucket<V>((NullValueMarker)existingValueObj, value);
+                }
+                else
+                {
+                    // Record the existing value as is
+                    bucket = new UpdateCacheBucket<V>((V)existingValueObj, value);
                 }
                 txnData.updatedItemsCache.put(key, bucket);
                 // remove the item from the removed cache, if present
@@ -619,21 +617,19 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 sharedCache.clear();
                 if (isDebugEnabled)
                 {
-                    logger.debug("Clear notification recieved at end of transaction - clearing shared cache");
+                    logger.debug("Clear notification recieved in commit - clearing shared cache");
                 }
             }
             else
             {
                 // transfer any removed items
-                // any removed items will have also been removed from the in-transaction updates
-                // propogate the deletes to the shared cache
                 for (Serializable key : txnData.removedItemsCache)
                 {
                     sharedCache.remove(key);
                 }
                 if (isDebugEnabled)
                 {
-                    logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache");
+                    logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache in commit");
                 }
             }
 
@@ -661,13 +657,45 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Just allow the transactional caches to be thrown away
+     * Transfers cache removals or clears.  This allows explicit cache cleanup to be propagated
+     * to the shared cache even in the event of rollback - useful if the cause of a problem is
+     * the shared cache value.
      */
     public void afterRollback()
     {
         TransactionData txnData = getTransactionData();
-        // drop caches from cachemanager
-        removeCaches(txnData);
+        try
+        {
+            if (txnData.isClearOn)
+            {
+                // clear shared cache
+                sharedCache.clear();
+                if (isDebugEnabled)
+                {
+                    logger.debug("Clear notification recieved in rollback - clearing shared cache");
+                }
+            }
+            else
+            {
+                // transfer any removed items
+                for (Serializable key : txnData.removedItemsCache)
+                {
+                    sharedCache.remove(key);
+                }
+                if (isDebugEnabled)
+                {
+                    logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache in rollback");
+                }
+            }
+        }
+        catch (CacheException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to transfer updates to shared cache", e);
+        }
+        finally
+        {
+            removeCaches(txnData);
+        }
     }
     
     /**

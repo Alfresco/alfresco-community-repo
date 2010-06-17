@@ -51,9 +51,6 @@
       <property name="contentService" >
          <ref bean="contentService" />
       </property>
-      <property name="nodeDaoService" >
-         <ref bean="nodeDaoService" />
-      </property>
       <property name="avmNodeDAO">
             <ref bean="newAvmNodeDAO"/>
       </property>

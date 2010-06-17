@@ -195,13 +195,10 @@
       <property name="dbNodeService">
          <ref bean="dbNodeService" />
       </property>
-      <property name="nodeDaoService">
-         <ref bean="nodeDaoService" />
+      <property name="nodeDAO">
+         <ref bean="nodeDAO" />
       </property>
    </bean>
-   <bean id="nodeCleanup.indexChildrenWhereRequired"
-         class="org.alfresco.repo.node.db.IndexChildrenWhereRequiredWorker"
-         parent="nodeCleanupBase"/>
    <bean id="nodeCleanup.deleteNodeCleanup"
          class="org.alfresco.repo.node.db.DeletedNodeCleanupWorker"
          parent="nodeCleanupBase">
@@ -218,8 +215,11 @@
       <property name="transactionService">
          <ref bean="transactionService" />
       </property>
-      <property name="nodeDaoService">
-         <ref bean="nodeDaoService" />
+      <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+      </property>
+      <property name="nodeDAO">
+         <ref bean="nodeDAO" />
       </property>
       <property name="policyComponent">
          <ref bean="policyComponent"/>

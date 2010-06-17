@@ -84,11 +84,6 @@ public class OrphanReaper
     private TransactionService fTransactionService;
 
     /**
-     * The Session Factory
-     */
-    private SessionFactory fSessionFactory;
-
-    /**
      * Active base sleep interval.
      */
     private long fActiveBaseSleep;
@@ -161,16 +156,6 @@ public class OrphanReaper
     public void setTransactionService(TransactionService transactionService)
     {
         fTransactionService = transactionService;
-    }
-
-    /**
-     * Set the hibernate session factory. (For Spring.)
-     * 
-     * @param sessionFactory
-     */
-    public void setSessionFactory(SessionFactory sessionFactory)
-    {
-        fSessionFactory = sessionFactory;
     }
 
     /**

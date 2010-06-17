@@ -49,6 +49,7 @@ public class PropertyValueEntity
     public static final Short ORDINAL_STRING = 3;
     public static final Short ORDINAL_SERIALIZABLE = 4;
     public static final Short ORDINAL_CONSTRUCTABLE = 5;
+    public static final Short ORDINAL_ENUM = 6;
     
     /**
      * Enumeration of persisted types for <b>alf_prop_value.persisted_type</b>.
@@ -137,6 +138,19 @@ public class PropertyValueEntity
             public Class<?> getAssociatedClass()
             {
                 return Class.class;
+            }
+        },
+        ENUM
+        {
+            @Override
+            public Short getOrdinalNumber()
+            {
+                return ORDINAL_ENUM;
+            }
+            @Override
+            public Class<?> getAssociatedClass()
+            {
+                return Enum.class;
             }
         };
         
@@ -262,6 +276,9 @@ public class PropertyValueEntity
         case CONSTRUCTABLE:
             // Construct an instance using the converter (it knows best!)
             return converter.constructInstance(stringValue);
+        case ENUM:
+            // The converter should handle enumeration types
+            return converter.convert(actualType, stringValue);
         default:
             throw new IllegalStateException("Should not be able to get through switch");
         }
@@ -308,6 +325,10 @@ public class PropertyValueEntity
                 case CONSTRUCTABLE:
                     // A special case.  There is no conversion, so just Store the name of the class.
                     stringValue = value.getClass().getName();
+                    break;
+                case ENUM:
+                    // A special case.  Store the string-equivalent representation
+                    stringValue = converter.convert(String.class, value);
                     break;
                 case SERIALIZABLE:
                     serializableValue = value;

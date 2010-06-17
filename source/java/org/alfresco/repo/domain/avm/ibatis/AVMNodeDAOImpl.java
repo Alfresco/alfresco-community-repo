@@ -56,7 +56,6 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     private static final String SELECT_AVM_NODES_NULL_PARENT_AND_ISROOT_TF= "alfresco.avm.select_AVMNodes_nullParentAndIsRootTF";
     private static final String SELECT_AVM_NODES_LAYERED_DIRECTORIES_AND_PRIMARY_TF = "alfresco.avm.select_AVMNodes_layeredDirectoriesAndPrimaryTF";
     private static final String SELECT_AVM_NODES_LAYERED_FILES = "alfresco.avm.select_AVMNodes_layeredFiles";
-    private static final String SELECT_AVM_NODE_IDS_BY_ACL_ID = "alfresco.avm.select_AVMNodes_IDs_byAcl";
     
     private static final String SELECT_AVM_CONTENT_URLS_FOR_PLAIN_FILES = "alfresco.avm.select_ContentUrlsForPlainFiles";
     
@@ -191,15 +190,6 @@ public class AVMNodeDAOImpl extends AbstractAVMNodeDAOImpl
     protected List<AVMNodeEntity> getAllLayeredFileNodeEntities()
     {
         return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_NODES_LAYERED_FILES);
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<Long> getAVMNodeEntityIdsByAclId(long aclId)
-    {
-        Map<String, Object> params = new HashMap<String, Object>(1);
-        params.put("id", aclId);
-        return (List<Long>) template.queryForList(SELECT_AVM_NODE_IDS_BY_ACL_ID, params);
     }
     
     @Override

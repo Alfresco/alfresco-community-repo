@@ -32,8 +32,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.AttributeConverter;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -44,7 +42,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConverter.Converter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.VersionNumber;
@@ -214,6 +211,9 @@ public class PropertyValue implements Cloneable, Serializable
                 return DefaultTypeConverter.INSTANCE.convert(Date.class, value);
             }
         },
+        /**
+         * @deprecated          column FK to alf_global_attributes has been removed (3.4)
+         */
         DB_ATTRIBUTE
         {
             @Override
@@ -222,14 +222,10 @@ public class PropertyValue implements Cloneable, Serializable
                 return Integer.valueOf(8);
             }
 
-            /** class that is able to convert from persisted attributes to normal attributes */
-            private AttributeConverter attributeConverter = new AttributeConverter();
-            
             @Override
             Serializable convert(Serializable value)
             {
-                Attribute attribute = DefaultTypeConverter.INSTANCE.convert(Attribute.class, value);
-                return attributeConverter.toPersistent(attribute);
+                return null;
             }
         },
         SERIALIZABLE
@@ -258,49 +254,19 @@ public class PropertyValue implements Cloneable, Serializable
             protected ValueType getPersistedType(Serializable value)
             {
                 // NOTE: since 2.2.1, PropertyValue is only used by AVM (which does not natively support MLText, other than single/default string)
-                if (value instanceof MLText)
-                {
-                    MLText mlText = (MLText) value;
-                    if (mlText.getDefaultValue() == null)
-                    {
-                        return ValueType.NULL;
-                    }
-                    else if (mlText.size() == 1)
-                    {
-                        return ValueType.STRING;
-                    }
-                }
-                else if ((value == null) || (value instanceof String))
-                {
-                    return ValueType.STRING;
-                }
-                return ValueType.DB_ATTRIBUTE;
+                return ValueType.STRING;
             }
 
-            @SuppressWarnings("unchecked")
             @Override
             Serializable convert(Serializable value)
             {
                 // NOTE: since 2.2.1, PropertyValue is only used by AVM (which does not natively support MLText, other than single/default string)
-                if (value != null)
+                MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
+                if (mlText.size() > 1)
                 {
-                    if (value instanceof String)
-                    {
-                        return value;
-                    }
-                    else if (value instanceof MLText)
-                    {
-                        if (((MLText)value).size() <= 1)
-                        {
-                            return (String)((Converter<MLText, String>)DefaultTypeConverter.INSTANCE.getConverter(MLText.class, String.class)).convert((MLText)value);
-                        }
-                        else
-                        {
-                            throw new UnsupportedOperationException("PropertyValue MLText is not supported for AVM");
-                        }
-                    }
+                    throw new UnsupportedOperationException("PropertyValue MLText is not supported for AVM");
                 }
-                return DefaultTypeConverter.INSTANCE.convert(MLText.class, value);
+                return DefaultTypeConverter.INSTANCE.convert(String.class, mlText);
             }
         },
         CONTENT
@@ -507,7 +473,7 @@ public class PropertyValue implements Cloneable, Serializable
          */
         abstract Serializable convert(Serializable value);
         
-        protected ArrayList<Serializable> convert(Collection collection)
+        protected ArrayList<Serializable> convert(Collection<?> collection)
         {
             ArrayList<Serializable> arrayList = new ArrayList<Serializable>(collection.size());
             for (Object object : collection)
@@ -600,10 +566,6 @@ public class PropertyValue implements Cloneable, Serializable
         {
             return ValueType.VERSION_NUMBER;
         }
-        else if (value instanceof Attribute)
-        {
-            return ValueType.DB_ATTRIBUTE;
-        }
         else if (value instanceof MLText)
         {
             return ValueType.MLTEXT;
@@ -677,7 +639,6 @@ public class PropertyValue implements Cloneable, Serializable
     private Float floatValue;
     private Double doubleValue;
     private String stringValue;
-    private Attribute attributeValue;
     private Serializable serializableValue;
     
     /**
@@ -706,11 +667,11 @@ public class PropertyValue implements Cloneable, Serializable
             setPersistedValue(ValueType.NULL, null);
             setMultiValued(false);
         }
-        else if (value instanceof Collection)
+        else if (value instanceof Collection<?>)
         {
             if(typeQName != null)
             {  
-                Collection collection = (Collection) value;
+                Collection<?> collection = (Collection<?>) value;
                 ValueType collectionValueType = makeValueType(typeQName);
                 // convert the collection values - we need to do this to ensure that the
                 // values provided conform to the given type
@@ -798,7 +759,6 @@ public class PropertyValue implements Cloneable, Serializable
                     EqualsHelper.nullSafeEquals(this.floatValue, that.floatValue) &&
                     EqualsHelper.nullSafeEquals(this.doubleValue, that.doubleValue) &&
                     EqualsHelper.nullSafeEquals(this.stringValue, that.stringValue) &&
-                    EqualsHelper.nullSafeEquals(this.attributeValue, that.attributeValue) &&
                     EqualsHelper.nullSafeEquals(this.serializableValue, that.serializableValue)
                     );
             
@@ -920,8 +880,7 @@ public class PropertyValue implements Cloneable, Serializable
                 this.stringValue = (String) value;
                 break;
             case DB_ATTRIBUTE:
-                this.attributeValue = (Attribute) value;
-                break;
+                throw new IllegalArgumentException("DB_ATTRIBUTE is no longer supported.");
             case SERIALIZABLE:
                 this.serializableValue = cloneSerializable(value);
                 break;
@@ -1011,7 +970,7 @@ public class PropertyValue implements Cloneable, Serializable
                     return this.stringValue;
                 }
             case DB_ATTRIBUTE:
-                return this.attributeValue;
+                return null;
             case SERIALIZABLE:
                 return this.serializableValue;
             default:
@@ -1054,7 +1013,7 @@ public class PropertyValue implements Cloneable, Serializable
         else if (this.isMultiValued)
         {
             // collections are always stored
-            Collection collection = (Collection) this.serializableValue;
+            Collection<?> collection = (Collection<?>) this.serializableValue;
             // convert the collection values - we need to do this to ensure that the
             // values provided conform to the given type
             ArrayList<Serializable> convertedCollection = requiredType.convert(collection);
@@ -1082,10 +1041,11 @@ public class PropertyValue implements Cloneable, Serializable
      * 
      * @see #getValue(QName)
      */
+    @SuppressWarnings("unchecked")
     public Collection<Serializable> getCollection(QName typeQName)
     {
         Serializable value = getValue(typeQName);
-        if (value instanceof Collection)
+        if (value instanceof Collection<?>)
         {
             return (Collection<Serializable>) value;
         }
@@ -1150,15 +1110,6 @@ public class PropertyValue implements Cloneable, Serializable
     public void setStringValue(String value)
     {
         this.stringValue = value;
-    }
-    
-    public Attribute getAttributeValue()
-    {
-        return attributeValue;
-    }
-    public void setAttributeValue(Attribute value)
-    {
-        this.attributeValue = value;
     }
     
     public Serializable getSerializableValue()

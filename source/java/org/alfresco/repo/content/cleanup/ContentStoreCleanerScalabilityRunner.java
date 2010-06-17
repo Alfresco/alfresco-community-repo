@@ -19,8 +19,6 @@
 package org.alfresco.repo.content.cleanup;
 
 import java.io.File;
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Date;
 
@@ -32,30 +30,23 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
-import org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor;
+import org.alfresco.repo.domain.node.ChildAssocEntity;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.tools.Repository;
 import org.alfresco.tools.ToolException;
-import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.lang.mutable.MutableInt;
-import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * Loads the repository up with orphaned content and then runs the cleaner.
@@ -71,11 +62,9 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
     private VmShutdownListener vmShutdownListener = new VmShutdownListener("ContentStoreCleanerScalabilityRunner");
     
     private ApplicationContext ctx;
-    private SingleEntryTransactionResourceInterceptor txnResourceInterceptor;
-    private HibernateHelper hibernateHelper;
+    private NodeHelper nodeHelper;
     private TransactionService transactionService;
-    private NodeDaoService nodeDaoService;
-    private DictionaryService dictionaryService;
+    private NodeDAO nodeDAO;
     private ContentStore contentStore;
     private ContentStoreCleaner cleaner;
     
@@ -92,15 +81,10 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
     {
         ctx = super.getApplicationContext();
         
-        txnResourceInterceptor = (SingleEntryTransactionResourceInterceptor) ctx.getBean("sessionSizeResourceInterceptor");
-
-        SessionFactory sessionFactory = (SessionFactory) ctx.getBean("sessionFactory");
-        hibernateHelper = new HibernateHelper();
-        hibernateHelper.setSessionFactory(sessionFactory);
+        nodeHelper = new NodeHelper();
         
         transactionService = (TransactionService) ctx.getBean("TransactionService");
-        nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
-        dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
+        nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         
         int orphanCount = 1000;
         
@@ -108,11 +92,6 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         
         loadData(orphanCount);
     
-        long beforeIterate = System.currentTimeMillis();
-//        iterateOverProperties();
-        long afterIterate = System.currentTimeMillis();
-        double aveIterate = (double) (afterIterate - beforeIterate) / (double) orphanCount / 1000D;
-        
         System.out.println("Ready to clean store: " + contentStore);
         synchronized(this)
         {
@@ -125,7 +104,6 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         double aveClean = (double) (afterClean - beforeClean) / (double) orphanCount / 1000D;
         
         System.out.println();
-        System.out.println(String.format("Iterating took %3f per 1000 content URLs in DB", aveIterate));
         System.out.println(String.format("Cleaning took %3f per 1000 content URLs in DB", aveClean));
         
         return 0;
@@ -144,7 +122,7 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                     // We don't need to write anything
                     String contentUrl = FileContentStore.createNewFileStoreUrl();
                     ContentData contentData = new ContentData(contentUrl, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10, "UTF-8");
-                    hibernateHelper.makeNode(contentData);
+                    nodeHelper.makeNode(contentData);
                     
                     int count = doneCount.intValue();
                     count++;
@@ -170,37 +148,6 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(makeNodesCallback);
         }
-    }
-    
-    private void iterateOverProperties()
-    {
-        final NodePropertyHandler nodePropertyHandler = new NodePropertyHandler()
-        {
-            int count = 0;
-            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
-            {
-                count++;
-                if (count % 1000 == 0)
-                {
-                    System.out.println("   " + (new Date()) + "Iterated over " + count + " content items");
-                }
-                if (vmShutdownListener.isVmShuttingDown())
-                {
-                    throw new RuntimeException("VM Shut down");
-                }
-            }
-        };
-        final DataTypeDefinition contentDataType = dictionaryService.getDataType(DataTypeDefinition.CONTENT);
-        // execute in READ-WRITE txn
-        RetryingTransactionCallback<Object> getUrlsCallback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Exception
-            {
-                nodeDaoService.getPropertyValuesByActualType(contentDataType, nodePropertyHandler);
-                return null;
-            };
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(getUrlsCallback);
     }
     
     private void clean()
@@ -297,11 +244,11 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         }
     }
     
-    private class HibernateHelper extends HibernateDaoSupport
+    private class NodeHelper
     {
         private QName contentQName;
         
-        public HibernateHelper()
+        public NodeHelper()
         {
             contentQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "realContent");
         }
@@ -311,8 +258,18 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         public void makeNode(ContentData contentData)
         {
             StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-            Long nodeId = nodeDaoService.newNode(storeRef, GUID.generate(), ContentModel.TYPE_CONTENT).getFirst();
-            nodeDaoService.addNodeProperty(nodeId, contentQName, contentData);
+            Long rootNodeId = nodeDAO.newStore(storeRef).getFirst();
+            ChildAssocEntity assoc = nodeDAO.newNode(
+                    rootNodeId,
+                    ContentModel.ASSOC_CHILDREN,
+                    ContentModel.ASSOC_CHILDREN,
+                    storeRef,
+                    null,
+                    ContentModel.TYPE_CONTENT,
+                    null,
+                    null);
+            Long nodeId = assoc.getChildNode().getId();
+            nodeDAO.addNodeProperty(nodeId, contentQName, contentData);
         }
     }
 }

@@ -52,8 +52,24 @@ public interface ControlDAO
     
     /**
      * Create a "Save Point" in the current transaction, for later selective rollback.
-     * Creation should be accompanied by a matching {@link #rollbackToSavepoint(String)}
-     * or {@link #releaseSavepoint(String)} using the same name.
+     * Creation <b>must</b> be accompanied by a matching {@link #rollbackToSavepoint(Savepoint)}
+     * or {@link #releaseSavepoint(Savepoint)}.
+     * <code><pre>
+     *  Savepoint savepoint = controlDAO.createSavepoint("functionF");
+     *  try
+     *  {
+     *      // Do something that could fail e.g. blind insert that might violate unique constraints
+     *      ...
+     *      // Success, so remove savepoint or risk crashing on long-running transactions
+     *      controlDAO.releaseSavepoint(savepoint);
+     *  }
+     *  catch (Throwable e)
+     *  {
+     *      controlDAO.rollbackToSavepoint(savepoint);
+     *      // Throw something that client code might be able to react to or try something else
+     *      ...
+     *  }
+     * </pre></code>
      * 
      * @param savepoint             the name of the save point
      * @return                      Returns the handle to the savepoint or <tt>null</tt> if the

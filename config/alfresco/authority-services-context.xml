@@ -88,8 +88,8 @@
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
-        <property name="aclDao">
-            <ref bean="aclDaoComponent" />
+        <property name="aclDAO">
+            <ref bean="aclDAO" />
         </property>
         
     </bean>

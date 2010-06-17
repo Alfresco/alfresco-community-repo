@@ -38,6 +38,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -45,11 +46,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.alfresco.util.Pair;
 
 /**
  * Bootstrap the dictionary from specified locations within the repository
@@ -253,27 +255,40 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                     {
                         for (NodeRef dictionaryModel : nodeRefs)
                         {
-                            // Ignore if the node is a working copy or archived, or if its inactive
-                            if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
+                            try
                             {
-                                Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
-                                
-                                if ((isActive != null) && (isActive.booleanValue() == true))
+                                // Ignore if the node is a working copy or archived, or if its inactive
+                                if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
                                 {
-                                    M2Model model = createM2Model(dictionaryModel);
-                                    if (model != null)
+                                    Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
+                                    
+                                    if ((isActive != null) && (isActive.booleanValue() == true))
                                     {
-                                        if (logger.isTraceEnabled())
+                                        M2Model model = createM2Model(dictionaryModel);
+                                        if (model != null)
                                         {
-                                            logger.trace("onDictionaryInit: "+model.getName()+" ("+dictionaryModel+")");
-                                        }
-                                        
-                                        for (M2Namespace namespace : model.getNamespaces())
-                                        {
-                                            modelMap.put(namespace.getUri(), new Pair<RepositoryLocation, M2Model>(repositoryLocation, model));
+                                            if (logger.isTraceEnabled())
+                                            {
+                                                logger.trace("onDictionaryInit: "+model.getName()+" ("+dictionaryModel+")");
+                                            }
+                                            
+                                            for (M2Namespace namespace : model.getNamespaces())
+                                            {
+                                                modelMap.put(namespace.getUri(), new Pair<RepositoryLocation, M2Model>(repositoryLocation, model));
+                                            }
                                         }
                                     }
                                 }
+                            }
+                            catch (InvalidNodeRefException inre)
+                            {
+                                // ignore - model no longer exists
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("onDictionaryInit: "+inre+" (assume concurrency failure)");
+                                }
+                                
+                                throw new ConcurrencyFailureException(inre.getMessage());
                             }
                         }
                     }

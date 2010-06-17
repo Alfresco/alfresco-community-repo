@@ -16,319 +16,120 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.service.cmr.attributes;
 
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
 
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.service.PublicService;
-import org.alfresco.util.Pair;
-import org.alfresco.service.Auditable;
-import org.alfresco.service.NotAuditable;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
  * This provides services for reading, writing, and querying global attributes.
- * <p>
- * Attributes are organized hierarchically.
- * Each segment within the hierarchy is referred to as a "key".  
- * Keys are indexed so that they may be queried efficiently.  
- * Because databases may impose length restrictions 
- * on index of primary keys, you are strongly advised to keep 
- * "large" strings in <em>values</em>, not <em>keys</em>.  
- * For example, 
- * http://dev.mysql.com/tech-resources/crash-me.php reports
- * that the index length limit of MySQL-4.1.1pre InnoDB is 1024,
- * bytes.  Assuming keys are stored in UTF8, this means keys 
- * should be no longer 170 chars (170*6 + 1 = 1020 < 1024).
- * <p>
- *
- * When an attribute within the hierarchy is represented as a "path", 
- * the set of keys used to reach it is concatenated using the '/' character.
- * Thus, "a/b/c" refers to attribute "c" within "b" within "a".
- * This "path" notation is merely a convenience; if you prefer,
- * lower-level functions can also be used that allow you to 
- * supply the list of keys directly.   If you need to create a "path"
- * that includes a key with an embedded '/' character, you must 
- * escape it with '\' (e.g.:  "silly\/example").   No such restriction
- * applies when you use an API that accepts a list of keys directly.
- * <p>
- * Lookups for attributes never attempt to search any other
- * leaf key (final path segment) than the one specified
- * function call.  Thus, if you have an attribute named
- * "egg", but no attribute named "hen/egg", a lookup for
- * "egg" will suceed, but a lookup for "hen/egg" will fail 
- * (i.e.: it will return null).  
- *
- * @author britt
+ * <p/>
+ * Attributes are uniquely identified by up to 3 keys; <tt>null</tt> keys are themselves treated uniquely i.e.
+ * <code>['a','b']</code> is equivalent to <code>['a','b',null]</code> in all cases except where multiple search results
+ * are possible. Keys can be any simple <code>Serializable</code> type, typically being convertable using
+ * {@link DefaultTypeConverter}. The attribute values persisted can be any <code>Serializable</code>
+ * (including collections) but the raw values should be convertable by the {@link DefaultTypeConverter} for
+ * the most efficient persistence.
+ * 
+ * @author Derek Hulley
+ * @since 3.4
  */
-@PublicService
-public interface AttributeService 
+public interface AttributeService
 {
     /**
-     * Get an Attribute using a path.
-     *
-     * @param path The path of the Attribute
-     * @return The value of the attribute or null.
-     */
-    @NotAuditable
-    public Attribute getAttribute(String path);
-    
-    /**
-     * Get an attribute using a list of keys.
-     *
-     * @param keys List of attribute path keys (path components).
-     * @return The value of the attribute or null.
-     */
-    @NotAuditable
-    public Attribute getAttribute(List<String> keys);
-    
-    /**
-     * Set an attribute, overwriting its prior value if it already existed.
-     *
-     * @param name The name of the Attribute.
-     * @param value The value to set.
-     */
-    @NotAuditable
-    public void setAttribute(String path, String name, Attribute value);
-    
-    /**
-     * Set an attribute, overwriting its prior value if it already existed.
-     *
-     * @param keys List of attribute path keys (path components).
-     * @param name The name of the attribute to set.
-     * @param value The Attribute to set.
-     */
-    @NotAuditable
-    public void setAttribute(List<String> keys, String name, Attribute value);
-    
-    /**
-     * Set a set of attributes on a map.
-     * @param path The path to the map.
-     * @param entries The entries to set.
-     */
-    @NotAuditable
-    public void setAttributes(String path, Map<String, Attribute> entries);
-    
-    /**
-     * Set a set of attributes on a map.
-     * @param keys The List of path keys to the map.
-     * @param entries The entries to set.
-     */
-    @NotAuditable
-    public void setAttributes(List<String> keys, Map<String, Attribute> entries);
-    
-    /**
-     * Set an attribute in a list.
-     *
-     * @param path The path to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}.
-     * @param index The list index.
-     * @param value The Attribute to set.
-     */
-    @NotAuditable
-    public void setAttribute(String path, int index, Attribute value);
-    
-    /**
-     * Set an attribute in a list.
-     * @param keys List of attribute path keys (path components).
-     * @param index The list index.
-     * @param value The Attribute to set within the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
-     */
-    @NotAuditable
-    public void setAttribute(List<String> keys, int index, Attribute value);
-    
-    /**
-     * Add an attribute to a list.
-     *
-     * @param path The path to the list.
-     * @param value The Attribute to add to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
-     */
-    @NotAuditable
-    public void addAttribute(String path, Attribute value);
-    
-    /**
-     * Add an attribute to a list.
-     *
-     * @param keys List of attribute path keys (path components).
-     * @param value The Attribute to add to the {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
-     */
-    @NotAuditable
-    public void addAttribute(List<String> keys, Attribute value);
-    
-    /**
-     * Add a list of attributes to the end of a list.
-     * @param path The path to the list.
-     * @param values The values to add.
-     */
-    @NotAuditable
-    public void addAttributes(String path, List<Attribute> values);
-    
-    /**
-     * Add a list of attributes to the end of a list.
-     * @param keys The List of path keys to the list.
-     * @param values The values to add.
-     */
-    @NotAuditable
-    public void addAttributes(List<String> keys, List<Attribute> values);
-    
-    /**
-     * Remove an Attribute.
-     * @param name The name of the Attribute.
-     */
-    @NotAuditable
-    public void removeAttribute(String path, String name);
-    
-    /**
-     * Remove an Attribute.
-     * @param keys List of attribute path keys (path components).
-     * @param name The name of the attribute to remove.
-     */
-    @NotAuditable
-    public void removeAttribute(List<String> keys, String name);
-    
-    /**
-     * Remove an attribute from a list.
-     * @param path The path to the list.
-     * @param index The index to remove from the  
-     *              {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
-     */
-    @NotAuditable
-    public void removeAttribute(String path, int index);
-
-    /**
-     * Remove an attribute from a list.
-     * @param keys List of attribute path keys (path components).
-     * @param index The index to remove from the  
-     *              {@link org.alfresco.repo.attributes.ListAttribute ListAttribute}
-     */
-    @NotAuditable
-    public void removeAttribute(List<String> keys, int index);
-    
-    /**
-     * Remove entries from the designated map which match the given query.
-     * @param keys The list of attribute path entries.
-     * @param query The attribute query.
-     */
-    @NotAuditable
-    public void removeEntries(List<String> keys, AttrQuery query);
-    
-    /**
-     * Remove entries from the designated map which match the given query.
-     * @param path The path to the map.
-     * @param query The attribute query.
-     */
-    @NotAuditable
-    public void removeEntries(String path, AttrQuery query);
-    
-    /**
-     * Query for the list of attributes that is contained in the map
-     * defined by the given path and meet the query criteria.
-     *
-     * <p>
-     * <b>Example 1:</b><br>
-     * Find all attributes within the nested namespace "a/b" 
-     * that are lexically greater than or equal to the string "v":
-     * <pre>
-     *          query("a/b", new AttrQueryGTE("v"))
-     * </pre>
-     * <p>
-     * <b>Example 2:</b><br>
-     * Find all attributes within the namespace "xyz" that are 
-     * either lexically less than the string "d" or greater than
-     * the string "w":
-     * <pre>
-     *           query("xyz", new AttrOrQuery(new AttrQueryLT("d"),
-     *                                        new AttrQueryGT("w")))
-     * </pre>
-     *
-     * @param path
-     * @param query
-     * @return A List of matching attributes.
-     */
-    @NotAuditable
-    public List<Pair<String, Attribute>> query(String path, AttrQuery query);
-    
-    /**
-     * Query for a list of attributes which are contained in a map defined by the
-     * given path and meet the query criteria.
-     * @param keys List of attribute path keys (path components).
-     * @param query
-     * @return A list of matching attributes.
-     */
-    @NotAuditable
-    public List<Pair<String, Attribute>> query(List<String> keys, AttrQuery query);
-    
-    /**
-     * Get all the keys at a given attribute path.
-     * When prior call to 
-     * {@link #setAttribute setAttribute}
-     * has associated a path with a
-     * {@link org.alfresco.repo.attributes.Attribute.Type#MAP MAP}, you can fetch the
-     * keys for that map via this function.
-     * <p>
-     * <b>Example:</b><br>
-     * Suppose <code>AttribSvc</code> is an attribute service object:<pre>
-     *
-     *   MapAttribute x = new MapAttributeValue();
-     *   x.put("cow",  new StringAttributeValue("moo");
-     *   x.put("bird", new StringAttributeValue("tweet");
-     *  
-     *   MapAttribute y = new MapAttributeValue();
-     *   y.put("pekingese",    new StringAttributeValue("yip-yip-yip");
-     *   y.put("blood hound",  new StringAttributeValue("Aroooooooooooo");
-     *   y.put("labrador",     new StringAttributeValue("Hello, kind stranger!");
-     *
-     *   AttribSvc.setAttribute("",  "x", x);
-     *   AttribSvc.setAttribute("x", "y", y);
-     *
-     *   List&lt;String&gt; x_keys  = AttribSvc.getKeys("x");    // cow, bird
-     *   List&lt;String&gt; y_keys  = AttribSvc.getKeys("x/y");  // pekingese, blood hound, labrador
-     * </pre>
+     * Determine if a particular attribute exists.
      * 
-     * @param path The attribute path.
-     * @return A list of all keys.
+     * @param keys                  List of 1 to 3 keys to uniquely identify the attribute
+     * @return                      <tt>true</tt> if the attribute exists (regardless of its value)
+     *                              or <tt>false</tt> if it doesn't exist
      */
-    @NotAuditable
-    public List<String> getKeys(String path);
-    
-    /**
-     * Get all the keys at a given attribute path as specified by a list of path components.
-     * @param keys List of attribute path keys (path components).
-     * @return A list of all keys at the specified Attribute location
-     */
-    @NotAuditable
-    public List<String> getKeys(List<String> keys);
+    public boolean exists(Serializable ... keys);
 
     /**
-     * Get the size of a map or list.
-     * @param keys List of attribute path keys.
-     * @return The size of of the list or map.
+     * Get an attribute using a list of unique keys
+     *
+     * @param keys                  List of 1 to 3 keys to uniquely identify the attribute
+     * @return                      The attribute value or <tt>null</tt>
      */
-    @NotAuditable
-    public int getCount(List<String> keys);
+    public Serializable getAttribute(Serializable ... keys);
     
     /**
-     * Get the size of a map or list.
-     * @param path The path to the map or list.
-     * @return The size of the list or map.
+     * Callback used for querying for lists of attributes.
+     * 
+     * @author Derek Hulley
+     * @since 3.4
      */
-    @NotAuditable
-    public int getCount(String path);
+    public interface AttributeQueryCallback
+    {
+        /**
+         * Handle an attribute value
+         * 
+         * @param id                the unique attribute ID
+         * @param value             the value associated with the attribute
+         * @param keys              the unique attribute keys
+         * @return                  <tt>true</tt> to continue sending results if any are available
+         */
+        boolean handleAttribute(Long id, Serializable value, Serializable[] keys);
+    }
     
     /**
-     * Does an attribute exist.
-     * @param keys List of attribute path keys.
-     * @return Whether the attribute exists.
+     * Get all attributes that share the starter keys provided.  If 3 key values are given,
+     * there can be, at most, one result.
+     * 
+     * @param callback              the callback that handles the results
+     * @param keys                  0 to 3 key values to search against
      */
-    @NotAuditable
-    public boolean exists(List<String> keys);
- 
+    public void getAttributes(AttributeQueryCallback callback, Serializable ... keys);
+    
     /**
-     * Does an attribute exist.
-     * @param path The path to the attribute.
-     * @return Whether the attribute exists.
+     * Set an attribute, overwriting its prior value if it already existed.  <tt>null</tt>
+     * values are treated as unique i.e. if the value set is <tt>null</tt> then
+     * {@link #exists(String...)} will still return <tt>true</tt>.  If the attribute doesn't
+     * exist, it will be created otherwise it will be modified.
+     *
+     * @param value                 The value to store (can be a collection or <tt>null</tt>)
+     * @param keys                  List of 1 to 3 keys to uniquely identify the attribute
      */
-    @NotAuditable
-    public boolean exists(String path);
+    public void setAttribute(Serializable value, Serializable ... keys);
+
+    /**
+     * Create an attribute with an optional value, assuming there is no existing attribute
+     * using the same keys.
+     * 
+     * @param value                 The value to store (can be a collection or <tt>null</tt>)
+     * @param keys                  List of 1 to 3 keys to uniquely identify the attribute
+     * 
+     * @throws DuplicateAttributeException if the attribute already exists
+     */
+    public void createAttribute(Serializable value, Serializable ... keys);
+    
+    /**
+     * Update an attribute key whilst preserving the associated value (if any).  If there is
+     * no existing key matching the original value, then nothing will happen.
+     * 
+     * @param keyBefore1            the first part of the original unique key (never <tt>null</tt>)
+     * @param keyBefore2            the second part of the original unique key (<tt>null</tt> allowed)
+     * @param keyBefore3            the third part of the original unique key (<tt>null</tt> allowed)
+     * @param keyAfter1             the first part of the new unique key (never <tt>null</tt>)
+     * @param keyAfter2             the second part of the new unique key (<tt>null</tt> allowed)
+     * @param keyAfter3             the third part of the new unique key (<tt>null</tt> allowed)
+     */
+    public void updateOrCreateAttribute(
+            Serializable keyBefore1, Serializable keyBefore2, Serializable keyBefore3,
+            Serializable keyAfter1, Serializable keyAfter2, Serializable keyAfter3);
+    
+    /**
+     * Remove a specific attribute.
+     * 
+     * @param keys                  up to 3 keys to uniquely identify the attribute
+     */
+    public void removeAttribute(Serializable ... keys);
+    
+    /**
+     * Remove all attributes that share a set of keys (in order)
+     * 
+     * @param keys                  up to 3 keys to identify attributes to remove
+     */
+    public void removeAttributes(Serializable ... keys);
 }

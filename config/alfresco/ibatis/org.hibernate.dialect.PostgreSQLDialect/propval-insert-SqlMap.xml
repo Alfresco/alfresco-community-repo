@@ -64,18 +64,14 @@
         <selectKey resultClass="long" keyProperty="id" type="pre">
             select nextVal('alf_prop_root_seq')
         </selectKey>
-        <include refid="insert_PropertyValue_Sequence"/>
+        <include refid="insert_PropertyRoot_Sequence"/>
     </insert>
 
     <insert id="insert_PropertyUniqueContext" parameterClass="PropertyUniqueContext" >
-        
         <selectKey resultClass="long" keyProperty="id">
             select nextVal('alf_prop_unique_ctx_seq')
         </selectKey>
-        
-        insert into alf_prop_unique_ctx (id, version, value1_prop_id, value2_prop_id, value3_prop_id) 
-        values (#id#, #version#, #value1PropId#, #value2PropId#, #value3PropId#)
-        
+        <include refid="insert_PropertyUniqueContext_Sequence"/>
     </insert>
 
 </sqlMap>

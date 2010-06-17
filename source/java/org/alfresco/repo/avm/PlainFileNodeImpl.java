@@ -117,17 +117,16 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              Map<QName, PropertyValue> props,
                              Set<QName> aspects,
                              DbAccessControlList acl,
-                             int versionID, Long parentAcl, ACLCopyMode mode)
+                             int versionID,
+                             DbAccessControlList parentAcl,
+                             ACLCopyMode mode)
     {
         super(store);
         setContentData(content);
         setBasicAttributes(attrs);
         setVersionID(versionID + 1);
         
-        if (acl != null)
-        {
-            setAcl(acl.getCopy(parentAcl, mode));
-        }
+        copyACLs(acl, parentAcl, mode);
         
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         

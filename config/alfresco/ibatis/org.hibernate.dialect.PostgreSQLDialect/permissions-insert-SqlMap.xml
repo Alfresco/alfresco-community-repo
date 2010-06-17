@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.permissions">
+
+    <insert id="insert_Acl" parameterClass="Acl">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_access_control_list_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Acl_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AclMember" parameterClass="AclMember">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_acl_member_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AclMember_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AclChangeSet" parameterClass="AclChangeSet">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_acl_change_set_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AclChangeSet_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Ace" parameterClass="Ace">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_access_control_entry_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Ace_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AceContext" parameterClass="AceContext">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_ace_context_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AceContext_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Permission" parameterClass="Permission">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_permission_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Permission_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Authority" parameterClass="Authority">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_authority_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_Authority_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_AuthorityAlias" parameterClass="AuthorityAlias">
+        <selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_authority_alias_seq')
+        </selectKey>
+        
+        <include refid="alfresco.permissions.insert_AuthorityAlias_Sequence"/>
+        
+    </insert>
+    
+</sqlMap>

@@ -59,6 +59,7 @@ public interface PropertyTypeConverter
     /**
      * Convert a value to a given type.
      * 
+     * @param targetClass       the desired type to convert <i>to</i>
      * @param value             the value to convert
      * @return                  Returns the persisted type and value to persist
      */

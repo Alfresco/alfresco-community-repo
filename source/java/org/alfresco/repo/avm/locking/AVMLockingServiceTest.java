@@ -16,12 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.avm.locking;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,15 +29,13 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMTestSuite;
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingException;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -55,71 +52,53 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.wcm.sandbox.SandboxConstants;
+import org.alfresco.wcm.util.WCMUtil;
 import org.springframework.context.ApplicationContext;
 
 /**
  * Tests for WCM (web project) locking - AVMLockingService & AVMLockingAwareService
  * 
- * @author britt
+ * @author Derek Hulley, janv
  */
 public class AVMLockingServiceTest extends TestCase
 {
-    private static ApplicationContext fContext = null;
+    private static String[] TESTUSERS = {"Buffy", "Willow", "Xander", "Tara", "Spike"};
+    private static String[] TESTAUTHORITIES = {"GROUP_Scoobies", "ROLE_SUPER_POWERED", "GROUP_vampires"};
     
-    private static AVMLockingService fLockingService;
+    private ApplicationContext ctx = null;
     
-    private static AVMService fService;
-    
-    private static AVMSyncService fSyncService;
-    
-    private static AttributeService fAttributeService;
-    
-    private static PersonService fPersonService;
-    
-    private static AuthorityService fAuthorityService;
-    
-    private static MutableAuthenticationService fAuthenticationService;
-    
-    private static NodeService fNodeService;
-    
-    private static RepoRemote fRepoRemote;
-    
-    private static NodeRef fWebProject;
-    
-    private static String[] testUsers = {"Buffy", "Willow", "Xander", "Tara", "Spike"};
-    
-    private static String[] testAuthorities = {"GROUP_Scoobies", "ROLE_SUPER_POWERED", "GROUP_vampires"};
+    private static AVMLockingService lockingService;
+    private static AVMService avmService;
+    private static AVMSyncService syncService;
+    private static PersonService personService;
+    private static AuthorityService authorityService;
+    private static MutableAuthenticationService authenticationService;
+    private static NodeService nodeService;
+    private static RepoRemote repoRemoteService;
     
     private static final String testWP1 = "alfresco-"+System.currentTimeMillis();
+    private NodeRef testWP1NodeRef;
     
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#setUp()
-     */
     @Override
     protected void setUp() throws Exception
     {
-        if (fContext == null)
-        {
-            fContext = AVMTestSuite.getContext();
-            
-            fLockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
-            fService = (AVMService) fContext.getBean("AVMLockingAwareService");
-            fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
-            fAttributeService = (AttributeService)fContext.getBean("AttributeService");
-            fPersonService = (PersonService)fContext.getBean("PersonService");
-            fAuthorityService = (AuthorityService)fContext.getBean("AuthorityService");
-            fAuthenticationService = (MutableAuthenticationService)fContext.getBean("AuthenticationService");
-            fNodeService = (NodeService)fContext.getBean("NodeService");
-            fRepoRemote = (RepoRemote)fContext.getBean("RepoRemoteService");
-        }
+        ctx = ApplicationContextHelper.getApplicationContext();
+        lockingService = (AVMLockingService)ctx.getBean("AVMLockingService");
+        avmService = (AVMService) ctx.getBean("AVMLockingAwareService");
+        syncService = (AVMSyncService)ctx.getBean("AVMSyncService");
+        personService = (PersonService)ctx.getBean("PersonService");
+        authorityService = (AuthorityService)ctx.getBean("AuthorityService");
+        authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
+        nodeService = (NodeService)ctx.getBean("NodeService");
+        repoRemoteService = (RepoRemote)ctx.getBean("RepoRemoteService");
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         // Set up a fake web project.
-        NodeRef root = fRepoRemote.getRoot();
+        NodeRef root = repoRemoteService.getRoot();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(WCMAppModel.PROP_AVMSTORE, testWP1);
-        fWebProject = fNodeService.createNode(root, ContentModel.ASSOC_CONTAINS, 
+        testWP1NodeRef = nodeService.createNode(root, ContentModel.ASSOC_CONTAINS, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, testWP1), 
                 WCMAppModel.TYPE_AVMWEBFOLDER, properties).getChildRef();
         
@@ -127,253 +106,199 @@ public class AVMLockingServiceTest extends TestCase
         
         cleanUsersAndGroups();
         
-        fAuthenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
-        fPersonService.getPerson("Buffy");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, "Scoobies");
-        fAuthorityService.addAuthority("GROUP_Scoobies", "Buffy");
-        fAuthorityService.createAuthority(AuthorityType.ROLE, "SUPER_POWERED");
-        fAuthorityService.addAuthority("ROLE_SUPER_POWERED", "Buffy");
+        authenticationService.createAuthentication("Buffy", "Buffy".toCharArray());
+        personService.getPerson("Buffy");
+        authorityService.createAuthority(AuthorityType.GROUP, "Scoobies");
+        authorityService.addAuthority("GROUP_Scoobies", "Buffy");
+        authorityService.createAuthority(AuthorityType.ROLE, "SUPER_POWERED");
+        authorityService.addAuthority("ROLE_SUPER_POWERED", "Buffy");
         
-        fAuthenticationService.createAuthentication("Willow", "Willow".toCharArray());
-        fPersonService.getPerson("Willow");
-        fAuthorityService.addAuthority("GROUP_Scoobies", "Willow");
+        authenticationService.createAuthentication("Willow", "Willow".toCharArray());
+        personService.getPerson("Willow");
+        authorityService.addAuthority("GROUP_Scoobies", "Willow");
         
-        fAuthenticationService.createAuthentication("Xander", "Xander".toCharArray());
-        fPersonService.getPerson("Xander");
-        fAuthorityService.addAuthority("GROUP_Scoobies", "Xander");
+        authenticationService.createAuthentication("Xander", "Xander".toCharArray());
+        personService.getPerson("Xander");
+        authorityService.addAuthority("GROUP_Scoobies", "Xander");
         
-        fAuthenticationService.createAuthentication("Tara", "Tara".toCharArray());
-        fPersonService.getPerson("Tara");
+        authenticationService.createAuthentication("Tara", "Tara".toCharArray());
+        personService.getPerson("Tara");
         
-        fAuthenticationService.createAuthentication("Spike", "Spike".toCharArray());
-        fPersonService.getPerson("Spike");
-        fAuthorityService.addAuthority("ROLE_SUPER_POWERED", "Spike");
-        fAuthorityService.createAuthority(AuthorityType.GROUP, "vampires");
-        fAuthorityService.addAuthority("GROUP_vampires", "Spike");
+        authenticationService.createAuthentication("Spike", "Spike".toCharArray());
+        personService.getPerson("Spike");
+        authorityService.addAuthority("ROLE_SUPER_POWERED", "Spike");
+        authorityService.createAuthority(AuthorityType.GROUP, "vampires");
+        authorityService.addAuthority("GROUP_vampires", "Spike");
     }
 
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
-     */
     @Override
     protected void tearDown() throws Exception
     {
-        List<String> webProjects = fLockingService.getWebProjects();
-        for (String webProject : webProjects)
-        {
-            if (webProject.equals(testWP1))
-            {
-                fLockingService.removeStoreLocks(webProject);
-                fLockingService.removeWebProject(webProject);
-            }
-        }
+        lockingService.removeLocks(testWP1);
         cleanUsersAndGroups();
-        fNodeService.deleteNode(fWebProject);
+        nodeService.deleteNode(testWP1NodeRef);
     }
     
     private void cleanUsersAndGroups()
     {
-        for (String testUser : testUsers)
+        for (String testUser : TESTUSERS)
         {
-            if (fAuthenticationService.authenticationExists(testUser))
+            if (authenticationService.authenticationExists(testUser))
             {
-                fAuthenticationService.deleteAuthentication(testUser);
+                authenticationService.deleteAuthentication(testUser);
             }
             
-            if (fPersonService.personExists(testUser))
+            if (personService.personExists(testUser))
             {
-                fPersonService.deletePerson(testUser);
+                personService.deletePerson(testUser);
             }
         }
         
-        for (String testAuthority : testAuthorities)
+        for (String testAuthority : TESTAUTHORITIES)
         {
-            if (fAuthorityService.authorityExists(testAuthority))
+            if (authorityService.authorityExists(testAuthority))
             {
-                fAuthorityService.deleteAuthority(testAuthority);
+                authorityService.deleteAuthority(testAuthority);
             }
         }
     }
     
-    public void testAll()
+    private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
+    
+    public void testAll() throws Exception
     {
+        lockingService.lock(testWP1, "Revello Drive/1630", TESTUSERS[0], EMPTY_MAP);
+        assertEquals(lockingService.getLockOwner(testWP1, "Revello Drive/1630"), TESTUSERS[0]);
+        lockingService.removeLock(testWP1, "Revello Drive/1630");
+        assertNull(lockingService.getLockOwner(testWP1, "Revello Drive/1630"));
+
+        lockingService.lock(testWP1, "UC Sunnydale/Stevenson Hall", TESTUSERS[0], EMPTY_MAP);
+        assertEquals(lockingService.getLockOwner(testWP1, "UC Sunnydale/Stevenson Hall"), TESTUSERS[0]);
+
         try
         {
-            fLockingService.addWebProject(testWP1);
-            System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
-            List<String> owners = new ArrayList<String>();
-            owners.add("Buffy");
-            owners.add("Spike");
-            AVMLock lock = new AVMLock(testWP1,
-                                       "Sunnydale",
-                                       "Revello Drive/1630",
-                                       AVMLockingService.Type.DISCRETIONARY,
-                                       owners);
-            fLockingService.lockPath(lock);
-            System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
-            assertNotNull(fLockingService.getLock(testWP1, "Revello Drive/1630"));
-            // assertEquals(1, fLockingService.getUsersLocks("Buffy").size());
-            assertEquals(1, fLockingService.getWebProjectLocks(testWP1).size());
-            List<String> owners2 = new ArrayList<String>();
-            owners2.add("Buffy");
-            owners2.add("Willow");
-            AVMLock lock2 = new AVMLock(testWP1,
-                                        "Sunnydale",
-                                        "UC Sunnydale/Stevenson Hall",
-                                        AVMLockingService.Type.DISCRETIONARY,
-                                        owners2);
-            fLockingService.lockPath(lock2);
-            System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
-            // assertEquals(2, fLockingService.getUsersLocks("Buffy").size());
-            assertEquals(2, fLockingService.getWebProjectLocks(testWP1).size());
-            System.out.println("Before----------------------------");
-            fLockingService.removeLock(testWP1, "Revello Drive/1630");
-            System.out.println("After----------------------------");
-            System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
-            // assertEquals(1, fLockingService.getUsersLocks("Buffy").size());
-            assertEquals(1, fLockingService.getWebProjectLocks(testWP1).size());
-            fLockingService.removeWebProject(testWP1);
-            System.out.println(fAttributeService.getAttribute(".avm_lock_table"));
-            // assertEquals(0, fLockingService.getUsersLocks("Spike").size());
-            // assertEquals(0, fLockingService.getUsersLocks("Buffy").size());
-            // assertEquals(0, fLockingService.getUsersLocks("Willow").size());
-            // assertEquals(0, fLockingService.getUsersLocks("Tara").size());
+            lockingService.lock(testWP1, "UC Sunnydale/Stevenson Hall", TESTUSERS[1], EMPTY_MAP);
+            fail("Failed to detect existing lock");
         }
-        catch (Exception e)
+        catch (AVMLockingException e)
         {
-            e.printStackTrace();
-            fail();
+            // Expected
         }
     }
     
+    @SuppressWarnings("deprecation")
     public void testRoleBasedLocking()
     {
-        try
-        {
-            fLockingService.addWebProject(testWP1);
-            List<String> owners = new ArrayList<String>();
-            owners.add("ROLE_SUPER_POWERED");
-            owners.add("Tara");
-            AVMLock lock = new AVMLock(testWP1, 
-                                       "Sunnydale", 
-                                       "TheInitiative/Adam/plans.txt", 
-                                       AVMLockingService.Type.DISCRETIONARY, 
-                                       owners);
-            fLockingService.lockPath(lock);
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail();
-        }
+        Map<String, String> lockData = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, "Sunnydale");
+        
+        // lock owner = "ROLE_SUPER_POWERED"
+        lockingService.lock(testWP1, "TheInitiative/Adam/plans.txt", TESTAUTHORITIES[1], lockData);
+        
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara")); // Tara does not belong to ROLE_SUPER_POWERED
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
+        
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
     }
 
+    @SuppressWarnings("deprecation")
     public void testGroupBasedLocking()
     {
-        try
-        {
-            fLockingService.addWebProject(testWP1);
-            List<String> owners = new ArrayList<String>();
-            owners.add("GROUP_Scoobies");
-            owners.add("Tara");
-            AVMLock lock = new AVMLock(testWP1, 
-                                       "Sunnydale", 
-                                       "TheInitiative/Adam/plans.txt", 
-                                       AVMLockingService.Type.DISCRETIONARY, 
-                                       owners);
-            fLockingService.lockPath(lock);
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail();
-        }
+        Map<String, String> lockData = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, "Sunnydale");
+        
+        // lock owner = "GROUP_Scoobies"
+        lockingService.lock(testWP1, "TheInitiative/Adam/plans.txt", TESTAUTHORITIES[0], lockData);
+        
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara")); // Tara does not belong to GROUP_Scoobies
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
+        
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
     }
     
+    @SuppressWarnings("deprecation")
     public void testLockModification()
     {
-        try
+        Map<String, String> lockData = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, "Sunnydale");
+        
+        // lock owner = "GROUP_Scoobies"
+        lockingService.lock(testWP1, "TheInitiative/Adam/plans.txt", TESTAUTHORITIES[0], lockData);
+        
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara")); // Tara does not belong to GROUP_Scoobies
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
+        
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
+        
+        lockData = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, "Sunnydale");
+        
+        // lock owner = "GROUP_Scoobies"
+        lockingService.modifyLock(
+                testWP1, "TheInitiative/Adam/plans.txt", TESTAUTHORITIES[0],
+                testWP1, "ScrapHeap/Adam/plans.txt", lockData);
+        
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara")); // Tara does not belong to GROUP_Scoobies
+        assertTrue(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
+        
+        lockData = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, "LA");
+        
+        lockingService.modifyLock(
+                testWP1, "ScrapHeap/Adam/plans.txt", TESTAUTHORITIES[0], 
+                testWP1, "ScrapHeap/Adam/plans.txt", lockData);
+        
+        assertTrue(lockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
+        assertTrue(lockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Tara")); // Tara does not belong to GROUP_Scoobies
+        assertTrue(lockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
+        
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
+        assertFalse(lockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
+        
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            fLockingService.addWebProject(testWP1);
-            List<String> owners = new ArrayList<String>();
-            owners.add("GROUP_Scoobies");
-            owners.add("Tara");
-            AVMLock lock = new AVMLock(testWP1, 
-                                       "Sunnydale", 
-                                       "TheInitiative/Adam/plans.txt", 
-                                       AVMLockingService.Type.DISCRETIONARY, 
-                                       owners);
-            fLockingService.lockPath(lock);
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/TheInitiative/Adam/plans.txt", "Xander"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Spike"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Willow"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Tara"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/TheInitiative/Adam/plans.txt", "Xander"));
-            fLockingService.modifyLock(testWP1, "TheInitiative/Adam/plans.txt", "ScrapHeap/Adam/plans.txt", null, null, null);
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertTrue(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
-            fLockingService.modifyLock(testWP1, "ScrapHeap/Adam/plans.txt", null, "LA", null, null);
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertFalse(fLockingService.hasAccess(testWP1, "Sunnydale:/ScrapHeap/Adam/plans.txt", "Xander"));
-            List<String> usersToAdd = new ArrayList<String>();
-            usersToAdd.add("Spike");
-            fLockingService.modifyLock(testWP1, "ScrapHeap/Adam/plans.txt", null, null, null, usersToAdd);
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
-            List<String> usersToRemove = new ArrayList<String>();
-            usersToRemove.add("GROUP_Scoobies");
-            fLockingService.modifyLock(testWP1, "ScrapHeap/Adam/plans.txt", null, null, usersToRemove, null);
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Buffy"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Spike"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
-            assertFalse(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
-            assertTrue(fLockingService.hasAccess(testWP1, "LA:/ScrapHeap/Adam/plans.txt", AuthenticationUtil.getAdminUserName()));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            fail();
-        }
+            public Object doWork() throws Exception
+            {
+                try
+                {
+                    lockingService.modifyLock(
+                            testWP1, "ScrapHeap/Adam/plans.txt", "Spike",
+                            testWP1, "TheInitiative/Adam/plans.txt", EMPTY_MAP);
+                    fail("Failed to prevent lock modification by non-owner.");
+                }
+                catch (AVMLockingException e)
+                {
+                    // Expected
+                }
+                
+                return null;
+            }
+        }, "Buffy");
     }
     
     /**
@@ -385,114 +310,104 @@ public class AVMLockingServiceTest extends TestCase
         {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
-            fService.createStore("main");
-            
-            fLockingService.addWebProject("main");
+            if (avmService.getStore("main") == null)
+            {
+                avmService.createStore("main");
+            }
             
             // note: locking applies to WCM web projects, hence relies on WCM sandbox conventions (naming and properties)
-            fService.setStoreProperty("main", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummy")));
+            avmService.setStoreProperty("main", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummy")));
             
-            fService.createStore("main--admin");
+            if (avmService.getStore("main--admin") == null)
+            {
+                avmService.createStore("main--admin");
+            }
             
             setupBasicTree0();
 
-            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "main--admin:/", null);
+            List<AVMDifference> diffs = syncService.compare(-1, "main:/", -1, "main--admin:/", null);
             assertEquals(2, diffs.size());
             assertEquals("[main:/a[-1] > main--admin:/a[-1], main:/d[-1] > main--admin:/d[-1]]", diffs.toString());
             
-            fSyncService.update(diffs, null, false, false, false, false, null, null);
+            syncService.update(diffs, null, false, false, false, false, null, null);
             
             RetryingTransactionHelper.RetryingTransactionCallback<Object> cb = new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
             {
                 public Object execute() throws Exception
                 {
                     BulkLoader loader = new BulkLoader();
-                    loader.setAvmService(fService);
+                    loader.setAvmService(avmService);
                     loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main--admin:/");
                     return null;
                 }
             };
-            RetryingTransactionHelper helper = (RetryingTransactionHelper) fContext.getBean("retryingTransactionHelper");
+            RetryingTransactionHelper helper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
             helper.doInTransaction(cb);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw e;
         }
         finally
         {
-            fLockingService.removeStoreLocks("main");
-            fLockingService.removeWebProject("main");
+            lockingService.removeLocks("main");
             
-            fService.purgeStore("main--admin");
-            fService.purgeStore("main");
+            avmService.purgeStore("main--admin");
+            avmService.purgeStore("main");
             
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         }
     }
     
     // Minimal test of locking with file 'rename' across web projects
+    @SuppressWarnings("deprecation")
     public void testLockingAwareServiceFileRename() throws Exception
     {
+        lockingService.removeLocks("wpA");
+        lockingService.removeLocks("wpB");
         try
         {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
-            fService.createStore("wpA");
-            fLockingService.addWebProject("wpA");
+            avmService.createStore("wpA");
+            avmService.createStore("wpA--admin");
             
-            fService.createStore("wpA--admin");
-            
-            fService.createStore("wpB");
-            fLockingService.addWebProject("wpB");
-            
-            fService.createStore("wpB--admin");
+            avmService.createStore("wpB");
+            avmService.createStore("wpB--admin");
             
             // note: locking applies to WCM web projects, hence relies on WCM sandbox conventions (naming and properties)
-            fService.setStoreProperty("wpA", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummyA")));
-            fService.setStoreProperty("wpB", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummyB")));
+            avmService.setStoreProperty("wpA", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummyA")));
+            avmService.setStoreProperty("wpB", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummyB")));
             
-            assertNull(fLockingService.getLock("wpA", "/file1.txt"));
-            assertTrue(fLockingService.hasAccess("wpA", "wpA--admin:/file1.txt", "admin"));
+            assertNull(lockingService.getLockOwner("wpA", "/file1.txt"));
+            assertTrue(lockingService.hasAccess("wpA", "wpA--admin:/file1.txt", "admin"));
             
-            fService.createFile("wpA--admin:/", "file1.txt").close();
+            avmService.createFile("wpA--admin:/", "file1.txt").close();
             
-            assertNotNull(fLockingService.getLock("wpA", "/file1.txt"));
-            assertEquals("admin", fLockingService.getLock("wpA", "/file1.txt").getOwners().get(0));
-            assertTrue(fLockingService.hasAccess("wpA", "wpA--admin:/file1.txt", "admin"));
+            assertNotNull(lockingService.getLockOwner("wpA", "/file1.txt"));
+            assertEquals("admin", lockingService.getLockOwner("wpA", "/file1.txt"));
+            assertTrue(lockingService.hasAccess("wpA", "wpA--admin:/file1.txt", "admin"));
             
-            assertNull(fLockingService.getLock("wpB", "/file1.txt"));
-            assertTrue(fLockingService.hasAccess("wpB", "wpB--admin:/file1.txt", "admin"));
+            assertNull(lockingService.getLockOwner("wpB", "/file1.txt"));
+            assertTrue(lockingService.hasAccess("wpB", "wpB--admin:/file1.txt", "admin"));
             
             // ETHREEOH-1544
-            fService.rename("wpA--admin:/", "file1.txt", "wpB--admin:/", "file1.txt");
+            avmService.rename("wpA--admin:/", "file1.txt", "wpB--admin:/", "file1.txt");
             
-            assertNull(fLockingService.getLock("wpA", "/file1.txt"));
-            assertTrue(fLockingService.hasAccess("wpA", "wpA--admin:/file1.txt", "admin"));
+            assertNull(lockingService.getLockOwner("wpA", "/file1.txt"));
+            assertTrue(lockingService.hasAccess("wpA", "wpA--admin:/file1.txt", "admin"));
             
-            assertNotNull(fLockingService.getLock("wpB", "/file1.txt"));
-            assertEquals("admin", fLockingService.getLock("wpB", "/file1.txt").getOwners().get(0));
-            assertTrue(fLockingService.hasAccess("wpB", "wpB--admin:/file1.txt", "admin"));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw e;
+            assertNotNull(lockingService.getLockOwner("wpB", "/file1.txt"));
+            assertEquals("admin", lockingService.getLockOwner("wpB", "/file1.txt"));
+            assertTrue(lockingService.hasAccess("wpB", "wpB--admin:/file1.txt", "admin"));
         }
         finally
         {
-            try { fLockingService.removeStoreLocks("wpA"); } catch (Exception e) {}
-            try { fLockingService.removeWebProject("wpA"); } catch (Exception e) {}
+            try { lockingService.removeLocks("wpA"); } catch (Exception e) {}
             
-            if (fService.getStore("wpA--admin") != null) { fService.purgeStore("wpA--admin"); }
-            if (fService.getStore("wpA") != null) { fService.purgeStore("wpA"); }
+            if (avmService.getStore("wpA--admin") != null) { avmService.purgeStore("wpA--admin"); }
+            if (avmService.getStore("wpA") != null) { avmService.purgeStore("wpA"); }
             
-            try { fLockingService.removeStoreLocks("wpB"); } catch (Exception e) {}
-            try { fLockingService.removeWebProject("wpB"); } catch (Exception e) {}
+            try { lockingService.removeLocks("wpB"); } catch (Exception e) {}
             
-            if (fService.getStore("wpB--admin") != null) { fService.purgeStore("wpB--admin"); }
-            if (fService.getStore("wpB") != null) { fService.purgeStore("wpB"); }
+            if (avmService.getStore("wpB--admin") != null) { avmService.purgeStore("wpB--admin"); }
+            if (avmService.getStore("wpB") != null) { avmService.purgeStore("wpB"); }
             
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         }
@@ -504,26 +419,26 @@ public class AVMLockingServiceTest extends TestCase
     protected void setupBasicTree0()
         throws IOException
     {
-        fService.createDirectory("main:/", "a");
-        fService.createDirectory("main:/a", "b");
-        fService.createDirectory("main:/a/b", "c");
-        fService.createDirectory("main:/", "d");
-        fService.createDirectory("main:/d", "e");
-        fService.createDirectory("main:/d/e", "f");
+        avmService.createDirectory("main:/", "a");
+        avmService.createDirectory("main:/a", "b");
+        avmService.createDirectory("main:/a/b", "c");
+        avmService.createDirectory("main:/", "d");
+        avmService.createDirectory("main:/d", "e");
+        avmService.createDirectory("main:/d/e", "f");
         
-        fService.createFile("main:/a/b/c", "foo").close();
-        ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo", true);
+        avmService.createFile("main:/a/b/c", "foo").close();
+        ContentWriter writer = avmService.getContentWriter("main:/a/b/c/foo", true);
         writer.setEncoding("UTF-8");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent("I am main:/a/b/c/foo");
         
-        fService.createFile("main:/a/b/c", "bar").close();
-        writer = fService.getContentWriter("main:/a/b/c/bar", true);
+        avmService.createFile("main:/a/b/c", "bar").close();
+        writer = avmService.getContentWriter("main:/a/b/c/bar", true);
         // Force a conversion
         writer.setEncoding("UTF-16");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent("I am main:/a/b/c/bar");
        
-        fService.createSnapshot("main", null, null);
+        avmService.createSnapshot("main", null, null);
     }
 }

@@ -279,7 +279,6 @@ public interface SandboxService
      * @param submitDescription  description for submitted snapshot
      * @param expirationDates    optional map of <path, date> for those assets set with an expiration date, or can be null (if no expiration dates)
      * @param launchDate         optional launch date
-     * @param validateLinks      if true then will validate links (if link validation is enabled)
      * @param autoDeploy         if true then will auto-deploy on workflow approval
      * 
      * @deprecated subject to change
@@ -288,7 +287,7 @@ public interface SandboxService
     public void submitListAssets(String sbStoreId, List<String> relativePaths,
                                  String workflowName, Map<QName, Serializable> workflowParams, 
                                  String submitLabel, String submitDescription,
-                                 Map<String, Date> expirationDates, Date launchDate, boolean validateLinks, boolean autoDeploy);
+                                 Map<String, Date> expirationDates, Date launchDate, boolean autoDeploy);
     
     /**
      * Revert all changed assets for given sandbox (eg. in user sandbox)

@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.security.permissions;
 
-import java.io.Serializable;
 
 /**
  * Properties for an access control list
@@ -26,7 +25,7 @@ import java.io.Serializable;
  * @author andyh
  *
  */
-public interface AccessControlListProperties extends Serializable
+public interface AccessControlListProperties
 {
     /**
      * Get the ACL ID

@@ -26,11 +26,9 @@ import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,6 +36,7 @@ import org.alfresco.util.TempFileProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -53,8 +52,6 @@ public class InvalidNameEndingPatch extends AbstractPatch
     private static final String ERR_UNABLE_TO_FIX = "patch.invalidNameEnding.err.unable_to_fix";
     
     private SessionFactory sessionFactory;
-    private NodeDaoService nodeDaoService;
-    
     
     public static void main(String[] args)
     {
@@ -80,20 +77,11 @@ public class InvalidNameEndingPatch extends AbstractPatch
         this.sessionFactory = sessionFactory;
     }
 
-    /**
-     * @param nodeDaoService The service that generates the CRC values
-     */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
-    }
-
     @Override
     protected void checkProperties()
     {
         super.checkProperties();
         checkPropertyNotNull(sessionFactory, "sessionFactory");
-        checkPropertyNotNull(nodeDaoService, "nodeDaoService");
     }
 
     @Override
@@ -154,7 +142,6 @@ public class InvalidNameEndingPatch extends AbstractPatch
         public String fixNames() throws Exception
         {
             // get the association types to check
-            @SuppressWarnings("unused")
             List<Node> nodes = getInvalidNames();
 
             int updated = 0;

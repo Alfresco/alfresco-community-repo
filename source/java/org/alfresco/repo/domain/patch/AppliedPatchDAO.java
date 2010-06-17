@@ -26,7 +26,7 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
 /**
  * Provides data access support for patch persistence in <b>alf_applied_patch</b>.
  * 
- * @since 3.3
+ * @since 3.4
  * @author Derek Hulley
  */
 public interface AppliedPatchDAO

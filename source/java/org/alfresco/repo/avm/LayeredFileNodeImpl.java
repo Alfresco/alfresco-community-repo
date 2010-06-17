@@ -19,7 +19,6 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.domain.DbAccessControlList;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -104,21 +103,21 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
                     AVMNode node = lookup.getCurrentNode();
                     if (node.getAcl() != null)
                     {
-                        setAcl(DbAccessControlListImpl.createLayeredAcl(node.getAcl().getId()));
+                        setAcl(AVMDAOs.Instance().fAclDAO.createLayeredAcl(node.getAcl().getId()));
                     }
                     else
                     {
-                        setAcl(DbAccessControlListImpl.createLayeredAcl(null));
+                        setAcl(AVMDAOs.Instance().fAclDAO.createLayeredAcl(null));
                     }
                 }
                 else
                 {
-                    setAcl(DbAccessControlListImpl.createLayeredAcl(null));
+                    setAcl(AVMDAOs.Instance().fAclDAO.createLayeredAcl(null));
                 }
             }
             else
             {
-                setAcl(DbAccessControlListImpl.createLayeredAcl(null));
+                setAcl(AVMDAOs.Instance().fAclDAO.createLayeredAcl(null));
             }
         }
     }
@@ -143,14 +142,14 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
             throw new AVMException("Unbacked layered file node.");
         }
         DirectoryNode dir = lPath.getCurrentNodeDirectory();
-        Long parentAclId = null;
+        DbAccessControlList parentAcl = null;
         if ((dir != null) && (dir.getAcl() != null))
         {
-            parentAclId = dir.getAcl().getId();
+            parentAcl = dir.getAcl();
         }
         // TODO This doesn't look quite right.
         PlainFileNodeImpl newMe = new PlainFileNodeImpl(lPath.getAVMStore(), getBasicAttributes(), getContentData(lPath), indirect.getProperties(), indirect.getAspects(), indirect
-                .getAcl(), getVersionID(), parentAclId, ACLCopyMode.COPY);
+                .getAcl(), getVersionID(), parentAcl, ACLCopyMode.COPY);
         newMe.setAncestor(this);
         return newMe;
     }

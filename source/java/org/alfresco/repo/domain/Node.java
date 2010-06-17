@@ -19,8 +19,10 @@
 package org.alfresco.repo.domain;
 
 import java.util.Map;
-import java.util.Set;
 
+import org.alfresco.repo.domain.node.NodePropertyKey;
+import org.alfresco.repo.domain.node.NodePropertyValue;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -86,14 +88,12 @@ public interface Node
     public Long getTypeQNameId();
     
     public void setTypeQNameId(Long typeQNameId);
-
-    public DbAccessControlList getAccessControlList();
-
-    public void setAccessControlList(DbAccessControlList accessControlList);
-
-    public Set<Long> getAspects();
     
-    public Map<PropertyMapKey, NodePropertyValue> getProperties();
+    public Long getAclId();
+    
+    public void setAclId(Long aclId);
+
+    public Map<NodePropertyKey, NodePropertyValue> getProperties();
     
     public AuditableProperties getAuditableProperties();
 

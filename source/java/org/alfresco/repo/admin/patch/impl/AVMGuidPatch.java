@@ -48,7 +48,7 @@ public class AVMGuidPatch extends AbstractPatch
         fAVMNodeDAO = dao;
     }
     
-    public void setPatchDao(PatchDAO dao)
+    public void setPatchDAO(PatchDAO dao)
     {
         patchDAO = dao;
     }

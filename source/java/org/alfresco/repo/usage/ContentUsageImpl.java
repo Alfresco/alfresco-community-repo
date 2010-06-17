@@ -19,7 +19,6 @@
 package org.alfresco.repo.usage;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +42,9 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Implements Content Usage service and policies/behaviour.
@@ -54,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
 public class ContentUsageImpl implements ContentUsageService,
                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
                                          NodeServicePolicies.BeforeDeleteNodePolicy,
-                                         NodeServicePolicies.OnAddAspectPolicy,
+                                         //NodeServicePolicies.OnAddAspectPolicy,
                                          NodeServicePolicies.OnCreateNodePolicy
 {
     // Logger
@@ -147,11 +146,13 @@ public class ContentUsageImpl implements ContentUsageService,
                     ContentModel.TYPE_CONTENT,
                     new JavaBehaviour(this, "onCreateNode"));
             
+            /*
             // Register interest in the onAddAspect policy - for ownable
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
                     ContentModel.ASPECT_OWNABLE,
                     new JavaBehaviour(this, "onAddAspect"));
+            */
         }
     }
     
@@ -220,6 +221,7 @@ public class ContentUsageImpl implements ContentUsageService,
             }
         }
     }
+
     
     @SuppressWarnings("unchecked")
     private void recordCreate(NodeRef nodeRef)
@@ -388,6 +390,7 @@ public class ContentUsageImpl implements ContentUsageService,
      * @param nodeRef the node to which the aspect was added
      * @param aspectTypeQName the type of the aspect
      */
+    /* NOTE: now handled via onUpdateProperties as expected
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         if ((stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString())) &&
@@ -419,6 +422,7 @@ public class ContentUsageImpl implements ContentUsageService,
             }
         }
     }
+    */
     
     private void incrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
@@ -493,7 +497,7 @@ public class ContentUsageImpl implements ContentUsageService,
         }
     }
     
-    public long getUserStoredUsage(NodeRef personNodeRef)
+    private long getUserStoredUsage(NodeRef personNodeRef)
     {
         Long currentUsage = null;
         if (personNodeRef != null)
@@ -504,17 +508,16 @@ public class ContentUsageImpl implements ContentUsageService,
         return (currentUsage == null ? -1 : currentUsage);
     }
     
-    public long getUserUsage(String userName) {
-        return getUserUsage(userName, false);
-    }
-    
-    public long getUserUsage(String userName, boolean removeDeltas)
+    public long getUserUsage(String userName)
     {
         ParameterCheck.mandatoryString("userName", userName);
-        
+        return getUserUsage(getPerson(userName));
+    }
+    
+    public long getUserUsage(NodeRef personNodeRef)
+    {
         long currentUsage = -1;
         
-        NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
         {
             currentUsage = getUserStoredUsage(personNodeRef);
@@ -522,16 +525,14 @@ public class ContentUsageImpl implements ContentUsageService,
         
         if (currentUsage != -1)
         {
-            long deltaSize = removeDeltas ? usageService.getAndRemoveTotalDeltaSize(personNodeRef) :
-                usageService.getTotalDeltaSize(personNodeRef);
-            // add any deltas to the currentUsage, removing them if required
-            currentUsage = currentUsage + deltaSize;
-
+            // add any deltas
+            currentUsage = currentUsage + usageService.getTotalDeltaSize(personNodeRef);
+            
             if (currentUsage < 0)
             {
                 if (logger.isWarnEnabled())
                 {
-                    logger.warn("User usage ("+ userName+") is negative ("+currentUsage+") overriding to 0");
+                    logger.warn("User usage ("+ personNodeRef+") is negative ("+currentUsage+") overriding to 0");
                 }
                 currentUsage = 0;
             }

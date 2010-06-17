@@ -1552,7 +1552,7 @@ public class AVMServiceImpl implements AVMService
             createFile(path, name, in);
             if (acl != null)
             {
-                setAclAsSystem(newPath, acl.getCopy(parentAclId, ACLCopyMode.COPY));
+                setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
             }
             ContentData cd = getContentDataForRead(version, desc.getPath());
             setEncoding(newPath, cd.getEncoding());
@@ -1571,7 +1571,7 @@ public class AVMServiceImpl implements AVMService
                 // Set acl before creating children as acls inherit :-)
                 if (acl != null)
                 {
-                    setAclAsSystem(newPath, acl.getCopy(parentAclId, ACLCopyMode.COPY));
+                    setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
                 }
             }
             Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc); 

@@ -1,7 +1,7 @@
 --
 -- Title:      Upgrade to V3.3 - Create repo sequences
 -- Database:   PostgreSQL
--- Since:      V3.3 schema 4005
+-- Since:      V3.4 schema 4105
 -- Author:     unknown
 --
 -- creates sequences for repo tables
@@ -9,11 +9,54 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-CREATE SEQUENCE alf_namespace_seq START WITH 1 INCREMENT BY 1;
-SELECT SETVAL('alf_namespace_seq', NEXTVAL('hibernate_sequence'));
+--ASSIGN:hibernate_seq_next_value=value
+SELECT NEXTVAL(hibernate_sequence) AS value;
 
-CREATE SEQUENCE alf_qname_seq START WITH 1 INCREMENT BY 1;
-SELECT SETVAL('alf_qname_seq', CURRVAL('hibernate_sequence'));
+CREATE SEQUENCE alf_namespace_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;   -- (optional)
+
+CREATE SEQUENCE alf_qname_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;       -- (optional)
+
+CREATE SEQUENCE alf_permission_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_ace_context_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_authority_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_access_control_entry_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_acl_change_set_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_access_control_list_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_acl_member_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_authority_alias_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_audit_config_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_audit_date_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_audit_source_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_audit_fact_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_server_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_transaction_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_store_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_node_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_child_assoc_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_locale_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_attributes_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_node_assoc_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
+
+CREATE SEQUENCE alf_usage_delta_seq START WITH ${hibernate_seq_next_value} INCREMENT BY 1;
 
 --
 -- Record script finish
@@ -24,5 +67,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.3-Fix-Repo-Seqs', 'Manually executed script upgrade V3.3 to create repo sequences',
-     0, 4004, -1, 4005, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
+     0, 4104, -1, 4105, null, 'UNKOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

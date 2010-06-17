@@ -16,656 +16,270 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.attributes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.Arrays;
 
-import org.alfresco.repo.attributes.Attribute.Type;
-import org.alfresco.service.cmr.attributes.AttrQuery;
+import org.alfresco.repo.domain.propval.PropertyUniqueConstraintViolation;
+import org.alfresco.repo.domain.propval.PropertyValueDAO;
+import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyUniqueContextCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.cmr.avm.AVMBadArgumentException;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
-import org.alfresco.service.cmr.avm.AVMWrongTypeException;
+import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of the AttributeService interface.
- * @author britt
+ * Layers on the storage of property values to provide generic attribute storage
+ * 
+ * @see PropertyValueDAO
+ * @author Derek Hulley
  */
 public class AttributeServiceImpl implements AttributeService
 {
-    private GlobalAttributeEntryDAO fGlobalAttributeEntryDAO;
-
-    private AttributeDAO fAttributeDAO;
-
-    private AttributeConverter fAttributeConverter;
+    private static final Log logger = LogFactory.getLog(AttributeServiceImpl.class);
+    
+    private PropertyValueDAO propertyValueDAO;
 
     public AttributeServiceImpl()
     {
     }
 
-    public void setGlobalAttributeEntryDao(GlobalAttributeEntryDAO dao)
-    {
-        fGlobalAttributeEntryDAO = dao;
-    }
-
-    public void setAttributeDao(AttributeDAO dao)
-    {
-        fAttributeDAO = dao;
-    }
-
-    public void setAttributeConverter(AttributeConverter converter)
-    {
-        fAttributeConverter = converter;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#getAttribute(java.lang.String)
+    /**
+     * Set the DAO that handles the unique property persistence
      */
-    public Attribute getAttribute(String path)
+    public void setPropertyValueDAO(PropertyValueDAO propertyValueDAO)
     {
-        if (path == null)
+        this.propertyValueDAO = propertyValueDAO;
+    }
+    
+    /**
+     * Formalize the shape of the variable-size array.
+     * 
+     * @param keys              the variable-size array of 1 to 3 keys
+     * @return                  an array of exactly 3 keys (incl. <tt>null</tt> values)
+     */
+    private Serializable[] normalizeKeys(Serializable ... keys)
+    {
+        if (keys.length < 1 || keys.length > 3)
         {
-            throw new AVMBadArgumentException("Null path.");
+            ParameterCheck.mandatory("keys", null);
         }
-        List<String> keys = parsePath(path);
-        return getAttribute(keys);
+        return new Serializable[]
+        {
+                keys[0],
+                keys.length > 1 ? keys[1] : null,
+                keys.length > 2 ? keys[2] : null
+        };
     }
 
     /**
-     * Utility to parse paths.  Paths are of the form '/name/name'. '\' can
-     * be used to escape '/'s.
-     * @param path The path to parse.
-     * @return The components of the path.
+     * {@inheritDoc}
      */
-    private List<String> parsePath(String path)
+    public boolean exists(Serializable ... keys)
     {
-        List<String> components = new ArrayList<String>();
-        int off = 0;
-        while (off < path.length())
+        keys = normalizeKeys(keys);
+        Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keys[0], keys[1], keys[2]);
+        boolean exists = (pair != null);
+        // Done
+        if (logger.isDebugEnabled())
         {
-            while (off < path.length() && path.charAt(off) == '/')
+            logger.debug(
+                    "Check attribute exists: \n" +
+                    "   Keys:   " + Arrays.asList(keys) + "\n" +
+                    "   exists: " + exists);
+        }
+        return exists;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Serializable getAttribute(Serializable ... keys)
+    {
+        keys = normalizeKeys(keys);
+        Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keys[0], keys[1], keys[2]);
+        Serializable value = null;
+        if (pair != null && pair.getSecond() != null)
+        {
+            Long valueId = pair.getSecond();
+            value = propertyValueDAO.getPropertyById(valueId);
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Got attribute: \n" +
+                    "   Keys:   " + Arrays.asList(keys) + "\n" +
+                    "   Value: " + value);
+        }
+        return value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void getAttributes(final AttributeQueryCallback callback, Serializable ... keys)
+    {
+        PropertyUniqueContextCallback propertyUniqueContextCallback = new PropertyUniqueContextCallback()
+        {
+            public void handle(Long id, Long valueId, Serializable[] resultKeyIds)
             {
-                off++;
-            }
-            StringBuilder builder = new StringBuilder();
-            while (off < path.length())
-            {
-                char c = path.charAt(off);
-                if (c == '/')
+                Serializable value = null;
+                if (valueId != null)
                 {
-                    break;
+                    value = propertyValueDAO.getPropertyById(valueId);
                 }
-                if (c == '\\')
+                
+                Serializable[] resultsKeyValues = new Serializable[resultKeyIds.length];
+                for (int i = 0; i < resultKeyIds.length; i++)
                 {
-                    off++;
-                    if (off >= path.length())
+                    if (resultKeyIds[i] != null)
                     {
-                        break;
+                        Pair<Long, Serializable> keyValuePair = propertyValueDAO.getPropertyValueById((Long)resultKeyIds[i]);
+                        resultsKeyValues[i] = (keyValuePair != null ? keyValuePair.getSecond() : null);
                     }
-                    c = path.charAt(off);
                 }
-                builder.append(c);
-                off++;
+                
+                callback.handleAttribute(id, value, resultsKeyValues);
+                
+                // Done
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace(
+                            "Got attribute: \n" +
+                            "   Keys:   " + Arrays.asList(resultsKeyValues) + "\n" +
+                            "   Value: " + value);
+                }
             }
-            components.add(builder.toString());
+        };
+        propertyValueDAO.getPropertyUniqueContext(propertyUniqueContextCallback, keys);
+        // Done
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void setAttribute(Serializable value, Serializable ... keys)
+    {
+        keys = normalizeKeys(keys);
+        Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keys[0], keys[1], keys[2]);
+        if (pair == null)
+        {
+            // We can create it.  Any concurrency issue will be handled by the transaction.
+            propertyValueDAO.createPropertyUniqueContext(keys[0], keys[1], keys[2], value);
         }
-        return components;
+        else
+        {
+            Long id = pair.getFirst();
+            propertyValueDAO.updatePropertyUniqueContext(id, value);
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Set attribute Value: \n" +
+                    "   Keys:   " + Arrays.asList(keys) + "\n" +
+                    "   Value: " + value);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#query(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
+    /**
+     * {@inheritDoc}
      */
-    public List<Pair<String, Attribute>> query(String path, AttrQuery query)
+    public void createAttribute(Serializable value, Serializable... keys)
     {
-        if (path == null)
+        keys = normalizeKeys(keys);
+        try
         {
-            throw new AVMBadArgumentException("Null Attribute Path.");
+            propertyValueDAO.createPropertyUniqueContext(keys[0], keys[1], keys[2], value);
         }
-        List<String> keys = parsePath(path);
-        return query(keys, query);
+        catch (PropertyUniqueConstraintViolation e)
+        {
+            throw new DuplicateAttributeException(keys[0], keys[1], keys[2], e); 
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Created attribute: \n" +
+                    "   Keys:   " + Arrays.asList(keys) + "\n" +
+                    "   Value: " + value);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#removeAttribute(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    public void removeAttribute(String path, String name)
+    public void updateOrCreateAttribute(
+            Serializable keyBefore1,
+            Serializable keyBefore2,
+            Serializable keyBefore3,
+            Serializable keyAfter1,
+            Serializable keyAfter2,
+            Serializable keyAfter3)
     {
-        if (path == null)
+        Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(keyBefore1, keyBefore2, keyBefore3);
+        try
         {
-            throw new AVMBadArgumentException("Null Attribute Path.");
-        }
-        List<String> keys = parsePath(path);
-        removeAttribute(keys, name);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.lang.String, org.alfresco.repo.attributes.Attribute)
-     */
-    public void setAttribute(String path, String name, Attribute value)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null path.");
-        }
-        List<String> keys = parsePath(path);
-        setAttribute(keys, name, value);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#getKeys(java.lang.String)
-     */
-    public List<String> getKeys(String path)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null Attribute Path.");
-        }
-        List<String> keys = parsePath(path);
-        return getKeys(keys);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#getAttribute(java.util.List)
-     */
-    public Attribute getAttribute(List<String> keys)
-    {
-        if (keys == null)
-        {
-            throw new AVMBadArgumentException("Null Attribute Path List.");
-        }
-        if (keys.size() < 1)
-        {
-            throw new AVMBadArgumentException("Bad Attribute Path List.");
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            return null;
-        }
-        Attribute converted = fAttributeConverter.toValue(found);
-        return converted;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#getKeys(java.util.List)
-     */
-    public List<String> getKeys(List<String> keys)
-    {
-        if (keys == null)
-        {
-            throw new AVMBadArgumentException("Null Keys List.");
-        }
-        if (keys.size() == 0)
-        {
-            return fGlobalAttributeEntryDAO.getKeys();
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.MAP)
-        {
-            throw new AVMWrongTypeException("Not a Map: " + keys.get(keys.size() - 1));
-        }
-        return new ArrayList<String>(found.keySet());
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.util.List, java.lang.String, org.alfresco.repo.attributes.Attribute)
-     */
-    public void setAttribute(List<String> keys, String name, Attribute value)
-    {
-        if (keys == null || name == null || value == null)
-        {
-            throw new AVMBadArgumentException("Null argument.");
-        }
-        if (keys.size() == 0)
-        {
-            Attribute toSave = fAttributeConverter.toPersistent(value);
-            GlobalAttributeEntry found = fGlobalAttributeEntryDAO.get(name);
-            if (found == null)
+            if (pair == null)
             {
-                found = new GlobalAttributeEntryImpl(name, toSave);
-                fGlobalAttributeEntryDAO.save(found);
-                return;
-            }
-            found.setAttribute(toSave);
-            return;
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.MAP)
-        {
-            throw new AVMWrongTypeException("Not a Map: " + keys);
-        }
-        Attribute converted = fAttributeConverter.toPersistent(value);
-        found.put(name, converted);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#query(java.util.List, org.alfresco.service.cmr.attributes.AttrQuery)
-     */
-    public List<Pair<String, Attribute>> query(List<String> keys, AttrQuery query)
-    {
-        if (keys == null || query == null)
-        {
-            throw new AVMBadArgumentException("Null argument.");
-        }
-        if (keys.size() == 0)
-        {
-            throw new AVMBadArgumentException("Cannot query top level Attributes.");
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.MAP)
-        {
-            throw new AVMWrongTypeException("Not a Map: " + keys);
-        }
-        List<Pair<String, Attribute>> rawResult =
-            fAttributeDAO.find((MapAttribute)found, query);
-        List<Pair<String, Attribute>> result =
-            new ArrayList<Pair<String, Attribute>>();
-        for (Pair<String, Attribute> raw : rawResult)
-        {
-            result.add(new Pair<String, Attribute>(raw.getFirst(),
-                                                   fAttributeConverter.toValue(raw.getSecond())));
-        }
-        return result;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#removeAttribute(java.util.List, java.lang.String)
-     */
-    public void removeAttribute(List<String> keys, String name)
-    {
-        if (keys == null || name == null)
-        {
-            throw new AVMBadArgumentException("Null argument.");
-        }
-        if (keys.size() == 0)
-        {
-            fGlobalAttributeEntryDAO.delete(name);
-            return;
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.MAP)
-        {
-            throw new AVMWrongTypeException("Attribute Not Map: " + keys);
-        }
-        found.remove(name);
-        fAttributeDAO.flush();
-        fAttributeDAO.evictFlat(found);
-    }
-
-    private Attribute getAttributeFromPath(List<String> keys)
-    {
-        GlobalAttributeEntry entry = fGlobalAttributeEntryDAO.get(keys.get(0));
-        if (entry == null)
-        {
-            return null;
-        }
-        Attribute current = entry.getAttribute();
-        for (int i = 1; i < keys.size(); i++)
-        {
-            if (current.getType() == Type.MAP)
-            {
-                Attribute newCurrent = current.get(keys.get(i));
-                fAttributeDAO.evictFlat(current);
-                current = newCurrent;
-            }
-            else if (current.getType() == Type.LIST)
-            {
-                Attribute newCurrent = current.get(Integer.parseInt(keys.get(i)));
-                fAttributeDAO.evictFlat(current);
-                current = newCurrent;
+                pair = propertyValueDAO.createPropertyUniqueContext(keyAfter1, keyAfter2, keyAfter3, null);
             }
             else
             {
-                throw new AVMWrongTypeException("Not a Map or List: " + keys.get(i - 1));
-            }
-            if (current == null)
-            {
-                return null;
+                Long id = pair.getFirst();
+                propertyValueDAO.updatePropertyUniqueContext(id, keyAfter1, keyAfter2, keyAfter3);
             }
         }
-        return current;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttribute(java.util.List, org.alfresco.repo.attributes.Attribute)
-     */
-    public void addAttribute(List<String> keys, Attribute value)
-    {
-        if (keys == null || value == null)
+        catch (PropertyUniqueConstraintViolation e)
         {
-            throw new AVMBadArgumentException("Illegal Null Argument.");
+            throw new DuplicateAttributeException(keyAfter1, keyAfter2, keyAfter3, e); 
         }
-        if (keys.size() < 1)
+        // Done
+        if (logger.isDebugEnabled())
         {
-            throw new AVMBadArgumentException("Path too short: " + keys);
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.LIST)
-        {
-            throw new AVMWrongTypeException("Attribute Not List: " + keys);
-        }
-        found.add(fAttributeConverter.toPersistent(value));
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttribute(java.lang.String, org.alfresco.repo.attributes.Attribute)
-     */
-    public void addAttribute(String path, Attribute value)
-    {
-        if (path == null || value == null)
-        {
-            throw new AVMBadArgumentException("Illegal null arguments.");
-        }
-        List<String> keys = parsePath(path);
-        addAttribute(keys, value);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#removeAttribute(java.util.List, int)
-     */
-    public void removeAttribute(List<String> keys, int index)
-    {
-        if (keys == null)
-        {
-            throw new AVMBadArgumentException("Illegal Null Keys.");
-        }
-        if (keys.size() < 1)
-        {
-            throw new AVMBadArgumentException("Keys too short: " + keys);
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.LIST)
-        {
-            throw new AVMWrongTypeException("Attribute Not List: " + keys);
-        }
-        found.remove(index);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#removeAttribute(java.lang.String, int)
-     */
-    public void removeAttribute(String path, int index)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Illegal null path.");
-        }
-        List<String> keys = parsePath(path);
-        removeAttribute(keys, index);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#removeEntries(java.util.List, org.alfresco.service.cmr.attributes.AttrQuery)
-     */
-    public void removeEntries(List<String> keys, AttrQuery query)
-    {
-        if (keys == null || query == null)
-        {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        if (keys.size() == 0)
-        {
-            throw new AVMBadArgumentException("Illegal zero length key path.");
-        }
-        Attribute map = getAttributeFromPath(keys);
-        if (map == null)
-        {
-            throw new AVMNotFoundException("Could not find attribute: " + keys);
-        }
-        if (map.getType() != Attribute.Type.MAP)
-        {
-            throw new AVMWrongTypeException("Not a map: " + keys);
-        }
-        fAttributeDAO.delete((MapAttribute)map, query);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#removeEntries(java.lang.String, org.alfresco.service.cmr.attributes.AttrQuery)
-     */
-    public void removeEntries(String path, AttrQuery query)
-    {
-        if (path == null || query == null)
-        {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        List<String> keys = parsePath(path);
-        removeEntries(keys, query);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.util.List, int, org.alfresco.repo.attributes.Attribute)
-     */
-    public void setAttribute(List<String> keys, int index, Attribute value)
-    {
-        if (keys == null || value == null)
-        {
-            throw new AVMBadArgumentException("Illegal Null Argument.");
-        }
-        if (keys.size() < 1)
-        {
-            throw new AVMBadArgumentException("Keys too short.");
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.LIST)
-        {
-            throw new AVMWrongTypeException("Attribute Not List: " + keys);
-        }
-        Attribute converted = fAttributeConverter.toPersistent(value);
-        found.set(index, converted);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttribute(java.lang.String, int, org.alfresco.repo.attributes.Attribute)
-     */
-    public void setAttribute(String path, int index, Attribute value)
-    {
-        if (path == null || value == null)
-        {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        List<String> keys = parsePath(path);
-        setAttribute(keys, index, value);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#exists(java.util.List)
-     */
-    public boolean exists(List<String> keys)
-    {
-        if (keys == null)
-        {
-            throw new AVMBadArgumentException("Null keys list.");
-        }
-        if (keys.size() == 0)
-        {
-            throw new AVMBadArgumentException("Illegal zero length keys list.");
-        }
-        Attribute attr = getAttributeFromPath(keys);
-        if (attr != null)
-        {
-            fAttributeDAO.evictFlat(attr);
-            return true;
-        }
-        return false;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#exists(java.lang.String)
-     */
-    public boolean exists(String path)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null attribute path.");
-        }
-        List<String> keys = parsePath(path);
-        return exists(keys);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#getCount(java.util.List)
-     */
-    public int getCount(List<String> keys)
-    {
-        if (keys == null)
-        {
-            throw new AVMBadArgumentException("Null keys list.");
-        }
-        if (keys.size() == 0)
-        {
-            throw new AVMBadArgumentException("Illegal empty keys list.");
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute not found: " + keys);
-        }
-        if (found.getType() != Attribute.Type.LIST &&
-            found.getType() != Attribute.Type.MAP)
-        {
-            throw new AVMWrongTypeException("Not a map or list: " + keys);
-        }
-        return found.size();
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#getCount(java.lang.String)
-     */
-    public int getCount(String path)
-    {
-        if (path == null)
-        {
-            throw new AVMBadArgumentException("Null attribute path.");
-        }
-        List<String> keys = parsePath(path);
-        return getCount(keys);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttributes(java.util.List, java.util.List)
-     */
-    public void addAttributes(List<String> keys, List<Attribute> values)
-    {
-        if (keys == null || values == null)
-        {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        if (keys.size() == 0)
-        {
-            throw new AVMBadArgumentException("Zero length keys.");
-        }
-        Attribute list = getAttributeFromPath(keys);
-        if (list.getType() != Attribute.Type.LIST)
-        {
-            throw new AVMWrongTypeException("Attribute not list: " + list.getType());
-        }
-        for (Attribute value : values)
-        {
-            Attribute persistent = fAttributeConverter.toPersistent(value);
-            list.add(persistent);
+            Serializable[] keysBefore = normalizeKeys(keyBefore1, keyBefore2, keyBefore3);
+            Serializable[] keysAfter = normalizeKeys(keyAfter1, keyAfter2, keyAfter3);
+            logger.debug(
+                    "Updated attribute: \n" +
+                    "   Before:   " + Arrays.asList(keysBefore) + "\n" +
+                    "   After:    " + Arrays.asList(keysAfter));
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#addAttributes(java.lang.String, java.util.List)
+    /**
+     * {@inheritDoc}
      */
-    public void addAttributes(String path, List<Attribute> values)
+    public void removeAttribute(Serializable ... keys)
     {
-        if (path == null || values == null)
+        keys = normalizeKeys(keys);
+        int deleted = propertyValueDAO.deletePropertyUniqueContext(keys[0], keys[1], keys[2]);
+        // Done
+        if (logger.isDebugEnabled())
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
-        }
-        List<String> keys = parsePath(path);
-        addAttributes(keys, values);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttributes(java.util.List, java.util.Map)
-     */
-    public void setAttributes(List<String> keys, Map<String, Attribute> entries)
-    {
-        if (keys == null || entries == null)
-        {
-            throw new AVMBadArgumentException("Null argument.");
-        }
-        if (keys.size() == 0)
-        {
-            for (Map.Entry<String, Attribute> entry : entries.entrySet())
-            {
-                String name = entry.getKey();
-                Attribute value = entry.getValue();
-                Attribute toSave = fAttributeConverter.toPersistent(value);
-                GlobalAttributeEntry found = fGlobalAttributeEntryDAO.get(name);
-                if (found == null)
-                {
-                    found = new GlobalAttributeEntryImpl(name, toSave);
-                    fGlobalAttributeEntryDAO.save(found);
-                    return;
-                }
-                found.setAttribute(toSave);
-            }
-            return;
-        }
-        Attribute found = getAttributeFromPath(keys);
-        if (found == null)
-        {
-            throw new AVMNotFoundException("Attribute Not Found: " + keys);
-        }
-        if (found.getType() != Type.MAP)
-        {
-            throw new AVMWrongTypeException("Not a Map: " + keys);
-        }
-        for (Map.Entry<String, Attribute> entry : entries.entrySet())
-        {
-            String name = entry.getKey();
-            Attribute value = entry.getValue();
-            found.put(name, fAttributeConverter.toPersistent(value));
+            logger.debug(
+                    "Deleted attribute: \n" +
+                    "   Keys:  " + Arrays.asList(keys) + "\n" +
+                    "   Count: " + deleted);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.attributes.AttributeService#setAttributes(java.lang.String, java.util.Map)
+    /**
+     * {@inheritDoc}
      */
-    public void setAttributes(String path, Map<String, Attribute> entries)
+    public void removeAttributes(Serializable ... keys)
     {
-        if (path == null || entries == null)
+        int deleted = propertyValueDAO.deletePropertyUniqueContext(keys);
+        // Done
+        if (logger.isDebugEnabled())
         {
-            throw new AVMBadArgumentException("Illegal null argument.");
+            logger.debug(
+                    "Deleted attributes: \n" +
+                    "   Keys:  " + Arrays.asList(keys) + "\n" +
+                    "   Count: " + deleted);
         }
-        List<String> keys = parsePath(path);
-        setAttributes(keys, entries);
     }
 }
-

@@ -28,6 +28,8 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -88,9 +90,9 @@ public class AbstractPermissionTest extends TestCase
     
     protected AuthorityDAO authorityDAO;
 
-    protected NodeDaoService nodeDaoService;
+    protected NodeDAO nodeDAO;
     
-    protected AclDaoComponent aclDaoComponent;
+    protected AclDAO aclDaoComponent;
 
     protected RetryingTransactionHelper retryingTransactionHelper;
 
@@ -122,8 +124,8 @@ public class AbstractPermissionTest extends TestCase
         
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
-        nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
-        aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
+        nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
+        aclDaoComponent = (AclDAO) applicationContext.getBean("aclDAO");
         
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         

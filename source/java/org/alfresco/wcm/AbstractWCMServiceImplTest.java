@@ -26,6 +26,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
@@ -100,6 +101,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected PersonService personService;
     
     protected TransactionService transactionService;
+    protected AVMLockingService avmLockingService;
     
     @Override
     protected void setUp() throws Exception
@@ -112,6 +114,7 @@ public class AbstractWCMServiceImplTest extends TestCase
         authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
         transactionService = (TransactionService)ctx.getBean("TransactionService");
+        avmLockingService = (AVMLockingService)ctx.getBean("AVMLockingService");
         
         // By default run as Admin
         USER_ADMIN = AuthenticationUtil.getAdminUserName();

@@ -307,14 +307,6 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
     /**
      * {@inheritDoc}
      */
-    public List<Long> getAVMNodesByAclId(long aclId)
-    {
-        return getAVMNodeEntityIdsByAclId(aclId);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
     public void getContentUrls(ContentUrlHandler handler)
     {
         getPlainFileContentUrls(handler);
@@ -393,7 +385,6 @@ public abstract class AbstractAVMNodeDAOImpl implements AVMNodeDAO
     protected abstract List<AVMNodeEntity> getNodeEntityOrphans(int maxSize);
     protected abstract List<AVMNodeEntity> getAllLayeredDirectoryNodeEntities();
     protected abstract List<AVMNodeEntity> getAllLayeredFileNodeEntities();
-    protected abstract List<Long> getAVMNodeEntityIdsByAclId(long aclId);
     protected abstract void getPlainFileContentUrls(ContentUrlHandler handler);
     
     /**

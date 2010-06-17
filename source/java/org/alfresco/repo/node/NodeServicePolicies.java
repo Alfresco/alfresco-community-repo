@@ -256,6 +256,9 @@ public interface NodeServicePolicies
          * @param assocTypeQName        the type of the association
          * @param assocQName            the name of the association
          * @param isNewNode             <tt>true</tt> if the node is new or <tt>false</tt> if the node is being linked in
+         * 
+         * @deprecated                  This is not necessary and we don't know about the child node until after the
+         *                              association has been created.
          */
         public void beforeCreateChildAssociation(
                 NodeRef parentNodeRef,

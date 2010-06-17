@@ -40,8 +40,8 @@
       <property name="nodeService">
           <ref bean="nodeService" />
       </property>
-      <property name="nodeDaoService">
-          <ref bean="nodeDaoService" />
+      <property name="nodeDAO">
+          <ref bean="nodeDAO" />
       </property>
       <property name="tenantService">
          <ref bean="tenantService" />

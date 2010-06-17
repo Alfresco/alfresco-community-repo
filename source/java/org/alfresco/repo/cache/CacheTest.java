@@ -131,16 +131,28 @@ public class CacheTest extends TestCase
         assertNull("Non-transactional remove didn't go to backing cache", backingCache.get(key));
     }
     
+    private static final String NEW_GLOBAL_ONE = "new_global_one";
+    private static final String NEW_GLOBAL_TWO = "new_global_two";
+    private static final String NEW_GLOBAL_THREE = "new_global_three";
+    private static final String UPDATE_TXN_THREE = "updated_txn_three";
+    private static final String UPDATE_TXN_FOUR = "updated_txn_four";
+
     public void testRollbackCleanup() throws Exception
     {
         TransactionService transactionService = serviceRegistry.getTransactionService();
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+
+        // Add items to the global cache
+        backingCache.put(NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
         
         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
             private int throwCount = 0;
             public Object execute() throws Throwable
             {
+                transactionalCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
+                transactionalCache.remove(NEW_GLOBAL_ONE);
+
                 String key = "B";
                 String value = "BBB";
                 // no transaction - do a put
@@ -151,24 +163,32 @@ public class CacheTest extends TestCase
                     throwCount++;
                     throw new SQLException("Dummy");
                 }
-                return null;
+                else
+                {
+                    throw new Exception("Fail");
+                }
             }
         };
-        txnHelper.doInTransaction(callback);
+        try
+        {
+            txnHelper.doInTransaction(callback);
+        }
+        catch (Exception e)
+        {
+            // Expected
+        }
+        
+        assertFalse("Remove not done after rollback", transactionalCache.contains(NEW_GLOBAL_ONE));
+        assertFalse("Update happened after rollback", transactionalCache.contains(NEW_GLOBAL_TWO));
     }
     
     public void testTransactionalCacheWithSingleTxn() throws Throwable
     {
-        String newGlobalOne = "new_global_one";
-        String newGlobalTwo = "new_global_two";
-        String newGlobalThree = "new_global_three";
-        String updatedTxnThree = "updated_txn_three";
-        String updatedTxnFour = "updated_txn_four";
         
         // add item to global cache
-        backingCache.put(newGlobalOne, newGlobalOne);
-        backingCache.put(newGlobalTwo, newGlobalTwo);
-        backingCache.put(newGlobalThree, newGlobalThree);
+        backingCache.put(NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
+        backingCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
+        backingCache.put(NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -178,29 +198,29 @@ public class CacheTest extends TestCase
             txn.begin();
             
             // remove 1 from the cache
-            transactionalCache.remove(newGlobalOne);
-            assertFalse("Item was not removed from txn cache", transactionalCache.contains(newGlobalOne));
-            assertNull("Get didn't return null", transactionalCache.get(newGlobalOne));
-            assertTrue("Item was removed from backing cache", backingCache.contains(newGlobalOne));
+            transactionalCache.remove(NEW_GLOBAL_ONE);
+            assertFalse("Item was not removed from txn cache", transactionalCache.contains(NEW_GLOBAL_ONE));
+            assertNull("Get didn't return null", transactionalCache.get(NEW_GLOBAL_ONE));
+            assertTrue("Item was removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
             
             // update 3 in the cache
-            transactionalCache.put(updatedTxnThree, "XXX");
-            assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(updatedTxnThree));
+            transactionalCache.put(UPDATE_TXN_THREE, "XXX");
+            assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(UPDATE_TXN_THREE));
             assertFalse("Item was put into backing cache (excl. NullValueMarker)",
-                    backingCache.contains(updatedTxnThree) &&
-                    !(backingCache.get(updatedTxnThree) instanceof NullValueMarker));
+                    backingCache.contains(UPDATE_TXN_THREE) &&
+                    !(backingCache.get(UPDATE_TXN_THREE) instanceof NullValueMarker));
             
             // check that the keys collection is correct
             Collection<String> transactionalKeys = transactionalCache.getKeys();
-            assertFalse("Transactionally removed item found in keys", transactionalKeys.contains(newGlobalOne));
-            assertTrue("Transactionally added item not found in keys", transactionalKeys.contains(updatedTxnThree));
+            assertFalse("Transactionally removed item found in keys", transactionalKeys.contains(NEW_GLOBAL_ONE));
+            assertTrue("Transactionally added item not found in keys", transactionalKeys.contains(UPDATE_TXN_THREE));
             
             // Register a post-commit cache reader to make sure that nothing blows up if the cache is hit in post-commit
-            PostCommitCacheReader listenerReader = new PostCommitCacheReader(transactionalCache, updatedTxnThree);
+            PostCommitCacheReader listenerReader = new PostCommitCacheReader(transactionalCache, UPDATE_TXN_THREE);
             AlfrescoTransactionSupport.bindListener(listenerReader);
             
             // Register a post-commit cache reader to make sure that nothing blows up if the cache is hit in post-commit
-            PostCommitCacheWriter listenerWriter = new PostCommitCacheWriter(transactionalCache, updatedTxnFour, "FOUR");
+            PostCommitCacheWriter listenerWriter = new PostCommitCacheWriter(transactionalCache, UPDATE_TXN_FOUR, "FOUR");
             AlfrescoTransactionSupport.bindListener(listenerWriter);
             
             // commit the transaction
@@ -217,13 +237,13 @@ public class CacheTest extends TestCase
             }
             
             // check that backing cache was updated with the in-transaction changes
-            assertFalse("Item was not removed from backing cache", backingCache.contains(newGlobalOne));
-            assertNull("Item could still be fetched from backing cache", backingCache.get(newGlobalOne));
-            assertEquals("Item not updated in backing cache", "XXX", backingCache.get(updatedTxnThree));
+            assertFalse("Item was not removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
+            assertNull("Item could still be fetched from backing cache", backingCache.get(NEW_GLOBAL_ONE));
+            assertEquals("Item not updated in backing cache", "XXX", backingCache.get(UPDATE_TXN_THREE));
             
             // Check that the transactional cache serves get requests
             assertEquals("Transactional cache must serve post-commit get requests", "XXX",
-                    transactionalCache.get(updatedTxnThree));
+                    transactionalCache.get(UPDATE_TXN_THREE));
         }
         catch (Throwable e)
         {

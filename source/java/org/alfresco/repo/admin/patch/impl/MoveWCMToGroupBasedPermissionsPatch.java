@@ -22,16 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -44,6 +40,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Remove ACLs on all but staging area stores On staging area stores, set ACls according to the users and roles as set
@@ -69,8 +66,6 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
     PermissionService permissionService;
 
-    AclDaoComponentImpl aclDaoComponent;
-
     AuthorityService authorityService;
 
     String replaceAllWith = PermissionService.WCM_CONTENT_MANAGER;
@@ -89,11 +84,6 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
-    }
-
-    public void setAclDaoComponent(AclDaoComponentImpl aclDaoComponent)
-    {
-        this.aclDaoComponent = aclDaoComponent;
     }
 
     public void setAuthorityService(AuthorityService authorityService)

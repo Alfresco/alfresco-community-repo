@@ -30,7 +30,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.config.JNDIConstants;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
@@ -38,11 +37,9 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -61,9 +58,11 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Bean that is responsible for locating expired content and routing
@@ -335,12 +334,12 @@ public class AVMExpiredContentProcessor
                      // before doing anything else see whether the item is locked by any user,
                      // if it is then just log a warning messge and wait until the next time around
                      String[] splitPath = nodePath.split(":");
-                     AVMLock lock = this.avmLockingService.getLock(storeName, splitPath[1]);
+                     String lockOwner = this.avmLockingService.getLockOwner(storeName, splitPath[1]);
                      
                      if (logger.isDebugEnabled())
-                         logger.debug("lock details for '" + nodePath + "': " + lock);
+                         logger.debug("lock details for '" + nodePath + "': " + lockOwner);
                      
-                     if (lock == null)
+                     if (lockOwner == null)
                      {
                          // get the map of expired content for the store
                          Map<String, List<String>> storeExpiredContent = this.expiredContent.get(storeName);

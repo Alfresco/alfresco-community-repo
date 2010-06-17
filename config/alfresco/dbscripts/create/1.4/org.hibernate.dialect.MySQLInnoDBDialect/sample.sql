@@ -1,4 +1,0 @@
---
--- Insert post-creation scripts here
--- This is specific to the dialect described in the path to the file
---

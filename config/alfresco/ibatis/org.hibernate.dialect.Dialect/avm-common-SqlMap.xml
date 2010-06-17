@@ -21,6 +21,8 @@
     <typeAlias alias="AVMStoreProperty" type="org.alfresco.repo.domain.avm.AVMStorePropertyEntity"/>
     <typeAlias alias="AVMNodeProperty" type="org.alfresco.repo.domain.avm.AVMNodePropertyEntity"/>
     
+    <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
+    
     
     <!--                -->
     <!-- Result Maps    -->
@@ -226,9 +228,19 @@
         values (#version#, #name#, 0, null, null)
     </sql>
     
+    <sql id="insert_AVMStore_Sequence">
+        insert into avm_stores (id, next_version_id, name, vers, current_root_id, acl_id)
+        values (#id#, #version#, #name#, 0, null, null)
+    </sql>
+    
     <sql id="insert_AVMNode_AutoIncrement">
         insert into avm_nodes (class_type, deletedType, version_id, vers, store_new_id, acl_id, guid, owner, creator, createDate, lastModifier, modDate, accessDate, is_root, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length)
         values (#classType#, #deletedType#, #version#, 0, #storeNewId#, #aclId#, #guid#, #owner#, #creator#, #createdDate#, #modifier#, #modifiedDate#, #accessDate#, #isRoot#, #layerId#, #indirection#, #indirectionVersion#, #primaryIndirection#, #opacity#, #contentUrl#, #mimetype#, #encoding#, #length#)
+    </sql>
+    
+    <sql id="insert_AVMNode_Sequence">
+        insert into avm_nodes (id, class_type, deletedType, version_id, vers, store_new_id, acl_id, guid, owner, creator, createDate, lastModifier, modDate, accessDate, is_root, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length)
+        values (#id#, #classType#, #deletedType#, #version#, 0, #storeNewId#, #aclId#, #guid#, #owner#, #creator#, #createdDate#, #modifier#, #modifiedDate#, #accessDate#, #isRoot#, #layerId#, #indirection#, #indirectionVersion#, #primaryIndirection#, #opacity#, #contentUrl#, #mimetype#, #encoding#, #length#)
     </sql>
     
     <sql id="insert_AVMVersionRoot_AutoIncrement">
@@ -236,9 +248,19 @@
         values (#storeId#, #rootNodeId#, #version#, #creator#, #createdDate#, #tag#, #description#)
     </sql>
     
+    <sql id="insert_AVMVersionRoot_Sequence">
+        insert into avm_version_roots (id, avm_store_id, root_id, version_id, creator, create_date, tag, description)
+        values (#id#, #storeId#, #rootNodeId#, #version#, #creator#, #createdDate#, #tag#, #description#)
+    </sql>
+    
     <sql id="insert_AVMStoreProperty_AutoIncrement">
         insert into avm_store_properties (actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, avm_store_id, qname_id)
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    </sql>
+    
+    <sql id="insert_AVMStoreProperty_Sequence">
+        insert into avm_store_properties (id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, avm_store_id, qname_id)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     </sql>
     
     
@@ -523,16 +545,7 @@
             class_type = 'layeredfile'
     </select>
     
-    <select id="select_AVMNodes_IDs_byAcl" parameterMap="parameter_IdMap" resultClass="long">
-        select
-            id
-        from
-            avm_nodes
-        where
-            acl_id = ?
-    </select>
-    
-        <select id="select_ContentUrlsForPlainFiles" resultClass="String">
+    <select id="select_ContentUrlsForPlainFiles" resultClass="String">
         select
            content_url
         from
@@ -613,6 +626,29 @@
         <isGreaterThan property="vers" compareValue="1">
             and vers = (#vers#-1)
         </isGreaterThan>
+    </update>
+    
+    <!-- for patch -->
+    <update id="update_AVMNodeList_nullifyAcl" parameterClass="list">
+        update
+            avm_nodes set acl_id = null
+        where 
+            acl_id is not null
+            and id in 
+            <iterate open="(" close=")" conjunction=",">
+                #[]#
+            </iterate>
+    </update>
+    
+    <!-- for patch -->
+    <update id="update_AVMNodeList_setAcl" parameterClass="IdListOfIdsParam">
+        update
+            avm_nodes set acl_id = #id#
+        where 
+            id in
+            <iterate property="listOfIds" open="(" close=")" conjunction=",">
+                #listOfIds[]#
+            </iterate>
     </update>
     
     <delete id="delete_AVMNode" parameterMap="parameter_IdMap">

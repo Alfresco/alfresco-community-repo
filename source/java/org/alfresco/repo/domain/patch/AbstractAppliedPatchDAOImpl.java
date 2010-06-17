@@ -29,7 +29,7 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
  * Abstract implementation for DAO <b>alf_applied_patch</b>.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public abstract class AbstractAppliedPatchDAOImpl implements AppliedPatchDAO
 {

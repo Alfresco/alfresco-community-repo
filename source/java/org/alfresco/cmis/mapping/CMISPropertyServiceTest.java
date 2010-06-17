@@ -97,7 +97,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), ""); // we don't unnecessarily guess/store (see FileFolderService.createImpl)
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
@@ -130,7 +130,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -181,7 +181,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -226,7 +226,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");  // we don't unnecessarily guess/store (see FileFolderService.createImpl)
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -260,7 +260,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -304,7 +304,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -335,7 +335,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -379,7 +379,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -410,7 +410,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -444,7 +444,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -475,7 +475,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -519,7 +519,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -550,7 +550,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -594,7 +594,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -626,7 +626,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -669,7 +669,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent (Working Copy)");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
@@ -701,7 +701,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), 0L);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
+        assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "");
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));

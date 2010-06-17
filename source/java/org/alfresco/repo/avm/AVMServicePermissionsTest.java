@@ -34,12 +34,12 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
-import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -100,7 +100,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     protected AuthorityService authorityService;
 
-    private AclDaoComponent aclDaoComponent;
+    private AclDAO aclDaoComponent;
 
     private UserTransaction testTX;
 
@@ -124,9 +124,9 @@ public class AVMServicePermissionsTest extends TestCase
     {
         avmNodeDAO = (AVMNodeDAO) applicationContext.getBean("avmNodeDAO");
 
-        avmACLDAO = (AccessControlListDAO) applicationContext.getBean("avmACLDAO");
+        avmACLDAO = (AccessControlListDAO) applicationContext.getBean("avmNodeACLDAO");
 
-        aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
+        aclDaoComponent = (AclDAO) applicationContext.getBean("aclDAO");
         avmService = (AVMService) applicationContext.getBean("avmService");
         avmSyncService = (AVMSyncService) applicationContext.getBean("AVMSyncService");
 

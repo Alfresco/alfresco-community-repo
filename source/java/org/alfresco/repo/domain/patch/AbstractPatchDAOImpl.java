@@ -25,6 +25,7 @@ import org.alfresco.ibatis.BatchingDAO;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 
 /**
@@ -54,36 +55,98 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     /**
      * {@inheritDoc}
      */
+    public boolean supportsProgressTracking()
+    {
+        return supportsProgressTrackingImpl();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public Long getAVMNodesCountWhereNewInStore()
     {
         return getAVMNodeEntitiesCountWhereNewInStore();
     }
     
-    protected abstract Long getAVMNodeEntitiesCountWhereNewInStore();
-    
     public List<AVMNodeEntity> getEmptyGUIDS(int count)
     {
-        // TODO limit results - count is currently ignored
-        return getAVMNodeEntitiesWithEmptyGUID();
+        return getAVMNodeEntitiesWithEmptyGUID(count);
     }
-    
-    protected abstract List<AVMNodeEntity> getAVMNodeEntitiesWithEmptyGUID();
     
     public List<AVMNodeEntity> getNullVersionLayeredDirectories(int count)
     {
-        // TODO limit results - count is currently ignored
-        return getNullVersionLayeredDirectoryNodeEntities();
+        return getNullVersionLayeredDirectoryNodeEntities(count);
     }
     
     public List<AVMNodeEntity> getNullVersionLayeredFiles(int count)
     {
-        // TODO limit results - count is currently ignored
-        return getNullVersionLayeredFileNodeEntities();
+        return getNullVersionLayeredFileNodeEntities(count);
     }
     
-    protected abstract List<AVMNodeEntity> getNullVersionLayeredDirectoryNodeEntities();
+    public int updateAVMNodesNullifyAcl(List<Long> nodeIds)
+    {
+        return updateAVMNodeEntitiesNullifyAcl(nodeIds);
+    }
     
-    protected abstract List<AVMNodeEntity> getNullVersionLayeredFileNodeEntities();
+    public int updateAVMNodesSetAcl(long aclId, List<Long> nodeIds)
+    {
+        return updateAVMNodeEntitiesSetAcl(aclId, nodeIds);
+    }
+    
+    protected abstract boolean supportsProgressTrackingImpl();
+    protected abstract Long getAVMNodeEntitiesCountWhereNewInStore();
+    protected abstract List<AVMNodeEntity> getAVMNodeEntitiesWithEmptyGUID(int maxResults);
+    protected abstract List<AVMNodeEntity> getNullVersionLayeredDirectoryNodeEntities(int maxResults);
+    protected abstract List<AVMNodeEntity> getNullVersionLayeredFileNodeEntities(int maxResults);
+    protected abstract int updateAVMNodeEntitiesNullifyAcl(List<Long> nodeIds);
+    protected abstract int updateAVMNodeEntitiesSetAcl(long aclId, List<Long> nodeIds);
+    
+    public Long getMaxAclId()
+    {
+        return getMaxAclEntityId();
+    }
+    
+    public long getDmNodeCount()
+    {
+        return getDmNodeEntitiesCount();
+    }
+    
+    public long getDmNodeCountWithNewACLs(Long above)
+    {
+        return getDmNodeEntitiesCountWithNewACLs(above);
+    }
+    
+    public List<Long> selectAllAclIds()
+    {
+        return selectAllAclEntityIds();
+    }
+    
+    public List<Long> selectNonDanglingAclIds()
+    {
+        return selectNonDanglingAclEntityIds();
+    }
+    
+    public int deleteDanglingAces()
+    {
+        return deleteDanglingAceEntities();
+    }
+    
+    public int deleteAcls(List<Long> aclIds)
+    {
+        return deleteAclEntities(aclIds);
+    }
+    
+    public int deleteAclMembersForAcls(List<Long> aclIds)
+    {
+        return deleteAclMemberEntitiesForAcls(aclIds);
+    }
+    
+    public void getUsersWithoutUsageProp(StoreRef storeRef, StringHandler handler)
+    {
+        selectUsersWithoutUsageProp(storeRef, handler);
+    }
+    
+    protected abstract void selectUsersWithoutUsageProp(StoreRef storeRef,StringHandler handler);
 
     /**
      * {@inheritDoc}
@@ -159,4 +222,13 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
             Integer listIndex,
             Long localeId,
             Long longValue);
+    
+    protected abstract Long getMaxAclEntityId();
+    protected abstract long getDmNodeEntitiesCount();
+    protected abstract long getDmNodeEntitiesCountWithNewACLs(Long above);
+    protected abstract List<Long> selectAllAclEntityIds();
+    protected abstract List<Long> selectNonDanglingAclEntityIds();
+    protected abstract int deleteDanglingAceEntities();
+    protected abstract int deleteAclEntities(List<Long> aclIds);
+    protected abstract int deleteAclMemberEntitiesForAcls(List<Long> aclIds);
 }

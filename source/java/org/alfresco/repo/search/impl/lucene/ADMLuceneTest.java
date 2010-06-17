@@ -27,6 +27,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -205,7 +206,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private Date testDate;
 
-    private NodeBulkLoader hibernateL1CacheBulkLoader;
+    private NodeBulkLoader nodeBulkLoader;
 
     private QueryEngine queryEngine;
 
@@ -261,7 +262,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         tenantService = (TenantService) ctx.getBean("tenantService");
         queryEngine = (QueryEngine) ctx.getBean("adm.luceneQueryEngineImpl");
 
-        hibernateL1CacheBulkLoader = (NodeBulkLoader) ctx.getBean("nodeDaoServiceImpl");
+        nodeBulkLoader = (NodeBulkLoader) ctx.getBean("nodeDAO");
 
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
@@ -425,15 +426,22 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         MLText desc1 = new MLText();
         desc1.addValue(Locale.ENGLISH, "Alfresco tutorial");
         desc1.addValue(Locale.US, "Alfresco tutorial");
-
+        
+        Date explicitCreatedDate = new Date();
+        Thread.sleep(2000);
+        
         properties.put(ContentModel.PROP_CONTENT, new ContentData(null, "text/plain", 0L, "UTF-8", Locale.UK));
         properties.put(ContentModel.PROP_DESCRIPTION, desc1);
-        properties.put(ContentModel.PROP_CREATED, new Date());
-
+        properties.put(ContentModel.PROP_CREATED, explicitCreatedDate);
+        
+        // note: cm:content - hence auditable aspect will be applied with any missing mandatory properties (cm:modified, cm:creator, cm:modifier)
         n14 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fourteen"), ContentModel.TYPE_CONTENT, properties).getChildRef();
         // nodeService.addAspect(n14, DictionaryBootstrap.ASPECT_QNAME_CONTENT,
         // properties);
-
+        
+        assertEquals(explicitCreatedDate, nodeService.getProperty(n14, ContentModel.PROP_CREATED));
+        
+        // note: cm:thumbnail - hence auditable aspect will be applied with mandatory properties (cm:created, cm:modified, cm:creator, cm:modifier)
         n15 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fifteen"), ContentModel.TYPE_THUMBNAIL, getOrderProperties()).getChildRef();
         
         ContentWriter writer = contentService.getWriter(n14, ContentModel.PROP_CONTENT, true);
@@ -458,13 +466,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         nodeService.addChild(n13, n14, ASSOC_TYPE_QNAME, QName.createQName("{namespace}common"));
 
         documentOrder = new NodeRef[] { rootNodeRef, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n3, n1, n2 };
-
-        // TODO: Why was the cm:auditable aspect added here?
-        // By adding it, the auditable properties were set automatically.
-        // nodeService.addAspect(n3, ContentModel.ASPECT_AUDITABLE, null);
-        // nodeService.addAspect(n1, ContentModel.ASPECT_AUDITABLE, null);
-        nodeService.setProperty(n1, ContentModel.PROP_MODIFIED, new Date(new Date().getTime() - 1000 * 60 * 60));
-        // nodeService.addAspect(n2, ContentModel.ASPECT_AUDITABLE, null);
     }
 
     private double orderDoubleCount = -0.11d;
@@ -1224,10 +1225,10 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, "cm:content:brown", 1);
         ftsQueryWithCount(searcher, "ANDY:brown", 1);
         ftsQueryWithCount(searcher, "ANDY", "brown", 1);
-
-        // test date ranges
-        ftsQueryWithCount(searcher, "modified:*", 2);
-        ftsQueryWithCount(searcher, "modified:[MIN TO NOW]", 2);
+        
+        // test date ranges - note: expected 2 results = n14 (cm:content) and n15 (cm:thumbnail)
+        ftsQueryWithCount(searcher, "modified:*", 2, Arrays.asList(new NodeRef[]{n14,n15}));
+        ftsQueryWithCount(searcher, "modified:[MIN TO NOW]", 2, Arrays.asList(new NodeRef[]{n14,n15}));
     }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
@@ -1275,6 +1276,25 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         {
             assertEquals(last, results.getNodeRef(results.length() - 1));
         }
+        results.close();
+    }
+    
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, List<NodeRef> expectedList)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
+        for (ResultSetRow row : results)
+        {
+            System.out.println("" + row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
+        }
+        assertEquals(count, results.length());
+        
+        List<NodeRef> actualList = results.getNodeRefs();
+        
+        for (NodeRef expected : expectedList)
+        {
+            assertTrue("did not find "+expected, actualList.contains(expected));
+        }
+        
         results.close();
     }
 
@@ -1392,7 +1412,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private void getCold(ADMLuceneSearcherImpl searcher, int n)
     {
-        hibernateL1CacheBulkLoader.clear();
+        nodeBulkLoader.clear();
 
         long start;
 
@@ -1449,7 +1469,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private void getCold10(ADMLuceneSearcherImpl searcher, int n)
     {
-        hibernateL1CacheBulkLoader.clear();
+        nodeBulkLoader.clear();
 
         long start;
 
@@ -1478,7 +1498,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private void getCold100(ADMLuceneSearcherImpl searcher, int n)
     {
-        hibernateL1CacheBulkLoader.clear();
+        nodeBulkLoader.clear();
 
         long start;
 
@@ -1507,7 +1527,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private void getCold1000(ADMLuceneSearcherImpl searcher, int n)
     {
-        hibernateL1CacheBulkLoader.clear();
+        nodeBulkLoader.clear();
 
         long start;
 
@@ -1536,7 +1556,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private void getCold10000(ADMLuceneSearcherImpl searcher, int n)
     {
-        hibernateL1CacheBulkLoader.clear();
+        nodeBulkLoader.clear();
 
         long start;
 
@@ -3935,26 +3955,35 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
             // short and long field ranges
 
+            // note: expected 2 results = n14 (cm:content) and n15 (cm:thumbnail)
+            
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:CrEaTeD:[MIN TO " + sDate + "]", null);
+            assertTrue("n14 not in results", (results.getNodeRef(0).equals(n14) || results.getNodeRef(1).equals(n14)));
+            assertTrue("n15 not in results", (results.getNodeRef(0).equals(n15) || results.getNodeRef(1).equals(n15)));
             assertEquals(2, results.length());
             results.close();
-
+            
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO NOW]", null);
+            assertTrue("n14 not in results", (results.getNodeRef(0).equals(n14) || results.getNodeRef(1).equals(n14)));
+            assertTrue("n15 not in results", (results.getNodeRef(0).equals(n15) || results.getNodeRef(1).equals(n15)));
             assertEquals(2, results.length());
             results.close();
             
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO TODAY]", null);
-            assertEquals(2, results.length());
-            results.close();
-
+            assertTrue("n14 not in results", (results.getNodeRef(0).equals(n14) || results.getNodeRef(1).equals(n14)));
+            assertTrue("n15 not in results", (results.getNodeRef(0).equals(n15) || results.getNodeRef(1).equals(n15)));
+            assertEquals(2, results.length());            results.close();
+            
             sDate = df.format(date);
             results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null);
+            assertTrue("n14 not in results", (results.getNodeRef(0).equals(n14) || results.getNodeRef(1).equals(n14)));
+            assertTrue("n15 not in results", (results.getNodeRef(0).equals(n15) || results.getNodeRef(1).equals(n15)));
             assertEquals(2, results.length());
             results.close();
-
+            
             // Date ranges
             // Test date collapses but date time does not
 

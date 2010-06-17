@@ -23,8 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -63,7 +62,7 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
 
     private Indexer indexer;
 
-    private NodeDaoService nodeDaoService;
+    private NodeDAO nodeDAO;
     
     private ThreadPoolExecutor threadPoolExecutor;
 
@@ -86,7 +85,7 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
         nodeService = serviceRegistry.getNodeService();
         ftsIndexer = (FullTextSearchIndexer) applicationContext.getBean("LuceneFullTextSearchIndexer");
         indexer = (Indexer) applicationContext.getBean("indexerComponent");
-        nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
+        nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         threadPoolExecutor = (ThreadPoolExecutor) applicationContext.getBean("indexTrackerThreadPoolExecutor");
         
 
@@ -186,7 +185,7 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
         tracker.setTransactionService((TransactionServiceImpl) transactionService);
         tracker.setFtsIndexer(ftsIndexer);
         tracker.setIndexer(indexer);
-        tracker.setNodeDaoService(nodeDaoService);
+        tracker.setNodeDAO(nodeDAO);
         tracker.setNodeService(nodeService);
         tracker.setSearcher(searchService);
         tracker.setThreadPoolExecutor(threadPoolExecutor);

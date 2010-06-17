@@ -24,7 +24,7 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
  * Entity for <b>alf_applied_patch</b> persistence. 
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public class AppliedPatchEntity extends AppliedPatch
 {

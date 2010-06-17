@@ -185,6 +185,10 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
             // It'll just be given back as a class name i.e. a CONSTRUCTABLE
             return PersistedType.CONSTRUCTABLE;
         }
+        else if (value instanceof Enum<?>)
+        {
+            return PersistedType.ENUM;
+        }
         else
         {
             // Check if there are converters to and from well-known types, just in case
@@ -204,10 +208,20 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
     }
     
     /**
-     * Performs the conversion
+     * Performs the conversion using {@link DefaultTypeConverter} but also adds
+     * special handling for {@link Enum enum types}.
      */
+    @SuppressWarnings("unchecked")
     public <T> T convert(Class<T> targetClass, Serializable value)
     {
-        return DefaultTypeConverter.INSTANCE.convert(targetClass, value);
+        if (targetClass.isEnum() && value != null && value instanceof String)
+        {
+            Class<Enum> enumClazz = (Class<Enum>) targetClass;
+            return (T) Enum.valueOf(enumClazz, (String) value);
+        }
+        else
+        {
+            return DefaultTypeConverter.INSTANCE.convert(targetClass, value);
+        }
     }
 }

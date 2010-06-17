@@ -216,16 +216,34 @@ public class TaggingServiceImpl implements TaggingService,
           updateAllScopeTags(nodeRef, assocRef.getParentRef(), isAdd);
        }
     }
+    @SuppressWarnings("unchecked")
     private void updateAllScopeTags(NodeRef nodeRef, NodeRef parentNodeRef, Boolean isAdd)
     {
         if (parentNodeRef != null)
         {
+            Map<NodeRef, Map<String, Boolean>> allQueuedUpdates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);
+            Map<String, Boolean> nodeQueuedUpdates = null;
+            if (allQueuedUpdates != null)
+            {
+                nodeQueuedUpdates = allQueuedUpdates.get(nodeRef);
+            }
+            
             List<String> tags = getTags(nodeRef);
             Map<String, Boolean> tagUpdates = new HashMap<String, Boolean>(tags.size());
             for (String tag : tags)
             {
                 tagUpdates.put(tag, isAdd);
-            }
+                
+                if (nodeQueuedUpdates != null)
+                {
+                    Boolean queuedOp = (Boolean)nodeQueuedUpdates.get(tag);
+                    if ((queuedOp != null) && (queuedOp.booleanValue() == isAdd.booleanValue()))
+                    {
+                        // dequeue - will be handled synchronously
+                        nodeQueuedUpdates.remove(tag);
+                    }
+                }
+             }
             updateTagScope(parentNodeRef, tagUpdates, false);
         }
     }

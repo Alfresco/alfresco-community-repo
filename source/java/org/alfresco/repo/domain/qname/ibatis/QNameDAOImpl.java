@@ -27,7 +27,7 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  * iBatis-specific extension of the QName and Namespace abstract DAO 
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public class QNameDAOImpl extends AbstractQNameDAOImpl
 {

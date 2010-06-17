@@ -24,6 +24,11 @@
         <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
+    <resultMap class="java.util.HashMap" id="result_authoritiesAndCrc">
+        <result property="authority" column="authority" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="crc" column="crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
@@ -87,6 +92,14 @@
         order by
             node_id ASC
         ]]>
+    </select>
+
+    <select id="select_authoritiesAndCrc" resultMap="result_authoritiesAndCrc">
+        select
+            authority,
+            crc
+        from
+            alf_authority
     </select>
 
     <!--                -->

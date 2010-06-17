@@ -399,8 +399,7 @@ public class AVMStoreImpl implements AVMStore
             ((LayeredDirectoryNodeImpl)newDir).setPrimaryIndirection(false);
             ((LayeredDirectoryNodeImpl)newDir).setLayerID(lPath.getTopLayer().getLayerID());
             
-            DbAccessControlList acl = dir.getAcl();
-            newDir.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            newDir.copyACLs(dir, ACLCopyMode.INHERIT);
             
             AVMDAOs.Instance().fAVMNodeDAO.update(newDir);
         }
@@ -408,8 +407,7 @@ public class AVMStoreImpl implements AVMStore
         {
             newDir = new PlainDirectoryNodeImpl(this);
             
-            DbAccessControlList acl = dir.getAcl();
-            newDir.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            newDir.copyACLs(dir, ACLCopyMode.INHERIT);
             
             AVMDAOs.Instance().fAVMNodeDAO.save(newDir);
         }
@@ -537,8 +535,7 @@ public class AVMStoreImpl implements AVMStore
                 -1,
                 "UTF-8"));
         
-        DbAccessControlList acl = dir.getAcl();
-        file.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+        file.copyACLs(dir, ACLCopyMode.INHERIT);
         
         AVMDAOs.Instance().fAVMNodeDAO.save(file);
         
@@ -625,8 +622,7 @@ public class AVMStoreImpl implements AVMStore
         LayeredFileNodeImpl newFile =
             new LayeredFileNodeImpl(srcPath, this, null);
         
-        DbAccessControlList acl = dir.getAcl();
-        newFile.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+        newFile.copyACLs(dir, ACLCopyMode.INHERIT);
         
         AVMDAOs.Instance().fAVMNodeDAO.save(newFile);
         

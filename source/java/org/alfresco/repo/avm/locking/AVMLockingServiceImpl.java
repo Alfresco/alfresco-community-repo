@@ -19,21 +19,21 @@
 
 package org.alfresco.repo.avm.locking;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.MapAttributeValue;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.attributes.AttrQueryEquals;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
+import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
-import org.alfresco.service.cmr.avm.AVMExistsException;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingException;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -44,61 +44,32 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.MD5;
-import org.alfresco.util.Pair;
+import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.ParameterCheck;
+import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * Implementation of the lock service.
- * @author britt
+ * 
+ * @author Derek Hulley, janv
  */
 public class AVMLockingServiceImpl implements AVMLockingService
 {
-    public static final String LOCK_TABLE = ".avm_lock_table";
-    public static final String WEB_PROJECTS = "web_projects";
-    public static final String USERS = "users";
-    public static final String STORES = "stores";
+    public static final String KEY_AVM_LOCKS = ".avm_locks";
+    public static final String KEY_LOCK_OWNER = "lock-owner";
 
     private static final String ROLE_CONTENT_MANAGER = "ContentManager";
 
     private static final Log logger = LogFactory.getLog(AVMLockingServiceImpl.class);
 
-    /**
-     * Store name containing the web project nodes.
-     */
     private String webProjectStore;
-
-    /**
-     * SearchService for access to web project properties.
-     */
-    private SearchService fSearchService;
-
-    /**
-     * AttributeService reference.
-     */
-    private AttributeService fAttributeService;
-
-    /**
-     * AuthorityService reference.
-     */
-    private AuthorityService fAuthorityService;
-
-    /**
-     * PersonService reference.
-     */
-    private PersonService fPersonService;
-
-    /**
-     * The NodeService.
-     */
-    private NodeService fNodeService;
-
-    /**
-     * Transaction Helper reference.
-     */
-    private RetryingTransactionHelper fRetryingTransactionHelper;
-
+    private SearchService searchService;
+    private AttributeService attributeService;
+    private AuthorityService authorityService;
+    private PersonService personService;
+    private NodeService nodeService;
 
     /**
      * @param webProjectStore The webProjectStore to set
@@ -109,466 +80,316 @@ public class AVMLockingServiceImpl implements AVMLockingService
     }
 
     /**
-     * Setter for AttributeService reference.
-     * @param service
+     * @param attributeService                  the service to persist attributes
      */
-    public void setAttributeService(AttributeService service)
+    public void setAttributeService(AttributeService attributeService)
     {
-        fAttributeService = service;
+        this.attributeService = attributeService;
     }
 
     /**
-     * Set the authority service reference.
-     * @param service
+     * @param authorityService                  the service to check validity of usernames
      */
-    public void setAuthorityService(AuthorityService service)
+    public void setAuthorityService(AuthorityService authorityService)
     {
-        fAuthorityService = service;
+        this.authorityService = authorityService;
     }
 
     /**
-     * Set the person service reference.
-     * @param service
+     * @param personService                     checks validity of person names
      */
-    public void setPersonService(PersonService service)
+    public void setPersonService(PersonService personService)
     {
-        fPersonService = service;
+        this.personService = personService;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * Appends the lock owner to the lock data.
+     */
+    private HashMap<String, String> createLockAttributes(String lockOwner, Map<String, String> lockData)
+    {
+        HashMap<String, String> lockAttributes = new HashMap<String, String>(lockData);
+        lockAttributes.put(KEY_LOCK_OWNER, lockOwner);
+        return lockAttributes;
     }
 
     /**
-     * Setter for RetryingTransactionHelper reference.
-     * @param helper
+     * {@inheritDoc}
      */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
+    public void lock(String avmStore, String path, String lockOwner, Map<String, String> lockData)
     {
-        fRetryingTransactionHelper = helper;
-    }
-
-    public void setSearchService(SearchService service)
-    {
-        fSearchService = service;
-    }
-
-    public void setNodeService(NodeService service)
-    {
-        fNodeService = service;
-    }
-
-    public void init()
-    {
-        RetryingTransactionHelper.RetryingTransactionCallback<Object> callback =
-            new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        ParameterCheck.mandatoryString("path", path);
+        ParameterCheck.mandatoryString("lockOwner", lockOwner);
+        path = AVMLockingServiceImpl.normalizePath(path);
+        
+        if (!authorityService.authorityExists(lockOwner) &&
+            !personService.personExists(lockOwner))
         {
-            public Object execute()
+            throw new AVMBadArgumentException("Not an Authority: " + lockOwner);
+        }
+        
+        LockState lockState = getLockState(avmStore, path, lockOwner);
+        switch (lockState)
+        {
+        case LOCK_NOT_OWNER:
+            throw new AVMLockingException("avmlockservice.locked", path, lockOwner);
+        case NO_LOCK:
+            // Lock it, assuming that the lock doesn't exist (concurrency-safe).
+            try
             {
-                if (!fAttributeService.exists(LOCK_TABLE))
-                {
-                    fAttributeService.setAttribute("", LOCK_TABLE, new MapAttributeValue());
-                }
-                if (!fAttributeService.exists(LOCK_TABLE + '/' + WEB_PROJECTS))
-                {
-                    fAttributeService.setAttribute(LOCK_TABLE, WEB_PROJECTS, new MapAttributeValue());
-                }
-                return null;
+                HashMap<String, String> lockAttributes = createLockAttributes(lockOwner, lockData);
+                attributeService.createAttribute(
+                        lockAttributes,
+                        KEY_AVM_LOCKS, avmStore, path);
             }
-        };
-        fRetryingTransactionHelper.doInTransaction(callback, false);
+            catch (DuplicateAttributeException e)
+            {
+                String currentLockOwner = getLockOwner(avmStore, path);
+                // Should trigger a retry, hence we pass the exception out
+                throw new AVMLockingException(e, "avmlockservice.locked", path, currentLockOwner);
+            }
+            break;
+        case LOCK_OWNER:
+            // Nothing to do
+            break;
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getLock(java.lang.String, java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    public AVMLock getLock(String webProject, String path)
+    public boolean modifyLock(
+            String avmStore, String path, String lockOwner,
+            String newAvmStore, String newPath,
+            Map<String, String> lockData)
     {
-        path = normalizePath(path);
-        List<String> keys = new ArrayList<String>(3);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(webProject);
-        List<Pair<String, Attribute>> attrs =
-            fAttributeService.query(keys, new AttrQueryEquals(MD5.Digest(path.getBytes())));
-        if (attrs.size() == 0)
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        ParameterCheck.mandatoryString("path", path);
+        ParameterCheck.mandatoryString("lockOwner", lockOwner);
+        ParameterCheck.mandatoryString("newAvmStore", newAvmStore);
+        ParameterCheck.mandatoryString("newPath", newPath);
+        path = AVMLockingServiceImpl.normalizePath(path);
+        newPath = AVMLockingServiceImpl.normalizePath(newPath);
+
+        LockState currentLockState = getLockState(avmStore, path, lockOwner);
+        switch (currentLockState)
+        {
+        case LOCK_NOT_OWNER:
+        case LOCK_OWNER:
+            if (currentLockState.equals(LockState.LOCK_NOT_OWNER))
+            {
+                // The lock is held by another user
+                if (! AuthenticationUtil.isRunAsUserTheSystemUser())
+                {
+                    String currentLockOwner = getLockOwner(avmStore, path);
+                    throw new AVMLockingException("avmlockservice.locked", path, currentLockOwner);
+                }
+            }
+            // Remove the lock first
+            attributeService.removeAttribute(KEY_AVM_LOCKS, avmStore, path);
+            HashMap<String, String> lockAttributes = createLockAttributes(lockOwner, lockData);
+            attributeService.setAttribute(
+                    lockAttributes,
+                    KEY_AVM_LOCKS, newAvmStore, newPath);
+            return true;
+        case NO_LOCK:
+            // Do nothing
+            return false;
+        default:
+            throw new IllegalStateException("Unexpected enum constant");
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getLockOwner(String avmStore, String path)
+    {
+        ParameterCheck.mandatoryString("path", path);
+        path = AVMLockingServiceImpl.normalizePath(path);
+
+        Map<String, String> lockAttributes = getLockData(avmStore, path);
+        if (lockAttributes == null)
         {
             return null;
         }
-        return new AVMLock(attrs.get(0).getSecond());
+        else if (!lockAttributes.containsKey(KEY_LOCK_OWNER))
+        {
+            logger.warn("AVM lock does not have a lock owner: " + avmStore + "-" + path);
+            return null;
+        }
+        return lockAttributes.get(KEY_LOCK_OWNER);
     }
 
     /**
-     * Utility to get relative paths into canonical form.
-     * @param path The incoming path.
-     * @return The normalized path.
+     * {@inheritDoc}
      */
-    private String normalizePath(String path)
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getLockData(String avmStore, String path)
     {
-        while (path.startsWith("/"))
-        {
-            path = path.substring(1);
-        }
-        while (path.endsWith("/"))
-        {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path.replaceAll("/+", "/");
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        ParameterCheck.mandatoryString("path", path);
+        path = AVMLockingServiceImpl.normalizePath(path);
+
+        Map<String, String> lockAttributes = (Map<String, String>) attributeService.getAttribute(
+                KEY_AVM_LOCKS, avmStore, path);
+        return lockAttributes;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getUsersLocks(java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    public List<AVMLock> getUsersLocks(String user)
+    public LockState getLockState(String avmStore, String path, String lockOwner)
     {
-//        List<String> keys = new ArrayList<String>(3);
-//        keys.add(LOCK_TABLE);
-//        keys.add(USERS);
-//        keys.add(user);
-//        Attribute userLocks = fAttributeService.getAttribute(keys);
-//        List<AVMLock> locks = new ArrayList<AVMLock>();
-//        if (userLocks == null)
-//        {
-//            return locks;
-//        }
-//        for (Attribute entry : userLocks)
-//        {
-//            String webProject = entry.get("web_project").getStringValue();
-//            String path = entry.get("path").getStringValue();
-//            locks.add(getLock(webProject, path));
-//        }
-//        return locks;
-        return null;
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        ParameterCheck.mandatoryString("lockOwner", lockOwner);
+        path = AVMLockingServiceImpl.normalizePath(path);
+        
+        String currentLockOwner = getLockOwner(avmStore, path);
+        if (currentLockOwner == null)
+        {
+            return LockState.NO_LOCK;
+        }
+        else if (currentLockOwner.equals(lockOwner))
+        {
+            return LockState.LOCK_OWNER;
+        }
+        else
+        {
+            return LockState.LOCK_NOT_OWNER;
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#lockPath(org.alfresco.service.cmr.avm.locking.AVMLock)
+    /**
+     * {@inheritDoc}
      */
-    public void lockPath(AVMLock lock)
+    public void removeLock(String avmStore, String path)
     {
-        for (String authority : lock.getOwners())
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        ParameterCheck.mandatoryString("path", path);
+        path = AVMLockingServiceImpl.normalizePath(path);
+
+        attributeService.removeAttribute(KEY_AVM_LOCKS, avmStore, path);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeLocks(String avmStore)
+    {
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        
+        attributeService.removeAttributes(KEY_AVM_LOCKS, avmStore);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void removeLocks(String avmStore, String dirPath, final Map<String, String> lockDataToMatch)
+    {
+        ParameterCheck.mandatoryString("avmStore", avmStore);
+        ParameterCheck.mandatory("lockDataToMatch", lockDataToMatch);
+        
+        final String dirPathStart;
+        if (dirPath == null)
         {
-            if (!fAuthorityService.authorityExists(authority) &&
-                !fPersonService.personExists(authority))
+            dirPathStart = null;
+        }
+        else
+        {
+            dirPath = normalizePath(dirPath);
+            if (! dirPath.endsWith("/"))
             {
-                throw new AVMBadArgumentException("Not an Authority: " + authority);
+                dirPath = dirPath + '/';
             }
+            
+            dirPathStart = dirPath;
         }
-        List<String> keys = new ArrayList<String>();
-        Attribute lockData = lock.getAttribute();
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(lock.getWebProject());
-        String digest = MD5.Digest(lock.getPath().getBytes());
-        keys.add(digest);
-        if (fAttributeService.exists(keys))
+        
+        final List<String> pathKeys = new ArrayList<String>(10);
+        
+        AttributeQueryCallback callback = new AttributeQueryCallback()
         {
-            throw new AVMExistsException("Lock Exists: " + keys);
-        }
-        keys.remove(3);
-        fAttributeService.setAttribute(keys, digest, lockData);
-//        Attribute reverseEntry = new MapAttributeValue();
-//        reverseEntry.put("web_project", new StringAttributeValue(lock.getWebProject()));
-//        reverseEntry.put("path", new StringAttributeValue(lock.getPath()));
-//        keys.clear();
-//        keys.add(LOCK_TABLE);
-//        keys.add(USERS);
-//        for (String user : lock.getOwners())
-//        {
-//            keys.add(user);
-//            Attribute userEntry = fAttributeService.getAttribute(keys);
-//            keys.remove(2);
-//            if (userEntry == null)
-//            {
-//                fAttributeService.setAttribute(keys, user, new ListAttributeValue());
-//            }
-//            keys.add(user);
-//            fAttributeService.addAttribute(keys, reverseEntry);
-//            keys.remove(2);
-//        }
-//        String store = lock.getStore();
-//        keys.clear();
-//        keys.add(LOCK_TABLE);
-//        keys.add(STORES);
-//        keys.add(store);
-//        Attribute storeEntry = fAttributeService.getAttribute(keys);
-//        keys.remove(2);
-//        if (storeEntry == null)
-//        {
-//            fAttributeService.setAttribute(keys, store, new ListAttributeValue());
-//        }
-//        keys.add(store);
-//        fAttributeService.addAttribute(keys, reverseEntry);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#removeLock(java.lang.String, java.lang.String)
-     */
-    public void removeLock(String webProject, String path)
-    {
-        path = normalizePath(path);
-        String pathKey = MD5.Digest(path.getBytes());
-        List<String> keys = new ArrayList<String>(4);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(webProject);
-        keys.add(pathKey);
-        if (!fAttributeService.exists(keys))
-        {
-            return;
-        }
-        keys.remove(3);
-        fAttributeService.removeAttribute(keys, pathKey);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#removeLocksInDirectory(java.lang.String, java.lang.String, java.lang.String)
-     */
-    public void removeLocksInDirectory(String webProject, String store,
-                                       String path)
-    {
-        path = normalizePath(path);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("removing locks in directory: " + path + "(" + webProject + ", " + store + ")");
-        }
-        List<String> keys = new ArrayList<String>();
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(webProject);
-        Attribute map = fAttributeService.getAttribute(keys);
-        if (map == null)
-        {
-            return;
-        }
-        for (Map.Entry<String, Attribute> entry : map.entrySet())
-        {
-            if (logger.isDebugEnabled())
+            @SuppressWarnings("unchecked")
+            public boolean handleAttribute(Long id, Serializable value, Serializable[] keys)
             {
-                logger.debug(entry);
-            }
-            Attribute child = entry.getValue();
-            if (child.get("store").getStringValue().equals(store) &&
-                child.get("path").getStringValue().startsWith(path + '/'))
-            {
-                fAttributeService.removeAttribute(keys, entry.getKey());
-            }
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#addWebProject(java.lang.String)
-     */
-    public void addWebProject(String webProject)
-    {
-        List<String> keys = new ArrayList<String>(3);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(webProject);
-        if (fAttributeService.exists(keys))
-        {
-            return;
-        }
-        keys.remove(2);
-        fAttributeService.setAttribute(keys, webProject, new MapAttributeValue());
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getWebProjectLocks(java.lang.String)
-     */
-    public List<AVMLock> getWebProjectLocks(String webProject)
-    {
-        List<String> keys = new ArrayList<String>(3);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(webProject);
-        Attribute locksMap = fAttributeService.getAttribute(keys);
-        List<AVMLock> result = new ArrayList<AVMLock>();
-        if (locksMap != null)
-        {
-            for (Attribute lockData : locksMap.values())
-            {
-                result.add(new AVMLock(lockData));
-            }
-        }
-        return result;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#removeWebProject(java.lang.String)
-     */
-    public void removeWebProject(String webProject)
-    {
-//        List<String> userKeys = new ArrayList<String>(2);
-//        userKeys.add(LOCK_TABLE);
-//        userKeys.add(USERS);
-//        List<String> users = fAttributeService.getKeys(userKeys);
-//        // TODO This works incredibly slowly. AttributeService has to support
-//        // extended querying on values.
-//        for (String user : users)
-//        {
-//            userKeys.add(user);
-//            Attribute userLocks = fAttributeService.getAttribute(userKeys);
-//            Iterator<Attribute> iter = userLocks.iterator();
-//            while (iter.hasNext())
-//            {
-//                Attribute lockInfo = iter.next();
-//                if (lockInfo.get("web_project").getStringValue().equals(webProject))
-//                {
-//                    iter.remove();
-//                }
-//            }
-//            userKeys.remove(2);
-//            fAttributeService.setAttribute(userKeys, user, userLocks);
-//        }
-//        List<String> storeKeys = new ArrayList<String>();
-//        storeKeys.add(LOCK_TABLE);
-//        storeKeys.add(STORES);
-//        List<String> stores = fAttributeService.getKeys(storeKeys);
-//        // TODO Ditto.
-//        for (String store : stores)
-//        {
-//            storeKeys.add(store);
-//            Attribute storeLocks = fAttributeService.getAttribute(storeKeys);
-//            Iterator<Attribute> iter = storeLocks.iterator();
-//            while (iter.hasNext())
-//            {
-//                Attribute lockInfo = iter.next();
-//                if (lockInfo.get("web_project").getStringValue().equals(webProject))
-//                {
-//                    iter.remove();
-//                }
-//            }
-//            storeKeys.remove(2);
-//            fAttributeService.setAttribute(storeKeys, store, storeLocks);
-//        }
-        List<String> keys = new ArrayList<String>(2);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        fAttributeService.removeAttribute(keys, webProject);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getStoreLocks(java.lang.String)
-     */
-    public List<AVMLock> getStoreLocks(String store)
-    {
-        return null;
-//        List<AVMLock> locks = new ArrayList<AVMLock>(3);
-//        List<String> keys = new ArrayList<String>();
-//        keys.add(LOCK_TABLE);
-//        keys.add(STORES);
-//        keys.add(store);
-//        List<String> lockKeys = new ArrayList<String>();
-//        lockKeys.add(LOCK_TABLE);
-//        lockKeys.add(WEB_PROJECTS);
-//        Attribute storeLocks = fAttributeService.getAttribute(keys);
-//        for (Attribute lockInfo : storeLocks)
-//        {
-//            String webProject = lockInfo.get("web_project").getStringValue();
-//            String path = lockInfo.get("path").getStringValue();
-//            lockKeys.add(webProject);
-//            lockKeys.add(MD5.Digest(path.getBytes()));
-//            Attribute lockData = fAttributeService.getAttribute(lockKeys);
-//            locks.add(new AVMLock(lockData));
-//            lockKeys.remove(3);
-//            lockKeys.remove(2);
-//        }
-//        return locks;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#modifyLock(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.List, java.util.List)
-     */
-    public void modifyLock(String webProject, String path, String newPath, String newStore, List<String> usersToRemove, List<String> usersToAdd)
-    {
-        AVMLock lock = getLock(webProject, path);
-        if (lock == null)
-        {
-            throw new AVMNotFoundException("Lock not found for " + webProject + ":" + path);
-        }
-        removeLock(webProject, path);
-        if (newPath != null)
-        {
-            lock.setPath(newPath);
-        }
-        if (newStore != null)
-        {
-            lock.setStore(newStore);
-        }
-        if (usersToRemove != null)
-        {
-            for (String user : usersToRemove)
-            {
-                lock.getOwners().remove(user);
-            }
-        }
-        if (usersToAdd != null)
-        {
-            for (String user : usersToAdd)
-            {
-                if (!fAuthorityService.authorityExists(user) &&
-                    !fPersonService.personExists(user))
+                if (keys.length != 3 || !EqualsHelper.nullSafeEquals(keys[0], KEY_AVM_LOCKS) || keys[1] == null || keys[2] == null || value == null)
                 {
-                    throw new AVMBadArgumentException("Not an authority: " + user);
+                    logger.warn("Unexpected AVM lock attribute: \n" +
+                            "   id:  " + id + "\n" +
+                            "   keys:  " + Arrays.toString(keys) + "\n" +
+                            "   value: " + value);
+                    return true;
                 }
-                if (lock.getOwners().contains(user))
+                
+                Map<String, String> lockData = (Map<String, String>) value;
+                
+                for (Map.Entry<String, String> entry : lockDataToMatch.entrySet())
                 {
-                    continue;
+                    String lockDataValue = lockData.get(entry.getKey());
+                    if (lockDataValue != null)
+                    {
+                        if (! lockDataValue.equals(entry.getValue()))
+                        {
+                            return true;
+                        }
+                    }
                 }
-                lock.getOwners().add(user);
+                
+                String pathKey = (String)keys[2];
+                
+                if (dirPathStart == null || pathKey.startsWith(dirPathStart))
+                {
+                    pathKeys.add(pathKey);
+                }
+                
+                // Continue
+                return true;
             }
-        }
-        lockPath(lock);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#removeStoreLocks(java.lang.String)
-     */
-    public void removeStoreLocks(String store)
-    {
-        String webProject = store;
-        int index = store.indexOf("--");
-        if (index >= 0)
+        };
+        
+        attributeService.getAttributes(callback, KEY_AVM_LOCKS, avmStore);
+        
+        for (String pathKey : pathKeys)
         {
-            webProject = store.substring(0, index);
-        }
-        List<String> keys = new ArrayList<String>(3);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        keys.add(webProject);
-        Attribute project = fAttributeService.getAttribute(keys);
-        if (project == null)
-        {
-            return;
-        }
-        List<String> toDelete = new ArrayList<String>();
-        for (Map.Entry<String, Attribute>  entry: project.entrySet())
-        {
-            AVMLock lock = new AVMLock(entry.getValue());
-            if (lock.getStore().equals(store))
-            {
-                toDelete.add(entry.getKey());
-            }
-        }
-        for (String name : toDelete)
-        {
-            fAttributeService.removeAttribute(keys, name);
+            attributeService.removeAttribute(KEY_AVM_LOCKS, avmStore, pathKey);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#hasAccess(java.lang.String, java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    public boolean hasAccess(String webProject, String avmPath, String user)
+    public void removeLocks(String avmStore, final Map<String, String> lockDataToMatch)
     {
-        if (fPersonService.getPerson(user) == null &&
-            !fAuthorityService.authorityExists(user))
+        removeLocks(avmStore, null, lockDataToMatch);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasAccess(String webProject, String avmPath, String lockOwner)
+    {
+        if (personService.getPerson(lockOwner) == null && !authorityService.authorityExists(lockOwner))
         {
             return false;
         }
-        if (fAuthorityService.isAdminAuthority(user))
+        if (authorityService.isAdminAuthority(lockOwner))
         {
             return true;
         }
         StoreRef storeRef = new StoreRef(this.webProjectStore);
-        ResultSet results = fSearchService.query(
+        ResultSet results = searchService.query(
                 storeRef,
                 SearchService.LANGUAGE_LUCENE,
                 "@wca\\:avmstore:\"" + webProject + '"');
@@ -576,7 +397,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             if (results.getNodeRefs().size() == 1)
             {
-                return hasAccess(webProject, results.getNodeRefs().get(0), avmPath, user);
+                return hasAccess(webProject, results.getNodeRefs().get(0), avmPath, lockOwner);
             }
             return false;
         }
@@ -586,45 +407,53 @@ public class AVMLockingServiceImpl implements AVMLockingService
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#hasAccess(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
+    /**
+     * {@inheritDoc}
      */
-    public boolean hasAccess(NodeRef webProjectRef, String avmPath, String user)
+    public boolean hasAccess(NodeRef webProjectRef, String avmPath, String lockOwner)
     {
-        if (fPersonService.getPerson(user) == null &&
-            !fAuthorityService.authorityExists(user))
+        if (personService.getPerson(lockOwner) == null &&
+            !authorityService.authorityExists(lockOwner))
         {
             return false;
         }
-        if (fAuthorityService.isAdminAuthority(user))
+        if (authorityService.isAdminAuthority(lockOwner))
         {
             return true;
         }
-        String webProject = (String)fNodeService.getProperty(webProjectRef, WCMAppModel.PROP_AVMSTORE);
-        return hasAccess(webProject, webProjectRef, avmPath, user);
+        String webProject = (String)nodeService.getProperty(webProjectRef, WCMAppModel.PROP_AVMSTORE);
+        return hasAccess(webProject, webProjectRef, avmPath, lockOwner);
     }
 
-    private boolean hasAccess(String webProject, NodeRef webProjectRef, String avmPath, String user)
+    private boolean hasAccess(String webProject, NodeRef webProjectRef, String avmPath, String lockOwner)
     {
         String[] storePath = avmPath.split(":");
         if (storePath.length != 2)
         {
             throw new AVMBadArgumentException("Malformed AVM Path : " + avmPath);
         }
-
+        
         if (logger.isDebugEnabled())
-           logger.debug("Testing lock access on path: " + avmPath + " for user: " + user + " in webproject: " + webProject);
-
+           logger.debug(
+                   "Testing lock access on path: " + avmPath +
+                   " for user: " + lockOwner + " in webproject: " + webProject);
+        
         // check if a lock exists at all for this path in the specified webproject id
         String path = normalizePath(storePath[1]);
-        AVMLock lock = getLock(webProject, path);
-        if (lock == null)
+        
+        Map<String, String> lockData = getLockData(webProject, path);
+        
+        if (lockData == null)
         {
             if (logger.isDebugEnabled())
                 logger.debug(" GRANTED: No lock found.");
             return true;
         }
-
+        
+        String currentLockOwner = lockData.get(KEY_LOCK_OWNER);
+        String currentLockStore = lockData.get(WCMUtil.LOCK_KEY_STORE_NAME);
+        
+        
         // locks are ignored in a workflow store
         if (storePath[0].contains("--workflow"))
         {
@@ -632,69 +461,66 @@ public class AVMLockingServiceImpl implements AVMLockingService
                 logger.debug(" GRANTED: Workflow store path.");
             return true;
         }
-
+        
         // locks are specific to a store - no access if the stores are different
-        if (!lock.getStore().equals(storePath[0]))
+        if (! ((currentLockStore != null) && (currentLockStore.equals(storePath[0]))))
         {
             if (logger.isDebugEnabled())
-                logger.debug(" DENIED: Store on path and lock (" + lock.getStore().toString() + ") do not match.");
+                logger.debug(" DENIED: Store on path and lock (" + currentLockStore + ") do not match.");
             return false;
         }
-
+        
         // check for content manager role - we allow access to all managers within the same store
         // TODO as part of WCM refactor, consolidate with WebProject.getWebProjectUserRole
         StringBuilder query = new StringBuilder(128);
         query.append("+PARENT:\"").append(webProjectRef).append("\" ");
         query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
         query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
-        query.append(user);
+        query.append(lockOwner);
         query.append("\"");
-        ResultSet resultSet = fSearchService.query(
-        		new StoreRef(this.webProjectStore),
+        ResultSet resultSet = searchService.query(
+                new StoreRef(this.webProjectStore),
                 SearchService.LANGUAGE_LUCENE,
-                query.toString());            
+                query.toString());
         List<NodeRef> nodes = resultSet.getNodeRefs();
         resultSet.close();
-
+        
         if (nodes.size() == 1)
         {
-            String userrole = (String)fNodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
+            String userrole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
             if (ROLE_CONTENT_MANAGER.equals(userrole))
             {
-	            if (logger.isDebugEnabled())
-	            {
-	                logger.debug("GRANTED: Store match and user is ContentManager role in webproject.");
-	            }
-	            return true;
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("GRANTED: Store match and user is ContentManager role in webproject.");
+                }
+                return true;
             }
         }
         else if (nodes.size() == 0)
         {
-        	logger.warn("hasAccess: user role not found for " + user);
+        	logger.warn("hasAccess: user role not found for " + lockOwner);
         }
         else
         {
-        	logger.warn("hasAccess: more than one user role found for " + user);
+            logger.warn("hasAccess: more than one user role found for " + lockOwner);
         }
-
-        // finally check the owners of the lock against the specified authority
-        List<String> owners = lock.getOwners();
-        for (String owner : owners)
+        
+        // finally check the owner of the lock against the specified authority
+        if (AuthorityType.getAuthorityType(currentLockOwner) == AuthorityType.EVERYONE)
         {
-            if (AuthorityType.getAuthorityType(owner) == AuthorityType.EVERYONE)
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug(" GRANTED: Authority EVERYONE matched lock owner.");
-                return true;
-            }
-            if (checkAgainstAuthority(user, owner))
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug(" GRANTED: User matched as lock owner.");
-                return true;
-            }
+            if (logger.isDebugEnabled())
+                logger.debug(" GRANTED: Authority EVERYONE matched lock owner.");
+            return true;
         }
-
+        
+        if (checkAgainstAuthority(lockOwner, currentLockOwner))
+        {
+            if (logger.isDebugEnabled())
+                logger.debug(" GRANTED: User matched as lock owner.");
+            return true;
+        }
+        
         if (logger.isDebugEnabled())
             logger.debug(" DENIED: User did not match as lock owner.");
         return false;
@@ -702,9 +528,6 @@ public class AVMLockingServiceImpl implements AVMLockingService
 
     /**
      * Helper function that checks the transitive closure of authorities for user.
-     * @param user
-     * @param authority
-     * @return
      */
     private boolean checkAgainstAuthority(String user, String authority)
     {
@@ -712,7 +535,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             return true;
         }
-        Set<String> containing = fAuthorityService.getContainingAuthorities(null, user, false);
+        Set<String> containing = authorityService.getContainingAuthorities(null, user, false);
         for (String parent : containing)
         {
             if (parent.equalsIgnoreCase(authority))
@@ -723,14 +546,22 @@ public class AVMLockingServiceImpl implements AVMLockingService
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.avm.locking.AVMLockingService#getWebProjects()
+    /**
+     * Utility to get relative paths into canonical form.
+     * 
+     * @param path The incoming path.
+     * @return The normalized path.
      */
-    public List<String> getWebProjects()
+    public static String normalizePath(String path)
     {
-        List<String> keys = new ArrayList<String>(2);
-        keys.add(LOCK_TABLE);
-        keys.add(WEB_PROJECTS);
-        return fAttributeService.getKeys(keys);
+        while (path.startsWith("/"))
+        {
+            path = path.substring(1);
+        }
+        while (path.endsWith("/"))
+        {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path.replaceAll("/+", "/");
     }
 }

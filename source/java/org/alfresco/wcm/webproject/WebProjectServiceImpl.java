@@ -64,7 +64,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.DNSNameMangler;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.wcm.preview.PreviewURIServiceRegistry;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxFactory;
@@ -73,6 +72,7 @@ import org.alfresco.wcm.sandbox.SandboxFactory.UserRoleWrapper;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Web Project Service Implementation
@@ -94,7 +94,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     private NodeService nodeService;
     private SearchService searchService;
     private AVMService avmService;
-    private AVMLockingService avmLockingService;
     private AuthorityService authorityService;
     private PermissionService permissionService;
     private PersonService personService;
@@ -102,6 +101,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     private VirtServerRegistry virtServerRegistry;
     private PreviewURIServiceRegistry previewURIProviderRegistry;
     private TransactionService transactionService;
+    private AVMLockingService avmLockingService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -116,11 +116,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
-    }
-    
-    public void setAvmLockingService(AVMLockingService avmLockingService)
-    {
-        this.avmLockingService = avmLockingService;
     }
     
     public void setAuthorityService(AuthorityService authorityService)
@@ -156,6 +151,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    public void setAvmLockingService(AVMLockingService avmLockingService)
+    {
+        this.avmLockingService = avmLockingService;
     }
     
     /* (non-Javadoc)
@@ -274,9 +274,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         avmService.setStoreProperty(stagingStore,
                 SandboxConstants.PROP_WEB_PROJECT_PREVIEW_PROVIDER,
                 new PropertyValue(DataTypeDefinition.TEXT, previewProviderName));
-        
-        // inform the locking service about this new instance
-        avmLockingService.addWebProject(wpStoreId);
         
         // Snapshot the store with the empty webapp
         avmService.createSnapshot(wpStoreId, null, null);
@@ -756,8 +753,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                                     }
                                     
                                     // delete sandbox (and associated preview sandbox, if it exists)
-                                    sandboxFactory.deleteSandbox(wpStoreId, sbInfo.getSandboxId());
+                                    sandboxFactory.deleteSandbox(sbInfo, false);
                                 }
+                                
+                                // delete all web project locks in one go (ie. all those currently held against staging store)
+                                avmLockingService.removeLocks(wpStoreId);
                                 
                                 StoreRef archiveStoreRef = nodeService.getStoreArchiveNode(wpNodeRef.getStoreRef()).getStoreRef();
                                 

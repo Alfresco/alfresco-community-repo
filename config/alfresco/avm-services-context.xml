@@ -4,19 +4,9 @@
 
 <beans>
 
-    <bean id="avmNodeDAO" class="org.alfresco.repo.avm.ibatis.AVMNodeDAOIbatis">
-        <property name="sessionFactory">
-            <ref bean="sessionFactory"/>
-        </property>
-    </bean>
+    <bean id="avmNodeDAO" class="org.alfresco.repo.avm.ibatis.AVMNodeDAOIbatis"/>
     
-    <bean id="avmStoreDAO" class="org.alfresco.repo.avm.ibatis.AVMStoreDAOIbatis">
-        
-        <property name="sessionFactory">
-            <ref bean="sessionFactory"/>
-        </property>
-     
-    </bean>
+    <bean id="avmStoreDAO" class="org.alfresco.repo.avm.ibatis.AVMStoreDAOIbatis"/>
     
     <bean id="versionRootDAO" class="org.alfresco.repo.avm.ibatis.VersionRootDAOIbatis"/>
     
@@ -26,11 +16,7 @@
     
     <bean id="mergeLinkDAO" class="org.alfresco.repo.avm.ibatis.MergeLinkDAOIbatis"/>
     
-    <bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.ibatis.AVMStorePropertyDAOIbatis">
-        <property name="sessionFactory">
-            <ref bean="sessionFactory"/>
-        </property>
-    </bean>
+    <bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.ibatis.AVMStorePropertyDAOIbatis"/>
     
     <bean id="versionLayeredNodeEntryDAO" class="org.alfresco.repo.avm.ibatis.VersionLayeredNodeEntryDAOIbatis"/>
     
@@ -71,18 +57,12 @@
 		<property name="avmStorePropertyDAO">
 			<ref bean="avmStorePropertyDAO"/>
 		</property>
-		<property name="attributeDAO">
-		    <ref bean="attributeDAO"/>
-		</property>
-		<property name="mapEntryDAO">
-		    <ref bean="mapEntryDAO"/>
-		</property>
-		<property name="listEntryDAO">
-		    <ref bean="listEntryDAO"/>
-		</property>
 		<property name="versionLayeredNodeEntryDAO">
 		    <ref bean="versionLayeredNodeEntryDAO"/>
 		</property>
+        <property name="aclDAO">
+            <ref bean="aclDAO"/>
+        </property>
 	</bean>
 
 	<bean id="lookupCache" class="org.alfresco.repo.avm.NOOPLookupCache"/>
@@ -102,9 +82,6 @@
 		</property>
 		<property name="transactionService">
 			<ref bean="transactionService"/>
-		</property>
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 
@@ -263,9 +240,6 @@
 	    </property>
 	    <property name="personService">
 	        <ref bean="personService"/>
-	    </property>
-	    <property name="retryingTransactionHelper">
-	        <ref bean="retryingTransactionHelper"/>
 	    </property>
 	    <property name="nodeService">
 	        <ref bean="nodeService"/>

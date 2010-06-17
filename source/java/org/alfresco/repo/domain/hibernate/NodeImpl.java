@@ -20,20 +20,17 @@ package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.AuditableProperties;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.NodePropertyValue;
-import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.Store;
-import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.domain.node.NodePropertyKey;
+import org.alfresco.repo.domain.node.NodePropertyValue;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -56,11 +53,10 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private Store store;
     private String uuid;
     private Long typeQNameId;
+    private Long aclId;
     private Transaction transaction;
     private boolean deleted;
-    private DbAccessControlList accessControlList;
-    private Set<Long> aspects;
-    private Map<PropertyMapKey, NodePropertyValue> properties;
+    private Map<NodePropertyKey, NodePropertyValue> properties;
     private AuditableProperties auditableProperties;
     
     private transient ReadLock refReadLock;
@@ -74,8 +70,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         refReadLock = lock.readLock();
         refWriteLock = lock.writeLock();
 
-        aspects = new HashSet<Long>(5);
-        properties = new HashMap<PropertyMapKey, NodePropertyValue>(5);
+        properties = new HashMap<NodePropertyKey, NodePropertyValue>(5);
         // Note auditableProperties starts null, as hibernate maps a component containing nulls to null and this would
         // cause a lot of dirty checks to fail!
     }
@@ -304,32 +299,18 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
             refWriteLock.unlock();
         }
     }
-
-    public DbAccessControlList getAccessControlList()
+    
+    public Long getAclId()
     {
-        return accessControlList;
-    }
-
-    public void setAccessControlList(DbAccessControlList accessControlList)
-    {
-        this.accessControlList = accessControlList;
-    }
-
-    public Set<Long> getAspects()
-    {
-        return aspects;
+        return aclId;
     }
     
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setAspects(Set<Long> aspects)
+    public void setAclId(Long aclId)
     {
-        this.aspects = aspects;
+        this.aclId = aclId;
     }
 
-    public Map<PropertyMapKey, NodePropertyValue> getProperties()
+    public Map<NodePropertyKey, NodePropertyValue> getProperties()
     {
         return properties;
     }
@@ -338,7 +319,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
      * For Hibernate use
      */
     @SuppressWarnings("unused")
-    private void setProperties(Map<PropertyMapKey, NodePropertyValue> properties)
+    private void setProperties(Map<NodePropertyKey, NodePropertyValue> properties)
     {
         this.properties = properties;
     }

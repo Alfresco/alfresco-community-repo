@@ -300,14 +300,12 @@ public interface NodeService
     
     /**
      * Makes a parent-child association between the given nodes.  Both nodes must belong to the same store.
-     * <p>
      * 
-     * 
-     * @param parentRef
-     * @param childRef 
-     * @param assocTypeQName the qualified name of the association type as defined in the datadictionary
-     * @param qname the qualified name of the association
-     * @return Returns a reference to the newly created child association
+     * @param parentRef         the parent node
+     * @param childRef          the child node
+     * @param assocTypeQName    the qualified name of the association type as defined in the datadictionary
+     * @param qname             the qualified name of the association
+     * @return                  Returns a reference to the newly created child association
      * @throws InvalidNodeRefException if the parent or child nodes could not be found
      * @throws CyclicChildRelationshipException if the child partakes in a cyclic relationship after the add
      */
@@ -320,14 +318,12 @@ public interface NodeService
     
     /**
      * Associates a given child node with a given collection of parents.  All nodes must belong to the same store.
-     * <p>
      * 
-     * 
-     * @param parentRefs
-     * @param childRef 
-     * @param assocTypeQName the qualified name of the association type as defined in the datadictionary
-     * @param qname the qualified name of the association
-     * @return Returns a reference to the newly created child association
+     * @param parentRefs        the parent nodes (there will be this many associations created).
+     * @param childRef          the child node
+     * @param assocTypeQName    the qualified name of the association type as defined in the datadictionary
+     * @param qname             the qualified name of the association
+     * @return                  Returns a reference to the newly created child association
      * @throws InvalidNodeRefException if the parent or child nodes could not be found
      * @throws CyclicChildRelationshipException if the child partakes in a cyclic relationship after the add
      */
@@ -456,11 +452,11 @@ public interface NodeService
      * <p>
      * The resultant list is ordered by (a) explicit index and (b) association creation time.
      * 
-     * @param nodeRef the child node
-     * @param typeQNamePattern the pattern that the type qualified name of the association must match
-     * @param qnamePattern the pattern that the qnames of the assocs must match
-     * @return Returns a list of all parent-child associations that exist where the given
-     *      node is the child
+     * @param nodeRef           the child node
+     * @param typeQNamePattern  the pattern that the type qualified name of the association must match
+     * @param qnamePattern      the pattern that the qnames of the assocs must match
+     * @return                  Returns a list of all parent-child associations that exist where the given
+     *                          node is the child
      * @throws InvalidNodeRefException if the node could not be found
      *
      * @see ChildAssociationRef#getNthSibling()

@@ -43,7 +43,6 @@ import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -578,14 +577,10 @@ public class AVMInterpreter
 
                 try
                 {
-                    AVMLock lock = fLockingService.getLock(mainStore, lockPath);
-                    out.print("lock: ");
-                    if (lock != null)
+                    String lockOwner = fLockingService.getLockOwner(mainStore, lockPath);
+                    if (lockOwner != null)
                     {
-                        out.print("store = ");
-                        out.print(lock.getStore());
-                        out.print(", owners = ");
-                        out.println(lock.getOwners());
+                        out.println("lock: " + lockOwner);
                     }
                     else
                     {

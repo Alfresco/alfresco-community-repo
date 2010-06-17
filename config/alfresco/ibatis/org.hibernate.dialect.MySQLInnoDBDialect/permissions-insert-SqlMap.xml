@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.permissions">
+
+    <insert id="insert_Acl" parameterClass="Acl">
+        <include refid="insert_Acl_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_AclMember" parameterClass="AclMember">
+        <include refid="insert_AclMember_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_AclChangeSet" parameterClass="AclChangeSet">
+        <include refid="insert_AclChangeSet_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_Ace" parameterClass="Ace">
+        <include refid="insert_Ace_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_AceContext" parameterClass="AceContext">
+        <include refid="insert_AceContext_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_Permission" parameterClass="Permission">
+        <include refid="insert_Permission_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_Authority" parameterClass="Authority">
+        <include refid="insert_Authority_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+    <insert id="insert_AuthorityAlias" parameterClass="AuthorityAlias">
+        <include refid="insert_AuthorityAlias_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+    
+</sqlMap>

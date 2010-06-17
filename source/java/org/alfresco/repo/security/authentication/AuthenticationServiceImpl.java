@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
@@ -26,8 +25,6 @@ import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.aop.framework.ReflectiveMethodInvocation;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {

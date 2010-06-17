@@ -31,8 +31,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 
-
-
 /**
  * Asset Service fundamental API.
  * <p>
@@ -45,46 +43,24 @@ public interface AssetService
 {
     /**
      * Create folder within given sandbox and webApp
-     * 
-     * @param sbStoreId
-     * @param webApp
-     * @param parentFolderPathRelativeToWebApp
-     * @param name
      */
     @NotAuditable
     public void createFolderWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, String name);
     
     /**
      * Create folder within given sandbox
-     * 
-     * @param sbStoreId
-     * @param parentFolderPath
-     * @param name
-     * @param properties
      */
     @NotAuditable
     public void createFolder(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties);
     
     /**
      * Create (empty) file within given sandbox and webApp, return content writer for file contents
-     * 
-     * @param sbStoreId
-     * @param webApp
-     * @param parentFolderPath
-     * @param name
-     * @return
      */
     @NotAuditable
     public ContentWriter createFileWebApp(String sbStoreId, String webApp, String parentFolderPath, String name);
     
     /**
      * Create (empty) file within given sandbox, return content writer for file contents
-     * 
-     * @param sbStoreId
-     * @param parentFolderPath
-     * @param name
-     * @param properties
-     * @return
      */
     @NotAuditable
     public ContentWriter createFile(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties);
@@ -93,11 +69,6 @@ public interface AssetService
      * Get asset (file or folder) for given sandbox, webApp and path (within webApp)
      * <p>
      * Returns null if the asset can not be found
-     * 
-     * @param sbStoreId
-     * @param webApp
-     * @param pathRelativeToWebApp
-     * @return
      */
     @NotAuditable
     public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp);
@@ -106,12 +77,6 @@ public interface AssetService
      * Get asset (file or folder) for given sandbox, webApp and path (within webApp), optionally include deleted assets
      * <p>
      * Returns null if the asset can not be found
-     * 
-     * @param sbStoreId
-     * @param webApp
-     * @param pathRelativeToWebApp
-     * @param includeDeleted
-     * @return AssetInfo  asset info
      */
     @NotAuditable
     public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp, boolean includeDeleted);
@@ -132,148 +97,90 @@ public interface AssetService
      * Get asset (file or folder) for given sandbox version and path, optionally include deleted assets
      * <p>
      * Returns null if the asset can not be found
-     * 
-     * @param sbStoreId
-     * @param version
-     * @param path
-     * @param includeDeleted
-     * @return AssetInfo  asset info
      */
     @NotAuditable
     public AssetInfo getAsset(String sbStoreId, int version, String path, boolean includeDeleted);
     
     /**
      * Get content writer for given file asset, to allow file contents to be written or updated
-     * 
-     * @param asset
-     * @return
      */
     @NotAuditable
     public ContentWriter getContentWriter(AssetInfo fileAsset);
     
     /**
      * Get content reader for given file asset, to allow file contents to be read
-     * 
-     * @param asset
-     * @return
      */
     @NotAuditable
     public ContentReader getContentReader(AssetInfo fileAsset);
     
     /**
      * Get asset properties
-     * 
-     * @param asset
-     * @return
      */
     @NotAuditable
     public Map<QName, Serializable> getAssetProperties(AssetInfo asset);
     
     /**
      * Set asset properties (will replace all existing properties)
-     * 
-     * @param asset
-     * @param properties
      */
     @NotAuditable
     public void setAssetProperties(AssetInfo asset, Map<QName, Serializable> properties);
     
     /**
      * Update asset properties (will replace given set of properties, if they already exist)
-     * 
-     * @param asset
-     * @param properties
      */
     @NotAuditable
     public void updateAssetProperties(AssetInfo asset, Map<QName, Serializable> properties);
     
     /**
      * Apply aspect to asset, with given properties (can be null)
-     * 
-     * @param asset
-     * @param aspectName
-     * @param properties
      */
     @NotAuditable
     public void addAspect(AssetInfo asset, QName aspectName, Map<QName, Serializable> properties);
     
     /**
      * Remove aspect from asset, and any related properties
-     * 
-     * @param asset
-     * @param aspectName
      */
     @NotAuditable
     public void removeAspect(AssetInfo asset, QName aspectName);
     
     /**
      * Get set of aspects applied to asset
-     * 
-     * @param asset
-     * @return list of aspects
      */
     @NotAuditable
     public Set<QName> getAspects(AssetInfo asset);
     
     /**
      * True, if asset has given aspect applied
-     * 
-     * @param asset
-     * @param aspectName
-     * @return
      */
     @NotAuditable
     public boolean hasAspect(AssetInfo asset, QName aspectName);
     
     /**
      * List assets within given sandbox and webApp and path (within webApp), optionally include deleted
-     * 
-     * @param sbStoreId
-     * @param webApp
-     * @param parentFolderPathRelativeToWebApp
-     * @param includeDeleted
-     * @return list of assets
      */
     @NotAuditable
     public List<AssetInfo> listAssetsWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, boolean includeDeleted);
     
     /**
      * List assets within given sandbox and path, optionally include deleted
-     * 
-     * @param sbStoreId
-     * @param parentFolderPath
-     * @param includeDeleted
-     * @return list of assets
      */
     @NotAuditable
     public List<AssetInfo> listAssets(String sbStoreId, String parentFolderPath, boolean includeDeleted);
     
     /**
      * List assets within given sandbox version and path, optionally include deleted
-     * 
-     * @param sbStoreId
-     * @param version
-     * @param parentFolderPath
-     * @param includeDeleted
-     * @return list of assets
      */
     @NotAuditable
     public List<AssetInfo> listAssets(String sbStoreId, int version, String parentFolderPath, boolean includeDeleted);
     
     /**
      * Delete asset
-     * 
-     * @param asset
      */
     @NotAuditable
     public void deleteAsset(AssetInfo asset);
     
     /**
      * Rename asset
-     * 
-     * @param asset
-     * @param newName
-     * @return AssetInfo  asset info
      */
     @NotAuditable
     public AssetInfo renameAsset(AssetInfo asset, String newName);
@@ -283,10 +190,6 @@ public interface AssetService
      * <p> 
      * Note: folder asset will be recursively copied
      * Note: file asset(s) must have content
-     * 
-     * @param asset
-     * @param parentFolderPath
-     * @return AssetInfo  asset info
      */
     @NotAuditable
     public AssetInfo copyAsset(AssetInfo asset, String parentFolderPath);
@@ -295,20 +198,12 @@ public interface AssetService
     
     /**
      * Move asset within sandbox
-     * 
-     * @param asset
-     * @param parentFolderPath
-     * @return AssetInfo  asset info
      */
     @NotAuditable
     public AssetInfo moveAsset(AssetInfo asset, String parentFolderPath);
     
     /**
      * Bulk import assets into sandbox
-     * 
-     * @param sbStoreId
-     * @param parentFolderPath
-     * @param zipFile
      */
     @NotAuditable
     public void bulkImport(String sbStoreId, String parentFolderPath, File zipFile, boolean isHighByteZip);
@@ -316,7 +211,6 @@ public interface AssetService
     /**
      * Runtime check to get lock (and owner) for asset - null if not locked
      * 
-     * @param asset
      * @return String lock owner (null if path not locked)
      */
     @NotAuditable
@@ -325,7 +219,6 @@ public interface AssetService
     /**
      * Runtime check to check if the current user can perform (write) operations on the asset when locked
      * 
-     * @param asset
      * @return boolean  true if current user has write access
      */
     @NotAuditable

@@ -34,7 +34,7 @@ import org.springframework.context.ApplicationContext;
  * @see QNameDAO
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public class QNameDAOTest extends TestCase
 {

@@ -27,12 +27,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Component to check and recover the indexes.
@@ -284,7 +284,7 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         {
             public Long execute() throws Exception
             {
-                Transaction txn = nodeDaoService.getTxnById(txnId);
+                Transaction txn = nodeDAO.getTxnById(txnId);
                 if (txn != null)
                 {
                     return txn.getCommitTimeMs();
@@ -436,7 +436,7 @@ found:
         while (true)
         {
             // Get the most recent transaction before the given look-back
-            List<Transaction> nextTransactions = nodeDaoService.getTxnsByCommitTimeDescending(
+            List<Transaction> nextTransactions = nodeDAO.getTxnsByCommitTimeDescending(
                     0L,
                     toTimeExclusive,
                     1,
@@ -512,7 +512,7 @@ found:
             // If the batch is full or if there are no more voids, fire the query
             if (voidTxnIdBatch.size() == VOID_BATCH_SIZE || !voidTxnIdIterator.hasNext())
             {
-                List<Transaction> filledTxns = nodeDaoService.getTxnsByMinCommitTime(voidTxnIdBatch);
+                List<Transaction> filledTxns = nodeDAO.getTxnsByCommitTimeAscending(voidTxnIdBatch);
                 for (Transaction txn : filledTxns)
                 {
                     if (txn.getCommitTimeMs() == null)          // Just coping with Hibernate mysteries
@@ -572,7 +572,7 @@ found:
     
     private List<Transaction> getNextTransactions(long fromTimeInclusive, long toTimeExclusive, List<Long> previousTxnIds)
     {
-        List<Transaction> txns = nodeDaoService.getTxnsByCommitTimeAscending(
+        List<Transaction> txns = nodeDAO.getTxnsByCommitTimeAscending(
                 fromTimeInclusive,
                 toTimeExclusive,
                 maxRecordSetSize,

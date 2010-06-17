@@ -26,12 +26,7 @@ package org.alfresco.repo.security.permissions;
  */
 public class SimpleAccessControlListProperties implements AccessControlListProperties
 {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 6476760867405494520L;
-
-    private String aclId;
+    private Long id;
     
     private ACLType aclType;
     
@@ -43,38 +38,54 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     
     private Boolean versioned;
     
-    private Long id;
+    private String aclId;
+    
+    // Default constructor
+    public SimpleAccessControlListProperties()
+    {
+    }
+    
+    public SimpleAccessControlListProperties(AccessControlListProperties props)
+    {
+        this.id = props.getId();
+        this.aclType = props.getAclType();
+        this.aclVersion = props.getAclVersion();
+        this.inherits = props.getInherits();
+        this.latest = props.isLatest();
+        this.versioned = props.isVersioned();
+        this.aclId = props.getAclId();
+    }
     
     public String getAclId()
     {
        return aclId;
     }
-
+    
     public ACLType getAclType()
     {
        return aclType;
     }
-
+    
     public Long getAclVersion()
     {
       return aclVersion;
     }
-
+    
     public Boolean getInherits()
     {
         return inherits;
     }
-
+    
     public Boolean isLatest()
     {
         return latest;
     }
-
+    
     public Boolean isVersioned()
     {
        return versioned;
     }
-
+    
     /**
      * Set the acl id
      * @param aclId
@@ -83,7 +94,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.aclId = aclId;
     }
-
+    
     /**
      * Set the acl type
      * @param aclType
@@ -92,7 +103,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.aclType = aclType;
     }
-
+    
     /**
      * Set the acl version
      * @param aclVersion
@@ -101,7 +112,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.aclVersion = aclVersion;
     }
-
+    
     /**
      * Set inheritance
      * @param inherits
@@ -110,7 +121,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.inherits = inherits;
     }
-
+    
     /**
      * Set latest
      * @param latest
@@ -119,7 +130,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.latest = latest;
     }
-
+    
     /**
      * Set versioned
      * @param versioned
@@ -128,12 +139,12 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.versioned = versioned;
     }
-
+    
     public Long getId()
     {
         return id;
     }
-
+    
     /**
      * Set the id
      * @param id
@@ -142,7 +153,4 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     {
         this.id = id;
     }
-    
-    
-
 }

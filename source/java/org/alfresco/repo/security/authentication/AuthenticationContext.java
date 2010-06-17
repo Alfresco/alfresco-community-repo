@@ -18,8 +18,6 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.service.Auditable;
-
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.UserDetails;
 

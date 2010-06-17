@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.alfresco.error.StackTraceUtil;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -49,7 +49,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
     private NodeCleanupRegistry registry;
     protected TransactionService transactionService;
     protected DbNodeServiceImpl dbNodeService;
-    protected NodeDaoService nodeDaoService;
+    protected NodeDAO nodeDAO;
     
     public AbstractNodeCleanupWorker()
     {
@@ -72,9 +72,9 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
         this.dbNodeService = dbNodeService;
     }
 
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    public void setNodeDAO(NodeDAO nodeDAO)
     {
-        this.nodeDaoService = nodeDaoService;
+        this.nodeDAO = nodeDAO;
     }
 
     public void register()
@@ -82,7 +82,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
         PropertyCheck.mandatory(this, "registry", registry);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "dbNodeService", dbNodeService);
-        PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
+        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
 
         registry.register(this);
     }

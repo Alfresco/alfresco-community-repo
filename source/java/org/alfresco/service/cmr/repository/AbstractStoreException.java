@@ -26,16 +26,28 @@ package org.alfresco.service.cmr.repository;
  */
 public abstract class AbstractStoreException extends RuntimeException
 {
+    private static final long serialVersionUID = 1315634811903555316L;
+
     private StoreRef storeRef;
     
     public AbstractStoreException(StoreRef storeRef)
     {
-        this(null, storeRef);
+        this(null, storeRef, null);
     }
 
     public AbstractStoreException(String msg, StoreRef storeRef)
     {
-        super(msg);
+        this(msg, storeRef, null);
+    }
+
+    public AbstractStoreException(StoreRef storeRef, Throwable e)
+    {
+        this(null, storeRef, e);
+    }
+
+    public AbstractStoreException(String msg, StoreRef storeRef, Throwable e)
+    {
+        super(msg, e);
         this.storeRef = storeRef;
     }
 

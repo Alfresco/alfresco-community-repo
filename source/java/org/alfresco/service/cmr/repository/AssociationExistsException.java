@@ -30,43 +30,43 @@ public class AssociationExistsException extends RuntimeException
 {
     private static final long serialVersionUID = 3256440317824874800L;
 
-    private NodeRef sourceRef;
-    private NodeRef targetRef;
+    private Long sourceNodeId;
+    private Long targetNodeId;
     private QName qname;
     
     /**
      * @see #AssociationExistsException(NodeRef, NodeRef, QName, Throwable)
      */
-    public AssociationExistsException(NodeRef sourceRef, NodeRef targetRef, QName qname)
+    public AssociationExistsException(Long sourceNodeId, Long targetNodeId, QName qname)
     {
         super();
-        this.sourceRef = sourceRef;
-        this.targetRef = targetRef;
+        this.sourceNodeId = sourceNodeId;
+        this.targetNodeId = targetNodeId;
         this.qname = qname;
     }
 
     /**
-     * @param sourceRef the source of the association
-     * @param targetRef the target of the association
-     * @param qname the qualified name of the association
+     * @param sourceNodeId      the source of the association
+     * @param targetNodeId      the target of the association
+     * @param qname             the qualified name of the association
      * @param cause a causal exception
      */
-    public AssociationExistsException(NodeRef sourceRef, NodeRef targetRef, QName qname, Throwable cause)
+    public AssociationExistsException(Long sourceNodeId, Long targetNodeId, QName qname, Throwable cause)
     {
         super(cause);
-        this.sourceRef = sourceRef;
-        this.targetRef = targetRef;
+        this.sourceNodeId = sourceNodeId;
+        this.targetNodeId = targetNodeId;
         this.qname = qname;
     }
 
-    public NodeRef getSourceRef()
+    public Long getSourceNodeId()
     {
-        return sourceRef;
+        return sourceNodeId;
     }
 
-    public NodeRef getTargetRef()
+    public Long getTargetNodeId()
     {
-        return targetRef;
+        return targetNodeId;
     }
     
     public QName getQName()

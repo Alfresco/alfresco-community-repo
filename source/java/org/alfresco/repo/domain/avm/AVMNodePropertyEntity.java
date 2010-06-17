@@ -44,7 +44,6 @@ public class AVMNodePropertyEntity extends PropertyValue
         setQnameId(qnameId);
         
         this.setActualType(value.getActualType());
-        this.setAttributeValue(value.getAttributeValue());
         this.setBooleanValue(value.getBooleanValue());
         this.setDoubleValue(value.getDoubleValue());
         this.setFloatValue(value.getFloatValue());

@@ -7,36 +7,27 @@
 <sqlMap namespace="alfresco.activities">
 
    <insert id="insert_activity_feedcontrol" parameterClass="FeedControl">
-   
-      insert into alf_activity_feed_control (feed_user_id, site_network, app_tool, last_modified)
-      values (#feedUserId#, #siteNetwork#, #appTool#, #lastModified#)
-      
+      <include refid="alfresco.activities.insert_ActivityFeedControl_AutoIncrement"/>
       <selectKey resultClass="long" keyProperty="id" type="post">
          KEY_COLUMN:GENERATED_KEY
       </selectKey>
       
    </insert>
-
+   
    <insert id="insert_activity_feed" parameterClass="ActivityFeed">
-   
-      insert into alf_activity_feed (activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
-      values (#activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
-
+      <include refid="alfresco.activities.insert_ActivityFeed_AutoIncrement"/>
       <selectKey resultClass="long" keyProperty="id" type="post">
          KEY_COLUMN:GENERATED_KEY
       </selectKey>
       
    </insert>
-
+   
    <insert id="insert_activity_post" parameterClass="ActivityPost">
-   
-      insert into alf_activity_post (status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
-      values (#status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
-      
+      <include refid="alfresco.activities.insert_ActivityPost_AutoIncrement"/>
       <selectKey resultClass="long" keyProperty="id" type="post">
          KEY_COLUMN:GENERATED_KEY
       </selectKey>
       
    </insert>
-
+   
 </sqlMap>

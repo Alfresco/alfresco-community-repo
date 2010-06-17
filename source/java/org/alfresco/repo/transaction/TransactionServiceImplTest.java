@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -137,7 +138,13 @@ public class TransactionServiceImplTest extends TestCase
         {
             @SuppressWarnings("unused")
             int i = 0;
-            // expected
+            // expected this ...
+        }
+        catch (TransientDataAccessResourceException e)
+        {
+            @SuppressWarnings("unused")
+            int i = 0;
+            // or this
         }
         finally
         {

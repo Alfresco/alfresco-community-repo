@@ -42,7 +42,7 @@ public interface NodeBulkLoader
     public void cacheNodes(List<NodeRef> nodeRefs);
     
     /**
-     * Clears the cached nodes
+     * <b>FOR TESTING ONLY: </b>Clears out node cache data
      */
     public void clear();
 }

@@ -29,13 +29,8 @@ public class StoreExistsException extends AbstractStoreException
 {
     private static final long serialVersionUID = 3906369320370975030L;
 
-    public StoreExistsException(StoreRef storeRef)
+    public StoreExistsException(StoreRef storeRef, Throwable e)
     {
-        super(storeRef);
-    }
-
-    public StoreExistsException(String msg, StoreRef storeRef)
-    {
-        super(msg, storeRef);
+        super(storeRef, e);
     }
 }

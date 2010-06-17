@@ -765,6 +765,9 @@ public class WCMUtil extends AVMUtil
    
    protected final static String SPACE_ICON_WEBSITE       = "space-icon-website";
    
+   // Locking constants
+   public static final String LOCK_KEY_STORE_NAME = "avm-store-name";
+   
    // web user role permissions
    public static final String ROLE_CONTENT_MANAGER     = PermissionService.WCM_CONTENT_MANAGER;
    public static final String ROLE_CONTENT_PUBLISHER   = PermissionService.WCM_CONTENT_PUBLISHER;

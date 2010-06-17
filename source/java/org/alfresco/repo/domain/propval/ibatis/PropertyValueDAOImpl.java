@@ -366,6 +366,8 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             break;
         case CONSTRUCTABLE:
             // The string value is the name of the class (e.g. 'java.util.HashMap')
+        case ENUM:
+            // The string-equivalent representation
         case STRING:
             // It's best to query using the CRC and short end-value
             query = SELECT_PROPERTY_VALUE_BY_STRING_VALUE;
@@ -416,6 +418,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             break;
         case STRING:
         case CONSTRUCTABLE:
+        case ENUM:
             String stringValue = insertEntity.getStringValue();
             Pair<Long, String> insertStringPair = getOrCreatePropertyStringValue(stringValue);
             insertEntity.setLongValue(insertStringPair.getFirst());
@@ -518,12 +521,15 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     }
 
     @Override
-    protected PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3)
+    protected PropertyUniqueContextEntity createPropertyUniqueContext(
+            Long valueId1, Long valueId2, Long valueId3,
+            Long propertyId)
     {
         PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
         entity.setValue1PropId(valueId1);
         entity.setValue2PropId(valueId2);
         entity.setValue3PropId(valueId3);
+        entity.setPropertyId(propertyId);
         Long id = (Long) template.insert(INSERT_PROPERTY_UNIQUE_CTX, entity);
         entity.setId(id);
         return entity;
@@ -547,6 +553,49 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity.setValue3PropId(valueId3);
         entity = (PropertyUniqueContextEntity) template.queryForObject(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
         return entity;
+    }
+    
+    @Override
+    protected void getPropertyUniqueContextByValues(final PropertyUniqueContextCallback callback, Long... valueIds)
+    {
+        PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
+        for (int i = 0; i < valueIds.length; i++)
+        {
+            switch (i)
+            {
+            case 0:
+                entity.setValue1PropId(valueIds[i]);
+                break;
+            case 1:
+                entity.setValue2PropId(valueIds[i]);
+                break;
+            case 2:
+                entity.setValue3PropId(valueIds[i]);
+                break;
+            default:
+                throw new IllegalArgumentException("Only 3 ids allowed");
+            }
+        }
+        
+        RowHandler valueRowHandler = new RowHandler()
+        {
+            public void handleRow(Object valueObject)
+            {
+                PropertyUniqueContextEntity result = (PropertyUniqueContextEntity) valueObject;
+                
+                Long id = result.getId();
+                Long propId = result.getPropertyId();
+                Serializable[] keys = new Serializable[3];
+                keys[0] = result.getValue1PropId();
+                keys[1] = result.getValue2PropId();
+                keys[2] = result.getValue3PropId();
+                
+                callback.handle(id, propId, keys);
+            }
+        };
+        
+        template.queryWithRowHandler(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity, valueRowHandler);
+        // Done
     }
 
     @Override

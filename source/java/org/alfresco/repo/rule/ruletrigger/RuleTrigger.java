@@ -27,6 +27,9 @@ import org.alfresco.service.cmr.rule.RuleType;
  */
 public interface RuleTrigger
 {
+    /** Key to look up a <tt>Set</tt> of <tt>String</tt> values controlling the firing of rules */
+    public static final String RULE_TRIGGER_NODESET = "RuleTrigger.NodeSet";
+    
     /**
      * Register the rule trigger
      */

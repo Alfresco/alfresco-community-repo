@@ -46,9 +46,6 @@ import org.apache.commons.logging.LogFactory;
 public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
         implements NodeServicePolicies.OnCreateNodePolicy
 {
-    /**
-     * The logger
-     */
     private static Log logger = LogFactory.getLog(CreateNodeRuleTrigger.class);
     
     private static final String POLICY = "onCreateNode";
@@ -63,8 +60,6 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     
 	/**
 	 * Set whether this is a class behaviour or not
-	 * 
-	 * @param isClassBehaviour
 	 */
     public void setIsClassBehaviour(boolean isClassBehaviour)
     {
@@ -73,8 +68,6 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 
     /**
      * Set the rule service
-     * 
-     * @param ruleService   rule service
      */
     public void setRuleService(RuntimeRuleService ruleService)
     {
@@ -82,8 +75,8 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     }
     
     /**
-	 * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
-	 */
+     * {@inheritDoc}
+     */
 	public void registerRuleTrigger()
 	{
 		if (isClassBehaviour == true)
@@ -142,9 +135,6 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 
     /**
      * On add aspect behaviour
-     * 
-     * @param nodeRef
-     * @param aspectTypeQName
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -165,9 +155,6 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     
     /**
      * On remove aspect behaviour
-     * 
-     * @param nodeRef
-     * @param aspectTypeQName
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {

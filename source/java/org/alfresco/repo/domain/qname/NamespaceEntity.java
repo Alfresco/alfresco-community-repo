@@ -24,7 +24,7 @@ import org.alfresco.util.EqualsHelper;
  * Entity for <b>alf_namespace</b> persistence. 
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public class NamespaceEntity
 {

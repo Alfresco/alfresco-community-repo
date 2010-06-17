@@ -16,129 +16,153 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.service.cmr.avm.locking;
 
-import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Service to handle AVM locking.
- * @author britt
+ * 
+ * @author Derek Hulley, janv
  */
 public interface AVMLockingService
 {
-    public enum Type implements Serializable
+    /**
+     * Creates a lock of the given type on a path within an AVM store.
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param path                  the relative path of the lock
+     * @param lockOwner             the user taking the lock
+     * @param lockData              additional data to append to the lock
+     */
+    public void lock(String avmStore, String path, String lockOwner, Map<String, String> lockData);
+
+    /**
+     * Modify a lock if it exists or do nothing if it doesn't.  The user supplied must
+     * already hold the lock if it exists.
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param path                  the relative path of the lock
+     * @param lockOwner             the user taking the lock and who must also own the existing lock
+     * @param newAvmStore           the name of the new AVM store
+     * @param newPath               the new relative path of the lock
+     * @param lockData              the new additional data to append to the lock
+     * @return                      <tt>true</tt> if the lock was modified or <tt>false</tt> if no lock existed
+     */
+    public boolean modifyLock(
+            String avmStore, String path, String lockOwner,
+            String newAvmStore, String newPath,
+            Map<String, String> lockData);
+
+    /**
+     * Get the current holder of a lock on AVM store path
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param path                  the relative path of the lock
+     * @return                      Returns the user holding the lock or <tt>null</tt>
+     */
+    public String getLockOwner(String avmStore, String path);
+
+    /**
+     * Enumeration of the state of a lock's with respect to a specific user.
+     * 
+     * @author Derek Hulley
+     * @since 3.4
+     */
+    public static enum LockState
     {
-        DISCRETIONARY
-    };
-
+        /**
+         * The user holds the lock
+         */
+        LOCK_OWNER,
+        /**
+         * Another user holds the lock
+         */
+        LOCK_NOT_OWNER,
+        /**
+         * There is currently no lock
+         */
+        NO_LOCK;
+    }
+    
     /**
-     * Creates a lock of the given type on a path.
-     * The lock is used to control access to all the
-     * corresponding paths in the given path's web project.
-     * @param lock The lock structure to create.
+     * Get the state of a lock with respect to a given AVM store, path <b>and user</b>
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param path                  the relative path of the lock
+     * @param lockOwner             the user who might own the lock
+     * @return                      the state of the lock with respect to the given user
      */
-    public void lockPath(AVMLock lock);
-
+    public LockState getLockState(String avmStore, String path, String lockOwner);
+    
     /**
-     * Get a lock on a given path
-     * @param webProject The website for which to get the lock.
-     * @param path The path to check for a lock.
-     * @return The Lock structure or null if there is no lock.
+     * Get the data associated with a lock
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param path                  the relative path of the lock
+     * @return                      the state of the lock with respect to the given user
      */
-    public AVMLock getLock(String webProject, String path);
-
-    /**
-     * Modify a lock. Null change parameters are ignored.
-     * @param webProject The name of the web project.
-     * @param path The path of the lock.
-     * @param newPath The path that the lock should be given. (may be null)
-     * @param newStore The store that the lock should be given. (may be null)
-     * @param usersToRemove List of users to remove from the lock. (may be null)
-     * @param usersToAdd List of users to add to the lock. (may be null)
-     */
-    public void modifyLock(String webProject, String path, String newPath,
-                           String newStore, List<String> usersToRemove,
-                           List<String> usersToAdd);
+    public Map<String, String> getLockData(String avmStore, String path);
 
     /**
      * Remove a lock.
-     * @param webProject The web project the lock lives in.
-     * @param path The store relative path of the lock.
+     * 
+     * @param webProject            the name of the web project
+     * @param path                  the relative path of the lock
      */
-    public void removeLock(String webProject, String path);
-
+    public void removeLock(String avmStore, String path);
+    
     /**
-     * Remove all locks on files contained within a directory.
-     * @param webProject
-     * @param store
-     * @param path
+     * Remove all locks for a specific AVM store
+     * 
+     * @param avmStore              the name of the AVM store
      */
-    public void removeLocksInDirectory(String webProject, String store, String path);
-
+    public void removeLocks(String avmStore);
+    
     /**
-     * Removes all locks residing in a store.
-     * @param store The store name.
+     * Remove all locks for a specific AVM store that start with a given directory path
+     * that also optionally match a map of lock data entries.
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param dirPath               optional - start with given directory path or null to match all
+     * @param lockDataToMatch       optional - lock data to match (note: all entries must match) or null/empty to match all
      */
-    public void removeStoreLocks(String store);
-
+    public void removeLocks(String avmStore, String dirPath, final Map<String, String> lockDataToMatch);
+    
     /**
-     * Get all the locks that a user owns.
-     * @param user The name of the user.
-     * @return The (possibly empty list) of the user's locks.
+     * Remove all locks for a specific AVM store 
+     * that also optionally match a map of lock data entries.
+     * 
+     * @param avmStore              the name of the AVM store
+     * @param lockDataToMatch       optional - lock data to match (note: all entries must match) or null/empty to match all
      */
-    public List<AVMLock> getUsersLocks(String user);
-
+    public void removeLocks(String avmStore, final Map<String, String> lockDataToMatch);
+    
     /**
-     * Add a web project to the locking tables if it doesn't already exist.
-     * @param webProject The web project name.
+     * Is the user allowed to do anything to the given asset, other than read?
+     * 
+     * @param webProject            the name of the WCM project
+     * @param path                  the relative path of the lock
+     * @param lockOwner             the user to check
+     * @return                      <tt>true</tt> if the user has access
+     *                              (either holds the lock or there is no lock, etc)
+     * 
+     * @deprecated  This will move into a WCMLockingService                            
      */
-    public void addWebProject(String webProject);
-
-    /**
-     * Remove a web project and all associated data from the locking tables.
-     * @param webProject The web project name.
-     */
-    public void removeWebProject(String webProject);
-
-    /**
-     * Get all locks in a give web project.
-     * @param webProject The web project name.
-     * @return All the locks found.
-     */
-    public List<AVMLock> getWebProjectLocks(String webProject);
-
-    /**
-     * Get all locks that reside in a given store.
-     * @param store The store name.
-     * @return All the locks found.
-     */
-    public List<AVMLock> getStoreLocks(String store);
+    public boolean hasAccess(String webProject, String avmPath, String lockOwner);
 
     /**
      * Is the user allowed to do anything to the given asset, other than read?
-     * @param webProject The name of the web project that this path is being checked in.
-     * @param avmPath A full avmPath
-     * @param user The name of the user, group, role to check on.
-     * @return Whether the user has access.
+     * 
+     * @param webProject            the name of the WCM project
+     * @param path                  the relative path of the lock
+     * @param lockOwner             the user to check
+     * @return                      <tt>true</tt> if the user has access
+     *                              (either holds the lock or there is no lock, etc)
+     * 
+     * @deprecated  This will move into a WCMLockingService                             
      */
-    public boolean hasAccess(String webProject, String avmPath, String user);
-
-    /**
-     * Is the user allowed to do anything to the given asset, other than read?
-     * @param webProjectRef The NodeRef to the web project that this path is being checked in.
-     * @param avmPath A full avmPath
-     * @param user The name of the user, group, role to check on.
-     * @return Whether the user has access.
-     */
-    public boolean hasAccess(NodeRef webProjectRef, String avmPath, String user);
-
-    /**
-     * Get the names of all the web projects the service knows about.
-     * @return The list of web project names.
-     */
-    public List<String> getWebProjects();
+    public boolean hasAccess(NodeRef webProject, String avmPath, String lockOwner);
 }

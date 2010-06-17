@@ -30,7 +30,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 /**
  * This abstracts the reading and writing of ACLs on nodes from particular node implementations.
  * 
- * @author britt
+ * @author andyh
+ * @author janv
  */
 public interface AccessControlListDAO
 {
@@ -68,21 +69,13 @@ public interface AccessControlListDAO
 
     /**
      * Update any associated ACLs
-     * 
-     * @param startingPoint
-     * @param chnages
      */
     public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes);
 
     /**
      * Update inheritance
-     * 
-     * @param parent
-     * @param inheritFrom
-     * @param previousId
-     * @return
      */
-    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom);
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace);
 
     public Long getIndirectAcl(NodeRef nodeRef);
 
@@ -95,4 +88,6 @@ public interface AccessControlListDAO
     public DbAccessControlList getAccessControlList(StoreRef storeRef);
     
     public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl);
+    
+    public void updateInheritance(Long childNodeId, Long oldParentNodeId, Long newParentNodeId);
 }

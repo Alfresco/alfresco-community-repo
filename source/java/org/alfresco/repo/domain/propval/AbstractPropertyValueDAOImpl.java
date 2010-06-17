@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -33,9 +34,9 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.CrcHelper;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
-import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,6 +64,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     protected final Log logger = LogFactory.getLog(getClass());
     
     protected PropertyTypeConverter converter;
+    protected ControlDAO controlDAO;
     
     private final PropertyClassCallbackDAO propertyClassDaoCallback;
     private final PropertyDateValueCallbackDAO propertyDateValueCallback;
@@ -152,6 +154,14 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     public void setConverter(PropertyTypeConverter converter)
     {
         this.converter = converter;
+    }
+
+    /**
+     * @param controlDAO                    the DAO that provides connection control
+     */
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
     }
 
     /**
@@ -858,8 +868,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
 
         /**
-         * No-op.  This is implemented as we just want to update the cache.
-         * @return              Returns 0 always
+         * Updates a property.  The <b>alf_prop_root</b> entity is updated
+         * to ensure concurrent modification is detected.
+         * 
+         * @return              Returns 1 always
          */
         @Override
         public int updateValue(Long key, Serializable value)
@@ -1073,15 +1085,29 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     // 'alf_prop_unique_ctx' accessors
     //================================
 
-    public Long createPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
+    public Pair<Long, Long> createPropertyUniqueContext(
+            Serializable value1, Serializable value2, Serializable value3,
+            Serializable propertyValue1)
     {
+        /*
+         * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transactioin
+         */
+        
         // Translate the properties.  Null values are acceptable
         Long id1 = getOrCreatePropertyValue(value1).getFirst();
         Long id2 = getOrCreatePropertyValue(value2).getFirst();
         Long id3 = getOrCreatePropertyValue(value3).getFirst();
+        Long property1Id = null;
+        if (propertyValue1 != null)
+        {
+            property1Id = createProperty(propertyValue1);
+        }
+        
+        Savepoint savepoint = controlDAO.createSavepoint("createPropertyUniqueContext");
         try
         {
-            PropertyUniqueContextEntity entity = createPropertyUniqueContext(id1, id2, id3);
+            PropertyUniqueContextEntity entity = createPropertyUniqueContext(id1, id2, id3, property1Id);
+            controlDAO.releaseSavepoint(savepoint);
             if (logger.isDebugEnabled())
             {
                 logger.debug(
@@ -1089,25 +1115,26 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                         "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
                         "   Result: " + entity);
             }
-            return entity.getId();
+            return new Pair<Long, Long>(entity.getId(), property1Id);
         }
         catch (Throwable e)
         {
-            throw new PropertyUniqueConstraintViolation(value1, value2, value3);
+            controlDAO.rollbackToSavepoint(savepoint);
+            throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
         }
     }
-
-    public Long getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
+    
+    public Pair<Long, Long> getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3)
     {
         // Translate the properties.  Null values are quite acceptable
         Pair<Long, Serializable> pair1 = getPropertyValue(value1);
         Pair<Long, Serializable> pair2 = getPropertyValue(value2);
         Pair<Long, Serializable> pair3 = getPropertyValue(value3);
         if (pair1 == null || pair2 == null || pair3 == null)
-        {
+            {
             // None of the values exist so no unique context values can exist
-            return null;
-        }
+                return null;
+            }
         Long id1 = pair1.getFirst();
         Long id2 = pair2.getFirst();
         Long id3 = pair3.getFirst();
@@ -1120,15 +1147,48 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                     "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
                     "   Result: " + entity);
         }
-        return entity == null ? null : entity.getId();
+        return entity == null ? null : new Pair<Long, Long>(entity.getId(), entity.getPropertyId());
+    }
+    
+    public void getPropertyUniqueContext(PropertyUniqueContextCallback callback, Serializable... values)
+    {
+        if (values.length < 1 || values.length > 3)
+        {
+            throw new IllegalArgumentException("Get of unique property sets must have 1, 2 or 3 values");
+        }
+        Long[] valueIds = new Long[values.length];
+        for (int i = 0; i < values.length; i++)
+        {
+            Pair<Long, Serializable> valuePair = getPropertyValue(values[i]);
+            if (valuePair == null)
+            {
+                // No such value, so no need to get
+                return;
+            }
+            valueIds[i] = valuePair.getFirst();
+        }
+        getPropertyUniqueContextByValues(callback, valueIds);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Searched for unique property context: \n" +
+                    "   Values: " + values);
+        }
     }
 
     public void updatePropertyUniqueContext(Long id, Serializable value1, Serializable value2, Serializable value3)
     {
+        /*
+         * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transactioin
+         */
+        
         // Translate the properties.  Null values are acceptable
         Long id1 = getOrCreatePropertyValue(value1).getFirst();
         Long id2 = getOrCreatePropertyValue(value2).getFirst();
         Long id3 = getOrCreatePropertyValue(value3).getFirst();
+        
+        Savepoint savepoint = controlDAO.createSavepoint("updatePropertyUniqueContext");
         try
         {
             PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
@@ -1140,6 +1200,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             entity.setValue2PropId(id2);
             entity.setValue3PropId(id3);
             updatePropertyUniqueContext(entity);
+            controlDAO.releaseSavepoint(savepoint);
             // Done
             if (logger.isDebugEnabled())
             {
@@ -1152,7 +1213,43 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
         catch (Throwable e)
         {
+            controlDAO.rollbackToSavepoint(savepoint);
             throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
+        }
+    }
+
+    public void updatePropertyUniqueContext(Long id, Serializable propertyValue)
+    {
+        PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
+        if (entity == null)
+        {
+            throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
+        }
+        Long propertyIdToDelete = entity.getPropertyId();
+
+        Long propertyId = null;
+        if (propertyValue != null)
+        {
+            propertyId = createProperty(propertyValue);
+        }
+        
+        // Create a new property
+        entity.setPropertyId(propertyId);
+        updatePropertyUniqueContext(entity);
+        
+        // Clean up the previous property, if present
+        if (propertyIdToDelete != null)
+        {
+            deleteProperty(propertyIdToDelete);
+        }
+        
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Updated unique property context: \n" +
+                    "   ID: " + id + "\n" +
+                    "   Property: " + propertyId);
         }
     }
 
@@ -1185,9 +1282,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         return deleted;
     }
 
-    protected abstract PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3);
+    protected abstract PropertyUniqueContextEntity createPropertyUniqueContext(Long valueId1, Long valueId2, Long valueId3, Long propertyId);
     protected abstract PropertyUniqueContextEntity getPropertyUniqueContextById(Long id);
     protected abstract PropertyUniqueContextEntity getPropertyUniqueContextByValues(Long valueId1, Long valueId2, Long valueId3);
+    protected abstract void getPropertyUniqueContextByValues(PropertyUniqueContextCallback callback, Long... valueIds);
     protected abstract PropertyUniqueContextEntity updatePropertyUniqueContext(PropertyUniqueContextEntity entity);
     protected abstract int deletePropertyUniqueContexts(Long ... valueIds);
 

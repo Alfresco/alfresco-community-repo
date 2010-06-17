@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.repo.domain.CrcHelper;
-import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.util.Pair;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -273,23 +272,70 @@ public interface PropertyValueDAO
     // 'alf_prop_unique_ctx' accessors
     //================================
     /**
-     * <b>alf_prop_unique_ctx</b> accessor: find an existing unique context.
+     * <b>alf_prop_unique_ctx</b> accessor: create a unique context with an optional
+     * associated value.
      * <p/>
      * The DAO ensures that the region-context-value combination will be globally unique.
      * 
+     * @param value1            a simple key value (not a collection) (may be <tt>null</tt>)
+     * @param value2            a simple key value (not a collection) (may be <tt>null</tt>)
+     * @param value3            a simple key value (not a collection) (may be <tt>null</tt>)
+     * @param propertyValue1    a value to store against the key (may be <tt>null</tt>)
+     * @return                  Returns the ID-valueId pair of the context
+     * 
      * @throws PropertyUniqueConstraintViolation        if the combination is not unique
      */
-    Long createPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3);
+    Pair<Long, Long> createPropertyUniqueContext(
+            Serializable value1, Serializable value2, Serializable value3,
+            Serializable propertyValue1);
     /**
-     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
+     * Get the unique context ID and associated shared property ID, or <tt>null</tt> if no
+     * such context exists.  The associated property may be <tt>null</tt> even if the unique
+     * context exists.
+     *
+     * @param values            a combination of one to three values in order
+     * @return                  Returns the ID-valueId pair or <tt>null</tt> if the context
+     *                          doesn't exist.
+     * 
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
      */
-    Long getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3);
+    Pair<Long, Long> getPropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3);
+    
     /**
-     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
+     * A callback for handling return property unique contexts
      */
-    void updatePropertyUniqueContext(Long id, Serializable value1, Serializable value2, Serializable value3);
+    public interface PropertyUniqueContextCallback
+    {
+        public void handle(Long id, Long propId, Serializable[] keys);
+    }
+    
     /**
-     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable)
+     * Get unique contexts (unique context ID and associated shared property ID), if any, based on one, two or three context values.
+     * The associated property may be <tt>null</tt> even if the unique context exists.
+     *
+     * @param values            a combination of one to three values in order
+     * 
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
+     */
+    void getPropertyUniqueContext(PropertyUniqueContextCallback callback, Serializable ... values);
+    /**
+     * Update the unique context, preserving any associated property.
+     * 
+     * @throws PropertyUniqueConstraintViolation        if the combination is not unique
+     * 
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
+     */
+    void updatePropertyUniqueContext(
+            Long id,
+            Serializable value1, Serializable value2, Serializable value3);
+    /**
+     * Update the property associated with a unique context.
+     * 
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
+     */
+    void updatePropertyUniqueContext(Long id, Serializable propertyValue1);
+    /**
+     * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
      */
     void deletePropertyUniqueContext(Long id);
     /**
@@ -299,7 +345,7 @@ public interface PropertyValueDAO
      * @return                  Returns the number of unique contexts deleted
      */
     int deletePropertyUniqueContext(Serializable ... values);
-
+    
     //================================
     // Utility methods
     //================================

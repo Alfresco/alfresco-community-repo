@@ -68,22 +68,17 @@
        </property>
        <property name="preCreateScriptUrls">
           <list>
-             <value>classpath:alfresco/dbscripts/create/3.3/${db.script.dialect}/AlfrescoCreate-3.3-RepoTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-RepoTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-LockTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-PropertyValueTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuditTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AvmTables.sql</value>
           </list>
        </property>
        <property name="postCreateScriptUrls">
           <list>
-             <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-MappedFKIndexes.sql</value>
-             <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-Extra.sql</value>
-             <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/post-create-indexes-04.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-extras.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-LockTables.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-ContentTables.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-PropertyValueTables.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AuditTables.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-AvmTables.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-Indexes.sql</value>
-             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-JBPM-Extra.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -92,8 +87,6 @@
        </property>
        <property name="preUpdateScriptPatches">
           <list>
-             <ref bean="patch.schemaUpdateScript-V1.4-1" />
-             <ref bean="patch.schemaUpdateScript-V1.4-2" />
              <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
              <ref bean="patch.db-V2.2-ACL" />
@@ -114,7 +107,6 @@
        </property>
        <property name="postUpdateScriptPatches">
           <list>
-             <ref bean="patch.db-V1.4-TxnCommitTimeIndex" />
              <ref bean="patch.db-V2.0-ContentUrls" />
              <ref bean="patch.db-V2.1-JBPMData" />
              <ref bean="patch.db-V2.1-VersionColumns2" />
@@ -127,7 +119,9 @@
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
              <ref bean="patch.db-V3.2-Upgrade-JBPM" />
              <ref bean="patch.db-V3.3-Remove-VersionCount" />
-             <ref bean="patch.db-V3.3-Fix-Repo-Seqs_1" />
+             <ref bean="patch.db-V3.3-Fix-Repo-Seqs" />
+             <ref bean="patch.db-V3.3-Fix-AVM-Seqs" />
+             <ref bean="patch.db-V3.3-property-unique-ctx-value" />
           </list>
        </property>
     </bean>
@@ -162,12 +156,6 @@
        </property>
     </bean>
 
-    <!-- Bootstrap AVM Locking Service. -->
-    <bean id="avmLockingBootstrap" class="org.alfresco.repo.avm.locking.AVMLockingBootstrap">
-       <property name="avmLockingService" ref="avmLockingService"/>
-       <property name="transactionService" ref="transactionService"/>
-    </bean>
-    
     <!-- Load models -->
     <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
 
@@ -541,8 +529,8 @@
         <property name="nodeService">
             <ref bean="nodeService"/>
         </property>
-        <property name="nodeDaoService">
-            <ref bean="nodeDaoService"/>
+        <property name="usageDAO">
+            <ref bean="usageDAO"/>
         </property>
         <property name="usageService">
             <ref bean="usageService"/>

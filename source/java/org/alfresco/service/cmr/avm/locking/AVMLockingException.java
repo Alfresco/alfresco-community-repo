@@ -16,49 +16,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.service.cmr.avm.locking;
 
 import org.alfresco.service.cmr.avm.AVMException;
 
 /**
- * Exception thrown when lock permission is denied.
- * @author britt
+ * Exception thrown when a lock is denied.
+ * 
+ * @author Derek Hulley
  */
 public class AVMLockingException extends AVMException
 {
-    /**
-     * @param msgId
-     */
-    public AVMLockingException(String msgId)
-    {
-        super(msgId);
-    }
+    private static final long serialVersionUID = -8446855530834146895L;
 
-    /**
-     * @param msgId
-     * @param msgParams
-     */
-    public AVMLockingException(String msgId, Object[] msgParams)
+    public AVMLockingException(String msgId, Object ... msgParams)
     {
         super(msgId, msgParams);
     }
 
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public AVMLockingException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-    }
-
-    /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
-     */
-    public AVMLockingException(String msgId, Object[] msgParams, Throwable cause)
+    public AVMLockingException(Throwable cause, String msgId, Object ... msgParams)
     {
         super(msgId, msgParams, cause);
     }

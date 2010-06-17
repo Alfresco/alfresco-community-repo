@@ -30,8 +30,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Checks that the behaviour of the {@link org.alfresco.repo.audit.AuditableAspect auditable aspect}
@@ -41,48 +43,48 @@ import org.alfresco.util.debug.NodeStoreInspector;
  */
 public class AuditableAspectTest extends BaseSpringTest 
 {
-	/**
-	 * Services used by the tests
-	 */
-	private NodeService nodeService;
-	
-	/**
-	 * Data used by the tests
-	 */
-	private StoreRef storeRef;
-	private NodeRef rootNodeRef;	
-	
-	/**
-	 * On setup in transaction implementation
-	 */
-	@Override
-	protected void onSetUpInTransaction() 
-		throws Exception 
-	{
-		// Set the services
-		this.nodeService = (NodeService)this.applicationContext.getBean("dbNodeService");
-		
-		// Create the store and get the root node reference
-		this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-		this.rootNodeRef = this.nodeService.getRootNode(storeRef);
-	}
-	
-
+    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
+    /*
+     * Services used by the tests
+     */
+    private NodeService nodeService;
+    
+    /**
+     * Data used by the tests
+     */
+    private StoreRef storeRef;
+    private NodeRef rootNodeRef;
+    
+    /**
+     * On setup in transaction implementation
+     */
+    @Override
+    protected void onSetUpInTransaction() throws Exception
+    {
+        // Set the services
+        this.nodeService = (NodeService)ctx.getBean("dbNodeService");
+        
+        // Create the store and get the root node reference
+        this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        this.rootNodeRef = this.nodeService.getRootNode(storeRef);
+    }
+    
     public void testAudit()
-	{
+    {
         // Create a folder
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testfolder"),
                 ContentModel.TYPE_FOLDER);
-
+        
         // Assert auditable properties exist on folder
         assertAuditableProperties(childAssocRef.getChildRef());
         
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
-	}	
-
+    }
+    
     public void testNoAudit()
     {
         // Create a person (which doesn't have auditable capability by default)
@@ -99,7 +101,7 @@ public class AuditableAspectTest extends BaseSpringTest
                 ContentModel.TYPE_PERSON,
                 personProps);
         NodeRef nodeRef = childAssocRef.getChildRef();
-
+        
         // Assert the person is not auditable
         Set<QName> aspects = nodeService.getAspects(nodeRef);
         assertFalse("cm:auditable must not be present.", aspects.contains(ContentModel.ASPECT_AUDITABLE));
@@ -114,12 +116,6 @@ public class AuditableAspectTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
     
-    public void test() throws Throwable
-    {
-        
-    }
-
-
     public void testAddAudit()
     {
         // Create a person
@@ -135,14 +131,15 @@ public class AuditableAspectTest extends BaseSpringTest
                 QName.createQName("{test}testperson"),
                 ContentModel.TYPE_PERSON,
                 personProps);
-
+        
         // Assert the person is not auditable
         Set<QName> aspects = nodeService.getAspects(childAssocRef.getChildRef());
         assertFalse(aspects.contains(ContentModel.ASPECT_AUDITABLE));
         
         // Add auditable capability
         nodeService.addAspect(childAssocRef.getChildRef(), ContentModel.ASPECT_AUDITABLE, null);
-
+        
+        // Add (titled) aspect
         nodeService.addAspect(childAssocRef.getChildRef(), ContentModel.ASPECT_TITLED, null);
         
         // Assert the person is now audiable
@@ -155,7 +152,7 @@ public class AuditableAspectTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
 
-    public synchronized void testAddAspect() throws Exception
+    public synchronized void testAddAndRemoveAspect() throws Exception
     {
         // Create a person (which doesn't have auditable capability by default)
         Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
@@ -174,6 +171,7 @@ public class AuditableAspectTest extends BaseSpringTest
                 ContentModel.TYPE_PERSON,
                 personProps);
         NodeRef nodeRef = childAssocRef.getChildRef();
+        
         // Add auditable capability
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUDITABLE, null);
         
@@ -192,9 +190,12 @@ public class AuditableAspectTest extends BaseSpringTest
                 aspectModifiedDate1.getTime() < t2);
         
         long t3 = System.currentTimeMillis();
-        this.wait(100);
+        this.wait(100);                             // Needed for system clock inaccuracies
         
-        // Add auditable capability
+        // Pause to allow for node modifiedDate tolerance (of 1000ms - refer to AbstractNodeDAOImpl.updateNodeImpl)
+        this.wait(1500); //
+        
+        // Add (titled) aspect
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
         
         // Check that the dates were set correctly
@@ -202,17 +203,78 @@ public class AuditableAspectTest extends BaseSpringTest
         Date aspectModifiedDate2 = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         assertEquals("The created date must not change", aspectCreatedDate1, aspectCreatedDate2);
         assertTrue("New modified date should be later than t3", t3 < aspectModifiedDate2.getTime());
-
+        
+        System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+        
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        
+        assertNotAuditableProperties(nodeRef);
+        
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
+    
+    /**
+     * ALF-2565: Allow cm:auditable values to be set programmatically
+     */
+    public void testCreateNodeWithAuditableProperties_ALF_2565()
+    {
+        // Create a person (which doesn't have auditable capability by default)
+        Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        personProps.put(ContentModel.PROP_USERNAME, "test person");
+        personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name ");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        // Add some auditable properties
+        Map<QName, Serializable> auditableProps = new HashMap<QName, Serializable>();
+        auditableProps.put(ContentModel.PROP_CREATED, new Date(0L));
+        auditableProps.put(ContentModel.PROP_CREATOR, "ZeroPerson");
+        auditableProps.put(ContentModel.PROP_MODIFIED, new Date(1L));
+        auditableProps.put(ContentModel.PROP_MODIFIER, "OnePerson");
+        
+        personProps.putAll(auditableProps);
 
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{test}testperson"),
+                    ContentModel.TYPE_PERSON,
+                    personProps);
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        
+        assertAuditableProperties(nodeRef, auditableProps);
+    }
+    
     private void assertAuditableProperties(NodeRef nodeRef)
+    {
+        assertAuditableProperties(nodeRef, null);
+    }
+    
+    private void assertAuditableProperties(NodeRef nodeRef, Map<QName, Serializable> checkProps)
     {
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
         assertNotNull(props.get(ContentModel.PROP_CREATED));
         assertNotNull(props.get(ContentModel.PROP_MODIFIED));
         assertNotNull(props.get(ContentModel.PROP_CREATOR));
         assertNotNull(props.get(ContentModel.PROP_MODIFIER));
+        if (checkProps != null)
+        {
+            assertEquals("PROP_CREATED not correct",
+                        checkProps.get(ContentModel.PROP_CREATED), props.get(ContentModel.PROP_CREATED));
+            assertEquals("PROP_MODIFIED not correct",
+                        checkProps.get(ContentModel.PROP_MODIFIED), props.get(ContentModel.PROP_MODIFIED));
+            assertEquals("PROP_CREATOR not correct",
+                        checkProps.get(ContentModel.PROP_CREATOR), props.get(ContentModel.PROP_CREATOR));
+            assertEquals("PROP_MODIFIER not correct",
+                        checkProps.get(ContentModel.PROP_MODIFIER), props.get(ContentModel.PROP_MODIFIER));
+        }
     }
     
+    private void assertNotAuditableProperties(NodeRef nodeRef)
+    {
+        Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+        assertNull(props.get(ContentModel.PROP_CREATED));
+        assertNull(props.get(ContentModel.PROP_MODIFIED));
+        assertNull(props.get(ContentModel.PROP_CREATOR));
+        assertNull(props.get(ContentModel.PROP_MODIFIER));
+    }
 }

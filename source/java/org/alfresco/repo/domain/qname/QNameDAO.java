@@ -29,7 +29,7 @@ import org.alfresco.util.Pair;
  * Data abstraction layer for QName and Namespace entities.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public interface QNameDAO
 {

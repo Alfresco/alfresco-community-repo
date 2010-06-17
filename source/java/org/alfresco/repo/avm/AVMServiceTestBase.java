@@ -173,10 +173,6 @@ public class AVMServiceTestBase extends TestCase
             fService.purgeStore("layer");
         }
         
-        if (!fLockingService.getWebProjects().contains("main"))
-        {
-            fLockingService.addWebProject("main");
-        }
         fStartTime = System.currentTimeMillis();
     }
 

@@ -411,7 +411,6 @@
                 <value>alfresco.messages.webdav-messages</value>
                 <value>alfresco.messages.copy-service</value>
                 <value>alfresco.messages.avm-messages</value>
-                <value>alfresco.messages.linkvalidation-messages</value>
                 <value>alfresco.messages.content-filter-languages</value>
                 <value>alfresco.messages.jbpm-engine-messages</value>
             </list>
@@ -447,14 +446,6 @@
         </property>
     </bean>
 
-
-    <!--                        -->
-    <!-- Property Component      -->
-    <!--                         -->
-    
-    <bean id="propertyValueComponent" class="org.alfresco.repo.props.PropertyValueComponentImpl" init-method="init">
-        <property name="propertyValueDAO" ref="propertyValueDAO"/>
-    </bean>
 
     <!--                         -->
     <!-- Indexing and Search API -->
@@ -721,7 +712,7 @@
             <ref bean="indexThreadPoolExecutor"></ref>
         </property>
         <property name="bulkLoader">
-            <ref bean="nodeDaoServiceImpl"></ref>
+            <ref bean="nodeDAO"></ref>
         </property>
     </bean>
     

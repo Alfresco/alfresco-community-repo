@@ -67,9 +67,6 @@ public abstract class DirectoryNodeImpl extends AVMNodeImpl implements Directory
         ChildKey key = new ChildKey(this, name);
         ChildEntry newChild = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fChildEntryDAO.save(newChild);
-        
-        AVMDAOs.Instance().fChildEntryDAO.evict(newChild);
-        AVMDAOs.Instance().fAVMNodeDAO.evict(node);
     }
     
     /**

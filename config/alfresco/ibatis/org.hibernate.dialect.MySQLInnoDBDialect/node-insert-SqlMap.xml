@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.node">
+
+    <insert id="insert_Server" parameterClass="Server" >
+        <include refid="alfresco.node.insert_Server_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert_Store" parameterClass="Store" >
+        <include refid="alfresco.node.insert_Store_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert_Node" parameterClass="Node" >
+        <include refid="alfresco.node.insert_Node_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert_Transaction" parameterClass="Transaction" >
+        <include refid="alfresco.node.insert_Transaction_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert_NodeAssoc" parameterClass="NodeAssoc" >
+        <include refid="alfresco.node.insert_NodeAssoc_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert_ChildAssoc" parameterClass="ChildAssoc" >
+        <include refid="alfresco.node.insert_ChildAssoc_AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+</sqlMap>

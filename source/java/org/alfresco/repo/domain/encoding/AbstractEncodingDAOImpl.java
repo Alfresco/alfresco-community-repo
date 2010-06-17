@@ -18,11 +18,10 @@
  */
 package org.alfresco.repo.domain.encoding;
 
-import java.io.Serializable;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.util.Pair;
+import org.alfresco.repo.cache.lookup.EntityLookupCache;
+import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -36,92 +35,89 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  */
 public abstract class AbstractEncodingDAOImpl implements EncodingDAO
 {
-    private static final Long CACHE_NULL_LONG = Long.MIN_VALUE;
-    private SimpleCache<Serializable, Serializable> encodingEntityCache;
-
+    private static final String CACHE_REGION_ENCODING = "Encoding";
+    
     /**
-     * 
-     * @param encodingEntityCache           the cache of IDs to mimetypes
+     * Cache for the Locale values:<br/>
+     * KEY: ID<br/>
+     * VALUE: String<br/>
+     * VALUE KEY: String<br/>
      */
-    public void setEncodingEntityCache(SimpleCache<Serializable, Serializable> encodingEntityCache)
+    private EntityLookupCache<Long, String, String> encodingEntityCache;
+    
+    /**
+     * Set the cache that maintains the ID-Encoding mappings and vice-versa (bi-directional)
+     * 
+     * @param encodingEntityCache        the cache
+     */
+    public void setEncodingEntityCache(SimpleCache<Long, String> encodingEntityCache)
     {
-        this.encodingEntityCache = encodingEntityCache;
+        this.encodingEntityCache = new EntityLookupCache<Long, String, String>(
+                encodingEntityCache,
+                CACHE_REGION_ENCODING,
+                new EncodingEntityCallbackDAO());
     }
-
+    
     public Pair<Long, String> getEncoding(Long id)
     {
-        // Check the cache
-        String encoding = (String) encodingEntityCache.get(id);
-        if (encoding != null)
-        {
-            return new Pair<Long, String>(id, encoding);
-        }
-        // Get it from the DB
-        EncodingEntity mimetypeEntity = getEncodingEntity(id);
-        if (mimetypeEntity == null)
-        {
-            throw new AlfrescoRuntimeException("The MimetypeEntity ID " + id + " doesn't exist.");
-        }
-        encoding = mimetypeEntity.getEncoding();
-        // Cache it
-        encodingEntityCache.put(encoding, id);
-        encodingEntityCache.put(id, encoding);
-        // Done
-        return new Pair<Long, String>(id, encoding);
+        return encodingEntityCache.getByKey(id);
     }
 
     public Pair<Long, String> getEncoding(String encoding)
     {
         ParameterCheck.mandatory("encoding", encoding);
-        
-        // Check the cache
-        Long id = (Long) encodingEntityCache.get(encoding);
-        if (id != null)
-        {
-            if (id.equals(CACHE_NULL_LONG))
-            {
-                return null;
-            }
-            else
-            {
-                return new Pair<Long, String>(id, encoding);
-            }
-        }
-        // It's not in the cache, so query
-        EncodingEntity result = getEncodingEntity(encoding);
-        if (result == null)
-        {
-            // Cache it
-            encodingEntityCache.put(encoding, CACHE_NULL_LONG);
-            // Done
-            return null;
-        }
-        else
-        {
-            id = result.getId();
-            // Cache it
-            encodingEntityCache.put(id, encoding);
-            encodingEntityCache.put(encoding, id);
-            // Done
-            return new Pair<Long, String>(id, encoding);
-        }
+        return encodingEntityCache.getByValue(encoding);
     }
 
     public Pair<Long, String> getOrCreateEncoding(String encoding)
     {
         ParameterCheck.mandatory("encoding", encoding);
-        
-        Pair<Long, String> result = getEncoding(encoding);
-        if (result == null)
+        return encodingEntityCache.getOrCreateByValue(encoding);
+    }
+    
+    /**
+     * Callback for <b>alf_encoding</b> DAO
+     */
+    private class EncodingEntityCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, String, String>
+    {
+        @Override
+        public String getValueKey(String value)
         {
-            EncodingEntity encodingEntity = createEncodingEntity(encoding);
-            Long id = encodingEntity.getId();
-            result = new Pair<Long, String>(id, encoding);
-            // Cache it
-            encodingEntityCache.put(id, encoding);
-            encodingEntityCache.put(encoding, id);
+            return value;
         }
-        return result;
+
+        public Pair<Long, String> findByKey(Long id)
+        {
+            EncodingEntity entity = getEncodingEntity(id);
+            if (entity == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new Pair<Long, String>(id, entity.getEncoding());
+            }
+        }
+        
+        @Override
+        public Pair<Long, String> findByValue(String encoding)
+        {
+            EncodingEntity entity = getEncodingEntity(encoding);
+            if (entity == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new Pair<Long, String>(entity.getId(), encoding);
+            }
+        }
+        
+        public Pair<Long, String> createValue(String encoding)
+        {
+            EncodingEntity entity = createEncodingEntity(encoding);
+            return new Pair<Long, String>(entity.getId(), encoding);
+        }
     }
     
     /**

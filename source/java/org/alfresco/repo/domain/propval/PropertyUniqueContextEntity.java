@@ -31,6 +31,7 @@ public class PropertyUniqueContextEntity
     private Long value1PropId;
     private Long value2PropId;
     private Long value3PropId;
+    private Long propertyId;
     
     public PropertyUniqueContextEntity()
     {
@@ -46,6 +47,7 @@ public class PropertyUniqueContextEntity
           .append(", value1PropId=").append(value1PropId)
           .append(", value2PropId=").append(value2PropId)
           .append(", value3PropId=").append(value3PropId)
+          .append(", propertyId=").append(propertyId)
           .append("]");
         return sb.toString();
     }
@@ -110,5 +112,15 @@ public class PropertyUniqueContextEntity
     public void setValue3PropId(Long value3PropId)
     {
         this.value3PropId = value3PropId;
+    }
+
+    public Long getPropertyId()
+    {
+        return propertyId;
+    }
+
+    public void setPropertyId(Long propId)
+    {
+        this.propertyId = propId;
     }
 }

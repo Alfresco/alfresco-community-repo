@@ -33,11 +33,11 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -90,7 +90,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     /** System Container ref cache (Tennant aware) */
     private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
     
-    private AclDaoComponent aclDao;
+    private AclDAO aclDao;
 
     private PolicyComponent policyComponent;
 
@@ -148,7 +148,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.tenantService = tenantService;
     }
     
-    public void setAclDao(AclDaoComponent aclDao)
+    public void setAclDAO(AclDAO aclDao)
     {
         this.aclDao = aclDao;
     }
@@ -900,8 +900,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             {
                 if (isAuthority)
                 {
-                    // Fix any ACLs
-                    aclDao.updateAuthority(authBefore, authAfter);
+                    if (authBefore != null)
+                    {
+                        // Fix any ACLs
+                        aclDao.renameAuthority(authBefore, authAfter);
+                    }
+                    
 
                     // Fix primary association local name
                     QName newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);

@@ -24,11 +24,15 @@ import junit.framework.TestSuite;
 import org.alfresco.repo.domain.audit.AuditDAOTest;
 import org.alfresco.repo.domain.contentdata.ContentDataDAOTest;
 import org.alfresco.repo.domain.encoding.EncodingDAOTest;
+import org.alfresco.repo.domain.locale.LocaleDAOTest;
 import org.alfresco.repo.domain.locks.LockDAOTest;
 import org.alfresco.repo.domain.mimetype.MimetypeDAOTest;
+import org.alfresco.repo.domain.node.NodeDAOTest;
 import org.alfresco.repo.domain.patch.AppliedPatchDAOTest;
+import org.alfresco.repo.domain.permissions.AclCrudDAOTest;
 import org.alfresco.repo.domain.propval.PropertyValueDAOTest;
 import org.alfresco.repo.domain.qname.QNameDAOTest;
+import org.alfresco.repo.domain.usage.UsageDAOTest;
 
 /**
  * Suite for domain-related tests.
@@ -41,6 +45,7 @@ public class DomainTestSuite extends TestSuite
     {
         TestSuite suite = new TestSuite();
         
+        suite.addTestSuite(NodeDAOTest.class);
         suite.addTestSuite(ContentDataDAOTest.class);
         suite.addTestSuite(EncodingDAOTest.class);
         suite.addTestSuite(LockDAOTest.class);
@@ -51,7 +56,9 @@ public class DomainTestSuite extends TestSuite
         suite.addTestSuite(PropertyValueDAOTest.class);
         suite.addTestSuite(AuditDAOTest.class);
         suite.addTestSuite(AppliedPatchDAOTest.class);
-                
+        suite.addTestSuite(AclCrudDAOTest.class);
+        suite.addTestSuite(UsageDAOTest.class);
+        
         return suite;
     }
 }

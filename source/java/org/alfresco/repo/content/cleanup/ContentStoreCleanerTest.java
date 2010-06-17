@@ -22,8 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -33,7 +35,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -83,7 +84,6 @@ public class ContentStoreCleanerTest extends TestCase
         jobLockService = serviceRegistry.getJobLockService();
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
-        NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
         AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("newAvmNodeDAO");
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
         
@@ -107,7 +107,6 @@ public class ContentStoreCleanerTest extends TestCase
         cleaner.setTransactionService(transactionService);
         cleaner.setDictionaryService(dictionaryService);
         cleaner.setContentService(contentService);
-        cleaner.setNodeDaoService(nodeDaoService);
         cleaner.setAvmNodeDAO(avmNodeDAO);
     }
     
@@ -116,9 +115,28 @@ public class ContentStoreCleanerTest extends TestCase
         AuthenticationUtil.clearCurrentSecurityContext();
     }
     
+    private void checkForExistence(Set<String> urls, boolean mustExist)
+    {
+        for (String url : urls)
+        {
+            ContentReader rawReader = contentService.getRawReader(url);
+            if (mustExist && !rawReader.exists())
+            {
+                fail("Content URL should have existed but did not: " + url);
+            }
+            else if (!mustExist && rawReader.exists())
+            {
+                fail("Content URL should not have existed but did: " + url);
+            }
+        }
+    }
+    
     public void testEagerCleanupOnCommit() throws Exception
     {
         eagerCleaner.setEagerOrphanCleanup(true);
+        final Set<String> urlsToExist = new HashSet<String>();
+        final Set<String> urlsToMiss = new HashSet<String>();
+        
         // Create a new file
         RetryingTransactionCallback<NodeRef> makeContentCallback = new RetryingTransactionCallback<NodeRef>()
         {
@@ -137,16 +155,17 @@ public class ContentStoreCleanerTest extends TestCase
                 ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("INITIAL CONTENT");
+                // Store the URL
+                urlsToExist.add(writer.getContentUrl());
                 // Done
                 return contentNodeRef;
             }
         };
         final NodeRef contentNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(makeContentCallback);
-        ContentReader contentReader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
-        assertTrue("Expect content to exist", contentReader.exists());
+        checkForExistence(urlsToExist, true);
+        checkForExistence(urlsToMiss, false);
         
         // Now update the node, but force a failure i.e. txn rollback
-        final List<String> newContentUrls = new ArrayList<String>();
         RetryingTransactionCallback<String> failUpdateCallback = new RetryingTransactionCallback<String>()
         {
             public String execute() throws Throwable
@@ -155,7 +174,7 @@ public class ContentStoreCleanerTest extends TestCase
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("CONTENT FOR FAIL");
                 // This will have updated the metadata, so we can fail now
-                newContentUrls.add(writer.getContentUrl());
+                urlsToMiss.add(writer.getContentUrl());
                 // Done
                 throw new RuntimeException("FAIL");
             }
@@ -179,10 +198,8 @@ public class ContentStoreCleanerTest extends TestCase
         }
         // Make sure that the new content is not there
         // The original content must still be there
-        assertEquals("Expected one content URL to play with", 1, newContentUrls.size());
-        ContentReader readerMissing = contentService.getRawReader(newContentUrls.get(0));
-        assertFalse("Newly created content should have been removed.", readerMissing.exists());
-        assertTrue("Original content should still be there.", contentReader.exists());
+        checkForExistence(urlsToExist, true);
+        checkForExistence(urlsToMiss, false);
         
         // Now update the node successfully
         RetryingTransactionCallback<String> successUpdateCallback = new RetryingTransactionCallback<String>()
@@ -192,16 +209,35 @@ public class ContentStoreCleanerTest extends TestCase
                 ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("CONTENT FOR SUCCESS");
+                // We expect the URL to be there, but the original URL must be removed
+                urlsToMiss.addAll(urlsToExist);
+                urlsToExist.clear();
+                urlsToExist.add(writer.getContentUrl());
                 // Done
                 return writer.getContentUrl();
             }
         };
-        String newContentUrl = transactionService.getRetryingTransactionHelper().doInTransaction(successUpdateCallback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(successUpdateCallback);
         // Make sure that the new content is there
         // The original content was disposed of
-        ContentReader contentReaderNew = contentService.getRawReader(newContentUrl);
-        assertTrue("Newly created content should be present.", contentReaderNew.exists());
-        assertFalse("Original content should have been removed.", contentReader.exists());
+        checkForExistence(urlsToExist, true);
+        checkForExistence(urlsToMiss, false);
+        
+        // Now get/set ContentData without a change
+        RetryingTransactionCallback<ContentData> pointlessUpdateCallback = new RetryingTransactionCallback<ContentData>()
+        {
+            public ContentData execute() throws Throwable
+            {
+                ContentData contentData = (ContentData) nodeService.getProperty(contentNodeRef, ContentModel.PROP_CONTENT);
+                nodeService.setProperty(contentNodeRef, ContentModel.PROP_CONTENT, contentData);
+                // Done
+                return contentData;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(pointlessUpdateCallback);
+        // Expect no change from before
+        checkForExistence(urlsToExist, true);
+        checkForExistence(urlsToMiss, false);
         
         // Now delete the node
         RetryingTransactionCallback<Object> deleteNodeCallback = new RetryingTransactionCallback<Object>()
@@ -209,13 +245,17 @@ public class ContentStoreCleanerTest extends TestCase
             public Object execute() throws Throwable
             {
                 nodeService.deleteNode(contentNodeRef);
+                // All URLs must be cleaned up
+                urlsToMiss.addAll(urlsToExist);
+                urlsToExist.clear();
                 // Done
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteNodeCallback);
         // The new content must have disappeared
-        assertFalse("Newly created content should be removed.", contentReaderNew.exists());
+        checkForExistence(urlsToExist, true);
+        checkForExistence(urlsToMiss, false);
     }
     
     /**
@@ -302,7 +342,8 @@ public class ContentStoreCleanerTest extends TestCase
                 writer.putContent("INITIAL CONTENT");
                 ContentData contentData = writer.getContentData();
                
-                // Delete the first node
+                // Delete the first node, bypassing archive
+                nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_TEMPORARY, null);
                 nodeService.deleteNode(contentNodeRef);
 
                 // Done

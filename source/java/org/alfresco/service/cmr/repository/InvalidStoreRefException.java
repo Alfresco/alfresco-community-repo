@@ -31,7 +31,7 @@ public class InvalidStoreRefException extends AbstractStoreException
 
     public InvalidStoreRefException(StoreRef storeRef)
     {
-        super(storeRef);
+        this("Invalid store: " + storeRef, storeRef);
     }
 
     public InvalidStoreRefException(String msg, StoreRef storeRef)

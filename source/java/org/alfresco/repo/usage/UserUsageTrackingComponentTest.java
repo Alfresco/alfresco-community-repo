@@ -61,12 +61,13 @@ public class UserUsageTrackingComponentTest extends TestCase
     private NodeService nodeService;
     private UserUsageTrackingComponent userUsageTrackingComponent;
     private ContentUsageService contentUsageService;
-
+    
     private UserTransaction testTX;
     
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-
-    private static final String TEST_USER_PREFIX = "user-";
+    
+    private static final String TEST_RUN = System.currentTimeMillis()+"";
+    private static final String TEST_USER_PREFIX = "user-"+TEST_RUN+"-";
     
     private static final int MAX_USERS = 5;
     private static final int BATCH_SIZE = 5;
@@ -87,7 +88,7 @@ public class UserUsageTrackingComponentTest extends TestCase
         
         createUsersAndContent();
     }
-
+    
     protected void tearDown() throws Exception
     {
         if (clean)

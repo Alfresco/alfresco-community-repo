@@ -19,7 +19,6 @@
 package org.alfresco.repo.node.db;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -28,25 +27,20 @@ import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.BaseNodeServiceTest;
-import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.Pair;
-import org.apache.commons.lang.mutable.MutableInt;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see org.alfresco.repo.node.db.DbNodeServiceImpl
@@ -57,7 +51,7 @@ import org.apache.commons.lang.mutable.MutableInt;
 public class DbNodeServiceImplTest extends BaseNodeServiceTest
 {
     private TransactionService txnService;
-    private NodeDaoService nodeDaoService;
+    private NodeDAO nodeDAO;
     private DictionaryService dictionaryService;
     
     protected NodeService getNodeService()
@@ -73,7 +67,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     {
         super.onSetUpInTransaction();
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
-        nodeDaoService = (NodeDaoService) applicationContext.getBean("nodeDaoService");
+        nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
     }
 
@@ -206,13 +200,13 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             public Object execute()
             {
                 // check n6
-                NodeRef.Status n6Status = nodeDaoService.getNodeRefStatus(n6Ref);
+                NodeRef.Status n6Status = nodeDAO.getNodeRefStatus(n6Ref);
                 if (!n6Status.isDeleted())
                 {
                     throw new RuntimeException("Deleted node does not have deleted status");
                 }
                 // n8 is a primary child - it should be deleted too
-                NodeRef.Status n8Status = nodeDaoService.getNodeRefStatus(n8Ref);
+                NodeRef.Status n8Status = nodeDAO.getNodeRefStatus(n8Ref);
                 if (!n8Status.isDeleted())
                 {
                     throw new RuntimeException("Cascade-deleted node does not have deleted status");
@@ -350,32 +344,6 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         assertEquals("Setting of MLText over String failed.", mlText, mlTextCheck);
     }
     
-    public void testDuplicatePrimaryParentHandling() throws Exception
-    {
-        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
-        // get the node to play with
-        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3"));
-        ChildAssociationRef n6pn8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8"));
-        final NodeRef n1Ref = n1pn3Ref.getParentRef();
-        final NodeRef n8Ref = n6pn8Ref.getChildRef();
-        
-        // Add a make n1 a second primary parent of n8
-        Pair<Long, NodeRef> n1Pair = nodeDaoService.getNodePair(n1Ref);
-        Pair<Long, NodeRef> n8Pair = nodeDaoService.getNodePair(n8Ref);
-        Pair<Long, ChildAssociationRef> assocPair = nodeDaoService.newChildAssoc(
-                n1Pair.getFirst(),
-                n8Pair.getFirst(),
-                true,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NAMESPACE, "n1pn8"),
-                null);
-        
-        // Now get the node primary parent
-        nodeService.getPrimaryParent(n8Ref);
-        // Get it again
-        nodeService.getPrimaryParent(n8Ref);
-    }
-    
     /**
      * It would appear that an issue has arisen with creating and deleting nodes
      * in the same transaction.
@@ -390,33 +358,6 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 TYPE_QNAME_TEST_CONTENT).getChildRef();
         // Delete the node
         nodeService.deleteNode(nodeRef);
-    }
-    
-    /**
-     * Adds a property to a node and checks that it can be found using the low-level DB query
-     */
-    public void testGetPropertyValuesByPropertyAndValue() throws Throwable
-    {
-        String findMeValue = "FIND ME";
-        nodeService.setProperty(rootNodeRef, PROP_QNAME_STRING_PROP_SINGLE, findMeValue);
-        final MutableInt count = new MutableInt(0);
-        // Add a property to the root node and check 
-        NodePropertyHandler handler = new NodePropertyHandler()
-        {
-            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
-            {
-                if (nodeTypeQName.equals(ContentModel.TYPE_STOREROOT))
-                {
-                    count.setValue(1);
-                }
-            }
-        };
-        nodeDaoService.getPropertyValuesByPropertyAndValue(
-                rootNodeRef.getStoreRef(),
-                PROP_QNAME_STRING_PROP_SINGLE,
-                findMeValue,
-                handler);
-        assertTrue("Set value not found.", count.intValue() == 1);
     }
     
     public void testAspectRemovalWithCommit() throws Throwable

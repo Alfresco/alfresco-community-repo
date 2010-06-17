@@ -21,38 +21,23 @@ package org.alfresco.repo.admin.patch.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.sql.Savepoint;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.CRC32;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
-import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.control.ControlDAO;
-import org.alfresco.repo.domain.hibernate.DbAuthorityImpl;
+import org.alfresco.repo.domain.patch.PatchDAO;
+import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.admin.PatchException;
-import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SQLQuery;
-import org.hibernate.ScrollMode;
-import org.hibernate.ScrollableResults;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * Fixes <a href=https://issues.alfresco.com/jira/browse/ALF-478>ALF-478</a>.
@@ -66,18 +51,31 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.fixAuthoritiesCrcValues.result";
     private static final String MSG_REWRITTEN = "patch.fixAuthoritiesCrcValues.fixed";
     private static final String MSG_UNABLE_TO_CHANGE = "patch.fixAuthoritiesCrcValues.unableToChange";
+
+    private final Log logger = LogFactory.getLog(getClass());
     
-    private SessionFactory sessionFactory;
+    private PatchDAO patchDAO;
+    private AclCrudDAO aclCrudDAO;
     private ControlDAO controlDAO;
-    private RuleService ruleService;
     
     public FixAuthoritiesCrcValuesPatch()
     {
     }
-    
-    public void setSessionFactory(SessionFactory sessionFactory)
+
+    /**
+     * @param patchDAO          finds incorrect authorities
+     */
+    public void setPatchDAO(PatchDAO patchDAO)
     {
-        this.sessionFactory = sessionFactory;
+        this.patchDAO = patchDAO;
+    }
+
+    /**
+     * @param aclCrudDAO        does the actual fixing
+     */
+    public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
+    {
+        this.aclCrudDAO = aclCrudDAO;
     }
 
     /**
@@ -88,28 +86,20 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
         this.controlDAO = controlDAO;
     }
 
-    /**
-     * @param ruleService the rule service
-     */
-    public void setRuleService(RuleService ruleService)
-    {
-        this.ruleService = ruleService;
-    }
-
     @Override
     protected void checkProperties()
     {
         super.checkProperties();
-        checkPropertyNotNull(sessionFactory, "sessionFactory");
-        checkPropertyNotNull(applicationEventPublisher, "applicationEventPublisher");
+        checkPropertyNotNull(patchDAO, "patchDAO");
+        checkPropertyNotNull(aclCrudDAO, "aclCrudDAO");
+        checkPropertyNotNull(controlDAO, "controlDAO");
     }
 
     @Override
     protected String applyInternal() throws Exception
     {
         // initialise the helper
-        HibernateHelper helper = new HibernateHelper();
-        helper.setSessionFactory(sessionFactory);
+        FixAuthoritiesCrcValuesPatchHelper helper = new FixAuthoritiesCrcValuesPatchHelper();
         
         try
         {
@@ -123,12 +113,12 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
         }
     }
     
-    private class HibernateHelper extends HibernateDaoSupport
+    private class FixAuthoritiesCrcValuesPatchHelper
     {
         private File logFile;
         private FileChannel channel;
         
-        private HibernateHelper() throws IOException
+        private FixAuthoritiesCrcValuesPatchHelper() throws IOException
         {
             // put the log file into a long life temp directory
             File tempDir = TempFileProvider.getLongLifeTempDir("patches");
@@ -144,12 +134,12 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
             writeLine("FixAuthorityCrcValuesPatch executing on " + new Date());
         }
         
-        private HibernateHelper write(Object obj) throws IOException
+        private FixAuthoritiesCrcValuesPatchHelper write(Object obj) throws IOException
         {
             channel.write(ByteBuffer.wrap(obj.toString().getBytes("UTF-8")));
             return this;
         }
-        private HibernateHelper writeLine(Object obj) throws IOException
+        private FixAuthoritiesCrcValuesPatchHelper writeLine(Object obj) throws IOException
         {
             write(obj);
             write("\n");
@@ -162,64 +152,44 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
 
         public String fixCrcValues() throws Exception
         {
+            List<String> mismatchedAuthorities = patchDAO.getAuthoritiesWithNonUtf8Crcs();
             // get the association types to check
-            BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(
+            BatchProcessor<String> batchProcessor = new BatchProcessor<String>(
                     "FixAuthorityCrcValuesPatch",
                     transactionService.getRetryingTransactionHelper(),
-                    findMismatchedCrcs(),
+                    mismatchedAuthorities,
                     2, 20,
                     applicationEventPublisher,
                     logger, 1000);
 
-            // Precautionary flush and clear so that we have an empty session
-            getSession().flush();
-            getSession().clear();
-
-            int updated = batchProcessor.process(new BatchProcessWorker<Long>()
+            int updated = batchProcessor.process(new BatchProcessWorker<String>()
             {
-                public String getIdentifier(Long entry)
+                public String getIdentifier(String entry)
                 {
-                    return entry.toString();
+                    return entry;
                 }
                 
                 public void beforeProcess() throws Throwable
                 {
-                    // Switch rules off
-                    ruleService.disableRules();
                     // Authenticate as system
                     String systemUsername = AuthenticationUtil.getSystemUserName();
                     AuthenticationUtil.setFullyAuthenticatedUser(systemUsername);
                 }
 
-                public void process(Long authorityId) throws Throwable
+                public void process(String authority) throws Throwable
                 {
-                    DbAuthority authority = (DbAuthority) getHibernateTemplate().get(DbAuthorityImpl.class, authorityId);
-                    if (authority == null)
-                    {
-                        // Missing now ...
-                        return;
-                    }
-                    // Get the old CRCs
-                    Long oldCrc = authority.getCrc();
-                    String authorityName = authority.getAuthority();
-                    
-                    // Update the CRCs
-                    long updatedCrc = getCrc(authorityName);
-                    authority.setCrc(updatedCrc);
-                  
                     // Persist
                     Savepoint savepoint = controlDAO.createSavepoint("FixAuthorityCrcValuesPatch");
                     try
                     {
-                        getSession().flush();
+                        aclCrudDAO.renameAuthority(authority, authority);
                         controlDAO.releaseSavepoint(savepoint);
                     }
                     catch (Throwable e)
                     {
                         controlDAO.rollbackToSavepoint(savepoint);
                         
-                        String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, authority.getId(), authority.getAuthority(), oldCrc,
-                                updatedCrc, e.getMessage());
+                        String msg = I18NUtil.getMessage(MSG_UNABLE_TO_CHANGE, authority, e.getMessage());
                         // We just log this and add details to the message file
                         if (logger.isDebugEnabled())
                         {
@@ -231,15 +201,12 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
                         }
                         writeLine(msg);
                     }
-                    getSession().clear();
                     // Record
-                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN,authority.getId(), authority.getAuthority(), oldCrc,
-                            updatedCrc));
+                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN, authority));
                 }
                 
                 public void afterProcess() throws Throwable
                 {
-                    ruleService.enableRules();
                 }
             }, true);
 
@@ -247,85 +214,27 @@ public class FixAuthoritiesCrcValuesPatch extends AbstractPatch
             String msg = I18NUtil.getMessage(MSG_SUCCESS, updated, logFile);
             return msg;
         }
-        
-        private List<Long> findMismatchedCrcs() throws Exception
-        {
-            final List<Long> authorityIds = new ArrayList<Long>(1000);
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    SQLQuery query = session
-                            .createSQLQuery(
-                                    " SELECT " +
-                                    "    au.id AS authority_id," +
-                                    "    au.authority AS authority," +
-                                    "    au.crc as crc" +
-                                    " FROM" +
-                                    "    alf_authority au");
-                    query.addScalar("authority_id", new LongType());
-                    query.addScalar("authority", new StringType());
-                    query.addScalar("crc", new LongType());
-                    return query.scroll(ScrollMode.FORWARD_ONLY);
-                }
-            };
-            ScrollableResults rs = null;
-            try
-            {
-                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
-                while (rs.next())
-                {
-                    // Compute child name crc
-                    Long authorityId = (Long) rs.get(0);
-                    String authority = (String) rs.get(1);
-                    Long crc = (Long) rs.get(2);
-                    long calculatedCrc = 0;
-                    if (authority != null)
-                    {
-                        calculatedCrc = getCrc(authority);
-                    }
-
-                    // Check
-                    if (crc != null && crc.equals(calculatedCrc))
-                    {
-                        // It is a match, so ignore
-                        continue;
-                    }
-                    authorityIds.add(authorityId);
-                }
-            }
-            catch (Throwable e)
-            {
-                logger.error("Failed to query for authority CRCs", e);
-                writeLine("Failed to query for authority CRCs: " + e.getMessage());
-                throw new PatchException("Failed to query for authority CRCs", e);
-            }
-            finally
-            {
-                if (rs != null)
-                {
-                    try { rs.close(); } catch (Throwable e) { writeLine("Failed to close resultset: " + e.getMessage()); }
-                }
-            }
-            return authorityIds;
-        }
-        
-        /**
-         * @param str           the name that will be kept as is
-         * @return              the CRC32 calculated on the exact case sensitive version of the string
-         */
-        private long getCrc(String str)
-        {
-            CRC32 crc = new CRC32();
-            try
-            {
-                crc.update(str.getBytes("UTF-8"));              // https://issues.alfresco.com/jira/browse/ALFCOM-1335
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                throw new RuntimeException("UTF-8 encoding is not supported");
-            }
-            return crc.getValue();
-        }
+// Keeping this for reference.  Actually, the query need only pull back the authority and crc     
+//        private List<String> findMismatchedCrcs() throws Exception
+//        {
+//            final List<Long> authorityIds = new ArrayList<Long>(1000);
+//            HibernateCallback callback = new HibernateCallback()
+//            {
+//                public Object doInHibernate(Session session)
+//                {
+//                    SQLQuery query = session
+//                            .createSQLQuery(
+//                                    " SELECT " +
+//                                    "    au.id AS authority_id," +
+//                                    "    au.authority AS authority," +
+//                                    "    au.crc as crc" +
+//                                    " FROM" +
+//                                    "    alf_authority au");
+//                    query.addScalar("authority_id", new LongType());
+//                    query.addScalar("authority", new StringType());
+//                    query.addScalar("crc", new LongType());
+//                    return query.scroll(ScrollMode.FORWARD_ONLY);
+//                }
+//            };
     }
 }

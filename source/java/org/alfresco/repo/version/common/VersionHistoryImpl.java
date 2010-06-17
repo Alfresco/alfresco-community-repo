@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +34,10 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionServiceException;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.VersionNumber;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Version History implementation. 
@@ -42,8 +46,9 @@ import org.alfresco.util.VersionNumber;
  */
 public class VersionHistoryImpl implements VersionHistory
 {
+    private static Log logger = LogFactory.getLog(VersionHistoryImpl.class);
+    
     private static final long serialVersionUID = 3257001051558326840L;
-
     /*
      * Error message(s)
      */
@@ -171,7 +176,7 @@ public class VersionHistoryImpl implements VersionHistory
             {
                 for (String key : this.versionHistory.keySet())
                 {
-                    if (this.versionHistory.get(key) == versionLabel)
+                    if (EqualsHelper.nullSafeEquals(this.versionHistory.get(key), versionLabel))
                     {
                         result.add(getVersion(key));
                     }
@@ -237,7 +242,18 @@ public class VersionHistoryImpl implements VersionHistory
 
         public int compare(Version v1, Version v2)
         {
-            int result = v2.getFrozenModifiedDate().compareTo(v1.getFrozenModifiedDate());
+            Date v1Date = v1.getFrozenModifiedDate();
+            Date v2Date = v2.getFrozenModifiedDate();
+            int result = 0;
+            if ((v1Date != null) && (v2Date != null))
+            {
+                result = v2.getFrozenModifiedDate().compareTo(v1.getFrozenModifiedDate());
+            }
+            else
+            {
+                logger.warn("Missing frozen modified date");
+            }
+            
             if (result == 0)
             {
                 result = new VersionNumber(v2.getVersionLabel()).compareTo(new VersionNumber(v1.getVersionLabel()));
@@ -257,7 +273,18 @@ public class VersionHistoryImpl implements VersionHistory
 
         public int compare(Version v1, Version v2)
         {
-            int result = v1.getFrozenModifiedDate().compareTo(v2.getFrozenModifiedDate());
+            Date v1Date = v1.getFrozenModifiedDate();
+            Date v2Date = v2.getFrozenModifiedDate();
+            int result = 0;
+            if ((v1Date != null) && (v2Date != null))
+            {
+                result = v1.getFrozenModifiedDate().compareTo(v2.getFrozenModifiedDate());
+            }
+            else
+            {
+                logger.warn("Missing frozen modified date");
+            }
+            
             if (result == 0)
             {
                 result = new VersionNumber(v1.getVersionLabel()).compareTo(new VersionNumber(v2.getVersionLabel()));

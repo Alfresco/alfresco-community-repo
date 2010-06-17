@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.cmis.mapping.CheckinCommentProperty;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
@@ -37,7 +36,6 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -99,7 +97,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
         this.copyService = (CopyService) this.applicationContext.getBean("CopyService");
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
-        this.checkOutCheckInService = (CheckOutCheckInService) this.applicationContext.getBean("checkOutCheckInService");
+        this.checkOutCheckInService = (CheckOutCheckInService) this.applicationContext.getBean("CheckoutCheckinService");
         this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
         this.actionService = (ActionService)this.applicationContext.getBean("ActionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
@@ -543,7 +541,6 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        NodeRef tagBar = taggingService.createTag(folder.getStoreRef(), "Bar");
        
        List<NodeRef> tagsList = new ArrayList<NodeRef>();
-       List<ChildAssociationRef> children;
        
        
        // Create two containers marked as tag scopes
@@ -644,10 +641,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        // Check out the node
        // Tags should be doubled up. (We don't care about ContentModel.ASPECT_WORKING_COPY
        //  because it isn't applied at suitable times to take not of)
-       UserTransaction tx = this.transactionService.getUserTransaction();
-       tx.begin();
        NodeRef checkedOutDoc = checkOutCheckInService.checkout(taggedDoc);
-       tx.commit();
        
        waitForActionExecution();
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());
@@ -663,10 +657,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
        
        // And check it back in again
        // Tags should go back to how they were
-       tx = this.transactionService.getUserTransaction();
-       tx.begin();
        checkOutCheckInService.checkin(checkedOutDoc, null);
-       tx.commit();
        
        waitForActionExecution();
        assertEquals(3, taggingService.findTagScope(container1).getTags().size());

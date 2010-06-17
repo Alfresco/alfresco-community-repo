@@ -29,15 +29,13 @@ import org.alfresco.repo.avm.AVMStoreImpl;
 import org.alfresco.repo.avm.DirectoryNode;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * iBATIS DAO wrapper for AVMStore
  * 
  * @author janv
  */
-class AVMStoreDAOIbatis extends HibernateDaoSupport implements AVMStoreDAO
+class AVMStoreDAOIbatis implements AVMStoreDAO
 {
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMStoreDAO#save(org.alfresco.repo.avm.AVMStore)
@@ -132,7 +130,7 @@ class AVMStoreDAOIbatis extends HibernateDaoSupport implements AVMStoreDAO
         DbAccessControlList acl = null;
         if (storeEntity.getAclId() != null)
         {
-            acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, storeEntity.getAclId());
+            acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlList(storeEntity.getAclId());
         }
         store.setStoreAcl(acl);
         

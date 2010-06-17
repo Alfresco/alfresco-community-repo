@@ -27,8 +27,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * The public API by which applications can create usage delta entries.
  * 
- * @author Jan Vonka
- * @since 2.9
+ * @author janv
+ * @since 2.9, 3.0
  */
 @PublicService
 public interface UsageService
@@ -44,13 +44,14 @@ public interface UsageService
      */
     @NotAuditable
     public long getTotalDeltaSize(NodeRef usageNodeRef);
-
+    
     /**
      * Get sum of usage delta sizes and remove affected deltas.
      */
     @NotAuditable
     public long getAndRemoveTotalDeltaSize(NodeRef usageNodeRef);
 
+    /**
     /**
      * Get distinct set of usage delta nodes
      */

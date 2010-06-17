@@ -78,8 +78,8 @@
     <parameterMap id="parameter_ContentData" class="ContentData">
         <parameter property="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="contentUrlId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-		<parameter property="mimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-		<parameter property="encodingId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="mimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="encodingId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
   

@@ -54,7 +54,6 @@
         insert into alf_namespace (version, uri) 
         values (#version#, #uri#)
     </sql>
-    
     <sql id="insert_Namespace_Sequence">
         insert into alf_namespace (id, version, uri) 
         values (#id#, #version#, #uri#)
@@ -64,7 +63,6 @@
         insert into alf_qname (version, ns_id, local_name) 
         values (#version#, #namespaceId#, #localName#)
     </sql>
-    
     <sql id="insert_QName_AutoIncrement_Sequence">
         insert into alf_qname (id, version, ns_id, local_name) 
         values (#id#, #version#, #namespaceId#, #localName#)

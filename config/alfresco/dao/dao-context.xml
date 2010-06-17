@@ -40,9 +40,10 @@
    <bean id="feedControlDAO" class="org.alfresco.repo.domain.activities.ibatis.FeedControlDAOImpl">
       <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
    </bean>
-
+   
    <bean id="patchDAO" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl">
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
    </bean>
    
@@ -56,6 +57,23 @@
       <property name="qnameCache" ref="immutableEntityCache"/>
    </bean>
    
+   <bean id="nodeDAO" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" init-method="init">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
+      <property name="aclDAO" ref="aclDAO"/>
+      <property name="accessControlListDAO" ref="admNodeACLDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="usageDAO" ref="usageDAO"/>
+      <property name="rootNodesCache" ref="node.rootNodesCache"/>
+      <property name="nodesCache" ref="node.nodesCache"/>
+      <property name="aspectsCache" ref="node.aspectsCache"/>
+      <property name="propertiesCache" ref="node.propertiesCache"/>
+      <property name="parentAssocsCache" ref="node.parentAssocsCache"/>
+   </bean>
+   
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
       <property name="sqlMapClientTemplate" ref="locksSqlMapClientTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
@@ -63,12 +81,17 @@
    
    <bean id="mimetypeDAO" class="org.alfresco.repo.domain.mimetype.ibatis.MimetypeDAOImpl">
       <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
-      <property name="mimetypeEntityCache" ref="mimetypeEntityCache"/>
+      <property name="mimetypeEntityCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="encodingDAO" class="org.alfresco.repo.domain.encoding.ibatis.EncodingDAOImpl">
       <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
-      <property name="encodingEntityCache" ref="encodingEntityCache"/>
+      <property name="encodingEntityCache" ref="immutableEntityCache"/>
+   </bean>
+   
+   <bean id="localeDAO" class="org.alfresco.repo.domain.locale.ibatis.LocaleDAOImpl">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="localeEntityCache" ref="immutableEntityCache"/>
    </bean>
    
    <bean id="contentDataDAO" class="org.alfresco.repo.domain.contentdata.ibatis.ContentDataDAOImpl">
@@ -85,15 +108,16 @@
       <property name="converter">
          <bean class="org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter"/>
       </property>
+      <property name="controlDAO" ref="controlDAO"/>
       <!--
-      <property name="propertyClassCache" ref="immutableEntityCache"/>
-      <property name="propertyDateValueCache" ref="immutableEntityCache"/>
-      <property name="propertyStringValueCache" ref="immutableEntityCache"/>
-      <property name="propertyDoubleValueCache" ref="immutableEntityCache"/>
-      <property name="propertySerializableValueCache" ref="immutableEntityCache"/>
+      <property name="propertyClassCache" ref="propertyValueCache"/>
+      <property name="propertyDateValueCache" ref="propertyValueCache"/>
+      <property name="propertyStringValueCache" ref="propertyValueCache"/>
+      <property name="propertyDoubleValueCache" ref="propertyValueCache"/>
+      <property name="propertySerializableValueCache" ref="propertyValueCache"/>
       -->
-      <property name="propertyValueCache" ref="immutableEntityCache"/>
-      <property name="propertyCache" ref="immutableEntityCache"/>
+      <property name="propertyValueCache" ref="propertyValueCache"/>
+      <property name="propertyCache" ref="propertyValueCache"/>
    </bean>
    
    <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">
@@ -130,6 +154,86 @@
    <bean id="newAvmVersionRootDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMVersionRootDAOImpl">
       <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
       <property name="versionRootEntityCache" ref="avmVersionRootEntityCache"/>
+   </bean>
+   
+   <!-- Permissions (including ACLs / ACEs) -->
+   
+   <bean id="permissionsDaoComponent" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+      <property name="proxyInterface">
+         <value>org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent</value>
+      </property>
+      <property name="defaultBinding">
+         <ref bean="admPermissionsDaoComponent"></ref>
+      </property>
+      <property name="redirectedProtocolBindings">
+         <map>
+            <entry key="workspace"><ref bean="admPermissionsDaoComponent"></ref></entry>
+            <entry key="versionStore"><ref bean="admPermissionsDaoComponent"></ref></entry>
+            <entry key="avm"><ref bean="avmPermissionsDaoComponent"/></entry>
+         </map>
+      </property>
+   </bean>
+   
+   <bean id="avmPermissionsDaoComponent" class="org.alfresco.repo.domain.permissions.AVMPermissionsDaoComponentImpl">
+      <property name="aclDAO">
+         <ref bean="aclDAO"/>
+      </property>
+      <property name="protocolToACLDAO">
+         <map>
+            <entry key="workspace"><ref bean="admNodeACLDAO"></ref></entry>
+            <entry key="avm"><ref bean="avmNodeACLDAO"/></entry>
+         </map>
+      </property>
+      <property name="defaultACLDAO">
+          <ref bean="admNodeACLDAO"/>
+       </property>
+   </bean>
+   
+   <bean id="admPermissionsDaoComponent" class="org.alfresco.repo.domain.permissions.ADMPermissionsDaoComponentImpl">
+      <property name="aclDAO">
+         <ref bean="aclDAO"/>
+      </property>
+      <property name="protocolToACLDAO">
+         <map>
+            <entry key="workspace"><ref bean="admNodeACLDAO"></ref></entry>
+            <entry key="avm"><ref bean="avmNodeACLDAO"/></entry>
+         </map>
+      </property>
+      <property name="defaultACLDAO">
+          <ref bean="admNodeACLDAO"/>
+       </property>
+   </bean>
+   
+   <bean id="admNodeACLDAO" class="org.alfresco.repo.domain.permissions.ADMAccessControlListDAO">
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="aclDAO" ref="aclDAO"/>
+   </bean>
+    
+   <bean id="avmNodeACLDAO" class="org.alfresco.repo.domain.permissions.AVMAccessControlListDAO">
+      <property name="avmRepository" ref="avmRepository"/>
+      <property name="avmService" ref="avmService"/>
+      <property name="aclDAO" ref="aclDAO"/>
+      <property name="avmNodeDAO" ref="newAvmNodeDAO"/>
+    </bean>
+   
+   <bean id="aclCrudDAO" class="org.alfresco.repo.domain.permissions.ibatis.AclCrudDAOImpl">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="aclCache" ref="aclEntityCache"/>
+      <property name="authorityCache" ref="authorityEntityCache"/>
+      <property name="permissionCache" ref="permissionEntityCache"/>
+   </bean>
+   
+   <bean id="aclDAO" class="org.alfresco.repo.domain.permissions.AclDAOImpl">
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="aclCrudDAO" ref="aclCrudDAO"/>
+      <property name="aclCache" ref="aclCache"/>
+   </bean>
+   
+   <bean id="usageDAO" class="org.alfresco.repo.domain.usage.ibatis.UsageDAOImpl">
+      <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
    </bean>
    
 </beans>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.locale">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="Locale" type="org.alfresco.repo.domain.locale.LocaleEntity"/>
+    
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_Locale" class="Locale">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="localeStr" column="locale_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+   
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+    
+    <parameterMap id="parameter_LocaleStr" class="map">
+        <parameter property="str" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+   
+    <parameterMap id="parameter_LocaleId" class="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+   
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_Locale_AutoIncrement">
+        insert into alf_locale (version, locale_str) 
+        values (#version#, #localeStr#)
+    </sql>
+    
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_LocaleById" parameterMap="parameter_LocaleId" resultMap="result_Locale">
+        select
+            *
+        from
+            alf_locale
+        where
+            id = ?
+    </select>
+    
+    <select id="select_LocaleByName" parameterMap="parameter_LocaleStr" resultMap="result_Locale">
+        select
+            *
+        from
+            alf_locale
+        where
+            locale_str = ?
+    </select>
+    
+</sqlMap>

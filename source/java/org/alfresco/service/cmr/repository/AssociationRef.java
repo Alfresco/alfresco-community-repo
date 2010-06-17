@@ -27,6 +27,8 @@ import org.alfresco.util.EqualsHelper;
 
 /**
  * This class represents a regular, named node relationship between two nodes.
+ * <p>
+ * Note that the ID of the association might not be populated.
  * 
  * @author Derek Hulley
  */
@@ -42,11 +44,25 @@ public class AssociationRef implements EntityRef, Serializable
     private NodeRef targetRef;
 
     /**
-     * Construct a representation of a source --- name ----> target
-     * relationship.
+     * Construct a representation of a source --- name ----> target relationship.
+     *
+     * @param sourceRef
+     *            the source reference - never null
+     * @param assocTypeQName
+     *            the qualified name of the association type - never null
+     * @param targetRef
+     *            the target node reference - never null.
+     */
+    public AssociationRef(NodeRef sourceRef, QName assocTypeQName, NodeRef targetRef)
+    {
+        this(null, sourceRef, assocTypeQName, targetRef);
+    }
+    
+    /**
+     * Construct a representation of a source --- name ----> target relationship.
      *
      * @param id
-     *            unique identifier
+     *            unique identifier - may be null
      * @param sourceRef
      *            the source reference - never null
      * @param assocTypeQName
@@ -118,7 +134,6 @@ public class AssociationRef implements EntityRef, Serializable
     /**
      * Compares:
      * <ul>
-     * <li>{@link #id}</li>
      * <li>{@link #sourceRef}</li>
      * <li>{@link #targetRef}</li>
      * <li>{@link #assocTypeQName}</li>
@@ -136,16 +151,14 @@ public class AssociationRef implements EntityRef, Serializable
         }
         AssociationRef other = (AssociationRef) o;
 
-        return (EqualsHelper.nullSafeEquals(this.id, other.id)
-                && EqualsHelper.nullSafeEquals(this.sourceRef, other.sourceRef)
+        return (EqualsHelper.nullSafeEquals(this.sourceRef, other.sourceRef)
                 && EqualsHelper.nullSafeEquals(this.assocTypeQName, other.assocTypeQName)
                 && EqualsHelper.nullSafeEquals(this.targetRef, other.targetRef));
     }
 
     public int hashCode()
     {
-        int hashCode = (getId() == null) ? 0 : getId().hashCode();
-        hashCode = 37 * hashCode + ((getSourceRef() == null) ? 0 : getSourceRef().hashCode());
+        int hashCode = ((getSourceRef() == null) ? 0 : getSourceRef().hashCode());
         hashCode = 37 * hashCode + ((getTypeQName() == null) ? 0 : getTypeQName().hashCode());
         hashCode = 37 * hashCode + getTargetRef().hashCode();
         return hashCode;
@@ -154,7 +167,8 @@ public class AssociationRef implements EntityRef, Serializable
     /**
      * Gets the unique identifier for this association.
      * 
-     * @return the unique identifier for this association
+     * @return  the unique identifier for this association, or <tt>null</tt> if the ID was not
+     *          given at the time of construction
      */
     public Long getId()
     {

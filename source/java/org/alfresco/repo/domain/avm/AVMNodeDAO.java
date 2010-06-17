@@ -69,8 +69,6 @@ public interface AVMNodeDAO
     
     public List<AVMNodeEntity> getAllLayeredFiles();
     
-    public List<Long> getAVMNodesByAclId(long aclId);
-    
     public void clearNodeEntityCache();
     
     /**

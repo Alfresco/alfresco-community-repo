@@ -1,0 +1,864 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.node">
+
+    <!--                -->
+    <!-- Type Defs      -->
+    <!--                -->
+    
+    <typeAlias alias="Server" type="org.alfresco.repo.domain.node.ServerEntity"/>
+    <typeAlias alias="Transaction" type="org.alfresco.repo.domain.node.TransactionEntity"/>
+    <typeAlias alias="TransactionQuery" type="org.alfresco.repo.domain.node.TransactionQueryEntity"/>
+    <typeAlias alias="Store" type="org.alfresco.repo.domain.node.StoreEntity"/>
+    <typeAlias alias="Node" type="org.alfresco.repo.domain.node.NodeEntity"/>
+    <typeAlias alias="NodeUpdate" type="org.alfresco.repo.domain.node.NodeUpdateEntity"/>
+    <typeAlias alias="AuditProps" type="org.alfresco.repo.domain.node.AuditablePropertiesEntity"/>
+    <typeAlias alias="NodePropertyKey" type="org.alfresco.repo.domain.node.NodePropertyKey"/>
+    <typeAlias alias="NodePropertyValue" type="org.alfresco.repo.domain.node.NodePropertyValue"/>
+    <typeAlias alias="NodeProperty" type="org.alfresco.repo.domain.node.NodePropertyEntity"/>
+    <typeAlias alias="NodeAspects" type="org.alfresco.repo.domain.node.NodeAspectsEntity"/>
+    <typeAlias alias="NodeAssoc" type="org.alfresco.repo.domain.node.NodeAssocEntity"/>
+    <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
+    <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
+
+    
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result_Server" class="Server">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="ipAddress" column="ip_address" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result_Transaction" class="Transaction">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="changeTxnId" column="change_txn_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="commitTimeMs" column="commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_StoreRef" class="Store">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result_StoreRootNode" class="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.id" column="storeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.protocol" column="storeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="store.identifier" column="storeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result_AuditProps" class="AuditProps">
+        <result property="auditCreator" column="audit_creator" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditCreated" column="audit_created" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditModifier" column="audit_modifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditModified" column="audit_modified" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditAccessed" column="audit_accessed" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result_NodeRef" class="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
+    </resultMap>
+    <resultMap id="result_Node" class="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.id" column="store_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
+        <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="auditableProperties" resultMap="alfresco.node.result_AuditProps"/>
+    </resultMap>
+    <resultMap id="result_NodeAcl" class="Node">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_NodeProperty" class="NodeProperty">
+        <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="key.qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="key.localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="key.listIndex" column="list_index" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="value.actualType" column="actual_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="value.persistedType" column="persisted_type_n" jdbcType="INT" javaType="java.lang.Integer"/>
+        <result property="value.booleanValue" column="boolean_value" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="value.longValue" column="long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="value.floatValue" column="float_value" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <result property="value.doubleValue" column="double_value" jdbcType="FLOAT" javaType="java.lang.Double"/>
+        <result property="value.stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="value.serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </resultMap>
+    <resultMap id="result_NodeAssoc" class="NodeAssoc">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="sourceNode.id" column="sourceNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="sourceNode.store.protocol" column="sourceNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="sourceNode.store.identifier" column="sourceNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="sourceNode.uuid" column="sourceNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="targetNode.id" column="targetNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="targetNode.store.protocol" column="targetNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="targetNode.store.identifier" column="targetNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="targetNode.uuid" column="targetNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_ChildAssoc" class="ChildAssoc">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="parentNode.id" column="parentNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="parentNode.store.protocol" column="parentNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="parentNode.store.identifier" column="parentNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="parentNode.uuid" column="parentNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="childNode.id" column="childNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNode.store.protocol" column="childNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="childNode.store.identifier" column="childNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="childNode.uuid" column="childNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNodeNameCrc" column="child_node_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNodeName" column="child_node_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="isPrimary" column="is_primary" jdbcType="BIT" javaType="java.lang.Boolean" />
+        <result property="assocIndex" column="assoc_index" jdbcType="INT" javaType="java.lang.Integer"/>
+    </resultMap>
+  
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter_Id" class="java.lang.Long">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    <parameterMap id="parameter_NodeProperty" class="NodeProperty">
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="key.qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="key.localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="key.listIndex" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="value.actualType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="value.persistedType" jdbcType="INT" javaType="java.lang.Integer"/>
+        <parameter property="value.booleanValue" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <parameter property="value.longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="value.floatValue" jdbcType="FLOAT" javaType="java.lang.Float"/>
+        <parameter property="value.doubleValue" jdbcType="FLOAT" javaType="java.lang.Double"/>
+        <parameter property="value.stringValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="value.serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
+    <parameterMap id="parameter_NodeAspect" class="map">
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    <parameterMap id="parameter_NodesWithAspect" class="map">
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+  
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_Server_AutoIncrement">
+        insert into alf_server (version, ip_address)
+        values (#version#, #ipAddress#)
+    </sql>
+    <sql id="insert_Server_Sequence">
+        insert into alf_server (id, version, ip_address)
+        values (#id#, #version#, #ipAddress#)
+    </sql>
+    
+    <sql id="insert_Transaction_AutoIncrement">
+        insert into alf_transaction (version, server_id, change_txn_id, commit_time_ms)
+        values (#version#, #server.id#, #changeTxnId#, #commitTimeMs#)
+    </sql>
+    <sql id="insert_Transaction_Sequence">
+        insert into alf_transaction (id, version, server_id, change_txn_id, commit_time_ms)
+        values (#id#, #version#, #server.id#, #changeTxnId#, #commitTimeMs#)
+    </sql>
+    
+    <sql id="insert_Store_AutoIncrement">
+        insert into alf_store (version, protocol, identifier, root_node_id)
+        values (#version#, #protocol#, #identifier#, #rootNode.id#)
+    </sql>
+    <sql id="insert_Store_Sequence">
+        insert into alf_store (id, version, protocol, identifier, root_node_id)
+        values (#id#, #version#, #protocol#, #identifier#, #rootNode.id#)
+    </sql>
+    
+    <sql id="insert_Node_AutoIncrement">
+        insert into alf_node
+        (
+            version, store_id, uuid, type_qname_id, acl_id, node_deleted, transaction_id
+            <isNotNull property="auditableProperties" prepend=",">
+                audit_creator, audit_created,
+                audit_modifier, audit_modified,
+                audit_accessed
+            </isNotNull>
+        )
+        values
+        (
+            #version#, #store.id#, #uuid#, #typeQNameId#, #aclId#, #deleted#, #transaction.id#
+            <isNotNull property="auditableProperties" prepend=",">
+                #auditableProperties.auditCreator#, #auditableProperties.auditCreated#,
+                #auditableProperties.auditModifier#, #auditableProperties.auditModified#,
+                #auditableProperties.auditAccessed#
+            </isNotNull>
+        )
+    </sql>
+    <sql id="insert_Node_Sequence">
+        insert into alf_node
+        (
+            id, version, store_id, uuid, type_qname_id, acl_id, node_deleted, transaction_id
+            <isNotNull property="auditableProperties" prepend=",">
+                audit_creator, audit_created,
+                audit_modifier, audit_modified,
+                audit_accessed
+            </isNotNull>
+        )
+        values
+        (
+            #id#, #version#, #store.id#, #uuid#, #typeQNameId#, #aclId#, #deleted#, #transaction.id#
+            <isNotNull property="auditableProperties" prepend=",">
+                #auditableProperties.auditCreator#, #auditableProperties.auditCreated#,
+                #auditableProperties.auditModifier#, #auditableProperties.auditModified#,
+                #auditableProperties.auditAccessed#
+            </isNotNull>
+        )
+    </sql>
+    
+    <sql id="insert_ChildAssoc_AutoIncrement">
+        insert into alf_child_assoc
+        (
+            version, parent_node_id, child_node_id, type_qname_id,
+            child_node_name_crc, child_node_name,
+            qname_ns_id, qname_localname, qname_crc,
+            is_primary, assoc_index
+        )
+        values
+        (
+            #version#, #parentNode.id#, #childNode.id#, #typeQNameId#,
+            #childNodeNameCrc#, #childNodeName#,
+            #qnameNamespaceId#, #qnameLocalName#, #qnameCrc#,
+            #isPrimary#, #assocIndex#
+        )
+    </sql>
+    <sql id="insert_ChildAssoc_Sequence">
+        insert into alf_child_assoc
+        (
+            id, version, parent_node_id, child_node_id, type_qname_id,
+            child_node_name_crc, child_node_name,
+            qname_ns_id, qname_localname, qname_crc,
+            is_primary, assoc_index
+        )
+        values
+        (
+            #id#, #version#, #parentNode.id#, #childNode.id#, #typeQNameId#,
+            #childNodeNameCrc#, #childNodeName#,
+            #qnameNamespaceId#, #qnameLocalName#, #qnameCrc#,
+            #isPrimary#, #assocIndex#
+        )
+    </sql>
+
+    <sql id="insert_NodeAssoc_AutoIncrement">
+        insert into alf_node_assoc (version, source_node_id, target_node_id, type_qname_id)
+        values (#version#, #sourceNode.id#, #targetNode.id#, #typeQNameId#)
+    </sql>
+    <sql id="insert_NodeAssoc_Sequence">
+        insert into alf_node_assoc (id, version, source_node_id, target_node_id, type_qname_id)
+        values (#id#, #version#, #sourceNode.id#, #targetNode.id#, #typeQNameId#)
+    </sql>
+    
+    <!--                -->
+    <!-- Inserts        -->
+    <!--                -->
+    
+    <insert id="insert_NodeProperty" parameterMap="parameter_NodeProperty">
+        insert into alf_node_properties
+        (
+            node_id, qname_id, locale_id, list_index,
+            actual_type_n, persisted_type_n,
+            boolean_value, long_value, float_value, double_value, string_value, serializable_value
+        )
+        values
+        (
+            ?, ?, ?, ?,
+            ?, ?,
+            ?, ?, ?, ?, ?, ?
+        )
+        
+    </insert>
+    
+    <insert id="insert_NodeAspect" parameterMap="parameter_NodeAspect">
+        insert into alf_node_aspects
+            (node_id, qname_id)
+        values
+            (?, ?)
+    </insert>
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <update id="update_TransactionCommitTime" parameterClass="Transaction">
+        update alf_transaction set
+            commit_time_ms = #commitTimeMs#
+        where
+            id = #id#
+    </update>
+    
+    <update id="update_StoreRoot" parameterClass="Store">
+        update alf_store set
+            root_node_id = #rootNode.id#
+        where
+            id = #id#
+    </update>
+    
+    <update id="update_Node" parameterClass="NodeUpdate">
+        update alf_node set
+                                                                          version           = #version#
+            <isEqual property="updateStore" compareValue="true">        , store_id          = #store.id#</isEqual>
+            <isEqual property="updateUuid" compareValue="true">         , uuid              = #uuid#</isEqual>
+            <isEqual property="updateTypeQNameId" compareValue="true" > , type_qname_id     = #typeQNameId#</isEqual>
+            <isEqual property="updateAclId" compareValue="true" >       , acl_id            = #aclId#</isEqual>
+            <isEqual property="updateDeleted" compareValue="true" >     , node_deleted      = #deleted#</isEqual>
+            <isEqual property="updateTransaction" compareValue="true" > , transaction_id    = #transaction.id#</isEqual>
+            <isEqual property="updateAuditableProperties" compareValue="true" >
+                , audit_creator = #auditableProperties.auditCreator#
+                , audit_created = #auditableProperties.auditCreated#
+                , audit_modifier = #auditableProperties.auditModifier#
+                , audit_modified = #auditableProperties.auditModified#
+                , audit_accessed = #auditableProperties.auditAccessed#
+            </isEqual>
+        where
+            id = #id#
+        <isGreaterThan property="version" compareValue="1">
+            and version = (#version#-1)
+        </isGreaterThan>
+    </update>
+    
+    <update id="update_ChildAssocsUniqueName" parameterClass="ChildAssoc">
+        update alf_child_assoc set
+            child_node_name_crc = #childNodeNameCrc#,
+            child_node_name = #childNodeName#
+        where
+            child_node_id = #childNode.id# and
+            child_node_name_crc > 0
+    </update>
+    
+    <update id="update_ChildAssocsIndex" parameterClass="ChildAssoc">
+        update alf_child_assoc set
+            assoc_index = #assocIndex#
+        where
+            parent_node_id = #parentNode.id# and
+            type_qname_id = #typeQNameId# and
+            qname_ns_id = #qnameNamespaceId# and
+            qname_localname = #qnameLocalName#
+    </update>
+    
+    <update id="update_ParentAssocsOfChild" parameterClass="ChildAssoc">
+        update alf_child_assoc set
+            parent_node_id = #parentNode.id#
+            <isNotNull property="typeQNameId">, type_qname_id = #typeQNameId#</isNotNull>
+            <isNotNull property="childNodeNameCrc">, child_node_name_crc = #childNodeNameCrc#</isNotNull>
+            <isNotNull property="childNodeName">, child_node_name = #childNodeName#</isNotNull>
+            <isNotNull property="qnameNamespaceId">, qname_ns_id = #qnameNamespaceId#</isNotNull>
+            <isNotNull property="qnameLocalName">, qname_localname = #qnameLocalName#</isNotNull>
+            <isNotNull property="qnameCrc">, qname_crc = #qnameCrc#</isNotNull>
+        where
+            child_node_id = #childNode.id# and
+            is_primary = #isPrimary#
+    </update>
+    
+    <!--                -->
+    <!-- Deletes        -->
+    <!--                -->
+    
+    <delete id="delete_TransactionById" parameterClass="Transaction">
+        delete from alf_transaction
+        where
+            id = #id#
+    </delete>
+    
+    <delete id="delete_NodeById" parameterClass="Node">
+        delete from alf_node
+        where
+            id = #id#
+            <isEqual property="deleted" compareValue="true">and node_deleted = #deleted#</isEqual>
+    </delete>
+    
+    <delete id="delete_NodeProperties" parameterClass="NodeProperty">
+        delete from alf_node_properties
+        where
+            node_id = #nodeId#
+            <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
+            <isNotNull property="key.localeId">and locale_id = #key.localeId#</isNotNull>
+            <isNotNull property="key.listIndex">and list_index = #key.listIndex#</isNotNull>
+            <isNotNull property="qnameIds">
+                and qname_id in
+                <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
+            </isNotNull>
+    </delete>
+    
+    <delete id="delete_NodeAspects" parameterClass="NodeAspects">
+        delete from alf_node_aspects
+        where
+            node_id = #id#
+            <isNotNull property="aspectQNameIds" prepend="">
+                and qname_id in
+                <iterate property="aspectQNameIds" open="(" close=")" conjunction=", ">#aspectQNameIds[]#</iterate>
+            </isNotNull>
+    </delete>
+    
+    <delete id="delete_NodeAssoc" parameterClass="NodeAssoc">
+        delete from alf_node_assoc
+        where
+            source_node_id = #sourceNode.id# and
+            target_node_id = #targetNode.id# and
+            type_qname_id = #typeQNameId#
+    </delete>
+    
+    <delete id="delete_NodeAssocsToAndFrom" parameterClass="NodeAssoc">
+        delete from alf_node_assoc
+        where
+            (source_node_id = #sourceNode.id# or target_node_id = #targetNode.id#)
+            <isNotNull property="typeQNameIds">
+                and type_qname_id in
+                <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
+            </isNotNull>
+    </delete>
+    
+    <delete id="delete_ChildAssocById" parameterClass="ChildAssoc">
+        delete from alf_child_assoc
+        where
+            id = #id#
+    </delete>
+    
+    <delete id="delete_ChildAssocsToAndFrom" parameterClass="ChildAssoc">
+        delete from alf_child_assoc
+        where
+            (parent_node_id = #parentNode.id# or child_node_id = #childNode.id#)
+            <isNotNull property="typeQNameIds">
+                and type_qname_id in
+                <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
+            </isNotNull>
+    </delete>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_ServerByIpAddress" parameterClass="Server" resultMap="result_Server">
+        select
+            id,
+            version,
+            ip_address
+        from
+            alf_server
+        where
+            ip_address = #ipAddress#
+    </select>
+    
+    <select id="select_StoreAll" resultMap="result_StoreRef">
+        select
+            id,
+            protocol,
+            identifier
+        from
+            alf_store
+    </select>
+    
+    <select id="select_StoreRootNodeById" parameterClass="Store" resultMap="result_StoreRootNode">
+        select
+            node.id             as id,
+            store.id            as storeId,
+            store.protocol      as storeProtocol,
+            store.identifier    as storeIdentifier,
+            node.uuid           as uuid
+        from
+            alf_store store
+            join alf_node node on (store.root_node_id = node.id)
+        where
+            store.id = #id#
+    </select>
+    
+    <select id="select_StoreRootNodeByRef" parameterClass="Store" resultMap="result_StoreRootNode">
+        select
+            node.id             as id,
+            store.id            as storeId,
+            store.protocol      as storeProtocol,
+            store.identifier    as storeIdentifier,
+            node.uuid           as uuid
+        from
+            alf_store store
+            join alf_node node on (store.root_node_id = node.id)
+        where
+            store.protocol = #protocol# and
+            store.identifier = #identifier#
+    </select>
+    
+    <!-- Common results for result_Node -->
+    <sql id="select_Node_Results">
+        select
+            node.id             as id,
+            node.version        as version,
+            store.id            as store_id,
+            store.protocol      as protocol,
+            store.identifier    as identifier,
+            node.uuid           as uuid,
+            node.type_qname_id  as type_qname_id,
+            node.acl_id         as acl_id,
+            node.node_deleted   as node_deleted,
+            txn.id              as txn_id,
+            txn.change_txn_id   as txn_change_id,
+            node.audit_creator  as audit_creator,
+            node.audit_created  as audit_created,
+            node.audit_modifier as audit_modifier,
+            node.audit_modified as audit_modified,
+            node.audit_accessed  as audit_accessed
+    </sql>
+    
+    <select id="select_NodeById" parameterClass="Node" resultMap="result_Node">
+        <include refid="alfresco.node.select_Node_Results"/>
+        from
+            alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
+        where
+            node.id = #id#
+            <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
+    </select>
+    
+    <select id="select_NodeByNodeRef" parameterClass="Node" resultMap="result_Node">
+        <include refid="alfresco.node.select_Node_Results"/>
+        from
+            alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
+        where
+            store.protocol = #store.protocol# and
+            store.identifier = #store.identifier# and
+            node.uuid = #uuid#
+            <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
+    </select>
+    
+    <sql id="select_NodeProperty_Results">
+        select
+            prop.node_id            as node_id,
+            prop.qname_id           as qname_id,
+            prop.locale_id          as locale_id,
+            prop.list_index         as list_index,
+            prop.actual_type_n      as actual_type_n,
+            prop.persisted_type_n   as persisted_type_n,
+            prop.boolean_value      as boolean_value,
+            prop.long_value         as long_value,
+            prop.float_value        as float_value,
+            prop.double_value       as double_value,
+            prop.string_value       as string_value,
+            prop.serializable_value as serializable_value
+    </sql>
+    
+    <select id="select_NodeProperties" parameterClass="NodeProperty" resultMap="result_NodeProperty">
+        <include refid="alfresco.node.select_NodeProperty_Results"/>
+        from
+            alf_node_properties prop
+        where
+            prop.node_id = #nodeId#
+            <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
+            <isNotNull property="qnameIds">
+                and qname_id in
+                <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
+            </isNotNull>
+    </select>
+    
+    <select id="select_NodeAspectIds" parameterMap="parameter_Id" resultClass="java.lang.Long">
+        select
+            qname_id
+        from
+            alf_node_aspects
+        where
+            node_id = ?
+    </select>
+    
+    <select id="select_NodesWithAspectId" parameterMap="parameter_NodesWithAspect" resultMap="result_NodeRef" >
+        select
+            node.id             as id,
+            store.protocol      as protocol,
+            store.identifier    as identifier,
+            node.uuid           as uuid,
+            node.node_deleted   as node_deleted
+        from
+            alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_node_aspects na on (na.node_id = node.id and na.node_id > ? and na.qname_id = ?)
+        order by
+            node.id
+    </select>
+
+    <!-- Common results for result_NodeAssoc -->
+    <sql id="select_NodeAssoc_Results">
+        select
+            assoc.id                as id,
+            sourceNode.id           as sourceNodeId,
+            sourceStore.protocol    as sourceNodeProtocol,
+            sourceStore.identifier  as sourceNodeIdentifier,
+            sourceNode.uuid         as sourceNodeUuid, 
+            targetNode.id           as targetNodeId,
+            targetStore.protocol    as targetNodeProtocol,
+            targetStore.identifier  as targetNodeIdentifier,
+            targetNode.uuid         as targetNodeUuid,
+            assoc.type_qname_id     as type_qname_id
+        from
+            alf_node_assoc assoc
+            join alf_node sourceNode on (sourceNode.id = assoc.source_node_id)
+            join alf_store sourceStore on (sourceStore.id = sourceNode.store_id) 
+            join alf_node targetNode on (targetNode.id = assoc.target_node_id)
+            join alf_store targetStore on (targetStore.id = targetNode.store_id)
+    </sql>
+    
+    <select id="select_NodeAssocsBySource" parameterClass="NodeAssoc" resultMap="result_NodeAssoc">
+        <include refid="alfresco.node.select_NodeAssoc_Results"/>
+        where
+            sourceNode.id = #sourceNode.id#
+    </select>
+
+    <select id="select_NodeAssocsByTarget" parameterClass="NodeAssoc" resultMap="result_NodeAssoc">
+        <include refid="alfresco.node.select_NodeAssoc_Results"/>
+        where
+            targetNode.id = #targetNode.id#
+    </select>
+    
+    <!-- Common results for result_ChildAssoc -->
+    <sql id="select_ChildAssoc_Results">
+        select
+            assoc.id                    as id,
+            parentNode.id               as parentNodeId,
+            parentStore.protocol        as parentNodeProtocol,
+            parentStore.identifier      as parentNodeIdentifier,
+            parentNode.uuid             as parentNodeUuid,
+            childNode.id                as childNodeId,
+            childStore.protocol         as childNodeProtocol,
+            childStore.identifier       as childNodeIdentifier,
+            childNode.uuid              as childNodeUuid,
+            assoc.type_qname_id         as type_qname_id,
+            assoc.child_node_name_crc   as child_node_name_crc,
+            assoc.child_node_name       as child_node_name,
+            assoc.qname_ns_id           as qname_ns_id,
+            assoc.qname_localname       as qname_localname,
+            assoc.is_primary            as is_primary,
+            assoc.assoc_index           as assoc_index
+    </sql>
+    <sql id="select_ChildAssoc_FromSimple">
+        from
+            alf_child_assoc assoc
+            join alf_node parentNode on (parentNode.id = assoc.parent_node_id)
+            join alf_store parentStore on (parentStore.id = parentNode.store_id)
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+    </sql>
+    <sql id="select_ChildAssoc_OrderBy">
+        order by
+            assoc.assoc_index ASC,
+            assoc.id ASC
+    </sql>
+    
+    <select id="select_ChildAssocById" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            assoc.id = #id#
+    </select>
+
+    <select id="select_ChildAssocsOfParent" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            parentNode.id = #parentNode.id#
+            <isNotNull property="childNode">and assoc.child_node_id = #childNode.id#</isNotNull>
+            <isNotNull property="typeQNameIds">
+                and type_qname_id in <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
+            </isNotNull>
+            <isNotNull property="typeQNameId">and assoc.type_qname_id = #typeQNameId#</isNotNull>
+            <isNotNull property="qnameCrc">and assoc.qname_crc = #qnameCrc#</isNotNull>
+            <isNotNull property="qnameNamespaceId">and assoc.qname_ns_id = #qnameNamespaceId#</isNotNull>
+            <isNotNull property="qnameLocalName">and assoc.qname_localname = #qnameLocalName#</isNotNull>
+            <isNotNull property="isPrimary">and assoc.is_primary = #isPrimary#</isNotNull>
+            <isNotNull property="childNodeName">and assoc.child_node_name = #childNodeName#</isNotNull>
+            <isNotNull property="childNodeNameCrc">and assoc.child_node_name_crc = #childNodeNameCrc#</isNotNull>
+            <isNotNull property="childNodeNameCrcs">
+                and child_node_name_crc in <iterate property="childNodeNameCrcs" open="(" close=")" conjunction=",">#childNodeNameCrcs[]#</iterate>
+            </isNotNull>
+            <isNotNull property="childNodeTypeQNameIds">
+                and childNode.type_qname_id in <iterate property="childNodeTypeQNameIds" open="(" close=")" conjunction=",">#childNodeTypeQNameIds[]#</iterate>
+            </isNotNull>
+            <isNotNull property="sameStore">
+                <isEqual property="sameStore" compareValue="true">and parentStore.id = childStore.id</isEqual>
+                <isEqual property="sameStore" compareValue="false"><![CDATA[and parentStore.id <> childStore.id]]></isEqual>
+            </isNotNull>
+        <isEqual property="ordered" compareValue="true">
+            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+        </isEqual>
+    </select>
+    
+    <select id="select_ChildAssocsOfParentWithoutParentAssocsOfType" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        from
+	        (
+	            alf_child_assoc assoc
+	            join alf_node parentNode on (parentNode.id = assoc.parent_node_id)
+	            join alf_store parentStore on (parentStore.id = parentNode.store_id)
+	            join alf_node childNode on (childNode.id = assoc.child_node_id)
+	            join alf_store childStore on (childStore.id = childNode.store_id)
+	        )
+	        LEFT OUTER JOIN
+	        (
+	            alf_child_assoc a
+	            JOIN alf_child_assoc z2 ON (z2.parent_node_id = #parentNode.id# AND z2.child_node_id = a.parent_node_id )
+	        )
+	        ON (a.child_node_id = childNode.id AND a.type_qname_id = #typeQNameId#)
+        where
+            parentNode.id = #parentNode.id# and
+            a.child_node_id IS NULL
+    </select>
+
+    <select id="select_NodePrimaryChildAcls" parameterClass="ChildAssoc" resultMap="result_NodeAcl">
+       select
+            node.id             as id,
+            node.acl_id         as acl_id
+        from
+            alf_node node 
+            join alf_child_assoc assoc on
+                (
+                    node.id = assoc.child_node_id
+                    and assoc.parent_node_id = #parentNode.id#
+                    and assoc.is_primary = #isPrimary#
+                )
+    </select>
+
+    <select id="select_ParentAssocsOfChild" parameterClass="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            childNode.id = #childNode.id#
+            <isNotNull property="parentNode">and assoc.parent_node_id = #parentNode.id#</isNotNull>
+            <isNotNull property="typeQNameIds">
+                and type_qname_id in <iterate property="typeQNameIds" open="(" close=")" conjunction=",">#typeQNameIds[]#</iterate>
+            </isNotNull>
+            <isNotNull property="typeQNameId">and assoc.type_qname_id = #typeQNameId#</isNotNull>
+            <isNotNull property="qnameCrc">and assoc.qname_crc = #qnameCrc#</isNotNull>
+            <isNotNull property="qnameNamespaceId">and assoc.qname_ns_id = #qnameNamespaceId#</isNotNull>
+            <isNotNull property="qnameLocalName">and assoc.qname_localname = #qnameLocalName#</isNotNull>
+            <isNotNull property="isPrimary">and assoc.is_primary = #isPrimary#</isNotNull>
+    </select>
+    
+    <sql id="select_Transaction_Results">
+        select
+            txn.id              as id,
+            txn.version         as version,
+            txn.change_txn_id   as change_txn_id,
+            txn.commit_time_ms  as commit_time_ms
+    </sql>
+    <sql id="select_Transaction_OrderByCommitTime">
+        <isEqual property="orderByCommit" compareValue="true">order by txn.commit_time ASC</isEqual>
+        <isEqual property="orderByCommit" compareValue="false">order by txn.commit_time DESC</isEqual>
+    </sql>
+    
+    <!-- Full WHERE clause for TransactionQueryEntity -->
+    <sql id="select_Transaction_FullWhere">
+        <dynamic prepend="where">
+            <isNotNull property="id" prepend="---">txn.id = #id#</isNotNull>
+            <isNotNull property="storeId" prepend="and"> store.id = #storeId#</isNotNull>
+            <isNotNull property="excludeServerId" prepend="and"><![CDATA[ server_id <> #excludeServerId#]]></isNotNull>
+            <isNotNull property="minCommitTime" prepend="and"><![CDATA[ txn.commit_time_ms >= #minCommitTime#]]></isNotNull>
+            <isNotNull property="maxCommitTime" prepend="and"><![CDATA[ txn.commit_time_ms < #maxCommitTime#]]></isNotNull>
+            <isNotEmpty property="includeTxnIds" prepend="and">
+                txn.id in <iterate property="includeTxnIds" open="(" close=")" conjunction=",">#includeTxnIds[]#</iterate>
+            </isNotEmpty>
+            <isNotEmpty property="excludeTxnIds" prepend="and">
+                txn.id NOT in <iterate property="excludeTxnIds" open="(" close=")" conjunction=",">#excludeTxnIds[]#</iterate>
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+    
+    <select id="select_TxnLast" parameterClass="TransactionQuery" resultMap="result_Transaction">
+        <include refid="alfresco.node.select_Transaction_Results"/>
+        from
+            alf_transaction txn
+        where
+            txn.commit_time_ms =
+            (
+                select max(commit_time_ms) from alf_transaction
+                <![CDATA[where commit_time_ms <= #maxCommitTime#]]>
+            )
+    </select>
+    
+    <select id="select_TxnNodes" parameterClass="TransactionQuery" resultMap="result_NodeRef">
+        select
+            node.id             as id,
+            store.protocol      as protocol,
+            store.identifier    as identifier,
+            node.uuid           as uuid,
+            node.node_deleted   as node_deleted
+        from
+            alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
+        <include refid="alfresco.node.select_Transaction_FullWhere"/>
+    </select>
+    
+    <select id="select_Txns" parameterClass="TransactionQuery" resultMap="result_Transaction">
+        <include refid="alfresco.node.select_Transaction_Results"/>
+        from
+            alf_transaction txn
+        <include refid="alfresco.node.select_Transaction_FullWhere"/>
+    </select>
+
+    <select id="select_TxnCount" resultClass="java.lang.Integer">
+        select
+            count(txn.id)
+        from
+            alf_transaction txn
+    </select>
+    
+    <select id="select_TxnNodeCount" parameterClass="Node" resultClass="java.lang.Integer">
+        select
+            count(node.id)
+        from
+            alf_node node
+        where
+            node.transaction_id = #transaction.id#
+            <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
+    </select>
+
+    <select id="select_TxnsUnused" parameterClass="TransactionQuery" resultClass="java.lang.Long">
+        select
+            txn.id
+        from
+            alf_transaction txn
+            right join alf_node node on (node.transaction_id = txn.id)
+        where
+            node.id is null
+            <isNotNull property="minId"><![CDATA[and txn.id >= #minId#]]></isNotNull>
+            <isNotNull property="maxCommitTime"><![CDATA[and txn.commit_time_ms <= #maxCommitTime#]]></isNotNull>
+    </select>
+    
+    <select id="select_TxnMinCommitTime" resultClass="java.lang.Long">
+        select
+            min(commit_time_ms)
+        from
+            alf_transaction
+    </select>
+
+    <select id="select_TxnMaxCommitTime" resultClass="java.lang.Long">
+        select
+            max(commit_time_ms)
+        from
+            alf_transaction
+    </select>
+
+</sqlMap>

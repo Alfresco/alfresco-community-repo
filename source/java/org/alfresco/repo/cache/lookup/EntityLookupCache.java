@@ -488,7 +488,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * by the {@link RetryingTransactionHelper#RETRY_EXCEPTIONS RetryingTransactionHelper}.
      * 
      * @param key                   The entity key, which may be valid or invalid (<tt>null</tt> not allowed)
-     * @param value                 The new entity value (may be null <tt>null</tt>)
+     * @param value                 The new entity value (may be <tt>null</tt>)
      * @return                      Returns the row update count.
      */
     @SuppressWarnings("unchecked")
@@ -526,6 +526,40 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
                 (value == null ? VALUE_NULL : value));
         // Done
         return updateCount;
+    }
+    
+    /**
+     * Cache-only operation: Update the cache's value
+     * 
+     * @param key                   The entity key, which may be valid or invalid (<tt>null</tt> not allowed)
+     * @param value                 The new entity value (may be <tt>null</tt>)
+     */
+    @SuppressWarnings("unchecked")
+    public void setValue(K key, V value)
+    {
+        // Handle missing cache
+        if (cache == null)
+        {
+            return;
+        }
+        
+        // Remove entries for the key (bidirectional removal removes the old value as well)
+        removeByKey(key);
+        
+        // Get the value key.
+        VK valueKey = (value == null) ? (VK)VALUE_NULL : entityLookup.getValueKey(value);
+        // Check if the value has a good key
+        if (valueKey != null)
+        {
+            // There is a good value key, cache by value
+            CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+            cache.put(valueCacheKey, key);
+        }
+        // Cache by key
+        cache.put(
+                new CacheRegionKey(cacheRegion, key),
+                (value == null ? VALUE_NULL : value));
+        // Done
     }
     
     /**

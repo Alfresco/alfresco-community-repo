@@ -8,7 +8,7 @@
 
    <class
          name="org.alfresco.repo.domain.hibernate.TransactionImpl"
-         proxy="org.alfresco.repo.domain.Transaction"
+         proxy="org.alfresco.repo.domain.node.Transaction"
          table="alf_transaction"
          dynamic-update="false"
          dynamic-insert="false"

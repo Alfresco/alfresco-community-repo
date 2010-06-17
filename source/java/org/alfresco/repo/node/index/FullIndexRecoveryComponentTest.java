@@ -25,11 +25,10 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.Transaction;
-import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.node.index.AbstractReindexComponent.InIndex;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,22 +47,13 @@ public class FullIndexRecoveryComponentTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private FullIndexRecoveryComponent indexRecoverer;
-
     private AVMFullIndexRecoveryComponent avmIndexRecoveryComponent;
-
     private NodeService nodeService;
-
     private NodeRef rootNodeRef;
-
     private TransactionService transactionService;
-
-    private RetryingTransactionHelper retryingTransactionHelper;
-
     private AuthenticationComponent authenticationComponent;
-
     private UserTransaction testTX;
-    
-    private NodeDaoService nodeDaoService;
+    private NodeDAO nodeDAO;
     
     public void setUp() throws Exception
     {
@@ -71,9 +61,8 @@ public class FullIndexRecoveryComponentTest extends TestCase
         avmIndexRecoveryComponent = (AVMFullIndexRecoveryComponent) ctx.getBean("avmIndexRecoveryComponent");
         nodeService = (NodeService) ctx.getBean("nodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
-        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");     
-        nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoServiceImpl"); 
+        nodeDAO = (NodeDAO) ctx.getBean("nodeDAO"); 
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
@@ -142,17 +131,17 @@ public class FullIndexRecoveryComponentTest extends TestCase
 //        
         
         
-        List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+        List<Transaction> endTxns = nodeDAO.getTxnsByCommitTimeDescending(
                 Long.MIN_VALUE, Long.MAX_VALUE, 20, null, false);
         InIndex endAllPresent = indexRecoverer.areAllTxnsInEndSample(endTxns);
         assertEquals(InIndex.INDETERMINATE, endAllPresent);
         
-        endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+        endTxns = nodeDAO.getTxnsByCommitTimeDescending(
                 Long.MIN_VALUE, Long.MAX_VALUE, 21, null, false);
         endAllPresent = indexRecoverer.areAllTxnsInEndSample(endTxns);
         assertEquals(InIndex.INDETERMINATE, endAllPresent);
         
-        endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+        endTxns = nodeDAO.getTxnsByCommitTimeDescending(
                 Long.MIN_VALUE, Long.MAX_VALUE, 22, null, false);
         endAllPresent = indexRecoverer.areAllTxnsInEndSample(endTxns);
         assertEquals(InIndex.YES, endAllPresent);

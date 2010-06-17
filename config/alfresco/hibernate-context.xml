@@ -56,13 +56,8 @@
                 <!-- Alfresco Node Storage -->
                 <!--  -->
 
-                <value>org/alfresco/repo/domain/hibernate/Locale.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
-                <value>org/alfresco/repo/domain/hibernate/Permission.hbm.xml</value>
-                <value>org/alfresco/repo/attributes/hibernate/Attributes.hbm.xml</value>
-                <value>org/alfresco/repo/domain/hibernate/UsageDelta.hbm.xml</value>
-                <value>org/alfresco/repo/activities/hibernate/Activities.hbm.xml</value>
 
                 <!-- Audit config -->
                 <!-- TODO: Move into org/alfresco/repo/domain/hibernate/ -->
@@ -167,20 +162,9 @@
             <props>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ChildAssocImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.NodeAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.StoreImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.TransactionImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ServerImpl">${cache.strategy}</prop>
-
-                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryContextImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityAliasImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbAuthorityImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.DbPermissionImpl">${cache.strategy}</prop>
-                 
                 <prop key="org.alfresco.repo.audit.hibernate.AuditConfigImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.audit.hibernate.AuditDateImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.audit.hibernate.AuditSourceImpl">${cache.strategy}</prop>
@@ -189,7 +173,6 @@
         <property name="collectionCacheStrategies" >
             <props>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.properties">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.NodeImpl.aspects">${cache.strategy}</prop>
             </props>
         </property>
     </bean>
@@ -203,126 +186,6 @@
             <ref bean="sessionFactory" />
         </property>
     </bean>
-
-   <bean id="permissionsDaoComponent" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
-      <property name="proxyInterface">
-         <value>org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent</value>
-      </property>
-      <property name="defaultBinding">
-         <ref bean="dmPermissionsDaoComponent"></ref>
-      </property>
-      <property name="redirectedProtocolBindings">
-         <map>
-            <entry key="workspace"><ref bean="dmPermissionsDaoComponent"></ref></entry>
-            <entry key="versionStore"><ref bean="dmPermissionsDaoComponent"></ref></entry>
-            <entry key="avm"><ref bean="avmPermissionsDaoComponent"/></entry>
-         </map>
-      </property>
-   </bean>
-    
-   <bean id="avmPermissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.PermissionsDaoComponentImpl">
-      <property name="aclDaoComponent">
-         <ref bean="aclDaoComponent" />
-      </property>
-      <property name="protocolToACLDAO">
-         <map>
-            <entry key="workspace"><ref bean="nodeACLDAO"></ref></entry>
-            <entry key="avm"><ref bean="avmACLDAO"/></entry>
-         </map>
-      </property>
-      <property name="defaultACLDAO">
-          <ref bean="nodeACLDAO"/>
-       </property>
-   </bean>
-    
-   <bean id="dmPermissionsDaoComponent" class="org.alfresco.repo.domain.hibernate.DMPermissionsDaoComponentImpl">
-      <property name="aclDaoComponent">
-         <ref bean="aclDaoComponent" />
-      </property>
-      <property name="protocolToACLDAO">
-         <map>
-            <entry key="workspace"><ref bean="nodeACLDAO"></ref></entry>
-            <entry key="avm"><ref bean="avmACLDAO"/></entry>
-         </map>
-      </property>
-      <property name="defaultACLDAO">
-          <ref bean="nodeACLDAO"/>
-       </property>
-   </bean>
-    
-   <bean id="aclDaoComponent" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="target">
-         <ref bean="aclDaoComponentImpl" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <value>daoServiceDirtySessionInterceptor</value>
-         </list>
-      </property>
-   </bean>
-    
-   <bean id="aclDaoComponentImpl" class="org.alfresco.repo.domain.hibernate.AclDaoComponentImpl">
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-      <property name="qnameDAO">
-         <ref bean="qnameDAO" />
-      </property>
-      <property name="patchDAO">
-         <ref bean="patchDAO" />
-      </property>
-      <property name="avmNodeDAO">
-         <ref bean="newAvmNodeDAO" />
-      </property>
-	  <property name="aclCache">
-         <ref bean="aclCache" />
-      </property>
-      <property name="useOldPermissions">
-         <value>false</value>
-      </property>
-   </bean>
-   
-    <bean id="nodeACLDAO" class="org.alfresco.repo.domain.hibernate.DMAccessControlListDAO">
-        <property name="nodeDaoService">
-            <ref bean="nodeDaoService" />
-        </property>
-		<property name="aclDaoComponent">
-            <ref bean="aclDaoComponent"/>
-        </property>
-		<property name="hibernateSessionHelper">
-            <ref bean="hibernateSessionHelper"/>
-        </property>
-		<property name="nodeService">
-            <ref bean="dbNodeService"/>
-        </property>
-    </bean>
-    
-    <bean id="avmACLDAO" class="org.alfresco.repo.domain.hibernate.AVMAccessControlListDAO">
-        <property name="avmRepository">
-            <ref bean="avmRepository"/>
-        </property>
-        <property name="avmService">
-            <ref bean="avmService"/>
-        </property>
-        <property name="aclDaoComponent">
-            <ref bean="aclDaoComponent"/>
-        </property>
-        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor"/>
-        </property>
-        <property name="hibernateSessionHelper">
-            <ref bean="hibernateSessionHelper"/>
-      </property>
-    </bean>
-
-    <bean id="usageDeltaDAO" class="org.alfresco.repo.domain.hibernate.HibernateUsageDeltaDAO">
-       <property name="sessionFactory">
-           <ref bean="sessionFactory"/>
-       </property>
-       <property name="nodeDaoService">
-           <ref bean="nodeDaoServiceImpl" />
-       </property>
-   </bean>
     
    <bean id="auditableTransactionHelper" class="org.alfresco.repo.transaction.RetryingTransactionHelper">
       <property name="transactionService">
@@ -339,48 +202,6 @@
       </property>
       <property name="retryWaitIncrementMs">
          <value>50</value>
-      </property>
-   </bean>
-
-   <bean id="nodeDaoServiceImpl" class="org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl" >
-      <property name="enableTimestampPropagation">
-         <value>${system.enableTimestampPropagation}</value>
-      </property>
-      <property name="qnameDAO">
-         <ref bean="qnameDAO" />
-      </property>
-      <property name="contentDataDAO">
-         <ref bean="contentDataDAO" />
-      </property>
-      <property name="usageDeltaDAO">
-          <ref bean="usageDeltaDAO"/>
-      </property>
-      <property name="aclDaoComponent">
-          <ref bean="aclDaoComponent"/>
-      </property>
-      <property name="localeDAO">
-         <ref bean="localeDAO" />
-      </property>
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
-      <property name="transactionService">
-         <ref bean="transactionService" />
-      </property>
-      <property name="auditableTransactionHelper">
-         <ref bean="auditableTransactionHelper" />
-      </property>
-      <property name="behaviourFilter">
-         <ref bean="policyBehaviourFilter" />
-      </property>
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-      <property name="storeAndNodeIdCache">
-         <ref bean="storeAndNodeIdCache"/>
-      </property>
-      <property name="parentAssocsCache">
-         <ref bean="parentAssocsCache"/>
       </property>
    </bean>
 
@@ -412,47 +233,8 @@
       </property>
    </bean>
 
-   <bean id="dbNodeDaoServiceTxnRegistration" class="org.alfresco.repo.transaction.TransactionalDaoInterceptor" >
-      <property name="daoService">
-         <ref bean="nodeDaoServiceImpl" />
-      </property>
-   </bean>
-
    <bean id="daoServiceDirtySessionInterceptor" class="org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor" />
 
-   <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="target">
-         <ref bean="nodeDaoServiceImpl" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <value>sessionSizeResourceInterceptor</value>
-            <value>daoServiceDirtySessionInterceptor</value>
-            <value>dbNodeDaoServiceTxnRegistration</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="localeDAOImpl" class="org.alfresco.repo.domain.hibernate.HibernateLocaleDAOImpl" >
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-      <property name="localeIdCache">
-         <ref bean="localeIdCache"/>
-      </property>
-   </bean>
-
-   <bean id="localeDAO" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="target">
-         <ref bean="localeDAOImpl" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <value>daoServiceDirtySessionInterceptor</value>
-         </list>
-      </property>
-   </bean>
-    
     <bean id="auditDaoHibernate" class="org.alfresco.repo.audit.hibernate.HibernateAuditDAO">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>

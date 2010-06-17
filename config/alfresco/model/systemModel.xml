@@ -225,15 +225,6 @@
          </properties>
       </aspect>
 
-      <!--
-         Aspect controlling some index behaviour.
-         Sometimes it is necessary to reindex an entire hierarchy.  But instead of
-         doing that inline, it can be done as a background process.
-      -->
-      <aspect name="sys:indexChildren">
-         <title>Cascade Index Children</title>
-      </aspect>
-
    </aspects>
 
 </model>

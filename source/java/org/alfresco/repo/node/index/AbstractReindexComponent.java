@@ -31,8 +31,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.Transaction;
-import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -52,11 +52,11 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Abstract helper for reindexing.
@@ -86,7 +86,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     /** the component giving direct access to <b>store</b> instances */
     protected NodeService nodeService;
     /** the component giving direct access to <b>transaction</b> instances */
-    protected NodeDaoService nodeDaoService;
+    protected NodeDAO nodeDAO;
     /** the component that holds the reindex worker threads */
     private ThreadPoolExecutor threadPoolExecutor;
     
@@ -183,11 +183,11 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     }
 
     /**
-     * @param nodeDaoService provides access to transaction-related queries
+     * @param nodeDAO provides access to transaction-related queries
      */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    public void setNodeDAO(NodeDAO nodeDAO)
     {
-        this.nodeDaoService = nodeDaoService;
+        this.nodeDAO = nodeDAO;
     }
 
     /**
@@ -247,7 +247,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         PropertyCheck.mandatory(this, "indexer", this.indexer);
         PropertyCheck.mandatory(this, "searcher", this.searcher);
         PropertyCheck.mandatory(this, "nodeService", this.nodeService);
-        PropertyCheck.mandatory(this, "nodeDaoService", this.nodeDaoService);
+        PropertyCheck.mandatory(this, "nodeDaoService", this.nodeDAO);
         PropertyCheck.mandatory(this, "transactionComponent", this.transactionService);
         
         if (indexerWriteLock.tryLock())
@@ -416,7 +416,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         if (!foundInIndex)
         {
             // If none of the stores have the transaction, then that might be because it consists of 0 modifications
-            int updateCount = nodeDaoService.getTxnUpdateCount(txnId);
+            int updateCount = nodeDAO.getTxnUpdateCount(txnId);
             
             /* Alternative (r15360)
             // exclude updates in the version store
@@ -459,7 +459,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             else
             {
                 // We're now in the case where there were no updates
-                int deleteCount = nodeDaoService.getTxnDeleteCount(txnId);
+                int deleteCount = nodeDAO.getTxnDeleteCount(txnId);
                 if (deleteCount == 0)
                 {
                     // There are no updates or deletes and no entry in the indexes.
@@ -547,7 +547,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         List<String> storesToIgnore = getStoresToIgnore();
         if ((storesToIgnore != null) && (storesToIgnore.size() > 0) && (txnId != null))
         {
-            List<NodeRef> nodeRefs = nodeDaoService.getTxnChanges(txnId);
+            List<NodeRef> nodeRefs = nodeDAO.getTxnChanges(txnId);
             
             allUpdatedNodesCanBeIgnored = true;
             for (NodeRef nodeRef : nodeRefs)
@@ -587,7 +587,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         final Long txnId = txn.getId();
         // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
         // get all node refs for the transaction
-        List<NodeRef> nodeRefs = nodeDaoService.getTxnChangesForStore(storeRef, txnId);
+        List<NodeRef> nodeRefs = nodeDAO.getTxnChangesForStore(storeRef, txnId);
         boolean foundNodeRef = false;
         for (NodeRef nodeRef : nodeRefs)
         {
@@ -689,7 +689,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
         
         // get the node references pertinent to the transaction
-        List<NodeRef> nodeRefs = nodeDaoService.getTxnChanges(txnId);
+        List<NodeRef> nodeRefs = nodeDAO.getTxnChanges(txnId);
         // reindex each node
         int nodeCount = 0;
         for (NodeRef nodeRef : nodeRefs)

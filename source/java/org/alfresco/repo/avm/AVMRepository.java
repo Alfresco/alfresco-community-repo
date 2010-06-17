@@ -353,8 +353,7 @@ public class AVMRepository
             ((LayeredDirectoryNode) child).setPrimaryIndirection(false);
             ((LayeredDirectoryNode) child).setLayerID(parent.getLayerID());
             
-            DbAccessControlList acl = dir.getAcl();
-            child.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            child.copyACLs(dir, ACLCopyMode.INHERIT);
             
             AVMDAOs.Instance().fAVMNodeDAO.update(child);
         }
@@ -362,8 +361,7 @@ public class AVMRepository
         {
             child = new PlainDirectoryNodeImpl(store);
             
-            DbAccessControlList acl = dir.getAcl();
-            child.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
+            child.copyACLs(dir, ACLCopyMode.INHERIT);
             
             AVMDAOs.Instance().fAVMNodeDAO.save(child);
         }
@@ -953,27 +951,19 @@ public class AVMRepository
      */
     public Map<String, Integer> createSnapshot(String storeName, String tag, String description)
     {
-        try
+        AlfrescoTransactionSupport.bindListener(fCreateVersionTxnListener);
+        AVMStore store = getAVMStoreByName(storeName);
+        if (store == null)
         {
-            fAVMNodeDAO.noCache();
-            AlfrescoTransactionSupport.bindListener(fCreateVersionTxnListener);
-            AVMStore store = getAVMStoreByName(storeName);
-            if (store == null)
-            {
-                throw new AVMNotFoundException("Store not found.");
-            }
-            Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
-            for (Map.Entry<String, Integer> entry : result.entrySet())
-            {
-                fLookupCache.onSnapshot(entry.getKey());
-                fCreateVersionTxnListener.versionCreated(entry.getKey(), entry.getValue());
-            }
-            return result;
+            throw new AVMNotFoundException("Store not found.");
         }
-        finally
+        Map<String, Integer> result = store.createSnapshot(tag, description, new HashMap<String, Integer>());
+        for (Map.Entry<String, Integer> entry : result.entrySet())
         {
-            fAVMNodeDAO.yesCache();
+            fLookupCache.onSnapshot(entry.getKey());
+            fCreateVersionTxnListener.versionCreated(entry.getKey(), entry.getValue());
         }
+        return result;
     }
 
     /**

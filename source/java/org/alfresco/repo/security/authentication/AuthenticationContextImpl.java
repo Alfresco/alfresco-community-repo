@@ -26,7 +26,6 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * @author Andy Hind

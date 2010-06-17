@@ -24,7 +24,7 @@ import java.util.Date;
  * Applied patch bean
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public class AppliedPatch
 {

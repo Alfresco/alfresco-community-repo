@@ -36,9 +36,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.LongAttributeValue;
-import org.alfresco.repo.attributes.MapAttributeValue;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.lock.JobLockService;
@@ -1321,13 +1318,13 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         return this.transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionCallback<Long>()
                 {
-
                     public Long execute() throws Throwable
                     {
-                        Attribute attribute = ChainingUserRegistrySynchronizer.this.attributeService
-                                .getAttribute(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label + '/'
-                                        + zoneId);
-                        return attribute == null ? -1 : attribute.getLongValue();
+                        Long updateTime = (Long) attributeService.getAttribute(
+                                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH,
+                                    label,
+                                    zoneId);
+                        return updateTime == null ? -1 : updateTime;
                     }
                 }, true, splitTxns);
     }
@@ -1346,30 +1343,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            <code>true</code>, the attribute is persisted in a new transaction for increased performance and
      *            reliability.
      */
-    private void setMostRecentUpdateTime(final String label, final String zoneId, final long lastModifiedMillis,
-            boolean splitTxns)
+    private void setMostRecentUpdateTime(final String label, final String zoneId, final long lastModifiedMillis, boolean splitTxns)
     {
-        final String path = ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH + '/' + label;
         this.transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
-
                     public Object execute() throws Throwable
                     {
-                        if (!ChainingUserRegistrySynchronizer.this.attributeService.exists(path))
-                        {
-                            if (!ChainingUserRegistrySynchronizer.this.attributeService
-                                    .exists(ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH))
-                            {
-                                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute("",
-                                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, new MapAttributeValue());
-                            }
-                            ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                    ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, label,
-                                    new MapAttributeValue());
-                        }
-                        ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(path, zoneId,
-                                new LongAttributeValue(lastModifiedMillis));
+                        attributeService.setAttribute(
+                                Long.valueOf(lastModifiedMillis),
+                                ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, label, zoneId);
                         return null;
                     }
                 }, false, splitTxns);

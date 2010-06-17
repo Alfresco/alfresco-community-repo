@@ -31,12 +31,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
-import org.alfresco.repo.attributes.Attribute;
-import org.alfresco.repo.attributes.MapAttribute;
-import org.alfresco.repo.attributes.MapAttributeValue;
-import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -330,36 +325,6 @@ public class DefaultTypeConverter
         });
 
         //
-        // Attributes
-        //
-        INSTANCE.addConverter(MapAttribute.class, MLText.class, new TypeConverter.Converter<MapAttribute, MLText>()
-        {
-            public MLText convert(MapAttribute source)
-            {
-                MLText ret = new MLText();
-                for (Map.Entry<String, Attribute> entry : source.entrySet())
-                {
-                    String localeStr = entry.getKey();
-                    Locale locale;
-                    try
-                    {
-                        locale = INSTANCE.convert(Locale.class, localeStr);
-                    }
-                    catch (TypeConversionException e)
-                    {
-                        throw new TypeConversionException(
-                                "MapAttribute string key cannot be converted to a locales:" + localeStr, e);
-                    }
-                    Attribute valueAttribute = entry.getValue();
-                    // Use the attribute's built-in conversion
-                    String valueStr = valueAttribute == null ? null : valueAttribute.getStringValue();
-                    ret.put(locale, valueStr);
-                }
-                return ret;
-            }
-        });
-        
-        //
         // From Locale
         //
 
@@ -402,21 +367,6 @@ public class DefaultTypeConverter
             }
         });
 
-        INSTANCE.addConverter(MLText.class, Attribute.class, new TypeConverter.Converter<MLText, Attribute>()
-        {
-            public Attribute convert(MLText source)
-            {
-                Attribute attribute = new MapAttributeValue();
-                for (Map.Entry<Locale, String> entry : source.entrySet())
-                {
-                    String localeStr = INSTANCE.convert(String.class, entry.getKey());
-                    Attribute stringAttribute = new StringAttributeValue(entry.getValue());
-                    attribute.put(localeStr, stringAttribute);
-                }
-                return attribute;
-            }
-        });
-        
         //
         // From enum
         //
@@ -442,24 +392,24 @@ public class DefaultTypeConverter
         // From Class
         
         INSTANCE.addConverter(Class.class, String.class, new TypeConverter.Converter<Class, String>()
-                {
-                    public String convert(Class source)
-                    {
-                        return source.getName();
-                    }
-                });
+        {
+            public String convert(Class source)
+            {
+                return source.getName();
+            }
+        });
 
         //
         // Number to Subtypes and Date
         //
 
         INSTANCE.addConverter(Number.class, Boolean.class, new TypeConverter.Converter<Number, Boolean>()
-                {
-                    public Boolean convert(Number source)
-                    {
-                        return new Boolean(source.longValue() > 0);
-                    }
-                });
+        {
+            public Boolean convert(Number source)
+            {
+                return new Boolean(source.longValue() > 0);
+            }
+        });
 
         INSTANCE.addConverter(Number.class, Byte.class, new TypeConverter.Converter<Number, Byte>()
         {

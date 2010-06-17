@@ -18,16 +18,16 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.node.db.NodeDaoService.ObjectArrayQueryCallback;
+import org.alfresco.repo.domain.patch.PatchDAO;
+import org.alfresco.repo.domain.patch.PatchDAO.StringHandler;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch to add person usage ('cm:sizeCurrent') property to person (if missing)
@@ -42,16 +42,15 @@ public class PersonUsagePatch extends AbstractPatch
     private static final String MSG_SUCCESS1 = "patch.personUsagePatch.result1";
     private static final String MSG_SUCCESS2 = "patch.personUsagePatch.result2";
     
-    private NodeDaoService nodeDaoService;
+    private PatchDAO patchDAO;
     private StoreRef personStoreRef;
     private TenantService tenantService;
     
-    
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    public void setPatchDAO(PatchDAO patchDAO)
     {
-        this.nodeDaoService = nodeDaoService;
+        this.patchDAO = patchDAO;
     }
-    
+
     public void setPersonStoreUrl(String storeUrl)
     {
         this.personStoreRef = new StoreRef(storeUrl);
@@ -89,31 +88,27 @@ public class PersonUsagePatch extends AbstractPatch
     {
         // get people (users) with missing 'cm:sizeCurrent' property
         
-        CountObjectArrayQueryCallback userHandler = new CountObjectArrayQueryCallback();
+        CountQueryCallback userHandler = new CountQueryCallback();
         
-        nodeDaoService.getUsersWithoutUsageProp(tenantService.getName(personStoreRef), userHandler);
+        patchDAO.getUsersWithoutUsageProp(tenantService.getName(personStoreRef), userHandler);
         
         return userHandler.getCount();
     }
     
-    private class CountObjectArrayQueryCallback implements ObjectArrayQueryCallback
+    private class CountQueryCallback implements StringHandler
     {
         private int count;
         
-        public CountObjectArrayQueryCallback()
+        public CountQueryCallback()
         {
             count = 0;
         }
         
-        public boolean handle(Object[] arr)
+        public void handle(String uuid)
         {
-            String uuid = (String)arr[0];
-            
             nodeService.setProperty(new NodeRef(personStoreRef, uuid), ContentModel.PROP_SIZE_CURRENT, null);
             
             count++;
-            
-            return true; // continue to next node (more required)
         }
         
         public int getCount()

@@ -138,7 +138,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             propertyTypeQName = propertyDef.getDataType().getName();
             // check that multi-valued properties are allowed
             boolean isMultiValued = propertyDef.isMultiValued();
-            if (isMultiValued && !(value instanceof Collection))
+            if (isMultiValued && !(value instanceof Collection<?>))
             {
                 if (value != null)
                 {
@@ -147,7 +147,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                     value = (Serializable) Collections.singletonList(value);
                 }
             }
-            else if (!isMultiValued && (value instanceof Collection))
+            else if (!isMultiValued && (value instanceof Collection<?>))
             {
                 // we only allow this case if the property type is ANY
                 if (!propertyTypeQName.equals(DataTypeDefinition.ANY))
@@ -258,7 +258,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
         catch (AVMExistsException e)
         {
-            throw new StoreExistsException("AVMStore exists", result);
+            throw new StoreExistsException(result, e);
         }
     }
     

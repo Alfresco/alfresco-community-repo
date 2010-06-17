@@ -597,7 +597,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             {
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("beforeCommit: pendingModelsCnt="+pendingModels.size()+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                    logger.trace("beforeCommit: pendinpolicy-context.xmlgModelsCnt="+pendingModels.size()+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                 }
                 
                 for (NodeRef pendingNodeRef : pendingModels)

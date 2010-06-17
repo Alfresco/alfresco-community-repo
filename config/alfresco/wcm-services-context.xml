@@ -47,7 +47,6 @@
        <property name="nodeService" ref="NodeService"/>
        <property name="searchService" ref="SearchService"/>
        <property name="avmService" ref="AVMService"/>
-       <property name="avmLockingService" ref="AVMLockingService"/>
        <property name="authorityService" ref="AuthorityService"/>
        <property name="permissionService" ref="PermissionService"/>
        <property name="personService" ref="PersonService"/>
@@ -55,6 +54,7 @@
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
        <property name="previewURIServiceRegistry" ref="previewURIServiceRegistry"/>
        <property name="transactionService" ref="transactionService"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
     </bean>
 
 
@@ -217,9 +217,9 @@
        <property name="nodeService" ref="NodeService"/>
        <property name="permissionService" ref="PermissionService"/>
        <property name="avmService" ref="AVMService"/>
-       <property name="avmLockingService" ref="AVMLockingService"/>
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
        <property name="authorityService" ref="AuthorityService"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
     </bean>
     
     

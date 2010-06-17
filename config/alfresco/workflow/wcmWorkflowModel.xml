@@ -281,8 +281,8 @@
           </index>
         </property>
         <property name="wcmwf:validateLinks">
-          <title>Validate Links</title>
-          <description>Determines whether links should be verified before entering the review cycle</description>
+          <title>Validate Links (Deprecated)</title>
+          <description>Deprecated</description>
           <type>d:boolean</type>
         </property>
         <property name="wcmwf:webapp">

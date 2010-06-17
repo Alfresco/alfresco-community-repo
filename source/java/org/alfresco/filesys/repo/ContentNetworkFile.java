@@ -40,6 +40,7 @@ import org.alfresco.jlan.smb.SeekType;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentReader;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -411,10 +412,18 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         if (modified)
         {
+            NodeRef contentNodeRef = getNodeRef();
             // We may be in a retry block, in which case this section will already have executed and channel will be null
             if (channel != null)
             {
-                // Take a guess at the mimetype
+                // Take a guess at the mimetype (if it has not been set by something already)
+                if (content.getMimetype() == null || content.getMimetype().equals(MimetypeMap.MIMETYPE_BINARY) )
+                {
+                    String filename = (String) nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME);
+                    String mimetype = mimetypeService.guessMimetype(filename);
+                    content.setMimetype(mimetype);
+                }
+                // Take a guess at the locale
                 channel.position(0);
                 InputStream is = new BufferedInputStream(Channels.newInputStream(channel));
                 ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
@@ -451,7 +460,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             
             if (contentChanged)
             {
-                NodeRef contentNodeRef = getNodeRef();
                 nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
                 try
                 {

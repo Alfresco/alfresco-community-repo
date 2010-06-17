@@ -236,6 +236,13 @@ public class VersionMigrator implements ApplicationEventPublisherAware
             nodeDetails.addProperty(sourceType, entry.getKey(), entry.getValue());
         }
         
+        // add newVersion auditable properties (of the version node itself, rather than the live versioned node) - will be set on create
+        nodeDetails.addProperty(sourceType, ContentModel.PROP_CREATED, versionCreated);
+        nodeDetails.addProperty(sourceType, ContentModel.PROP_CREATOR, versionCreator);
+        nodeDetails.addProperty(sourceType, ContentModel.PROP_MODIFIED, versionModified);
+        nodeDetails.addProperty(sourceType, ContentModel.PROP_MODIFIER, versionModifier);
+        nodeDetails.addProperty(sourceType, ContentModel.PROP_ACCESSED, versionAccessed);
+        
         // add aspects
         for (QName aspect : nodeAspects)
         {
@@ -274,15 +281,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                 versionMetaDataProperties,
                 versionNumber,
                 nodeDetails);
-        
-        // set newVersion auditable properties (of the version node itself, rather than the live versioned node)
-        Map<QName, Serializable> props = dbNodeService.getProperties(newVersionRef);
-        props.put(ContentModel.PROP_CREATED, versionCreated);
-        props.put(ContentModel.PROP_CREATOR, versionCreator);
-        props.put(ContentModel.PROP_MODIFIED, versionModified);
-        props.put(ContentModel.PROP_MODIFIER, versionModifier);
-        props.put(ContentModel.PROP_ACCESSED, versionAccessed);
-        dbNodeService.setProperties(newVersionRef, props);
         
         return newVersionRef;
     }

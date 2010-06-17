@@ -18,9 +18,11 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import java.util.Set;
+
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -93,14 +95,16 @@ public class OnCreateChildAssociationRuleTrigger
         // then we don't want to trigger any associated rules.
         //
         // See http://issues.alfresco.com/browse/AR-1544
-        if (AlfrescoTransactionSupport.getResource(childAssocRef.getChildRef().toString()+"rename") == null)
+        Set<String> nodeRefRenameSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NODESET);
+        String marker = childAssocRef.getChildRef().toString()+"rename";
+        if (!nodeRefRenameSet.contains(marker))
         {
         	triggerRules(childAssocRef.getParentRef(), childAssocRef.getChildRef());
         }
         else
         {
         	// Remove the marker
-        	AlfrescoTransactionSupport.unbindResource(childAssocRef.getChildRef().toString()+"rename");
+            nodeRefRenameSet.remove(marker);
         }
     }
 }

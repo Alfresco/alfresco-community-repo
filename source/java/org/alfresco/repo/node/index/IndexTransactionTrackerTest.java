@@ -24,6 +24,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -77,13 +78,13 @@ public class IndexTransactionTrackerTest extends TestCase
         ftsIndexer = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
 
         indexer = (Indexer) ctx.getBean("indexerComponent");
-        NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
+        NodeDAO nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         TransactionService transactionService = serviceRegistry.getTransactionService();
         indexTracker = new IndexTransactionTracker();
         indexTracker.setAuthenticationComponent(authenticationComponent);
         indexTracker.setFtsIndexer(ftsIndexer);
         indexTracker.setIndexer(indexer);
-        indexTracker.setNodeDaoService(nodeDaoService);
+        indexTracker.setNodeDAO(nodeDAO);
         indexTracker.setNodeService(nodeService);
         indexTracker.setThreadPoolExecutor(threadPoolExecutor);
         indexTracker.setSearcher(searchService);

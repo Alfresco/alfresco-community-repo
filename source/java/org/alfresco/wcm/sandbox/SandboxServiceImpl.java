@@ -593,7 +593,7 @@ public class SandboxServiceImpl implements SandboxService
         }
         
         // via submit direct workflow
-        submitViaWorkflow(sbStoreId, relativePaths, null, null, submitLabel, submitComment, null, null, false, false);
+        submitViaWorkflow(sbStoreId, relativePaths, null, null, submitLabel, submitComment, null, null, false);
     }
     
     /* (non-Javadoc)
@@ -602,11 +602,11 @@ public class SandboxServiceImpl implements SandboxService
     public void submitListAssets(String sbStoreId, List<String> relativePaths,
                                  String workflowName, Map<QName, Serializable> workflowParams, 
                                  String submitLabel, String submitComment,
-                                 Map<String, Date> expirationDates, Date launchDate, boolean validateLinks, boolean autoDeploy)
+                                 Map<String, Date> expirationDates, Date launchDate, boolean autoDeploy)
     {
         // via selected workflow
         submitViaWorkflow(sbStoreId, relativePaths, workflowName, workflowParams, submitLabel, submitComment,
-                          expirationDates, launchDate, validateLinks, autoDeploy);
+                          expirationDates, launchDate, autoDeploy);
     }
     
     /**
@@ -621,7 +621,7 @@ public class SandboxServiceImpl implements SandboxService
      */
     private void submitViaWorkflow(final String sbStoreId, final List<String> relativePaths, String workflowName, Map<QName, Serializable> workflowParams, 
                                    final String submitLabel, final String submitComment,
-                                   final Map<String, Date> expirationDates, final Date launchDate, final boolean validateLinks, final boolean autoDeploy)
+                                   final Map<String, Date> expirationDates, final Date launchDate, final boolean autoDeploy)
     {
         // checks sandbox access (TODO review)
         getSandbox(sbStoreId); // ignore result
@@ -683,7 +683,7 @@ public class SandboxServiceImpl implements SandboxService
                     public String execute() throws Throwable
                     {
                         // call the actual implementation
-                        startWorkflow(wpStoreId, sbStoreId, wfSandboxInfo, webApp, finalWorkflowName, finalWorkflowParams, submitLabel, submitComment, launchDate, validateLinks, autoDeploy);
+                        startWorkflow(wpStoreId, sbStoreId, wfSandboxInfo, webApp, finalWorkflowName, finalWorkflowParams, submitLabel, submitComment, launchDate, autoDeploy);
                         return null;
                     }
                 };
@@ -795,7 +795,7 @@ public class SandboxServiceImpl implements SandboxService
      * checked and reviewed.
      */
     protected void startWorkflow(String wpStoreId, String sbStoreId, SandboxInfo wfSandboxInfo, String webApp, String workflowName, Map<QName, Serializable> workflowParams, 
-                                 String submitLabel, String submitComment, Date launchDate, boolean validateLinks, boolean autoDeploy)
+                                 String submitLabel, String submitComment, Date launchDate, boolean autoDeploy)
     {
         ParameterCheck.mandatoryString("workflowName", workflowName);
         ParameterCheck.mandatory("workflowParams", workflowParams);
@@ -824,8 +824,6 @@ public class SandboxServiceImpl implements SandboxService
                     workflowParams.put(WCMWorkflowModel.PROP_FROM_PATH,
                             WCMUtil.buildStoreRootPath(sbStoreId));
                     workflowParams.put(WCMWorkflowModel.PROP_LAUNCH_DATE, launchDate);
-                    workflowParams.put(WCMWorkflowModel.PROP_VALIDATE_LINKS,
-                            new Boolean(validateLinks));
                     workflowParams.put(WCMWorkflowModel.PROP_AUTO_DEPLOY,
                             new Boolean(autoDeploy));
                     workflowParams.put(WCMWorkflowModel.PROP_WEBAPP,
@@ -856,7 +854,7 @@ public class SandboxServiceImpl implements SandboxService
             public String execute() throws Throwable
             {
                 // delete AVM stores in the workflow sandbox
-                sandboxFactory.deleteSandbox(sandboxInfo);
+                sandboxFactory.deleteSandbox(sandboxInfo, true);
                 return null;
             }
         };
@@ -1000,7 +998,7 @@ public class SandboxServiceImpl implements SandboxService
                     logger.debug("unlocking file " + relativePath + " in web project " + wpStoreId);
                 }
                 
-                if (avmLockingService.getLock(wpStoreId, relativePath) != null)
+                if (avmLockingService.getLockOwner(wpStoreId, relativePath) != null)
                 {
                     avmLockingService.removeLock(wpStoreId, relativePath);
                 }

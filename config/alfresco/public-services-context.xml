@@ -1097,12 +1097,9 @@
         </property>
         <property name="mappedNames">
             <list>
+                <value>exists</value>
                 <value>getAttribute</value>
                 <value>getAttributes</value>
-                <value>query</value>
-                <value>getKeys</value>
-                <value>exists</value>
-                <value>getCount</value>
             </list>
         </property>
     </bean>
@@ -1115,11 +1112,10 @@
         <property name="mappedNames">
             <list>
                 <value>setAttribute</value>
-                <value>setAttributes</value>
+                <value>createAttribute</value>
+                <value>updateOrCreateAttribute</value>
                 <value>removeAttribute</value>
-                <value>addAttribute</value>
-                <value>addAttributes</value>
-                <value>removeEntries</value>
+                <value>removeAttributes</value>
             </list>
         </property>
     </bean>
@@ -1150,11 +1146,8 @@
         </property>
         <property name="mappedNames">
             <list>
-                <value>getLock</value>
-                <value>getUsersLocks</value>
-                <value>getWebProjectLocks</value>
-                <value>getWebProjects</value>
-                <value>getStoreLocks</value>
+                <value>getLockOwner</value>
+                <value>getLockState</value>
                 <value>hasAccess</value>
             </list>
         </property>
@@ -1166,13 +1159,10 @@
         </property>
         <property name="mappedNames">
             <list>
-                <value>addWebProject</value>
-                <value>lockPath</value>
-                <value>removeLock</value>
-                <value>removeWebProject</value>
+                <value>lock</value>
                 <value>modifyLock</value>
-                <value>removeStoreLocks</value>
-                <value>removeLocksInDirectory</value>
+                <value>removeLock</value>
+                <value>removeLocks</value>
             </list>
         </property>
     </bean>
@@ -1401,63 +1391,6 @@
         </property>
     </bean>
 
-    <!-- LinkValidationService -->
-    <!-- Read transaction advisor for link validation service. -->
-    <bean id="linkValidationServiceReadTxnAdvisor"
-          class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <ref bean="retryingReadTxnAdvice"/>
-        </property>
-        <property name="mappedNames">
-            <list>
-                    <value>getHrefManifest</value>
-                    <value>getBrokenHrefManifest</value>
-                    <value>getHrefDifference</value>
-                    <value>getHrefManifestBrokenByNewOrMod</value>
-                    <value>getHrefsDependentUponFile</value>
-                    <value>getPollInterval</value>
-                    <value>isLinkValidationDisabled</value>
-            </list>
-        </property>
-    </bean>
-
-    <!-- Write transaction advisor for link validation service. -->
-    <bean id="linkValidationServiceWriteTxnAdvisor"
-          class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <ref bean="retryingWriteTxnAdvice"/>
-        </property>
-        <property name="mappedNames">
-            <list>
-                    <value>onBootstrap</value>
-                    <value>onShutdown</value>
-                    <value>setLinkValidationDisabled</value>
-                    <value>updateHrefInfo</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="LinkValidationService"
-          class="org.springframework.aop.framework.ProxyFactoryBean"
-          lazy-init="true">
-        <property name="proxyInterfaces">
-            <list>
-                <value>org.alfresco.linkvalidation.LinkValidationService</value>
-            </list>
-        </property>
-        <property name="targetName">
-            <value>linkValidationService</value>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <value>linkValidationServiceWriteTxnAdvisor</value>
-                <value>linkValidationServiceReadTxnAdvisor</value>
-                <value>checkTxnAdvisor</value>
-            </list>
-        </property>
-    </bean>
-
-      
     <!-- Repository Admin Service -->
     
     <bean id="RepoAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">

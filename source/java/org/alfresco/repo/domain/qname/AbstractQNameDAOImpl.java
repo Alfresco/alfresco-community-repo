@@ -36,7 +36,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * Abstract implementation of the QName and Namespace DAO interface.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public abstract class AbstractQNameDAOImpl implements QNameDAO
 {

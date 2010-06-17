@@ -24,10 +24,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.Transaction;
-import org.alfresco.repo.node.index.AbstractReindexComponent.InIndex;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.node.index.IndexTransactionTracker.IndexTransactionTrackerListener;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -36,6 +34,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Component to check and recover the indexes.  By default, the server is
@@ -185,12 +184,12 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             }
             
             
-            List<Transaction> startTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+            List<Transaction> startTxns = nodeDAO.getTxnsByCommitTimeAscending(
                     Long.MIN_VALUE, Long.MAX_VALUE, 1000, null, false);
             InIndex startAllPresent = areTxnsInStartSample(startTxns);
             
             
-            List<Transaction> endTxns = nodeDaoService.getTxnsByCommitTimeDescending(
+            List<Transaction> endTxns = nodeDAO.getTxnsByCommitTimeDescending(
                     Long.MIN_VALUE, Long.MAX_VALUE, 1000, null, false);
             InIndex endAllPresent = areAllTxnsInEndSample(endTxns);
                 
@@ -337,7 +336,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteWork, true, true);
         
         
-        int txnCount = nodeDaoService.getTransactionCount();
+        int txnCount = nodeDAO.getTransactionCount();
         // starting
         String msgStart = I18NUtil.getMessage(MSG_RECOVERY_STARTING, txnCount);
         logger.info(msgStart);
@@ -349,7 +348,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         List<Long> lastTxnIds = Collections.<Long>emptyList();
         while(true)
         {
-            List<Transaction> nextTxns = nodeDaoService.getTxnsByCommitTimeAscending(
+            List<Transaction> nextTxns = nodeDAO.getTxnsByCommitTimeAscending(
                     fromTimeInclusive,
                     toTimeExclusive,
                     MAX_TRANSACTIONS_PER_ITERATION,
@@ -447,7 +446,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             public Object execute() throws Exception
             {
                 // get the node references pertinent to the transaction
-                List<NodeRef> nodeRefs = nodeDaoService.getTxnChanges(txnId);
+                List<NodeRef> nodeRefs = nodeDAO.getTxnChanges(txnId);
                 // reindex each node
                 for (NodeRef nodeRef : nodeRefs)
                 {

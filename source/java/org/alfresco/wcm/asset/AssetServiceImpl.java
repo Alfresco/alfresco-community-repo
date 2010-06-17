@@ -45,7 +45,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -53,11 +52,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.tools.zip.ZipFile;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Asset Service fundamental API.
@@ -68,9 +67,6 @@ import org.apache.tools.zip.ZipFile;
  */
 public class AssetServiceImpl implements AssetService
 {
-    /** Logger */
-    //private static Log logger = LogFactory.getLog(AssetServiceImpl.class);
-    
     private static char PATH_SEPARATOR = '/';
     
     private static final int BUFFER_SIZE = 16384;
@@ -116,9 +112,6 @@ public class AssetServiceImpl implements AssetService
         return ((propVal != null) && (WCMUtil.isStagingStore(sbStoreId)));
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#createFolderWebApp(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
     public void createFolderWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, String name)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -140,9 +133,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#createFolder(java.lang.String, java.lang.String, java.lang.String, java.util.Map)
-     */
     public void createFolder(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -180,9 +170,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#createFileWebApp(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
     public ContentWriter createFileWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, String name)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -201,9 +188,6 @@ public class AssetServiceImpl implements AssetService
         return avmService.getContentWriter(avmPath, true);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#createFile(java.lang.String, java.lang.String, java.lang.String, java.util.Map)
-     */
     public ContentWriter createFile(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -255,9 +239,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getContentWriter(org.alfresco.wcm.asset.AssetInfo)
-     */
     public ContentWriter getContentWriter(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -272,9 +253,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getContentReader(org.alfresco.wcm.asset.AssetInfo)
-     */
     public ContentReader getContentReader(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -282,17 +260,11 @@ public class AssetServiceImpl implements AssetService
         return avmService.getContentReader(asset.getSandboxVersion(), asset.getAvmPath());
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getAssetWebApp(java.lang.String, java.lang.String, java.lang.String)
-     */
     public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp)
     {
         return getAssetWebApp(sbStoreId, webApp, pathRelativeToWebApp, false);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getAssetWebApp(java.lang.String, java.lang.String, java.lang.String, boolean)
-     */
     public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -306,17 +278,11 @@ public class AssetServiceImpl implements AssetService
         return getAssetAVM(-1, avmPath, includeDeleted);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getAsset(java.lang.String, java.lang.String)
-     */
     public AssetInfo getAsset(String sbStoreId, String path)
     {
         return getAsset(sbStoreId, -1, path, false);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getAsset(java.lang.String, int, java.lang.String, boolean)
-     */
     public AssetInfo getAsset(String sbStoreId, int version, String path, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -351,9 +317,6 @@ public class AssetServiceImpl implements AssetService
         return asset;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getLockOwner(org.alfresco.wcm.asset.AssetInfo)
-     */
     public String getLockOwner(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -363,39 +326,19 @@ public class AssetServiceImpl implements AssetService
     
     private String getLockOwner(String wpStoreId, String filePath)
     {
-        String lockOwner = null;
-        
-        if (avmLockingService != null)
-        {
-            AVMLock lock = avmLockingService.getLock(wpStoreId, filePath);
-    
-            if (lock != null)
-            {
-                // for now assume single lock owner (if more than one, then return first in list)
-                List<String> lockUsers = lock.getOwners();
-                if (lockUsers.size() > 0)
-                {
-                    lockOwner = lockUsers.get(0);
-                }
-            }
-        }
-        
-        return lockOwner;
+        return avmLockingService.getLockOwner(wpStoreId, filePath);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#hasLockAccess(org.alfresco.wcm.asset.AssetInfo)
-     */
     public boolean hasLockAccess(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
         
-        return avmLockingService.hasAccess(WCMUtil.getWebProjectStoreId(asset.getSandboxId()), asset.getAvmPath(), AuthenticationUtil.getFullyAuthenticatedUser());
+        return avmLockingService.hasAccess(
+                WCMUtil.getWebProjectStoreId(asset.getSandboxId()),
+                asset.getAvmPath(),
+                AuthenticationUtil.getFullyAuthenticatedUser());
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#updateAssetProperties(org.alfresco.wcm.asset.AssetInfo, java.util.Map)
-     */
     public void updateAssetProperties(AssetInfo asset, Map<QName, Serializable> properties)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -408,9 +351,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#setAssetProperties(org.alfresco.wcm.asset.AssetInfo, java.util.Map)
-     */
     public void setAssetProperties(AssetInfo asset, Map<QName, Serializable> properties)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -425,9 +365,6 @@ public class AssetServiceImpl implements AssetService
         avmNodeService.setProperties(avmNodeRef, properties);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#addAspect(org.alfresco.wcm.asset.AssetInfo, org.alfresco.service.namespace.QName, java.util.Map)
-     */
     public void addAspect(AssetInfo asset, QName aspectName, Map<QName, Serializable> properties)
     {
         addAspect(asset.getAvmPath(), aspectName, properties);
@@ -439,9 +376,6 @@ public class AssetServiceImpl implements AssetService
         avmNodeService.addAspect(avmNodeRef, aspect, properties);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#removeAspect(org.alfresco.wcm.asset.AssetInfo, org.alfresco.service.namespace.QName)
-     */
     public void removeAspect(AssetInfo asset, QName aspectName)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -450,9 +384,6 @@ public class AssetServiceImpl implements AssetService
         avmNodeService.removeAspect(avmNodeRef, aspectName);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getAspects(org.alfresco.wcm.asset.AssetInfo)
-     */
     public Set<QName> getAspects(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -461,9 +392,6 @@ public class AssetServiceImpl implements AssetService
         return avmNodeService.getAspects(avmNodeRef);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#hasAspect(org.alfresco.wcm.asset.AssetInfo, org.alfresco.service.namespace.QName)
-     */
     public boolean hasAspect(AssetInfo asset, QName aspectName)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -472,9 +400,6 @@ public class AssetServiceImpl implements AssetService
         return avmNodeService.hasAspect(avmNodeRef, aspectName);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#getAssetProperties(org.alfresco.wcm.asset.AssetInfo)
-     */
     public Map<QName, Serializable> getAssetProperties(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -488,9 +413,6 @@ public class AssetServiceImpl implements AssetService
         return avmNodeService.getProperties(avmNodeRef); // note: includes built-in properties
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#listAssetsWebApp(java.lang.String, java.lang.String, java.lang.String, boolean)
-     */
     public List<AssetInfo> listAssetsWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -504,9 +426,6 @@ public class AssetServiceImpl implements AssetService
         return listAssetsAVM(-1, avmPath, includeDeleted);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#listAssets(java.lang.String, java.lang.String, boolean)
-     */
     public List<AssetInfo> listAssets(String sbStoreId, String parentFolderPath, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -517,9 +436,6 @@ public class AssetServiceImpl implements AssetService
         return listAssetsAVM(-1, avmPath, includeDeleted);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#listAssets(java.lang.String, int, java.lang.String, boolean)
-     */
     public List<AssetInfo> listAssets(String sbStoreId, int version, String parentFolderPath, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
@@ -554,9 +470,6 @@ public class AssetServiceImpl implements AssetService
         return assets;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#deleteAsset(org.alfresco.wcm.asset.AssetInfo)
-     */
     public void deleteAsset(AssetInfo asset)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -571,9 +484,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#renameAsset(org.alfresco.wcm.asset.AssetInfo, java.lang.String)
-     */
     public AssetInfo renameAsset(AssetInfo asset, String newName)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -593,9 +503,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#moveAsset(org.alfresco.wcm.asset.AssetInfo, java.lang.String)
-     */
     public AssetInfo moveAsset(AssetInfo asset, String parentFolderPath)
     {
         ParameterCheck.mandatory("asset", asset);
@@ -617,9 +524,6 @@ public class AssetServiceImpl implements AssetService
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.asset.AssetService#copyAsset(org.alfresco.wcm.asset.AssetInfo, java.lang.String)
-     */
     public AssetInfo copyAsset(AssetInfo asset, String parentFolderPath)
     {
         ParameterCheck.mandatory("asset", asset);

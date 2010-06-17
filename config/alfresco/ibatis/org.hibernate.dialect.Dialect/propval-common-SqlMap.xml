@@ -95,6 +95,7 @@
         <result property="value1PropId" column="value1_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="value2PropId" column="value2_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="value3PropId" column="value3_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="propertyId" column="prop1_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     <resultMap id="result_PropertyIdSearchRow" class="PropertyIdSearchRow">
         <!-- If we use nested ResultMaps, then this ResultMap can't be embedded... -->
@@ -167,14 +168,18 @@
         insert into alf_prop_root (version) 
         values (?)
     </sql>
-    <sql id="insert_PropertyValue_Sequence">
+    <sql id="insert_PropertyRoot_Sequence">
         insert into alf_prop_root (id, version) 
         values (?, ?)
     </sql>
     
     <sql id="insert_PropertyUniqueContext_AutoIncrement">
-        insert into alf_prop_unique_ctx (version, value1_prop_id, value2_prop_id, value3_prop_id) 
-        values (#version#, #value1PropId#, #value2PropId#, #value3PropId#)
+        insert into alf_prop_unique_ctx (version, value1_prop_id, value2_prop_id, value3_prop_id, prop1_id) 
+        values (#version#, #value1PropId#, #value2PropId#, #value3PropId#, #propertyId#)
+    </sql>
+    <sql id="insert_PropertyUniqueContext_Sequence">
+        insert into alf_prop_unique_ctx (id, version, value1_prop_id, value2_prop_id, value3_prop_id, prop1_id)
+        values (#id#, #version#, #value1PropId#, #value2PropId#, #value3PropId#, #propertyId#)
     </sql>
     
     <!--                -->
@@ -353,7 +358,7 @@
         from
             alf_prop_value pv
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5 OR pv.persisted_type = 6))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         where
             pv.id = #id#
@@ -377,7 +382,7 @@
             alf_prop_link pl
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5 OR pv.persisted_type = 6))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         where
             pl.root_prop_id = #id#
@@ -402,7 +407,7 @@
             alf_prop_link pl
             join alf_prop_value pv on (pl.value_prop_id = pv.id)
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
-            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5 OR pv.persisted_type = 6))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         <dynamic prepend="where pl.root_prop_id in ">
             <iterate property="rootPropIds" open="(" close=")" conjunction=", ">
@@ -466,7 +471,8 @@
             version,
             value1_prop_id,
             value2_prop_id,
-            value3_prop_id
+            value3_prop_id,
+            prop1_id
         from
             alf_prop_unique_ctx
         where
@@ -479,13 +485,18 @@
             version,
             value1_prop_id,
             value2_prop_id,
-            value3_prop_id
+            value3_prop_id,
+            prop1_id
         from
             alf_prop_unique_ctx
         where
-            value1_prop_id = #value1PropId# and
-            value2_prop_id = #value2PropId# and
-            value3_prop_id = #value3PropId#
+            value1_prop_id = #value1PropId#
+        <isNotNull property="value2PropId">
+            and value2_prop_id = #value2PropId#
+        </isNotNull>
+        <isNotNull property="value3PropId">
+            and value3_prop_id = #value3PropId#
+        </isNotNull>
     </select>
 
     <update id="update_PropertyUniqueContext" parameterClass="PropertyUniqueContext">
@@ -495,7 +506,8 @@
             version = #version#,
             value1_prop_id = #value1PropId#,
             value2_prop_id = #value2PropId#,
-            value3_prop_id = #value3PropId#
+            value3_prop_id = #value3PropId#,
+            prop1_id = #propertyId#
         where
             id = #id# 
         <isGreaterThan property="version" compareValue="1">

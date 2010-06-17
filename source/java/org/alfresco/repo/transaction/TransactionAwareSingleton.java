@@ -22,6 +22,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.alfresco.util.GUID;
+
 /**
  * A transactionally-safe storage class for singleton objects.  Changes to the singleton
  * are only visibly promoted when the transaction is committed.
@@ -40,14 +42,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
  */
 public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
 {
-    private static final String TRANSACTION_KEY = "TransactionAwareSingleton.storage";
-    
+    private final String txnKey;
     private final ReadLock singletonReadLock;
     private final WriteLock singletonWriteLock;
     private Object singletonValue;
     
     public TransactionAwareSingleton()
     {
+        txnKey = GUID.generate();
         ReentrantReadWriteLock serverReadWriteLock = new ReentrantReadWriteLock();
         singletonReadLock = serverReadWriteLock.readLock();
         singletonWriteLock = serverReadWriteLock.writeLock();
@@ -88,7 +90,7 @@ public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
     public T get()
     {
         // an in-transaction value overrides the singleton
-        TransactionStorage storage = (TransactionStorage) AlfrescoTransactionSupport.getResource(TRANSACTION_KEY);
+        TransactionStorage storage = (TransactionStorage) AlfrescoTransactionSupport.getResource(txnKey);
         if (storage != null)
         {
             return (T) storage.newValue;
@@ -109,12 +111,12 @@ public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
     public void put(T value)
     {
         // the value is changing
-        TransactionStorage storage = (TransactionStorage) AlfrescoTransactionSupport.getResource(TRANSACTION_KEY);
+        TransactionStorage storage = (TransactionStorage) AlfrescoTransactionSupport.getResource(txnKey);
         if (storage == null)
         {
             // it has not changed before
             storage = new TransactionStorage();
-            AlfrescoTransactionSupport.bindResource(TRANSACTION_KEY, storage);
+            AlfrescoTransactionSupport.bindResource(txnKey, storage);
             // listen to the transaction
             AlfrescoTransactionSupport.bindListener(this);
         }
@@ -126,7 +128,7 @@ public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
      */
     public void afterCommit()
     {
-        TransactionStorage storage = (TransactionStorage) AlfrescoTransactionSupport.getResource(TRANSACTION_KEY);
+        TransactionStorage storage = (TransactionStorage) AlfrescoTransactionSupport.getResource(txnKey);
         if (storage != null)
         {
             // the value was overridden

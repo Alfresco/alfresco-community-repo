@@ -31,7 +31,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * injected into them and their <code>init</code> operations invoked at the appropriate time. 
  * 
  * @author Brian
- * @since 3.3
+ * @since 3.4
  */
 public abstract class AbstractNodeFilter implements NodeFilter
 {

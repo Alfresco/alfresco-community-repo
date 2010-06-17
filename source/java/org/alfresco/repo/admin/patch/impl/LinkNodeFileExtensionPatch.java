@@ -25,11 +25,9 @@ import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -37,6 +35,7 @@ import org.alfresco.util.TempFileProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -52,7 +51,6 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
     private static final String ERR_UNABLE_TO_FIX = "patch.linkNodeExtension.err.unable_to_fix";
     
     private SessionFactory sessionFactory;
-    private NodeDaoService nodeDaoService;
 
     /**
      * Default constructor
@@ -72,20 +70,11 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
         this.sessionFactory = sessionFactory;
     }
 
-    /**
-     * @param nodeDaoService The service that generates the CRC values
-     */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
-    }
-
     @Override
     protected void checkProperties()
     {
         super.checkProperties();
         checkPropertyNotNull(sessionFactory, "sessionFactory");
-        checkPropertyNotNull(nodeDaoService, "nodeDaoService");
     }
 
     @Override
@@ -150,7 +139,6 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
         {
             // Get the list of nodes to be updated
         	
-            @SuppressWarnings("unused")
             List<NodeImpl> nodes = getInvalidNames();
 
             int updated = 0;

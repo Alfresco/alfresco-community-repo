@@ -22,10 +22,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -128,10 +129,10 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
             logger.debug("OnPropertyUpdate rule triggered fired; nodeRef=" + nodeRef.toString() + "; triggerParentRules=" + this.triggerParentRules);
         }
         
-        Object createdNodeRef = AlfrescoTransactionSupport.getResource(nodeRef.toString());
+        Set<String> nodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NODESET);
         
         // Only try and trigger the rules if a non protected propety has been modified
-        if (createdNodeRef == null && havePropertiesBeenModified(nodeRef, before, after) == true)
+        if (!nodeRefSet.contains(nodeRef.toString()) && havePropertiesBeenModified(nodeRef, before, after) == true)
         {
             if (triggerParentRules == true)
             {            

@@ -21,13 +21,13 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
-import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Snap shot all stores after applying the staging are permissions patch
@@ -37,13 +37,13 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 public class WCMPostPermissionSnapshotPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.wcmPostPermissionSnapshotPatch.result";
-
-    AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
-
-    AVMService avmService;
-
-    AclDaoComponent aclDaoComponent;
-
+    
+    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
+    
+    private AVMService avmService;
+    
+    private PatchDAO patchDAO;
+    
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
@@ -54,9 +54,9 @@ public class WCMPostPermissionSnapshotPatch extends AbstractPatch
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
 
-    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
+    public void setPatchDAO(PatchDAO patchDAO)
     {
-        this.aclDaoComponent = aclDaoComponent;
+        this.patchDAO = patchDAO;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class WCMPostPermissionSnapshotPatch extends AbstractPatch
         
         Thread progressThread = null;
 
-        Long toDo = aclDaoComponent.getNewInStore();
+        Long toDo = patchDAO.getAVMNodesCountWhereNewInStore();
 
         List<AVMLuceneIndexer> indexers = new ArrayList<AVMLuceneIndexer>(stores.size());
         for (AVMStoreDescriptor storeDesc : stores)

@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationService;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.apache.commons.logging.Log;
@@ -37,8 +35,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     private AbstractAuthenticationService authenticationService;
 
-    private LinkValidationService linkValidationService;
-
     public void setTransactionService(TransactionServiceImpl transactionService)
     {
         this.transactionService = transactionService;
@@ -47,12 +43,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
     public void setAuthenticationService(AbstractAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
-    }
-
-    // TODO - temporary workaround, can be removed when link validation is part of repo
-    public void registerLinkValidationService(LinkValidationService linkValidationService)
-    {
-        this.linkValidationService = linkValidationService;
     }
 
     public boolean isReadOnly()
@@ -123,16 +113,5 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
     public int getMaxUsers()
     {
         return authenticationService.getMaxUsers();
-    }
-
-    public boolean isLinkValidationDisabled()
-    {
-        if (linkValidationService == null)
-        {
-            log.error("LinkValidationService not registered");
-            throw new AlfrescoRuntimeException("LinkValidationService not registered");
-        }
-
-        return linkValidationService.isLinkValidationDisabled();
     }
 }

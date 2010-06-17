@@ -19,15 +19,10 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.DbPermission;
-import org.alfresco.repo.domain.hibernate.DbPermissionImpl;
-import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.domain.permissions.AclCrudDAO;
+import org.alfresco.repo.domain.permissions.Permission;
+import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.namespace.QName;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * Provides common functionality to change a permission type and/or name.
@@ -36,23 +31,13 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public abstract class AbstractPermissionChangePatch extends AbstractPatch
 {
-    private HibernateHelper helper;
+    private AclCrudDAO aclCrudDAO;
     
-    public AbstractPermissionChangePatch()
+    public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
     {
-        helper = new HibernateHelper();
+        this.aclCrudDAO = aclCrudDAO;
     }
     
-    public void setSessionFactory(SessionFactory sessionFactory)
-    {
-        this.helper.setSessionFactory(sessionFactory);
-    }
-
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        helper.setQnameDAO(qnameDAO);
-    }
-
     /**
      * Helper method to rename (move) a permission.  This involves checking for the existence of the
      * new permission and then moving all the entries to point to the new permission.
@@ -65,75 +50,25 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
      */
     protected int renamePermission(QName oldTypeQName, String oldName, QName newTypeQName, String newName)
     {
-        return helper.createAndUpdatePermission(oldTypeQName, oldName, newTypeQName, newName);
-    }
-
-    /** Helper to get a permission entity */
-    private static class GetPermissionCallback implements HibernateCallback
-    {
-        private Long typeQNameId;
-        private String name;
-        public GetPermissionCallback(Long typeQNameId, String name)
+        if (oldTypeQName.equals(newTypeQName) && oldName.equals(newName))
         {
-            this.typeQNameId = typeQNameId;
-            this.name = name;
+            throw new IllegalArgumentException("Cannot move permission to itself: " + oldTypeQName + "-" + oldName);
         }
-        public Object doInHibernate(Session session)
-        {
-            // flush any outstanding entities
-            session.flush();
-            
-            Query query = session.getNamedQuery(HibernateHelper.QUERY_GET_PERMISSION);
-            query.setLong("permissionTypeQNameId", typeQNameId)
-                 .setString("permissionName", name);
-            return query.uniqueResult();
-        }
-    }
-    
-    private static class HibernateHelper extends HibernateDaoSupport
-    {
-        private static final String QUERY_GET_PERMISSION = "permission.GetPermission";
         
-        private QNameDAO qnameDAO;
-        
-        public void setQnameDAO(QNameDAO qnameDAO)
+        SimplePermissionReference oldPermRef = SimplePermissionReference.getPermissionReference(oldTypeQName, oldName);
+        Permission permission = aclCrudDAO.getPermission(oldPermRef);
+        if (permission == null)
         {
-            this.qnameDAO = qnameDAO;
+            // create the permission
+            SimplePermissionReference newPermRef = SimplePermissionReference.getPermissionReference(newTypeQName, newName);
+            aclCrudDAO.createPermission(newPermRef);
         }
-
-        public int createAndUpdatePermission(
-                final QName oldTypeQName,
-                final String oldName,
-                final QName newTypeQName,
-                final String newName)
+        else
         {
-            if (oldTypeQName.equals(newTypeQName) && oldName.equals(newName))
-            {
-                throw new IllegalArgumentException("Cannot move permission to itself: " + oldTypeQName + "-" + oldName);
-            }
-            
-            // Get the QName entities
-            Long oldTypeQNameId = qnameDAO.getOrCreateQName(oldTypeQName).getFirst();
-            Long newTypeQNameId = qnameDAO.getOrCreateQName(newTypeQName).getFirst();
-            
-            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(oldTypeQNameId, oldName);
-            DbPermission permission = (DbPermission) getHibernateTemplate().execute(getNewPermissionCallback);
-            if (permission == null)
-            {
-                // create the permission
-                permission = new DbPermissionImpl();
-                permission.setTypeQNameId(newTypeQNameId);
-                permission.setName(newName);
-                // save
-                getHibernateTemplate().save(permission);
-            }
-            else
-            {
-                permission.setTypeQNameId(newTypeQNameId);
-                permission.setName(newName);
-            }
-            // done
-            return 1;
+            // rename the permission
+            aclCrudDAO.renamePermission(oldTypeQName, oldName, newTypeQName, newName);
         }
+        // done
+        return 1;
     }
 }

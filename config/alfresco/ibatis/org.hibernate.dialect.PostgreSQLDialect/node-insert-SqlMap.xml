@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.node">
+
+    <insert id="insert_Server" parameterClass="Server" >
+    	<selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_server_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Server_Sequence"/>        
+    </insert>
+
+    <insert id="insert_Store" parameterClass="Store" >
+    	<selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_store_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Store_Sequence"/>        
+    </insert>
+
+    <insert id="insert_Node" parameterClass="Node" >
+    	<selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_node_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Node_Sequence"/>        
+    </insert>
+
+    <insert id="insert_Transaction" parameterClass="Transaction" >
+    	<selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_transaction_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Transaction_Sequence"/>        
+    </insert>
+
+    <insert id="insert_NodeAssoc" parameterClass="NodeAssoc" >
+    	<selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_node_assoc_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_NodeAssoc_Sequence"/>        
+    </insert>
+
+	<insert id="insert_ChildAssoc" parameterClass="ChildAssoc" >
+		<selectKey resultClass="long" keyProperty="id">
+            select nextVal('alf_child_assoc_seq')
+        </selectKey>
+		
+        <include refid="alfresco.node.insert_ChildAssoc_Sequence"/>
+        
+    </insert>
+
+</sqlMap>

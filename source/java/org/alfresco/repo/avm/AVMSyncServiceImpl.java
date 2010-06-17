@@ -655,11 +655,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
             fAVMService.link(parentPath, name, toLink);
         }
         
-        DbAccessControlList parentAcl= getACL(parentPath);
-        DbAccessControlList acl = getACL(toLink.getPath());
-        setACL(newPath, acl == null ? null : acl.getCopy(parentAcl == null ? null : parentAcl.getId(), ACLCopyMode.COPY));
+        setACL(parentPath, toLink.getPath(), newPath);
     }
-
+    
     /*
      * Get acl
      */
@@ -680,18 +678,18 @@ public class AVMSyncServiceImpl implements AVMSyncService
     /*
      * Set ACL without COW
      */
-    private void setACL(String path, DbAccessControlList acl)
+    private void setACL(String parentPath, String toCopyPath, String newPath)
     {
-        Lookup lookup = AVMRepository.GetInstance().lookup(-1, path, false);
+        DbAccessControlList parentAcl= getACL(parentPath);
+        DbAccessControlList acl = getACL(toCopyPath);
+        
+        Lookup lookup = AVMRepository.GetInstance().lookup(-1, newPath, false);
         if (lookup != null)
         {
-            AVMNode node = lookup.getCurrentNode();
-            // May be support an unwrapped getById to avoid this monkey madness
-            AVMDAOs.Instance().fAVMNodeDAO.evict(node);
-            node = AVMDAOs.Instance().fAVMNodeDAO.getByID(node.getId());
-            node.setAcl(acl);
+            AVMNode newNode = lookup.getCurrentNode();
+            newNode.copyACLs(acl, parentAcl, ACLCopyMode.COPY);
             
-            AVMDAOs.Instance().fAVMNodeDAO.update(node);
+            AVMDAOs.Instance().fAVMNodeDAO.update(newNode);
         }
         else
         {
@@ -737,10 +735,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if (toCopy.isFile() || toCopy.isDeleted() || toCopy.isPlainDirectory())
         {
             fAVMRepository.link(parent, name, toCopy);
+            
             // needs to get the acl from the new location
-            DbAccessControlList parentAcl = getACL(parent.getPath());
-            DbAccessControlList acl = getACL(toCopy.getPath());
-            setACL(newPath, acl == null ? null : acl.getCopy(parentAcl == null ? null : parentAcl.getId(), ACLCopyMode.COPY));
+            setACL(parent.getPath(), toCopy.getPath(), newPath);
             return;
         }
         // Otherwise make a directory in the target parent, and recursiveCopy all the source

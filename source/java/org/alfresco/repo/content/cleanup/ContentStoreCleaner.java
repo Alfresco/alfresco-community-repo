@@ -28,7 +28,6 @@ import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO.ContentUrlHandler;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -89,7 +88,6 @@ public class ContentStoreCleaner
     private ContentDataDAO contentDataDAO;
     private DictionaryService dictionaryService;
     private ContentService contentService;
-    private NodeDaoService nodeDaoService;
     private AVMNodeDAO avmNodeDAO;
     private TransactionService transactionService;
     private int protectDays;
@@ -140,14 +138,6 @@ public class ContentStoreCleaner
     }
 
     /**
-     * @param nodeDaoService used to get the property values
-     */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
-    }
-
-    /**
      * @param avmNodeDAO The AVM Node DAO to get urls with.
      */
     public void setAvmNodeDAO(AVMNodeDAO avmNodeDAO)
@@ -191,7 +181,6 @@ public class ContentStoreCleaner
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "contentService", contentService);
-        PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
         PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "eagerContentStoreCleaner", eagerContentStoreCleaner);

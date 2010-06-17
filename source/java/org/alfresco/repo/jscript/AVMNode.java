@@ -18,20 +18,17 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Represents a AVM specific node in the Script context. Provides specific implementations
@@ -164,9 +161,9 @@ public class AVMNode extends ScriptNode
      */
     public boolean getIsLocked()
     {
-        AVMLock lock = this.services.getAVMLockingService().getLock(
+        String lockOwner = this.services.getAVMLockingService().getLockOwner(
                 getWebProject(), path.substring(path.indexOf("/")));
-        return (lock != null);
+        return (lockOwner != null);
     }
     
     /**
@@ -174,17 +171,16 @@ public class AVMNode extends ScriptNode
      */
     public boolean isLockOwner()
     {
-        boolean lockOwner = false;
-        
-        AVMLock lock = this.services.getAVMLockingService().getLock(
+        String lockOwner = this.services.getAVMLockingService().getLockOwner(
                 getWebProject(), path.substring(path.indexOf("/")));
-        if (lock != null)
+        if (lockOwner != null)
         {
-            List<String> lockUsers = lock.getOwners();
-            lockOwner = (lockUsers.contains(this.services.getAuthenticationService().getCurrentUserName()));
+            return lockOwner.equals(this.services.getAuthenticationService().getCurrentUserName());
         }
-        
-        return lockOwner;
+        else
+        {
+            return true;
+        }
     }
 
     /**

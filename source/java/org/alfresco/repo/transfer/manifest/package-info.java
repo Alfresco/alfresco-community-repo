@@ -3,6 +3,6 @@
  * <p>
  * XMLTransferManifestWriter writes the transfer manifest.  XMLTransferManifestReader reads the transfer manifest and calls the
  * TransferManifestProcessor as the read progresses.    These classes are designed to stream content through, processing each node at a time, and not hold a large data objects in memory.
- * @since 3.3
+ * @since 3.4
  */
 package org.alfresco.repo.transfer.manifest;

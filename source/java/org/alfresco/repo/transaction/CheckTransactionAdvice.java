@@ -41,7 +41,8 @@ public class CheckTransactionAdvice implements MethodInterceptor
         {
             String methodName = methodInvocation.getMethod().getName();
             String className = methodInvocation.getMethod().getDeclaringClass().getName();
-            throw new AlfrescoRuntimeException("A transaction has not be started for method " + methodName + " on " + className);
+            throw new AlfrescoRuntimeException(
+                    "A transaction has not be started for method '" + methodName + "' on " + className);
         }
         return methodInvocation.proceed();
     }

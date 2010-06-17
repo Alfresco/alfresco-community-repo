@@ -20,14 +20,13 @@ package org.alfresco.repo.admin.patch.impl;
 
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.security.permissions.ACLType;
-import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Migrate permissions from the OLD format to defining, shared and layered
@@ -36,16 +35,16 @@ public class DmPermissionsPatch extends AbstractPatch
 {
 
     private static final String MSG_SUCCESS = "patch.updateDmPermissions.result";
-
+    
     private AccessControlListDAO accessControlListDao;
-
-    private AclDaoComponent aclDaoComponent;
-
+    
+    private PatchDAO patchDAO;
+    
     @Override
     protected String applyInternal() throws Exception
     {
         Thread progressThread = null;
-        if (this.aclDaoComponent.supportsProgressTracking())
+        if (this.patchDAO.supportsProgressTracking())
         {
             progressThread = new Thread(new ProgressWatcher(), "DMPatchProgressWatcher");
             progressThread.start();
@@ -74,15 +73,15 @@ public class DmPermissionsPatch extends AbstractPatch
     {
         this.accessControlListDao = accessControlListDao;
     }
-
+    
     /**
-     * Set the acl dao component
+     * Set the patch dao
      * 
-     * @param aclDaoComponent
+     * @param patchDAO
      */
-    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
+    public void setPatchDAO(PatchDAO patchDAO)
     {
-        this.aclDaoComponent = aclDaoComponent;
+        this.patchDAO = patchDAO;
     }
 
     private class ProgressWatcher implements Runnable
@@ -118,12 +117,12 @@ public class DmPermissionsPatch extends AbstractPatch
                         {
                             if (ProgressWatcher.this.toDo == null)
                             {
-                                ProgressWatcher.this.toDo = DmPermissionsPatch.this.aclDaoComponent
+                                ProgressWatcher.this.toDo = DmPermissionsPatch.this.patchDAO
                                         .getDmNodeCount();
-                                ProgressWatcher.this.max = DmPermissionsPatch.this.aclDaoComponent.getMaxAclId();
+                                ProgressWatcher.this.max = DmPermissionsPatch.this.patchDAO.getMaxAclId();
                             }
-                            return DmPermissionsPatch.this.aclDaoComponent
-                                    .getDmNodeCountWithNewACLS(ProgressWatcher.this.max);
+                            return DmPermissionsPatch.this.patchDAO
+                                    .getDmNodeCountWithNewACLs(ProgressWatcher.this.max);
                         }
                     }, true, true);
 

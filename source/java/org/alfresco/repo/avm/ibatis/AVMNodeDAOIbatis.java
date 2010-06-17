@@ -49,9 +49,7 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.avm.AVMVersionRootEntity;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
 import org.alfresco.service.namespace.QName;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * iBATIS DAO wrapper for AVMNode
@@ -59,7 +57,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * @author janv
  *
  */
-class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
+class AVMNodeDAOIbatis implements AVMNodeDAO
 {
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMNodeDAO#save(org.alfresco.repo.avm.AVMNode)
@@ -491,7 +489,7 @@ class AVMNodeDAOIbatis extends HibernateDaoSupport implements AVMNodeDAO
         DbAccessControlList acl = null;
         if (nodeEntity.getAclId() != null)
         {
-            acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, nodeEntity.getAclId());
+            acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlList(nodeEntity.getAclId());
         }
         node.setAcl(acl);
         

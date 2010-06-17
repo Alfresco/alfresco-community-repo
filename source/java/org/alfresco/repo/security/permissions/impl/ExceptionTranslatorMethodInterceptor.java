@@ -22,6 +22,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.TransientDataAccessResourceException;
 
 /**
  * Interceptor to translate and possibly I18Nize exceptions thrown by service calls. 
@@ -45,6 +46,11 @@ public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
         catch (net.sf.acegisecurity.AccessDeniedException ade)
         {
             throw new AccessDeniedException(MSG_ACCESS_DENIED, ade);
+        }
+        catch (TransientDataAccessResourceException e)
+        {
+            // this usually occurs when the server is in read-only mode
+            throw new AccessDeniedException(MSG_READ_ONLY, e);
         }
         catch (InvalidDataAccessApiUsageException e)
         {

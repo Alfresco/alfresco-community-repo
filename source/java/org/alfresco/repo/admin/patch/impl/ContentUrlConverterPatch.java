@@ -39,7 +39,6 @@ import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -106,7 +105,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
     
     private RegistryService registryService;
     private JobLockService jobLockService;
-    private NodeDaoService nodeDaoService;
     private PatchDAO patchDAO;
     private ControlDAO controlDAO;
     private ContentStore contentStore;
@@ -141,14 +139,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
-    }
-
-    /**
-     * Provides low-level access to do the property transformation
-     */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
     }
 
     /**
@@ -226,7 +216,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
     {
         PropertyCheck.mandatory(this, "registryService", registryService);
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
-        PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
         PropertyCheck.mandatory(this, "patchDAO", patchDAO);
         super.checkProperties();
     }

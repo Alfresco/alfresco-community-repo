@@ -27,8 +27,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.node.db.NodeDaoService;
-import org.alfresco.repo.node.db.NodeDaoService.ObjectArrayQueryCallback;
+import org.alfresco.repo.domain.usage.UsageDAO;
+import org.alfresco.repo.domain.usage.UsageDAO.MapHandler;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -36,17 +36,16 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * User Usage Tracking Component - to allow user usages to be collapsed or re-calculated
@@ -62,7 +61,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
     private ContentUsageImpl contentUsageImpl;
     
     private NodeService nodeService;
-    private NodeDaoService nodeDaoService;
+    private UsageDAO usageDAO;
     private UsageService usageService;
     private TenantAdminService tenantAdminService;
     private TenantService tenantService;
@@ -95,9 +94,9 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
         this.nodeService = nodeService;
     }
     
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    public void setUsageDAO(UsageDAO usageDAO)
     {
-        this.nodeDaoService = nodeDaoService;
+        this.usageDAO = usageDAO;
     }
     
     public void setUsageService(UsageService usageService)
@@ -232,19 +231,17 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
             public Object execute() throws Throwable
             {
                 // get people (users) with calculated usage
-                ObjectArrayQueryCallback userHandler = new ObjectArrayQueryCallback()
+                MapHandler userHandler = new MapHandler()
                 {
-                    public boolean handle(Object[] arr)
+                    public void handle(Map<String, Object> result)
                     {
-                        String username = (String)arr[0];
-                        String uuid = (String)arr[1];
+                        String username = (String)result.get("username");
+                        String uuid = (String)result.get("uuid");
                         
                         users.put(username, new NodeRef(personStoreRef, uuid));
-                        
-                        return true; // continue to next node (more required)
                     }
                 };
-                nodeDaoService.getUsersWithUsage(personStoreRef, userHandler);
+                usageDAO.getUsersWithUsage(personStoreRef, userHandler);
                 
                 return null;
             }
@@ -330,20 +327,18 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
             public Object execute() throws Throwable
             {
                 // get people (users) without calculated usage
-                ObjectArrayQueryCallback userHandler = new ObjectArrayQueryCallback()
+                MapHandler userHandler = new MapHandler()
                 {
-                    public boolean handle(Object[] arr)
+                    public void handle(Map<String, Object> result)
                     {
-                        String username = (String)arr[0];
-                        String uuid = (String)arr[1];
+                        String username = (String)result.get("username");
+                        String uuid = (String)result.get("uuid");
                         
                         users.put(username, new NodeRef(personStoreRef, uuid));
-                        
-                        return true; // continue to next node (more required)
                     }
                 };
                 
-                nodeDaoService.getUsersWithoutUsage(tenantService.getName(personStoreRef), userHandler);
+                usageDAO.getUsersWithoutUsage(tenantService.getName(personStoreRef), userHandler);
                         
                 return null;
             }
@@ -394,35 +389,37 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
                     }
                     
                     // get content urls
-                    ObjectArrayQueryCallback nodeContentUrlHandler = new ObjectArrayQueryCallback()
+                    MapHandler userContentUrlHandler = new MapHandler()
                     {
-                        public boolean handle(Object[] arr)
+                        public void handle(Map<String, Object> result)
                         {
-                            String owner = (String)arr[0];
-                            String creator = (String)arr[1];
-                            String contentUrlStr = (String)arr[2];
+                            String owner = (String)result.get("owner");
+                            String creator = (String)result.get("creator");
+                            Long contentSize = (Long)result.get("contentSize"); // sum of content size (via join of new style content id)
+                            
+                            if (contentSize == null)
+                            {
+                                contentSize = 0L;
+                            }
                             
                             if (owner == null)
                             {
                                 owner = creator;
                             }
                             
-                            ContentData contentData = ContentData.createContentProperty(contentUrlStr);
-                            if (contentData != null)
+                            Long currentUsage = currentUserUsages.get(owner);
+                            
+                            if (currentUsage == null)
                             {
-                                Long currentUsage = currentUserUsages.get(owner);
-                                
-                                if (currentUsage == null)
-                                {
-                                    currentUsage = 0L;
-                                }
-                                
-                                currentUserUsages.put(owner, currentUsage + contentData.getSize());
+                                currentUsage = 0L;
                             }
-                            return true; // continue to next node (more required)
+                            
+                            currentUserUsages.put(owner, currentUsage + contentSize);
                         }
                     };
-                    nodeDaoService.getContentUrlsForStore(storeRef, nodeContentUrlHandler);
+                    
+                    // Query and sum the 'new' style content properties
+                    usageDAO.getUserContentSizesForStore(storeRef, userContentUrlHandler);
                 }
                 
                 return null;
@@ -559,28 +556,23 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
                 if (nodeType.equals(ContentModel.TYPE_PERSON))
                 {
                     NodeRef personNodeRef = usageNodeRef;
-                    String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-                    
-                    long currentUsage = contentUsageImpl.getUserStoredUsage(personNodeRef);
+                    // collapse the usage deltas
+                    long currentUsage = contentUsageImpl.getUserUsage(personNodeRef);
                     if (currentUsage != -1)
                     {
-                    	// Collapse the usage deltas
-                        // Calculate and remove deltas in one go to guard against deletion of
-                        // deltas from another transaction that have not been included in the
-                        // calculation
-                        currentUsage = contentUsageImpl.getUserUsage(userName, true);
+                        usageService.deleteDeltas(personNodeRef);
                         contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                         
                         if (logger.isTraceEnabled()) 
                         {
-                            logger.trace("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
+                            logger.trace("Collapsed usage: personNodeRef=" + personNodeRef + ", usage=" + currentUsage);
                         }
                     }
                     else
                     {
                         if (logger.isWarnEnabled())
                         {
-                            logger.warn("Initial usage for user has not yet been calculated: " + userName);
+                            logger.warn("Initial usage has not yet been calculated: personNodeRef=" + personNodeRef);
                         }
                     }
                 }

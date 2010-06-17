@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.alfresco.repo.domain.Server;
-import org.alfresco.repo.domain.Transaction;
+import org.alfresco.repo.domain.node.Transaction;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**

@@ -553,6 +553,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     /**
      * @see NodeServicePolicies.BeforeCreateChildAssociationPolicy#beforeCreateChildAssociation(NodeRef,
      *      NodeRef, QName, QName)
+     *      
+     * @deprecated      V3.3: We don't know the child node reference until the association has been created
      */
     protected void invokeBeforeCreateChildAssociation(NodeRef parentNodeRef, NodeRef childNodeRef, QName assocTypeQName, QName assocQName, boolean isNewNode)
     {

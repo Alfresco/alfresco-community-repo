@@ -306,8 +306,8 @@
         <property name="permissionsManager">
             <ref bean="personServicePermissionsManager" />
         </property>
-        <property name="aclDao">
-            <ref bean="aclDaoComponent" />
+        <property name="aclDAO">
+            <ref bean="aclDAO" />
         </property>
         <property name="homeFolderManager">
             <ref bean="homeFolderManager" />

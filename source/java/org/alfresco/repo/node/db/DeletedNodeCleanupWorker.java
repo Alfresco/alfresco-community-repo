@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
-import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -105,11 +105,11 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                         return true;
                     }
                 };
-                nodeDaoService.getNodesDeletedInOldTxns(minNodeId.longValue(), maxCommitTime, NODE_PURGE_BATCH_SIZE, callback);
+                nodeDAO.getNodesDeletedInOldTxns(minNodeId.longValue(), maxCommitTime, NODE_PURGE_BATCH_SIZE, callback);
                 for (Pair<Long, NodeRef> nodePair : nodePairs)
                 {
                     Long nodeId = nodePair.getFirst();
-                    nodeDaoService.purgeNode(nodeId);
+                    nodeDAO.purgeNode(nodeId);
                     // Update the min node ID for the next query
                     if (nodeId.longValue() > minNodeId.longValue())
                     {
@@ -192,13 +192,13 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         {
             public Integer execute() throws Throwable
             {
-                 final List<Long> txnIds = nodeDaoService.getTxnsUnused(
+                 final List<Long> txnIds = nodeDAO.getTxnsUnused(
                          minTxnId.longValue(),
                          maxCommitTime,
                          TXN_PURGE_BATCH_SIZE);
                 for (Long txnId : txnIds)
                 {
-                    nodeDaoService.purgeTxn(txnId);
+                    nodeDAO.purgeTxn(txnId);
                     // Update the min node ID for the next query
                     if (txnId.longValue() > minTxnId.longValue())
                     {

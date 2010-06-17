@@ -75,9 +75,9 @@ public final class SandboxFactory extends WCMUtil
    private NodeService nodeService;
    private PermissionService permissionService;
    private AVMService avmService;
-   private AVMLockingService avmLockingService;
    private VirtServerRegistry virtServerRegistry;
    private AuthorityService authorityService;
+   private AVMLockingService avmLockingService;
    
    static
    {
@@ -104,11 +104,6 @@ public final class SandboxFactory extends WCMUtil
        this.avmService = avmService;
    }
    
-   public void setAvmLockingService(AVMLockingService avmLockingService)
-   {
-       this.avmLockingService = avmLockingService;
-   }
-   
    public void setVirtServerRegistry(VirtServerRegistry virtServerRegistry)
    {
        this.virtServerRegistry = virtServerRegistry;
@@ -117,6 +112,11 @@ public final class SandboxFactory extends WCMUtil
    public void setAuthorityService(AuthorityService authorityService)
    {
        this.authorityService = authorityService;
+   }
+   
+   public void setAvmLockingService(AVMLockingService avmLockingService)
+   {
+       this.avmLockingService = avmLockingService;
    }
    
    /**
@@ -978,14 +978,15 @@ public final class SandboxFactory extends WCMUtil
    
    public void deleteSandbox(String wpStoreId, String sbStoreId)
    {
-       deleteSandbox(getSandbox(wpStoreId, sbStoreId, true));
+       deleteSandbox(getSandbox(wpStoreId, sbStoreId, true), true);
    }
    
-   public void deleteSandbox(SandboxInfo sbInfo)
+   public void deleteSandbox(SandboxInfo sbInfo, boolean removeLocks)
    {
        if (sbInfo != null)
        {
            String mainSandboxStore = sbInfo.getMainStoreName();
+           String wpStoreId = WCMUtil.getWebProjectStoreId(mainSandboxStore);
            
            // found the sandbox to remove - remove the main store (eg. user main store, staging main store, workflow main store)
            String path = WCMUtil.buildSandboxRootPath(mainSandboxStore);
@@ -1025,8 +1026,11 @@ public final class SandboxFactory extends WCMUtil
                     avmService.purgeStore(avmStoreName);
                 }
                 
-                // remove any locks this user may have
-                avmLockingService.removeStoreLocks(avmStoreName);
+                if (removeLocks)
+                {
+                    Map<String, String> lockDataToMatch = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, avmStoreName);
+                    avmLockingService.removeLocks(wpStoreId, lockDataToMatch);
+                }
             }
             
             if (logger.isDebugEnabled())

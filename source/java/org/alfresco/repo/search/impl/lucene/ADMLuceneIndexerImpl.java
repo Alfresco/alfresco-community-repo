@@ -594,7 +594,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         List<Document> docs = new ArrayList<Document>();
         ChildAssociationRef qNameRef = null;
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);
+        NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);             // DH: Let me know if this field gets dropped (performance)
 
         Collection<Path> directPaths = new LinkedHashSet<Path>(nodeService.getPaths(nodeRef, false));
         Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(nodeRef, properties);

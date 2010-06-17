@@ -40,8 +40,8 @@ import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -75,7 +75,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private static final String MSG_UNABLE_TO_CHANGE = "patch.fixNameCrcValues.unableToChange";
     
     private SessionFactory sessionFactory;
-    private NodeDaoService nodeDaoService;
+    private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private ControlDAO controlDAO;
     private RuleService ruleService;
@@ -92,12 +92,9 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         this.sessionFactory = sessionFactory;
     }
 
-    /**
-     * @param nodeDaoService The service that generates the CRC values
-     */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
+    public void setNodeDAO(NodeDAO nodeDAO)
     {
-        this.nodeDaoService = nodeDaoService;
+        this.nodeDAO = nodeDAO;
     }
 
     /**
@@ -134,7 +131,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     {
         super.checkProperties();
         checkPropertyNotNull(sessionFactory, "sessionFactory");
-        checkPropertyNotNull(nodeDaoService, "nodeDaoService");
+        checkPropertyNotNull(nodeDAO, "nodeDAO");
         checkPropertyNotNull(qnameDAO, "qnameDAO");
         checkPropertyNotNull(applicationEventPublisher, "applicationEventPublisher");
     }
@@ -241,7 +238,7 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     // Get the child node
                     Node childNode = assoc.getChild();
                     // Get the name
-                    String childName = (String) nodeDaoService.getNodeProperty(childNode.getId(), ContentModel.PROP_NAME);
+                    String childName = (String) nodeDAO.getNodeProperty(childNode.getId(), ContentModel.PROP_NAME);
                     if (childName == null)
                     {
                         childName = childNode.getUuid();

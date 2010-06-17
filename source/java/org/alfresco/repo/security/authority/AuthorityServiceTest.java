@@ -31,10 +31,10 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -69,7 +69,7 @@ public class AuthorityServiceTest extends TestCase
 
     private UserTransaction tx;
 
-    private AclDaoComponent aclDaoComponent;
+    private AclDAO aclDaoComponent;
 
     private NodeService nodeService;
 
@@ -88,7 +88,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
-        aclDaoComponent = (AclDaoComponent) ctx.getBean("aclDaoComponent");
+        aclDaoComponent = (AclDAO) ctx.getBean("aclDAO");
         nodeService = (NodeService) ctx.getBean("nodeService");
 
         authenticationComponentImpl.setSystemUserAsCurrentUser();

@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
@@ -42,7 +43,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
-import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -129,9 +129,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private boolean includeAutoCreated = false;
 
-    private AclDaoComponent aclDao;
+    private AclDAO aclDao;
 
     private PermissionsManager permissionsManager;
+    
+    // Behaviours
+    JavaBehaviour onUpdatePropertiesBehaviour;
 
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, Set<NodeRef>> personCache;
@@ -191,10 +194,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 BeforeDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "beforeDeleteNode"));
+        
+        onUpdatePropertiesBehaviour = new JavaBehaviour(this, "onUpdateProperties");
+        
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_PERSON,
-                new JavaBehaviour(this, "onUpdateProperties"));
+                onUpdatePropertiesBehaviour);
     }
 
     public UserNameMatcher getUserNameMatcher()
@@ -237,7 +243,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.homeFolderManager = homeFolderManager;
     }
     
-    public void setAclDao(AclDaoComponent aclDao)
+    public void setAclDAO(AclDAO aclDao)
     {
         this.aclDao = aclDao;
     }
@@ -448,32 +454,40 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         // Get the duplicates in a form that can be read by the transaction work anonymous instance
         final Set<NodeRef> postTxnDuplicates = getPostTxnDuplicates();
-
+        
         RetryingTransactionCallback<Object> processDuplicateWork = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
-
-                if (duplicateMode.equalsIgnoreCase(SPLIT))
+                try
                 {
-                    // Allow UIDs to be updated in this transaction
-                    AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
-                    split(postTxnDuplicates);
-                    s_logger.info("Split duplicate person objects");
-                }
-                else if (duplicateMode.equalsIgnoreCase(DELETE))
-                {
-                    delete(postTxnDuplicates);
-                    s_logger.info("Deleted duplicate person objects");
-                }
-                else
-                {
-                    if (s_logger.isDebugEnabled())
+                    onUpdatePropertiesBehaviour.disable();
+                    
+                    if (duplicateMode.equalsIgnoreCase(SPLIT))
                     {
-                        s_logger.debug("Duplicate person objects exist");
+                        // Allow UIDs to be updated in this transaction
+                        AlfrescoTransactionSupport.bindResource(KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
+                        split(postTxnDuplicates);
+                        s_logger.info("Split duplicate person objects");
+                    }
+                    else if (duplicateMode.equalsIgnoreCase(DELETE))
+                    {
+                        delete(postTxnDuplicates);
+                        s_logger.info("Deleted duplicate person objects");
+                    }
+                    else
+                    {
+                        if (s_logger.isDebugEnabled())
+                        {
+                            s_logger.debug("Duplicate person objects exist");
+                        }
                     }
                 }
-
+                finally
+                {
+                    onUpdatePropertiesBehaviour.enable();
+                }
+                
                 // Done
                 return null;
             }
@@ -684,8 +698,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
 
-        NodeRef personRef = nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, QName.createQName("cm", userName.toLowerCase(), namespacePrefixResolver), // Lowercase:
-                                                                                                                                                                                // ETHREEOH-1431
+        NodeRef personRef = nodeService.createNode(
+                getPeopleContainer(),
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("cm", userName.toLowerCase(), namespacePrefixResolver), // Lowercase:
                 ContentModel.TYPE_PERSON, properties).getChildRef();
 
         if (zones != null)
@@ -1018,8 +1034,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             // Only allow UID update if we are in the special split processing txn or we are just changing case
             if (AlfrescoTransactionSupport.getResource(KEY_ALLOW_UID_UPDATE) != null || uidBefore.equalsIgnoreCase(uidAfter))
             {
-                // Fix any ACLs
-                aclDao.updateAuthority(uidBefore, uidAfter);
+                if (uidBefore != null)
+                {
+                    // Fix any ACLs
+                    aclDao.renameAuthority(uidBefore, uidAfter);
+                }
+                
 
                 // Fix primary association local name
                 QName newAssocQName = QName.createQName("cm", uidAfter.toLowerCase(), namespacePrefixResolver);

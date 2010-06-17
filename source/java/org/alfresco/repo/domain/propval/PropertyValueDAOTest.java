@@ -33,17 +33,16 @@ import javax.naming.CompositeName;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
-import org.alfresco.repo.props.PropertyUniqueConstraintViolation;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.bouncycastle.util.Arrays;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * @see PropertyValueDAO
@@ -441,6 +440,20 @@ public class PropertyValueDAOTest extends TestCase
         }
     }
     
+    private static enum TEST_NUMBERS
+    {
+        ONE, TWO, THREE;
+    }
+    
+    public void testPropertyValue_Enum() throws Exception
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            TEST_NUMBERS n = TEST_NUMBERS.values()[i];
+            runPropertyValueTest(n);
+        }
+    }
+    
     public void testPropertyValue_EmptyHashMap() throws Exception
     {
         final HashMap<String, String> map = new HashMap<String, String>(15);
@@ -712,16 +725,16 @@ public class PropertyValueDAOTest extends TestCase
             public Void execute() throws Throwable
             {
                 // Get the ID for nulls
-                Long nullId = propertyValueDAO.getPropertyUniqueContext(null, null, null);
-                if (nullId != null)
+                Pair<Long, Long> nullPair = propertyValueDAO.getPropertyUniqueContext(null, null, null);
+                if (nullPair != null)
                 {
-                    propertyValueDAO.deletePropertyUniqueContext(nullId);
+                    propertyValueDAO.deletePropertyUniqueContext(nullPair.getFirst());
                 }
                 // Check nulls
-                propertyValueDAO.createPropertyUniqueContext(null, null, null);
+                propertyValueDAO.createPropertyUniqueContext(null, null, null, "A VALUE");
                 try
                 {
-                    propertyValueDAO.createPropertyUniqueContext(null, null, null);
+                    propertyValueDAO.createPropertyUniqueContext(null, null, null, "A VALUE");
                     fail("Failed to throw exception creating duplicate property unique context");
                 }
                 catch (PropertyUniqueConstraintViolation e)
@@ -736,7 +749,7 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Long execute() throws Throwable
             {
-                return propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                return propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa, null).getFirst();
             }
         }, false);
         // Check that duplicates are disallowed
@@ -746,7 +759,7 @@ public class PropertyValueDAOTest extends TestCase
             {
                 public Void execute() throws Throwable
                 {
-                    propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                    propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa, null);
                     return null;
                 }
             }, false);
@@ -766,9 +779,9 @@ public class PropertyValueDAOTest extends TestCase
                     // Now update it
                     propertyValueDAO.updatePropertyUniqueContext(id, "A", "AA", bbb);
                     // Should be able to create the previous one ...
-                    propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa);
+                    propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa, null);
                     // ... and fail to create the second one
-                    propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
+                    propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb, null);
                     return null;
                 }
             }, false);
@@ -784,10 +797,78 @@ public class PropertyValueDAOTest extends TestCase
             {
                 // Delete
                 propertyValueDAO.deletePropertyUniqueContext(id);
-                propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb);
+                propertyValueDAO.createPropertyUniqueContext("A", "AA", bbb, null);
                 
                 return null;
             }
         }, false);
+    }
+    
+    public void testPropertyUniqueContextValue() throws Exception
+    {
+        final String aaa = GUID.generate();
+        final String bbb = GUID.generate();
+        final String ccc = GUID.generate();
+        
+        final String v1 = GUID.generate();
+        final String v2 = GUID.generate();
+        
+        // Create a well-known context ID
+        final Long id = txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                return propertyValueDAO.createPropertyUniqueContext(aaa, bbb, ccc, null).getFirst();
+            }
+        }, false);
+        Pair<Long, Serializable> v0Pair = new Pair<Long, Serializable>(id, null);
+        Pair<Long, Serializable> v1Pair = new Pair<Long, Serializable>(id, v1);
+        Pair<Long, Serializable> v2Pair = new Pair<Long, Serializable>(id, v2);
+        
+        // Check, assign value and recheck
+        Pair<Long, Serializable> pair = null;
+        
+        // Check that the property is correct
+        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(aaa, bbb, ccc);
+                if (pair.getSecond() == null)
+                {
+                    return new Pair<Long, Serializable>(pair.getFirst(), null);
+                }
+                else
+                {
+                    Serializable value = propertyValueDAO.getPropertyById(pair.getSecond());
+                    return new Pair<Long, Serializable>(pair.getFirst(), value);
+                }
+            }
+        }, true);
+        assertEquals("ID-value pair incorrect", v0Pair, pair);
+
+        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                propertyValueDAO.updatePropertyUniqueContext(id, v1);
+                Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(aaa, bbb, ccc);
+                Serializable value = propertyValueDAO.getPropertyById(pair.getSecond());
+                return new Pair<Long, Serializable>(pair.getFirst(), value);
+            }
+        }, false);
+        assertEquals("ID-value pair incorrect", v1Pair, pair);
+
+        pair = txnHelper.doInTransaction(new RetryingTransactionCallback<Pair<Long, Serializable>>()
+        {
+            public Pair<Long, Serializable> execute() throws Throwable
+            {
+                propertyValueDAO.updatePropertyUniqueContext(id, v2);
+                Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(aaa, bbb, ccc);
+                Serializable value = propertyValueDAO.getPropertyById(pair.getSecond());
+                return new Pair<Long, Serializable>(pair.getFirst(), value);
+            }
+        }, false);
+        assertEquals("ID-value pair incorrect", v2Pair, pair);
     }
 }

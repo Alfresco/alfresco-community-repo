@@ -23,6 +23,7 @@ import java.util.List;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Additional DAO services for patches
@@ -33,6 +34,13 @@ import org.alfresco.service.cmr.repository.ContentData;
  */
 public interface PatchDAO
 {
+    /**
+     * Does the underlying connection support isolation level 1 (dirty read)
+     * 
+     * @return true if we can do a dirty db read and so track changes (Oracle can not)
+     */
+    public boolean supportsProgressTracking();
+    
     // AVM-related
     
     public Long getAVMNodesCountWhereNewInStore();
@@ -46,6 +54,10 @@ public interface PatchDAO
     public Long getMaxAvmNodeID();
     
     public List<Long> getAvmNodesWithOldContentProperties(Long minNodeId, Long maxNodeId);
+    
+    public int updateAVMNodesNullifyAcl(List<Long> nodeIds);
+    
+    public int updateAVMNodesSetAcl(long aclId, List<Long> nodeIds);
     
     // DM-related
     
@@ -68,4 +80,60 @@ public interface PatchDAO
      * @return                  the number of rows affected
      */
     public int updateContentMimetypeIds(Long oldMimetypeId, Long newMimetypeId);
+    
+    /**
+     * A callback handler for iterating over the string results
+     */
+    public interface StringHandler
+    {
+        void handle(String string);
+    }
+    
+    /**
+     * Iterate over all person nodes with missing usage property (for one-off patch)
+     * 
+     * @param storeRef                          the store to search in
+     * @param handler                           the callback to use while iterating over the people
+     * @return Returns the values for person node uuid
+     */
+    public void getUsersWithoutUsageProp(StoreRef storeRef, StringHandler handler);
+    
+    // ACL-related
+    
+    /**
+     * Get the max acl id
+     * 
+     * @return - max acl id
+     */
+    public Long getMaxAclId();
+    
+    /**
+     * How many DM nodes are there?
+     * 
+     * @return - the count
+     */
+    public long getDmNodeCount();
+    
+    /**
+     * How many DM nodes are three with new ACls (to track patch progress)
+     * 
+     * @param above
+     * @return - the count
+     */
+    public long getDmNodeCountWithNewACLs(Long above);
+    
+    public List<Long> selectAllAclIds();
+    
+    public List<Long> selectNonDanglingAclIds();
+    
+    public int deleteDanglingAces();
+    
+    public int deleteAcls(List<Long> aclIds);
+    
+    public int deleteAclMembersForAcls(List<Long> aclIds);
+    
+    /**
+     * @return      Returns the names of authorities with incorrect CRC values
+     */
+    public List<String> getAuthoritiesWithNonUtf8Crcs();
 }

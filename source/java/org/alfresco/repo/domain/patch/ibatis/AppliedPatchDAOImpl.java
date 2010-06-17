@@ -28,7 +28,7 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  * iBatis-specific implementation of the AppliedPatch DAO.
  * 
  * @author Derek Hulley
- * @since 3.3
+ * @since 3.4
  */
 public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
 {

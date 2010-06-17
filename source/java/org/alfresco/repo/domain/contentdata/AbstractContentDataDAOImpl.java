@@ -28,8 +28,8 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
-import org.alfresco.repo.domain.LocaleDAO;
 import org.alfresco.repo.domain.encoding.EncodingDAO;
+import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -387,11 +387,25 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      */
     private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size)
     {
-        // Create the content URL entity
-        ContentUrlEntity contentUrlEntity = getContentUrlEntity(contentUrl);
-        // If it exists, then we can just re-use it, but check that the size is consistent
-        if (contentUrlEntity != null)
+        // Try to insert the content first.  Usually, the insert will not clash with anything
+        // as content URL re-use is far less frequent than new content creation.
+        ContentUrlEntity contentUrlEntity = null;
+        try
         {
+            contentUrlEntity = createContentUrlEntity(contentUrl, size);
+        }
+        catch (RuntimeException e)
+        {
+            // See if this was caused by an existing URL
+            contentUrlEntity = getContentUrlEntity(contentUrl);
+            // If it exists, then we can just re-use it, but check that the size is consistent
+            if (contentUrlEntity == null)
+            {
+                // The error was caused by something else.  Perhaps another, as-yet-unseen
+                // row clashes with this.  Just propagate the exception and let retrying
+                // happen as required.
+                throw e;
+            }
             // Reuse it
             long existingSize = contentUrlEntity.getSize();
             if (size != existingSize)
@@ -412,11 +426,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                     throw new ConcurrencyFailureException("Failed to remove orphan time: " + contentUrlEntity);
                 }
             }
-        }
-        else
-        {
-            // Create it
-            contentUrlEntity = createContentUrlEntity(contentUrl, size);
         }
         // Done
         return contentUrlEntity;

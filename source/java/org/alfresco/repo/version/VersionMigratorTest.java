@@ -168,21 +168,21 @@ public class VersionMigratorTest extends BaseVersionStoreTest
             assertTrue(""+key, newVersionAspects.contains(key));
         }
         
-        // TODO review against latest merges
-        /*
-        assertEquals(oldVersionProps.size(), newVersionProps.size());
-        for (QName key : oldVersionProps.keySet())
+        // note: since 3.4, "cm:accessed" is not returned/migrated if null
+        int expectedPropCount = oldVersionProps.size();
+        
+        if (oldVersionProps.get(ContentModel.PROP_ACCESSED) == null)
         {
-        	assertEquals(""+key, oldVersionProps.get(key), newVersionProps.get(key));
+            expectedPropCount--;
         }
-        */
-        assertEquals(oldVersionProps.size(), newVersionProps.size()+1);
+        
+        assertEquals(expectedPropCount, newVersionProps.size());
         for (QName key : oldVersionProps.keySet())
         {
-        	if (! key.equals(ContentModel.PROP_ACCESSED))
-        	{
-        		assertEquals(""+key, oldVersionProps.get(key), newVersionProps.get(key));
-        	}
+            if (! (key.equals(ContentModel.PROP_ACCESSED) && (oldVersionProps.get(key) == null)))
+            {
+                assertEquals(""+key, oldVersionProps.get(key), newVersionProps.get(key));
+            }
         }
         
         // ALFCOM-2658

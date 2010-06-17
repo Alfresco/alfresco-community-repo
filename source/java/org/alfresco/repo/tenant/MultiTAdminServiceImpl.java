@@ -20,11 +20,14 @@ package org.alfresco.repo.tenant;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.transaction.UserTransaction;
@@ -32,12 +35,7 @@ import javax.transaction.UserTransaction;
 import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.RepoModelDefinition;
-import org.alfresco.repo.attributes.BooleanAttributeValue;
-import org.alfresco.repo.attributes.MapAttribute;
-import org.alfresco.repo.attributes.MapAttributeValue;
-import org.alfresco.repo.attributes.StringAttributeValue;
 import org.alfresco.repo.content.TenantRoutingFileContentStore;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -50,6 +48,7 @@ import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -57,7 +56,7 @@ import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.ParameterCheck;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,6 +64,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * MT Admin Service Implementation.
@@ -219,7 +220,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private static final String TENANTS_ATTRIBUTE_PATH = "alfresco-tenants";
     private static final String TENANT_ATTRIBUTE_ENABLED = "enabled";
-    private static final String TENANT_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
+    private static final String TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
     
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
     
@@ -476,36 +477,35 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private void putTenantAttributes(String tenantDomain, Tenant tenant)
     {
-        if (! attributeService.exists(TENANTS_ATTRIBUTE_PATH))
-        { 
-            // bootstrap
-            attributeService.setAttribute("", TENANTS_ATTRIBUTE_PATH, new MapAttributeValue());
-        }
+        Map<String, Serializable> tenantAttributes = new HashMap<String, Serializable>(7);
+        tenantAttributes.put(TENANT_ATTRIBUTE_ENABLED, new Boolean(tenant.isEnabled()));
+        tenantAttributes.put(TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR, tenant.getRootContentStoreDir());
         
-        MapAttribute tenantProps = new MapAttributeValue();
-        tenantProps.put(TENANT_ATTRIBUTE_ENABLED, new BooleanAttributeValue(tenant.isEnabled()));
-        tenantProps.put(TENANT_ROOT_CONTENT_STORE_DIR, new StringAttributeValue(tenant.getRootContentStoreDir()));
-        
-        attributeService.setAttribute(TENANTS_ATTRIBUTE_PATH, tenantDomain, tenantProps);
+        attributeService.setAttribute(
+                (Serializable) tenantAttributes,
+                TENANTS_ATTRIBUTE_PATH, tenantDomain);
         
         // update tenant status cache
         ((MultiTServiceImpl)tenantService).putTenant(tenantDomain, tenant);
     }
     
+    @SuppressWarnings("unchecked")
     private Tenant getTenantAttributes(String tenantDomain)
     {
-        if (attributeService.exists(TENANTS_ATTRIBUTE_PATH+"/"+tenantDomain))
-        {        
-            MapAttribute map = (MapAttribute)attributeService.getAttribute(TENANTS_ATTRIBUTE_PATH+"/"+tenantDomain);
-            if (map != null)
-            {
-                return new Tenant(tenantDomain, 
-                                  map.get(TENANT_ATTRIBUTE_ENABLED).getBooleanValue(),
-                                  map.get(TENANT_ROOT_CONTENT_STORE_DIR).getStringValue());
-            }
+        Map<String, Serializable> tenantAttributes = (Map<String, Serializable>) attributeService.getAttribute(
+                TENANTS_ATTRIBUTE_PATH,
+                tenantDomain);
+        if (tenantAttributes == null)
+        {
+            return null;
         }
-        
-        return null;
+        else
+        {
+            Boolean enabled = (Boolean) tenantAttributes.get(TENANT_ATTRIBUTE_ENABLED);
+            String storeDir = (String) tenantAttributes.get(TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR);
+            Tenant tenant = new Tenant(tenantDomain, enabled.booleanValue(), storeDir);
+            return tenant;
+        }
     }
     
     public void enableTenant(String tenantDomain)
@@ -724,23 +724,33 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
      */
     public List<Tenant> getAllTenants()
     {
-        MapAttribute map = (MapAttribute)attributeService.getAttribute(TENANTS_ATTRIBUTE_PATH);
+        final List<Tenant> tenants = new ArrayList<Tenant>();
         
-        List<Tenant> tenants = new ArrayList<Tenant>();
-        
-        if (map != null)
+        AttributeQueryCallback callback = new AttributeQueryCallback()
         {
-            // note: getAllTenants is called first, by TenantDeployer - hence need to initialise the TenantService status cache           
-            Set<String> tenantDomains = map.keySet();
-                            
-            for (String tenantDomain : tenantDomains)
-            {        
-                Tenant tenant = getTenantAttributes(tenantDomain);
-                tenants.add(new Tenant(tenantDomain, tenant.isEnabled(), tenant.getRootContentStoreDir()));
-            }        
-        }
-        
-        return tenants; // list of tenants or empty list     
+            @SuppressWarnings("unchecked")
+            public boolean handleAttribute(Long id, Serializable value, Serializable[] keys)
+            {
+                if (keys.length != 3 || !EqualsHelper.nullSafeEquals(keys[0], TENANTS_ATTRIBUTE_PATH) || keys[1] == null)
+                {
+                    logger.warn("Unexpected tenant attribute: \n" +
+                            "   id:  " + id + "\n" +
+                            "   keys:  " + Arrays.toString(keys) + "\n" +
+                            "   value: " + value);
+                    return true;
+                }
+                String tenantDomain = (String) keys[1];
+                Map<String, Serializable> tenantAttributes = (Map<String, Serializable>) value;
+                Boolean enabled = (Boolean) tenantAttributes.get(TENANT_ATTRIBUTE_ENABLED);
+                String storeDir = (String) tenantAttributes.get(TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR);
+                Tenant tenant = new Tenant(tenantDomain, enabled.booleanValue(), storeDir);
+                tenants.add(tenant);
+                // Continue
+                return true;
+            }
+        };
+        attributeService.getAttributes(callback, TENANTS_ATTRIBUTE_PATH);
+        return tenants;
     }
 
     private void importBootstrapSystemTenantStore(String tenantDomain, File directorySource)

@@ -33,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -123,7 +124,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     private PolicyComponent policyComponent;
 
-    private AclDaoComponent aclDaoComponent;
+    private AclDAO aclDaoComponent;
     
     private PermissionReference allPermissionReference;
 
@@ -212,7 +213,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
      * 
      * @param aclDaoComponent
      */
-    public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
+    public void setAclDAO(AclDAO aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
     }

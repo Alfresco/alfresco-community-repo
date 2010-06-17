@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -59,7 +60,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 public class AclDaoComponentTest extends TestCase
 {
@@ -74,8 +74,6 @@ public class AclDaoComponentTest extends TestCase
     protected MutableAuthenticationService authenticationService;
     
     private MutableAuthenticationDao authenticationDAO;
-
-    protected LocalSessionFactoryBean sessionFactory;
 
     protected NodeRef rootNodeRef;
 
@@ -93,7 +91,7 @@ public class AclDaoComponentTest extends TestCase
     
     protected AuthorityService authorityService;
 
-    private AclDaoComponent aclDaoComponent;
+    private AclDAO aclDaoComponent;
 
     private UserTransaction testTX;
 
@@ -107,7 +105,7 @@ public class AclDaoComponentTest extends TestCase
 
     public void setUp() throws Exception
     {
-        aclDaoComponent = (AclDaoComponent) applicationContext.getBean("aclDaoComponent");
+        aclDaoComponent = (AclDAO) applicationContext.getBean("aclDAO");
         
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE
@@ -200,7 +198,19 @@ public class AclDaoComponentTest extends TestCase
     {
         return permissionModelDAO.getPermissionReference(null, permission);
     }
-
+    
+    public void testCreateDefault()
+    {
+        // Create default ACL (type=DEFINING, inherits=true, versioned=false)
+        Long id = aclDaoComponent.createAccessControlList();
+        
+        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        assertEquals(aclProps.getAclType(), ACLType.DEFINING);
+        assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
+        assertEquals(aclProps.getInherits(), Boolean.TRUE);
+        assertEquals(aclProps.isVersioned(), Boolean.FALSE);
+    }
+    
     public void testCreateDefining()
     {
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
@@ -212,7 +222,6 @@ public class AclDaoComponentTest extends TestCase
         assertEquals(aclProps.getAclType(), ACLType.DEFINING);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
-        
     }
     
     public void testCreateShared()
@@ -293,7 +302,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace1.setPosition(null);
         aclDaoComponent.setAccessControlEntry(id, ace1);
@@ -324,7 +332,6 @@ public class AclDaoComponentTest extends TestCase
         ace2.setAccessStatus(AccessStatus.ALLOWED);
         ace2.setAceType(ACEType.ALL);
         ace2.setAuthority("paul");
-        ace2.setContext(null);
         ace2.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Write"));
         ace2.setPosition(null);
         aclDaoComponent.setAccessControlEntry(id, ace2);
@@ -372,7 +379,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Write"));
         ace1.setPosition(null);
         aclDaoComponent.setAccessControlEntry(def1, ace1);
@@ -450,7 +456,6 @@ public class AclDaoComponentTest extends TestCase
         ace2.setAccessStatus(AccessStatus.ALLOWED);
         ace2.setAceType(ACEType.ALL);
         ace2.setAuthority("paul");
-        ace2.setContext(null);
         ace2.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Write"));
         ace2.setPosition(null);
         aclDaoComponent.setAccessControlEntry(def4, ace2);
@@ -497,7 +502,7 @@ public class AclDaoComponentTest extends TestCase
         assertEquals(aclDaoComponent.getAccessControlList(shared6_3).getEntries().size(), 2);
         assertTrue(hasAce(aclDaoComponent.getAccessControlList(shared6_3).getEntries(), ace1, 11));
         assertTrue(hasAce(aclDaoComponent.getAccessControlList(shared6_3).getEntries(), ace2, 5));
-       
+        
         aclDaoComponent.disableInheritance(def4, false);
         
         assertEquals(aclDaoComponent.getAccessControlList(def1).getEntries().size(), 1);
@@ -1061,12 +1066,10 @@ public class AclDaoComponentTest extends TestCase
         properties.setVersioned(true);
         Long defined = aclDaoComponent.createAccessControlList(properties);
         
-
         SimpleAccessControlEntry ace1 = new SimpleAccessControlEntry();
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("offski");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "P1"));
         ace1.setPosition(null);
           
@@ -1074,7 +1077,6 @@ public class AclDaoComponentTest extends TestCase
         ace2.setAccessStatus(AccessStatus.ALLOWED);
         ace2.setAceType(ACEType.ALL);
         ace2.setAuthority("offski");
-        ace2.setContext(null);
         ace2.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "P2"));
         ace2.setPosition(null);
         
@@ -1082,7 +1084,6 @@ public class AclDaoComponentTest extends TestCase
         ace3.setAccessStatus(AccessStatus.ALLOWED);
         ace3.setAceType(ACEType.ALL);
         ace3.setAuthority("keepski");
-        ace3.setContext(null);
         ace3.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "P3"));
         ace3.setPosition(null);
         
@@ -1162,7 +1163,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace1.setPosition(null);
         List<AclChange> changes = aclDaoComponent.setAccessControlEntry(id, ace1);
@@ -1229,7 +1229,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace1.setPosition(null);
         List<AclChange> changes = aclDaoComponent.setAccessControlEntry(i_1, ace1);
@@ -1280,6 +1279,7 @@ public class AclDaoComponentTest extends TestCase
         aclDaoComponent.mergeInheritedAccessControlList(s_1_2, i_1_2_4);
         Long i_1_2_4_5 = aclDaoComponent.createAccessControlList(properties);
         Long s_1_2_4_5 = aclDaoComponent.getInheritedAccessControlList(i_1_2_4_5);
+        assertNotNull(s_1_2_4_5);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_2_4, i_1_2_4_5);
         
         Long i_1_3_6 = aclDaoComponent.createAccessControlList(properties);
@@ -1298,7 +1298,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace1.setPosition(null);
         List<AclChange> changes = aclDaoComponent.setAccessControlEntry(i_1_3, ace1);
@@ -1347,7 +1346,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace1.setPosition(null);
         List<AclChange> changes = aclDaoComponent.setAccessControlEntry(id, ace1);
@@ -1382,7 +1380,6 @@ public class AclDaoComponentTest extends TestCase
         ace1.setAccessStatus(AccessStatus.ALLOWED);
         ace1.setAceType(ACEType.ALL);
         ace1.setAuthority("andy");
-        ace1.setContext(null);
         ace1.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace1.setPosition(null);
         
@@ -1390,7 +1387,6 @@ public class AclDaoComponentTest extends TestCase
         ace2.setAccessStatus(AccessStatus.ALLOWED);
         ace2.setAceType(ACEType.ALL);
         ace2.setAuthority("andy");
-        ace2.setContext(null);
         ace2.setPermission(new SimplePermissionReference(QName.createQName("uri", "local"), "Read"));
         ace2.setPosition(null);
         

@@ -11,11 +11,11 @@
     <!--                -->
     
     <typeAlias alias="AppliedPatch" type="org.alfresco.repo.domain.patch.AppliedPatchEntity"/>
-
+    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
-
+    
     <resultMap id="result_AppliedPatch" class="AppliedPatch">
         <result property="id" column="id" jdbcType="VARCHAR" javaType="string"/>
         <result property="description" column="description" jdbcType="VARCHAR" javaType="string"/>
@@ -29,26 +29,10 @@
         <result property="succeeded" column="succeeded" jdbcType="BOOLEAN" javaType="boolean"/>
         <result property="report" column="report" jdbcType="VARCHAR" javaType="string"/>
     </resultMap>
-  
-    <!--                -->
-    <!-- SQL Snippets   -->
-    <!--                -->
-
-<!--    
-    <sql id="insert_LockResource_AutoIncrement">
-        insert into alf_lock_resource (version, qname_ns_id, qname_localname) 
-        values (#version#, #qnameNamespaceId#, #qnameLocalName#)
-    </sql>
     
-    <sql id="insert_Lock_AutoIncrement">
-        insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
-        values (#version#, #sharedResourceId#, #exclusiveResourceId#, #lockToken#, #startTime#, #expiryTime#)
-    </sql>
--->
-    
-    <!--                -->
-    <!-- Inserts        -->
-    <!--                -->
+    <!--                         -->
+    <!-- SQL Snippets / Inserts  -->
+    <!--                         -->
     
     <insert id="insert_AppliedPatch" parameterClass="AppliedPatch">
         insert into alf_applied_patch
@@ -94,14 +78,14 @@
     
     <select id="select_AppliedPatchById" parameterClass="AppliedPatch" resultMap="result_AppliedPatch">
         select
-	        id, description,
-	        fixes_from_schema, fixes_to_schema, target_schema,
-	        applied_to_schema, applied_on_date, applied_to_server,
-	        was_executed, succeeded, report
-	    from
-	        alf_applied_patch
-	    where
-	        id = #id#
+            id, description,
+            fixes_from_schema, fixes_to_schema, target_schema,
+            applied_to_schema, applied_on_date, applied_to_server,
+            was_executed, succeeded, report
+        from
+            alf_applied_patch
+        where
+            id = #id#
     </select>
     
     <select id="select_AllAppliedPatches" resultMap="result_AppliedPatch">

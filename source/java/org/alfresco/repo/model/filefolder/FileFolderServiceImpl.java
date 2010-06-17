@@ -32,10 +32,11 @@ import java.util.Stack;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.rule.ruletrigger.RuleTrigger;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -693,7 +694,9 @@ public class FileFolderServiceImpl implements FileFolderService
     	// used by the rule trigger to ensure inbound rule is not triggered by a file rename
     	//
     	// See http://issues.alfresco.com/browse/AR-1544
-    	AlfrescoTransactionSupport.bindResource(sourceNodeRef.toString()+"rename", sourceNodeRef);
+        Set<String> nodeRefRenameSet = TransactionalResourceHelper.getSet(RuleTrigger.RULE_TRIGGER_NODESET);
+        String marker = sourceNodeRef.toString()+"rename";
+        nodeRefRenameSet.add(marker);
     	
         return moveOrCopy(sourceNodeRef, null, newName, true);
     }
@@ -920,27 +923,9 @@ public class FileFolderServiceImpl implements FileFolderService
     
     private FileInfo createImpl(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
     {
-        // file or folder
-        boolean isFolder = false;
-        try
-        {
-            isFolder = isFolder(typeQName);
-        }
-        catch (InvalidTypeException e)
-        {
-            throw new AlfrescoRuntimeException("The type is not supported by this service: " + typeQName);
-        }
-        
         // set up initial properties
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
-        if (!isFolder)
-        {
-            // guess a mimetype based on the filename
-            String mimetype = mimetypeService.guessMimetype(name);
-            ContentData contentData = new ContentData(null, mimetype, 0L, "UTF-8");
-            properties.put(ContentModel.PROP_CONTENT, contentData);
-        }
         
         // create the node
         if (assocQName == null)

@@ -67,41 +67,247 @@ public class PermissionServiceTest extends AbstractPermissionTest
     {
         runAs("admin");
         NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        permissionService.setPermission(one, "andy", PermissionService.CONTRIBUTOR, true);
+        permissionService.setPermission(one, "andy", PermissionService.READ, true);
         NodeRef two = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(two, "andy", PermissionService.WRITE, true);
+        NodeRef three = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        
+        
         NodeRef test = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"), ContentModel.TYPE_FOLDER).getChildRef();
         
+        // test has shared acl
+        
+        
+        // under 1
+        // start
         runAs("andy");
         assertEquals("andy", authenticationComponent.getCurrentUserName());
-        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
         
+        //under 2
+        // def parent -> def parent
         runAs("admin");
-        permissionService.setInheritParentPermissions(test, false);
-        
-        runAs("andy");
-        assertEquals("andy", authenticationComponent.getCurrentUserName());
-        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
-        
-        runAs("admin");
-        ChildAssociationRef newAssoc = nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
-        assertTrue(nodeService.exists(test));
-        assertTrue(nodeService.exists(one));
-        assertTrue(nodeService.exists(two));
-        nodeDaoService.getNodePair(test);
-        nodeDaoService.getNodePair(one);
-        nodeDaoService.getNodePair(two);
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
         assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
         
         runAs("andy");
         assertEquals("andy", authenticationComponent.getCurrentUserName());
-        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        
+        // under 3
+        // def parent -> shared parent
+        runAs("admin");
+        nodeService.moveNode(test, three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(three, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        
+        //under 2
+        // shared parent -> def parent
+        runAs("admin");
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        
+        //under 1
+        // def parent -> def parent
+        runAs("admin");
+        nodeService.moveNode(test, one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(one, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        
+        
+        // test has defining acl
+        
+        runAs("admin");
+        permissionService.setPermission(test, "andy", PermissionService.CHANGE_PERMISSIONS, true);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 2
+        runAs("admin");
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 3
+        runAs("admin");
+        nodeService.moveNode(test, three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(three, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 2
+        runAs("admin");
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 1
+        runAs("admin");
+        nodeService.moveNode(test, one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(one, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 1 inherit
         
         runAs("admin");
         permissionService.setInheritParentPermissions(test, true);
         
         runAs("andy");
         assertEquals("andy", authenticationComponent.getCurrentUserName());
-        assertTrue(permissionService.hasPermission(test, PermissionService.CONTRIBUTOR) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, false);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, true);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 2 inherit
+        
+        runAs("admin");
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+       
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, true);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, false);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, true);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // 3 inherit
+        
+        runAs("admin");
+        nodeService.moveNode(test, three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(three, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, true);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        runAs("admin");
+        permissionService.setInheritParentPermissions(test, false);
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // move to 2 without inherit
+        
+        runAs("admin");
+        nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(two, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
+        // move to 3 without inherit
+        
+        runAs("admin");
+        nodeService.moveNode(test, three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        assertEquals(three, nodeService.getPrimaryParent(test).getParentRef());
+        
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+        assertTrue(permissionService.hasPermission(test, PermissionService.READ) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(test, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+        
     }
 
     public void testChangePersonUid()
@@ -891,7 +1097,15 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n2 = nodeService.createNode(n1, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
-
+        
+        runAs("andy");
+        
+        assertTrue(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.READ)) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(n2, getPermission(PermissionService.READ)) == AccessStatus.DENIED);
+        
+        runAs(AuthenticationUtil.getAdminUserName());
+        
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
         runAs("andy");
@@ -945,7 +1159,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     @SuppressWarnings("unused")
     private void printPermissions(NodeRef nodeRef, String path)
     {
-        Long id = nodeDaoService.getNodePair(nodeRef).getFirst();
+        Long id = nodeDAO.getNodePair(nodeRef).getFirst();
         System.out.println(path + " has " + id);
         for (AccessControlEntry entry : aclDaoComponent.getAccessControlList(id).getEntries())
         {
@@ -2678,6 +2892,109 @@ public class PermissionServiceTest extends AbstractPermissionTest
         // assertEquals(1, permissionService.getAllSetPermissionsForAuthority("andy").get(n10).size());
 
     }
+    
+    public void test_DefiningShared_AclUpdatePerformance()
+    {
+        runAs("admin");
+        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(one, "andy", PermissionService.READ, true);
+        NodeRef two = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(two, "andy", PermissionService.WRITE, true);
+        NodeRef test = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        // test has shared acl
+
+
+        long start = System.nanoTime();
+        for(int i = 0; i < 1000; i++)
+        {
+            nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+            nodeService.moveNode(test, one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        }  
+        long end = System.nanoTime();
+
+        //assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+
+    
+    public void test_DefiningDefining_AclUpdatePerformance()
+    {
+        runAs("admin");
+        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(one, "andy", PermissionService.READ, true);
+        permissionService.setPermission(one, "bob", PermissionService.READ, true);
+        permissionService.setPermission(one, "cat", PermissionService.READ, true);
+        permissionService.setPermission(one, "dog", PermissionService.READ, true);
+        permissionService.setPermission(one, "emu", PermissionService.READ, true);
+        permissionService.setPermission(one, "fox", PermissionService.READ, true);
+        NodeRef two = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(two, "andy", PermissionService.WRITE, true);
+        NodeRef test = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(test, "andy", PermissionService.CHANGE_PERMISSIONS, true);
+        
+        // test has shared acl
+
+
+        long start = System.nanoTime();
+        for(int i = 0; i < 1000; i++)
+        {
+            nodeService.moveNode(test, two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+            nodeService.moveNode(test, one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"));
+        }  
+        long end = System.nanoTime();
+
+        //assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+       
+    }
+
+    
+    public void testAclInsertionPerformanceShared()
+    {
+        NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        for(int i = 0; i < 10000; i++)
+        {
+            nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
+        }
+        long start = System.nanoTime();
+        permissionService.setPermission(new SimplePermissionEntry(parent, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
+        long end = System.nanoTime();
+        
+        //assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+    
+    public void testAclInsertionPerformanceDefining()
+    {
+        NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        for(int i = 0; i < 10000; i++)
+        {
+            NodeRef created = nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
+            permissionService.setPermission(new SimplePermissionEntry(created, getPermission(PermissionService.CONSUMER), "bob", AccessStatus.ALLOWED));
+        }
+        long start = System.nanoTime();
+        permissionService.setPermission(new SimplePermissionEntry(parent, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
+        long end = System.nanoTime();
+
+        //assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+
+    public void testAclInsertionPerformanceMixed()
+    {
+        NodeRef parent = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        for(int i = 0; i < 10000; i++)
+        {
+            NodeRef created = nodeService.createNode(parent, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}child"+i), ContentModel.TYPE_FOLDER).getChildRef();
+            if(i % 2 == 0)
+            {
+                permissionService.setPermission(new SimplePermissionEntry(created, getPermission(PermissionService.CONSUMER), "bob", AccessStatus.ALLOWED));
+            }
+        }
+        long start = System.nanoTime();
+        permissionService.setPermission(new SimplePermissionEntry(parent, getPermission(PermissionService.CONSUMER), "andy", AccessStatus.ALLOWED));
+        long end = System.nanoTime();
+
+        //assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+    
 
     public void xtestFindNodesByPermission()
     {

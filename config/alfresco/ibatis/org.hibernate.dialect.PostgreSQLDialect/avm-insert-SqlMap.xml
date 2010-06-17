@@ -4,49 +4,45 @@
     PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
     "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 
-<sqlMap namespace="alfresco.avm">    
-          
+<sqlMap namespace="alfresco.avm">
+    
     <insert id="insert_AVMStore" parameterClass="AVMStore">
         
         <selectKey resultClass="long" keyProperty="id">
-            select nextVal('hibernate_sequence')
+            select nextVal('avm_stores_seq')
         </selectKey>
         
-        insert into avm_stores (id, next_version_id, name, vers, current_root_id, acl_id)
-        values (#id#, #version#, #name#, 0, null, null)
+        <include refid="alfresco.avm.insert_AVMStore_Sequence"/>
         
     </insert>
     
     <insert id="insert_AVMStoreProperty" parameterMap="parameter_IdStorePropertyPatternMap">
     
         <selectKey resultClass="long" keyProperty="id">
-            select nextVal('hibernate_sequence')
+            select nextVal('avm_store_properties_seq')
         </selectKey>
         
-        insert into avm_store_properties (id, actual_type_n, persisted_type_n, multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value, avm_store_id, qname_id)
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        <include refid="alfresco.avm.insert_AVMStoreProperty_Sequence"/>
         
     </insert>
     
     <insert id="insert_AVMNode" parameterClass="AVMNode">
         
         <selectKey resultClass="long" keyProperty="id">
-            select nextVal('hibernate_sequence')
+            select nextVal('avm_nodes_seq')
         </selectKey>
         
-        insert into avm_nodes (id, class_type, deletedType, version_id, vers, store_new_id, acl_id, guid, owner, creator, createDate, lastModifier, modDate, accessDate, is_root, layer_id, indirection, indirection_version, primary_indirection, opacity, content_url, mime_type, encoding, length)
-        values (#id#, #classType#, #deletedType#, #version#, 0, #storeNewId#, #aclId#, #guid#, #owner#, #creator#, #createdDate#, #modifier#, #modifiedDate#, #accessDate#, #isRoot#, #layerId#, #indirection#, #indirectionVersion#, #primaryIndirection#, #opacity#, #contentUrl#, #mimetype#, #encoding#, #length#)
+        <include refid="alfresco.avm.insert_AVMNode_Sequence"/>
         
     </insert>
     
     <insert id="insert_AVMVersionRoot" parameterClass="AVMVersionRoot">
         
         <selectKey resultClass="long" keyProperty="id">
-            select nextVal('hibernate_sequence')
+            select nextVal('avm_version_roots_seq')
         </selectKey>
         
-        insert into avm_version_roots (id, avm_store_id, root_id, version_id, creator, create_date, tag, description)
-        values (#id#, #storeId#, #rootNodeId#, #version#, #creator#, #createdDate#, #tag#, #description#)
+        <include refid="alfresco.avm.insert_AVMVersionRoot_Sequence"/>
         
     </insert>
     

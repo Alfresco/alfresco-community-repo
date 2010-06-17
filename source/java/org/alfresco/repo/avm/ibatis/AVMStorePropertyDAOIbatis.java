@@ -18,28 +18,21 @@
 
 package org.alfresco.repo.avm.ibatis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.AVMStoreProperty;
 import org.alfresco.repo.avm.AVMStorePropertyDAO;
-import org.alfresco.repo.avm.AVMStorePropertyImpl;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.avm.AVMStorePropertyEntity;
 import org.alfresco.service.namespace.QName;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * iBATIS DAO wrapper for AVMStoreProperty
  * 
  * @author janv
  */
-class AVMStorePropertyDAOIbatis extends HibernateDaoSupport implements AVMStorePropertyDAO
+class AVMStorePropertyDAOIbatis implements AVMStorePropertyDAO
 {
     
     /* (non-Javadoc)

@@ -20,38 +20,33 @@ package org.alfresco.repo.admin.patch.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.CRC32;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.domain.DbAccessControlEntry;
-import org.alfresco.repo.domain.DbAccessControlList;
-import org.alfresco.repo.domain.DbAccessControlListChangeSet;
-import org.alfresco.repo.domain.DbAuthority;
-import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListChangeSetImpl;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
-import org.alfresco.repo.domain.hibernate.DbAccessControlListMemberImpl;
-import org.alfresco.repo.domain.hibernate.DbAuthorityImpl;
-import org.alfresco.repo.domain.hibernate.DbPermissionImpl;
+import org.alfresco.repo.domain.avm.AVMChildEntryEntity;
+import org.alfresco.repo.domain.avm.AVMNodeLinksDAO;
+import org.alfresco.repo.domain.avm.AVMStoreDAO;
+import org.alfresco.repo.domain.patch.PatchDAO;
+import org.alfresco.repo.domain.permissions.AclCrudDAO;
+import org.alfresco.repo.domain.permissions.AclEntity;
+import org.alfresco.repo.domain.permissions.Authority;
+import org.alfresco.repo.domain.permissions.Permission;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -62,16 +57,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
-import org.hibernate.ScrollMode;
-import org.hibernate.ScrollableResults;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Alternative patch to remove ACLs from all WCM stores, and replace with WCM group-based ACLs.
@@ -80,32 +66,47 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPermissionsPatch
 {
-	private static Log logger = LogFactory.getLog(ResetWCMToGroupBasedPermissionsPatch.class);
-	
+    private static Log logger = LogFactory.getLog(ResetWCMToGroupBasedPermissionsPatch.class);
+    
     private static final String MSG_SUCCESS = "patch.resetWCMToGroupBasedPermissionsPatch.result";
     
-    private HibernateHelper helper;
+    private AclCrudDAO aclCrudDAO;
+    private AVMStoreDAO avmStoreDAO;
+    private AVMNodeLinksDAO avmNodeLinksDAO;
+    private PatchDAO patchDAO;
+    
+    private HelperDAO helper; // local helper class
     
     private PersonService personService;
     
     private static int batchSize = 500;
     
     // cache staging store acl change set and shared acl id
-    private Map<String, Pair<DbAccessControlListChangeSet, Long>> stagingData = new HashMap<String, Pair<DbAccessControlListChangeSet, Long>>(10);
-    
-    public void setSessionFactory(SessionFactory sessionFactory)
-    {
-        helper.setSessionFactory(sessionFactory);
-    }
-    
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        helper.setQnameDAO(qnameDAO);
-    }
+    private Map<String, Pair<Long, Long>> stagingData = new HashMap<String, Pair<Long, Long>>(10);
     
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public void setAvmStoreDAO(AVMStoreDAO avmStoreDAO)
+    {
+        this.avmStoreDAO = avmStoreDAO;
+    }
+    
+    public void setAvmNodeLinksDAO(AVMNodeLinksDAO avmNodeLinksDAO)
+    {
+        this.avmNodeLinksDAO = avmNodeLinksDAO;
+    }
+    
+    public void setAclCrudDAO(AclCrudDAO aclCrudDAO)
+    {
+        this.aclCrudDAO = aclCrudDAO;
+    }
+    
+    public void setPatchDAO(PatchDAO patchDAO)
+    {
+        this.patchDAO = patchDAO;
     }
     
     public void setBatchSize(int batchSizeOverride)
@@ -115,7 +116,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
     
     public ResetWCMToGroupBasedPermissionsPatch()
     {
-        helper = new HibernateHelper();
+        helper = new HelperDAO();
     }
     
     @Override
@@ -176,9 +177,6 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 nullifyAvmNodeAclsExcluding(store.getName(), JNDIConstants.DIR_DEFAULT_WWW);
                 
                 setStagingAreaPermissions(store);
-                
-                // flush any outstanding entities
-                helper.getSessionFactory().getCurrentSession().flush();
                 
                 setStagingAreaMasks(store);
                 
@@ -282,9 +280,6 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 setSandboxPermissions(store);
                 
-                // flush any outstanding entities
-                helper.getSessionFactory().getCurrentSession().flush();
-                
                 setSandBoxMasks(store);
                 break;
                 
@@ -309,9 +304,6 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 count++;
                 
                 setSandboxPermissions(store);
-                
-                // flush any outstanding entities
-                helper.getSessionFactory().getCurrentSession().flush();
                 
                 setStagingAreaMasks(store);
                 break;
@@ -359,9 +351,6 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 setSandboxPermissions(store);
                 
-                // flush any outstanding entities
-                helper.getSessionFactory().getCurrentSession().flush();
-                
                 setSandBoxMasks(store);
                 break;
                 
@@ -405,9 +394,6 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 count++;
                 
                 setSandboxPermissions(store);
-                
-                // flush any outstanding entities
-                helper.getSessionFactory().getCurrentSession().flush();
                 
                 setSandBoxMasks(store);
                 break;
@@ -508,12 +494,12 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 logger.debug("Start deleting dangling acls/aces (across all stores)");
             }
             
-            helper.deleteDanglingAcls();
-            helper.deleteDanglingAces();
+            int aclsDeletedCount = helper.deleteDanglingAcls();
+            int acesDeletedCount = patchDAO.deleteDanglingAces();
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Finish deleting dangling acls/aces (across all stores) in "+(System.currentTimeMillis()-startTime)/1000+" secs");
+                logger.debug("Finish deleting dangling acls/aces ["+aclsDeletedCount+"/"+acesDeletedCount+"] (across all stores) in "+(System.currentTimeMillis()-startTime)/1000+" secs");
             }
         }
         catch (Throwable e)
@@ -537,15 +523,12 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         }
         
         // create acl change set, defining acl and shared acl
-        DbAccessControlListChangeSet aclChangeSet = helper.createAclChangeSet();
+        long aclChangeSet = aclCrudDAO.createAclChangeSet();
         
         long definingAclId = helper.createWCMGroupBasedAcl(stagingStoreName, aclChangeSet, ACLType.DEFINING, false);
         long sharedAclId = helper.createWCMGroupBasedAcl(stagingStoreName, aclChangeSet, ACLType.SHARED, false);
         
-        stagingData.put(stagingStoreName, new Pair<DbAccessControlListChangeSet, Long>(aclChangeSet, sharedAclId));
-        
-        // flush any outstanding entities
-        helper.getSessionFactory().getCurrentSession().flush();
+        stagingData.put(stagingStoreName, new Pair<Long, Long>(aclChangeSet, sharedAclId));
         
         helper.updateAclInherited(definingAclId, sharedAclId);
         
@@ -575,9 +558,9 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             logger.debug("Start set sandbox permissions: "+sandboxStoreName);
         }
         
-        Pair<DbAccessControlListChangeSet, Long> aclData = stagingData.get(extractBaseStore(sandboxStoreName));
+        Pair<Long, Long> aclData = stagingData.get(extractBaseStore(sandboxStoreName));
         
-        DbAccessControlListChangeSet aclChangeSet = aclData.getFirst();
+        long aclChangeSet = aclData.getFirst();
         long baseSharedAclId = aclData.getSecond();
         
         String stagingStoreName = extractStagingAreaName(sandboxStoreName);
@@ -586,10 +569,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         long layeredAclId = helper.createWCMGroupBasedAcl(stagingStoreName, aclChangeSet, ACLType.LAYERED, true);
         long sharedAclId = helper.createWCMGroupBasedAcl(stagingStoreName, aclChangeSet, ACLType.SHARED, false);
         
-        stagingData.put(sandboxStoreName, new Pair<DbAccessControlListChangeSet, Long>(aclChangeSet, sharedAclId));
-        
-        // flush any outstanding entities
-        helper.getSessionFactory().getCurrentSession().flush();
+        stagingData.put(sandboxStoreName, new Pair<Long, Long>(aclChangeSet, sharedAclId));
         
         helper.updateAclInheritsFrom(layeredAclId, baseSharedAclId);
         helper.updateAclInheritsFrom(sharedAclId, layeredAclId);
@@ -693,21 +673,8 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         return name;
     }
     
-    private static class HibernateHelper extends HibernateDaoSupport
+    private class HelperDAO
     {
-        private static Log logger = LogFactory.getLog(ResetWCMToGroupBasedPermissionsPatch.class);
-        
-        private static final String QUERY_GET_PERMISSION = "permission.GetPermission";
-        private static final String QUERY_GET_AUTHORITY = "permission.GetAuthority";
-        private static final String QUERY_GET_ACE_WITH_NO_CONTEXT = "permission.GetAceWithNoContext";
-        
-        protected QNameDAO qnameDAO;
-        
-        public void setQnameDAO(QNameDAO qnameDAO)
-        {
-            this.qnameDAO = qnameDAO;
-        }
-        
         private int nullifyAvmNodeAcls(final String storeName)
         {
             try
@@ -738,16 +705,16 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             {
                 long rootId = getAVMStoreCurrentRootNodeId(storeName);
                 
-                List<Pair<Long, String>> children = getAVMChildrenWithName(rootId);
+                List<AVMChildEntryEntity> children = getAVMChildrenEntries(rootId);
                 
                 int totalUpdatedCount = 0;
                 
                 List<Long> childIds = new ArrayList<Long>(0);
                 
-                for (Pair<Long, String> child : children)
+                for (AVMChildEntryEntity child : children)
                 {
-                    Long childId = child.getFirst();
-                    String name = child.getSecond();
+                    Long childId = child.getChildId();
+                    String name = child.getName();
                     
                     if (! name.equals(excludeRootChild))
                     {
@@ -808,19 +775,10 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 if (batchChildIds.size() == batchSize || !childIdIterator.hasNext())
                 {
-                    // native SQL
-                    SQLQuery query = getSession()
-                            .createSQLQuery(
-                                " update avm_nodes set acl_id = null "+
-                                " where acl_id is not null " +
-                                " and id in (:childIds) "+
-                                "");
+                    // execute the update
+                    int batchUpdateCount = patchDAO.updateAVMNodesNullifyAcl(batchChildIds);
                     
-                    query.setParameterList("childIds", batchChildIds);
-                    
-                    int batchUpdateCount = (Integer)query.executeUpdate();
                     totalUpdateCount = totalUpdateCount + batchUpdateCount;
-                    
                     batchChildIds.clear();
                 }
             }
@@ -843,18 +801,9 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 if (batchChildIds.size() == batchSize || !childIdIterator.hasNext())
                 {
-                    // native SQL
-                    SQLQuery query = getSession()
-                            .createSQLQuery(
-                                " update avm_nodes set acl_id = :aclId "+
-                                " where id in (:childIds) "+
-                                "");
+                    // execute the update
+                    int batchUpdateCount = patchDAO.updateAVMNodesSetAcl(aclId, batchChildIds);
                     
-                    query.setParameterList("childIds", batchChildIds);
-                    
-                    query.setLong("aclId", aclId);
-                    
-                    int batchUpdateCount = (Integer)query.executeUpdate();
                     totalUpdateCount = totalUpdateCount + batchUpdateCount;
                     
                     batchChildIds.clear();
@@ -871,14 +820,14 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             {
                 long rootId = getAVMStoreCurrentRootNodeId(storeName);
                 
-                List<Pair<Long, String>> children = getAVMChildrenWithName(rootId);
+                List<AVMChildEntryEntity> children = getAVMChildrenEntries(rootId);
                 
                 int totalUpdatedCount = 0;
                 
-                for (Pair<Long, String> child : children)
+                for (AVMChildEntryEntity child : children)
                 {
-                    Long childId = child.getFirst();
-                    String name = child.getSecond();
+                    Long childId = child.getChildId();
+                    String name = child.getName();
                     
                     if (name.equals(JNDIConstants.DIR_DEFAULT_WWW))
                     {
@@ -911,14 +860,14 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             {
                 long rootId = getAVMStoreCurrentRootNodeId(storeName);
                 
-                List<Pair<Long, String>> children = getAVMChildrenWithName(rootId);
+                List<AVMChildEntryEntity> children = getAVMChildrenEntries(rootId);
                 
                 List<Long> childIds = new ArrayList<Long>(1);
                 
-                for (Pair<Long, String> child : children)
+                for (AVMChildEntryEntity child : children)
                 {
-                    Long childId = child.getFirst();
-                    String name = child.getSecond();
+                    Long childId = child.getChildId();
+                    String name = child.getName();
                     
                     if (name.equals(JNDIConstants.DIR_DEFAULT_WWW))
                     {
@@ -962,25 +911,11 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             return updatedCount;
         }
         
-        private int deleteDanglingAces()
-        {
-            // native SQL
-            SQLQuery query = getSession()
-                    .createSQLQuery(
-                        " delete from alf_access_control_entry "+
-                        " where id not in "+
-                        " (select distinct(m.ace_id) "+
-                        " from alf_acl_member m) "+
-                        "");
-            
-            return (Integer)query.executeUpdate(); // return deleted count
-        }
-        
         // note: dangling shared acl currently possible (after creating new sandbox)
         private int deleteDanglingAcls() throws Exception
         {
-            Set<Long> nonDanglingAclIds = getNonDanglingAcls();
-            Set<Long> aclIds = getAllAcls();
+            List<Long> nonDanglingAclIds = patchDAO.selectNonDanglingAclIds();
+            List<Long> aclIds = patchDAO.selectAllAclIds();
             
             // get set of dangling acl ids
             aclIds.removeAll(nonDanglingAclIds);
@@ -998,18 +933,10 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 if (batchAclIds.size() == batchSize || !aclIdIterator.hasNext())
                 {
-                    // native SQL
-                    SQLQuery query = getSession()
-                            .createSQLQuery(
-                                " delete from alf_acl_member "+
-                                " where acl_id in (:aclIds) "+
-                                "");
+                    // execute delete
+                    int batchDeletedCount = patchDAO.deleteAclMembersForAcls(batchAclIds);
                     
-                    query.setParameterList("aclIds", batchAclIds);
-                    
-                    int batchDeletedCount = (Integer)query.executeUpdate();
                     totalDeletedCount = totalDeletedCount + batchDeletedCount;
-                    
                     batchAclIds.clear();
                 }
             }
@@ -1032,18 +959,10 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 
                 if (batchAclIds.size() == batchSize || !aclIdIterator.hasNext())
                 {
-                    // native SQL
-                    SQLQuery query = getSession()
-                            .createSQLQuery(
-                                " delete from alf_access_control_list "+
-                                " where id in (:aclIds) "+
-                                "");
+                    // execute delete
+                    int batchDeletedCount = patchDAO.deleteAcls(batchAclIds);
                     
-                    query.setParameterList("aclIds", batchAclIds);
-                    
-                    int batchDeletedCount = (Integer)query.executeUpdate();
                     totalDeletedCount = totalDeletedCount + batchDeletedCount;
-                    
                     batchAclIds.clear();
                 }
             }
@@ -1056,318 +975,49 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             return totalDeletedCount;
         }
         
-        private Set<Long> getNonDanglingAcls()
-        {
-            final Set<Long> aclIds = new HashSet<Long>(10000);
-            
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    // native SQL
-                    SQLQuery query = getSession().createSQLQuery(
-                            " select acl_id from avm_nodes where acl_id is not null "+
-                            " union "+
-                            " select acl_id from avm_stores where acl_id is not null "+
-                            " union "+
-                            " select acl_id from alf_node where acl_id is not null "+
-                            " union "+
-                            " select acl_id from alf_attributes where acl_id is not null");
-                    
-                    query.addScalar("acl_id", new LongType());
-                    
-                    return query.scroll(ScrollMode.FORWARD_ONLY);
-                }
-            };
-            ScrollableResults rs = null;
-            try
-            {
-                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
-                while (rs.next())
-                {
-                    Long aclId = (Long) rs.get(0);
-                    aclIds.add(aclId);
-                }
-            }
-            catch (Throwable e)
-            {
-                String msg = "Failed to query for non-dangling acls";
-                logger.error(msg, e);
-                throw new PatchException(msg, e);
-            }
-            finally
-            {
-                if (rs != null)
-                {
-                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
-                }
-            }
-            return aclIds;
-        }
-        
-        private Set<Long> getAllAcls()
-        {
-            final Set<Long> aclIds = new HashSet<Long>(10000);
-            
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    // native SQL
-                    SQLQuery query = getSession().createSQLQuery("select id from alf_access_control_list ");
-                    
-                    query.addScalar("id", new LongType());
-                    
-                    return query.scroll(ScrollMode.FORWARD_ONLY);
-                }
-            };
-            ScrollableResults rs = null;
-            try
-            {
-                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
-                while (rs.next())
-                {
-                    Long aclId = (Long) rs.get(0);
-                    aclIds.add(aclId);
-                }
-            }
-            catch (Throwable e)
-            {
-                String msg = "Failed to query for all acls";
-                logger.error(msg, e);
-                throw new PatchException(msg, e);
-            }
-            finally
-            {
-                if (rs != null)
-                {
-                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
-                }
-            }
-            return aclIds;
-        }
-        
         private long getAVMStoreCurrentRootNodeId(final String avmStoreName)
         {
-            // native SQL
-            SQLQuery query = getSession().createSQLQuery("select current_root_id as root_id from avm_stores where name = :name");
-            
-            query.setString("name", avmStoreName);
-            query.addScalar("root_id", new LongType());
-            
-            return (Long)query.uniqueResult();
+            return avmStoreDAO.getStore(avmStoreName).getRootNodeId();
         }
         
         private List<Long> getAVMChildren(final long parentId)
         {
-            final List<Long> childIds = new ArrayList<Long>(100);
+            List<AVMChildEntryEntity> childEntries = getAVMChildrenEntries(parentId);
+            List<Long> childIds = new ArrayList<Long>(childEntries.size());
             
-            HibernateCallback callback = new HibernateCallback()
+            for (AVMChildEntryEntity childEntry : childEntries)
             {
-                public Object doInHibernate(Session session)
-                {
-                    // native SQL
-                    SQLQuery query = getSession().createSQLQuery("select child_id as child_id from avm_child_entries where parent_id = :parentId");
-                    
-                    query.setLong("parentId", parentId);
-                    query.addScalar("child_id", new LongType());
-                    
-                    return query.scroll(ScrollMode.FORWARD_ONLY);
-                }
-            };
-            ScrollableResults rs = null;
-            try
-            {
-                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
-                while (rs.next())
-                {
-                    Long childId = (Long) rs.get(0);
-                    childIds.add(childId);
-                }
-            }
-            catch (Throwable e)
-            {
-                String msg = "Failed to query for child entries (parent_id = "+parentId+")";
-                logger.error(msg, e);
-                throw new PatchException(msg, e);
-            }
-            finally
-            {
-                if (rs != null)
-                {
-                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
-                }
+                Long childId = (Long)childEntry.getChildId();
+                childIds.add(childId);
             }
             return childIds;
         }
         
-        private List<Pair<Long, String>> getAVMChildrenWithName(final long parentId)
+        private List<AVMChildEntryEntity> getAVMChildrenEntries(final long parentId)
         {
-            final List<Pair<Long, String>> children = new ArrayList<Pair<Long, String>>(100);
-            
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    // native SQL
-                    SQLQuery query = getSession().createSQLQuery("select child_id, name as name from avm_child_entries where parent_id = :parentId");
-                    
-                    query.setLong("parentId", parentId);
-                    query.addScalar("child_id", new LongType());
-                    query.addScalar("name", new StringType());
-                    
-                    return query.scroll(ScrollMode.FORWARD_ONLY);
-                }
-            };
-            ScrollableResults rs = null;
-            try
-            {
-                rs = (ScrollableResults) getHibernateTemplate().execute(callback);
-                while (rs.next())
-                {
-                    Long childId = (Long) rs.get(0);
-                    String name = (String) rs.get(1);
-                    children.add(new Pair<Long, String>(childId, name));
-                }
-            }
-            catch (Throwable e)
-            {
-                String msg = "Failed to query for child entries (parent_id = "+parentId+")";
-                logger.error(msg, e);
-                throw new PatchException(msg, e);
-            }
-            finally
-            {
-                if (rs != null)
-                {
-                    try { rs.close(); } catch (Throwable e) { logger.error(e); }
-                }
-            }
-            return children;
+            return avmNodeLinksDAO.getChildEntriesByParent(parentId, null);
         }
         
         private long findOrCreateAce(final String authorityName, final String permissionName) throws Exception
         {
-            final DbPermission permission = findOrCreatePermission(permissionName);
-            final DbAuthority authority = findOrCreateAuthority(authorityName);
+            Authority authority = aclCrudDAO.getOrCreateAuthority(authorityName);
             
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    Query query = session.getNamedQuery(QUERY_GET_ACE_WITH_NO_CONTEXT);
-                    query.setParameter("permissionId", permission.getId());
-                    query.setParameter("authorityId", authority.getId());
-                    query.setParameter("allowed", true);
-                    query.setParameter("applies", ACEType.ALL.getId());
-                    return query.uniqueResult();
-                }
-            };
-            DbAccessControlEntry entry = (DbAccessControlEntry) getHibernateTemplate().execute(callback);
-            
-            if (entry == null)
-            {
-                DbAccessControlEntryImpl newEntry = new DbAccessControlEntryImpl();
-                
-                newEntry.setAceType(ACEType.ALL);
-                newEntry.setAllowed(true);
-                
-                newEntry.setAuthority(authority);
-                newEntry.setPermission(permission);
-                
-                entry = newEntry;
-                
-                // save
-                getHibernateTemplate().save(newEntry);
-            }
-
-            return entry.getId();
-        }
-        
-        private DbAuthority findOrCreateAuthority(final String authorityName) throws Exception
-        {
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    Query query = session.getNamedQuery(QUERY_GET_AUTHORITY);
-                    query.setParameter("authority", authorityName);
-                    return query.uniqueResult();
-                }
-            };
-            DbAuthority authority = (DbAuthority)getHibernateTemplate().execute(callback);
-            
-            if (authority == null)
-            {
-                DbAuthorityImpl newAuthority = new DbAuthorityImpl();
-                newAuthority.setAuthority(authorityName);
-                newAuthority.setCrc(getCrc(authorityName));
-                        
-                authority = newAuthority;
-                
-                // save
-                getHibernateTemplate().save(newAuthority);
-            }
-            
-            return authority;
-        }
-        
-        private long getCrc(String str)
-        {
-            CRC32 crc = new CRC32();
-            crc.update(str.getBytes());
-            return crc.getValue();
-        }
-        
-        private DbPermission findOrCreatePermission(final String permissionName) throws Exception
-        {
             QName permissionQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "cmobject");
-            Pair<Long, QName> permissionQNamePair = qnameDAO.getOrCreateQName(permissionQName);
+            SimplePermissionReference permRef = SimplePermissionReference.getPermissionReference(permissionQName, permissionName);
             
-            final Long qNameId = permissionQNamePair.getFirst();
-
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    Query query = session.getNamedQuery(QUERY_GET_PERMISSION);
-                    query.setParameter("permissionTypeQNameId", qNameId);
-                    query.setParameter("permissionName", permissionName);
-                    return query.uniqueResult();
-                }
-            };
-            DbPermission permission = (DbPermission)getHibernateTemplate().execute(callback);
+            Permission permission = aclCrudDAO.getOrCreatePermission(permRef);
             
-            if (permission == null)
-            {
-                DbPermissionImpl newPerm = new DbPermissionImpl();
-                newPerm.setTypeQNameId(qNameId);
-                newPerm.setName(permissionName);
-                
-                permission = newPerm;
-                
-                // save
-                getHibernateTemplate().save(newPerm);
-            }
-
-            return permission;
+            return aclCrudDAO.getOrCreateAce(permission, authority, ACEType.ALL, AccessStatus.ALLOWED).getId();
         }
         
-        private DbAccessControlListChangeSet createAclChangeSet() throws Exception
+        private long createAcl(final long aclChangeSet, final ACLType aclType, boolean requiresVersion) throws Exception
         {
-            DbAccessControlListChangeSet changeSet = new DbAccessControlListChangeSetImpl();
-            getHibernateTemplate().save(changeSet);
-            return changeSet;
-        }
-        
-        private long createAcl(final DbAccessControlListChangeSet aclChangeSet, final ACLType aclType, boolean requiresVersion) throws Exception
-        {
-            DbAccessControlListImpl acl = new DbAccessControlListImpl();
-
+            AclEntity acl = new AclEntity();
+            
             acl.setAclId(GUID.generate());
             acl.setAclType(aclType);
             acl.setAclVersion(Long.valueOf(1l));
-
+            
             switch (aclType)
             {
             case FIXED:
@@ -1383,7 +1033,7 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             }
             
             acl.setLatest(Boolean.TRUE);
-
+            
             switch (aclType)
             {
             case OLD:
@@ -1398,67 +1048,30 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
                 acl.setVersioned(Boolean.TRUE);
                 break;
             }
-
-            acl.setAclChangeSet(aclChangeSet);
+            
+            acl.setAclChangeSetId(aclChangeSet);
             acl.setRequiresVersion(requiresVersion);
             
             // save
-            Long created = (Long) getHibernateTemplate().save(acl);
-            return created;
+            return aclCrudDAO.createAcl(acl).getId();
         }
         
         private void updateAclInheritsFrom(final long aclId, final long inheritsFromId) throws Exception
         {
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Integer doInHibernate(Session session)
-                {
-                    // native SQL
-                    SQLQuery query = session
-                            .createSQLQuery(
-                                " update alf_access_control_list set inherits_from = :inheritsFromId where id = :aclId ");
-                   
-                    query.setLong("aclId", aclId);
-                    query.setLong("inheritsFromId", inheritsFromId);
-                    
-                    return (Integer)query.executeUpdate();
-                }
-            };
-            
-            int updatedCount = (Integer)getHibernateTemplate().execute(callback);
-            if (updatedCount != 1)
-            {
-                throw new AlfrescoRuntimeException("Failed to update acl inheritsFrom");
-            }
+            AclEntity aclEntity = aclCrudDAO.getAclForUpdate(aclId);
+            aclEntity.setInheritsFrom(inheritsFromId);
+            aclCrudDAO.updateAcl(aclEntity);
         }
         
         private void updateAclInherited(final long aclId, final long inheritedAclId) throws Exception
         {
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Integer doInHibernate(Session session)
-                {
-                    // native SQL
-                    SQLQuery query = session
-                            .createSQLQuery(
-                                " update alf_access_control_list set inherited_acl = :inheritedAclId where id = :aclId ");
-                   
-                    query.setLong("aclId", aclId);
-                    query.setLong("inheritedAclId", inheritedAclId);
-                    
-                    return (Integer)query.executeUpdate();
-                }
-            };
-            
-            int updatedCount = (Integer)getHibernateTemplate().execute(callback);
-            if (updatedCount != 1)
-            {
-                throw new AlfrescoRuntimeException("Failed to update acl inherited");
-            }
+            AclEntity aclEntity = aclCrudDAO.getAclForUpdate(aclId);
+            aclEntity.setInheritedAcl(inheritedAclId);
+            aclCrudDAO.updateAcl(aclEntity);
         }
         
         // assume groups exist, if permission does not exist then will be created
-        private Long createWCMGroupBasedAcl(String stagingStoreName, DbAccessControlListChangeSet aclChangeSet, ACLType aclType, boolean requiresVersion) throws Exception
+        private Long createWCMGroupBasedAcl(String stagingStoreName, long aclChangeSet, ACLType aclType, boolean requiresVersion) throws Exception
         {
             if (stagingStoreName.contains(WCM_STORE_SEPARATOR))
             {
@@ -1484,28 +1097,10 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
             aceIds.add(crAceId);
             aceIds.add(erAceId);
             
-            addAcesToAcl(aclId, aceIds, 0);
+            // create acl members
+            aclCrudDAO.addAclMembersToAcl(aclId, aceIds, 0);
             
             return aclId;
-        }
-        
-        // create acl members
-        private void addAcesToAcl(long aclId, List<Long> aceIds, int depth)
-        {
-            DbAccessControlList acl = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, aclId);
-
-            for (Long aceId : aceIds)
-            {
-                DbAccessControlEntry ace = (DbAccessControlEntry) getHibernateTemplate().get(DbAccessControlEntryImpl.class, aceId);
-                
-                DbAccessControlListMemberImpl newMember = new DbAccessControlListMemberImpl();
-                newMember.setAccessControlList(acl);
-                newMember.setAccessControlEntry(ace);
-                newMember.setPosition(depth);
-                
-                // save
-                getHibernateTemplate().save(newMember);
-            }
         }
     }
 }

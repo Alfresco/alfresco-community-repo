@@ -497,8 +497,28 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         assertNotNull(sbInfo);
         
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        String authorSandboxId = sbInfo.getSandboxId();
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        for (int i = 1; i <= 10; i++)
+        {
+            assetService.createFile(authorSandboxId, authorSandboxPath, "myFile-"+i, null);
+            
+            String relPath = authorSandboxPath + "/" + "myFile-"+i;
+            assertEquals(USER_TWO, avmLockingService.getLockOwner(wpStoreId, relPath));
+        }
+        
         // can delete own sandbox
         sbService.deleteSandbox(sbInfo.getSandboxId());
+        assertNull(sbService.getSandbox(sbInfo.getSandboxId()));
+        
+        // Check locks have been removed
+        for (int i = 1; i <= 10; i++)
+        {
+            String relPath = authorSandboxPath + "/" + "myFile-"+i;
+            assertNull("Lock still exists: "+relPath, avmLockingService.getLockOwner(wpStoreId, relPath));
+        }
         
         assertEquals(3, sbService.listSandboxes(wpStoreId).size());
         

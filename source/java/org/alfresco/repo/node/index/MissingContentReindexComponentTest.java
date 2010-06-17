@@ -26,7 +26,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.repo.node.db.NodeDaoService;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -80,13 +80,13 @@ public class MissingContentReindexComponentTest extends TestCase
         ftsIndexer = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
 
         Indexer indexer = (Indexer) ctx.getBean("indexerComponent");
-        NodeDaoService nodeDaoService = (NodeDaoService) ctx.getBean("nodeDaoService");
+        NodeDAO nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         TransactionService transactionService = serviceRegistry.getTransactionService();
         reindexer = new MissingContentReindexComponent();
         reindexer.setAuthenticationComponent(authenticationComponent);
         reindexer.setFtsIndexer(ftsIndexer);
         reindexer.setIndexer(indexer);
-        reindexer.setNodeDaoService(nodeDaoService);
+        reindexer.setNodeDAO(nodeDAO);
         reindexer.setNodeService(nodeService);
         reindexer.setThreadPoolExecutor(threadPoolExecutor);
         reindexer.setSearcher(searchService);

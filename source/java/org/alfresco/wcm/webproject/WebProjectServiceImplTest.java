@@ -38,9 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.SandboxInfo;
@@ -81,7 +79,6 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     private PermissionService permissionService;
     private AVMService avmService;
     private NodeService nodeService;
-
     
     @Override
     protected void setUp() throws Exception
@@ -89,8 +86,6 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
-        authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
-        personService = (PersonService)ctx.getBean("PersonService");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
         authorityService = (AuthorityService)ctx.getBean("AuthorityService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
@@ -518,11 +513,32 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        String adminUser = AuthenticationUtil.getAdminUserName();
+        AuthenticationUtil.setFullyAuthenticatedUser(adminUser);
+        
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        String authorSandboxId = sbInfo.getSandboxId();
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        for (int i = 1; i <= 10; i++)
+        {
+            assetService.createFile(authorSandboxId, authorSandboxPath, "myFile-"+i, null);
+            
+            String relPath = authorSandboxPath + "/" + "myFile-"+i;
+            assertEquals(adminUser, avmLockingService.getLockOwner(wpStoreId, relPath));
+        }
         
         // Delete the web project
         wpService.deleteWebProject(wpStoreId);
         assertNull(wpService.getWebProject(wpStoreId));
+        
+        // Check locks have been removed
+        for (int i = 1; i <= 10; i++)
+        {
+            String relPath = authorSandboxPath + "/" + "myFile-"+i;
+            assertNull("Lock still exists: "+relPath, avmLockingService.getLockOwner(wpStoreId, relPath));
+        }
         
         assertEquals(0, sbService.listSandboxes(wpStoreId).size());
         assertEquals(2, sbService.listSandboxes(wpStoreAnoId).size());
@@ -572,16 +588,16 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         wpStoreId = wpInfo.getStoreId();
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
-        String defaultWebApp = wpInfo.getDefaultWebApp();
+        defaultWebApp = wpInfo.getDefaultWebApp();
         
-        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
-        final String authorSandboxId = sbInfo.getSandboxId();
+        sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
         List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
         
-        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
         
         for (int i = 1; i <= 100; i++)
         {

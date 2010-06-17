@@ -367,12 +367,37 @@ public abstract class AVMNodeImpl implements AVMNode
         getBasicAttributes().setOwner(other.getBasicAttributes().getOwner());
     }
     
+    public void copyACLs(AVMNode other, ACLCopyMode mode)
+    {
+        DbAccessControlList otherAcl = other.getAcl();
+        Long otherAclId = (otherAcl == null ? null : otherAcl.getId());
+        copyACLs(otherAclId, otherAclId, mode);
+    }
+    
+    public void copyACLs(DbAccessControlList otherAcl, DbAccessControlList parentAcl, ACLCopyMode mode)
+    {
+        Long otherAclId = (otherAcl == null ? null : otherAcl.getId());
+        Long parentAclId = (parentAcl == null ? null : parentAcl.getId());
+        
+        copyACLs(otherAclId, parentAclId, mode);
+    }
+    
     protected void copyACLs(AVMNode other, Long parentAcl, ACLCopyMode mode)
     {
-        DbAccessControlList acl = other.getAcl();
-        if (acl != null)
+        DbAccessControlList otherAcl = other.getAcl();
+        copyACLs((otherAcl == null ? null : otherAcl.getId()), parentAcl, mode);
+    }
+    
+    protected void copyACLs(Long otherAcl, Long parentAcl, ACLCopyMode mode)
+    {
+        if (otherAcl != null)
         {
-            setAcl(acl.getCopy(parentAcl, mode));
+            DbAccessControlList aclCopy = AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(otherAcl, parentAcl, mode);
+            setAcl(aclCopy);
+        }
+        else
+        {
+            setAcl(null);
         }
     }
     

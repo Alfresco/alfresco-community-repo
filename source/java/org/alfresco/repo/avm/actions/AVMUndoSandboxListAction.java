@@ -116,7 +116,7 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
                         fgLogger.debug("unlocking file " + path + " in web project " + webProject);
                     }
                     
-                    if (fAVMLockingService.getLock(webProject, path) != null)
+                    if (fAVMLockingService.getLockOwner(webProject, path) != null)
                     {
                         fAVMLockingService.removeLock(webProject, path);
                     }

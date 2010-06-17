@@ -125,36 +125,7 @@ public interface AVMNodeDAO
     public List<Layered> getNewLayeredInStore(AVMStore store);
 
     /**
-     * Inappropriate hack to get Hibernate to play nice.
-     * 
-     * @deprecated
-     */
-    public void flush();
-
-    /**
-     * Evict an AVMNode that is no longer going to be used.
-     * @param node
-     * 
-     * @deprecated
-     */
-    public void evict(AVMNode node);
-
-    /**
      * Clear the cache.
      */
     public void clear();
-
-    /**
-     * Turn off 2nd level caching.
-     * 
-     * @deprecated
-     */
-    public void noCache();
-
-    /**
-     * Turn on 2nd level caching.
-     * 
-     * @deprecated
-     */
-    public void yesCache();
 }

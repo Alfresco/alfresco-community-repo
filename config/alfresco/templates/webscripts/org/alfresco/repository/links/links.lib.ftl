@@ -1,6 +1,7 @@
 <#import "../generic-paged-results.lib.ftl" as gen>
 
 <#macro renderPerson person fieldName>
+<#escape x as jsonUtils.encodeJSONString(x)>
 	"${fieldName}":
 	{
 	<#if person.assocs["cm:avatar"]??>
@@ -10,6 +11,7 @@
 		"firstName": "${person.properties["cm:firstName"]!""}",
 		"lastName": "${person.properties["cm:lastName"]!""}"
 	},
+</#escape>
 </#macro>
 
 <#--
@@ -45,6 +47,7 @@
 </#macro>
 
 <#macro renderLinkList>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 	"metadata":
 	{
@@ -57,10 +60,13 @@
 		<@linkJSON item=item />
 	</@gen.pagedResults>
 }
+</#escape>
 </#macro>
 
 <#macro renderLink>
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
 	"item": <@linkJSON item=item />
 }
+</#escape>
 </#macro>

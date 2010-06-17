@@ -120,27 +120,27 @@ public class ActivityServiceImplTest extends BaseSpringTest
     
     public void testGetEmptyUserFeed() throws Exception
     {
-        List<String> userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", null);
+        List<String> userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site");
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site");
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site", true, false);
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, false);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site", false, true);
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", false, true);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site", true, true);
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, true);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());

@@ -73,6 +73,7 @@
        </property>
        <property name="postCreateScriptUrls">
           <list>
+             <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-MappedFKIndexes.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-Extra.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/post-create-indexes-04.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-extras.sql</value>
@@ -108,6 +109,7 @@
              <ref bean="patch.db-V3.2-AuditTables" />
              <ref bean="patch.db-V3.2-Child-Assoc-QName-CRC" />
              <ref bean="patch.db-V3.3-modify-index-permission_id" />
+             <ref bean="patch.db-V3.2-AddFKIndexes" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

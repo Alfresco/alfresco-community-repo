@@ -40,8 +40,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -53,7 +51,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,8 +69,6 @@ public class RepoAdminServiceImplTest extends TestCase
     
     private RepoAdminService repoAdminService;
     private DictionaryService dictionaryService;
-    private TransactionService transactionService;
-    
     private NodeService nodeService;
     private ContentService contentService;
     private SearchService searchService;
@@ -83,7 +78,7 @@ public class RepoAdminServiceImplTest extends TestCase
     final static String MKR = "{MKR}";
     
     public static final String MODEL_MKR_XML =
-        "<model name='test"+MKR+":testModel"+MKR+"' xmlns='http://www.alfresco.org/model/dictionary/1.0'>" +
+        "<model name='ratest-"+MKR+":testModel"+MKR+"' xmlns='http://www.alfresco.org/model/dictionary/1.0'>" +
         
         "   <description>Test model "+MKR+"</description>" +
         "   <author>Alfresco</author>" +
@@ -96,17 +91,17 @@ public class RepoAdminServiceImplTest extends TestCase
         "   </imports>" +
         
         "   <namespaces>" +
-        "      <namespace uri='http://www.alfresco.org/test/testmodel"+MKR+"/1.0' prefix='test"+MKR+"'/>" +
+        "      <namespace uri='http://www.alfresco.org/test/testmodel"+MKR+"/1.0' prefix='ratest-"+MKR+"'/>" +
         "   </namespaces>" +
         
         "   <types>" +
         
-        "      <type name='test"+MKR+":base'>" +
+        "      <type name='ratest-"+MKR+":base'>" +
         "        <title>Base</title>" +
         "        <description>The Base Type</description>" +
         "        <parent>cm:content</parent>" +
         "        <properties>" +
-        "           <property name='test"+MKR+":prop1'>" +
+        "           <property name='ratest-"+MKR+":prop1'>" +
         "              <type>d:text</type>" +
         "           </property>" +
         "        </properties>" +
@@ -123,8 +118,6 @@ public class RepoAdminServiceImplTest extends TestCase
         
         repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
-        transactionService = (TransactionService) ctx.getBean("TransactionService");
-        
         nodeService = (NodeService) ctx.getBean("NodeService");
         contentService = (ContentService) ctx.getBean("ContentService");
         searchService = (SearchService) ctx.getBean("SearchService");
@@ -472,6 +465,12 @@ public class RepoAdminServiceImplTest extends TestCase
                 String model = MODEL_MKR_XML.replace(MKR, i+"");
                 InputStream modelStream = new ByteArrayInputStream(model.getBytes("UTF-8"));
                 repoAdminService.deployModel(modelStream, modelPrefix+i);
+                
+                logger.info("["+i+"] Deployed - test model: "+modelPrefix+i);
+            }
+            else
+            {
+                logger.warn("["+i+"] Already deployed - test model: "+modelPrefix+i);
             }
         }
     }
@@ -592,30 +591,22 @@ public class RepoAdminServiceImplTest extends TestCase
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                 
-                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                if (opType == 1)
                 {
-                    public Object execute() throws Throwable
-                    {
-                        if (opType == 1)
-                        {
-                            // Deploy model
-                            String model = MODEL_MKR_XML.replace(MKR, i+"");
-                            InputStream modelStream = new ByteArrayInputStream(model.getBytes("UTF-8"));
-                            repoAdminService.deployModel(modelStream, modelPrefix+i);
-                            
-                            logger.info("["+i+"] Deploying test model: "+modelPrefix+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
-                        }
-                        else if (opType == 2)
-                        {
-                            // Undeploy model
-                            repoAdminService.undeployModel(modelPrefix+i);
-                            
-                            logger.info("["+i+"] Undeployed test model: "+modelPrefix+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
-                        }
-                        
-                        return null;
-                    }
-                });
+                    // Deploy model
+                    String model = MODEL_MKR_XML.replace(MKR, i+"");
+                    InputStream modelStream = new ByteArrayInputStream(model.getBytes("UTF-8"));
+                    repoAdminService.deployModel(modelStream, modelPrefix+i);
+                    
+                    logger.info("["+i+"] Deploying - test model: "+modelPrefix+i);
+                }
+                else if (opType == 2)
+                {
+                    // Undeploy model
+                    repoAdminService.undeployModel(modelPrefix+i);
+                    
+                    logger.info("["+i+"] Undeployed - test model: "+modelPrefix+i);
+                }
             }
             catch (Throwable t)
             {
@@ -623,7 +614,7 @@ public class RepoAdminServiceImplTest extends TestCase
                 t.printStackTrace(new PrintWriter(sw));
                 errorStackTrace = sw.toString();
                 
-                logger.error("["+i+"] Failed to deploy test model: "+t);
+                logger.error("["+i+"] Failed to "+(opType == 1 ? "deploy" : "undeploy")+" test model: "+t);
             }
         }
     }

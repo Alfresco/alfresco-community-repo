@@ -50,7 +50,6 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
@@ -285,10 +284,10 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                                 // ignore - model no longer exists
                                 if (logger.isDebugEnabled())
                                 {
-                                    logger.debug("onDictionaryInit: "+inre+" (assume concurrency failure)");
+                                    logger.debug("onDictionaryInit: "+inre+" (assume concurrently deleted)");
                                 }
                                 
-                                throw new ConcurrencyFailureException(inre.getMessage());
+                                continue;
                             }
                         }
                     }

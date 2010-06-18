@@ -163,7 +163,7 @@
       <property name="contentService" ref="ContentService"/>
       <property name="transactionService" ref="transactionService"/>
       <property name="namespaceService" ref="namespaceService"/>
-      <property name="nodeService" ref="NodeService"/>
+      <property name="nodeService" ref="nodeService"/>
       <property name="messageService" ref="messageService"/>
       <property name="tenantAdminService" ref="tenantAdminService"/>
       

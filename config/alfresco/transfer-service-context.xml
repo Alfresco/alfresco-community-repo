@@ -98,6 +98,7 @@
 		class="org.alfresco.repo.transfer.DefaultManifestProcessorFactoryImpl">
 		<property name="nodeService" ref="NodeService" />
 		<property name="contentService" ref="ContentService" />
+		<property name="dictionaryService" ref="DictionaryService" />
 		<property name="nodeResolverFactory" ref="transferNodeResolverFactory" />
 	</bean>
 

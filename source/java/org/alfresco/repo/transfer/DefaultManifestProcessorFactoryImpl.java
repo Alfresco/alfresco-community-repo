@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
@@ -35,6 +36,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
 {
     private NodeService nodeService;
     private ContentService contentService;
+    private DictionaryService dictionaryService;
     private CorrespondingNodeResolverFactory nodeResolverFactory;
 
     /*
@@ -51,6 +53,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         primaryProcessor.setContentService(contentService);
         primaryProcessor.setNodeResolver(nodeResolver);
         primaryProcessor.setNodeService(nodeService);
+        primaryProcessor.setDictionaryService(dictionaryService);
         processors.add(primaryProcessor);
         
         RepoSecondaryManifestProcessorImpl secondaryProcessor = new RepoSecondaryManifestProcessorImpl(receiver, transferId);
@@ -75,6 +78,15 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * @param dictionaryService
+     *            the dictionaryService to set
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**

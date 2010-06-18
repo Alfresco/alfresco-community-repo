@@ -34,6 +34,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -72,6 +74,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
     private NodeService nodeService;
     private ContentService contentService;
+    private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
 
     private Map<NodeRef, List<ChildAssociationRef>> orphans = new HashMap<NodeRef, List<ChildAssociationRef>>(89);
@@ -379,7 +382,14 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             Set<QName> suppliedAspects = new HashSet<QName>(node.getAspects());
             Set<QName> existingAspects = nodeService.getAspects(nodeToUpdate);
             Set<QName> aspectsToRemove = new HashSet<QName>(existingAspects);
-
+            
+            // Add mandatory aspects to the supplied aspects (eg. should not explicitly remove auditable aspect from a folder - see also DMDeploymentTarget for similar)
+            List<AspectDefinition> aspectDefs = dictionaryService.getType(nodeService.getType(nodeToUpdate)).getDefaultAspects(true);
+            for (AspectDefinition aspectDef : aspectDefs)
+            {
+                suppliedAspects.add(aspectDef.getName());
+            }
+            
             aspectsToRemove.removeAll(suppliedAspects);
             suppliedAspects.removeAll(existingAspects);
 
@@ -587,6 +597,15 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * @param dictionaryService
+     *            the dictionaryService to set
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**

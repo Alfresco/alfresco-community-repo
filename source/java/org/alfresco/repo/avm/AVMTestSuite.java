@@ -79,7 +79,7 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(AVMScaleTestP.class);
         suite.addTestSuite(AVMStressTestP.class);
         
-        suite.addTestSuite(PurgeTestP.class);
+        //suite.addTestSuite(PurgeTestP.class);
         suite.addTestSuite(SimultaneousLoadTest.class);
         suite.addTestSuite(AVMDiffPerformanceTest.class);
         suite.addTestSuite(AVMChildNamePatternMatchPerformanceTest.class);

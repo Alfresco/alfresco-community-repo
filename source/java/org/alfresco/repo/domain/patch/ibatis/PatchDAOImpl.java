@@ -21,6 +21,7 @@ package org.alfresco.repo.domain.patch.ibatis;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,10 @@ import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.patch.AbstractPatchDAOImpl;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
@@ -59,20 +63,24 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_ADM_MAX_NODE_ID = "alfresco.patch.select_admMaxNodeId";
     private static final String SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_avmNodesWithOldContentProperties";
     private static final String SELECT_ADM_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_admOldContentProperties";
+    private static final String SELECT_USERS_WITHOUT_USAGE_PROP = "alfresco.usage.select_GetUsersWithoutUsageProp";
     private static final String SELECT_AUTHORITIES_AND_CRC = "alfresco.patch.select_authoritiesAndCrc";
+    private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.permissions.select_AllAclIds";
+    private static final String SELECT_PERMISSIONS_USED_ACL_IDS = "alfresco.permissions.select_UsedAclIds";
+    private static final String SELECT_CHILD_ASSOCS_COUNT = "alfresco.patch.select_allChildAssocsCount";
+    private static final String SELECT_CHILD_ASSOCS_FOR_CRCS = "alfresco.patch.select_allChildAssocsForCrcs";
+    private static final String SELECT_NODES_BY_TYPE_AND_NAME_PATTERN = "alfresco.patch.select_nodesByTypeAndNamePattern";
+    
     private static final String UPDATE_ADM_OLD_CONTENT_PROPERTY = "alfresco.patch.update_admOldContentProperty";
     private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
     private static final String UPDATE_AVM_NODE_LIST_NULLIFY_ACL = "alfresco.avm.update_AVMNodeList_nullifyAcl";
     private static final String UPDATE_AVM_NODE_LIST_SET_ACL = "alfresco.avm.update_AVMNodeList_setAcl";
-    
-    private static final String SELECT_USERS_WITHOUT_USAGE_PROP = "alfresco.usage.select_GetUsersWithoutUsageProp";
+    private static final String UPDATE_CHILD_ASSOC_CRC = "alfresco.patch.update_childAssocCrc";
     
     private static final String SELECT_PERMISSIONS_MAX_ACL_ID = "alfresco.permissions.select_MaxAclId";
     private static final String SELECT_PERMISSIONS_DM_NODE_COUNT = "alfresco.permissions.select_DmNodeCount";
     private static final String SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS = "alfresco.permissions.select_DmNodeCountWherePermissionsHaveChanged";
     
-    private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.permissions.select_AllAclIds";
-    private static final String SELECT_PERMISSIONS_USED_ACL_IDS = "alfresco.permissions.select_UsedAclIds";
     private static final String DELETE_PERMISSIONS_UNUSED_ACES = "alfresco.permissions.delete_UnusedAces";
     private static final String DELETE_PERMISSIONS_ACL_LIST = "alfresco.permissions.delete_AclList";
     private static final String DELETE_PERMISSIONS_ACL_MEMBERS_FOR_ACL_LIST = "alfresco.permissions.delete_AclMembersForAclList";
@@ -436,6 +444,75 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         };
         template.queryWithRowHandler(SELECT_AUTHORITIES_AND_CRC, rowHandler);
         // Done
+        return results;
+    }
+
+    public int getChildAssocCount()
+    {
+        return (Integer) template.queryForObject(SELECT_CHILD_ASSOCS_COUNT);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getChildAssocsForCrcFix(Long minAssocId, int maxResults)
+    {
+        Long qnameId = qnameDAO.getOrCreateQName(ContentModel.PROP_NAME).getFirst();
+        
+        IdsEntity entity = new IdsEntity();
+        entity.setIdOne(qnameId);
+        entity.setIdTwo(minAssocId);
+        List<Map<String, Object>> results = template.queryForList(SELECT_CHILD_ASSOCS_FOR_CRCS, entity, 0, maxResults);
+        // Done
+        return results;
+    }
+
+    public int updateChildAssocCrc(Long assocId, Long childNodeNameCrc, Long qnameCrc)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("id", assocId);
+        params.put("childNodeNameCrc", childNodeNameCrc);
+        params.put("qnameCrc", qnameCrc);
+        return template.update(UPDATE_CHILD_ASSOC_CRC, params);
+    }
+
+    public List<Pair<NodeRef, String>> getNodesOfTypeWithNamePattern(QName typeQName, String namePattern)
+    {
+        Pair<Long, QName> typeQNamePair = qnameDAO.getQName(typeQName);
+        if (typeQNamePair == null)
+        {
+            // No point querying
+            return Collections.emptyList();
+        }
+        Long typeQNameId = typeQNamePair.getFirst();
+        
+        Pair<Long, QName> propQNamePair = qnameDAO.getQName(ContentModel.PROP_NAME);
+        if (propQNamePair == null)
+        {
+            return Collections.emptyList();
+        }
+        Long propQNameId = propQNamePair.getFirst();
+        
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("typeQNameId", typeQNameId);
+        params.put("propQNameId", propQNameId);
+        params.put("namePattern", namePattern);
+        
+        final List<Pair<NodeRef, String>> results = new ArrayList<Pair<NodeRef, String>>(500);
+        RowHandler rowHandler = new RowHandler()
+        {
+            @SuppressWarnings("unchecked")
+            public void handleRow(Object rowObject)
+            {
+                Map<String, Object> row = (Map<String, Object>) rowObject;
+                String protocol = (String) row.get("protocol");
+                String identifier = (String) row.get("identifier");
+                String uuid = (String) row.get("uuid");
+                NodeRef nodeRef = new NodeRef(new StoreRef(protocol, identifier), uuid);
+                String name = (String) row.get("name");
+                Pair<NodeRef, String> pair = new Pair<NodeRef, String>(nodeRef, name);
+                results.add(pair);
+            }
+        };
+        template.queryWithRowHandler(SELECT_NODES_BY_TYPE_AND_NAME_PATTERN, params, rowHandler);
         return results;
     }
 }

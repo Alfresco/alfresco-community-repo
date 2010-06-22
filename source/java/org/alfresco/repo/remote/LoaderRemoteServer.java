@@ -18,9 +18,15 @@
  */
 package org.alfresco.repo.remote;
 
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -29,7 +35,12 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.remote.FileFolderRemote;
 import org.alfresco.service.cmr.remote.LoaderRemote;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -37,13 +48,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Server side implementation of the <code>LoaderServiceTransport</code> transport
@@ -65,7 +69,6 @@ public class LoaderRemoteServer implements LoaderRemote
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthenticationService authenticationService;
     private NodeService nodeService;
-    private NodeDaoService nodeDaoService;
     private FileFolderService fileFolderService;
     private FileFolderRemote fileFolderRemote;
     private MimetypeService mimetypeService;
@@ -93,14 +96,6 @@ public class LoaderRemoteServer implements LoaderRemote
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    /**
-     * @param nodeDaoService                the DAO for node queries
-     */
-    public void setNodeDaoService(NodeDaoService nodeDaoService)
-    {
-        this.nodeDaoService = nodeDaoService;
     }
 
     /**

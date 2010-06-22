@@ -31,7 +31,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorkerAdaptor;
-import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -439,7 +438,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         int batchCount = 0;
         
         boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
-        SessionSizeResourceManager.setDisableInTransaction();
         
         try
         {
@@ -623,7 +621,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
         finally
         {
             MLPropertyInterceptor.setMLAware(wasMLAware);
-            SessionSizeResourceManager.setEnableInTransaction();
         }
         
         return migrationComplete;
@@ -674,7 +671,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                             int batchCount = 0;
                             
                             boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
-                            SessionSizeResourceManager.setDisableInTransaction();
                             
                             try
                             {
@@ -760,7 +756,6 @@ public class VersionMigrator implements ApplicationEventPublisherAware
                             finally
                             {
                                 MLPropertyInterceptor.setMLAware(wasMLAware);
-                                SessionSizeResourceManager.setEnableInTransaction();
                             }
                             
                             if (notMigratedCount > 0)

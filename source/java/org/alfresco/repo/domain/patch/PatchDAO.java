@@ -19,11 +19,15 @@
 package org.alfresco.repo.domain.patch;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Additional DAO services for patches
@@ -136,4 +140,40 @@ public interface PatchDAO
      * @return      Returns the names of authorities with incorrect CRC values
      */
     public List<String> getAuthoritiesWithNonUtf8Crcs();
+    
+    /**
+     * @return                      Returns the number child association rows
+     */
+    public int getChildAssocCount();
+    
+    /**
+     * The results map contains:
+     * <pre>
+     * <![CDATA[
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="childNodeNameCrc" column="child_node_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="qnameCrc" column="qname_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNodeUuid" column="child_node_uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="childNodeName" column="child_node_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+       ]]>
+     * </pre>
+     * @param minAssocId            the minimum child assoc ID
+     * @param maxResults            the number of child associations to fetch
+     * @return                      Returns child associations <b>that need fixing</b>
+     */
+    public List<Map<String, Object>> getChildAssocsForCrcFix(Long minAssocId, int maxResults);
+    
+    public int updateChildAssocCrc(Long assocId, Long childNodeNameCrc, Long qnameCrc);
+    
+    /**
+     * Query for a list of nodes that have a given type and share the same name pattern (SQL LIKE syntax)
+     * 
+     * @param typeQName             the node type
+     * @param namePattern           the SQL LIKE pattern
+     * @return                      Returns the node ID and node name
+     */
+    public List<Pair<NodeRef, String>> getNodesOfTypeWithNamePattern(QName typeQName, String namePattern);
 }

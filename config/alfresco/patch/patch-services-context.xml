@@ -468,15 +468,14 @@
             <value>3.3.x</value>
         </property>
     </bean>
-    <bean id="patch.InvalidNameEnding" class="org.alfresco.repo.admin.patch.impl.InvalidNameEndingPatch" parent="basePatch" >
+    <bean id="patch.InvalidNameEnding" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.InvalidNameEnding</value></property>
         <property name="description"><value>patch.invalidNameEnding.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>21</value></property>
         <property name="targetSchema"><value>22</value></property>
-        <!-- helper beans -->
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
+        <property name="lastSupportedVersion" >
+            <value>3.3.x</value>
         </property>
     </bean>
     <bean id="patch.systemDescriptorContent" class="org.alfresco.repo.admin.patch.impl.SystemDescriptorContentPatch" parent="basePatch" >
@@ -530,9 +529,11 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>33</value></property>
         <property name="targetSchema"><value>34</value></property>
-        <!-- helper beans -->
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
+        <property name="patchDAO">
+            <ref bean="patchDAO" />
+        </property>
+        <property name="controlDAO">
+            <ref bean="controlDAO" />
         </property>
     </bean>
 
@@ -1810,14 +1811,11 @@
         <property name="authorityService">
             <ref bean="authorityService" />
         </property>
-      <property name="avmService">
+        <property name="avmService">
             <ref bean="avmService" />
         </property>
-      <property name="siteService">
+        <property name="siteService">
             <ref bean="siteService" />
-        </property>
-      <property name="hibernateSessionHelper">
-            <ref bean="hibernateSessionHelper"/>
         </property>
         <property name="dependsOn">
             <list>
@@ -1958,23 +1956,14 @@
                 <ref bean="patch.InvalidNameEnding" />
             </list>
         </property>
-        <property name="sessionFactory">
-            <ref bean="sessionFactory" />
-        </property>
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
+        <property name="patchDAO">
+            <ref bean="patchDAO" />
         </property>
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
         </property>
         <property name="controlDAO">
             <ref bean="controlDAO" />
-        </property>
-        <property name="ruleService">
-            <ref bean="ruleService" />
-        </property>
-        <property name="dialect">
-            <ref bean="dialect" />
         </property>
     </bean>
     

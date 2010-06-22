@@ -40,9 +40,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
-import org.alfresco.repo.domain.hibernate.NodeImpl;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -76,7 +73,6 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.collections.map.SingletonMap;
-import org.hibernate.Session;
 import org.springframework.context.ApplicationContext;
 
 import sun.security.action.GetBooleanAction;
@@ -156,7 +152,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     protected TransactionService transactionService;
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected AuthenticationComponent authenticationComponent;
-    protected NodeDaoService nodeDaoService;
     protected NodeService nodeService;
     /** populated during setup */
     protected NodeRef rootNodeRef;
@@ -424,28 +419,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         // done
         return ret;
-    }
-    
-    @SuppressWarnings("unchecked")
-    private int countNodesByReference(NodeRef nodeRef)
-    {
-        String query =
-                "select count(node.uuid)" +
-                " from " +
-                NodeImpl.class.getName() + " node" +
-                " where" +
-                "    node.uuid = ? and" +
-                "    node.deleted = false and" +
-                "    node.store.protocol = ? and" +
-                "    node.store.identifier = ?";
-        Session session = getSession();
-        List results = session.createQuery(query)
-            .setString(0, nodeRef.getId())
-            .setString(1, nodeRef.getStoreRef().getProtocol())
-            .setString(2, nodeRef.getStoreRef().getIdentifier())
-            .list();
-        Long count = (Long) results.get(0);
-        return count.intValue();
     }
     
     /**
@@ -916,9 +889,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("path1"),
                 ContentModel.TYPE_CONTAINER);
         NodeRef nodeRef = assocRef.getChildRef();
-        // count the nodes with the given id
-        int count = countNodesByReference(nodeRef);
-        assertEquals("Unexpected number of nodes present", 1, count);
+        assertTrue(nodeService.exists(nodeRef));
     }
     
     public void testLargeStrings() throws Exception
@@ -983,8 +954,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
 
         // control checks
-        assertEquals("n6 not present", 1, countNodesByReference(n6Ref));
-        assertEquals("n8 not present", 1, countNodesByReference(n8Ref));
+        assertTrue("n6 not present", nodeService.exists(n6Ref));
+        assertTrue("n8 not present", nodeService.exists(n8Ref));
         assertTrue("n8 exists failure", nodeService.exists(n8Ref));
         assertEquals("n6 primary parent association not present on n3", 1, countChildrenOfNode(n3Ref));
         assertEquals("n6 secondary parent association not present on n4", 1, countChildrenOfNode(n4Ref));
@@ -1000,8 +971,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         setComplete();
         endTransaction();
 
-        assertEquals("n6 not directly deleted", 0, countNodesByReference(n6Ref));
-        assertEquals("n8 not cascade deleted", 0, countNodesByReference(n8Ref));
+        assertFalse("n6 not directly deleted", nodeService.exists(n6Ref));
+        assertFalse("n8 not cascade deleted", nodeService.exists(n8Ref));
         assertEquals("n6 primary parent association not removed from n3", 0, countChildrenOfNode(n3Ref));
         assertEquals("n6 secondary parent association not removed from n4", 0, countChildrenOfNode(n4Ref));
         assertEquals("n8 secondary parent association not removed from n7", 0, countChildrenOfNode(n7Ref));
@@ -1123,11 +1094,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         // delete n1
         nodeService.deleteNode(n1Ref);
-        assertEquals("Node not directly deleted", 0, countNodesByReference(n1Ref));
-        assertEquals("Node not cascade deleted", 0, countNodesByReference(n3Ref));
-        assertEquals("Node incorrectly cascade deleted", 1, countNodesByReference(n4Ref));
-        assertEquals("Node not cascade deleted", 0, countNodesByReference(n6Ref));
-        assertEquals("Node not cascade deleted", 0, countNodesByReference(n8Ref));
+        assertFalse("Node not directly deleted", nodeService.exists(n1Ref));
+        assertFalse("Node not cascade deleted", nodeService.exists(n3Ref));
+        assertTrue("Node incorrectly cascade deleted", nodeService.exists(n4Ref));
+        assertFalse("Node not cascade deleted", nodeService.exists(n6Ref));
+        assertFalse("Node not cascade deleted", nodeService.exists(n8Ref));
         
         // check before delete delete policy has been called
         assertTrue("n1Ref before delete policy not called", beforeDeleteNodeRefs.contains(n1Ref));
@@ -1263,24 +1234,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
     }
     
-    
-    @SuppressWarnings("unchecked")
     private int countChildrenOfNode(NodeRef nodeRef)
     {
-        String query =
-                "select childAssoc" +
-                " from " +
-                ChildAssocImpl.class.getName() + " childAssoc" +
-                " join childAssoc.parent node" +
-                " where node.uuid = ? and node.store.protocol = ? and node.store.identifier = ?";
-        Session session = getSession();
-        List results = session.createQuery(query)
-            .setString(0, nodeRef.getId())
-            .setString(1, nodeRef.getStoreRef().getProtocol())
-            .setString(2, nodeRef.getStoreRef().getIdentifier())
-            .list();
-        int count = results.size();
-        return count;
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
+        return children.size();
     }
     
     public void testAddBogusChild() throws Exception

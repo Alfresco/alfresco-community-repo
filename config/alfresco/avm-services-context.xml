@@ -252,32 +252,4 @@
 	    </property>
 	</bean>
 
-   <bean id="avmSessionSizeResourceInterceptor" class="org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor" >
-      <property name="methodResourceManagers">
-         <list>
-            <ref bean="avmSessionSizeResourceManager"></ref>
-         </list>
-      </property>
-      <property name="elapsedTimeBeforeActivationMillis">
-         <value>500</value>
-      </property>
-      <property name="resourceManagerCallFrequencyMillis">
-         <value>250</value>
-      </property>
-   </bean>
-
-   <bean id="avmSessionSizeResourceManager" class="org.alfresco.repo.domain.hibernate.SessionSizeResourceManager">
-      <property name="sessionFactory">
-         <ref bean="sessionFactory" />
-      </property>
-      <property name="writeThreshold">
-         <value>100</value>
-      </property>
-      <property name="readThreshold">
-         <value>100</value>
-      </property>
-      <property name="retentionFactor">
-         <value>0</value>
-      </property>
-   </bean>
 </beans>

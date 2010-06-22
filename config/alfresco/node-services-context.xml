@@ -233,9 +233,6 @@
       <property name="nodeIndexer">
          <ref bean="nodeIndexer"/>
       </property>
-      <property name="cascadeInTransaction">
-         <value>${system.cascadeDeleteInTransaction}</value>
-      </property>
       <property name="tenantService">
          <ref bean="tenantService"/>
       </property>

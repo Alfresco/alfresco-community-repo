@@ -33,7 +33,6 @@ import java.util.Stack;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
@@ -125,14 +124,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
-     * @deprecated              the functionality did not see wide enough usage to warrant the maintenance
-     */
-    public void setCascadeInTransaction(boolean cascadeInTransaction)
-    {
-        logger.warn("NodeService property 'cascadeInTransaction' is no longer available.");
-    }
-
-    /**
      * Performs a null-safe get of the node
      * 
      * @param nodeRef the node to retrieve
@@ -170,7 +161,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
-     * @see NodeDaoService#getStores()
+     * {@inheritDoc}
      */
     public List<StoreRef> getStores()
     {

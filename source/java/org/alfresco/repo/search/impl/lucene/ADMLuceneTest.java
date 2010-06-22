@@ -49,7 +49,6 @@ import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
-import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -631,7 +630,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
                 {
                     public Object execute() throws Throwable
                     {
-                        SessionSizeResourceManager.setDisableInTransaction();
                         for (int i = 0; i < 100; i++)
                         {
                             ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", query);
@@ -1369,8 +1367,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private void doBulkTest(int n) throws Exception
     {
-        SessionSizeResourceManager.setDisableInTransaction();
-
         Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
         testProperties.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"), "BULK");
         for (int i = 0; i < n; i++)
@@ -2202,7 +2198,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         {
             public Object execute() throws Throwable
             {
-                SessionSizeResourceManager.setDisableInTransaction();
                 for (int i = 0; i < 100; i+=10)
                 {
                     HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
@@ -2310,7 +2305,6 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
                 {
                     public Object execute() throws Throwable
                     {
-                        SessionSizeResourceManager.setDisableInTransaction();
                         for (int i = 0; i < 20; i++)
                         {
                             HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();

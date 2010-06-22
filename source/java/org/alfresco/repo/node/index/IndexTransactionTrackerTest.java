@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;

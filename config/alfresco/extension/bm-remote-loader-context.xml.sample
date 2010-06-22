@@ -48,9 +48,6 @@
         <property name="nodeService">
             <ref bean="NodeService"/>
         </property>
-        <property name="nodeDaoService">
-            <ref bean="nodeDaoService"/>
-        </property>
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
         </property>

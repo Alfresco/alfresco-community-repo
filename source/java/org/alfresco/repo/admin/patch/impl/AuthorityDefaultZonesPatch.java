@@ -23,10 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
-import org.alfresco.repo.domain.hibernate.HibernateSessionHelper;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -35,6 +33,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch to assign users and groups to default zones
@@ -51,12 +50,8 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
 
     /** The authority service. */
     private AuthorityService authorityService;
-
     private AVMService avmService;
-
     private SiteService siteService;
-
-    private HibernateSessionHelper hibernateSessionHelper;
 
     /**
      * Sets the authority service.
@@ -87,14 +82,6 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         this.siteService = siteService;
     }
     
-    /**
-     * @param hibernateSessionHelper
-     */
-    public void setHibernateSessionHelper(HibernateSessionHelper hibernateSessionHelper)
-    {
-        this.hibernateSessionHelper = hibernateSessionHelper;
-    }
-
     @Override
     protected String applyInternal() throws Exception
     {
@@ -167,9 +154,7 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
     private int setZones(AuthorityType authorityType, List<Action> actions, int total, int start)
     {
         int count = start;
-        hibernateSessionHelper.mark();
         Set<String> authorities = authorityService.getAllAuthorities(authorityType);
-        hibernateSessionHelper.reset();
         for (String authority : authorities)
         {
             for (Action action : actions)
@@ -188,7 +173,6 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
                     break;
                 }
             }
-            hibernateSessionHelper.reset();
             count++;
             reportProgress(total, count);
         }

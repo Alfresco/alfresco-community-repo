@@ -30,7 +30,6 @@ import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,10 +49,6 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
 {
     protected NodeService getNodeService()
     {
-        // Force cascading
-        DbNodeServiceImpl dbNodeServiceImpl = (DbNodeServiceImpl) applicationContext.getBean("dbNodeServiceImpl");
-        dbNodeServiceImpl.setCascadeInTransaction(true);
-        
         return (NodeService) applicationContext.getBean("NodeService");
     }
 

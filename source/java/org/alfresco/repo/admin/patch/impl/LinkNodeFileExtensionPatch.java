@@ -22,21 +22,20 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.sql.Savepoint;
 import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.hibernate.NodeImpl;
-import org.alfresco.service.cmr.admin.PatchException;
+import org.alfresco.repo.domain.control.ControlDAO;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -50,45 +49,47 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
     private static final String MSG_REWRITTEN = "patch.linkNodeExtension.rewritten";
     private static final String ERR_UNABLE_TO_FIX = "patch.linkNodeExtension.err.unable_to_fix";
     
-    private SessionFactory sessionFactory;
+    private PatchDAO patchDAO;
+    private ControlDAO controlDAO;
+    private NodeService nodeService;
 
     /**
      * Default constructor
-     *
      */
     public LinkNodeFileExtensionPatch()
     {
     }
 
-    /**
-     * Set the session factory
-     * 
-     * @param sessionFactory SessionFactory
-     */
-    public void setSessionFactory(SessionFactory sessionFactory)
+    public void setPatchDAO(PatchDAO patchDAO)
     {
-        this.sessionFactory = sessionFactory;
+        this.patchDAO = patchDAO;
+    }
+
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     @Override
     protected void checkProperties()
     {
         super.checkProperties();
-        checkPropertyNotNull(sessionFactory, "sessionFactory");
+        checkPropertyNotNull(patchDAO, "patchDAO");
+        checkPropertyNotNull(nodeService, "nodeService");
     }
 
     @Override
     protected String applyInternal() throws Exception
     {
-        // Initialise the helper
-    	
-        HibernateHelper helper = new HibernateHelper();
-        helper.setSessionFactory(sessionFactory);
+        LinkNodeFileExtensionHelper helper = new LinkNodeFileExtensionHelper();
 
         try
         {
-        	// Fix the link node file names
-        	
             return helper.fixNames();
         }
         finally
@@ -97,12 +98,12 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
         }
     }
     
-    private class HibernateHelper extends HibernateDaoSupport
+    private class LinkNodeFileExtensionHelper extends HibernateDaoSupport
     {
         private File logFile;
         private FileChannel channel;
         
-        private HibernateHelper() throws IOException
+        private LinkNodeFileExtensionHelper() throws IOException
         {
         	// Open a log file
             File tempDir = TempFileProvider.getLongLifeTempDir("patches");
@@ -119,12 +120,12 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
             writeLine("LinkNodeExtensionPatch executing on " + new Date());
         }
         
-        private HibernateHelper write(Object obj) throws IOException
+        private LinkNodeFileExtensionHelper write(Object obj) throws IOException
         {
             channel.write(ByteBuffer.wrap(obj.toString().getBytes()));
             return this;
         }
-        private HibernateHelper writeLine(Object obj) throws IOException
+        private LinkNodeFileExtensionHelper writeLine(Object obj) throws IOException
         {
             write(obj);
             write("\n");
@@ -137,78 +138,46 @@ public class LinkNodeFileExtensionPatch extends AbstractPatch
 
         public String fixNames() throws Exception
         {
-            // Get the list of nodes to be updated
-        	
-            List<NodeImpl> nodes = getInvalidNames();
+            List<Pair<NodeRef, String>> names = patchDAO.getNodesOfTypeWithNamePattern(ContentModel.TYPE_LINK, "%.lnk");
 
             int updated = 0;
-            for (NodeImpl node : nodes)
+            for (Pair<NodeRef, String> pair : names)
             {
-            	// Check that the node is a link node
-            	
-                NodeRef nodeRef = node.getNodeRef();
-                
-                if ( nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION) != null)
+                NodeRef nodeRef = pair.getFirst();
+                String name = pair.getSecond();
+                // Update the name string, replace '.lnk' with '.url'
+                String updatedName = name.substring(0, name.length() - 4) + ".url";
+                int idx = 0;
+                boolean applied = false;
+                while (!applied && idx < 10)
                 {
-                	// Get the current file name
-                	
-	                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-	                if (name != null && name.length() >= 4 && name.endsWith(".lnk"))
-	                {
-	                	// Update the name string, replace '.lnk' with '.url'
-	                	
-	                	String updatedName = name.substring(0, name.length() - 4) + ".url";
-	                	
-	                    int idx = 0;
-	                    boolean applied = false;
-	                    while (!applied)
-	                    {
-	                        try
-	                        {
-	                            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, updatedName);
-	                            applied = true;
-	                        }
-	                        catch(DuplicateChildNodeNameException e)
-	                        {
-	                            idx++;
-	                            if (idx > 10)
-	                            {
-	                                writeLine(I18NUtil.getMessage(ERR_UNABLE_TO_FIX, name, updatedName));
-	                                throw new PatchException(ERR_UNABLE_TO_FIX, logFile);
-	                            }
-	                            updatedName += "_" + idx;
-	                        }
-	                    }
-	                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN, name ,updatedName));
-	                    updated++;
-	                    getSession().flush();
-	                    getSession().clear();
-	                }
+                    Savepoint savepoint = controlDAO.createSavepoint("LinkNodeFileExtensionsFix");
+                    try
+                    {
+                        nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, updatedName);
+                        controlDAO.releaseSavepoint(savepoint);
+                        applied = true;
+                    }
+                    catch(DuplicateChildNodeNameException e)
+                    {
+                        controlDAO.rollbackToSavepoint(savepoint);
+                        idx++;
+                        updatedName += "_" + idx;
+                    }
                 }
+                if (applied)
+                {
+                    writeLine(I18NUtil.getMessage(MSG_REWRITTEN, name ,updatedName));
+                }
+                else
+                {
+                    writeLine(I18NUtil.getMessage(ERR_UNABLE_TO_FIX, name, updatedName));
+                }
+                updated++;
             }
             
             String msg = I18NUtil.getMessage(MSG_SUCCESS, updated, logFile);
             return msg;
         }
-        
-        @SuppressWarnings("unchecked")
-        private List<NodeImpl> getInvalidNames()
-        {
-            HibernateCallback callback = new HibernateCallback()
-            {
-                public Object doInHibernate(Session session)
-                {
-                    Query query = session
-                            .createQuery(
-                                    "select node from org.alfresco.repo.domain.hibernate.NodeImpl as node " + 
-                                    "join node.properties prop where " +
-                                    " prop.stringValue like '%.lnk' ");                    
-                    return query.list();
-                }
-            };
-            List<NodeImpl> results = (List<NodeImpl>) getHibernateTemplate().execute(callback);
-            return results;
-        }
-        
     }
 }

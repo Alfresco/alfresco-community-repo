@@ -63,7 +63,7 @@ public class ChildAssocEntity
     private Boolean isPrimary;
     private int assocIndex;
     
-    // Suplemental query-related parameters
+    // Supplemental query-related parameters
     private List<Long> typeQNameIds;
     private List<Long> childNodeNameCrcs;
     private List<Long> childNodeTypeQNameIds;

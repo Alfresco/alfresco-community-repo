@@ -29,10 +29,8 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
-import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -104,10 +102,6 @@ public class ArchiveAndRestoreTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
-        // Force cascading
-        DbNodeServiceImpl dbNodeServiceImpl = (DbNodeServiceImpl) ctx.getBean("dbNodeServiceImpl");
-        dbNodeServiceImpl.setCascadeInTransaction(true);
-        
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         nodeService = serviceRegistry.getNodeService();
@@ -471,8 +465,6 @@ public class ArchiveAndRestoreTest extends TestCase
      */
     public void testArchiveVsDeletePerformance() throws Exception
     {
-        // Disable the in-transaction flushing
-        SessionSizeResourceManager.setDisableInTransaction();
         // Start by deleting the node structure and then recreating it.
         // Only measure the delete speed
         int iterations = 100;

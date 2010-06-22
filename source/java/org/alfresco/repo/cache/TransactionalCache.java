@@ -188,7 +188,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             data = new TransactionData();
             // create and initialize caches
-            data.updatedItemsCache = new LRUMap(17);
+            data.updatedItemsCache = new LRUMap(maxCacheSize);
             data.removedItemsCache = new HashSet<K>(13);
 
             // ensure that we get the transaction callbacks as we have bound the unique

@@ -392,6 +392,36 @@ public class CacheTest extends TestCase
     }
     
     /**
+     * Time how long it takes to create and complete a whole lot of transactions
+     */
+    public void testInitializationPerformance() throws Exception
+    {
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        long start = System.nanoTime();
+        int count = 10000;
+        for (int i = 0; i < count; i++)
+        {
+            UserTransaction txn = transactionService.getUserTransaction();
+            try
+            {
+                txn.begin();
+                transactionalCache.contains("A");
+            }
+            finally
+            {
+                try { txn.rollback(); } catch (Throwable ee) {}
+            }
+        }
+        long end = System.nanoTime();
+        
+        // report
+        System.out.println(
+                "Cache initialization performance test: \n" +
+                "   count:       " + count + "\n" +
+                "   transaction: " + (end-start)/((long)count) + " ns\\count"); 
+    }
+    
+    /**
      * @see #testPerformance()
      */
     public static void main(String ... args)
@@ -400,7 +430,10 @@ public class CacheTest extends TestCase
         {
             CacheTest test = new CacheTest();
             test.setUp();
-            System.out.println("Press any key to run test ...");
+            System.out.println("Press any key to run initialization test ...");
+            System.in.read();
+            test.testInitializationPerformance();
+            System.out.println("Press any key to run performance test ...");
             System.in.read();
             test.testPerformance();
             System.out.println("Press any key to shutdown ...");

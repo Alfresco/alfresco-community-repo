@@ -21,6 +21,7 @@ package org.alfresco.repo.cache;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +31,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -188,7 +188,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             data = new TransactionData();
             // create and initialize caches
-            data.updatedItemsCache = new LRUMap(maxCacheSize);
+            data.updatedItemsCache = new LRULinkedHashMap<K, CacheBucket<V>>(23);
             data.removedItemsCache = new HashSet<K>(13);
 
             // ensure that we get the transaction callbacks as we have bound the unique
@@ -273,7 +273,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Checks the per-transaction caches for the object before going to the shared cache.
      * If the thread is not in a transaction, then the shared cache is accessed directly.
      */
-    @SuppressWarnings("unchecked")
     public V get(K key)
     {
         boolean ignoreSharedCache = false;
@@ -398,7 +397,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 // we have an active transaction - add the item into the updated cache for this transaction
                 // are we in an overflow condition?
-                if (txnData.updatedItemsCache.isFull())
+                if (txnData.updatedItemsCache.hasHitSize())
                 {
                     // overflow about to occur or has occured - we can only guarantee non-stale
                     // data by clearing the shared cache after the transaction.  Also, the
@@ -600,7 +599,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /**
      * Merge the transactional caches into the shared cache
      */
-    @SuppressWarnings("unchecked")
     public void afterCommit()
     {
         if (isDebugEnabled)
@@ -831,10 +829,38 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /** Data holder to bind data to the transaction */
     private class TransactionData
     {
-        private LRUMap updatedItemsCache;
+        private LRULinkedHashMap<K, CacheBucket<V>> updatedItemsCache;
         private Set<K> removedItemsCache;
         private boolean haveIssuedFullWarning;
         private boolean isClearOn;
         private boolean isClosed;
+    }
+    
+    /**
+     * Simple LRU based on {@link LinkedHashMap}
+     * 
+     * @author Derek Hulley
+     * @since 3.4
+     */
+    private class LRULinkedHashMap<K1, V1> extends LinkedHashMap<K1, V1>
+    {
+        private static final long serialVersionUID = -4874684348174271106L;
+
+        private LRULinkedHashMap(int initialSize)
+        {
+            super(initialSize);
+        }
+        private boolean hasHitSize()
+        {
+            return size() >= maxCacheSize;
+        }
+        /**
+         * Remove the eldest entry if the size has reached the maximum cache size
+         */
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<K1, V1> eldest)
+        {
+            return (size() > maxCacheSize);
+        }
     }
 }

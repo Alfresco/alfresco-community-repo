@@ -913,15 +913,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         TransactionEntity txn = getCurrentTransaction();
         node.setTransaction(txn);
         
-        Set<QName> nodeAspects = null;
-        
         // Audit
+        boolean addAuditableAspect = false;
         if (auditableProps != null)
         {
             // Client-supplied cm:auditable values
             node.setAuditableProperties(auditableProps);
-            
-            nodeAspects = Collections.singleton(ContentModel.ASPECT_AUDITABLE);
+            addAuditableAspect = true;
         }
         else if (AuditablePropertiesEntity.hasAuditableAspect(nodeTypeQName, dictionaryService))
         {
@@ -929,12 +927,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             auditableProps = new AuditablePropertiesEntity();
             auditableProps.setAuditValues(null, null, true, 0L);
             node.setAuditableProperties(auditableProps);
-            
-            nodeAspects = Collections.singleton(ContentModel.ASPECT_AUDITABLE);
-        }
-        else
-        {
-            nodeAspects = Collections.<QName>emptySet();
+            addAuditableAspect = true;
         }
         
         Long id = null;
@@ -961,6 +954,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
         node.setId(id);
+        
+        Set<QName> nodeAspects = null;
+        if (addAuditableAspect)
+        {
+            Long auditableAspectQNameId = qnameDAO.getOrCreateQName(ContentModel.ASPECT_AUDITABLE).getFirst();
+            insertNodeAspect(id, auditableAspectQNameId);
+            nodeAspects = Collections.<QName>singleton(ContentModel.ASPECT_AUDITABLE);
+        }
+        else
+        {
+            nodeAspects = Collections.<QName>emptySet();
+        }
         
         // Lock the node and cache
         node.lock();
@@ -1551,6 +1556,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Map<QName, Serializable> newProps,
             boolean isAddOnly)
     {
+        if (isAddOnly && newProps.size() == 0)
+        {
+            return false;                       // No point adding nothing
+        }
+        
         Node node = getNodeNotNull(nodeId);
         // Copy inbound values
         newProps = new HashMap<QName, Serializable>(newProps);
@@ -1888,6 +1898,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     public boolean addNodeAspects(Long nodeId, Set<QName> aspectQNames)
     {
+        if (aspectQNames.size() == 0)
+        {
+            return false;
+        }
         // Copy the inbound set
         Set<QName> aspectQNamesToAdd = new HashSet<QName>(aspectQNames);
         // Get existing

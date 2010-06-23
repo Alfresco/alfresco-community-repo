@@ -79,14 +79,26 @@ public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformer
        
        ContentReader targetReader = targetWriter.getReader();
        String checkContent = targetReader.getContentString();
-       System.err.println(checkContent);
+       
+       additionalContentCheck(
+             MimetypeMap.MIMETYPE_EXCEL, 
+             MimetypeMap.MIMETYPE_TEXT_CSV, 
+             checkContent
+       );
     }
     
     @Override
     protected void additionalContentCheck(String sourceMimetype,
          String targetMimetype, String contents) {
        if(targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_CSV)) {
-          System.err.println(contents);
+          assertTrue(
+                "Content not properly CSV'd",
+                contents.contains("1,2,2")
+          );
+          assertTrue(
+                "Content not properly CSV'd",
+                contents.contains("\"The\",\"quick\",\"brown\",\"fox\"")
+          );
        } else {
           super.additionalContentCheck(sourceMimetype, targetMimetype, contents);
        }

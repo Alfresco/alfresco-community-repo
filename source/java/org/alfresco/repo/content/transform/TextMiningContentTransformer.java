@@ -32,6 +32,11 @@ import org.textmining.extraction.word.WordTextExtractorFactory;
  * Makes use of the {@link http://www.textmining.org/ TextMining} library to
  * perform conversions from MSWord documents to text.
  * 
+ * Doesn't currently use {@link http://tika.apache.org/ Apache Tika} to
+ *  do this, as Tika can't handle Word 6 or Word 95 documents, only
+ *  Word 97, 2000, 2003, 2007 and 2010.
+ * Once Tika does support these older formats, we can switch to it.
+ * 
  * @author Derek Hulley
  */
 public class TextMiningContentTransformer extends AbstractContentTransformer2

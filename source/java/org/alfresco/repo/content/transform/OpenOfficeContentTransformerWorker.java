@@ -43,8 +43,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.DefaultResourceLoader;
 
 /**
- * Makes use of the {@link http://sourceforge.net/projects/joott/JOOConverter} library to perform OpenOffice-drive
- * conversions.
+ * Makes use of the {@link http://sourceforge.net/projects/joott/JOOConverter} library to perform 
+ *  OpenOffice-driven conversions.
+ * This requires that OpenOffice be running, but delivers a wider range of transformations
+ *  than Tika is able to (Tika just translates into Text, HTML and XML)
  * 
  * @author Derek Hulley
  */

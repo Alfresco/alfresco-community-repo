@@ -18,71 +18,28 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.InputStream;
-
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.pdf.PDFParser;
 
 /**
- * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library to
- * perform conversions from PDF files to text.
+ * Uses {@link http://tika.apache.org/ Apache Tika} and
+ *  {@link http://pdfbox.apache.org/ Apache PDFBox} to perform
+ *  conversions from PDF documents.
  * 
+ * @author Nick Burch
  * @author Derek Hulley
  */
-public class PdfBoxContentTransformer extends AbstractContentTransformer2
+public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
 {
-    /**
-     * Currently the only transformation performed is that of text extraction from PDF documents.
-     */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        // TODO: Expand PDFBox usage to convert images to PDF and investigate other conversions
-        
-        if (!MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) ||
-            !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
-        {
-            // only support PDF -> Text
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+    public PdfBoxContentTransformer() {
+       super(new String[] {
+             MimetypeMap.MIMETYPE_PDF
+       });
     }
 
-    protected void transformInternal(
-            ContentReader reader,
-            ContentWriter writer,
-            TransformationOptions options) throws Exception
-    {
-        PDDocument pdf = null;
-        InputStream is = null;
-        try
-        {
-            is = reader.getContentInputStream();
-            // stream the document in
-            pdf = PDDocument.load(is);
-            // strip the text out
-            PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(pdf);
-            
-            // dump it all to the writer
-            writer.putContent(text);
-        }
-        finally
-        {
-            if (pdf != null)
-            {
-                try { pdf.close(); } catch (Throwable e) {e.printStackTrace(); }
-            }
-            if (is != null)
-            {
-                try { is.close(); } catch (Throwable e) {e.printStackTrace(); }
-            }
-        }
+    @Override
+    protected Parser getParser() {
+       return new PDFParser();
     }
 }

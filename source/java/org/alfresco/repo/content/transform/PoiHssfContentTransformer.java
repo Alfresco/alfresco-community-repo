@@ -42,8 +42,6 @@ import org.xml.sax.SAXException;
  *  Xml or Text (space or comma separated)
  * <p>Handles all sheets in the file.
  * 
- * TODO CSV Support
- * 
  * @author Nick Burch
  * @author Derek Hulley
  */
@@ -103,7 +101,6 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
      * A wrapper around the normal Tika BodyContentHandler,
      *  which causes things to be CSV encoded rather than
      *  tab separated
-     * TODO Get rid of the extra tabs that crop up
      */
     protected static class CsvContentHandler extends BodyContentHandler {
        private static final char[] comma = new char[]{ ',' };
@@ -114,6 +111,16 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
        
        protected CsvContentHandler(Writer output) {
           super(output);
+       }
+
+       @Override
+       public void ignorableWhitespace(char[] ch, int start, int length)
+            throws SAXException {
+          if(length == 1 && ch[0] == '\t') {
+             // Ignore tabs, as they mess up the CSV output
+          } else {
+             super.ignorableWhitespace(ch, start, length);
+          }
        }
 
        @Override
@@ -150,32 +157,28 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
        public void startElement(String uri, String localName, String name,
             Attributes atts) throws SAXException {
           if(localName.equals("td")) {
-             localName = "span";
-             name = "span";
-             
              inCell = true;
              if(needsComma) {
                 super.characters(comma, 0, 1);
                 needsComma = true;
              }
+          } else {
+             super.startElement(uri, localName, name, atts);
           }
-          super.startElement(uri, localName, name, atts);
        }
 
        @Override
        public void endElement(String uri, String localName, String name)
             throws SAXException {
           if(localName.equals("td")) {
-             localName = "span";
-             name = "span";
-             
              needsComma = true;
              inCell = false;
+          } else {
+             if(localName.equals("tr")) {
+                needsComma = false;
+             }
+             super.endElement(uri, localName, name);
           }
-          if(localName.equals("tr")) {
-             needsComma = false;
-          }
-          super.endElement(uri, localName, name);
        }
     }
 }

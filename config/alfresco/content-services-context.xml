@@ -367,8 +367,14 @@
          class="org.alfresco.repo.content.transform.TikaAutoContentTransformer"
          parent="baseContentTransformer" />
 
+   <!-- This one does excel only -->
    <bean id="transformer.Poi"
          class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
+         parent="baseContentTransformer" />
+
+   <!-- This one does the other office formats, like word and powerpoint -->
+   <bean id="transformer.Office"
+         class="org.alfresco.repo.content.transform.PoiContentTransformer"
          parent="baseContentTransformer" />
 
    <bean id="transformer.TextMining"

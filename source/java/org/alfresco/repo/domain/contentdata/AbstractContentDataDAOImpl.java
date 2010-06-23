@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.contentdata;
 
 import java.io.Serializable;
+import java.sql.Savepoint;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +29,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.encoding.EncodingDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
@@ -65,6 +67,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     private static Log logger = LogFactory.getLog(AbstractContentDataDAOImpl.class);
     
     private final ContentDataCallbackDAO contentDataCallbackDAO;
+    private ControlDAO controlDAO;
     private MimetypeDAO mimetypeDAO;
     private EncodingDAO encodingDAO;
     private LocaleDAO localeDAO;
@@ -87,6 +90,14 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         this.contentDataCache = new EntityLookupCache<Long, ContentData, Serializable>(contentDataCallbackDAO);
     }
 
+    /**
+     * @param controlDAO        create Savepoints
+     */
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
+    }
+    
     public void setMimetypeDAO(MimetypeDAO mimetypeDAO)
     {
         this.mimetypeDAO = mimetypeDAO;
@@ -390,12 +401,15 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         // Try to insert the content first.  Usually, the insert will not clash with anything
         // as content URL re-use is far less frequent than new content creation.
         ContentUrlEntity contentUrlEntity = null;
+        Savepoint savepoint = controlDAO.createSavepoint("getOrCreateContentUrlEntity");
         try
         {
             contentUrlEntity = createContentUrlEntity(contentUrl, size);
+            controlDAO.releaseSavepoint(savepoint);
         }
         catch (RuntimeException e)
         {
+            controlDAO.rollbackToSavepoint(savepoint);
             // See if this was caused by an existing URL
             contentUrlEntity = getContentUrlEntity(contentUrl);
             // If it exists, then we can just re-use it, but check that the size is consistent

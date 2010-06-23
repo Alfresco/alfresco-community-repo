@@ -63,6 +63,7 @@
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
       <property name="aclDAO" ref="aclDAO"/>
       <property name="accessControlListDAO" ref="admNodeACLDAO"/>
+      <property name="controlDAO" ref="controlDAO"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="localeDAO" ref="localeDAO"/>
@@ -97,6 +98,7 @@
    <bean id="contentDataDAO" class="org.alfresco.repo.domain.contentdata.ibatis.ContentDataDAOImpl">
       <property name="sqlMapClientTemplate" ref="contentSqlMapClientTemplate"/>
       <property name="contentDataCache" ref="contentDataCache"/>
+      <property name="controlDAO" ref="controlDAO"/>
       <property name="mimetypeDAO" ref="mimetypeDAO"/>
       <property name="encodingDAO" ref="encodingDAO"/>
       <property name="localeDAO" ref="localeDAO"/>

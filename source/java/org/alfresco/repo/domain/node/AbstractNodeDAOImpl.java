@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -123,6 +125,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private BehaviourFilter policyBehaviourFilter;
     private AclDAO aclDAO;
     private AccessControlListDAO accessControlListDAO;
+    private ControlDAO controlDAO;
     private QNameDAO qnameDAO;
     private ContentDataDAO contentDataDAO;
     private LocaleDAO localeDAO;
@@ -213,6 +216,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         this.accessControlListDAO = accessControlListDAO;
     }
 
+    /**
+     * @param controlDAO        create Savepoints
+     */
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
+    }
+    
     /**
      * @param qnameDAO          translates QName IDs into QName instances and vice-versa
      */
@@ -999,6 +1010,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             public Integer execute() throws Throwable
             {
+                // Because we are retrying in-transaction i.e. absorbing exceptions, we need a Savepoint
+                Savepoint savepoint = controlDAO.createSavepoint("DuplicateChildNodeNameException");
                 // We use the child node's UUID if there is no cm:name
                 String childNodeName = (String) getNodeProperty(childNodeId, ContentModel.PROP_NAME);
                 if (childNodeName == null)
@@ -1008,15 +1021,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
                 try
                 {
-                    return updatePrimaryParentAssocs(
+                    int updated = updatePrimaryParentAssocs(
                             childNodeId,
                             newParentNodeId,
                             assocTypeQName,
                             assocQName,
                             childNodeName);
+                    controlDAO.releaseSavepoint(savepoint);
+                    return updated;
                 }
                 catch (Throwable e)
                 {
+                    controlDAO.rollbackToSavepoint(savepoint);
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
                             newParentNode.getNodeRef(),

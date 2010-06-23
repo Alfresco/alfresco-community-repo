@@ -19,19 +19,16 @@
 
 package org.alfresco.repo.avm.locking;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.domain.avm.AVMLockDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
-import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.locking.AVMLockingException;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
@@ -44,7 +41,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
@@ -70,6 +66,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
     private AuthorityService authorityService;
     private PersonService personService;
     private NodeService nodeService;
+    
+    private AVMLockDAO avmLockDAO;
 
     /**
      * @param webProjectStore The webProjectStore to set
@@ -102,15 +100,20 @@ public class AVMLockingServiceImpl implements AVMLockingService
     {
         this.personService = personService;
     }
-
+    
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setAvmLockDAO(AVMLockDAO avmLockDAO)
+    {
+        this.avmLockDAO = avmLockDAO;
     }
     
     /**
@@ -317,54 +320,8 @@ public class AVMLockingServiceImpl implements AVMLockingService
             dirPathStart = dirPath;
         }
         
-        final List<String> pathKeys = new ArrayList<String>(10);
-        
-        AttributeQueryCallback callback = new AttributeQueryCallback()
-        {
-            @SuppressWarnings("unchecked")
-            public boolean handleAttribute(Long id, Serializable value, Serializable[] keys)
-            {
-                if (keys.length != 3 || !EqualsHelper.nullSafeEquals(keys[0], KEY_AVM_LOCKS) || keys[1] == null || keys[2] == null || value == null)
-                {
-                    logger.warn("Unexpected AVM lock attribute: \n" +
-                            "   id:  " + id + "\n" +
-                            "   keys:  " + Arrays.toString(keys) + "\n" +
-                            "   value: " + value);
-                    return true;
-                }
-                
-                Map<String, String> lockData = (Map<String, String>) value;
-                
-                for (Map.Entry<String, String> entry : lockDataToMatch.entrySet())
-                {
-                    String lockDataValue = lockData.get(entry.getKey());
-                    if (lockDataValue != null)
-                    {
-                        if (! lockDataValue.equals(entry.getValue()))
-                        {
-                            return true;
-                        }
-                    }
-                }
-                
-                String pathKey = (String)keys[2];
-                
-                if (dirPathStart == null || pathKey.startsWith(dirPathStart))
-                {
-                    pathKeys.add(pathKey);
-                }
-                
-                // Continue
-                return true;
-            }
-        };
-        
-        attributeService.getAttributes(callback, KEY_AVM_LOCKS, avmStore);
-        
-        for (String pathKey : pathKeys)
-        {
-            attributeService.removeAttribute(KEY_AVM_LOCKS, avmStore, pathKey);
-        }
+        // optimised to delete with single DB query
+        avmLockDAO.removeLocks(avmStore, dirPathStart, lockDataToMatch);
     }
 
     /**

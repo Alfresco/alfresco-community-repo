@@ -228,13 +228,13 @@
             <ref bean="sandboxFactory" />
         </property>
     </bean>
-
-	<!-- AVM Locking. -->
-
-	<bean id="avmLockingService" class="org.alfresco.repo.avm.locking.AVMLockingServiceImpl">
-	    <property name="attributeService">
-	        <ref bean="attributeService"/>
-	    </property>
+    
+    <!-- AVM Locking. -->
+    
+    <bean id="avmLockingService" class="org.alfresco.repo.avm.locking.AVMLockingServiceImpl">
+        <property name="attributeService">
+         <ref bean="attributeService"/>
+             </property>
 	    <property name="authorityService">
 	        <ref bean="authorityService"/>
 	    </property>
@@ -250,6 +250,9 @@
 	    <property name="webProjectStore">
 	        <value>workspace://SpacesStore</value>
 	    </property>
+	    <property name="avmLockDAO">
+            <ref bean="avmLockDAO"/>
+        </property>
 	</bean>
 
 </beans>

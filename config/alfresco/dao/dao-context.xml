@@ -158,6 +158,11 @@
       <property name="versionRootEntityCache" ref="avmVersionRootEntityCache"/>
    </bean>
    
+   <bean id="avmLockDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMLockDAOImpl">
+      <property name="sqlMapClientTemplate" ref="avmSqlMapClientTemplate"/>
+      <property name="propertyValueDAO" ref="propertyValueDAO"/>
+   </bean>
+   
    <!-- Permissions (including ACLs / ACEs) -->
    
    <bean id="permissionsDaoComponent" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">

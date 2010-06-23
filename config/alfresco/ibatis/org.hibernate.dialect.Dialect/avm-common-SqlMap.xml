@@ -218,6 +218,14 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
+    <parameterMap id="parameterMap_delete_PropertyUniqueContextByValues" class="map">
+        <parameter property="value1PropId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="value2PropId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="value3LikeStr" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="lockDataStoreKey" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="lockDataStoreValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+    
     
     <!--                -->
     <!-- SQL Snippets   -->
@@ -1225,5 +1233,61 @@
             indirection_version is null and
             class_type = 'layeredfile'
     </select>
+    
+    <!--
+       Optimised delete of AVM locks (as used by WCM web projects)
+       
+      note: assumes that directory path to match
+                   - does not start with /
+                   - is lower-case
+                   - ends with /
+            for example:
+                   - 'www/avm_webapps/root/this/is/an/example/dirtomatch/'
+     -->
+    <delete id="delete_PropertyUniqueContextByValuesWithOneKV" parameterMap="parameterMap_delete_PropertyUniqueContextByValues">
+        delete from
+            alf_prop_unique_ctx
+        where exists
+        (
+            select
+                *
+            from
+                alf_prop_value pv3
+                join alf_prop_string_value psv3 on (psv3.id = pv3.long_value),
+                alf_prop_link pl
+                left join alf_prop_value pkey on (pkey.id = pl.key_prop_id and pkey.persisted_type = 3)
+                left join alf_prop_string_value psvk on (psvk.id = pkey.long_value)
+                left join alf_prop_value pval on (pval.id = pl.value_prop_id and pval.persisted_type = 3)
+                left join alf_prop_string_value psvv on (psvv.id = pval.long_value)
+            where
+                value1_prop_id = ? and
+                value2_prop_id = ? and
+                value3_prop_id = pv3.id and
+                pv3.persisted_type = 3 and
+                psv3.string_value like ? and
+                prop1_id = pl.root_prop_id and
+                psvk.string_value = ? and
+                psvv.string_value = ?
+        )
+    </delete>
+    
+    <delete id="delete_PropertyUniqueContextByValuesWithNoKV" parameterMap="parameterMap_delete_PropertyUniqueContextByValues">
+        delete from
+            alf_prop_unique_ctx
+        where exists
+        (
+            select
+                *
+            from
+                alf_prop_value pv3
+                join alf_prop_string_value psv3 on (psv3.id = pv3.long_value)
+            where
+                value1_prop_id = ? and
+                value2_prop_id = ? and
+                value3_prop_id = pv3.id and
+                pv3.persisted_type = 3 and
+                psv3.string_value like ?
+        )
+    </delete>
     
 </sqlMap>

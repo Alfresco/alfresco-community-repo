@@ -502,15 +502,20 @@ public class AVMLockingServiceImpl implements AVMLockingService
         }
         return false;
     }
-
+    
     /**
-     * Utility to get relative paths into canonical form.
+     * Utility to get relative paths into canonical lock form
+     * 
+     * - remove first forward slash
+     * - multiple forward slashes collapsed into single foward slash
      * 
      * @param path The incoming path.
      * @return The normalized path.
      */
     public static String normalizePath(String path)
     {
+        path = path.toLowerCase(); // note: enables optimised removal of locks (based on path dir start)
+        
         while (path.startsWith("/"))
         {
             path = path.substring(1);

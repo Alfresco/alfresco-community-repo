@@ -363,6 +363,10 @@
       </property>
    </bean>
 
+   <bean id="transformer.TikaAuto"
+         class="org.alfresco.repo.content.transform.TikaAutoContentTransformer"
+         parent="baseContentTransformer" />
+
    <bean id="transformer.Poi"
          class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
          parent="baseContentTransformer" />

@@ -238,6 +238,9 @@ public abstract class AbstractContentTransformerTest extends TestCase
                                 "   source: " + sourceReader + "\n" +
                                 "   target: " + targetWriter,
                                 checkContent.contains(QUICK_CONTENT));
+                        
+                        // Let subclasses do extra checks if they want
+                        additionalContentCheck(sourceMimetype, targetMimetype, checkContent);
                     }
                     else if (isQuickWordsExpected(targetMimetype))
                     {
@@ -280,6 +283,13 @@ public abstract class AbstractContentTransformerTest extends TestCase
         outputWriter.setEncoding("UTF8");
         outputWriter.putContent(sb.toString());
     }
+    
+    /**
+     * Allows implementations to do some extra checks on the 
+     *  results of the content as found by 
+     *  {@link #testAllConversions()}
+     */
+    protected void additionalContentCheck(String sourceMimetype, String targetMimetype, String contents) {}
 
     /**
      * This method is an extension point for enabling/disabling an assertion that the "quick brown fox"

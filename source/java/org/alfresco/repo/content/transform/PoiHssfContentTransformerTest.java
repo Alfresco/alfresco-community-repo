@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.InputStream;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
@@ -32,7 +34,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Derek Hulley
  */
-public class PoiHssfContentTransformerTest extends AbstractContentTransformerTest
+public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformerTest
 {
     private ContentTransformer transformer;
     
@@ -56,12 +58,52 @@ public class PoiHssfContentTransformerTest extends AbstractContentTransformerTes
     {
         assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_EXCEL, new TransformationOptions()));
         assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_CSV, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
     }
     
-    /**
+    public void testCsvOutput() throws Exception
+    {
+       File sourceFile = AbstractContentTransformerTest.loadQuickTestFile("xls");
+       ContentReader sourceReader = new FileContentReader(sourceFile);
+
+       File targetFile = TempFileProvider.createTempFile(
+             getClass().getSimpleName() + "_" + getName() + "_xls_",
+             ".csv");
+       ContentWriter targetWriter = new FileContentWriter(targetFile);
+       
+       sourceReader.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
+       targetWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_CSV);
+       transformer.transform(sourceReader, targetWriter);
+       
+       ContentReader targetReader = targetWriter.getReader();
+       String checkContent = targetReader.getContentString();
+       System.err.println(checkContent);
+    }
+    
+    @Override
+    protected void additionalContentCheck(String sourceMimetype,
+         String targetMimetype, String contents) {
+       if(targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_CSV)) {
+          System.err.println(contents);
+       } else {
+          super.additionalContentCheck(sourceMimetype, targetMimetype, contents);
+       }
+    }
+
+    @Override
+    protected boolean isQuickPhraseExpected(String targetMimetype) {
+       if(targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_CSV)) {
+          return true;
+       }
+       return super.isQuickPhraseExpected(targetMimetype);
+    }
+
+   /**
      * Tests a specific failure in the library
      */
-    public void xtestBugFixAR114() throws Exception
+    public void xxtestBugFixAR114() throws Exception
     {
         File tempFile = TempFileProvider.createTempFile(
                 getClass().getSimpleName() + "_" + getName() + "_",

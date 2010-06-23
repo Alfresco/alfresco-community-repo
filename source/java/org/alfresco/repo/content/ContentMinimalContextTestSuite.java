@@ -28,6 +28,7 @@ import org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PoiMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest;
+import org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistryTest;
@@ -41,6 +42,7 @@ import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerTe
 import org.alfresco.repo.content.transform.StringExtractingContentTransformerTest;
 import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
+import org.alfresco.repo.content.transform.TikaAutoContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
@@ -91,6 +93,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite( PdfBoxMetadataExtracterTest.class );
        suite.addTestSuite( PoiMetadataExtracterTest.class );
        suite.addTestSuite( RFC822MetadataExtracterTest.class );
+       suite.addTestSuite( TikaAutoMetadataExtracterTest.class );
        
        // Transform tests
        suite.addTestSuite(BinaryPassThroughContentTransformerTest.class);
@@ -106,6 +109,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite(StringExtractingContentTransformerTest.class);
        suite.addTestSuite(TextMiningContentTransformerTest.class);
        suite.addTestSuite(TextToPdfContentTransformerTest.class);
+       suite.addTestSuite(TikaAutoContentTransformerTest.class);
        suite.addTestSuite(ImageMagickContentTransformerTest.class);
        
        return suite;

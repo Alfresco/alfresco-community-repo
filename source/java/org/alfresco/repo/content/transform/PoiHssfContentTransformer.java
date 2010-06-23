@@ -24,11 +24,11 @@ import java.util.regex.Pattern;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.TikaOfficeDetectParser;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.microsoft.OfficeParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -56,14 +56,15 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
     public PoiHssfContentTransformer() 
     {
        super(new String[] {
-             MimetypeMap.MIMETYPE_EXCEL
+             MimetypeMap.MIMETYPE_EXCEL,
+             MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET
        });
     }
     
     @Override
     protected Parser getParser() 
     {
-       return new OfficeParser();
+       return new TikaOfficeDetectParser();
     }
     
     /**

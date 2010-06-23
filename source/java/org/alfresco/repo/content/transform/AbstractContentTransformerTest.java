@@ -111,14 +111,14 @@ public abstract class AbstractContentTransformerTest extends TestCase
      * Helper method to load one of the "The quick brown fox" files from the
      * classpath.
      * 
-     * @param extension the extension of the file required, e.g. <b>txt</b>
+     * @param the file required, eg <b>quick.txt</b>
      * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
      *      no resource could be found.
      * @throws IOException
      */
-    public static File loadQuickTestFile(String extension) throws IOException
+    public static File loadNamedQuickTestFile(String quickname) throws IOException
     {
-        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/quick." + extension);
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/" + quickname);
         if (url == null)
         {
             return null;
@@ -129,6 +129,34 @@ public abstract class AbstractContentTransformerTest extends TestCase
             return null;
         }
         return file;
+    }
+    /**
+     * Helper method to load one of the "The quick brown fox" files from the
+     * classpath.
+     * 
+     * @param the file extension required, eg <b>txt</b> for the file quick.txt
+     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
+     *      no resource could be found.
+     * @throws IOException
+     */
+    public static File loadQuickTestFile(String extension) throws IOException
+    {
+       return loadNamedQuickTestFile("quick."+extension);
+    }
+    
+    /**
+     * For the given mime type, returns one or more quick*
+     *  files to be tested.
+     * By default this is just quick + the default extension.
+     * However, you can override this if you need special
+     *  rules, eg quickOld.foo, quickMid.foo and quickNew.foo
+     *  for differing versions of the file format.
+     */
+    protected String[] getQuickFilenames(String sourceMimetype) {
+       String sourceExtension = mimetypeService.getExtension(sourceMimetype);
+       return new String[] {
+             "quick." + sourceExtension
+       };
     }
 
     /**
@@ -160,120 +188,124 @@ public abstract class AbstractContentTransformerTest extends TestCase
         for (String sourceMimetype : mimetypes)
         {
             // attempt to get a source file for each mimetype
-            String sourceExtension = mimetypeService.getExtension(sourceMimetype);
-            
-            sb.append("   Source Extension: ").append(sourceExtension).append("\n");
-            
-            // attempt to convert to every other mimetype
-            for (String targetMimetype : mimetypes)
+            String[] quickFiles = getQuickFilenames(sourceMimetype);
+            sb.append("   Source Files: ").append(quickFiles).append("\n");
+
+            for (String quickFile : quickFiles)
             {
-            	if (sourceMimetype.equals(targetMimetype))
-            	{
-            		// Don't test like-to-like transformations
-            		continue;
-            	}
-                ContentWriter targetWriter = null;
-                // construct a reader onto the source file
-                String targetExtension = mimetypeService.getExtension(targetMimetype);
-                
-                // must we test the transformation?
-                ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);
-                if (transformer == null || transformer.isTransformable(sourceMimetype, targetMimetype, null) == false)
-                {
-                    // no transformer
-                    continue;
-                }
-                
-                if (isTransformationExcluded(sourceExtension, targetExtension))
-                {
-                	continue;
-                }
-
-                // dump
-                sb.append("      Target Extension: ").append(targetExtension);
-                sb.append(" <").append(transformer.getClass().getSimpleName()).append(">");
-
-                // is there a test file for this conversion?
-                File sourceFile = AbstractContentTransformerTest.loadQuickTestFile(sourceExtension);
-                if (sourceFile == null)
-                {
-                    sb.append(" <no source test file>\n");
-                    continue;  // no test file available for that extension
-                }
-                ContentReader sourceReader = new FileContentReader(sourceFile);
-
-                // perform the transformation several times so that we get a good idea of performance
-                int count = 0;
-                long before = System.currentTimeMillis();
-                Set<String> transformerClasses = new HashSet<String>(2);
-                for (int i = 0; i < 5; i++)
-                {
-                    // get the transformer repeatedly as it might be different each time around
-                    transformer = getTransformer(sourceMimetype, targetMimetype);
-                    // must we report on this class?
-                    if (!transformerClasses.contains(transformer.getClass().getName()))
-                    {
-                        transformerClasses.add(transformer.getClass().getName());
-                        sb.append(" <").append(transformer.getClass().getSimpleName()).append(">");
-                    }
-
-                    // make a writer for the target file
-                    File targetFile = TempFileProvider.createTempFile(
-                            getClass().getSimpleName() + "_" + getName() + "_" + sourceExtension + "_",
-                            "." + targetExtension);
-                    targetWriter = new FileContentWriter(targetFile);
-                    
-                    // do the transformation
-                    sourceReader.setMimetype(sourceMimetype);
-                    targetWriter.setMimetype(targetMimetype);
-                    transformer.transform(sourceReader.getReader(), targetWriter);
-                    
-                    // if the target format is any type of text, then it must contain the 'quick' phrase
-                    if (isQuickPhraseExpected(targetMimetype))
-                    {
-                        ContentReader targetReader = targetWriter.getReader();
-                        String checkContent = targetReader.getContentString();
-                        assertTrue("Quick phrase not present in document converted to text: \n" +
-                                "   transformer: " + transformer + "\n" +
-                                "   source: " + sourceReader + "\n" +
-                                "   target: " + targetWriter,
-                                checkContent.contains(QUICK_CONTENT));
-                        
-                        // Let subclasses do extra checks if they want
-                        additionalContentCheck(sourceMimetype, targetMimetype, checkContent);
-                    }
-                    else if (isQuickWordsExpected(targetMimetype))
-                    {
-                        ContentReader targetReader = targetWriter.getReader();
-                        String checkContent = targetReader.getContentString();
-                        // essentially check that FTS indexing can use the conversion properly
-                        for (int word = 0; word < QUICK_WORDS.length; word++)
-                        {
-                            assertTrue("Quick phrase word not present in document converted to text: \n" +
-                                    "   transformer: " + transformer + "\n" +
-                                    "   source: " + sourceReader + "\n" +
-                                    "   target: " + targetWriter + "\n" +
-                                    "   word: " + word,
-                                    checkContent.contains(QUICK_WORDS[word]));
-                        }
-                    }
-                    // increment count
-                    count++;
-                }
-                long after = System.currentTimeMillis();
-                double average = (double) (after - before) / (double) count;
-                
-                // dump
-                sb.append(String.format(" average %10.0f ms", average)).append("\n");
-                
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Transformation performed " + count + " time: " +
-                            sourceMimetype + " --> " + targetMimetype + "\n" +
-                            "   source: " + sourceReader + "\n" +
-                            "   target: " + targetWriter + "\n" +
-                            "   transformer: " + getTransformer(sourceMimetype, targetMimetype));
-                }
+               String sourceExtension = quickFile.substring(quickFile.lastIndexOf('.')+1);
+               
+               // attempt to convert to every other mimetype
+               for (String targetMimetype : mimetypes)
+               {
+               	if (sourceMimetype.equals(targetMimetype))
+               	{
+               		// Don't test like-to-like transformations
+               		continue;
+               	}
+                   ContentWriter targetWriter = null;
+                   // construct a reader onto the source file
+                   String targetExtension = mimetypeService.getExtension(targetMimetype);
+                   
+                   // must we test the transformation?
+                   ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);
+                   if (transformer == null || transformer.isTransformable(sourceMimetype, targetMimetype, null) == false)
+                   {
+                       // no transformer
+                       continue;
+                   }
+                   
+                   if (isTransformationExcluded(sourceExtension, targetExtension))
+                   {
+                   	continue;
+                   }
+   
+                   // dump
+                   sb.append("      Target Extension: ").append(targetExtension);
+                   sb.append(" <").append(transformer.getClass().getSimpleName()).append(">");
+   
+                   // is there a test file for this conversion?
+                   File sourceFile = AbstractContentTransformerTest.loadNamedQuickTestFile(quickFile);
+                   if (sourceFile == null)
+                   {
+                       sb.append(" <no source test file>\n");
+                       continue;  // no test file available for that extension
+                   }
+                   ContentReader sourceReader = new FileContentReader(sourceFile);
+   
+                   // perform the transformation several times so that we get a good idea of performance
+                   int count = 0;
+                   long before = System.currentTimeMillis();
+                   Set<String> transformerClasses = new HashSet<String>(2);
+                   for (int i = 0; i < 5; i++)
+                   {
+                       // get the transformer repeatedly as it might be different each time around
+                       transformer = getTransformer(sourceMimetype, targetMimetype);
+                       // must we report on this class?
+                       if (!transformerClasses.contains(transformer.getClass().getName()))
+                       {
+                           transformerClasses.add(transformer.getClass().getName());
+                           sb.append(" <").append(transformer.getClass().getSimpleName()).append(">");
+                       }
+   
+                       // make a writer for the target file
+                       File targetFile = TempFileProvider.createTempFile(
+                               getClass().getSimpleName() + "_" + getName() + "_" + sourceExtension + "_",
+                               "." + targetExtension);
+                       targetWriter = new FileContentWriter(targetFile);
+                       
+                       // do the transformation
+                       sourceReader.setMimetype(sourceMimetype);
+                       targetWriter.setMimetype(targetMimetype);
+                       transformer.transform(sourceReader.getReader(), targetWriter);
+                       
+                       // if the target format is any type of text, then it must contain the 'quick' phrase
+                       if (isQuickPhraseExpected(targetMimetype))
+                       {
+                           ContentReader targetReader = targetWriter.getReader();
+                           String checkContent = targetReader.getContentString();
+                           assertTrue("Quick phrase not present in document converted to text: \n" +
+                                   "   transformer: " + transformer + "\n" +
+                                   "   source: " + sourceReader + "\n" +
+                                   "   target: " + targetWriter,
+                                   checkContent.contains(QUICK_CONTENT));
+                           
+                           // Let subclasses do extra checks if they want
+                           additionalContentCheck(sourceMimetype, targetMimetype, checkContent);
+                       }
+                       else if (isQuickWordsExpected(targetMimetype))
+                       {
+                           ContentReader targetReader = targetWriter.getReader();
+                           String checkContent = targetReader.getContentString();
+                           // essentially check that FTS indexing can use the conversion properly
+                           for (int word = 0; word < QUICK_WORDS.length; word++)
+                           {
+                               assertTrue("Quick phrase word not present in document converted to text: \n" +
+                                       "   transformer: " + transformer + "\n" +
+                                       "   source: " + sourceReader + "\n" +
+                                       "   target: " + targetWriter + "\n" +
+                                       "   word: " + word,
+                                       checkContent.contains(QUICK_WORDS[word]));
+                           }
+                       }
+                       // increment count
+                       count++;
+                   }
+                   long after = System.currentTimeMillis();
+                   double average = (double) (after - before) / (double) count;
+                   
+                   // dump
+                   sb.append(String.format(" average %10.0f ms", average)).append("\n");
+                   
+                   if (logger.isDebugEnabled())
+                   {
+                       logger.debug("Transformation performed " + count + " time: " +
+                               sourceMimetype + " --> " + targetMimetype + "\n" +
+                               "   source: " + sourceReader + "\n" +
+                               "   target: " + targetWriter + "\n" +
+                               "   transformer: " + getTransformer(sourceMimetype, targetMimetype));
+                   }
+               }
             }
         }
         

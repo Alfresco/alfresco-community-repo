@@ -52,6 +52,13 @@ public class TextMiningContentTransformerTest extends AbstractContentTransformer
         return transformer;
     }
     
+    @Override
+    protected String[] getQuickFilenames(String sourceMimetype) {
+      return new String[] {
+            "quick.doc", "quick95.doc", "quick6.doc"
+      };
+    }
+    
     public void testIsTransformable() throws Exception
     {
         assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD, new TransformationOptions()));

@@ -46,7 +46,14 @@ public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformer
         transformer = new PoiHssfContentTransformer();
     }
     
-    /**
+    @Override
+    protected String[] getQuickFilenames(String sourceMimetype) {
+      return new String[] {
+            "quick.xls", "quick.xlsx"
+      };
+    }
+
+   /**
      * @return Returns the same transformer regardless - it is allowed
      */
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)

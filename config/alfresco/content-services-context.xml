@@ -377,6 +377,11 @@
          class="org.alfresco.repo.content.transform.PoiContentTransformer"
          parent="baseContentTransformer" />
 
+   <!-- This one handles the newer ooxml office formats, such as .xlsx and .docx -->
+   <bean id="transformer.OOXML"
+         class="org.alfresco.repo.content.transform.PoiOOXMLContentTransformer"
+         parent="baseContentTransformer" />
+
    <bean id="transformer.TextMining"
          class="org.alfresco.repo.content.transform.TextMiningContentTransformer"
          parent="baseContentTransformer" >

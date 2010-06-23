@@ -72,7 +72,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.collections.map.SingletonMap;
 import org.springframework.context.ApplicationContext;
 
 import sun.security.action.GetBooleanAction;

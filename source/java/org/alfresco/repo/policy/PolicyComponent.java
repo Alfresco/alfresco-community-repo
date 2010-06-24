@@ -38,6 +38,9 @@ import org.alfresco.service.namespace.QName;
  * this case, the behaviour is not validated (i.e. checked to determine if it
  * supports the policy interface) until the Policy is registered.  Otherwise,
  * the behaviour is validated at bind-time.
+ * 
+ * @see org.alfresco.repo.policy.BehaviourFilter
+ * 
  *
  * @author David Caruana
  *

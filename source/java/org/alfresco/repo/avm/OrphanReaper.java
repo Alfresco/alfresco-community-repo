@@ -22,12 +22,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
+import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
 
 /**
  * This is the background thread for reaping no longer referenced nodes in the AVM repository. These orphans arise from
@@ -43,9 +44,20 @@ public class OrphanReaper
         {
             if (fRunning)
             {
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("OrphanReaper is already running - just return");
+                }
+                
                 return;
             }
+            
             fRunning = true;
+            
+            if (fgLogger.isTraceEnabled())
+            {
+                fgLogger.trace("Start running OrphanReaper ...");
+            }
         }
         try
         {
@@ -54,14 +66,23 @@ public class OrphanReaper
                 doBatch();
                 if (fDone)
                 {
+                    if (fgLogger.isTraceEnabled())
+                    {
+                        fgLogger.trace("OrphanReaper is done - just return");
+                    }
                     return;
                 }
                 try
                 {
+                    if (fgLogger.isTraceEnabled())
+                    {
+                        fgLogger.trace("OrphanReaper is not done - sleep for "+fActiveBaseSleep+" ms");
+                    }
                     Thread.sleep(fActiveBaseSleep);
                 }
                 catch (InterruptedException e)
                 {
+                    fgLogger.warn("OrphanReaper was interrupted - do nothing: "+e);
                     // Do nothing.
                 }
             }
@@ -72,6 +93,11 @@ public class OrphanReaper
             synchronized (this)
             {
                 fRunning = false;
+                
+                if (fgLogger.isTraceEnabled())
+                {
+                    fgLogger.trace("... finish running OrphanReaper");
+                }
             }
         }
     }
@@ -239,6 +265,11 @@ public class OrphanReaper
                     List<AVMNode> nodes = AVMDAOs.Instance().fAVMNodeDAO.getOrphans(fQueueLength);
                     if (nodes.size() == 0)
                     {
+                        if (fgLogger.isTraceEnabled())
+                        {
+                            fgLogger.trace("Nothing to purge (set fActive = false)");
+                        }
+                        
                         fActive = false;
                         return null;
                     }
@@ -248,55 +279,80 @@ public class OrphanReaper
                         fPurgeQueue.add(node.getId());
                     }
                 }
+                
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("Found orphan nodes (fpurgeQueue size = "+fPurgeQueue.size()+")");
+                }
+                
                 fActive = true;
                 for (int i = 0; i < fBatchSize; i++)
                 {
                     if (fPurgeQueue.size() == 0)
                     {
+                        if (fgLogger.isDebugEnabled())
+                        {
+                            fgLogger.debug("Purge queue is empty (fpurgeQueue size = "+fPurgeQueue.size()+")");
+                        }
+                        
                         fPurgeQueue = null;
                         return null;
                     }
-                    AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(fPurgeQueue.removeFirst());
+                    
+                    Long nodeId = fPurgeQueue.removeFirst();
+                    AVMNode node = AVMDAOs.Instance().fAVMNodeDAO.getByID(nodeId);
                     if (node == null)
                     {
                         // eg. cluster, multiple reapers
+                        
+                        fgLogger.warn("Node ["+nodeId+"] not found - assume multiple reapers ...");
+                        
                         continue;
                     }
                     
                     // Save away the ancestor and merged from fields from this node.
-                    HistoryLink hlink = AVMDAOs.Instance().fHistoryLinkDAO.getByDescendent(node);
+                    
                     AVMNode ancestor = null;
-                    if (hlink != null)
+                    AVMHistoryLinkEntity hlEntity = AVMDAOs.Instance().newAVMNodeLinksDAO.getHistoryLinkByDescendent(node.getId());
+                    if (hlEntity != null)
                     {
-                        ancestor = hlink.getAncestor();
-                        AVMDAOs.Instance().fHistoryLinkDAO.delete(hlink);
+                        ancestor = AVMDAOs.Instance().fAVMNodeDAO.getByID(hlEntity.getAncestorNodeId());
+                        AVMDAOs.Instance().newAVMNodeLinksDAO.deleteHistoryLink(hlEntity.getAncestorNodeId(), hlEntity.getDescendentNodeId());
                     }
-                    MergeLink mlink = AVMDAOs.Instance().fMergeLinkDAO.getByTo(node);
+                    
                     AVMNode mergedFrom = null;
-                    if (mlink != null)
+                    AVMMergeLinkEntity mlEntity = AVMDAOs.Instance().newAVMNodeLinksDAO.getMergeLinkByTo(node.getId());
+                    if (mlEntity != null)
                     {
-                        mergedFrom = mlink.getMfrom();
-                        AVMDAOs.Instance().fMergeLinkDAO.delete(mlink);
+                        mergedFrom = AVMDAOs.Instance().fAVMNodeDAO.getByID(mlEntity.getMergeFromNodeId());
+                        AVMDAOs.Instance().newAVMNodeLinksDAO.deleteMergeLink(mlEntity.getMergeFromNodeId(), mlEntity.getMergeToNodeId());
                     }
                     
                     // Get all the nodes that have this node as ancestor.
-                    List<HistoryLink> links = AVMDAOs.Instance().fHistoryLinkDAO.getByAncestor(node);
-                    for (HistoryLink link : links)
+                    List<AVMHistoryLinkEntity> hlEntities = AVMDAOs.Instance().newAVMNodeLinksDAO.getHistoryLinksByAncestor(node.getId());
+                    for (AVMHistoryLinkEntity link : hlEntities)
                     {
-                        AVMNode desc = link.getDescendent();
-                        desc.setAncestor(ancestor);
-                        if (desc.getMergedFrom() == null)
+                        AVMNode desc = AVMDAOs.Instance().fAVMNodeDAO.getByID(link.getDescendentNodeId());
+                        if (desc != null)
                         {
-                            desc.setMergedFrom(mergedFrom);
+                            desc.setAncestor(ancestor);
+                            if (desc.getMergedFrom() == null)
+                            {
+                                desc.setMergedFrom(mergedFrom);
+                            }
                         }
-                        AVMDAOs.Instance().fHistoryLinkDAO.delete(link);
+                        AVMDAOs.Instance().newAVMNodeLinksDAO.deleteHistoryLink(link.getAncestorNodeId(), link.getDescendentNodeId());
                     }
                     // Get all the nodes that have this node as mergedFrom
-                    List<MergeLink> mlinks = AVMDAOs.Instance().fMergeLinkDAO.getByFrom(node);
-                    for (MergeLink link : mlinks)
+                    List<AVMMergeLinkEntity> mlEntities = AVMDAOs.Instance().newAVMNodeLinksDAO.getMergeLinksByFrom(node.getId());
+                    for (AVMMergeLinkEntity link : mlEntities)
                     {
-                        link.getMto().setMergedFrom(ancestor);
-                        AVMDAOs.Instance().fMergeLinkDAO.delete(link);
+                        AVMNode mto = AVMDAOs.Instance().fAVMNodeDAO.getByID(link.getMergeToNodeId());
+                        if (mto != null)
+                        {
+                            mto.setMergedFrom(ancestor);
+                        }
+                        AVMDAOs.Instance().newAVMNodeLinksDAO.deleteMergeLink(link.getMergeFromNodeId(), link.getMergeToNodeId());
                     }
                     
                     // Get rid of all properties belonging to this node.
@@ -334,6 +390,11 @@ public class OrphanReaper
                     }
                     // Finally, delete it
                     AVMDAOs.Instance().fAVMNodeDAO.delete(node);
+                    
+                    if (fgLogger.isTraceEnabled())
+                    {
+                        fgLogger.trace("Deleted Node ["+node.getId()+"]");
+                    }
                 }
                 return null;
             }

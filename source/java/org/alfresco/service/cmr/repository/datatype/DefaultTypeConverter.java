@@ -52,7 +52,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 /**
  * Support for generic conversion between types.
  * 
- * Additional conversions may be added. Basic interoperabikitynos supported.
+ * Additional conversions may be added. Basic inter-operability supported.
  * 
  * Direct conversion and two stage conversions via Number are supported. We do
  * not support conversion by any route at the moment

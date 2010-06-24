@@ -20,6 +20,8 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Test the purge thread.
@@ -27,6 +29,46 @@ import org.alfresco.repo.avm.util.BulkLoader;
  */
 public class PurgeTestP extends AVMServiceTestBase
 {
+    private static Log logger = LogFactory.getLog(PurgeTestP.class);
+    
+    public void testSetup()
+    {
+        runOrphanReaper();
+    }
+        
+    public void testRemoveNodes() throws Throwable
+    {
+        try
+        {
+            logger.info("testRemoveNodes");
+            
+            runOrphanReaper();
+            
+            int fileCount = 10;
+            
+            logger.info("Create "+fileCount+" files ...");
+            
+            for (int i = 1; i <= fileCount; i++)
+            {
+                fService.createFile("main:/", "file"+i);
+            }
+            
+            logger.info("Remove "+fileCount+" files ...");
+            
+            for (int i = 1; i <= fileCount; i++)
+            {
+                fService.removeNode("main:/", "file"+i);
+            }
+            
+            runOrphanReaper();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
+    }
+    
     /**
      * Test purging a version.
      */
@@ -34,6 +76,10 @@ public class PurgeTestP extends AVMServiceTestBase
     {
         try
         {
+            logger.info("testPurgeVersion");
+            
+            runOrphanReaper();
+            
             setupBasicTree();
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
@@ -44,9 +90,9 @@ public class PurgeTestP extends AVMServiceTestBase
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             
             
-            System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main", null, null);
-            System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
             fService.purgeVersion(2, "main");
             
             runOrphanReaper();
@@ -65,6 +111,10 @@ public class PurgeTestP extends AVMServiceTestBase
     {
         try
         {
+            logger.info("testPurgeOlderVersion");
+            
+            runOrphanReaper();
+            
             setupBasicTree();
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
@@ -75,9 +125,9 @@ public class PurgeTestP extends AVMServiceTestBase
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             
             
-            System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main", null, null);
-            System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
             
             
             //fService.removeNode("main:/source/java/org/alfresco", "repo");
@@ -103,7 +153,12 @@ public class PurgeTestP extends AVMServiceTestBase
     {
         try
         {
+            logger.info("testPurgeStore");
+            
+            runOrphanReaper();
+            
             setupBasicTree();
+            
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             long start = System.currentTimeMillis();
@@ -113,9 +168,9 @@ public class PurgeTestP extends AVMServiceTestBase
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             
             
-            System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main", null, null);
-            System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
+            logger.info("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
             
             
             //fService.createLayeredDirectory("main:/source", "main:/", "layer");
@@ -125,8 +180,8 @@ public class PurgeTestP extends AVMServiceTestBase
             fService.removeNode("main:/layer", "actions");
             fService.createFile("main:/layer", "goofy").close();
             
-            
             fService.createSnapshot("main", null, null);
+            
             fService.purgeStore("main");
             
             runOrphanReaper();
@@ -140,7 +195,10 @@ public class PurgeTestP extends AVMServiceTestBase
     
     private void runOrphanReaper()
     {
+        logger.info("Reaper started");
+        
         fReaper.activate();
+        fReaper.execute();
         
         final int maxCycles = 100;
         
@@ -149,12 +207,13 @@ public class PurgeTestP extends AVMServiceTestBase
         {
             try
             {
-                System.out.print(".");
+                //System.out.print(".");
                 Thread.sleep(2000);
             }
             catch (InterruptedException e)
             {
                 // Do nothing.
+                logger.warn("OrphanReaper was interrupted - do nothing: "+e);
             }
             
             cycles++;
@@ -165,6 +224,6 @@ public class PurgeTestP extends AVMServiceTestBase
             throw new AlfrescoRuntimeException("Orphan reaper still active - failed to clean orphans in "+cycles+" cycles (max "+maxCycles+")");
         }
         
-        System.out.println("\nReaper finished (in "+cycles+" cycles)");
+        logger.info("Reaper finished (in "+cycles+" cycles)");
     }
 }

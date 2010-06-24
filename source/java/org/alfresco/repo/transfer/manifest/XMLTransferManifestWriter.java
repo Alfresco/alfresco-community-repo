@@ -255,12 +255,12 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
     }
 
     @SuppressWarnings("unchecked")
-    private void writeProperty(QName name, Serializable value) throws SAXException
+    private void writeProperty(QName propertyName, Serializable value) throws SAXException
     {
         {
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "name", "name", "String",
-                        formatQName(name));
+                        formatQName(propertyName));
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                         ManifestModel.LOCALNAME_ELEMENT_PROPERTY, PREFIX + ":"
                                     + ManifestModel.LOCALNAME_ELEMENT_PROPERTY, attributes);
@@ -328,11 +328,16 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
     {
         try
         {
+            AttributesImpl valueAttributes = new AttributesImpl();
+            valueAttributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "className",
+                        "className", "String", value.getClass().getName());
+            
             String strValue = (String) DefaultTypeConverter.INSTANCE.convert(String.class, value);
+            
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                         ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING, PREFIX + ":"
                                     + ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING,
-                        EMPTY_ATTRIBUTES);
+                        valueAttributes);
 
             writer.characters(strValue.toCharArray(), 0, strValue.length());
 

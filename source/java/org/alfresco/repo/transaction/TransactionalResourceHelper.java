@@ -107,4 +107,52 @@ public abstract class TransactionalResourceHelper
         }
         return list;
     }
+    
+    /**
+     * Support method to set a boolean (true) value in the current transaction.
+     * @param resourceKey   the key under which the resource will be stored
+     * @return true - the value of resourceKey, was set to true, false - the value was already true
+     */
+    public static final boolean setBoolean(Object resourceKey)
+    {
+        Boolean value = AlfrescoTransactionSupport.getResource(resourceKey);
+        if(value == null)
+        {
+            AlfrescoTransactionSupport.bindResource(resourceKey, Boolean.TRUE);
+            return true;
+        }
+       
+        return false;
+    }
+    
+    /**
+     * Support method to reset (make false) a boolean value in the current transaction.
+     * @param resourceKey   the key under which the resource is stored.
+     */
+    public static final void resetBoolean(Object resourceKey)
+    {
+        Boolean value = AlfrescoTransactionSupport.getResource(resourceKey);
+        if(value == null)
+        {
+            AlfrescoTransactionSupport.unbindResource(resourceKey);
+        }
+    }
+    
+    /**
+     * Is there a boolean value in the current transaction
+     * @param resourceKey   the key under which the resource will be stored
+     * @return true - thre is, false no.
+     */
+    public static final boolean testBoolean(Object resourceKey)
+    {
+        Boolean value = AlfrescoTransactionSupport.getResource(resourceKey);
+        if(value == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 }

@@ -70,7 +70,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected static final boolean CLEAN = true; // cleanup during teardown
     
     // base web project
-    protected static final String TEST_WEBPROJ_DNS  = "testWebProj-"+TEST_RUN;
+    protected static final String TEST_WEBPROJ_DNS  = "testWP-"+TEST_RUN;
     
     protected static final String TEST_WEBPROJ_NAME = "testSandbox Web Project Display Name - "+TEST_RUN;
     protected static final String TEST_WEBPROJ_TITLE = "This is my title";

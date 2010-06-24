@@ -415,7 +415,7 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
         }
         catch (Exception ex)
         {
-            logger.error("Passthru error", ex);
+            logger.debug("Passthru error", ex);
         }
         finally {
             

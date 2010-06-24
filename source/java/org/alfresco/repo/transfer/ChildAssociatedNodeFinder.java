@@ -26,16 +26,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * @author brian
+ * 
+ * A node finder that searches for child nodes with the association specified.
+ * 
+ * For example, could be used to find all children with the cm:contains relationship.
+ * 
+ <pre> 
+      NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler(); 
+      crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
+      Set<NodeRef> crawledNodes = crawler.crawl(rootNode);
+ </pre> 
+ * @see NodeCrawlerFactory
  * 
  */
 public class ChildAssociatedNodeFinder extends AbstractNodeFinder

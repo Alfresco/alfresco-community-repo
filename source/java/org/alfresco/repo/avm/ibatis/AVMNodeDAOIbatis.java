@@ -34,19 +34,19 @@ import org.alfresco.repo.avm.BasicAttributesImpl;
 import org.alfresco.repo.avm.DeletedNode;
 import org.alfresco.repo.avm.DeletedNodeImpl;
 import org.alfresco.repo.avm.DirectoryNode;
-import org.alfresco.repo.avm.HistoryLink;
 import org.alfresco.repo.avm.Layered;
 import org.alfresco.repo.avm.LayeredDirectoryNode;
 import org.alfresco.repo.avm.LayeredDirectoryNodeImpl;
 import org.alfresco.repo.avm.LayeredFileNode;
 import org.alfresco.repo.avm.LayeredFileNodeImpl;
-import org.alfresco.repo.avm.MergeLink;
 import org.alfresco.repo.avm.PlainDirectoryNode;
 import org.alfresco.repo.avm.PlainDirectoryNodeImpl;
 import org.alfresco.repo.avm.PlainFileNode;
 import org.alfresco.repo.avm.PlainFileNodeImpl;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
+import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.avm.AVMVersionRootEntity;
 import org.alfresco.service.namespace.QName;
@@ -208,12 +208,12 @@ class AVMNodeDAOIbatis implements AVMNodeDAO
      */
     public AVMNode getAncestor(AVMNode descendent)
     {
-        HistoryLink hl =  AVMDAOs.Instance().fHistoryLinkDAO.getByDescendent(descendent);
-        if (hl == null)
+        AVMHistoryLinkEntity hlEntity = AVMDAOs.Instance().newAVMNodeLinksDAO.getHistoryLinkByDescendent(descendent.getId());
+        if (hlEntity == null)
         {
             return null;
         }
-        return hl.getAncestor();
+        return AVMDAOs.Instance().fAVMNodeDAO.getByID(hlEntity.getAncestorNodeId());
     }
     
     /* (non-Javadoc)
@@ -221,12 +221,12 @@ class AVMNodeDAOIbatis implements AVMNodeDAO
      */
     public AVMNode getMergedFrom(AVMNode mTo)
     {
-        MergeLink ml = AVMDAOs.Instance().fMergeLinkDAO.getByTo(mTo);
-        if (ml == null)
+        AVMMergeLinkEntity mlEntity = AVMDAOs.Instance().newAVMNodeLinksDAO.getMergeLinkByTo(mTo.getId());
+        if (mlEntity == null)
         {
             return null;
         }
-        return ml.getMfrom();
+        return AVMDAOs.Instance().fAVMNodeDAO.getByID(mlEntity.getMergeFromNodeId());
     }
     
     /* (non-Javadoc)

@@ -12,10 +12,6 @@
     
     <bean id="childEntryDAO" class="org.alfresco.repo.avm.ibatis.ChildEntryDAOIbatis"/>
     
-    <bean id="historyLinkDAO" class="org.alfresco.repo.avm.ibatis.HistoryLinkDAOIbatis"/>
-    
-    <bean id="mergeLinkDAO" class="org.alfresco.repo.avm.ibatis.MergeLinkDAOIbatis"/>
-    
     <bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.ibatis.AVMStorePropertyDAOIbatis"/>
     
     <bean id="versionLayeredNodeEntryDAO" class="org.alfresco.repo.avm.ibatis.VersionLayeredNodeEntryDAOIbatis"/>
@@ -47,12 +43,6 @@
         </property>
 		<property name="childEntryDAO">
 			<ref bean="childEntryDAO"/>
-		</property>
-		<property name="historyLinkDAO">
-			<ref bean="historyLinkDAO"/>
-		</property>
-		<property name="mergeLinkDAO">
-			<ref bean="mergeLinkDAO"/>
 		</property>
 		<property name="avmStorePropertyDAO">
 			<ref bean="avmStorePropertyDAO"/>

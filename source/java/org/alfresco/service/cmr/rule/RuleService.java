@@ -52,20 +52,28 @@ public interface RuleService
     
     /**
      * Enable rules for the current thread
+     * 
+     * @see #isEnabled
+     * @see #disableRules
      */
     @Auditable
     public void enableRules();
     
     /**
-     * Diable rules for the current thread
+     * Disable rules for the current thread
+     * @see #enableRules
+     * @see #isEnabled
      */
     @Auditable
     public void disableRules();
     
     /**
-     * Indicates whether rules are currently enabled or not
+     * Indicates whether rules are currently enabled for the current thread or not
      * 
-     * @return  true if rules are enabled, false otherwise
+     * @see #enableRules
+     * @see #disableRules
+     * 
+     * @return  true if rules are enabled for the current thread, false otherwise
      */
     @Auditable
     public boolean isEnabled();
@@ -101,6 +109,8 @@ public interface RuleService
     /**
      * Disables a rule, preventing it from being fired.
      * 
+     * @See enableRule
+     * 
      * @param rule  the rule to disable
      */
     @Auditable(parameters = {"rule"})
@@ -108,6 +118,8 @@ public interface RuleService
     
     /**
      * Enables a rule previously disabled.
+     * 
+     * @See diableRule
      * 
      * @param rule  the rule to enable
      */

@@ -180,9 +180,9 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Mangled case
-        String dnsName = TEST_WEBPROJ_DNS+"some.unexpected.chars";
+        String dnsName = TEST_WEBPROJ_DNS+"-a.b.c";
         String name = dnsName + " name";
-        String mangledDnsName = TEST_WEBPROJ_DNS+"some-unexpected-chars";
+        String mangledDnsName = TEST_WEBPROJ_DNS+"-a-b-c";
         
         wpInfo = wpService.createWebProject(dnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
         checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
@@ -190,8 +190,8 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
 
         // Another mangled case
-        dnsName = TEST_WEBPROJ_DNS+"some.moreé1í2ó3ú4Á5É6Í7Ó8Ú9";
-        mangledDnsName = TEST_WEBPROJ_DNS+"some-more-1-2-3-4-5-6-7-8-9";
+        dnsName = TEST_WEBPROJ_DNS+"-0é1í2ó3ú4";
+        mangledDnsName = TEST_WEBPROJ_DNS+"-0-1-2-3-4";
         
         name = dnsName + " name";
         

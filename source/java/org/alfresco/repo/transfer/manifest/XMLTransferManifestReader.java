@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -270,6 +272,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING))
             {
+                props.put("className", atts.getValue("", "className"));
                 buffer = new StringBuffer();   
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL))
@@ -458,7 +461,26 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING))
             {
                 Collection<Serializable> values =  (Collection<Serializable>)props.get("values");
-                String value = buffer.toString();
+                String className = (String)props.get("className");
+                
+                Serializable value = buffer.toString();
+                
+                if(className != null && !className.equals("java.lang.String"))
+                {
+                    // value is not a string and needs to be converted
+                    try
+                    {
+                        value = (Serializable)DefaultTypeConverter.INSTANCE.convert(Class.forName(className), value);
+                    }
+                    catch (TypeConversionException tcf)
+                    {
+                        // leave value as string
+                    }
+                    catch (ClassNotFoundException cnf)
+                    {
+                        // leave value as string
+                    }
+                }
                 
                 if(values != null)
                 {

@@ -269,14 +269,17 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                             else
                             {
                                 // Map the passthru username to an Alfresco person
-            
+
                                 String username = client.getUserName();
-                                String personName = getPersonService().getUserIdentifier( username);
-                                
+                                String personName = getPersonService().getUserIdentifier(username);
+                                if (null == personName)
+                                {
+                                    personName = username;
+                                }
                                 if ( personName != null)
                                 {
                                     // Use the person name as the current user
-                                    
+
                                     getAuthenticationComponent().setCurrentUser(personName);
                                     alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                                     

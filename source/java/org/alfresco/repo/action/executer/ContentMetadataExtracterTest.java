@@ -123,9 +123,9 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     
     private static final QName PROP_UNKNOWN_1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "unkown1");
     private static final QName PROP_UNKNOWN_2 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "unkown2");
-    private static class UnknownMetadataExtracter extends AbstractMappingMetadataExtracter
+    private static class TestUnknownMetadataExtracter extends AbstractMappingMetadataExtracter
     {
-        public UnknownMetadataExtracter()
+        public TestUnknownMetadataExtracter()
         {
             Properties mappingProperties = new Properties();
             mappingProperties.put("unknown1", PROP_UNKNOWN_1.toString());
@@ -156,7 +156,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     public void testUnknownProperties()
     {
         MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
-        UnknownMetadataExtracter extracterUnknown = new UnknownMetadataExtracter();
+        TestUnknownMetadataExtracter extracterUnknown = new TestUnknownMetadataExtracter();
         extracterUnknown.setRegistry(registry);
         extracterUnknown.register();
         // Now add some content with a binary mimetype
@@ -173,6 +173,85 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         
         assertNotNull("Unknown property is null", prop1);
         assertNotNull("Unknown property is null", prop2);
+    }
+    
+    private static class TestNullPropMetadataExtracter extends AbstractMappingMetadataExtracter
+    {
+        public TestNullPropMetadataExtracter()
+        {
+            Properties mappingProperties = new Properties();
+            mappingProperties.put("title", ContentModel.PROP_TITLE.toString());
+            mappingProperties.put("description", ContentModel.PROP_DESCRIPTION.toString());
+            setMappingProperties(mappingProperties);
+        }
+        @Override
+        protected Map<String, Set<QName>> getDefaultMapping()
+        {
+            // No need to give anything back as we have explicitly set the mapping already
+            return new HashMap<String, Set<QName>>(0);
+        }
+        @Override
+        public boolean isSupported(String sourceMimetype)
+        {
+            return sourceMimetype.equals(MimetypeMap.MIMETYPE_BINARY);
+        }
+
+        public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            Map<String, Serializable> rawMap = newRawMap();
+            putRawValue("title", null, rawMap);
+            putRawValue("description", "", rawMap);
+            return rawMap;
+        }
+    }
+    
+    /**
+     * Ensure that missing raw values result in node properties being removed
+     * when running with {@link ContentMetadataExtracter#setCarryAspectProperties(boolean)}
+     * set to <tt>false</tt>.
+     */
+    public void testNullExtractedValues_ALF1823()
+    {
+        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
+        TestNullPropMetadataExtracter extractor = new TestNullPropMetadataExtracter();
+        extractor.setRegistry(registry);
+        extractor.register();
+        // Now set the title and description
+        nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "TITLE");
+        nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "DESCRIPTION");
+        // Now add some content with a binary mimetype
+        ContentWriter cw = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        cw.setMimetype(MimetypeMap.MIMETYPE_BINARY);
+        cw.putContent("Content for " + getName());
+        
+        ActionImpl action = new ActionImpl(null, ID, SetPropertyValueActionExecuter.NAME, null);
+        executer.execute(action, this.nodeRef);
+        
+        // cm:titled properties should be present
+        Serializable title = nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
+        Serializable descr = nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION);
+        
+        assertNotNull("cm:title property is null", title);
+        assertNotNull("cm:description property is null", descr);
+        
+        try
+        {
+            // Now change the setting to remove unset aspect properties
+            executer.setCarryAspectProperties(false);
+            // Extract again
+            executer.execute(action, this.nodeRef);
+            
+            // cm:titled properties should *NOT* be present
+            title = nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
+            descr = nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION);
+            
+            assertNull("cm:title property is not null", title);
+            assertNull("cm:description property is not null", descr);
+        }
+        finally
+        {
+            executer.setCarryAspectProperties(true);
+        }
     }
 
     /**

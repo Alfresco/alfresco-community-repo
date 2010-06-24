@@ -844,8 +844,11 @@ public class AVMStoreImpl implements AVMStore
             throw new AVMNotFoundException("Not allowed to delete in store : " + getName() +"  at " + path);
         }
         
-        dir.removeChild(lPath, name);
-        //dir.updateModTime();
+        if (dir != null)
+        {
+            dir.removeChild(lPath, name);
+            //dir.updateModTime();
+        }
     }
 
     /**

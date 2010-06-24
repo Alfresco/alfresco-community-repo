@@ -58,9 +58,9 @@ import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileNameValidator;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.alfresco.util.Pair;
 
 /**
  * This or AVMStore are the implementors of the operations specified by AVMService.
@@ -1016,12 +1016,15 @@ public class AVMRepository
             throw new AccessDeniedException("Not allowed to purge: " + name);
         }
         
+        root.setIsRoot(false);
         fAVMNodeDAO.update(root);
         
         List<VersionRoot> vRoots = fVersionRootDAO.getAllInAVMStore(store);
         for (VersionRoot vr : vRoots)
         {
             AVMNode node = fAVMNodeDAO.getByID(vr.getRoot().getId());
+            
+            root.setIsRoot(false);
             fAVMNodeDAO.update(node);
             
             fVersionLayeredNodeEntryDAO.delete(vr);
@@ -1038,6 +1041,11 @@ public class AVMRepository
         fAVMStoreDAO.delete(store);
         fAVMStoreDAO.invalidateCache();
         fPurgeStoreTxnListener.storePurged(name);
+        
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("Purged store: "+name);
+        }
     }
 
     /**
@@ -1059,6 +1067,11 @@ public class AVMRepository
         fLookupCache.onDelete(name);
         store.purgeVersion(version);
         fPurgeVersionTxnListener.versionPurged(name, version);
+        
+        if (fgLogger.isDebugEnabled())
+        {
+            fgLogger.debug("Purged version: "+name+" "+version);
+        }
     }
 
     /**

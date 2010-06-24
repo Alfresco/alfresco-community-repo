@@ -35,6 +35,8 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Class containing behaviour for the rules aspect
@@ -49,6 +51,8 @@ public class RulesAspect implements
     private BehaviourFilter behaviourFilter;
     private RuleService ruleService;
     private NodeService nodeService;
+    
+    private static Log logger = LogFactory.getLog(RulesAspect.class); 
     
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -85,7 +89,6 @@ public class RulesAspect implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
                 RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "onCopyComplete"));
-        
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
                 RuleModel.ASPECT_RULES, 
@@ -103,6 +106,10 @@ public class RulesAspect implements
             int count = this.nodeService.getChildAssocs(nodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).size();
             if (count == 0)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("rules folder does not exist: create new rules folder for: " + nodeRef);
+                }
                 this.nodeService.createNode(
                         nodeRef,
                         RuleModel.ASSOC_RULE_FOLDER,

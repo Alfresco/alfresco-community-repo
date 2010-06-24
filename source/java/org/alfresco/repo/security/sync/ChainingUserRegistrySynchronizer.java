@@ -34,6 +34,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -58,6 +61,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.TraceableThreadFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -103,8 +107,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI,
             "ChainingUserRegistrySynchronizer");
 
-    /** The maximum time this lock will be held for (1 day). */
-    private static final long LOCK_TTL = 1000 * 60 * 60 * 24;
+    /** The time this lock will persist for in the database (now only 2 minutes but refreshed at regular intervals). */
+    private static final long LOCK_TTL = 1000 * 60 * 2;
 
     /** The path in the attribute service below which we persist attributes. */
     private static final String ROOT_ATTRIBUTE_PATH = ".ChainingUserRegistrySynchronizer";
@@ -315,7 +319,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      * (non-Javadoc)
      * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean, boolean, boolean)
      */
-    public void synchronize(boolean forceUpdate, boolean allowDeletions, boolean splitTxns)
+    public void synchronize(boolean forceUpdate, boolean allowDeletions, final boolean splitTxns)
     {
         // Don't proceed with the sync if the repository is read only
         if (this.transactionService.isReadOnly())
@@ -325,8 +329,15 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             return;
         }
 
+        // Create a background executor that will refresh our lock. This means we can request a lock with a relatively
+        // small persistence time and not worry about it lasting after server restarts. Note we use an independent
+        // executor because this is a compound operation that spans accross multiple batch processors.
         String lockToken = null;
-
+        TraceableThreadFactory threadFactory = new TraceableThreadFactory();
+        threadFactory.setNamePrefix("ChainingUserRegistrySynchronizer lock refresh");
+        threadFactory.setThreadDaemon(true);
+        ScheduledExecutorService lockRefresher = new ScheduledThreadPoolExecutor(1, threadFactory);
+		
         // Let's ensure all exceptions get logged
         try
         {
@@ -351,7 +362,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 else
                 {
                     // If this is a login-triggered sync, give it a few retries before giving up
-                    this.jobLockService.getTransactionalLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
+                    lockToken = this.jobLockService.getLock(ChainingUserRegistrySynchronizer.LOCK_QNAME,
                             ChainingUserRegistrySynchronizer.LOCK_TTL, 3000, 10);
                 }
             }
@@ -362,6 +373,27 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         .warn("User registry synchronization already running in another thread. Synchronize aborted");
                 return;
             }
+
+            // Schedule the lock refresh to run at regular intervals
+            final String token = lockToken;
+            lockRefresher.scheduleAtFixedRate(new Runnable()
+            {
+                public void run()
+                {
+                    ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper()
+                            .doInTransaction(new RetryingTransactionCallback<Object>()
+                            {
+                                public Object execute() throws Throwable
+                                {
+                                    ChainingUserRegistrySynchronizer.this.jobLockService.refreshLock(token,
+                                            ChainingUserRegistrySynchronizer.LOCK_QNAME,
+                                            ChainingUserRegistrySynchronizer.LOCK_TTL);
+                                    return null;
+                                }
+                            }, false, splitTxns);
+                }
+            }, ChainingUserRegistrySynchronizer.LOCK_TTL / 2, ChainingUserRegistrySynchronizer.LOCK_TTL / 2,
+                    TimeUnit.MILLISECONDS);
 
             Set<String> visitedZoneIds = new TreeSet<String>();
             Collection<String> instanceIds = this.applicationContextManager.getInstanceIds();
@@ -418,6 +450,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         {
             if (lockToken != null)
             {
+                // Cancel the lock refresher
+                lockRefresher.shutdown();
+                try
+                {
+                    lockRefresher.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+                }
+                catch (InterruptedException e)
+                {
+                }
+
                 final String token = lockToken;
                 this.transactionService.getRetryingTransactionHelper().doInTransaction(
                         new RetryingTransactionCallback<Object>()
@@ -888,8 +930,43 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 // Remove all the associations we have already dealt with
                 this.groupAssocsToCreate.keySet().removeAll(this.authoritiesMaintained);
 
-                // Filter out associations to authorities that simply can't exist
-                this.groupAssocsToCreate.keySet().retainAll(this.allZoneAuthorities);
+                // Filter out associations to authorities that simply can't exist (and log if debugging is enabled)
+                Iterator<Map.Entry<String, Set<String>>> i = this.groupAssocsToCreate.entrySet().iterator();
+                StringBuilder groupList = null;
+                while (i.hasNext())
+                {
+                    Map.Entry<String, Set<String>> entry = i.next();
+                    String child = entry.getKey();
+                    if (!this.allZoneAuthorities.contains(child))
+                    {
+                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                        {
+                            if (groupList == null)
+                            {
+                                groupList = new StringBuilder(1024);
+                            }
+                            else
+                            {
+                                groupList.setLength(0);
+                            }
+                            for (String parent : entry.getValue())
+                            {
+                                if (groupList.length() > 0)
+                                {
+                                    groupList.append(", ");
+                                }
+                                groupList.append('\'').append(
+                                        ChainingUserRegistrySynchronizer.this.authorityService.getShortName(parent))
+                                        .append('\'');
+
+                            }
+                            ChainingUserRegistrySynchronizer.logger.debug("Ignoring non-existent member '"
+                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
+                                    + "' in groups {" + groupList.toString() + "}");
+                        }
+                        i.remove();
+                    }
+                }
 
                 if (!this.groupAssocsToCreate.isEmpty())
                 {

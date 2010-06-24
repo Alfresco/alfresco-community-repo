@@ -4,6 +4,16 @@
 <!-- Core and miscellaneous bean definitions -->
 <beans>
 
+   <bean id="hostConfigurableSocketFactory" class="org.alfresco.util.remote.server.socket.HostConfigurableSocketFactory">
+      <property name="host" value="${alfresco.rmi.services.host}" />
+   </bean>
+
+   <bean id="baseServiceExporter" class="org.springframework.remoting.rmi.RmiServiceExporter" abstract="true">
+      <property name="registryPort" value="${alfresco.rmi.services.port}" />
+      <property name="registryServerSocketFactory" ref="hostConfigurableSocketFactory" />
+      <property name="registryClientSocketFactory" ref="hostConfigurableSocketFactory" />
+   </bean>
+
     <!--                    -->
     <!--  PERSISTENCE       -->
     <!--                    -->
@@ -136,9 +146,22 @@
           class="org.springframework.remoting.rmi.RmiRegistryFactoryBean"
           lazy-init="true">
         <property name="port" value="${alfresco.rmi.services.port}"/>
+        <property name="clientSocketFactory" ref="hostConfigurableSocketFactory" />
+        <property name="serverSocketFactory" ref="hostConfigurableSocketFactory" />
     </bean>
 
     <!-- MBeanServer Connector (registers itself with custom alfrescoMBeanServer) -->
+    <bean id="jmxUrlPattern" class="java.lang.String">
+       <constructor-arg value="service:jmx:rmi://(host):${monitor.rmi.service.port}/jndi/rmi://(host):${alfresco.rmi.services.port}/alfresco/jmxrmi" />
+    </bean>
+
+    <bean id="jmxUrl" factory-bean="jmxUrlPattern" factory-method="replaceAll">
+       <constructor-arg value="\(host\)" />
+       <constructor-arg>
+          <bean factory-bean="hostConfigurableSocketFactory" factory-method="getHost" />
+       </constructor-arg>
+    </bean>
+
     <bean id="serverConnector"
           class="org.springframework.jmx.support.ConnectorServerFactoryBean"
           depends-on="registry"
@@ -146,7 +169,7 @@
 
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
-        <property name="serviceUrl"  value="service:jmx:rmi://${alfresco.rmi.services.host}:${monitor.rmi.service.port}/jndi/rmi://${alfresco.rmi.services.host}:${alfresco.rmi.services.port}/alfresco/jmxrmi" />
+        <property name="serviceUrl"  ref="jmxUrl" />
 
         <property name="environment">
             <map>

@@ -186,6 +186,11 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
         Set<QName> requiredAspectQNames = new HashSet<QName>(3);
         Set<QName> aspectPropertyQNames = new HashSet<QName>(17);
         
+        /**
+         * The modified properties contain null values as well.  As we are only interested
+         * in the keys, this will force aspect aspect properties to be removed even if there
+         * are no settable properties pertaining to the aspect.
+         */
         for (QName propertyQName : modifiedProperties.keySet())
         {
             PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
@@ -212,6 +217,12 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             {
                 if (!modifiedProperties.containsKey(aspectPropertyQName))
                 {
+                    // Simple case: This property was not extracted
+                    nodeProperties.remove(aspectPropertyQName);
+                }
+                else if (modifiedProperties.get(aspectPropertyQName) == null)
+                {
+                    // Trickier (ALF-1823): The property was extracted as 'null'
                     nodeProperties.remove(aspectPropertyQName);
                 }
             }

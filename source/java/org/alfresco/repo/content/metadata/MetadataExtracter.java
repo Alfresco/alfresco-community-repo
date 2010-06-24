@@ -52,6 +52,7 @@ public interface MetadataExtracter extends ContentWorker
          * <ul>
          *   <li>the extracted property is not null</li>
          * </ul>
+         * <tt>null</tt> extracted values are return in the 'modified' map.
          */
         EAGER
         {
@@ -64,11 +65,10 @@ public interface MetadataExtracter extends ContentWorker
                     QName propertyQName = entry.getKey();
                     Serializable extractedValue = entry.getValue();
                     // Ignore null extracted value
-                    if (extractedValue == null)
+                    if (extractedValue != null)
                     {
-                        continue;
+                        targetProperties.put(propertyQName, extractedValue);
                     }
-                    targetProperties.put(propertyQName, extractedValue);
                     modifiedProperties.put(propertyQName, extractedValue);
                 }
                 return modifiedProperties;
@@ -82,6 +82,7 @@ public interface MetadataExtracter extends ContentWorker
          *   <li>the target value is null</li>
          *   <li>the string representation of the target value is an empty string</li>
          * </ul>
+         * <tt>null</tt> extracted values are return in the 'modified' map.
          */
         PRAGMATIC
         {
@@ -99,6 +100,7 @@ public interface MetadataExtracter extends ContentWorker
                     // Ignore null extracted value
                     if (extractedValue == null)
                     {
+                        modifiedProperties.put(propertyQName, extractedValue);
                         continue;
                     }
                     // Handle the shortcut cases where the target value is missing or null
@@ -148,6 +150,7 @@ public interface MetadataExtracter extends ContentWorker
          *   <li>the extracted property is not null</li>
          *   <li>there is no target key for the property</li>
          * </ul>
+         * <tt>null</tt> extracted values are return in the 'modified' map.
          */
         CAUTIOUS
         {
@@ -162,6 +165,7 @@ public interface MetadataExtracter extends ContentWorker
                     // Ignore null extracted value
                     if (extractedValue == null)
                     {
+                        modifiedProperties.put(propertyQName, extractedValue);
                         continue;
                     }
                     // Is the key present in the target values
@@ -181,8 +185,8 @@ public interface MetadataExtracter extends ContentWorker
          * Apply the overwrite policy for the extracted properties.
          * 
          * @return
-         *          Returns a map of all properties that were applied to the target map.  If the result is
-         *          an empty map, then the target map remains unchanged.
+         *          Returns a map of all properties that were applied to the target map
+         *          as well as any null values that weren't applied but were present.
          */
         public Map<QName, Serializable> applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
         {

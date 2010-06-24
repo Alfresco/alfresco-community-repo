@@ -50,7 +50,7 @@
     
     <!--  The remote interface for the deployment receiver engine -->
     
-	<bean id="deploymentReceiverTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">
+	<bean id="deploymentReceiverTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
 		<property name="service">
 			<ref bean="deploymentReceiverEngine"/>
 		</property>
@@ -60,15 +60,9 @@
 		<property name="serviceName">
 			<value>deployment</value>
 		</property>
-		<property name="registryPort">
-			<value>${alfresco.rmi.services.port}</value>
-		</property>
 		<property name="servicePort">
 			<value>${wcm-deployment-receiver.rmi.service.port}</value>
 		</property>
-		<property name="registryHost">
-            <value>${alfresco.rmi.services.host}</value>
-        </property>
 	</bean>
 	
 	<!--  Now import the deployment targets -->

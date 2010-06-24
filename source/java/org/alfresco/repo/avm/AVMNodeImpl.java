@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
@@ -135,22 +136,19 @@ public abstract class AVMNodeImpl implements AVMNode
         {
             return;
         }
-        HistoryLinkImpl link = new HistoryLinkImpl();
-        link.setAncestor(ancestor);
-        link.setDescendent(this);
-        AVMDAOs.Instance().fHistoryLinkDAO.save(link);
+        AVMDAOs.Instance().newAVMNodeLinksDAO.createHistoryLink(ancestor.getId(), this.getId());
     }
-
+    
     /**
      * Change the ancestor of this node.
      * @param ancestor The new ancestor to give it.
      */
     public void changeAncestor(AVMNode ancestor)
     {
-        HistoryLink old = AVMDAOs.Instance().fHistoryLinkDAO.getByDescendent(this);
-        if (old != null)
+        AVMHistoryLinkEntity hlEntity = AVMDAOs.Instance().newAVMNodeLinksDAO.getHistoryLinkByDescendent(this.getId());
+        if (hlEntity != null)
         {
-            AVMDAOs.Instance().fHistoryLinkDAO.delete(old);
+            AVMDAOs.Instance().newAVMNodeLinksDAO.deleteHistoryLink(hlEntity.getAncestorNodeId(), hlEntity.getDescendentNodeId());
         }
         setAncestor(ancestor);
     }
@@ -174,10 +172,7 @@ public abstract class AVMNodeImpl implements AVMNode
         {
             return;
         }
-        MergeLinkImpl link = new MergeLinkImpl();
-        link.setMfrom(mergedFrom);
-        link.setMto(this);
-        AVMDAOs.Instance().fMergeLinkDAO.save(link);
+        AVMDAOs.Instance().newAVMNodeLinksDAO.createMergeLink(mergedFrom.getId(), this.getId());
     }
     
     /**

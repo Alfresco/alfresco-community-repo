@@ -856,6 +856,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     protected Date makeDate(String dateStr)
     {
+        if (dateStr == null || dateStr.length() == 0)
+        {
+            return null;
+        }
+        
         Date date = null;
         try
         {
@@ -885,9 +890,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
     
     /**
-     * Adds a value to the map if it is non-trivial.  A value is trivial if
+     * Adds a value to the map, conserving null values.  Values are converted to null if:
      * <ul>
-     *   <li>it is null</li>
      *   <li>it is an empty string value after trimming</li>
      *   <li>it is an empty collection</li>
      *   <li>it is an empty array</li>
@@ -907,14 +911,14 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         if (value == null)
         {
-            return false;
+            // Just keep this
         }
-        if (value instanceof String)
+        else if (value instanceof String)
         {
             String valueStr = ((String) value).trim();
             if (valueStr.length() == 0)
             {
-                return false;
+                value = null;
             }
             else
             {
@@ -927,14 +931,14 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             Collection valueCollection = (Collection) value;
             if (valueCollection.isEmpty())
             {
-                return false;
+                value = null;
             }
         }
         else if (value.getClass().isArray())
         {
             if (Array.getLength(value) == 0)
             {
-                return false;
+                value = null;
             }
         }
         // It passed all the tests

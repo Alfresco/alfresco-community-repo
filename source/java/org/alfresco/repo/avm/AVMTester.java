@@ -315,6 +315,10 @@ class AVMTester implements Runnable
     {
         String name = fNames[fgRandom.nextInt(26 * 26)];
         String path = randomPath();
+        if (path == null)
+        {
+            return;
+        }
         AVMNodeDescriptor desc = fService.lookup(-1, path);
         if (desc == null)
         {
@@ -398,6 +402,10 @@ class AVMTester implements Runnable
     private void removeNode()
     {
         String target = randomPath();
+        if (target == null)
+        {
+            return;
+        }
         int lastSlash = target.lastIndexOf('/');
         String path = target.substring(0, lastSlash);
         if (path.equals("main:"))

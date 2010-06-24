@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferException;
@@ -142,6 +144,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     private TransferProgressMonitor progressMonitor;
     private ActionService actionService;
     private TenantService tenantService;
+    private RuleService ruleService;
 
     private Map<String,NodeRef> transferLockFolderMap = new ConcurrentHashMap<String, NodeRef>();
     private Map<String,NodeRef> transferTempFolderMap = new ConcurrentHashMap<String, NodeRef>();
@@ -151,6 +154,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "ruleService", ruleService);
+        PropertyCheck.mandatory(this, "actionService", actionService);
+        PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
+        PropertyCheck.mandatory(this, "tennantService", tenantService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "transferLockFolderPath", transferLockFolderPath);
         PropertyCheck.mandatory(this, "inboundTransferRecordsPath", inboundTransferRecordsPath);
@@ -587,6 +594,13 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         {
             log.debug("Committing transferId=" + transferId);
         }
+        
+        /**
+         * Turn off rules while transfer is being committed.
+         */
+        boolean rulesEnabled = ruleService.isEnabled();
+        ruleService.disableRules();
+        
         try
         {
             nudgeLock(transferId);
@@ -616,14 +630,18 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                         for (TransferManifestProcessor processor : commitProcessors)
                         {
                             XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
-                            behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+
+                            //behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                            behaviourFilter.disableAllBehaviours();
+                       
                             try
                             {
                                 parser.parse(snapshotFile, reader);
                             }
                             finally
                             {
-                                behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                              //  behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                                behaviourFilter.enableAllBehaviours();
                             }
                             nudgeLock(transferId);
                             parser.reset();
@@ -674,6 +692,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         }
         finally
         {
+            if(rulesEnabled)
+            {
+                /**
+                 * Turn rules back on if we turned them off earlier.
+                 */
+                ruleService.enableRules();
+            }
+            
             /**
              * Clean up at the end of the transfer
              */
@@ -804,6 +830,20 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
+    }
+    
+    /**
+     * @param progressMonitor
+     *            the progressMonitor to set
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+
+    public RuleService getRuleService()
+    {
+        return this.ruleService;
     }
 
 }

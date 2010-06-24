@@ -75,16 +75,6 @@ public class AVMDAOs
     public ChildEntryDAO fChildEntryDAO;
     
     /**
-     * The HistoryLinkDAO.
-     */
-    public HistoryLinkDAO fHistoryLinkDAO;
-    
-    /**
-     * The MergeLinkDAO.
-     */
-    public MergeLinkDAO fMergeLinkDAO;
-    
-    /**
      * The AVMStorePropertyDAO
      */
     public AVMStorePropertyDAO fAVMStorePropertyDAO;
@@ -123,23 +113,7 @@ public class AVMDAOs
     {
         fChildEntryDAO = childEntryDAO;
     }
-
-    /**
-     * @param historyLinkDAO the fHistoryLinkDAO to set
-     */
-    public void setHistoryLinkDAO(HistoryLinkDAO historyLinkDAO)
-    {
-        fHistoryLinkDAO = historyLinkDAO;
-    }
-
-    /**
-     * @param mergeLinkDAO the fMergeLinkDAO to set
-     */
-    public void setMergeLinkDAO(MergeLinkDAO mergeLinkDAO)
-    {
-        fMergeLinkDAO = mergeLinkDAO;
-    }
-
+    
     /**
      * @param aVMStoreDAO The fAVMStoreDAO to set
      */

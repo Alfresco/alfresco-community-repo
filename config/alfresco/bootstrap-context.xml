@@ -79,6 +79,7 @@
        <property name="postCreateScriptUrls">
           <list>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/node-prop-serializable.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -122,6 +123,8 @@
              <ref bean="patch.db-V3.3-Fix-Repo-Seqs" />
              <ref bean="patch.db-V3.3-Fix-AVM-Seqs" />
              <ref bean="patch.db-V3.3-property-unique-ctx-value" />
+             <ref bean="patch.db-V3.3-JBPM-Extra" />
+             <ref bean="patch.db-V3.3-Node-Prop-Serializable" />
           </list>
        </property>
     </bean>

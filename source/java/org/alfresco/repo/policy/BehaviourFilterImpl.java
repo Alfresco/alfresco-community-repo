@@ -37,6 +37,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class BehaviourFilterImpl implements BehaviourFilter
 {
+    private static final String KEY_GLOBAL_FILTER = "BehaviourFilterImpl.gloalFilter";
     private static final String KEY_CLASS_FILTER = "BehaviourFilterImpl.classFilter";
     private static final String KEY_NODEREF_FILTER = "BehaviourFilterImpl.nodeRefFilter";
     
@@ -122,14 +123,26 @@ public class BehaviourFilterImpl implements BehaviourFilter
         nodeRefFilters.remove(nodeRef);
     }
     
+    public void disableAllBehaviours()
+    {
+        TransactionalResourceHelper.setBoolean(KEY_GLOBAL_FILTER);
+    }
+    
     public void enableAllBehaviours()
     {
+        TransactionalResourceHelper.resetBoolean(KEY_GLOBAL_FILTER);
+        
         Map<NodeRef,List<QName>> filters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
         filters.clear();
     }
 
     public boolean isEnabled(NodeRef nodeRef, QName className)
     {
+        if(TransactionalResourceHelper.testBoolean(KEY_GLOBAL_FILTER))
+        {
+            return false;
+        }
+            
         // check global filters
         if (!isEnabled(className))
         {
@@ -163,6 +176,11 @@ public class BehaviourFilterImpl implements BehaviourFilter
 
     public boolean isEnabled(QName className)
     {
+        if(TransactionalResourceHelper.testBoolean(KEY_GLOBAL_FILTER))
+        {
+            return false;
+        }
+        
         // check global class filters
         List<QName> classFilters = TransactionalResourceHelper.getList(KEY_CLASS_FILTER);
         boolean filtered = classFilters.contains(className);
@@ -186,6 +204,8 @@ public class BehaviourFilterImpl implements BehaviourFilter
     {
         List<QName> classFilters = TransactionalResourceHelper.getList(KEY_CLASS_FILTER);
         Map<NodeRef,List<QName>> nodeRefFilters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
-        return (!classFilters.isEmpty()) || (!nodeRefFilters.isEmpty());
+        boolean globalFlag = TransactionalResourceHelper.testBoolean(KEY_GLOBAL_FILTER);
+        return ((!classFilters.isEmpty()) || (!nodeRefFilters.isEmpty()) || globalFlag);
     }
+
 }

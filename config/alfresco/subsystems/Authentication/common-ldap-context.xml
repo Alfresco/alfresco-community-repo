@@ -106,12 +106,35 @@
                <value>${ldap.authentication.java.naming.provider.url}</value>
             </entry>
 
-            <!-- The authentication mechanism to use      -->
+            <!-- The authentication mechanism to use for password validation -->
             <!-- Some sasl authentication mechanisms may require a realm to be set -->
             <!--                java.naming.security.sasl.realm -->
             <!-- The available options will depend on your LDAP provider -->
             <entry key="java.naming.security.authentication">
                <value>${ldap.authentication.java.naming.security.authentication}</value>
+            </entry>
+         </map>
+      </property>
+      <property name="defaultIntialDirContextEnvironment">
+         <map>
+            <!-- The LDAP provider -->
+            <entry key="java.naming.factory.initial">
+               <value>${ldap.authentication.java.naming.factory.initial}</value>
+            </entry>
+
+            <!-- The url to the LDAP server -->
+            <!-- Note you can use space separated urls - they will be tried in turn until one works -->
+            <!-- This could be used to authenticate against one or more ldap servers (you will not know which one ....) -->
+            <entry key="java.naming.provider.url">
+               <value>${ldap.authentication.java.naming.provider.url}</value>
+            </entry>
+
+            <!-- The authentication mechanism to use for SYNCHRONIZATION -->
+            <!-- Some sasl authentication mechanisms may require a realm to be set -->
+            <!--                java.naming.security.sasl.realm -->
+            <!-- The available options will depend on your LDAP provider -->
+            <entry key="java.naming.security.authentication">
+               <value>${ldap.synchronization.java.naming.security.authentication}</value>
             </entry>
 
             <!-- The id of a user who can read group and user information -->
@@ -123,6 +146,16 @@
             <!-- The password for the user defined above -->
             <entry key="java.naming.security.credentials">
                <value>${ldap.synchronization.java.naming.security.credentials}</value>
+            </entry>
+
+            <!-- Allow the 'underlying mechanism' to obtain credentials (e.g. Kerberos) -->
+            <entry key="javax.security.auth.useSubjectCredsOnly">
+               <value>false</value>
+            </entry>
+
+            <!-- Pool the default connection -->
+            <entry key="com.sun.jndi.ldap.connect.pool">
+               <value>true</value>
             </entry>
          </map>
       </property>

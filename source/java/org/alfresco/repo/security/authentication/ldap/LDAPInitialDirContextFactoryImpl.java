@@ -49,7 +49,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 {
     private static final Log logger = LogFactory.getLog(LDAPInitialDirContextFactoryImpl.class);
 
-    private Map<String, String> initialDirContextEnvironment = Collections.<String, String> emptyMap();
+    private Map<String, String> defaultEnvironment = Collections.<String, String> emptyMap();
+    private Map<String, String> authenticatedEnvironment = Collections.<String, String> emptyMap();
 
     static
     {
@@ -63,13 +64,18 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     public void setInitialDirContextEnvironment(Map<String, String> initialDirContextEnvironment)
     {
-        this.initialDirContextEnvironment = initialDirContextEnvironment;
+        this.authenticatedEnvironment = initialDirContextEnvironment;
     }
 
     public Map<String, String> getInitialDirContextEnvironment()
     {
-        return initialDirContextEnvironment;
+        return authenticatedEnvironment;
     }
+    
+    public void setDefaultIntialDirContextEnvironment(Map<String, String> defaultEnvironment)
+    {
+        this.defaultEnvironment = defaultEnvironment;
+    }    
 
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException
     {
@@ -78,10 +84,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException
     {
-        Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-        env.putAll(initialDirContextEnvironment);
-        env.put("javax.security.auth.useSubjectCredsOnly", "false");
-        env.put("com.sun.jndi.ldap.connect.pool", "true"); // Pool the default connection
+        Hashtable<String, String> env = new Hashtable<String, String>(defaultEnvironment.size());
+        env.putAll(defaultEnvironment);
         return buildInitialDirContext(env, pageSize);
     }
 
@@ -185,8 +189,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             throw new AuthenticationException("Empty credentials provided.");
         }
 
-        Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-        env.putAll(initialDirContextEnvironment);
+        Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
+        env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, principal);
         env.put(Context.SECURITY_CREDENTIALS, credentials);
 
@@ -284,8 +288,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     {
         // Check Anonymous bind
 
-        Hashtable<String, String> env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-        env.putAll(initialDirContextEnvironment);
+        Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
+        env.putAll(authenticatedEnvironment);
         env.remove(Context.SECURITY_PRINCIPAL);
         env.remove(Context.SECURITY_CREDENTIALS);
         try
@@ -310,8 +314,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         // Simple DN and password
 
-        env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-        env.putAll(initialDirContextEnvironment);
+        env = new Hashtable<String, String>(authenticatedEnvironment.size());
+        env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "daftAsABrush");
         env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
         try
@@ -339,8 +343,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         // DN and password
 
-        env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-        env.putAll(initialDirContextEnvironment);
+        env = new Hashtable<String, String>(authenticatedEnvironment.size());
+        env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "cn=daftAsABrush,dc=woof");
         env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
         try
@@ -368,14 +372,14 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         // Check more if we have a real principal we expect to work
 
-        env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-        env.putAll(initialDirContextEnvironment);
+        env = new Hashtable<String, String>(defaultEnvironment.size());
+        env.putAll(defaultEnvironment);
         if (env.get(Context.SECURITY_PRINCIPAL) != null)
         {
             // Correct principal invalid password
 
-            env = new Hashtable<String, String>(initialDirContextEnvironment.size());
-            env.putAll(initialDirContextEnvironment);
+            env = new Hashtable<String, String>(defaultEnvironment.size());
+            env.putAll(defaultEnvironment);
             env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
             try
             {

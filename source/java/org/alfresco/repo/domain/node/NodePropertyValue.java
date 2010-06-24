@@ -37,7 +37,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.ContentDataId;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -50,10 +49,10 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Immutable property value storage class.

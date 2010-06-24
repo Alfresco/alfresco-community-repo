@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.domain;
+package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
 

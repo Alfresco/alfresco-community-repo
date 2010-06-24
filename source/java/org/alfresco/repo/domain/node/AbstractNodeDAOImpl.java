@@ -1569,10 +1569,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Remove sys:referenceable
         ReferenceablePropertiesEntity.removeReferenceableProperties(node, newProps);
 
+        // Get the old properties in the raw format, attempting a shortcut for new nodes
+        Map<NodePropertyKey, NodePropertyValue> oldPropsRaw = null;
+        Map<QName, Serializable> oldProps = propertiesCache.getValue(nodeId);
+        if (oldProps != null && oldProps.isEmpty())
+        {
+            // Don't requery
+            oldPropsRaw = Collections.emptyMap();
+            isAddOnly = false;
+        }
+        else
+        {
+            oldPropsRaw = selectNodeProperties(nodeId);
+        }
+        
         // Determine which properties we are interested in.  For addition of properties, we only
         // need the old properties for the QNames being added.  For complete setting of properties,
         // we need the full set of old properties.
-        Map<NodePropertyKey, NodePropertyValue> oldPropsRaw = selectNodeProperties(nodeId);
         Set<Long> qnameIdsOfInterest = qnameDAO.convertQNamesToIds(newProps.keySet(), true);
         
         // Get new property raw values
@@ -1617,7 +1630,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     if (newContentData != null)
                     {
                         Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
-                        newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, newContentDataId);
+                        newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
                         propsToAdd.put(key, newPropValue);
                     }
                 }
@@ -1678,7 +1691,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         if (newContentData != null)
                         {
                             Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
-                            newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, newContentDataId);
+                            newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
                             propsToAdd.put(key, newPropValue);
                         }
                     }

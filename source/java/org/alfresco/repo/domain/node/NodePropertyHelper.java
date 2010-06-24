@@ -35,7 +35,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.ContentDataId;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -251,18 +250,6 @@ public class NodePropertyHelper
                         "Collections of collections (Serializable) are only supported by type 'd:any': \n"
                                 + "   Property: " + propertyDef + "\n" + "   Type: " + propertyTypeQName + "\n"
                                 + "   Value: " + value);
-            }
-            // Handle ContentData
-            // We used to check the property type, but we now handle d:any ContentData as well
-            if (value instanceof ContentData)
-            {
-                // We keep the ContentData i.e. we treat it as a low-level property that will be handled externally.
-                //    This will be converted to a String and persisted as such unless the value is ultimately
-                //    replaced by and ID-based ContentData reference
-//                // Needs converting to an ID
-//                ContentData contentData = (ContentData) value;
-//                Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
-//                value = new ContentDataId(contentDataId);
             }
             // Handle MLText
             if (value instanceof MLText)
@@ -618,30 +605,14 @@ public class NodePropertyHelper
                 // ContentData used to be persisted as a String and then as a Long.
                 // Now it has a special type to denote the ID
                 Long contentDataId = ((ContentDataId) value).getId();
-                Pair<Long, ContentData> contentDataPair = contentDataDAO.getContentData(contentDataId);
-                if (contentDataPair == null)
-                {
-                    // It is invalid
-                    value = null;
-                }
-                else
-                {
-                    value = contentDataPair.getSecond();
-                }
+                ContentData contentData = contentDataDAO.getContentData(contentDataId).getSecond();
+                value = new ContentDataWithId(contentData, contentDataId);
             }
-            else if (propertyTypeQName.equals(DataTypeDefinition.CONTENT) && (value instanceof Long))
+            else if ((value instanceof Long) && propertyTypeQName.equals(DataTypeDefinition.CONTENT))
             {
-                // ContentData used to be persisted 
-                Pair<Long, ContentData> contentDataPair = contentDataDAO.getContentData((Long) value);
-                if (contentDataPair == null)
-                {
-                    // It is invalid
-                    value = null;
-                }
-                else
-                {
-                    value = contentDataPair.getSecond();
-                }
+                Long contentDataId = (Long) value;
+                ContentData contentData = contentDataDAO.getContentData(contentDataId).getSecond();
+                value = new ContentDataWithId(contentData, contentDataId);
             }
             // done
             return value;

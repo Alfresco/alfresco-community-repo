@@ -13,7 +13,7 @@
 	                  <#assign navurl="/navigate/showSpaceDetails/">
 	               </#if>
 	               <#assign navurl=navurl + node.nodeRef.storeRef.protocol + '/' + node.nodeRef.storeRef.identifier + '/' + node.nodeRef.id>
-	               <td width=24><center><a href='${url.context}${navurl}' target="new"><img src='${url.context}/images/icons/View_details.gif' style='cursor:pointer' width=12 height=16 border=0 title='${msg("details")}' alt='${msg("details")}'></a></center></td>
+	               <td width=24><center><a href="${url.context}${navurl}?close=true" target="new"><img src='${url.context}/images/icons/View_details.gif' style='cursor:pointer' width=12 height=16 border=0 title='${msg("details")}' alt='${msg("details")}'></a></center></td>
 	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="<#if isVideo>if (document.all) document.getElementById('${node.id}_player').controls.stop();</#if>AlfNodeInfoMgr.close('${node.nodeRef}');" style='cursor:pointer' width=14 height=14 border=0 title='${msg("close")}' alt='${msg("close")}'></td>
 	            </tr>
 	         </table>
@@ -23,7 +23,7 @@
 	   <tr>
 	      <td valign="middle" align="center">
 	         <#if isImage>
-	            <a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.url}" width=120 border=0></a>
+	            <a href="${url.context}${node.url}?close=true" target="new"><img src="${url.context}${node.url}" width=120 border=0></a>
 	         <#elseif isVideo>
 	            <object width="320" height="240" border="0" id="${node.id}_player" classid="CLSID:6BF52A52-394A-11d3-B153-00C04F79FAA6">
 	               <param name="URL" value="${url.context}${node.url}" />
@@ -36,7 +36,7 @@
 	               <tr>
 	                  <td>
 	                     <div style="border: 1px solid #cccccc; padding:4px">
-	                        <a href="${url.context}${node.url}" target="new"><img src="${url.context}${node.icon32}" width="32" height="32" border="0"></a>
+	                        <a href="${url.context}${node.url}?close=true" target="new"><img src="${url.context}${node.icon32}" width="32" height="32" border="0"></a>
 	                     </div>
 	                  </td>
 	                  <td><img src="${url.context}/images/parts/rightSideShadow42.gif" width="6" height="42"></td>

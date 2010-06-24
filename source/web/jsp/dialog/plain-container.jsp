@@ -27,6 +27,19 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
+<%
+   boolean closeWindow = false;
+   String param = request.getParameter("close");
+   if (param != null && param.equalsIgnoreCase("true"))
+   {
+      closeWindow = true;
+   }
+%>
+
+<script type="text/javascript">
+   var isClose = <%=closeWindow%>;
+</script>
+
 <r:page title="<%=Application.getDialogManager().getTitle() %>">
 
 <f:view>
@@ -56,6 +69,27 @@
          </tr>
       </table>
    </h:form>
+
+<script type="text/javascript">
+   window.addEvent('domready', init);
+
+   function init()
+   {
+      if (isClose == true)
+      {
+         document.getElementById("dialog:cancel-button").onclick = function()
+         {
+            if(navigator.appName == "Microsoft Internet Explorer")
+            {
+               window.opener = this;
+            }
+            window.open('', '_parent', '');
+            window.close();
+         }
+      }
+   }
+
+</script>
     
 </f:view>
 

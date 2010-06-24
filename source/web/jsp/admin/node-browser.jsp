@@ -150,13 +150,16 @@
    
       <br/>
       <h:outputText styleClass="mainTitle" value="Aspects"/>
-   
-      <h:dataTable id="aspects" value="#{AdminNodeBrowseBean.aspects}" var="aspect">
-          <h:column>
-              <h:outputText value="#{aspect}"/>
-          </h:column>
+
+      <h:dataTable id="aspects" border="1" value="#{AdminNodeBrowseBean.aspects}" var="aspect" styleClass="nodeBrowserTable">
+      <h:column>
+      <f:facet name="header">
+      <h:outputText value="Aspect Type"/>
+      </f:facet>
+      <h:outputText value="#{aspect}"/>
+      </h:column>
       </h:dataTable>
-   
+         
       <br/>
       <h:outputText styleClass="mainTitle" value="Permissions"/>
       
@@ -236,7 +239,7 @@
               <f:facet name="header">
                   <h:outputText value="Association Type"/>
               </f:facet>
-              <h:outputText value="#{child.typeQName.prefixString}"/>
+              <h:outputText value="#{child.typeQName}"/>
           </h:column>
           <h:column>
               <f:facet name="header">
@@ -263,7 +266,7 @@
               <f:facet name="header">
                   <h:outputText value="Association Type"/>
               </f:facet>
-              <h:outputText value="#{assoc.typeQName.prefixString}"/>
+              <h:outputText value="#{assoc.typeQName}"/>
           </h:column>
       </h:dataTable>
    

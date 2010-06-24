@@ -165,6 +165,20 @@ public class ContentData implements Serializable
     }
     
     /**
+     * Copy constructor for derived class
+     * 
+     * @param original              the object to copy
+     */
+    protected ContentData(ContentData original)
+    {
+        this.contentUrl = original.contentUrl;
+        this.encoding = original.encoding;
+        this.locale = original.locale;
+        this.mimetype = original.mimetype;
+        this.size = original.size;
+    }
+    
+    /**
      * Create a content data using the {@link I18NUtil#getLocale() default locale}.
      * 
      * @see #ContentData(String, String, long, String, Locale)

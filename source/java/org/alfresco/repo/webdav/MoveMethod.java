@@ -68,6 +68,15 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
 
         checkNode(fileInfo);
 
-        fileFolderService.move(sourceNodeRef, destParentNodeRef, name);
+        if (getNodeService().getPrimaryParent(sourceNodeRef).getParentRef().equals(destParentNodeRef))
+        {
+            // It is renaming operation
+            fileFolderService.rename(sourceNodeRef, name);
+        }
+        else
+        {
+            // It is move operation
+            fileFolderService.move(sourceNodeRef, destParentNodeRef, name);
+        }
     }
 }

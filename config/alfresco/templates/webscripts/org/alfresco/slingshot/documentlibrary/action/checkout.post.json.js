@@ -25,15 +25,15 @@ function runAction(p_params)
       // Ensure the file is versionable
       if (!assetNode.hasAspect("cm:versionable"))
       {
-	      var props = new Array(1);
-	      props["cm:autoVersionOnUpdateProps"] = false;
-	      assetNode.addAspect("cm:versionable", props);
+         var props = new Array(1);
+         props["cm:autoVersionOnUpdateProps"] = false;
+         assetNode.addAspect("cm:versionable", props);
       }
  
       if (assetNode.versionHistory == null)
       {
-	      // Create the first version manually so we have 1.0 before checkout
-	      assetNode.createVersion("", true);
+         // Create the first version manually so we have 1.0 before checkout
+         assetNode.createVersion("", true);
       }
 
       // Checkout the asset
@@ -43,6 +43,10 @@ function runAction(p_params)
          status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not checkout: " + p_params.path);
          return;
       }
+      
+      // Extra property to allow the full series of actions via the Explorer client
+      workingCopy.properties["cm:workingCopyMode"] = "offlineEditing";
+      workingCopy.save();
 
       var resultId = assetNode.name,
          resultNodeRef = workingCopy.nodeRef.toString();

@@ -383,7 +383,15 @@ public abstract class WebDAVMethod
                 factory.setNamespaceAware(true);
 
                 DocumentBuilder builder = factory.newDocumentBuilder();
-                body = builder.parse(new InputSource(m_request.getReader()));
+                if (m_request.getCharacterEncoding() == null)
+                {
+                    // Let the XML parser work out the encoding if it is not explicitly declared in the HTTP header
+                    body = builder.parse(new InputSource(m_request.getInputStream()));
+                }
+                else
+                {
+                    body = builder.parse(new InputSource(m_request.getReader()));
+                }
             }
             catch (ParserConfigurationException e)
             {

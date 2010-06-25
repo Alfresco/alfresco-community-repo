@@ -2249,7 +2249,7 @@
         <property name="fixesToSchema"><value>4105</value></property>
         <property name="targetSchema"><value>4106</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-3.3-JBPM-Extra.sql</value>
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
         </property>
     </bean>
     
@@ -2260,7 +2260,7 @@
         <property name="fixesToSchema"><value>4105</value></property>
         <property name="targetSchema"><value>4106</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/node-prop-serializable.sql</value>
+            <value>classpath:alfresco/dbscripts/upgrade/3.3/${db.script.dialect}/node-prop-serializable.sql</value>
         </property>
     </bean>
 

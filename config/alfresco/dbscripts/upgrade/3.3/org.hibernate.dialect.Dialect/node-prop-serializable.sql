@@ -1,7 +1,7 @@
 --
 -- Title:      Upgrade to V3.3
 -- Database:   DB2
--- Since:      V3.3 schema 4014
+-- Since:      V3.3 schema 4106
 -- Author:     janv
 --
 -- This patch is only required to fix column on DB2.

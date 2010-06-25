@@ -19,5 +19,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.1-AuditPathIndex', 'Manually executed script upgrade V2.1: Ensure existence of audit path index',
-    0, 81, -1, 82, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 81, -1, 82, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

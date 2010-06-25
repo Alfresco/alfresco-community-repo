@@ -40,5 +40,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-Child-Assoc-QName-CRC', 'Manually executed script upgrade V3.2 to Add qname_crc column to alf_child_assoc and change indexes',
-     0, 3005, -1, 3006, null, 'UNKOWN', 1, 1, 'Script completed'
+     0, 3005, -1, 3006, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

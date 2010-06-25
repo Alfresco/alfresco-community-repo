@@ -21,5 +21,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-Upgrade-JBPM', 'Manually executed script upgrade V3.2 to jbpm version 3.3.1 usage',
-     0, 2017, -1, 2018, null, 'UNKOWN', 1, 1, 'Script completed'
+     0, 2017, -1, 2018, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

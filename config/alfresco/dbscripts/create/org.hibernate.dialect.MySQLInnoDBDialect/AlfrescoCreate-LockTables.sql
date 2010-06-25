@@ -42,5 +42,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-LockTables', 'Manually executed script upgrade V3.2: Lock Tables',
-    0, 2010, -1, 2011, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 2010, -1, 2011, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

@@ -73,5 +73,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.3-modify-index-permission_id', 'Remove context_id from the permission_id unique index (as it always contains null and therefore has no effect)',
-     0, 4102, -1, 4103, null, 'UNKOWN', 1, 1, 'Script completed'
+     0, 4102, -1, 4103, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

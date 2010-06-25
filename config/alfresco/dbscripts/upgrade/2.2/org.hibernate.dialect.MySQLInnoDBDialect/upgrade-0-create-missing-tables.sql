@@ -90,5 +90,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.2-0-CreateMissingTables', 'Manually executed script upgrade V2.2: Created missing tables',
-    0, 120, -1, 121, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 120, -1, 121, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

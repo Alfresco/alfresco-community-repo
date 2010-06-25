@@ -17,5 +17,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.1-Allow-IPv6', 'Manually executed script upgrade V3.1: Increase the ipAddress field length',
-     0, 2019, -1, 2020, null, 'UNKOWN', 1, 1, 'Script completed'
+     0, 2019, -1, 2020, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

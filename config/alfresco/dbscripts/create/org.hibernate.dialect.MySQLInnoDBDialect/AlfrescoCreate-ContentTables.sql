@@ -65,5 +65,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-ContentTables', 'Manually executed script upgrade V3.2: Content Tables',
-    0, 2011, -1, 2012, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 2011, -1, 2012, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

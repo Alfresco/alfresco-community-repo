@@ -15,5 +15,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.3-Node-Prop-Serializable', 'Manually executed script upgrade V3.3',
-     0, 4105, -1, 4106, null, 'UNKOWN', 1, 1, 'Script completed'
+     0, 4105, -1, 4106, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

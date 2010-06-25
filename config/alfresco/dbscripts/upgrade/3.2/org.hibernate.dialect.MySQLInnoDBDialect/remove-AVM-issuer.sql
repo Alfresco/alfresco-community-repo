@@ -53,5 +53,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-Remove-AVM-Issuer', 'Manually executed script upgrade V3.2 to remove AVM Issuer',
-     0, 2007, -1, 2008, null, 'UNKOWN', 1, 1, 'Script completed'
+     0, 2007, -1, 2008, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
    );

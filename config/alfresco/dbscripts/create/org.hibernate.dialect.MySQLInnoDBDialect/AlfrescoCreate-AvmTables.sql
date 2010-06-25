@@ -244,5 +244,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-AvmTables', 'Manually executed script upgrade V3.2: AVM Tables',
-    0, 3001, -1, 3002, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 3001, -1, 3002, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

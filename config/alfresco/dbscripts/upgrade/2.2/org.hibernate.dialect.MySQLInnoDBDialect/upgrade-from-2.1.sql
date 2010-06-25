@@ -1138,5 +1138,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.2-Upgrade-From-2.1', 'Manually executed script upgrade V2.2: Upgrade from 2.1',
-    0, 85, -1, 91, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 85, -1, 91, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

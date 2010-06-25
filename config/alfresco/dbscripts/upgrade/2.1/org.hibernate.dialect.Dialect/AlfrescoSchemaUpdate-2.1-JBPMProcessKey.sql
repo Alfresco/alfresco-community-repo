@@ -18,5 +18,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.1-JBPMProcessKey', 'Manually executed script upgrade V2.1: JBPM 3.2 Process Instance Key',
-    0, 62, -1, 63, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 62, -1, 63, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

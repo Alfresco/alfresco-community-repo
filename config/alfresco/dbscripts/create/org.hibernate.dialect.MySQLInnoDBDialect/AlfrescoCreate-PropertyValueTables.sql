@@ -118,5 +118,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V3.2-PropertyValueTables', 'Manually executed script upgrade V3.2: PropertyValue Tables',
-    0, 3000, -1, 3001, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 3000, -1, 3001, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

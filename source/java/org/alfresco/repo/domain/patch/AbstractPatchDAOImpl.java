@@ -27,6 +27,8 @@ import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.StoreRef;
 
+import com.ibatis.sqlmap.client.event.RowHandler;
+
 
 /**
  * Abstract implementation for Patch DAO.
@@ -162,10 +164,10 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
         {
             String stringValue = (String) prop.get("stringValue");
             
-            ContentData contentData = ContentData.createContentProperty(stringValue);
-            Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
-            prop.put("contentDataId", contentDataId);
-        }
+                ContentData contentData = ContentData.createContentProperty(stringValue);
+                Long contentDataId = contentDataDAO.createContentData(contentData).getFirst();
+                prop.put("contentDataId", contentDataId);
+            }
         
         // Now do the updates in the context of a batch
         try
@@ -231,4 +233,50 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     protected abstract int deleteDanglingAceEntities();
     protected abstract int deleteAclEntities(List<Long> aclIds);
     protected abstract int deleteAclMemberEntitiesForAcls(List<Long> aclIds);
+    
+    // note: caller's row handler is expected to migrate the attrs
+    public void migrateOldAttrTenants(RowHandler rowHandler)
+    {
+        getOldAttrTenantsImpl(rowHandler);
+    }
+    
+    protected abstract void getOldAttrTenantsImpl(RowHandler rowHandler);
+    
+    // note: caller's row handler is expected to migrate the attrs
+    public void migrateOldAttrAVMLocks(RowHandler rowHandler)
+    {
+        getOldAttrAVMLocksImpl(rowHandler);
+    }
+    
+    protected abstract void getOldAttrAVMLocksImpl(RowHandler rowHandler);
+    
+    // note: caller's row handler is expected to migrate the attrs
+    public void migrateOldAttrPropertyBackedBeans(RowHandler rowHandler)
+    {
+        getOldAttrPropertyBackedBeansImpl(rowHandler);
+    }
+    
+    protected abstract void getOldAttrPropertyBackedBeansImpl(RowHandler rowHandler);
+    
+    // note: caller's row handler is expected to migrate the attrs
+    public void migrateOldAttrChainingURS(RowHandler rowHandler)
+    {
+        getOldAttrChainingURSImpl(rowHandler);
+    }
+    
+    protected abstract void getOldAttrChainingURSImpl(RowHandler rowHandler);
+    
+    public List<String> getOldAttrCustomNames()
+    {
+        return getOldAttrCustomNamesImpl();
+    }
+    
+    protected abstract List<String> getOldAttrCustomNamesImpl();
+    
+    public void deleteAllOldAttrs()
+    {
+        deleteAllOldAttrsImpl();
+    }
+    
+    protected abstract void deleteAllOldAttrsImpl();
 }

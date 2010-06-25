@@ -85,6 +85,16 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String DELETE_PERMISSIONS_ACL_LIST = "alfresco.permissions.delete_AclList";
     private static final String DELETE_PERMISSIONS_ACL_MEMBERS_FOR_ACL_LIST = "alfresco.permissions.delete_AclMembersForAclList";
     
+    private static final String SELECT_OLD_ATTR_TENANTS = "alfresco.patch.select_oldAttrTenants";
+    private static final String SELECT_OLD_ATTR_AVM_LOCKS= "alfresco.patch.select_oldAttrAVMLocks";
+    private static final String SELECT_OLD_ATTR_PBBS = "alfresco.patch.select_oldAttrPropertyBackedBeans";
+    private static final String SELECT_OLD_ATTR_CHAINING_URS = "alfresco.patch.select_oldAttrChainingURS";
+    private static final String SELECT_OLD_ATTR_CUSTOM_NAMES = "alfresco.patch.select_oldAttrCustomNames";
+    
+    private static final String  DELETE_OLD_ATTR_LIST = "alfresco.patch.delete_oldAttrAlfListAttributeEntries";
+    private static final String  DELETE_OLD_ATTR_MAP = "alfresco.patch.delete_oldAttrAlfMapAttributeEntries";
+    private static final String  DELETE_OLD_ATTR_GLOBAL = "alfresco.patch.delete_oldAttrAlfGlobalAttributes";
+    private static final String  DELETE_OLD_ATTR = "alfresco.patch.delete_oldAttrAlfAttributes";
     
     private SqlMapClientTemplate template;
     private QNameDAO qnameDAO;
@@ -446,12 +456,12 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         // Done
         return results;
     }
-
+    
     public int getChildAssocCount()
     {
         return (Integer) template.queryForObject(SELECT_CHILD_ASSOCS_COUNT);
     }
-
+    
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getChildAssocsForCrcFix(Long minAssocId, int maxResults)
     {
@@ -464,7 +474,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         // Done
         return results;
     }
-
+    
     public int updateChildAssocCrc(Long assocId, Long childNodeNameCrc, Long qnameCrc)
     {
         Map<String, Object> params = new HashMap<String, Object>();
@@ -473,7 +483,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("qnameCrc", qnameCrc);
         return template.update(UPDATE_CHILD_ASSOC_CRC, params);
     }
-
+    
     public List<Pair<NodeRef, String>> getNodesOfTypeWithNamePattern(QName typeQName, String namePattern)
     {
         Pair<Long, QName> typeQNamePair = qnameDAO.getQName(typeQName);
@@ -514,5 +524,54 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         };
         template.queryWithRowHandler(SELECT_NODES_BY_TYPE_AND_NAME_PATTERN, params, rowHandler);
         return results;
+    }
+    
+    @Override
+    protected void getOldAttrTenantsImpl(RowHandler rowHandler)
+    {
+        template.queryWithRowHandler(SELECT_OLD_ATTR_TENANTS, rowHandler);
+    }
+    
+    @Override
+    protected void getOldAttrAVMLocksImpl(RowHandler rowHandler)
+    {
+        template.queryWithRowHandler(SELECT_OLD_ATTR_AVM_LOCKS, rowHandler);
+    }
+    
+    @Override
+    protected void getOldAttrPropertyBackedBeansImpl(RowHandler rowHandler)
+    {
+        template.queryWithRowHandler(SELECT_OLD_ATTR_PBBS, rowHandler);
+    }
+    
+    @Override
+    protected void getOldAttrChainingURSImpl(RowHandler rowHandler)
+    {
+        template.queryWithRowHandler(SELECT_OLD_ATTR_CHAINING_URS, rowHandler);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<String> getOldAttrCustomNamesImpl()
+    {
+        return (List<String>)template.queryForList(SELECT_OLD_ATTR_CUSTOM_NAMES);
+    }
+    
+    @Override
+    protected void deleteAllOldAttrsImpl()
+    {
+        int deleted = 0;
+        
+        deleted = template.delete(DELETE_OLD_ATTR_LIST);
+        logger.info("Deleted "+deleted+" rows from alf_list_attribute_entries");
+        
+        deleted = template.delete(DELETE_OLD_ATTR_MAP);
+        logger.info("Deleted "+deleted+" rows from alf_map_attribute_entries");
+        
+        deleted = template.delete(DELETE_OLD_ATTR_GLOBAL);
+        logger.info("Deleted "+deleted+" rows from alf_global_attributes");
+        
+        deleted = template.delete(DELETE_OLD_ATTR);
+        logger.info("Deleted "+deleted+" rows from alf_attributes");
     }
 }

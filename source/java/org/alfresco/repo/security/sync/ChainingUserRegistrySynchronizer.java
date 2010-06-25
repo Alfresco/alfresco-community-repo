@@ -111,7 +111,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
     private static final long LOCK_TTL = 1000 * 60 * 2;
 
     /** The path in the attribute service below which we persist attributes. */
-    private static final String ROOT_ATTRIBUTE_PATH = ".ChainingUserRegistrySynchronizer";
+    public static final String ROOT_ATTRIBUTE_PATH = ".ChainingUserRegistrySynchronizer";
 
     /** The label under which the last group modification timestamp is stored for each zone. */
     private static final String GROUP_LAST_MODIFIED_ATTRIBUTE = "GROUP";

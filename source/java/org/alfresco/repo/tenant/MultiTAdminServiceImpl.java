@@ -218,9 +218,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public static final String STORE_BASE_ID_VERSION2 = "version2Store";
     public static final String STORE_BASE_ID_SPACES = "SpacesStore";
     
-    private static final String TENANTS_ATTRIBUTE_PATH = "alfresco-tenants";
-    private static final String TENANT_ATTRIBUTE_ENABLED = "enabled";
-    private static final String TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
+    public static final String TENANTS_ATTRIBUTE_PATH = "alfresco-tenants";
+    public static final String TENANT_ATTRIBUTE_ENABLED = "enabled";
+    public static final String TENANT_ATTRIBUTE_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
     
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
     

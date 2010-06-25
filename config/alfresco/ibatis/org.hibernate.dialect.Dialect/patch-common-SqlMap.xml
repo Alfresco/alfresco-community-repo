@@ -11,7 +11,7 @@
     <!--                -->
     
     <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
-
+    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
@@ -43,6 +43,31 @@
     <resultMap id="result_nodeIdAndName" class="java.util.HashMap">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <resultMap class="java.util.HashMap" id="result_admTenant">
+        <result property="tenantDomain" column="tenantDomain" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="isEnabled" column="isEnabled" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="rootDir" column="rootDir" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <resultMap class="java.util.HashMap" id="result_avmLock">
+        <result property="wpStoreId" column="wpStoreId" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="relPath" column="relPath" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="avmStore" column="avmStore" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="owner1" column="owner1" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <resultMap class="java.util.HashMap" id="result_PBB">
+        <result property="componentName" column="componentName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="propName" column="propName" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="propValue" column="propValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <resultMap class="java.util.HashMap" id="result_ChainingURS">
+        <result property="label" column="label" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="zoneId" column="zoneId" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="lastModified" column="lastModified" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
     <!--                -->
@@ -169,7 +194,82 @@
             np.qname_id = #propQNameId# and
             np.string_value like #namePattern#
     </select>
-
+    
+    <select id="select_oldAttrTenants" resultMap="result_admTenant">
+        select
+            ma.mkey         tenantDomain,
+            a2.bool_value   isEnabled,
+            a3.string_value rootDir
+        from 
+            alf_global_attributes ga
+            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
+            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id and ma2.mkey = 'enabled')
+            join alf_attributes a2 on (a2.id = ma2.attribute_id)
+            join alf_map_attribute_entries ma3 on (ma3.map_id = ma.attribute_id and ma3.mkey = 'rootContentStoreDir')
+            join alf_attributes a3 on (a3.id = ma3.attribute_id)
+        where 
+            ga.name = 'alfresco-tenants'
+    </select>
+    
+    <select id="select_oldAttrAVMLocks" resultMap="result_avmLock">
+        select
+            ma2.mkey wpStoreId,
+            a4.string_value relPath,
+            a5.string_value avmStore,
+            a6.string_value owner1
+        from 
+            alf_global_attributes ga
+            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
+            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id)
+            join alf_map_attribute_entries ma3 on (ma3.map_id = ma2.attribute_id)
+            join alf_map_attribute_entries ma4 on (ma4.map_id = ma3.attribute_id and ma4.mkey = 'path')
+            join alf_attributes a4 on (a4.id = ma4.attribute_id)
+            join alf_map_attribute_entries ma5 on (ma5.map_id = ma3.attribute_id and ma5.mkey = 'store')
+            join alf_attributes a5 on (a5.id = ma5.attribute_id)
+            join alf_map_attribute_entries ma6 on (ma6.map_id = ma3.attribute_id and ma6.mkey = 'owners')
+            join alf_list_attribute_entries la6 on (la6.list_id = ma6.attribute_id and la6.mindex = 0)
+            join alf_attributes a6 on (a6.id = la6.attribute_id)
+        where 
+            ga.name = '.avm_lock_table'
+    </select>
+    
+    <select id="select_oldAttrPropertyBackedBeans" resultMap="result_PBB">
+         select
+            ma.mkey         componentName,
+            ma2.mkey        propName,
+            a2.string_value propValue
+        from 
+            alf_global_attributes ga
+            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
+            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id)
+            join alf_attributes a2 on (a2.id = ma2.attribute_id)
+        where 
+            ga.name = '.PropertyBackedBeans'
+    </select>
+    
+    <select id="select_oldAttrChainingURS" resultMap="result_ChainingURS">
+         select
+            ma.mkey       label,
+            ma2.mkey      zoneId,
+            a2.long_value lastModified
+        from 
+            alf_global_attributes ga
+            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
+            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id)
+            join alf_attributes a2 on (a2.id = ma2.attribute_id)
+        where 
+            ga.name = '.ChainingUserRegistrySynchronizer'
+    </select>
+    
+    <select id="select_oldAttrCustomNames" resultClass="string">
+         select
+            ga.name name
+        from
+            alf_global_attributes ga
+        where
+            ga.name not in ('alfresco-tenants', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer');
+    </select>
+    
     <!--                -->
     <!-- Updates        -->
     <!--                -->
@@ -207,5 +307,25 @@
         where
             id = ?
     </update>
-
+    
+    <!--                -->
+    <!-- Deletes        -->
+    <!--                -->
+    
+    <delete id="delete_oldAttrAlfListAttributeEntries">
+        delete from alf_list_attribute_entries
+    </delete>
+    
+    <delete id="delete_oldAttrAlfMapAttributeEntries">
+        delete from alf_map_attribute_entries
+    </delete>
+    
+    <delete id="delete_oldAttrAlfGlobalAttributes">
+        delete from alf_global_attributes
+    </delete>
+    
+    <delete id="delete_oldAttrAlfAttributes">
+        delete from alf_attributes
+    </delete>
+    
 </sqlMap>

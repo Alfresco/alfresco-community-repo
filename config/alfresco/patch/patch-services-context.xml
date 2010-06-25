@@ -2263,5 +2263,91 @@
             <value>classpath:alfresco/dbscripts/upgrade/3.3/${db.script.dialect}/node-prop-serializable.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.migrateAttrTenants" class="org.alfresco.repo.admin.patch.impl.MigrateAttrTenantsPatch" parent="basePatch">
+        <property name="id"><value>patch.migrateAttrTenants</value></property>
+        <property name="description"><value>patch.migrateAttrTenants.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4106</value></property>
+        <property name="targetSchema"><value>4107</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.migrateAttrAVMLocks" class="org.alfresco.repo.admin.patch.impl.MigrateAttrAVMLocksPatch" parent="basePatch">
+        <property name="id"><value>patch.migrateAttrAVMLocks</value></property>
+        <property name="description"><value>patch.migrateAttrAVMLocks.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4106</value></property>
+        <property name="targetSchema"><value>4107</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.migrateAttrPropBackedBeans" class="org.alfresco.repo.admin.patch.impl.MigrateAttrPropBackedBeanPatch" parent="basePatch">
+        <property name="id"><value>patch.migrateAttrPropBackedBeans</value></property>
+        <property name="description"><value>patch.migrateAttrPropBackedBeans.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4106</value></property>
+        <property name="targetSchema"><value>4107</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.migrateAttrChainingURS" class="org.alfresco.repo.admin.patch.impl.MigrateAttrChainingURSPatch" parent="basePatch">
+        <property name="id"><value>patch.migrateAttrChainingURS</value></property>
+        <property name="description"><value>patch.migrateAttrChainingURS.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4106</value></property>
+        <property name="targetSchema"><value>4107</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.migrateAttrDelete" class="org.alfresco.repo.admin.patch.impl.MigrateAttrDeletePatch" parent="basePatch">
+        <property name="id"><value>patch.migrateAttrDelete</value></property>
+        <property name="description"><value>patch.migrateAttrDelete.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4106</value></property>
+        <property name="targetSchema"><value>4107</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.migrateAttrTenants"/>
+                <ref bean="patch.migrateAttrAVMLocks"/>
+                <ref bean="patch.migrateAttrPropBackedBeans"/>
+                <ref bean="patch.migrateAttrChainingURS"/>
+            </list>
+        </property>
+    </bean>
 
 </beans>

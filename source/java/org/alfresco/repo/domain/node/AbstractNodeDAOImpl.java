@@ -956,7 +956,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         node.setId(id);
         
         Set<QName> nodeAspects = null;
-        if (addAuditableAspect)
+        if (addAuditableAspect && !deleted)
         {
             Long auditableAspectQNameId = qnameDAO.getOrCreateQName(ContentModel.ASPECT_AUDITABLE).getFirst();
             insertNodeAspect(id, auditableAspectQNameId);
@@ -1269,12 +1269,15 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         
         // Do the update
         int count = 0;
+        Savepoint savepoint = controlDAO.createSavepoint("updateNode");
         try
         {
             count = updateNode(nodeUpdate);
+            controlDAO.releaseSavepoint(savepoint);
         }
         catch (Throwable e)
         {
+            controlDAO.rollbackToSavepoint(savepoint);
             NodeRef targetNodeRef = nodeUpdate.getNodeRef();
             // Wipe the node ID from the caches just in case we have stale caches
             // The TransactionalCache will propagate removals to the shared cache on rollback
@@ -1569,24 +1572,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Remove sys:referenceable
         ReferenceablePropertiesEntity.removeReferenceableProperties(node, newProps);
 
-        // Get the old properties in the raw format, attempting a shortcut for new nodes
-        Map<NodePropertyKey, NodePropertyValue> oldPropsRaw = null;
-        Map<QName, Serializable> oldProps = propertiesCache.getValue(nodeId);
-        if (oldProps != null && oldProps.isEmpty())
+        // Get the cached properties
+        Map<QName, Serializable> oldPropsCached = getNodePropertiesCached(nodeId);
+        Map<QName, Serializable> oldProps = new HashMap<QName, Serializable>(oldPropsCached);
+        // If this is an add-only operation, remove any properties we are not interested in
+        if (isAddOnly)
         {
-            // Don't requery
-            oldPropsRaw = Collections.emptyMap();
-            isAddOnly = false;
+            oldProps.keySet().retainAll(newProps.keySet());
         }
-        else
-        {
-            oldPropsRaw = selectNodeProperties(nodeId);
-        }
-        
-        // Determine which properties we are interested in.  For addition of properties, we only
-        // need the old properties for the QNames being added.  For complete setting of properties,
-        // we need the full set of old properties.
-        Set<Long> qnameIdsOfInterest = qnameDAO.convertQNamesToIds(newProps.keySet(), true);
+        // Convert to a raw format for comparison
+        Map<NodePropertyKey, NodePropertyValue> oldPropsRaw = nodePropertyHelper.convertToPersistentProperties(oldProps);
         
         // Get new property raw values
         Map<NodePropertyKey, NodePropertyValue> newPropsRaw = nodePropertyHelper.convertToPersistentProperties(newProps);
@@ -1632,68 +1627,55 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
                         newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
                         propsToAdd.put(key, newPropValue);
+                        newPropsRaw.put(
+                                key,
+                                new NodePropertyValue(
+                                        DataTypeDefinition.CONTENT,
+                                        new ContentDataWithId(newContentData, newContentDataId)));
                     }
                 }
                 continue;
             case LEFT_ONLY:
                 // Only present in old props: must not be added
                 propsToAdd.remove(key);
-                // Handle the fact that this might be a QName we are not interested in
-                if (isAddOnly && !qnameIdsOfInterest.contains(key.getQnameId()))
-                {
-                    // We are adding properties and this is not a property type of interest
-                    propsToDelete.remove(key);
-                    continue;
-                }
                 // Handle deleted content
                 if (isContent)
                 {
                     // The old values will be an ID-based ContentData reference
                     NodePropertyValue valueToDelete = propsToDelete.get(key);
-                    Long contentDataId = (Long) valueToDelete.getValue(DataTypeDefinition.CONTENT);
-                    if (contentDataId != null)
+                    ContentDataWithId contentDataWithId = (ContentDataWithId) valueToDelete.getValue(DataTypeDefinition.CONTENT);
+                    if (contentDataWithId != null)
                     {
+                        Long contentDataId = contentDataWithId.getId();
                         contentDataDAO.deleteContentData(contentDataId);
                     }
                 }
                 continue;
-                // Fall through for content dereferencing
             case NOT_EQUAL:
                 // Value has changed: remove and add
-                // Handle changed content.  We may have equal ContentData values here but the ID-ContentData
-                //    mix will always turn up NOT_EQUAL, hence the double-check
                 if (isContent)
                 {
                     // The old values will be an ID-based ContentData reference
                     NodePropertyValue valueToDelete = propsToDelete.get(key);
-                    Long contentDataIdToDelete = (Long) valueToDelete.getValue(DataTypeDefinition.CONTENT);
-                    ContentData contentDataToDelete =
-                            (contentDataIdToDelete == null)
-                            ? null
-                            : contentDataDAO.getContentData(contentDataIdToDelete).getSecond();
-                    // The new value will NOT be an ID-based reference
+                    ContentDataWithId contentDataWithId = (ContentDataWithId) valueToDelete.getValue(DataTypeDefinition.CONTENT);
+                    if (contentDataWithId != null)
+                    {
+                        Long contentDataId = contentDataWithId.getId();
+                        contentDataDAO.deleteContentData(contentDataId);
+                    }
+                    // The new value needs conversion to the ID-based ContentData reference
                     NodePropertyValue newPropValue = propsToAdd.get(key);
                     ContentData newContentData = (ContentData) newPropValue.getValue(DataTypeDefinition.CONTENT);
-                    // Are they actually different?
-                    if (EqualsHelper.nullSafeEquals(contentDataToDelete, newContentData))
+                    if (newContentData != null)
                     {
-                        // The are the same, so don't do anything
-                        propsToDelete.remove(key);
-                        propsToAdd.remove(key);
-                    }
-                    else
-                    {
-                        // The ContentData values are different
-                        if (contentDataIdToDelete != null)
-                        {
-                            contentDataDAO.deleteContentData(contentDataIdToDelete);
-                        }
-                        if (newContentData != null)
-                        {
-                            Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
-                            newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
-                            propsToAdd.put(key, newPropValue);
-                        }
+                        Long newContentDataId = contentDataDAO.createContentData(newContentData).getFirst();
+                        newPropValue = new NodePropertyValue(DataTypeDefinition.CONTENT, new ContentDataId(newContentDataId));
+                        propsToAdd.put(key, newPropValue);
+                        newPropsRaw.put(
+                                key,
+                                new NodePropertyValue(
+                                        DataTypeDefinition.CONTENT,
+                                        new ContentDataWithId(newContentData, newContentDataId)));
                     }
                 }
                 continue;
@@ -1736,7 +1718,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             if (isAddOnly)
             {
                 // Combine the old and new properties
-                propsToCache = nodePropertyHelper.convertToPublicProperties(oldPropsRaw);
+                propsToCache = oldPropsCached;
                 propsToCache.putAll(newProps);
             }
             else

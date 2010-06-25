@@ -278,13 +278,13 @@ public class NodePropertyValue implements Cloneable, Serializable
             @Override
             protected ValueType getPersistedType(Serializable value)
             {
-                if (value instanceof Long)
+                if (value instanceof ContentData)
                 {
-                    return ValueType.LONG;
+                    return ValueType.SERIALIZABLE;
                 }
                 else
                 {
-                    return ValueType.STRING;
+                    throw new RuntimeException("ContentData persistence must be by ContentDataId.");
                 }
             }
 
@@ -294,6 +294,11 @@ public class NodePropertyValue implements Cloneable, Serializable
                 if (value instanceof Long)
                 {
                     return value;
+                }
+                else if (value instanceof String)
+                {
+                    logger.warn("Content URL converter has not run to completion: " + value);
+                    return DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
                 }
                 else
                 {

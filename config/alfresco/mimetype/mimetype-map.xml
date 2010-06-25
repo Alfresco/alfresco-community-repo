@@ -140,7 +140,8 @@
             <extension>css</extension>
          </mimetype>
          <mimetype mimetype="application/msword" display="Microsoft Word">
-            <extension>doc</extension>
+            <extension default="true">doc</extension>
+            <extension>dot</extension>
          </mimetype>
          <mimetype mimetype="application/wordperfect" display="WordPerfect">
             <extension>wpd</extension>
@@ -344,7 +345,9 @@
             <extension>xbm</extension>
          </mimetype>
          <mimetype mimetype="application/vnd.ms-excel" display="Microsoft Excel">
-            <extension>xls</extension>
+            <extension display="Excel Spreadsheet" default="true">xls</extension>
+            <extension display="Excel Template">xlt</extension>
+            <extension display="Excel Macro">xlm</extension>
          </mimetype>
          <mimetype mimetype="application/vnd.excel" display="Microsoft Excel">
             <extension>xls</extension>
@@ -387,6 +390,15 @@
          </mimetype>
          <mimetype mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation" display="Microsoft PowerPoint 2007">
             <extension>pptx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.template" display="Microsoft Excel Template 2007">
+            <extension>xltx</extension>
+         </mimetype>         
+         <mimetype mimetype="application/vnd.ms-excel.template.macroEnabled.12" display="Microsoft Excel Macro">
+            <extension>xltm</extension>
+         </mimetype>         
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.template" display="Microsoft Word Template 2007">
+            <extension>dotx</extension>
          </mimetype>
       </mimetypes>
    </config>

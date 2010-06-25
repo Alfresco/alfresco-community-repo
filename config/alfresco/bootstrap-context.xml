@@ -121,9 +121,9 @@
              <ref bean="patch.db-V3.3-Remove-VersionCount" />
              <ref bean="patch.db-V3.3-Fix-Repo-Seqs" />
              <ref bean="patch.db-V3.3-Fix-AVM-Seqs" />
-             <ref bean="patch.db-V3.3-property-unique-ctx-value" />
              <ref bean="patch.db-V3.3-JBPM-Extra" />
              <ref bean="patch.db-V3.3-Node-Prop-Serializable" />
+             <ref bean="patch.db-V3.4-property-unique-ctx-value" />
           </list>
        </property>
     </bean>

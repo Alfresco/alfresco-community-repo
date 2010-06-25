@@ -2226,19 +2226,14 @@
         </property>
     </bean>
 
-    <bean id="patch.db-V3.3-property-unique-ctx-value" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V3.3-property-unique-ctx-value</value></property>
+    <bean id="patch.db-V3.4-property-unique-ctx-value" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-property-unique-ctx-value</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4104</value></property>
         <property name="targetSchema"><value>4105</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.3/${db.script.dialect}/property-unique-ctx-value.sql</value>
-        </property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.db-V3.2-PropertyValueTables" />
-            </list>
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/property-unique-ctx-value.sql</value>
         </property>
     </bean>
 

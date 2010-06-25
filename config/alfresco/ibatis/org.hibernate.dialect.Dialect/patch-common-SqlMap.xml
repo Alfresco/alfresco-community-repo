@@ -262,12 +262,12 @@
     </select>
     
     <select id="select_oldAttrCustomNames" resultClass="string">
-         select
-            ga.name name
+        select
+            ga.name as name
         from
             alf_global_attributes ga
         where
-            ga.name not in ('alfresco-tenants', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer');
+            name not in ('alfresco-tenants', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
     </select>
     
     <!--                -->

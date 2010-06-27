@@ -9,6 +9,7 @@
 -->
 <beans>
 
+    <!-- This adds in the extra mapping for the Open Document extractor -->
     <bean id="extracter.OpenDocument" class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter" parent="baseMetadataExtracter" >
         <property name="inheritDefaultMapping">
             <value>true</value>
@@ -21,4 +22,16 @@
         </property>
     </bean>
 
+    <!-- While this one adds it for the Tika Auto-Detect extractor -->
+   <bean id="extracter.TikaAuto" class="org.alfresco.repo.content.metadata.TikaAutoMetadataExtracter" parent="baseMetadataExtracter">
+        <property name="inheritDefaultMapping">
+            <value>true</value>
+        </property>
+        <property name="mappingProperties">
+            <props>
+                <prop key="namespace.prefix.cm">http://www.alfresco.org/model/content/1.0</prop>
+                <prop key="user1">cm:description</prop>
+            </props>
+        </property>
+    </bean>
 </beans>

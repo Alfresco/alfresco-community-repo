@@ -186,6 +186,19 @@
 				</property>
 			</properties>
 		</aspect>
+		
+		<aspect name="trx:transferred">
+            <title>Nodes with this aspect are have been transferred from one repository to another
+            </title>
+            <properties>
+                <property name="trx:repositoryId">
+                    <title>Source RepositoryId</title>
+                    <type>d:text</type>
+                    <mandatory enforced="false">true</mandatory>
+                </property>
+            </properties>
+        </aspect>
+		
 	</aspects>
 
 </model>

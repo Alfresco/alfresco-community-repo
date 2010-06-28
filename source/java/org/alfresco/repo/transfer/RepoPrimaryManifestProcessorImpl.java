@@ -51,6 +51,11 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author brian
  * 
+ * The primary manifest processor is responsible for the first parsing the snapshot 
+ * file and writing nodes into the receiving repository.
+ * 
+ * New nodes may be written into a "temporary" space if their primary parent node 
+ * has not yet been transferred. 
  */
 public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorBase
 {
@@ -76,7 +81,17 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
+    
+    // State within this class
+    /**
+     * The header of the manifest
+     */
+    TransferManifestHeader header;
 
+    /**
+     * The list of orphans, during processing orphans are added and removed from this list.
+     * If at the end of processing there are still orphans then an exception will be thrown.
+     */
     private Map<NodeRef, List<ChildAssociationRef>> orphans = new HashMap<NodeRef, List<ChildAssociationRef>>(89);
 
     /**
@@ -276,6 +291,13 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
         // Split out the content properties and sanitise the others
         Map<QName, Serializable> contentProps = processProperties(null, props, true);
+        
+        // inject transferred property here
+        if(!contentProps.containsKey(TransferModel.PROP_REPOSITORY_ID))
+        {
+            log.debug("injecting repositoryId property");
+            props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
+        }
 
         // Create the corresponding node...
         ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName, node
@@ -368,6 +390,13 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             // We need to process content properties separately.
             // First, create a shallow copy of the supplied property map...
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
+            
+            // inject transferred property here
+            if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
+            {
+                log.debug("injecting repositoryId property");
+                props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
+            }
 
             // Split out the content properties and sanitise the others
             Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, false);
@@ -391,6 +420,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
             
             aspectsToRemove.removeAll(suppliedAspects);
+            aspectsToRemove.remove(TransferModel.ASPECT_TRANSFERRED);
             suppliedAspects.removeAll(existingAspects);
 
             // Now aspectsToRemove contains the set of aspects to remove
@@ -570,6 +600,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
     protected void processHeader(TransferManifestHeader header)
     {
+        // squirrel away the header for later use
+        this.header = header;
     }
 
     /*

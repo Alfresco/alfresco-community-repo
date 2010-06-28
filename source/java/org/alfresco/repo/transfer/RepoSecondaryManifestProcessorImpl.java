@@ -38,6 +38,13 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 /**
  * @author brian
  * 
+ * The secondary manifest processor performs a second parse of the snapshot file.
+ * 
+ * It is responsible for linking nodes together, moving them out of the temporary space 
+ * into their final position in the repository.    At the point that this processor runs both
+ * ends (source and target) of the nodes' associations should be available in the receiving 
+ * repository.
+ * 
  */
 public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcessorBase
 {

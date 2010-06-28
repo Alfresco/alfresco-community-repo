@@ -676,6 +676,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
             assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
             
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+            
+            // Now set up the next test which is to 
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE_UPDATED);   
         }
         finally
@@ -690,11 +694,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
              * Transfer our node again - so this is an update
              */
             {
-                    TransferDefinition definition = new TransferDefinition();
-                    Set<NodeRef>nodes = new HashSet<NodeRef>();
-                    nodes.add(contentNodeRef);
-                    definition.setNodes(nodes);
-                    transferService.transfer(targetName, definition);
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(contentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
             }  
         }
         finally
@@ -710,6 +714,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
             assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE_UPDATED); 
             assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+
         }
         finally
         {

@@ -33,6 +33,12 @@ public interface TransferModel
     static final QName ASPECT_ENABLEABLE = QName.createQName(TRANSFER_MODEL_1_0_URI, "enableable");
 //  static final QName ASSOC_IMAP_ATTACHMENTS_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "attachmentsFolder");
     
+    /**
+     * Aspect : transferred
+     */
+    static final QName ASPECT_TRANSFERRED = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferred");
+    static final QName PROP_REPOSITORY_ID = QName.createQName(TRANSFER_MODEL_1_0_URI, "repositoryId");
+    
     /*
      * Type : Transfer Group
      */

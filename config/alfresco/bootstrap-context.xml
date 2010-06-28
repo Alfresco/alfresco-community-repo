@@ -74,6 +74,7 @@
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-PropertyValueTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuditTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AvmTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
           </list>
        </property>
        <property name="postCreateScriptUrls">
@@ -113,7 +114,7 @@
              <ref bean="patch.db-V2.1-JBPMProcessKey" />
              <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
              <ref bean="patch.db-V2.1-AuditPathIndex" />
-             <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
+             <ref bean="patch.db-V3.0-ActivityTables" />
              <ref bean="patch.db-V3.1-Allow-IPv6" />
              <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />

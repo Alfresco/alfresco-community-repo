@@ -7,10 +7,12 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
+-- Optional if upgrading from before 3.2.x
+
 ALTER TABLE alf_prop_unique_ctx
    ADD COLUMN prop1_id BIGINT NULL AFTER value3_prop_id,
    ADD CONSTRAINT fk_alf_propuctx_p1 FOREIGN KEY (prop1_id) REFERENCES alf_prop_root (id)
-;
+; --(optional)
 
 --
 -- Record script finish

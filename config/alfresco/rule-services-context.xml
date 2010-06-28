@@ -122,8 +122,8 @@
    </bean>
    
    <bean id="on-create-node-trigger" class="org.alfresco.repo.rule.ruletrigger.CreateNodeRuleTrigger" parent="rule-trigger-base">
-      <property name="dictionaryService">
-          <ref bean="dictionaryService"/>
+      <property name="ruleService">
+          <ref bean="ruleService"/>
       </property>
       <property name="isClassBehaviour">
            <value>true</value>

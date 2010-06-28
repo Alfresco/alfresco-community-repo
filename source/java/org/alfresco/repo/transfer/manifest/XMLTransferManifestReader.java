@@ -199,6 +199,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 buffer = new StringBuffer();
             }
+            else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID))
+            {
+                buffer = new StringBuffer();
+            }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOCS))
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
@@ -349,7 +353,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 TransferManifestDeletedNode node = (TransferManifestDeletedNode)props.get("node");
                 processor.processTransferManifestNode(node);
-            }            
+            }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASPECTS))
             {
                 
@@ -381,6 +385,12 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             { 
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 header.setNodeCount(Integer.parseInt(buffer.toString()));
+                buffer = null;
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID))
+            {
+                TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
+                header.setRepositoryId(buffer.toString());
                 buffer = null;
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOCS))

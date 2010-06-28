@@ -73,6 +73,8 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -109,6 +111,7 @@ public class TransferServiceImpl implements TransferService
         PropertyCheck.mandatory(this, "namespaceResolver", transmitter);
         PropertyCheck.mandatory(this, "actionService", actionService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "descriptorService", descriptorService);
     }
     
     private String transferSpaceQuery; 
@@ -121,6 +124,7 @@ public class TransferServiceImpl implements TransferService
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private TransferReporter transferReporter;
     private TenantService tenantService;
+    private DescriptorService descriptorService;
     
     /**
      * How long to delay while polling for commit status.
@@ -557,6 +561,8 @@ public class TransferServiceImpl implements TransferService
             // Write the manifest file
             TransferManifestWriter formatter = new XMLTransferManifestWriter();
             TransferManifestHeader header = new TransferManifestHeader();
+            Descriptor descriptor = descriptorService.getCurrentRepositoryDescriptor();
+            header.setRepositoryId(descriptor.getId());
             header.setCreatedDate(new Date());
             header.setNodeCount(nodes.size());
             formatter.startTransferManifest(snapshotWriter);
@@ -1109,6 +1115,16 @@ public class TransferServiceImpl implements TransferService
     public long getCommitPollDelay()
     {
         return commitPollDelay;
+    }
+
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+
+    public DescriptorService getDescriptorService()
+    {
+        return descriptorService;
     }
 
     private class TransferStatus 

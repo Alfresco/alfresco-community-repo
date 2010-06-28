@@ -140,6 +140,20 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                         ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":"
                                     + ManifestModel.LOCALNAME_HEADER_NODE_COUNT);
+            
+            if(header.getRepositoryId() != null)
+            {
+                // Repository Id
+                writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, PREFIX + ":"
+                                + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, EMPTY_ATTRIBUTES);
+                char[] repositoryId = header.getRepositoryId().toCharArray();
+                writer.characters(repositoryId, 0, repositoryId.length);
+                writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID);
+            }
+                        
 
             // End Header
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,

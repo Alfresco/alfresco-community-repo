@@ -64,6 +64,7 @@ public class TransferManifestTest extends TestCase
          */
         String prefix = "TRX-SNAP";
         String suffix = ".xml";
+        String repoId = "repoId";
 
         // where to put snapshot ?
         File snapshotFile = TempFileProvider.createTempFile(prefix, suffix);
@@ -73,6 +74,7 @@ public class TransferManifestTest extends TestCase
         TransferManifestWriter formatter = new XMLTransferManifestWriter();
         TransferManifestHeader header = new TransferManifestHeader();
         header.setCreatedDate(new Date());
+        header.setRepositoryId(repoId);
         formatter.startTransferManifest(snapshotWriter);
         formatter.writeTransferManifestHeader(header);
         

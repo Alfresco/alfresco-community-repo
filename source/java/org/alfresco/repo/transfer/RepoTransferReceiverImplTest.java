@@ -896,6 +896,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         TransferManifestHeader header = new TransferManifestHeader();
         header.setCreatedDate(new Date());
         header.setNodeCount(nodes.size());
+        header.setRepositoryId("repo 1");
         manifestWriter.writeTransferManifestHeader(header);
         for (TransferManifestNode node : nodes)
         {

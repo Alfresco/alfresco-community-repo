@@ -30,7 +30,8 @@ public class TransferManifestHeader
 {
     private Date createdDate;
     private int nodeCount; 
-
+    private String repositoryId;
+    
     public void setCreatedDate(Date createDate)
     {
         this.createdDate = createDate;
@@ -57,4 +58,15 @@ public class TransferManifestHeader
         this.nodeCount = nodeCount;
     }
 
+    public void setRepositoryId(String repositoryId)
+    {
+        this.repositoryId = repositoryId;
+    }
+
+    public String getRepositoryId()
+    {
+        return repositoryId;
+    }
+
+    
 }

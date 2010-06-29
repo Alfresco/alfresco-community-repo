@@ -1847,7 +1847,7 @@ public class DeploymentServiceImpl implements DeploymentService
 							AVMNodeDescriptor src = work.getSrc();
 							if(src.isFile())
 							{
-								copyFileToFSR(src, work.getVersion(), event.getDestination(), ticket);
+								copyFileToFSR(src, true, work.getVersion(), event.getDestination(), ticket);
 							}
 							else
 							{
@@ -1857,7 +1857,7 @@ public class DeploymentServiceImpl implements DeploymentService
 						}
 						else if (event.getType().equals(DeploymentEvent.Type.UPDATED))
 						{
-							copyFileToFSR(work.getSrc(), work.getVersion(), event.getDestination(), ticket);
+							copyFileToFSR(work.getSrc(), false, work.getVersion(), event.getDestination(), ticket);
 						}
 						// success, now put the event onto the event queue
 						eventQueue.add(event);
@@ -1885,6 +1885,7 @@ public class DeploymentServiceImpl implements DeploymentService
 	     */
 	    private void copyFileToFSR(
 	            final AVMNodeDescriptor src, 
+	            final boolean create,
 	            final int version,
 	            final String dstPath,
 	            final String ticket)
@@ -1905,7 +1906,7 @@ public class DeploymentServiceImpl implements DeploymentService
   
         	        	Set<String>stringAspects = getAspects(avmService, src);       	        	
         	        	Map<String, Serializable> stringProperties = getProperties(src, version);
-        	        	OutputStream out = service.send(ticket, dstPath, src.getGuid(), encoding, mimeType, stringAspects, stringProperties);
+        	        	OutputStream out = service.send(ticket, create, dstPath, src.getGuid(), encoding, mimeType, stringAspects, stringProperties);
       
                         try
                         {

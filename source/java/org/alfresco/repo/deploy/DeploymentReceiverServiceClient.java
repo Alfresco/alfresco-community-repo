@@ -123,9 +123,9 @@ public class DeploymentReceiverServiceClient implements
     /* (non-Javadoc)
      * @see org.alfresco.deployment.DeploymentReceiverService#send(java.lang.String, java.lang.String, java.lang.String)
      */
-    public OutputStream send(String ticket, String path, String guid, String encoding, String mimeType, Set<String>aspects, Map<String, Serializable> props)
+    public OutputStream send(String ticket, boolean create, String path, String guid, String encoding, String mimeType, Set<String>aspects, Map<String, Serializable> props)
     {
-        String outputToken = fTransport.getSendToken(ticket, path, guid, encoding, mimeType, aspects, props);
+        String outputToken = fTransport.getSendToken(ticket, create, path, guid, encoding, mimeType, aspects, props);
         return new DeploymentClientOutputStream(fTransport, ticket, outputToken);
     }
 

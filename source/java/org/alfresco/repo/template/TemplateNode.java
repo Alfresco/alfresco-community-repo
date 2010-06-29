@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -524,19 +523,6 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     {
         return new NodeSearchResultsMap(this, this.services);
     }
-    
-    
-    // ------------------------------------------------------------------------------
-    // Audit API
-    
-    /**
-     * @return a list of AuditInfo objects describing the Audit Trail for this node instance
-     */
-    public List<AuditInfo> getAuditTrail()
-    {
-        return this.services.getAuditService().getAuditTrail(this.nodeRef);
-    }
-    
     
     // ------------------------------------------------------------------------------
     // Misc helpers 

@@ -30,18 +30,14 @@ import java.util.Set;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.audit.AuditState;
-import org.alfresco.repo.audit.hibernate.HibernateAuditDAO;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.propval.PropertyIdSearchRow;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
-import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,15 +53,9 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
 {
     protected final Log logger = LogFactory.getLog(this.getClass());
     
-    private HibernateAuditDAO oldDAO;
     private ContentService contentService;
     private ContentDataDAO contentDataDAO;
     protected PropertyValueDAO propertyValueDAO;
-    
-    public void setOldDAO(HibernateAuditDAO oldDAO)
-    {
-        this.oldDAO = oldDAO;
-    }
     
     public void setContentService(ContentService contentService)
     {
@@ -87,28 +77,6 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
         return this.propertyValueDAO;
     }
     
-    /*
-     * Support for older audit DAO
-     */
-
-    /**
-     * Uses {@link HibernateAuditDAO older DAO}
-     * @since 3.2
-     */
-    public void audit(AuditState auditInfo)
-    {
-        oldDAO.audit(auditInfo);
-    }
-
-    /**
-     * Uses {@link HibernateAuditDAO older DAO}
-     * @since 3.2
-     */
-    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
-    {
-        return oldDAO.getAuditTrail(nodeRef);
-    }
-
     /*
      * alf_audit_model
      */

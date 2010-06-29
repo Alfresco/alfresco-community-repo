@@ -29,16 +29,12 @@ import org.alfresco.service.PublicService;
  * against a user id. 
  *  
  * @author Andy Hind
- *
  */
 @PublicService
 public interface AuthenticationService
 {
     /**
      * Is an authentication enabled or disabled?
-     * 
-     * @param userName
-     * @return
      */
     @Auditable(parameters = {"userName"})
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException;
@@ -90,9 +86,6 @@ public interface AuthenticationService
     
     /**
      * Invalidate any tickets held by the user.
-     * 
-     * @param userName
-     * @throws AuthenticationException
      */
     @Auditable(parameters = {"userName"})
     public void invalidateUserSession(String userName) throws AuthenticationException;
@@ -100,7 +93,6 @@ public interface AuthenticationService
     /**
      * Invalidate a single ticket by ID or remove its association with a given session ID.
      *
-     * @param ticket
      * @param sessionId
      *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
      * @throws AuthenticationException
@@ -145,22 +137,18 @@ public interface AuthenticationService
      * Get a new ticket as a string
      * @param sessionId
      *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
-     * @return
      */
     @Auditable(parameters = {"sessionId"}, recordable = {false})
     public String getNewTicket(String sessionId);
     
     /**
      * Remove the current security information
-     *
      */
     @Auditable
     public void clearCurrentSecurityContext();
     
     /**
      * Is the current user the system user?
-     * 
-     * @return
      */
     @Auditable
     public boolean isCurrentUserTheSystemUser();
@@ -175,24 +163,18 @@ public interface AuthenticationService
     
     /**
      * Does this instance alow user to be created?
-     * 
-     * @return
      */
     @Auditable
     public Set<String> getDomainsThatAllowUserCreation();
     
     /**
      * Does this instance allow users to be deleted?
-     * 
-     * @return
      */
     @Auditable
     public Set<String>  getDomainsThatAllowUserDeletion();
     
     /**
      * Does this instance allow users to update their passwords?
-     * 
-     * @return
      */
     @Auditable
     public Set<String> getDomiansThatAllowUserPasswordChanges();

@@ -20,15 +20,11 @@ package org.alfresco.repo.domain.audit;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.audit.AuditState;
-import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
 /**
@@ -42,21 +38,6 @@ import org.alfresco.util.Pair;
  */
 public interface AuditDAO
 {
-    /**
-     * Create an audit entry.
-     * 
-     * @param auditInfo
-     * @since 2.1
-     */
-    public void audit(AuditState auditInfo);
-
-    /**
-     * Get the audit trail for a node.
-     * 
-     * @since 2.1
-     */
-    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
-    
     /*
      * V3.2 methods after here only, please
      */

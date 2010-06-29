@@ -32,7 +32,6 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService.LockState;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -538,19 +537,6 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
         }
         return this.services.getAVMService().getContentDataForRead(this.avmRef).getSize();
     }
-    
-    
-    // ------------------------------------------------------------------------------
-    // Audit API
-    
-    /**
-     * @return a list of AuditInfo objects describing the Audit Trail for this node instance
-     */
-    public List<AuditInfo> getAuditTrail()
-    {
-        return this.services.getAuditService().getAuditTrail(this.nodeRef);
-    }
-    
     
     // ------------------------------------------------------------------------------
     // Node Helper API 

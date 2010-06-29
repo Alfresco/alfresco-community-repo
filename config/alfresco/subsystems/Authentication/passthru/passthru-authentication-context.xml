@@ -95,9 +95,6 @@
       <property name="sysAdminParams">
          <ref bean="sysAdminParams" />
       </property>
-      <property name="auditComponent">
-         <ref bean="auditComponent" />
-      </property>
    </bean>
 
    <!-- CIFS authentication and SMB session listener -->

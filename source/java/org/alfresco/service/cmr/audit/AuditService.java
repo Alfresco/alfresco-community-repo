@@ -19,88 +19,18 @@
 package org.alfresco.service.cmr.audit;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * The public API by which applications can create audit entries.
- * This does not affect auditing using method interceptors.
- * The information recorded can not be confused between the two.
+ * The public API by which applications can query the audit logs and enable or disable auditing.
  * 
- * This API could be used by an audit action.
- * 
- * @author Andy Hind
+ * @author Derek Hulley
  */
 @PublicService
 public interface AuditService
 {
-    /**
-     * Add an application audit entry.
-     * 
-     * @param source -
-     *            a string that represents the application
-     * @param description -
-     *            the audit entry
-     */
-    @NotAuditable
-    public void audit(String source, String description);
-
-    /**
-     * 
-     * @param source -
-     *            a string that represents the application
-     * @param description -
-     *            the audit entry
-     * @param key -
-     *            a node ref to use as the key for filtering etc
-     */
-    @NotAuditable
-    public void audit(String source, String description, NodeRef key);
-
-    /**
-     * 
-     * @param source -
-     *            a string that represents the application
-     * @param description -
-     *            the audit entry
-     * @param args -
-     *            an arbitrary list of parameters
-     */
-    @NotAuditable
-    public void audit(String source, String description, Object... args);
-
-    /**
-     * 
-     * @param source -
-     *            a string that represents the application
-     * @param description -
-     *            the audit entry *
-     * @param key -
-     *            a node ref to use as the key for filtering etc
-     * @param args -
-     *            an arbitrary list of parameters
-     */
-    @NotAuditable
-    public void audit(String source, String description, NodeRef key, Object... args);
-    
-    
-    /**
-     * Get the audit trail for a node ref.
-     * 
-     * @param nodeRef - the node ref for which to get the audit trail.
-     * @return - tha audit trail 
-     */
-    @NotAuditable
-    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
-
-    /*
-     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
-     */
-    
     /**
      * @param applicationName   the name of the application to check 
      * @param path              the path to check

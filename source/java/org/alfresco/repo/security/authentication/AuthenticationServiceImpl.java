@@ -21,25 +21,17 @@ package org.alfresco.repo.security.authentication;
 import java.util.Collections;
 import java.util.Set;
 
-import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
-import org.alfresco.service.cmr.security.AuthenticationService;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
     AuthenticationComponent authenticationComponent;
-    
     TicketComponent ticketComponent;
     
-    AuditComponent auditComponent;
-    
     private String domain;
-    
     private boolean allowsUserCreation = true;
-    
     private boolean allowsUserDeletion = true;
-    
     private boolean allowsUserPasswordChange = true;
     
     public AuthenticationServiceImpl()
@@ -57,25 +49,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         this.authenticationComponent = authenticationComponent;
     }
    
-    
-    /**
-     * @param auditComponent the auditComponent to set
-     */
-    public void setAuditComponent(AuditComponent auditComponent)
-    {
-        this.auditComponent = auditComponent;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
     public boolean isActive()
     {
         return !(this.authenticationComponent instanceof ActivateableBean)
                 || ((ActivateableBean) this.authenticationComponent).isActive();
     }
-
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
@@ -161,7 +139,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
     public String getNewTicket(String sessionId)
     {
-        auditComponent.beforeMethodCallManualAudit(AuthenticationService.class, this, "getNewTicket", "");
         String userName = getCurrentUserName();
         try
         {

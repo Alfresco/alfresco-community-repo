@@ -19,17 +19,13 @@
 package org.alfresco.repo.audit;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
 import org.alfresco.repo.audit.model._3.AuditPath;
-import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * The audit component. Used by the AuditService and AuditMethodInterceptor to insert audit entries.
@@ -42,52 +38,6 @@ import org.aopalliance.intercept.MethodInvocation;
  */
 public interface AuditComponent
 {
-    /**
-     * Audit entry point for method interceptors.
-     * 
-     * @return - the return onbject from the normal invocation of the audited method.
-     * 
-     * @since 2.1
-     */
-    public Object audit(MethodInvocation methodInvocation) throws Throwable;
-
-    /**
-     * @param source -
-     *            a string that represents the application
-     * @param description -
-     *            the audit entry *
-     * @param key -
-     *            a node ref to use as the key for filtering etc
-     * @param args -
-     *            an arbitrary list of parameters
-     * 
-     * @since 2.1
-     */
-    public void audit(String source, String description, NodeRef key, Object... args);
-    
-    /**
-     * Add an audit entry - without invoking the method invocation.
-     * Only the method arguments can be audited.
-     * 
-     * @since 3.2
-     */
-    void beforeMethodCallManualAudit(Class<?> clazz, Object target, String method, Object ... args);
-
-    /**
-     * Get the audit trail for a node.
-     * 
-     * @param nodeRef -
-     *            the node ref for which we want the audit trail
-     * @return - a list of AuditInfo objects that represent the audit trail for the given node reference.
-     * 
-     * @since 2.1
-     */
-    public List<AuditInfo> getAuditTrail(NodeRef nodeRef);
-
-    /*
-     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
-     */
-
     /**
      * Determines whether audit is globally enabled or disabled.
      * 

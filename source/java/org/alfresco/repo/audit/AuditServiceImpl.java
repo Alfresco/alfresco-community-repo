@@ -19,20 +19,10 @@
 package org.alfresco.repo.audit;
 
 import java.io.Serializable;
-import java.util.List;
 
-import javax.transaction.UserTransaction;
-
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.context.ApplicationContext;
 
 /**
  * The implementation of the AuditService for application auditing.
@@ -52,77 +42,6 @@ public class AuditServiceImpl implements AuditService
     {
         this.auditComponent = auditComponent;
     }
-
-    public void audit(String source, String description)
-    {
-        auditComponent.audit(source, description, null, (Object[]) null);
-    }
-
-    public void audit(String source, String description, NodeRef key)
-    {
-        auditComponent.audit(source, description, key, (Object[]) null);
-    }
-
-    public void audit(String source, String description, Object... args)
-    {
-        auditComponent.audit(source, description, null, args);
-    }
-
-    public void audit(String source, String description, NodeRef key, Object... args)
-    {
-        auditComponent.audit(source, description, key, args);
-    }
-
-    public List<AuditInfo> getAuditTrail(NodeRef nodeRef)
-    {
-        return  auditComponent.getAuditTrail(nodeRef);
-    }
-    
-    public static void main(String[] args) throws Exception
-    {
-
-        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-        AuditService as = (AuditService) ctx.getBean("AuditService");
-
-        TransactionService txs = (TransactionService) ctx.getBean("transactionComponent");
-        UserTransaction tx = txs.getUserTransaction();
-        tx.begin();
-
-        AuthenticationUtil.setRunAsUserSystem();
-        try
-        {
-
-            NodeRef nodeRef = new NodeRef(new StoreRef("test", "audit"), "id");
-            as.audit("AuditedApp", "First");
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("AuditedApp", "Second", nodeRef);
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("AuditedApp", "Third", new Object[] { "one", "two", "three" });
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("AuditedApp", "Fourth",nodeRef, new Object[] { "one",
-                    "two", "three" });
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("UnAuditedApp", "First");
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("UnAuditedApp", "Second", nodeRef);
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("UnAuditedApp", "Third", new Object[] { "one", "two", "three" });
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-            as.audit("UnAuditedApp", "Fourth", nodeRef, new Object[] { "one",
-                    "two", "three" });
-            System.out.println("Audit entries for node "+as.getAuditTrail(nodeRef).size());
-        }
-        finally
-        {
-            AuthenticationUtil.clearCurrentSecurityContext();
-        }
-        tx.commit();
-
-    }
-
-    /*
-     * V3.2 from here on.  Put all fixes to the older audit code before this point, please.
-     */
 
     /**
      * {@inheritDoc}

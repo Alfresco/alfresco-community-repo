@@ -16,22 +16,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.audit.hibernate;
+package org.alfresco.repo.audit;
 
-public interface AuditSource
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
+/**
+ * Suite for audit-related tests.
+ * 
+ * @author Derek Hulley
+ * @since 3.4
+ */
+public class AuditTestSuite extends TestSuite
 {
-    public String getApplication();
-
-    public Long getId();
-  
-    public String getMethod();
-
-    public String getService();
-
-    void setApplication(String auditApplication);
-
-    void setService(String auditService);
-
-    void setMethod(String auditMethod);
-
+    public static Test suite() 
+    {
+        TestSuite suite = new TestSuite();
+        
+        suite.addTestSuite(AuditableAspectTest.class);
+        suite.addTestSuite(AuditBootstrapTest.class);
+        suite.addTestSuite(AuditComponentTest.class);
+                
+        return suite;
+    }
 }

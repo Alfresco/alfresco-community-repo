@@ -11,69 +11,18 @@
         </property>
     </bean>
     
-    
     <!-- Audit component -->
     
     <bean id="auditComponent" class="org.alfresco.repo.audit.AuditComponentImpl">
-        <property name="publicServiceIdentifier">
-            <ref bean="publicServiceIdentifier"/>
-        </property>
-        <property name="auditDAO">
-            <ref bean="auditDAO"/>
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-		<property name="namespacePrefixResolver">
-            <ref bean="namespaceService"/>
-        </property>
-        <property name="auditConfiguration">
-            <ref bean="auditConfiguration"/>
-        </property>
-        <property name="auditModel">
-            <ref bean="auditModel"/>
-        </property>
-        <!-- V3.2 specific -->
+        <property name="transactionService" ref="transactionService"/>
+        <property name="auditDAO" ref="auditDAO"/>
         <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
         <property name="propertyValueDAO" ref="propertyValueDAO"/>
     </bean>
     
-    <!-- Public service idntifier -->
+    <!-- Public service identifier -->
     
     <bean id="publicServiceIdentifier" class="org.alfresco.repo.audit.PublicServiceIdentifierImpl"/>
-    
-    <!-- The configuration of the audit model -->
-    
-    <bean id="auditConfiguration" class="org.alfresco.repo.audit.AuditConfigurationImpl">
-        <property name="config">
-            <value>classpath:alfresco/auditConfig.xml</value>
-        </property>
-    </bean>
-    
-    <!-- The content store in which to store audit information -->
-    
-    <bean id="auditFileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
-        <constructor-arg>
-            <value>${dir.auditcontentstore}</value>
-        </constructor-arg>
-    </bean>
-    
-    <!-- The audit model -->
-    
-    <bean id="auditModel" class="org.alfresco.repo.audit.model.AuditEntry">
-        <property name="auditConfiguration">
-            <ref bean="auditConfiguration"/>
-        </property>
-        <property name="namespacePrefixResolver">
-            <ref bean="namespaceService"/>
-        </property>
-         <property name="publicServiceIdentifier">
-            <ref bean="publicServiceIdentifier"/>
-        </property>
-    </bean>
     
     <!--                           -->
     <!-- Audit V3.2 implementation -->

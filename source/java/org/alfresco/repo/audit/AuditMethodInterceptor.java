@@ -92,9 +92,6 @@ public class AuditMethodInterceptor implements MethodInterceptor
     private AuditComponent auditComponent;
     private TransactionService transactionService;
 
-    // SysAdmin cache - used to cluster certain configuration parameters
-    private boolean useNewConfig = false;
-    
     private final ThreadLocal<Boolean> inAudit = new ThreadLocal<Boolean>();
     
     public AuditMethodInterceptor()
@@ -109,7 +106,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
      */
     public void setUseNewConfig(boolean useNewConfig)
     {
-        this.useNewConfig = useNewConfig;
+        logger.warn("Property 'useNewConfig' is no longer used.");
     }
 
     public void setPublicServiceIdentifier(PublicServiceIdentifier serviceIdentifier)
@@ -160,7 +157,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
             // If we are already in a nested audit call, there is nothing to do
             if (wasInAudit != null)
             {
-                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+                return mi.proceed();
             }
 
             // If there are no mapped paths, there is nothing to do
@@ -168,14 +165,14 @@ public class AuditMethodInterceptor implements MethodInterceptor
             {
                 // We can ignore the rest of the stack too
                 inAudit.set(Boolean.TRUE);
-                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+                return mi.proceed();
             }
 
             Auditable auditableDef = mi.getMethod().getAnnotation(Auditable.class);
             if (auditableDef == null)
             {
                 // No annotation, so just continue as normal
-                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+                return mi.proceed();
             }
             
             // First get the argument map, if present
@@ -186,7 +183,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
             if (serviceName == null)
             {
                 // Not a public service
-                return useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+                return mi.proceed();
             }
             String methodName = mi.getMethod().getName();
             
@@ -225,7 +222,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         Throwable thrown = null;
         try
         {
-            ret = useNewConfig ? mi.proceed() : auditComponent.audit(mi);
+            ret = mi.proceed();
         }
         catch (Throwable e)
         {

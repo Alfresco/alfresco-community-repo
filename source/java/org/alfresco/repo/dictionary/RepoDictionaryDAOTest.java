@@ -31,7 +31,6 @@ import junit.framework.TestCase;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
@@ -57,9 +56,10 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
-public class DictionaryDAOTest extends TestCase
+public class RepoDictionaryDAOTest extends TestCase
 {
     public static final String TEST_RESOURCE_MESSAGES = "alfresco/messages/dictionary-messages";
 

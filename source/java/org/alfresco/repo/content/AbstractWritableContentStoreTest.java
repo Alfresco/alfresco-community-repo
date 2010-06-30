@@ -490,7 +490,6 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
                 streamClosed[0] = true;
             }
         };
-        writer.setRetryingTransactionHelper(null);
         writer.addListener(listener);
         
         // write some content

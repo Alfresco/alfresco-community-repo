@@ -61,9 +61,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     
     private StackTraceElement[] traceLoggerChannelAssignTrace;
     
-    /** when set, ensures that listeners are executed within a transaction */
-    private RetryingTransactionHelper transactionHelper;
-    
     private String contentUrl;
     private String mimetype;
     private String encoding;
@@ -126,11 +123,6 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         return property;
     }
 
-    public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
-    {
-        this.transactionHelper = helper;
-    }
-    
     /**
      * Derived classes can call this method to ensure that necessary trace logging is performed
      * when the IO Channel is opened.
@@ -263,33 +255,12 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+
+            for (ContentStreamListener listener : listeners)
             {
-                public Object execute()
-                {
-                    for (ContentStreamListener listener : listeners)
-                    {
-                        listener.contentStreamClosed();
-                    }
-                    return null;
-                }
-            };
-            if (transactionHelper != null)
-            {
-                // Execute in transaction.
-                transactionHelper.doInTransaction(cb, false);
+                listener.contentStreamClosed();
             }
-            else
-            {
-                try
-                {
-                    cb.execute();       
-                }
-                catch (Throwable e)
-                {
-                    throw new ContentIOException("Failed to executed channel close callbacks", e);
-                }
-            }
+                    
             // done
             if (logger.isDebugEnabled())
             {
@@ -356,37 +327,12 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-            // We're now doing this in a retrying transaction, which means
-            // that the body of execute() must be idempotent.
-            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
+          
+            for (ContentStreamListener listener : listeners)
             {
-                public Object execute()
-                {
-                    for (ContentStreamListener listener : listeners)
-                    {
-                        listener.contentStreamClosed();
-                    }
-                    return null;
-                }
-            };
-            // We're now doing this inside a Retrying transaction.
-            // NB 
-            if (transactionHelper != null)
-            {
-                // just create a transaction
-                transactionHelper.doInTransaction(cb, false);
+                listener.contentStreamClosed();
             }
-            else
-            {
-                try
-                {
-                    cb.execute();
-                }
-                catch (Throwable e)
-                {
-                    throw new ContentIOException("Failed to executed channel close callbacks", e);
-                }
-            }
+                   
             // done
             if (logger.isDebugEnabled())
             {

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.domain.qname;
 
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -28,7 +29,6 @@ import org.alfresco.util.EqualsHelper;
  */
 public class NamespaceEntity
 {
-    public static final String EMPTY_URI_SUBSTITUTE = ".empty";
     public static final Long CONST_LONG_ZERO = new Long(0L);
 
     private Long id;
@@ -94,7 +94,7 @@ public class NamespaceEntity
      */
     public String getUriSafe()
     {
-        if (EqualsHelper.nullSafeEquals(uri, NamespaceEntity.EMPTY_URI_SUBSTITUTE))
+        if (EqualsHelper.nullSafeEquals(uri, QName.EMPTY_URI_SUBSTITUTE))
         {
             return "";
         }
@@ -108,6 +108,6 @@ public class NamespaceEntity
      */
     public void setUriSafe(String uri)
     {
-        this.uri = (uri.length() == 0) ? NamespaceEntity.EMPTY_URI_SUBSTITUTE : uri;
+        this.uri = (uri.length() == 0) ? QName.EMPTY_URI_SUBSTITUTE : uri;
     }
 }

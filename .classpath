@@ -9,5 +9,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/MBean"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Deployment"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Alfresco JLAN"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DataModel"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

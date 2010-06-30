@@ -48,7 +48,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -467,8 +466,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             // need a listener to update the node when the stream closes
             WriteStreamListener listener = new WriteStreamListener(nodeService, nodeRef, propertyQName, writer);
+            listener.setRetryingTransactionHelper(transactionHelper);
             writer.addListener(listener);
-            writer.setRetryingTransactionHelper(transactionHelper);
+            
         }
         
         // give back to the client
@@ -596,12 +596,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * Ensures that, upon closure of the output stream, the node is updated with
      * the latest URL of the content to which it refers.
      * <p>
-     * The listener close operation does not need a transaction as the 
-     * <code>ContentWriter</code> takes care of that.
      * 
      * @author Derek Hulley
      */
-    private static class WriteStreamListener implements ContentStreamListener
+    private static class WriteStreamListener extends AbstractContentStreamListener
     {
         private NodeService nodeService;
         private NodeRef nodeRef;
@@ -620,7 +618,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             this.writer = writer;
         }
         
-        public void contentStreamClosed() throws ContentIOException
+        public void contentStreamClosedImpl() throws ContentIOException
         {
             try
             {

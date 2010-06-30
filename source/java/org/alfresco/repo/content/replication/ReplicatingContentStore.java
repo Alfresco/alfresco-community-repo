@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
+import org.alfresco.repo.content.AbstractContentStreamListener;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentExistsException;
 import org.alfresco.repo.content.ContentStore;
@@ -315,9 +316,10 @@ public class ReplicatingContentStore extends AbstractContentStore
                         "   writer: " + writer);
             }
             // attach the listener
-            ContentStreamListener listener = new ReplicatingWriteListener(secondaryStores, writer, outboundThreadPoolExecutor);
+            ReplicatingWriteListener listener = new ReplicatingWriteListener(secondaryStores, writer, outboundThreadPoolExecutor);
+            listener.setRetryingTransactionHelper(transactionHelper);   // mandatory when listeners are added
             writer.addListener(listener);
-            writer.setRetryingTransactionHelper(transactionHelper);   // mandatory when listeners are added
+          
         }
         
         // done
@@ -388,13 +390,11 @@ public class ReplicatingContentStore extends AbstractContentStore
      * Replicates the content upon stream closure.  If the thread pool is available,
      * then the process will be asynchronous.
      * <p>
-     * No transaction boundaries have been declared as the
-     * {@link ContentWriter#addListener(ContentStreamListener)} method indicates that
-     * all listeners will be called within a transaction.
+    
      * 
      * @author Derek Hulley
      */
-    public static class ReplicatingWriteListener implements ContentStreamListener
+    public static class ReplicatingWriteListener extends AbstractContentStreamListener
     {
         private List<ContentStore> stores;
         private ContentWriter writer;
@@ -410,7 +410,7 @@ public class ReplicatingContentStore extends AbstractContentStore
             this.threadPoolExecutor = threadPoolExecutor;
         }
         
-        public void contentStreamClosed() throws ContentIOException
+        public void contentStreamClosedImpl() throws ContentIOException
         {
             Runnable runnable = new ReplicateOnCloseRunnable();
             if (threadPoolExecutor == null)

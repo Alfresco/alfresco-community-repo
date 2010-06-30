@@ -1,12 +1,15 @@
 /**
- * Search Component: search
- *
+ * Search Component
+ * 
  * Inputs:
- *   optional: site = the site to search into.
- *   optional: container = the component the search in
- *
+ *   optional: site = the site to search into, null for all sites
+ *   optional: container = the component the search in, null for all components in the site
+ *   optional: term = search terms, should be supplied if tag is not
+ *   optional: tag = search tag, should be supplied if term is not
+ *   maxResults = maximum results to return
+ * 
  * Outputs:
- *  data.items/data.error - object containing list of search results
+ *  items - Array of objects containing the search results
  */
 const DEFAULT_MAX_RESULTS = 100;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
@@ -14,10 +17,10 @@ const QUERY_TEMPLATES = [
    {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT)"}];
 
 /**
- * Returns site data as returned to the user.
+ * Returns site information data structure.
  * { shortName: siteId, title: title }
  * 
- * Caches the sites to avoid repeatedly querying the repository.
+ * Caches the data to avoid repeatedly querying the repository.
  */
 var siteDataCache = [];
 function getSiteData(siteId)
@@ -30,12 +33,8 @@ function getSiteData(siteId)
    var data =
    {
       shortName : siteId,
-      title : "unknown"
+      title : (site !== null ? site.title : "unknown")
    };
-   if (site !== null)
-   {
-      data.title = site.title;
-   }
    siteDataCache[siteId] = data;
    return data;
 }
@@ -398,35 +397,28 @@ function getLinkItem(siteId, containerId, restOfPath, node)
  */
 function getItem(siteId, containerId, restOfPath, node)
 {
-   if (containerId == "documentLibrary")
+   switch ("" + containerId)
    {
-      return getDocumentItem(siteId, containerId, restOfPath, node);
+      case "documentLibrary":
+         return getDocumentItem(siteId, containerId, restOfPath, node);
+         break;
+      case "blog":
+         return getBlogPostItem(siteId, containerId, restOfPath, node);
+         break;
+      case "discussions":
+         return getForumPostItem(siteId, containerId, restOfPath, node);
+         break;
+      case "calendar":
+         return getCalendarItem(siteId, containerId, restOfPath, node);
+         break;
+      case "wiki":
+         return getWikiItem(siteId, containerId, restOfPath, node);
+         break;
+      case "links":
+         return getLinkItem(siteId, containerId, restOfPath, node);
+         break;
    }
-   else if (containerId == "blog")
-   {
-      return getBlogPostItem(siteId, containerId, restOfPath, node);
-   }
-   else if (containerId == "discussions")
-   {
-      return getForumPostItem(siteId, containerId, restOfPath, node);
-   }
-   else if (containerId == "calendar")
-   {
-      return getCalendarItem(siteId, containerId, restOfPath, node);
-   }
-   else if (containerId == "wiki")
-   {
-      return getWikiItem(siteId, containerId, restOfPath, node);
-   }
-   else if (containerId == "links")
-   {
-      return getLinkItem(siteId, containerId, restOfPath, node);
-   }
-   else
-   {
-      // unknown container
-      return null;
-   }
+   return null;
 }
 
 /**

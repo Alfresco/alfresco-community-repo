@@ -187,10 +187,18 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             parentRefs.add(parentRef);
         }
         NodeRef childRef = getAuthorityOrNull(childName);
+
         if (childRef == null)
         {
             throw new UnknownAuthorityException("An authority was not found for " + childName);
         }
+
+        // Normalize the user name if necessary
+        if (isUser)
+        {
+            childName = (String) nodeService.getProperty(childRef, ContentModel.PROP_USERNAME);
+        }
+
         nodeService.addChild(parentRefs, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("cm", childName,
                 namespacePrefixResolver));
         if (isUser)
@@ -830,6 +838,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             NodeRef authRef = getAuthorityOrNull(authorityName);
             if (authRef != null)
             {
+                // Normalize the user name if necessary
+                if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
+                {
+                    authorityName = (String) nodeService.getProperty(authRef, ContentModel.PROP_USERNAME);
+                }
+                
                 nodeService.addChild(zoneRefs, authRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", authorityName, namespacePrefixResolver));
             }
         }

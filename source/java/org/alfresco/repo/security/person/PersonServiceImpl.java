@@ -616,7 +616,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 makeHomeFolderIfRequired(personNode);                
             }
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode, ContentModel.PROP_USERNAME));
-            properties.put(ContentModel.PROP_USERNAME, realUserName);
+            String suggestedUserName;
+
+            // LDAP sync: allow change of case if we have case insensitive user names and the same name in a different case
+            if (getUserNamesAreCaseSensitive()
+                    || (suggestedUserName = (String) properties.get(ContentModel.PROP_USERNAME)) == null
+                    || !suggestedUserName.equalsIgnoreCase(realUserName))
+            {
+                properties.put(ContentModel.PROP_USERNAME, realUserName);
+            }
         }
         Map<QName, Serializable> update = nodeService.getProperties(personNode);
         update.putAll(properties);

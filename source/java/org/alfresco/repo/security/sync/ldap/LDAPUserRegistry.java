@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -542,12 +544,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         return new PersonCollection(modifiedSince);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#processDeletions(java.util.Set)
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.UserRegistry#getPersonNames()
      */
-    public void processDeletions(final Set<String> candidateAuthoritiesForDeletion)
+    public Collection<String> getPersonNames()
     {
+        final List<String> personNames = new LinkedList<String>();
         processQuery(new SearchCallback()
         {
             public void process(SearchResult result) throws NamingException, ParseException
@@ -568,8 +571,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 }
                 else
                 {
-                    String authority = (String) nameAttribute.get();
-                    candidateAuthoritiesForDeletion.remove(authority);
+                    personNames.add((String) nameAttribute.get());
                 }
             }
 
@@ -581,6 +583,15 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         {
             this.userIdAttributeName
         });
+        return personNames;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.security.sync.UserRegistry#getGroupNames()
+     */
+    public Collection<String> getGroupNames()
+    {
+        final List<String> groupNames = new LinkedList<String>();
         processQuery(new SearchCallback()
         {
 
@@ -603,7 +614,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 else
                 {
                     String authority = "GROUP_" + (String) nameAttribute.get();
-                    candidateAuthoritiesForDeletion.remove(authority);
+                    groupNames.add(authority);
                 }
             }
 
@@ -615,6 +626,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         {
             this.groupIdAttributeName
         });
+        return groupNames;
     }
 
     /*

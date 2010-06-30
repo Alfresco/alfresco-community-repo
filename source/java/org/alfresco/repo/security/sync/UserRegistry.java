@@ -58,14 +58,20 @@ public interface UserRegistry
     public Collection<NodeDescription> getGroups(Date modifiedSince);
 
     /**
-     * Retrieves the complete set of known users and groups from the user registry and removes them from the set of
-     * candidate local authorities to be deleted.
+     * Gets the names of all persons in the registry. Used to detect local persons to be deleted. Note that the
+     * treatment of these names will depend on Alfresco's username case-sensitivity setting.
      * 
-     * @param candidateAuthoritiesForDeletion
-     *            the candidate authorities for deletion
+     * @return the person names
      */
-    public void processDeletions(final Set<String> candidateAuthoritiesForDeletion);
-    
+    public Collection<String> getPersonNames();
+
+    /**
+     * Gets the names of all groups in the registry. Used to detect local groups to be deleted.
+     * 
+     * @return the person names
+     */
+    public Collection<String> getGroupNames();
+
     /**
      * Gets the set of property names that are auto-mapped by this user registry. These should remain read-only for this
      * registry's users in the UI.

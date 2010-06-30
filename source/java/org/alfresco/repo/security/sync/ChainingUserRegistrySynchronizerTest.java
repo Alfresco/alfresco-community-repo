@@ -256,7 +256,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6"), newPerson("U7")
         }, new NodeDescription[]
         {
-            newGroup("G1", "U1", "U6", "UDangling"), newGroup("G2", "U1", "GDangling"), newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
+            newGroup("G1", "U1", "U6", "UDangling"), newGroup("G2", "U1", "GDangling"),
+            newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
         });
         this.applicationContextManager.updateZone("Z2", new NodeDescription[]
         {
@@ -359,6 +360,65 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 return null;
             }
         }, false, true);
+        tearDownTestUsersAndGroups();
+    }
+
+    /**
+     * Tests a forced update of the test users and groups where some of the users change their case and some groups
+     * appear with different case.
+     */
+    public void testCaseChange() throws Exception
+    {
+        setUpTestUsersAndGroups();
+
+        // Get hold of the original person nodes so we can compare them later
+        NodeRef u1 = this.personService.getPerson("U1", false);
+        NodeRef u2 = this.personService.getPerson("U2", false);
+        NodeRef u6 = this.personService.getPerson("U6", false);
+
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
+        {
+            newPerson("u1"), newPerson("u2"), newPerson("u6"), newPerson("U7")
+        }, new NodeDescription[]
+        {
+            newGroup("g1", "u6"), newGroup("g2", "u1", "G3"), newGroup("G3", "u2", "g4", "g5"), newGroup("g4"),
+            newGroup("g5")
+        }), new MockUserRegistry("Z2", new NodeDescription[]
+        {
+            newPerson("U1"), newPerson("U3"), newPerson("U4"), newPerson("U5")
+        }, new NodeDescription[]
+        {
+            newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
+        }));
+        this.synchronizer.synchronize(true, true, true);
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                assertExists("Z1", "u1");
+                assertExists("Z1", "u2");
+                assertExists("Z1", "u6");
+                assertExists("Z1", "g1", "u6");
+                assertExists("Z1", "g2", "u1", "G3");
+                assertExists("Z1", "G3", "u2", "g4", "g5");
+                assertExists("Z1", "g4");
+                assertExists("Z1", "g5");
+                assertExists("Z2", "U3");
+                assertExists("Z2", "U4");
+                assertExists("Z2", "U5");
+                assertExists("Z2", "G2", "U3", "U4");
+                assertExists("Z2", "G6", "U3", "U4", "G7");
+                assertExists("Z2", "G7", "U5");
+                return null;
+            }
+        }, false, true);
+
+        // Make sure the original people have been preserved
+        assertEquals(u1, this.personService.getPerson("U1", false));
+        assertEquals(u2, this.personService.getPerson("U2", false));
+        assertEquals(u6, this.personService.getPerson("U6", false));
+
         tearDownTestUsersAndGroups();
     }
 
@@ -512,6 +572,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             // Check users exist as persons
             assertTrue(this.personService.personExists(name));
+
+            // Check case matches
+            assertEquals(this.personService.getUserIdentifier(name), name);
         }
     }
 
@@ -573,8 +636,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private String longName(String shortName)
     {
-        return this.authorityService.getName(shortName.startsWith("G") ? AuthorityType.GROUP : AuthorityType.USER,
-                shortName);
+        return this.authorityService.getName(shortName.toLowerCase().startsWith("g") ? AuthorityType.GROUP
+                : AuthorityType.USER, shortName);
     }
 
     /**
@@ -621,11 +684,11 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         public void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups)
         {
             List<NodeDescription> newPersons = new ArrayList<NodeDescription>(this.persons);
-            mergeNodeDescriptions(newPersons, persons, ContentModel.PROP_USERNAME);
+            mergeNodeDescriptions(newPersons, persons, ContentModel.PROP_USERNAME, false);
             this.persons = newPersons;
 
             List<NodeDescription> newGroups = new ArrayList<NodeDescription>(this.groups);
-            mergeNodeDescriptions(newGroups, groups, ContentModel.PROP_AUTHORITY_NAME);
+            mergeNodeDescriptions(newGroups, groups, ContentModel.PROP_AUTHORITY_NAME, true);
             this.groups = newGroups;
         }
 
@@ -639,19 +702,30 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
          *            the new node list
          * @param idProp
          *            the name of the ID property
+         * @param caseSensitive
+         *            are IDs case sensitive?
          */
         private void mergeNodeDescriptions(List<NodeDescription> oldNodes, Collection<NodeDescription> newNodes,
-                QName idProp)
+                QName idProp, boolean caseSensitive)
         {
             Map<String, NodeDescription> nodeMap = new LinkedHashMap<String, NodeDescription>(newNodes.size() * 2);
             for (NodeDescription node : newNodes)
             {
-                nodeMap.put((String) node.getProperties().get(idProp), node);
+                String id = (String) node.getProperties().get(idProp);
+                if (!caseSensitive)
+                {
+                    id = id.toLowerCase();
+                }
+                nodeMap.put(id, node);
             }
             for (int i = 0; i < oldNodes.size(); i++)
             {
                 NodeDescription oldNode = oldNodes.get(i);
                 String id = (String) oldNode.getProperties().get(idProp);
+                if (!caseSensitive)
+                {
+                    id = id.toLowerCase();
+                }
                 NodeDescription newNode = nodeMap.remove(id);
                 if (newNode == null)
                 {
@@ -694,18 +768,30 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         /*
          * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#processDeletions(java.util.Set)
+         * @see org.alfresco.repo.security.sync.UserRegistry#getGroupNames()
          */
-        public void processDeletions(Set<String> candidateAuthoritiesForDeletion)
+        public Collection<String> getGroupNames()
         {
-            for (NodeDescription person : this.persons)
-            {
-                candidateAuthoritiesForDeletion.remove(person.getProperties().get(ContentModel.PROP_USERNAME));
-            }
+            List<String> groupNames = new LinkedList<String>();
             for (NodeDescription group : this.groups)
             {
-                candidateAuthoritiesForDeletion.remove(group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
+                groupNames.add((String) group.getProperties().get(ContentModel.PROP_AUTHORITY_NAME));
             }
+            return groupNames;
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.security.sync.UserRegistry#getPersonNames()
+         */
+        public Collection<String> getPersonNames()
+        {
+            List<String> personNames = new LinkedList<String>();
+            for (NodeDescription person : this.persons)
+            {
+                personNames.add((String) person.getProperties().get(ContentModel.PROP_USERNAME));
+            }
+            return personNames;
         }
 
         /*
@@ -754,7 +840,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return filterNodeDescriptions(this.persons, modifiedSince);
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
          * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties()
          */
         public Set<QName> getPersonMappedProperties()
@@ -762,7 +849,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return new HashSet<QName>(Arrays.asList(new QName[]
             {
                 ContentModel.PROP_USERNAME, ContentModel.PROP_FIRSTNAME, ContentModel.PROP_LASTNAME,
-                ContentModel.PROP_EMAIL, ContentModel.PROP_ORGID, ContentModel.PROP_HOME_FOLDER_PROVIDER
+                ContentModel.PROP_EMAIL, ContentModel.PROP_ORGID, ContentModel.PROP_ORGANIZATION,
+                ContentModel.PROP_HOME_FOLDER_PROVIDER
             }));
         }
     }

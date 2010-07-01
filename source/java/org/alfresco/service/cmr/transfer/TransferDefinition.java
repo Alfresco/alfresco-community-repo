@@ -27,9 +27,14 @@ import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Definition of a transfer.
+ * Definition of what to transfer.
  * 
- * Specifies which node to transfer
+ * nodes Specifies which node to transfer
+ * <p>
+ * isComplete specifies whether the list of nodes is complete.  If complete then the transfer 
+ * machinery can determine by the absence of a node that the missing node should be deleted.
+ * if the transfer is not complete (a partial transfer) then the archive node ref is required 
+ * to delete a remote node.
  *
  */
 public class TransferDefinition implements Serializable
@@ -41,6 +46,9 @@ public class TransferDefinition implements Serializable
     
     // Which nodes to deploy
     private Set<NodeRef> nodes;
+    
+    // is complete
+    private boolean isComplete = false;
 
     /**
      * Set which nodes to transfer
@@ -63,5 +71,26 @@ public class TransferDefinition implements Serializable
     public Set<NodeRef> getNodes()
     {
         return nodes;
+    }
+    
+    /**
+    * isComplete specifies whether the list of nodes is complete.  If complete then the transfer 
+    * machinery can determine by the absence of a node in the transfer that the missing node should be deleted.
+    * Else with a partial transfer then the archive node ref is required to delete a remote node.
+    */ 
+    public void setComplete(boolean isComplete)
+    {
+        this.isComplete = isComplete;
+    }
+
+    /**
+     * isComplete specifies whether the list of nodes is complete.  If complete then the transfer 
+     * machinery can determine by the absence of a node in the transfer that the missing node should be deleted.
+     * Else with a partial transfer then the archive node ref is required to delete a remote node.
+     * @return true if the transfer contains a full list of dependent nodes.
+     */
+    public boolean isComplete()
+    {
+        return isComplete;
     }
 }

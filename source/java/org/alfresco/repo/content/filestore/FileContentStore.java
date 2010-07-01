@@ -146,10 +146,6 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
         return sb.toString();
     }
 
-    
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;

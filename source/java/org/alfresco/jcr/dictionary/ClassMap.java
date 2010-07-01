@@ -94,7 +94,7 @@ public class ClassMap
      */
     public static QName convertClassToType(QName alfrescoClass)
     {
-        return JCRToAlfresco.get(alfrescoClass);
+        return AlfrescoToJCR.get(alfrescoClass);
     }
 
     /**

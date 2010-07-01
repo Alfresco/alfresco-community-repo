@@ -47,6 +47,7 @@ import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.AssociationPolicyDelegate;
@@ -113,6 +114,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private ClassPolicyDelegate<OnUpdatePropertiesPolicy> onUpdatePropertiesDelegate;
     private ClassPolicyDelegate<BeforeDeleteNodePolicy> beforeDeleteNodeDelegate;
     private ClassPolicyDelegate<OnDeleteNodePolicy> onDeleteNodeDelegate;
+    private ClassPolicyDelegate<OnRestoreNodePolicy> onRestoreNodePolicy;
     private ClassPolicyDelegate<BeforeAddAspectPolicy> beforeAddAspectDelegate;
     private ClassPolicyDelegate<OnAddAspectPolicy> onAddAspectDelegate;
     private ClassPolicyDelegate<BeforeRemoveAspectPolicy> beforeRemoveAspectDelegate;
@@ -201,6 +203,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         onUpdatePropertiesDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdatePropertiesPolicy.class);
         beforeDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeDeleteNodePolicy.class);
         onDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnDeleteNodePolicy.class);
+        onRestoreNodePolicy = policyComponent.registerClassPolicy(NodeServicePolicies.OnRestoreNodePolicy.class);
 
         beforeAddAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeAddAspectPolicy.class);
         onAddAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnAddAspectPolicy.class);
@@ -452,6 +455,19 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         }
     }
 
+    /**
+     * @see NodeServicePolicies.OnRestoreNodePolicy#onDeleteNode(ChildAssociationRef)
+     */
+    protected void invokeOnRestoreNode(ChildAssociationRef childAssocRef)
+    {
+        NodeRef childNodeRef = childAssocRef.getChildRef();
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(childNodeRef);
+        // execute policy for node type and aspects
+        NodeServicePolicies.OnRestoreNodePolicy policy = onRestoreNodePolicy.get(childAssocRef.getChildRef(), qnames);
+        policy.onRestoreNode(childAssocRef);
+    }
+    
     /**
      * @see NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(NodeRef,
      *      QName)

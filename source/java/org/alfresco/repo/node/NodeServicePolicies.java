@@ -218,6 +218,16 @@ public interface NodeServicePolicies
         public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName);
     }
     
+    public interface OnRestoreNodePolicy extends ClassPolicy
+    {
+        /**
+         * Called after an archived node is restored.
+         * 
+         * @param childAssocRef  the newly created child association reference
+         */
+        public void onRestoreNode(ChildAssociationRef childAssocRef);
+    }
+
     public interface BeforeCreateNodeAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNodeAssociation");

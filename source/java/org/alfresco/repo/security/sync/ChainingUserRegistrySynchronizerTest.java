@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 
 import junit.framework.TestCase;
 
@@ -371,10 +372,18 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     {
         setUpTestUsersAndGroups();
 
-        // Get hold of the original person nodes so we can compare them later
-        NodeRef u1 = this.personService.getPerson("U1", false);
-        NodeRef u2 = this.personService.getPerson("U2", false);
-        NodeRef u6 = this.personService.getPerson("U6", false);
+        final Map<String, NodeRef> personNodes = new TreeMap<String, NodeRef>();
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // Get hold of the original person nodes so we can compare them later
+                personNodes.put("u1", ChainingUserRegistrySynchronizerTest.this.personService.getPerson("U1", false));
+                personNodes.put("u2", ChainingUserRegistrySynchronizerTest.this.personService.getPerson("U2", false));
+                personNodes.put("u6", ChainingUserRegistrySynchronizerTest.this.personService.getPerson("U6", false));
+                return null;
+            }
+        }, false, true);
 
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
         {
@@ -410,14 +419,17 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z2", "G2", "U3", "U4");
                 assertExists("Z2", "G6", "U3", "U4", "G7");
                 assertExists("Z2", "G7", "U5");
+
+                // Make sure the original people have been preserved
+                assertEquals(personNodes.get("u1"), ChainingUserRegistrySynchronizerTest.this.personService.getPerson(
+                        "U1", false));
+                assertEquals(personNodes.get("u2"), ChainingUserRegistrySynchronizerTest.this.personService.getPerson(
+                        "U2", false));
+                assertEquals(personNodes.get("u6"), ChainingUserRegistrySynchronizerTest.this.personService.getPerson(
+                        "U6", false));
                 return null;
             }
         }, false, true);
-
-        // Make sure the original people have been preserved
-        assertEquals(u1, this.personService.getPerson("U1", false));
-        assertEquals(u2, this.personService.getPerson("U2", false));
-        assertEquals(u6, this.personService.getPerson("U6", false));
 
         tearDownTestUsersAndGroups();
     }

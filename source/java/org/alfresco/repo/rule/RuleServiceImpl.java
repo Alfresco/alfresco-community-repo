@@ -1098,17 +1098,29 @@ public class RuleServiceImpl
     /**
      * Executes a pending rule
      * 
-     * @param pendingRule    the pending rule data object
+	 * @param pendingRule	the pending rule data object
      */
     @SuppressWarnings("unchecked")
     private void executePendingRule(PendingRuleData pendingRule) 
     {
         Set<ExecutedRuleData> executedRules =
                (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
-    
+
         NodeRef actionedUponNodeRef = pendingRule.getActionedUponNodeRef();
         Rule rule = pendingRule.getRule();
-        
+		
+        NodeRef ruleNodeRef = rule.getNodeRef();
+        if (!ruleNodeRef.getStoreRef().equals(actionedUponNodeRef.getStoreRef()) && !nodeService.exists(ruleNodeRef))
+        {
+            NodeRef newRuleNodeRef = new NodeRef(actionedUponNodeRef.getStoreRef(), ruleNodeRef.getId());
+            if (nodeService.exists(newRuleNodeRef))
+            {
+                ruleNodeRef = newRuleNodeRef;
+            }
+            
+        }
+        //update all associations and actions
+        rule = getRule(ruleNodeRef);
         if (executedRules == null || canExecuteRule(executedRules, actionedUponNodeRef, rule) == true) 
         {
             executeRule(rule, actionedUponNodeRef, executedRules);

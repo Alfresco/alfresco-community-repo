@@ -79,6 +79,7 @@
             <ref bean="on-create-node-trigger"/>
              <ref bean="on-create-child-association-trigger"/>
              <ref bean="on-content-create-trigger"/>
+             <ref bean="on-content-restore-trigger"/>
          </list>
       </constructor-arg>
    </bean>
@@ -180,5 +181,7 @@
          <value>true</value>
       </property>
    </bean>
+   
+   <bean id="on-content-restore-trigger" class="org.alfresco.repo.rule.ruletrigger.RestoreNodeRuleTrigger" parent="rule-trigger-base" />
    
 </beans>

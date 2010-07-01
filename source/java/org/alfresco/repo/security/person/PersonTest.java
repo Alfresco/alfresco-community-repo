@@ -472,11 +472,11 @@ public class PersonTest extends TestCase
         personService.createPerson(createDefaultProperties("Derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         testProperties(personService.getPerson("Derek"), "Derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        personService.setPersonProperties("Derek", createDefaultProperties("derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_", rootNodeRef));
+        personService.setPersonProperties("Derek", createDefaultProperties("notderek", "Derek_", "Hulley_", "dh@dh_", "alfresco_", rootNodeRef));
 
         testProperties(personService.getPerson("Derek"), "Derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_");
 
-        personService.setPersonProperties("Derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
+        personService.setPersonProperties("Derek", createDefaultProperties("notderek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
 
         testProperties(personService.getPerson("Derek"), "Derek", "Derek", "Hulley", "dh@dh", "alfresco");
 

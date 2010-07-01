@@ -1896,8 +1896,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
             permissionService.hasPermission(n5, PermissionService.READ);
         }
         long end = System.nanoTime();
-        System.out.println("Can in " + ((end - start) / 10e9f / 10000));
-        System.out.println("Can per second " + (1 / ((end - start) / 10e9f / 10000)));
+        System.out.println("Can in " + ((end - start) / 1e9f / 10000));
+        System.out.println("Can per second " + (1 / ((end - start) / 1e9f / 10000)));
 
     }
 

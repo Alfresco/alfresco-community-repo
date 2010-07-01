@@ -1926,7 +1926,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // the node reference has changed due to the store move
         NodeRef restoredNodeRef = newChildAssocRef.getChildRef();
-        
+        invokeOnRestoreNode(newChildAssocRef);
         // done
         if (logger.isDebugEnabled())
         {

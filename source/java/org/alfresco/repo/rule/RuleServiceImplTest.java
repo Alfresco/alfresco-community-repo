@@ -31,16 +31,21 @@ import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
@@ -56,16 +61,20 @@ public class RuleServiceImplTest extends BaseRuleTest
     private RegexQNamePattern ASSOC_NAME_RULES_REGEX = new RegexQNamePattern(RuleModel.RULE_MODEL_URI, "^" + ASSOC_NAME_RULES_PREFIX + ".*");
     
     MutableAuthenticationService authenticationService;
-	PermissionService permissionService;  
-	
-	@Override
-	protected void onSetUpInTransaction() throws Exception 
-	{
-		super.onSetUpInTransaction();		
-		this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
+    PermissionService permissionService;  
+    SearchService searchService;
+    NamespaceService namespaceService;
+    
+    @Override
+    protected void onSetUpInTransaction() throws Exception 
+    {
+        super.onSetUpInTransaction();        
+        this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
 		this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
-	}
-	
+        this.searchService = (SearchService) applicationContext.getBean("SearchService");
+        this.namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
+    }
+    
     /**
      * Test get rule type
      */
@@ -76,9 +85,9 @@ public class RuleServiceImplTest extends BaseRuleTest
         
         // Visual check to make sure that the display labels are being returned correctly
         for (RuleType type : ruleTypes)
-		{
-			System.out.println(type.getDisplayLabel());
-		}
+        {
+            System.out.println(type.getDisplayLabel());
+        }
     }
     
     /**
@@ -369,55 +378,55 @@ public class RuleServiceImplTest extends BaseRuleTest
     
     public void testRuleServicePermissionsConsumer()
     {
-    	this.authenticationService.createAuthentication("conUser", "password".toCharArray());
-    	this.permissionService.setPermission(this.nodeRef, "conUser", PermissionService.CONSUMER, true);
-    	this.permissionService.setInheritParentPermissions(this.nodeRef, true);    	
-    	
-    	this.authenticationService.authenticate("conUser", "password".toCharArray());    	
-    	Rule rule = createTestRule();
-    	try
-    	{
-    		this.ruleService.saveRule(this.nodeRef, rule);
-    		// Fail
-    		fail("Consumers cannot create rules.");
-    	}
-    	catch (Exception exception)
-    	{
-    		// Ok
-    	}
+        this.authenticationService.createAuthentication("conUser", "password".toCharArray());
+        this.permissionService.setPermission(this.nodeRef, "conUser", PermissionService.CONSUMER, true);
+        this.permissionService.setInheritParentPermissions(this.nodeRef, true);        
+        
+        this.authenticationService.authenticate("conUser", "password".toCharArray());        
+        Rule rule = createTestRule();
+        try
+        {
+            this.ruleService.saveRule(this.nodeRef, rule);
+            // Fail
+            fail("Consumers cannot create rules.");
+        }
+        catch (Exception exception)
+        {
+            // Ok
+        }
 
     }
     
     public void testRuleServicePermissionsEditor()
     {
-    	this.authenticationService.createAuthentication("editorUser", "password".toCharArray());
-    	this.permissionService.setPermission(this.nodeRef, "editorUser", PermissionService.EDITOR, true);
-    	this.permissionService.setInheritParentPermissions(this.nodeRef, true);    	
-    	
-    	this.authenticationService.authenticate("editorUser", "password".toCharArray());    	
-    	Rule rule = createTestRule();
-    	try
-    	{
-    		this.ruleService.saveRule(this.nodeRef, rule);
-    		// Fail
-    		fail("Editors cannot create rules.");
-    	}
-    	catch (Exception exception)
-    	{
-    		// Ok
-    	}
+        this.authenticationService.createAuthentication("editorUser", "password".toCharArray());
+        this.permissionService.setPermission(this.nodeRef, "editorUser", PermissionService.EDITOR, true);
+        this.permissionService.setInheritParentPermissions(this.nodeRef, true);        
+        
+        this.authenticationService.authenticate("editorUser", "password".toCharArray());        
+        Rule rule = createTestRule();
+        try
+        {
+            this.ruleService.saveRule(this.nodeRef, rule);
+            // Fail
+            fail("Editors cannot create rules.");
+        }
+        catch (Exception exception)
+        {
+            // Ok
+        }
     }
     
     public void testRuleServicePermissionsCoordinator()
     {
-    	this.authenticationService.createAuthentication("coordUser", "password".toCharArray());
-    	this.permissionService.setPermission(this.nodeRef, "coordUser", PermissionService.COORDINATOR, true);
-    	this.permissionService.setInheritParentPermissions(this.nodeRef, true);
-    	
+        this.authenticationService.createAuthentication("coordUser", "password".toCharArray());
+        this.permissionService.setPermission(this.nodeRef, "coordUser", PermissionService.COORDINATOR, true);
+        this.permissionService.setInheritParentPermissions(this.nodeRef, true);
+        
     	this.authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());    	
-		Rule rule2 = createTestRule();
-		this.ruleService.saveRule(this.nodeRef, rule2);    	
-		this.authenticationService.clearCurrentSecurityContext();  		
+        Rule rule2 = createTestRule();
+        this.ruleService.saveRule(this.nodeRef, rule2);        
+        this.authenticationService.clearCurrentSecurityContext();
     }
     
     /**
@@ -863,4 +872,58 @@ public class RuleServiceImplTest extends BaseRuleTest
 //                    };
 //                });
     }    
+    
+    public void testDeleteSpaceWithExecuteScriptRule() throws Exception
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute()
+            {
+                NodeRef storeRootNodeRef = nodeService.getRootNode(new StoreRef("workspace://SpacesStore"));
+                // get company_home nodeRef
+                NodeRef companyHomeNodeRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home", null, namespaceService, false).get(0);
+
+                assertNotNull("NodeRef company_home is null", companyHomeNodeRef);
+
+                // create test folder in company_home
+                QName testFolderName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "ISSUE_ETWOTWO_738_" + System.currentTimeMillis());
+                ChildAssociationRef childAssocRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, testFolderName, ContentModel.TYPE_FOLDER);
+                NodeRef testFolderNodeRef = childAssocRef.getChildRef();
+
+                // get script nodeRef
+                NodeRef scriptRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home/app:dictionary/app:scripts/cm:backup.js", null, namespaceService, false).get(0);
+
+                assertNotNull("NodeRef script is null", scriptRef);
+
+                // create rule
+                Rule rule = new Rule();
+                rule.setRuleType("inbound");
+                rule.setTitle("rule title " + System.currentTimeMillis());
+
+                CompositeAction compositeAction = actionService.createCompositeAction();
+                rule.setAction(compositeAction);
+
+                // add the conditions to the rule
+                ActionCondition condition = actionService.createActionCondition("no-condition");
+                condition.setParameterValues(new HashMap<String, Serializable>());
+                condition.setInvertCondition(false);
+                compositeAction.addActionCondition(condition);
+
+                // add the action to the rule
+                Action action = actionService.createAction("script");
+                Map<String, Serializable> repoActionParams = new HashMap<String, Serializable>();
+                repoActionParams.put("script-ref", scriptRef);
+                action.setParameterValues(repoActionParams);
+                compositeAction.addAction(action);
+
+                // save rule
+                ruleService.saveRule(testFolderNodeRef, rule);
+
+                // delete node with rule
+                nodeService.deleteNode(testFolderNodeRef);
+
+                return null;
+            }
+        }, false, true);
+    }
 }

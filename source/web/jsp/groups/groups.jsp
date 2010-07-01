@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
---%><%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
+--%>
+<%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
@@ -47,7 +48,7 @@
 
 </script>
 </f:verbatim>
-         
+
 <h:outputText value="<div style='padding-left: 8px; padding-top: 4px; padding-bottom: 4px'>" escape="false" />
 
 <%-- Group Path Breadcrumb --%>

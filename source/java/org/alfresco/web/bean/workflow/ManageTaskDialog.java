@@ -233,8 +233,11 @@ public class ManageTaskDialog extends BaseDialogBean
                                                 .equals(trans.id)) || (hiddenTransitions instanceof List<?>)
                                     && !((List<?>) hiddenTransitions).contains(trans.id))
                         {
-                            buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
+                            if (this.taskNode.getProperties().get(ContentModel.PROP_OWNER) != null)
+                            {
+                                buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
                                         "#{DialogManager.bean.transition}", "false", null));
+                            }
                         }
                     }
                 }

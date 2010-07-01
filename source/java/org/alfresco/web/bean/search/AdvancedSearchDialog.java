@@ -421,33 +421,30 @@ public class AdvancedSearchDialog extends BaseDialogBean
                   search.addFixedValueQuery(QName.createQName(qname), value.toString());
                }
             }
-            else if (DataTypeDefinition.INT.equals(typeName) || DataTypeDefinition.LONG.equals(typeName) ||
-                     DataTypeDefinition.FLOAT.equals(typeName) || DataTypeDefinition.DOUBLE.equals(typeName))
-            {
-               String strVal = value.toString();
-               if (strVal != null && strVal.length() != 0)
-               {
-                  search.addFixedValueQuery(QName.createQName(qname), strVal);
-               }
-            }
             else if (value != null)
             {
+               // is the value from a list?
+               String strVal = value.toString();
                Object item = properties.getCustomProperties().get(
                      UISearchCustomProperties.PREFIX_LOV_ITEM + qname);
                if (item != null)
                {
-                  // ListOfValues
+                  // ListOfValues custom property - use a fixed value query if set
                   if (((Boolean)value) == true)
                   {
                      search.addFixedValueQuery(QName.createQName(qname), item.toString());
                   }
                }
-               else
+               else if (strVal != null && strVal.length() != 0)
                {
-                  // by default use toString() value - this is for text fields and unknown types
-                  String strVal = value.toString();
-                  if (strVal != null && strVal.length() != 0)
+                  if (DataTypeDefinition.INT.equals(typeName) || DataTypeDefinition.LONG.equals(typeName) ||
+                      DataTypeDefinition.FLOAT.equals(typeName) || DataTypeDefinition.DOUBLE.equals(typeName))
                   {
+                     search.addFixedValueQuery(QName.createQName(qname), strVal);
+                  }
+                  else
+                  {
+                     // by default use toString() value - this is for text fields and unknown types
                      search.addAttributeQuery(QName.createQName(qname), strVal);
                   }
                }

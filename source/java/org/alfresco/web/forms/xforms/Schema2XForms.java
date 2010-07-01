@@ -234,16 +234,15 @@ public class Schema2XForms implements Serializable
             {
                continue;
             }
-            final String prefix = schemaDocument.lookupPrefix(schemaNamespaces.item(i));
+            final String prefix = this.addNamespace(xformsDocument.getDocumentElement(),
+                                                    schemaDocument.lookupPrefix(schemaNamespaces.item(i)),
+                                                    schemaNamespaces.item(i));
             if (LOGGER.isDebugEnabled())
             {
                LOGGER.debug("[buildXForm] adding namespace " + schemaNamespaces.item(i) +
                             " with prefix " + prefix +
                             " to xform and default instance element");
             }
-            this.addNamespace(xformsDocument.getDocumentElement(),
-                              prefix,
-                              schemaNamespaces.item(i));
             schemaNamespacesMap.put(prefix, schemaNamespaces.item(i));
          }
       }
@@ -352,6 +351,9 @@ public class Schema2XForms implements Serializable
 
       if (importedInstanceDocumentElement != null)
       {
+         Schema2XForms.removeRemovedNodes(importedInstanceDocumentElement,
+                                          defaultInstanceDocumentElement,
+                                          schemaNamespacesMap);
          Schema2XForms.insertUpdatedNodes(importedInstanceDocumentElement,
                                           defaultInstanceDocumentElement,
                                           schemaNamespacesMap);
@@ -507,6 +509,65 @@ public class Schema2XForms implements Serializable
       }
    }
 
+   @SuppressWarnings("unchecked")
+   public static void removeRemovedNodes(final Element instanceDocumentElement, final Element prototypeDocumentElement,
+         final HashMap<String, String> schemaNamespaces)
+   {
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[removeRemovedNodes] updating imported instance document");
+
+      final JXPathContext prototypeContext = JXPathContext.newContext(prototypeDocumentElement);
+      prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI);
+      final JXPathContext instanceContext = JXPathContext.newContext(instanceDocumentElement);
+      instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI);
+
+      for (final String prefix : schemaNamespaces.keySet())
+      {
+         prototypeContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
+         instanceContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
+      }
+
+      // Check all elements and attributes in the instance document
+      OUTER: for (;;)
+      {
+         final Iterator<Pointer> it = instanceContext.iteratePointers("//* | //@*");
+         while (it.hasNext())
+         {
+            final Pointer p = it.next();
+            String path = p.asPath().replaceAll("\\[\\d+\\]", "");
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("[removeRemovedNodes] evaluating instance node " + p.asPath() + " normalized "
+                     + path + " in prototype document");
+            }
+
+            final List<Node> l = (List<Node>) prototypeContext.selectNodes(path);
+            if (l.isEmpty())
+            {
+               final Node node = (Node) p.getNode();
+               if (LOGGER.isDebugEnabled())
+               {
+                  LOGGER.debug("[removeRemovedNodes] removing instance node " + node.getNodeName() +" with no prototype nodes matching path " + path);
+               }
+               if (node instanceof Attr)
+               {
+                  ((Attr) node).getOwnerElement().removeAttributeNode((Attr) node);
+               }
+               else
+               {
+                  node.getParentNode().removeChild(node);
+               }
+
+               // We have removed a node and potentially an entire sub-tree of paths. Restart the search
+               continue OUTER;
+            }
+         }
+         // We completed the search
+         break OUTER;
+      }
+
+   }
+   
    /**
     * Inserts prototype nodes into the provided instance document by aggregating insertion
     * points from the generated prototype instance docment.
@@ -3103,20 +3164,34 @@ public class Schema2XForms implements Serializable
       return elementName;
    }
 
-   private void addNamespace(final Element e,
-                             final String nsPrefix,
-                             final String ns)
+   private String addNamespace(final Element e,
+                               String nsPrefix,
+                               final String ns)
    {
-
-      if (!e.hasAttributeNS(NamespaceConstants.XMLNS_NS, nsPrefix))
+      String prefix;
+      if ((prefix = NamespaceResolver.getPrefix(e, ns)) != null)
       {
-         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("[addNamespace] adding namespace " + ns + " with prefix " + nsPrefix + " to " + e.getNodeName());
-         
-         e.setAttributeNS(NamespaceConstants.XMLNS_NS,
-                          NamespaceConstants.XMLNS_PREFIX + ':' + nsPrefix,
-                          ns);
+         return prefix;
       }
+      
+      if (nsPrefix == null || e.hasAttributeNS(NamespaceConstants.XMLNS_NS, nsPrefix))
+      {
+         // Generate a unique prefix
+         int suffix = 1;
+         while (e.hasAttributeNS(NamespaceConstants.XMLNS_NS, nsPrefix = "ns" + suffix))
+         {
+            suffix++;
+         }
+      }
+
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("[addNamespace] adding namespace " + ns + " with prefix " + nsPrefix + " to " + e.getNodeName());
+      
+      e.setAttributeNS(NamespaceConstants.XMLNS_NS,
+                       NamespaceConstants.XMLNS_PREFIX + ':' + nsPrefix,
+                       ns);
+      
+      return nsPrefix;
    }
 
    private void createTriggersForRepeats(final Document xformsDocument, final Element rootGroup)

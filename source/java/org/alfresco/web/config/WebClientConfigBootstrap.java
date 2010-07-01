@@ -14,6 +14,7 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
+ * FLOSS exception.  You should have recieved a copy of the text describing 
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.web.config;
@@ -26,6 +27,7 @@ import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.config.source.UrlConfigSource;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -35,8 +37,12 @@ import org.springframework.context.ApplicationContextAware;
  * 
  * @author Roy Wetherall
  */
-public class WebClientConfigBootstrap implements ApplicationContextAware, ConfigDeployer
+public class WebClientConfigBootstrap implements ApplicationContextAware, BeanNameAware, ConfigDeployer
 {
+    
+    /** The bean name. */
+    private String beanName;
+
     /** The application context */
     private ApplicationContext applicationContext;
     
@@ -76,6 +82,15 @@ public class WebClientConfigBootstrap implements ApplicationContextAware, Config
         }
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
+     */
+    public void setBeanName(String name)
+    {
+        this.beanName = name;
+    }
+
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;        
@@ -86,6 +101,14 @@ public class WebClientConfigBootstrap implements ApplicationContextAware, Config
     	this.configService = configService;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.config.ConfigDeployer#getSortKey()
+     */
+    public String getSortKey()
+    {
+        return this.beanName;
+    }
+
     public void register()
     {
     	if (configService == null)
@@ -109,4 +132,5 @@ public class WebClientConfigBootstrap implements ApplicationContextAware, Config
     	
     	return null;
     }
+
 }

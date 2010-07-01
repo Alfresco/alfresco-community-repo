@@ -42,6 +42,7 @@ import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.myfaces.shared_impl.renderkit.ViewSequenceUtils;
 
 /**
  * Servlet allowing external URL access to various global JSF views in the Web Client.
@@ -171,11 +172,6 @@ public class ExternalAccessServlet extends BaseServlet
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, "dialog:" + OUTCOME_DOCDETAILS);
-         
-         // Do not forward via faces context when AlfrescoNavigationHandler has already called render response phase
-         String viewId = fc.getViewRoot().getViewId();
-         getServletContext().getRequestDispatcher(viewId).forward(req, res);
-         return;
       }
       else if (OUTCOME_SPACEDETAILS.equals(outcome))
       {
@@ -209,11 +205,6 @@ public class ExternalAccessServlet extends BaseServlet
          // perform the appropriate JSF navigation outcome
          NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
          navigationHandler.handleNavigation(fc, null, "dialog:" + OUTCOME_SPACEDETAILS);
-         
-         // Do not forward via faces context when AlfrescoNavigationHandler has already called render response phase
-         String viewId = fc.getViewRoot().getViewId();
-         getServletContext().getRequestDispatcher(viewId).forward(req, res);
-         return;
       }
       else if (OUTCOME_BROWSE.equals(outcome))
       {
@@ -343,6 +334,7 @@ public class ExternalAccessServlet extends BaseServlet
       
       // perform the forward to the page processed by the Faces servlet
       String viewId = fc.getViewRoot().getViewId();
+      ViewSequenceUtils.nextViewSequence(fc);      
       getServletContext().getRequestDispatcher(FACES_SERVLET + viewId).forward(req, res);
    }
    

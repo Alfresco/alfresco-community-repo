@@ -253,6 +253,17 @@ public class EditCategoryDialog extends BaseDialogBean
          NodeRef nodeRef = getActionCategory().getNodeRef();
          getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, getName());
 
+         // ALF-1788 Need to rename the association
+         ChildAssociationRef assocRef = getNodeService().getPrimaryParent(nodeRef);
+         QName qname = QName.createQName(
+                 assocRef.getQName().getNamespaceURI(),
+             QName.createValidLocalName(name));
+         getNodeService().moveNode(
+                 assocRef.getChildRef(),
+                 assocRef.getParentRef(),
+                 assocRef.getTypeQName(),
+                 qname);
+         
          // apply the titled aspect - for description
          if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_TITLED) == false)
          {

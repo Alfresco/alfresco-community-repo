@@ -490,7 +490,7 @@ public class GroupsDialog extends BaseDialogBean
             
             final String userName = this.getAuthorityService().getShortName(authority);
             authMap.put("userName", userName);
-            authMap.put("id", authority);
+            authMap.put("id", Utils.encode(authority));
             authMap.put("name", new AuthorityNamePropertyResolver(userName));
             authMap.put("firstName", new AuthorityPropertyResolver(userName, ContentModel.PROP_FIRSTNAME));
             authMap.put("lastName", new AuthorityPropertyResolver(userName, ContentModel.PROP_LASTNAME));

@@ -25,27 +25,28 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.textmining.extraction.TextExtractor;
-import org.textmining.extraction.word.WordTextExtractorFactory;
+import org.apache.poi.POIOLE2TextExtractor;
+import org.apache.poi.hwpf.OldWordFileFormatException;
+import org.apache.poi.hwpf.extractor.Word6Extractor;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 /**
- * Makes use of the {@link http://www.textmining.org/ TextMining} library to
- * perform conversions from MSWord documents to text.
+ * This badly named transformer turns Microsoft Word documents
+ *  (Word 6, 95, 97, 2000, 2003) into plain text.
  * 
  * Doesn't currently use {@link http://tika.apache.org/ Apache Tika} to
- *  do this, as Tika can't handle Word 6 or Word 95 documents, only
- *  Word 97, 2000, 2003, 2007 and 2010.
- * Once Tika does support these older formats, we can switch to it.
+ *  do this, pending TIKA-408. When Apache POI 3.7 beta 2 has been
+ *  released, we can switch to Tika and then handle Word 6,
+ *  Word 95, Word 97, 2000, 2003, 2007 and 2010 formats.
+ * TODO Switch to Tika in August 2010
  * 
- * @author Derek Hulley
+ * @author Nick Burch
  */
 public class TextMiningContentTransformer extends AbstractContentTransformer2
 {
-    private WordTextExtractorFactory wordExtractorFactory;
-    
     public TextMiningContentTransformer()
     {
-        this.wordExtractorFactory = new WordTextExtractorFactory();
     }
     
     /**
@@ -68,13 +69,19 @@ public class TextMiningContentTransformer extends AbstractContentTransformer2
     public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
             throws Exception
     {
+       POIOLE2TextExtractor extractor = null;
         InputStream is = null;
         String text = null;
         try
         {
             is = reader.getContentInputStream();
-            TextExtractor te = wordExtractorFactory.textExtractor(is);
-            text = te.getText();
+            POIFSFileSystem fs = new POIFSFileSystem(is);
+            try {
+               extractor = new WordExtractor(fs);
+            } catch(OldWordFileFormatException e) {
+               extractor = new Word6Extractor(fs);
+            }
+            text = extractor.getText();
         }
         catch (IOException e)
         {

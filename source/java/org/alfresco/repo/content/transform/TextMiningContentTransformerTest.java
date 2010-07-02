@@ -29,6 +29,8 @@ import org.alfresco.util.TempFileProvider;
 
 /**
  * @see org.alfresco.repo.content.transform.TextMiningContentTransformer
+ * Note - Is actually POI (soon to be Tika), and not the
+ *  old and unsupported Text Mining library!
  * 
  * @author Derek Hulley
  */

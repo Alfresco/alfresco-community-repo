@@ -500,7 +500,7 @@ function processResults(nodes, maxResults)
  * "or" is the default operator, AND and NOT are also supported - as is any other valid fts-alfresco
  * elements such as "quoted terms" and (bracket terms) and also propname:propvalue syntax.
  */
-function getSearchResults(term, tag, maxResults, siteId, containerId)
+function getSearchResults(term, tag, maxResults, siteId, containerId, sort)
 {
    var nodes;
    
@@ -538,6 +538,45 @@ function getSearchResults(term, tag, maxResults, siteId, containerId)
       ftsQuery  = "PATH:\"" + path + "/*\" AND (" + ftsQuery + ") ";
       ftsQuery += "AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
       
+      // sort field
+      /* sort
+       * {
+       *    column: string,         mandatory, sort column in appropriate format for the language
+       *    ascending: boolean      optional, defaults to false
+       * }*/
+      var sortColumns = [];
+      if (sort != null && sort.length != 0)
+      {
+         var asc = true;
+         var separator = sort.indexOf("|");
+         if (separator != -1)
+         {
+            sort = sort.substring(0, separator);
+            asc = (sort.substring(separator + 1) == "true");
+         }
+         var column;
+         if (sort.charAt(0) == '.')
+         {
+            // handle pseudo cm:content fields
+            column = "@{http://www.alfresco.org/model/content/1.0}content" + sort;
+         }
+         else if (sort.indexOf(":") != -1)
+         {
+            // handle attribute field sort
+            column = "@" + utils.longQName(sort);
+         }
+         else
+         {
+            // other sort types e.g. TYPE
+            column = sort;
+         }
+         sortColumns.push(
+         {
+            column: column,
+            ascending: asc
+         });
+      }
+      
       // perform fts-alfresco language query
       var queryDef = {
          query: ftsQuery,
@@ -545,7 +584,8 @@ function getSearchResults(term, tag, maxResults, siteId, containerId)
          page: {maxItems: maxResults},
          templates: QUERY_TEMPLATES,
          defaultField: "keywords",
-         onerror: "no-results"
+         onerror: "no-results",
+         sort: sortColumns 
       };
       nodes = search.query(queryDef);
    }

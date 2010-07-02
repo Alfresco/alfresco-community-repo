@@ -33,11 +33,10 @@ import org.apache.tika.parser.pdf.PDFParser;
  *   <b>title:</b>                  --      cm:title
  *   <b>subject:</b>                --      cm:description
  *   <b>created:</b>                --      cm:created
+ *   <b>(custom metadata):</b>      --
  * </pre>
  * 
  * Uses Apache Tika
- * 
- * TODO - Update Tika to handle custom metadata
  * 
  * @author Jesper Steen Møller
  * @author Derek Hulley

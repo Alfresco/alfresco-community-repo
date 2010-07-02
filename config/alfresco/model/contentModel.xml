@@ -1175,6 +1175,20 @@
       <!--  DEPRECATED (end of) -->
       <!--                      -->
 
+      <aspect name="cm:geographic">
+         <title>Geographic</title>
+         <properties>
+            <property name="cm:latitude">
+               <title>Latitude</title>
+               <type>d:double</type>
+            </property>
+            <property name="cm:longitude">
+               <title>Longitude</title>
+               <type>d:double</type>
+            </property>
+         </properties>
+      </aspect>
+      
    </aspects>
 
 </model>

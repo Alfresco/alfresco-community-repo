@@ -40,6 +40,8 @@ import org.apache.tika.parser.Parser;
  *   <b>subject:</b>                --      cm:description
  *   <b>created:</b>                --      cm:created
  *   <b>comments:</b>
+ *   <p>geo:lat:</b>                --      cm:latitude
+ *   <p>geo:long:</b>               --      cm:longitude
  * </pre>
  * 
  * @author Nick Burch

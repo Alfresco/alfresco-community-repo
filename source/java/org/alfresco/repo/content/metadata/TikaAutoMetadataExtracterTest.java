@@ -210,16 +210,38 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       assertEquals("409", p.get("width"));
       assertEquals("92", p.get("height"));
       assertEquals("8 8 8", p.get("Data BitsPerSample"));
+      
+      
+      // Geo tagged image
+      p = openAndCheck("GEO.jpg", "image/jpeg");
+      assertEquals("100 pixels", p.get("Image Width"));
+      assertEquals("68 pixels", p.get("Image Height"));
+      assertEquals("8 bits", p.get("Data Precision"));
+      assertEquals(QUICK_TITLE, p.get("Comments"));
+      assertEquals("12.54321", p.get("geo:lat"));
+      assertEquals("-54.1234", p.get("geo:long"));
+      
+      // Map and check
+      Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+      ContentReader reader = new FileContentReader(open("GEO.jpg"));
+      reader.setMimetype("image/jpeg");
+      extracter.extract(reader, properties);
+      assertEquals(12.54321, properties.get(QName.createQName("http://www.alfresco.org/model/content/1.0","latitude")));
+      assertEquals(-54.1234, properties.get(QName.createQName("http://www.alfresco.org/model/content/1.0","longitude")));
    }
-   private Map<String, Serializable> openAndCheck(String fileBase, String expMimeType) throws Throwable {
+   private File open(String fileBase) throws Throwable {
       String filename = "quick" + fileBase;
       URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/" + filename);
       File file = new File(url.getFile());
-      
+      assertTrue(file.exists());
+      return file;
+   }
+   private Map<String, Serializable> openAndCheck(String fileBase, String expMimeType) throws Throwable {
       // Cheat and ask Tika for the mime type!
+      File file = open(fileBase);
       AutoDetectParser ap = new AutoDetectParser();
       Metadata metadata = new Metadata();
-      metadata.set(Metadata.RESOURCE_NAME_KEY, filename);
+      metadata.set(Metadata.RESOURCE_NAME_KEY, "quick"+fileBase);
       MediaType mt = ap.getDetector().detect(
             new BufferedInputStream(new FileInputStream(file)), metadata);
       String mimetype = mt.toString();

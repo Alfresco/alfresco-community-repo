@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -31,9 +32,11 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
@@ -109,6 +112,7 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
     {
         super(supportedMimeTypes);
         
+        // TODO Once TIKA-451 is fixed this list will get nicer
         this.tikaDateFormats = new DateFormat[] {
               new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"),
               new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US),
@@ -116,6 +120,10 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
               new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US),
               new SimpleDateFormat("yyyy-MM-dd"),
               new SimpleDateFormat("yyyy-MM-dd", Locale.US),
+              new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
+              new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US),
+              new SimpleDateFormat("yyyy/MM/dd"),
+              new SimpleDateFormat("yyyy/MM/dd", Locale.US),
               new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy"),
               new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy", Locale.US)
         };
@@ -169,6 +177,28 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
        return properties;
     }
     
+    /**
+     * There seems to be some sort of issue with some downstream
+     *  3rd party libraries, and input streams that come from
+     *  a {@link ContentReader}. This happens most often with
+     *  JPEG and Tiff files.
+     * For these cases, buffer out to a local file if not
+     *  already there
+     */
+    private InputStream getInputStream(ContentReader reader) throws IOException {
+       if("image/jpeg".equals(reader.getMimetype()) ||
+             "image/tiff".equals(reader.getMimetype())) {
+          if(reader instanceof FileContentReader) {
+             return TikaInputStream.get( ((FileContentReader)reader).getFile() );
+          } else {
+             File tmpFile = File.createTempFile("tika", "tmp");
+             reader.getContent(tmpFile);
+             return TikaInputStream.get(tmpFile);
+          }
+       }
+       return reader.getContentInputStream(); 
+    }
+    
     @Override
     protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
@@ -177,7 +207,7 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         InputStream is = null;
         try
         {
-            is = reader.getContentInputStream();
+            is = getInputStream(reader); 
             Parser parser = getParser();
             Metadata metadata = new Metadata();
             ParseContext context = new ParseContext();

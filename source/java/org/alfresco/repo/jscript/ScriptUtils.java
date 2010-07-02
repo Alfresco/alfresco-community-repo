@@ -155,6 +155,17 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     {
         return createQName(s).toPrefixString(services.getNamespaceService());
     }
+    
+    /**
+     * Given a short-form QName string, this method returns the fully qualified QName string.
+     * 
+     * @param s   Short form QName string, e.g. "cm:content"
+     * @return Fully qualified QName string
+     */
+    public String longQName(String s)
+    {
+        return createQName(s).toString();
+    }
 
     /**
      * Helper to create a QName from either a fully qualified or short-name QName string

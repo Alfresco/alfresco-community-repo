@@ -529,10 +529,30 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     }
     
     /**
+     * Cache-only operation: Get the key for a given value key (note: not 'value' but 'value key').
+     * 
+     * @param value                 The entity value key, which must be valid (<tt>null</tt> not allowed)
+     * @return                      The entity key (may be <tt>null</tt>)
+     */
+    @SuppressWarnings("unchecked")
+    public K getKey(VK valueKey)
+    {
+        // There is a good value key, cache by value
+        CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
+        K key = (K) cache.get(valueCacheKey);
+        // Check if we have looked this up already
+        if (key != null && key.equals(VALUE_NOT_FOUND))
+        {
+            key = null;
+        }
+        return key;
+    }
+    
+    /**
      * Cache-only operation: Get the value for a given key
      * 
      * @param key                   The entity key, which may be valid or invalid (<tt>null</tt> not allowed)
-     * @return                      The new entity value (may be <tt>null</tt>)
+     * @return                      The entity value (may be <tt>null</tt>)
      */
     @SuppressWarnings("unchecked")
     public V getValue(K key)

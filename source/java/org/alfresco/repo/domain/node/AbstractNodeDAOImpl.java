@@ -33,10 +33,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.BatchingDAO;
@@ -478,6 +481,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     }
                     return true;
                 }
+
+                public void done()
+                {
+                }                               
             };
             selectChildAssocs(parentNodeId, null, null, null, null, null, callback);
         }
@@ -2367,6 +2374,76 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Done
         return assocToKeep.getPair(qnameDAO);
     }
+    
+    /**
+     * Callback that applies node preloading.  Instances must be used and discarded per query.
+     * 
+     * @author Derek Hulley
+     * @since 3.4
+     */
+    private class ChildAssocRefBatchingQueryCallback implements ChildAssocRefQueryCallback
+    {
+        private static final int BATCH_SIZE = 256 * 4;
+        private final ChildAssocRefQueryCallback callback;
+        private final boolean preload;
+        private final List<NodeRef> nodeRefs;
+        /**
+         * @param callback      the callback to batch around
+         */
+        private ChildAssocRefBatchingQueryCallback(ChildAssocRefQueryCallback callback)
+        {
+            this.callback = callback;
+            this.preload = callback.preLoadNodes();
+            if (preload)
+            {
+                nodeRefs = new LinkedList<NodeRef>();           // No memory required
+            }
+            else
+            {
+                nodeRefs = null;                                // No list needed
+            }
+        }
+        /**
+         * @return              Returns <tt>false</tt> always as batching is applied
+         */
+        public boolean preLoadNodes()
+        {
+            return false;
+        }
+        /**
+         * {@inheritDoc}
+         */
+        public boolean handle(
+                Pair<Long, ChildAssociationRef> childAssocPair,
+                Pair<Long, NodeRef> parentNodePair,
+                Pair<Long, NodeRef> childNodePair)
+        {
+            if (!preload)
+            {
+                return callback.handle(childAssocPair, parentNodePair, childNodePair);
+            }
+            // Batch it
+            if (nodeRefs.size() >= BATCH_SIZE)
+            {
+                cacheNodes(nodeRefs);
+                nodeRefs.clear();
+            }
+            nodeRefs.add(childNodePair.getSecond());
+            
+            return callback.handle(childAssocPair, parentNodePair, childNodePair);
+        }
+        public void done()
+        {
+            // Finish the batch
+            if (preload && nodeRefs.size() > 0)
+            {
+                cacheNodes(nodeRefs);
+                nodeRefs.clear();
+            }
+            
+            callback.done();
+        }                               
+    }
 
     public void getChildAssocs(
             Long parentNodeId,
@@ -2380,7 +2457,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         selectChildAssocs(
                 parentNodeId, childNodeId,
                 assocTypeQName, assocQName, isPrimary, sameStore,
-                resultsCallback);
+                new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
     public void getChildAssocs(Long parentNodeId, Set<QName> assocTypeQNames, ChildAssocRefQueryCallback resultsCallback)
@@ -2391,10 +2468,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return;                     // No results possible
         case 1:
             QName assocTypeQName = assocTypeQNames.iterator().next();
-            selectChildAssocs(parentNodeId, null, assocTypeQName, (QName) null, null, null, resultsCallback);
+            selectChildAssocs(
+                        parentNodeId, null, assocTypeQName, (QName) null, null, null,
+                        new ChildAssocRefBatchingQueryCallback(resultsCallback));
             break;
         default:
-            selectChildAssocs(parentNodeId, assocTypeQNames, resultsCallback);
+            selectChildAssocs(
+                        parentNodeId, assocTypeQNames,
+                        new ChildAssocRefBatchingQueryCallback(resultsCallback));
         }
     }
 
@@ -2410,7 +2491,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Collection<String> childNames,
             ChildAssocRefQueryCallback resultsCallback)
     {
-        selectChildAssocs(parentNodeId, assocTypeQName, childNames, resultsCallback);
+        selectChildAssocs(
+                    parentNodeId, assocTypeQName, childNames,
+                    new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
     public void getChildAssocsByChildTypes(
@@ -2418,7 +2501,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Set<QName> childNodeTypeQNames,
             ChildAssocRefQueryCallback resultsCallback)
     {
-        selectChildAssocsByChildTypes(parentNodeId, childNodeTypeQNames, resultsCallback);
+        selectChildAssocsByChildTypes(
+                    parentNodeId, childNodeTypeQNames,
+                    new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
     public void getChildAssocsWithoutParentAssocsOfType(
@@ -2426,7 +2511,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             QName assocTypeQName,
             ChildAssocRefQueryCallback resultsCallback)
     {
-        selectChildAssocsWithoutParentAssocsOfType(parentNodeId, assocTypeQName, resultsCallback);
+        selectChildAssocsWithoutParentAssocsOfType(
+                    parentNodeId, assocTypeQName,
+                    new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
     public Pair<Long, ChildAssociationRef> getPrimaryParentAssoc(Long childNodeId)
@@ -2698,9 +2785,137 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Bulk caching
      */
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Loads properties, aspects, parent associations and the ID-noderef cache.
+     */
     public void cacheNodes(List<NodeRef> nodeRefs)
     {
+        /*
+         * ALF-2712: Performance degradation from 3.1.0 to 3.1.2
+         * ALF-2784: Degradation of performance between 3.1.1 and 3.2x (observed in JSF)
+         * 
+         * There is an obvious cost associated with querying the database to pull back nodes,
+         * and there is additional cost associated with putting the resultant entries into the
+         * caches.  It is NO MORE expensive to check the cache than it is to put an entry into it
+         * - and probably cheaper considering cache replication - so we start checking nodes to see
+         * if they have entries before passing them over for batch loading.
+         * 
+         * However, when running against a cold cache or doing a first-time query against some
+         * part of the repo, we will be checking for entries in the cache and consistently getting
+         * no results.  To avoid unnecessary checking when the cache is PROBABLY cold, we
+         * examine the ratio of hits/misses at regular intervals.
+         */
+        if (nodeRefs.size() < 10)
+        {
+            // We only cache where the number of results is potentially
+            // a problem for the N+1 loading that might result.
+            return;
+        }
+        int foundCacheEntryCount = 0;
+        int missingCacheEntryCount = 0;
+        boolean forceBatch = false;
+
+        // Group the nodes by store so that we don't *have* to eagerly join to store to get query performance
+        Map<StoreRef, List<String>> uuidsByStore = new HashMap<StoreRef, List<String>>(3);
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            if (!forceBatch)
+            {
+                // Is this node in the cache?
+                if (nodesCache.getKey(nodeRef) != null)
+                {
+                    foundCacheEntryCount++;                             // Don't add it to the batch
+                    continue;
+                }
+                else
+                {
+                    missingCacheEntryCount++;                           // Fall through and add it to the batch
+                }
+                if (foundCacheEntryCount + missingCacheEntryCount % 100 == 0)
+                {
+                    // We force the batch if the number of hits drops below the number of misses
+                    forceBatch = foundCacheEntryCount < missingCacheEntryCount;
+                }
+            }
+
+            StoreRef storeRef = nodeRef.getStoreRef();
+            List<String> uuids = (List<String>) uuidsByStore.get(storeRef);
+            if (uuids == null)
+            {
+                uuids = new ArrayList<String>(nodeRefs.size());
+                uuidsByStore.put(storeRef, uuids);
+            }
+            uuids.add(nodeRef.getId());
+        }
+        int size = nodeRefs.size();
+        nodeRefs = null;
+        // Now load all the nodes
+        for (Map.Entry<StoreRef, List<String>> entry : uuidsByStore.entrySet())
+        {
+            StoreRef storeRef = entry.getKey();
+            List<String> uuids = entry.getValue();
+            cacheNodes(storeRef, uuids);
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Pre-loaded " + size + " nodes.");
+        }
+    }
+    
+    /**
+     * Loads the nodes into cache using batching.
+     */
+    private void cacheNodes(StoreRef storeRef, List<String> uuids)
+    {
+        StoreEntity store = getStoreNotNull(storeRef);
+        Long storeId = store.getId();
         
+        int batchSize = 256;
+        SortedSet<String> batch = new TreeSet<String>();
+        for (String uuid : uuids)
+        {
+            batch.add(uuid);
+            if (batch.size() >= batchSize)
+            {
+                // Preload
+                cacheNodesNoBatch(storeId, batch);
+                batch.clear();
+            }
+        }
+        // Load any remaining nodes
+        if (batch.size() > 0)
+        {
+            cacheNodesNoBatch(storeId, batch);
+        }
+    }
+    
+    /**
+     * Bulk-fetch the nodes for a given store.  All nodes passed in are fetched.
+     */
+    private void cacheNodesNoBatch(Long storeId, SortedSet<String> uuids)
+    {
+        // Get the nodes
+        List<NodeEntity> nodes = selectNodesByUuids(storeId, uuids);
+        SortedSet<Long> nodeIds = new TreeSet<Long>();
+        for (NodeEntity node : nodes)
+        {
+            Long nodeId = node.getId();
+            nodesCache.setValue(nodeId, node);
+            if (propertiesCache.getValue(nodeId) == null)
+            {
+                nodeIds.add(nodeId);
+            }
+        }
+        Map<Long, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(nodeIds);
+        for (Map.Entry<Long, Map<NodePropertyKey, NodePropertyValue>> entry : propsByNodeId.entrySet())
+        {
+            Long nodeId = entry.getKey();
+            Map<NodePropertyKey, NodePropertyValue> propertyValues = entry.getValue();
+            Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propertyValues);
+            propertiesCache.setValue(nodeId, props);
+        }
     }
 
     /**
@@ -2850,6 +3065,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int deleteNodeById(Long nodeId, boolean deletedOnly);
     protected abstract NodeEntity selectNodeById(Long id, Boolean deleted);
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted);
+    protected abstract List<NodeEntity> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
+    protected abstract Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds);
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId);
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId, Set<Long> qnameIds);
     protected abstract int deleteNodeProperties(Long nodeId, Set<Long> qnameIds);

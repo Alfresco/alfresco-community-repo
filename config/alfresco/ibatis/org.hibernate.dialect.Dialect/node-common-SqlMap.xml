@@ -15,6 +15,7 @@
     <typeAlias alias="TransactionQuery" type="org.alfresco.repo.domain.node.TransactionQueryEntity"/>
     <typeAlias alias="Store" type="org.alfresco.repo.domain.node.StoreEntity"/>
     <typeAlias alias="Node" type="org.alfresco.repo.domain.node.NodeEntity"/>
+    <typeAlias alias="NodeBatchLoad" type="org.alfresco.repo.domain.node.ibatis.NodeBatchLoadEntity"/>
     <typeAlias alias="NodeUpdate" type="org.alfresco.repo.domain.node.NodeUpdateEntity"/>
     <typeAlias alias="AuditProps" type="org.alfresco.repo.domain.node.AuditablePropertiesEntity"/>
     <typeAlias alias="NodePropertyKey" type="org.alfresco.repo.domain.node.NodePropertyKey"/>
@@ -547,6 +548,17 @@
             <isNotNull property="deleted">and node.node_deleted = #deleted#</isNotNull>
     </select>
     
+    <select id="select_NodesByUuids" parameterClass="NodeBatchLoad" resultMap="result_Node">
+        <include refid="alfresco.node.select_Node_Results"/>
+        from
+            alf_node node
+            join alf_store store on (store.id = node.store_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
+        where
+            node.store_id = #storeId# and
+            node.uuid in <iterate property="uuids" open="(" close=")" conjunction=",">#uuids[]#</iterate>
+    </select>
+    
     <sql id="select_NodeProperty_Results">
         select
             prop.node_id            as node_id,
@@ -568,7 +580,12 @@
         from
             alf_node_properties prop
         where
-            prop.node_id = #nodeId#
+            <dynamic>
+                <isNotNull property="nodeId">prop.node_id = #nodeId#</isNotNull>
+                <isNotNull property="nodeIds">
+                    node_id in <iterate property="nodeIds" open="(" close=")" conjunction=",">#nodeIds[]#</iterate>
+                </isNotNull>
+            </dynamic>
             <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
             <isNotNull property="qnameIds">
                 and qname_id in

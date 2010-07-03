@@ -791,6 +791,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 public boolean preLoadNodes()
                 {
                     return true;
+                }
+
+                public void done()
+                {
                 }                               
             };
             // Get all the QNames to remove
@@ -987,6 +991,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 return true;
             }
+
+            public void done()
+            {
+            }                               
        };
 
        // Get all the QNames to remove
@@ -1134,6 +1142,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 return true;
             }
+
+            public void done()
+            {
+            }                               
         };
         nodeDAO.getChildAssocs(parentNodeId, childNodeId, null, null, null, null, callback);
         
@@ -1482,6 +1494,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 results.add(childAssocPair.getSecond());
                 return true;
             }
+
+            public void done()
+            {
+            }                               
         };
         
         // Get the assocs pointing to it
@@ -1539,6 +1555,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 results.add(childAssocPair.getSecond());
                 return true;
             }
+
+            public void done()
+            {
+            }                               
         };
         
         // Get the assocs pointing to it
@@ -1576,6 +1596,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 return true;
             }
+
+            public void done()
+            {
+            }                               
         };
         // Get all child associations with the specific qualified name
         nodeDAO.getChildAssocsByChildTypes(nodeId, childNodeTypeQNames, callback);
@@ -1650,6 +1674,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 return true;
             }            
+
+            public void done()
+            {
+            }                               
         };
         // Get all child associations with the specific qualified name
         nodeDAO.getChildAssocs(nodeId, assocTypeQName, childNames, callback);
@@ -1724,6 +1752,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 return false;
             }
+
+            public void done()
+            {
+            }                               
         };
 
         // Get the child associations that meet the criteria
@@ -2076,6 +2108,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 return true;
             }
+
+            public void done()
+            {
+            }                               
         };
         // We only need to move child nodes that are not already in the same store
         nodeDAO.getChildAssocs(nodeId, null, null, null, Boolean.TRUE, Boolean.FALSE, callback);

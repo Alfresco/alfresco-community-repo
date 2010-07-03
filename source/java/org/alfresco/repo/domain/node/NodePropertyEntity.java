@@ -39,6 +39,8 @@ public class NodePropertyEntity
     private NodePropertyValue value;
     /** Carries data for queries and updates */
     private List<Long> qnameIds;
+    /** Carries data for queries */
+    private List<Long> nodeIds;
     
     /**
      * Required default constructor
@@ -91,5 +93,15 @@ public class NodePropertyEntity
     public void setQnameIds(List<Long> qnameIds)
     {
         this.qnameIds = qnameIds;
+    }
+
+    public List<Long> getNodeIds()
+    {
+        return nodeIds;
+    }
+
+    public void setNodeIds(List<Long> nodeIds)
+    {
+        this.nodeIds = nodeIds;
     }
 }

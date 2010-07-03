@@ -310,6 +310,11 @@ public interface NodeDAO extends NodeBulkLoader
          * @return              Return <tt>true</tt> if caching of the results is required
          */
         boolean preLoadNodes();
+        
+        /**
+         * Called once the iteration of results has concluded
+         */
+        void done();
     }
 
     /**

@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
@@ -86,6 +87,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
+    private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update_PrimaryChildrenSharedAcl";
@@ -338,31 +340,40 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return (NodeEntity) template.queryForObject(SELECT_NODE_BY_NODEREF, node);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<NodeEntity> selectNodesByUuids(Long storeId, SortedSet<String> uuids)
+    {
+        NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+        nodeBatchLoadEntity.setStoreId(storeId);
+        nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
+        
+        return (List<NodeEntity>) template.queryForList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
+    }
+
     /**
      * Pull out the key-value pairs from the rows
      */
-    private Map<NodePropertyKey, NodePropertyValue> makePersistentPropertiesMap(List<NodePropertyEntity> rows)
+    private Map<Long, Map<NodePropertyKey, NodePropertyValue>> makePersistentPropertiesMap(List<NodePropertyEntity> rows)
     {
-        Long nodeId = null;
-        Map<NodePropertyKey, NodePropertyValue> props = new HashMap<NodePropertyKey, NodePropertyValue>(27);
+        Map<Long, Map<NodePropertyKey, NodePropertyValue>> results = new HashMap<Long, Map<NodePropertyKey, NodePropertyValue>>(3);
         for (NodePropertyEntity row : rows)
         {
-            if (row.getNodeId() == null)
+            Long nodeId = row.getNodeId();
+            if (nodeId == null)
             {
                 throw new RuntimeException("Expect results with a Node ID: " + row);
             }
-            if (nodeId == null)
+            Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeId);
+            if (props == null)
             {
-                nodeId = row.getNodeId();
-            }
-            else if (!nodeId.equals(row.getNodeId()))
-            {
-                throw new RuntimeException("Results can only be interpreted for a single node.");
+                props = new HashMap<NodePropertyKey, NodePropertyValue>(17);
+                results.put(nodeId, props);
             }
             props.put(row.getKey(), row.getValue());
         }
         // Done
-        return props;
+        return results;
     }
     
     /**
@@ -383,12 +394,27 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return rows;
     }
     
+    @Override
+    @SuppressWarnings("unchecked")
+    protected Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds)
+    {
+        if (nodeIds.size() == 0)
+        {
+            return Collections.emptyMap();
+        }
+        NodePropertyEntity prop = new NodePropertyEntity();
+        prop.setNodeIds(new ArrayList<Long>(nodeIds));
+
+        List<NodePropertyEntity> rows = template.queryForList(SELECT_NODE_PROPERTIES, prop);
+        return makePersistentPropertiesMap(rows);
+    }
+    @Override
     protected Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId)
     {
         return selectNodeProperties(nodeId, Collections.<Long>emptySet());
     }
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     protected Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId, Set<Long> qnameIds)
     {
         NodePropertyEntity prop = new NodePropertyEntity();
@@ -409,7 +435,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         
         List<NodePropertyEntity> rows = template.queryForList(SELECT_NODE_PROPERTIES, prop);
-        return makePersistentPropertiesMap(rows);
+        Map<Long, Map<NodePropertyKey, NodePropertyValue>> results = makePersistentPropertiesMap(rows);
+        Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeId);
+        if (props == null)
+        {
+            return Collections.emptyMap();
+        }
+        else
+        {
+            return props;
+        }
     }
 
     @Override
@@ -862,6 +897,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
         template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        resultsCallback.done();
     }
 
     @Override
@@ -885,6 +921,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
         template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        resultsCallback.done();
     }
 
     @Override
@@ -960,6 +997,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(filter, resultsCallback);
         template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        resultsCallback.done();
     }
 
     @Override
@@ -983,6 +1021,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
         template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, rowHandler);
+        resultsCallback.done();
     }
     
     @Override
@@ -1004,6 +1043,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
         ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
         template.queryWithRowHandler(SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE, assoc, rowHandler);
+        resultsCallback.done();
     }
 
     @SuppressWarnings("unchecked")
@@ -1058,6 +1098,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
         template.queryWithRowHandler(SELECT_PARENT_ASSOCS_OF_CHILD, assoc, rowHandler);
+        resultsCallback.done();
     }
 
     @SuppressWarnings("unchecked")

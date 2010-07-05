@@ -538,12 +538,10 @@ function getSearchResults(term, tag, maxResults, siteId, containerId, sort)
       ftsQuery  = "PATH:\"" + path + "/*\" AND (" + ftsQuery + ") ";
       ftsQuery += "AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
       
-      // sort field
-      /* sort
-       * {
-       *    column: string,         mandatory, sort column in appropriate format for the language
-       *    ascending: boolean      optional, defaults to false
-       * }*/
+      // sort field - expecting field to in one of the following formats:
+      //  - short QName form such as: cm:name
+      //  - pseudo cm:content field starting with "." such as: .size
+      //  - any other directly supported search field such as: TYPE
       var sortColumns = [];
       if (sort != null && sort.length != 0)
       {

@@ -101,6 +101,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_NODE_ASSOCS_TO_AND_FROM = "alfresco.node.delete_NodeAssocsToAndFrom";
     private static final String SELECT_NODE_ASSOCS_BY_SOURCE = "alfresco.node.select_NodeAssocsBySource";
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
+    private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
     private static final String SELECT_NODE_PRIMARY_CHILD_ACLS = "alfresco.node.select_NodePrimaryChildAcls";
     private static final String INSERT_CHILD_ASSOC = "alfresco.node.insert_ChildAssoc";
     private static final String DELETE_CHILD_ASSOC_BY_ID = "alfresco.node.delete_ChildAssocById";
@@ -655,6 +656,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setTargetNode(targetNode);
         
         return (List<NodeAssocEntity>) template.queryForList(SELECT_NODE_ASSOCS_BY_TARGET, assoc);
+    }
+
+    @Override
+    protected NodeAssocEntity selectNodeAssocById(Long assocId)
+    {
+        NodeAssocEntity assoc = new NodeAssocEntity();
+        assoc.setId(assocId);
+        
+        return (NodeAssocEntity) template.queryForObject(SELECT_NODE_ASSOC_BY_ID, assoc);
     }
 
     @Override

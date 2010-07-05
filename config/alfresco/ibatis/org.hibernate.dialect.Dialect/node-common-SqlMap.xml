@@ -650,6 +650,12 @@
             targetNode.id = #targetNode.id#
     </select>
     
+    <select id="select_NodeAssocById" parameterClass="NodeAssoc" resultMap="result_NodeAssoc">
+        <include refid="alfresco.node.select_NodeAssoc_Results"/>
+        where
+            assoc.id = #id#
+    </select>
+    
     <!-- Common results for result_ChildAssoc -->
     <sql id="select_ChildAssoc_Results">
         select

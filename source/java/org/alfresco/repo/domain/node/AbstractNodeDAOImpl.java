@@ -2124,12 +2124,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         for (NodeAssocEntity nodeAssocEntity : nodeAssocEntities)
         {
             Long assocId = nodeAssocEntity.getId();
-            QName assocTypeQName = qnameDAO.getQName(nodeAssocEntity.getTypeQNameId()).getSecond();
-            AssociationRef assocRef = new AssociationRef(
-                    nodeAssocEntity.getId(),
-                    nodeAssocEntity.getSourceNode().getNodeRef(),
-                    assocTypeQName,
-                    nodeAssocEntity.getTargetNode().getNodeRef());
+            AssociationRef assocRef = nodeAssocEntity.getAssociationRef(qnameDAO);
             results.add(new Pair<Long, AssociationRef>(assocId, assocRef));
         }
         return results;
@@ -2142,17 +2137,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         for (NodeAssocEntity nodeAssocEntity : nodeAssocEntities)
         {
             Long assocId = nodeAssocEntity.getId();
-            QName assocTypeQName = qnameDAO.getQName(nodeAssocEntity.getTypeQNameId()).getSecond();
-            AssociationRef assocRef = new AssociationRef(
-                    nodeAssocEntity.getId(),
-                    nodeAssocEntity.getSourceNode().getNodeRef(),
-                    assocTypeQName,
-                    nodeAssocEntity.getTargetNode().getNodeRef());
+            AssociationRef assocRef = nodeAssocEntity.getAssociationRef(qnameDAO);
             results.add(new Pair<Long, AssociationRef>(assocId, assocRef));
         }
         return results;
     }
     
+    public Pair<Long, AssociationRef> getNodeAssoc(Long assocId)
+    {
+        NodeAssocEntity nodeAssocEntity = selectNodeAssocById(assocId);
+        if (nodeAssocEntity == null)
+        {
+            throw new ConcurrencyFailureException("Assoc ID does not point to a valid association: " + assocId);
+        }
+        AssociationRef assocRef = nodeAssocEntity.getAssociationRef(qnameDAO);
+        return new Pair<Long, AssociationRef>(assocId, assocRef);
+    }
+
     /*
      * Child assocs
      */
@@ -3082,6 +3083,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int deleteNodeAssocsToAndFrom(Long nodeId, Set<Long> assocTypeQNameIds);
     protected abstract List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId);
     protected abstract List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId);
+    protected abstract NodeAssocEntity selectNodeAssocById(Long assocId);
     protected abstract Long insertChildAssoc(ChildAssocEntity assoc);
     protected abstract int deleteChildAssocById(Long assocId);
     protected abstract int updateChildAssocIndex(

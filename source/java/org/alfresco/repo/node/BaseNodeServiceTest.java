@@ -2200,6 +2200,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 sourceRef,
                 anotherTargetRef,
                 ASSOC_TYPE_QNAME_TEST_NEXT);
+        Long anotherAssocId = anotherAssocRef.getId();
+        assertNotNull("Created association does not have an ID", anotherAssocId);
+        AssociationRef anotherAssocRefCheck = nodeService.getAssoc(anotherAssocId);
+        assertEquals("Assoc fetched by ID is incorrect.", anotherAssocRef, anotherAssocRefCheck);
         
         // remove assocs
         List<AssociationRef> assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
@@ -2222,6 +2226,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(sourceRef, qname);
         assertEquals("Incorrect number of targets", 1, targetAssocs.size());
         assertTrue("Target not found", targetAssocs.contains(assocRef));
+        
+        // Check that IDs are present
+        for (AssociationRef targetAssoc : targetAssocs)
+        {
+            assertNotNull("Association does not have ID", targetAssoc.getId());
+        }
     }
     
     public void testGetSourceAssocs() throws Exception
@@ -2234,6 +2244,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         List<AssociationRef> sourceAssocs = nodeService.getSourceAssocs(targetRef, qname);
         assertEquals("Incorrect number of source assocs", 1, sourceAssocs.size());
         assertTrue("Source not found", sourceAssocs.contains(assocRef));
+        
+        // Check that IDs are present
+        for (AssociationRef sourceAssoc : sourceAssocs)
+        {
+            assertNotNull("Association does not have ID", sourceAssoc.getId());
+        }
     }
     
     /**

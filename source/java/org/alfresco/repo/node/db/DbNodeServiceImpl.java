@@ -1786,8 +1786,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public AssociationRef getAssoc(Long id)
     {
-        throw new UnsupportedOperationException("TODO: Implement the method for the new DAO implementation.");
-//        return nodeDaoService.getNodeAssocOrNull(id);
+        return nodeDAO.getNodeAssoc(id).getSecond();
     }
 
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)

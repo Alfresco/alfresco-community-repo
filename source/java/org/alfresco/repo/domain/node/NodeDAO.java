@@ -284,6 +284,13 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId);
 
+    /**
+     * @return                  Returns a specific node association with the given ID
+     * 
+     * @throws ConcurrencyFailureException  if the association ID is invalid
+     */
+    public Pair<Long, AssociationRef> getNodeAssoc(Long assocId);
+
     /*
      * Child Assocs
      */

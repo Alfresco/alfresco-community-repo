@@ -26,6 +26,10 @@ package org.alfresco.repo.domain.node;
 
 import java.util.List;
 
+import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.namespace.QName;
+
 /**
  * Bean for <b>alf_node_assoc</b> table.
  * 
@@ -60,6 +64,20 @@ public class NodeAssocEntity
           .append(", typeQNameIds=").append(typeQNameIds)
           .append("]");
         return sb.toString();
+    }
+    
+    /**
+     * Helper method to fetch the association reference
+     */
+    public AssociationRef getAssociationRef(QNameDAO qnameDAO)
+    {
+        QName assocTypeQName = qnameDAO.getQName(typeQNameId).getSecond();
+        AssociationRef assocRef = new AssociationRef(
+                id,
+                sourceNode.getNodeRef(),
+                assocTypeQName,
+                targetNode.getNodeRef());
+        return assocRef;
     }
 
     public Long getId()

@@ -151,7 +151,7 @@ public class MetadataExtracterRegistry
         }
         
         // We have the list of extractors that supposedly work (as registered).
-        // Take the first one that still claims to work
+        // Take the last one that still claims to work
         MetadataExtracter liveExtractor = null;
         for (MetadataExtracter extractor : extractors)
         {

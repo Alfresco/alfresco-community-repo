@@ -731,7 +731,28 @@
 	<bean id="webscript.org.alfresco.repository.rule.actionConstraint.get" class="org.alfresco.repo.web.scripts.rule.ActionConstraintGet" parent="abstractRuleWebScript">		      
 	</bean>
 	
-	<!-- adds a new action to the execution queue. -->
-	<bean id="webscript.org.alfresco.repository.rule.actionQueue.post" class="org.alfresco.repo.web.scripts.rule.ActionQueuePost" parent="abstractRuleWebScript">		      
-	</bean>
+    <!-- adds a new action to the execution queue. -->
+    <bean id="webscript.org.alfresco.repository.rule.actionQueue.post" class="org.alfresco.repo.web.scripts.rule.ActionQueuePost" parent="abstractRuleWebScript">
+    </bean>
+	
+    <!--                                   -->
+    <!--      Workflow Service REST API        -->
+    <!--                                   -->
+
+    <!-- abstract workflow web script -->
+    <bean id="abstractWorkflowWebScript"
+    class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript"
+    parent="webscript" abstract="true">
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="workflowService" ref="WorkflowService"/>
+    </bean>
+
+    <!-- Lists the task instances, filtered by task owner and state. -->
+    <bean id="webscript.org.alfresco.repository.workflow.task-instances.get"
+    class="org.alfresco.repo.web.scripts.workflow.TaskInstancesGet"
+    parent="abstractWorkflowWebScript">
+    </bean>
+
 </beans>

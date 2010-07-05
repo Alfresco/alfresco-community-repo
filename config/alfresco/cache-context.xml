@@ -728,9 +728,6 @@
    
    <!-- The cross-transaction shared cache for ACL entities -->
    
-   <bean name="aclEntitySharedCache" class="org.alfresco.repo.cache.NullCache"/>
-   
-   <!--
    <bean name="aclEntitySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
          <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
@@ -743,7 +740,6 @@
          </bean>
       </property>
    </bean>
-   -->
    
    <!-- The transactional cache for ACL entities -->
    

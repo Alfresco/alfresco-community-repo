@@ -225,9 +225,9 @@
    <bean id="aclCrudDAO" class="org.alfresco.repo.domain.permissions.ibatis.AclCrudDAOImpl">
       <property name="sqlMapClientTemplate" ref="repoSqlMapClientTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
-      <property name="aclCache" ref="aclEntityCache"/>
-      <property name="authorityCache" ref="authorityEntityCache"/>
-      <property name="permissionCache" ref="permissionEntityCache"/>
+      <property name="aclEntityCache" ref="aclEntityCache"/>
+      <property name="authorityEntityCache" ref="authorityEntityCache"/>
+      <property name="permissionEntityCache" ref="permissionEntityCache"/>
    </bean>
    
    <bean id="aclDAO" class="org.alfresco.repo.domain.permissions.AclDAOImpl">

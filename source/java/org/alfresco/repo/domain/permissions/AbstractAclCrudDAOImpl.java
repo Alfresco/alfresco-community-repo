@@ -98,7 +98,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
      * VALUE: AclEntity<br/>
      * VALUE KEY: None<br/>
      */
-    private EntityLookupCache<Long, AclEntity, Serializable> aclCache;
+    private EntityLookupCache<Long, AclEntity, Serializable> aclEntityCache;
     
     /**
      * Cache for the Authority entity:<br/>
@@ -106,7 +106,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
      * VALUE: AuthorityEntity<br/>
      * VALUE KEY: Name<br/>
      */
-    private EntityLookupCache<Long, AuthorityEntity, String> authorityCache;
+    private EntityLookupCache<Long, AuthorityEntity, String> authorityEntityCache;
     
     /**
      * Cache for the Permission entity:<br/>
@@ -114,17 +114,17 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
      * VALUE: PermissionEntity<br/>
      * VALUE KEY: PermissionEntity (compound key: qnameId + name)<br/>
      */
-    private EntityLookupCache<Long, PermissionEntity, PermissionEntity> permissionCache;
+    private EntityLookupCache<Long, PermissionEntity, PermissionEntity> permissionEntityCache;
     
     /**
      * Set the cache to use for <b>alf_access_control_list</b> lookups (optional).
      * 
-     * @param aclCache            the cache of IDs to AclEntities
+     * @param aclEntityCache            the cache of IDs to AclEntities
      */
-    public void setAclCache(SimpleCache<Serializable, Object> aclCache)
+    public void setAclEntityCache(SimpleCache<Serializable, Object> aclEntityCache)
     {
-        this.aclCache = new EntityLookupCache<Long, AclEntity, Serializable>(
-                aclCache,
+        this.aclEntityCache = new EntityLookupCache<Long, AclEntity, Serializable>(
+                aclEntityCache,
                 CACHE_REGION_ACL,
                 aclEntityDaoCallback);
     }
@@ -132,12 +132,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     /**
      * Set the cache to use for <b>alf_authority</b> lookups (optional).
      * 
-     * @param authorityCache            the cache of IDs to AclEntities
+     * @param authorityEntityCache      the cache of IDs to AclEntities
      */
-    public void setAuthorityCache(SimpleCache<Serializable, Object> authorityCache)
+    public void setAuthorityEntityCache(SimpleCache<Serializable, Object> authorityEntityCache)
     {
-        this.authorityCache = new EntityLookupCache<Long, AuthorityEntity, String>(
-                authorityCache,
+        this.authorityEntityCache = new EntityLookupCache<Long, AuthorityEntity, String>(
+                authorityEntityCache,
                 CACHE_REGION_AUTHORITY,
                 authorityEntityDaoCallback);
     }
@@ -145,12 +145,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     /**
      * Set the cache to use for <b>alf_permission</b> lookups (optional).
      * 
-     * @param permissionCache            the cache of IDs to PermissionEntities
+     * @param permissionEntityCache     the cache of IDs to PermissionEntities
      */
-    public void setPermissionCache(SimpleCache<Serializable, Object> permissionCache)
+    public void setPermissionEntityCache(SimpleCache<Serializable, Object> permissionEntityCache)
     {
-        this.permissionCache = new EntityLookupCache<Long, PermissionEntity, PermissionEntity>(
-                permissionCache,
+        this.permissionEntityCache = new EntityLookupCache<Long, PermissionEntity, PermissionEntity>(
+                permissionEntityCache,
                 CACHE_REGION_PERMISSION,
                 permissionEntityDaoCallback);
     }
@@ -165,13 +165,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     public AbstractAclCrudDAOImpl()
     {
         this.aclEntityDaoCallback = new AclEntityCallbackDAO();
-        this.aclCache = new EntityLookupCache<Long, AclEntity, Serializable>(aclEntityDaoCallback);
+        this.aclEntityCache = new EntityLookupCache<Long, AclEntity, Serializable>(aclEntityDaoCallback);
         
         this.authorityEntityDaoCallback = new AuthorityEntityCallbackDAO();
-        this.authorityCache = new EntityLookupCache<Long, AuthorityEntity, String>(authorityEntityDaoCallback);
+        this.authorityEntityCache = new EntityLookupCache<Long, AuthorityEntity, String>(authorityEntityDaoCallback);
         
         this.permissionEntityDaoCallback = new PermissionEntityCallbackDAO();
-        this.permissionCache = new EntityLookupCache<Long, PermissionEntity, PermissionEntity>(permissionEntityDaoCallback);
+        this.permissionEntityCache = new EntityLookupCache<Long, PermissionEntity, PermissionEntity>(permissionEntityDaoCallback);
     }
     
     //
@@ -187,7 +187,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         
         entity.setVersion(0L);
         
-        Pair<Long, AclEntity> entityPair = aclCache.getOrCreateByValue(entity);
+        Pair<Long, AclEntity> entityPair = aclEntityCache.getOrCreateByValue(entity);
         return entityPair.getSecond();
     }
     
@@ -198,7 +198,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     private AclEntity getAclImpl(long id)
     {
-        Pair<Long, AclEntity> entityPair = aclCache.getByKey(id);
+        Pair<Long, AclEntity> entityPair = aclEntityCache.getByKey(id);
         if (entityPair == null)
         {
             return null;
@@ -261,7 +261,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         ParameterCheck.mandatory("entity.aclVersion", entity.getAclVersion());
         ParameterCheck.mandatory("entity.version", entity.getVersion());
         
-        int updated = aclCache.updateValue(entity.getId(), entity);
+        int updated = aclEntityCache.updateValue(entity.getId(), entity);
         if (updated < 1)
         {
             throw new ConcurrencyFailureException("AclEntity with ID (" + entity.getId() + ") no longer exists or has been updated concurrently");
@@ -270,13 +270,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     public void deleteAcl(long id)
     {
-        Pair<Long, AclEntity> entityPair = aclCache.getByKey(id);
+        Pair<Long, AclEntity> entityPair = aclEntityCache.getByKey(id);
         if (entityPair == null)
         {
             return;
         }
         
-        int deleted = aclCache.deleteByKey(id);
+        int deleted = aclEntityCache.deleteByKey(id);
         if (deleted < 1)
         {
             throw new ConcurrencyFailureException("AclEntity with ID " + id + " no longer exists");
@@ -640,7 +640,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             
             entity.setVersion(0L);
             
-            Pair<Long, PermissionEntity> entityPair = permissionCache.getOrCreateByValue(entity);
+            Pair<Long, PermissionEntity> entityPair = permissionEntityCache.getOrCreateByValue(entity);
             entity = entityPair.getSecond();
         }
         return entity;
@@ -648,7 +648,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     public Permission getPermission(long id)
     {
-        Pair<Long, PermissionEntity> entityPair = permissionCache.getByKey(id);
+        Pair<Long, PermissionEntity> entityPair = permissionEntityCache.getByKey(id);
         if (entityPair == null)
         {
             return null;
@@ -674,7 +674,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             Long qnameId  = qnamePair.getFirst();
             
             PermissionEntity permission = new PermissionEntity(qnameId, permissionReference.getName());
-            Pair<Long, PermissionEntity> entityPair = permissionCache.getByValue(permission);
+            Pair<Long, PermissionEntity> entityPair = permissionEntityCache.getByValue(permission);
             if (entityPair != null)
             {
                 entity = entityPair.getSecond();
@@ -727,7 +727,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             permission.setTypeQNameId(newTypeQNameId);
             permission.setName(newName);
             
-            int updated = permissionCache.updateValue(permission.getId(), permission);
+            int updated = permissionEntityCache.updateValue(permission.getId(), permission);
             if (updated < 1)
             {
                 throw new ConcurrencyFailureException("PermissionEntity with ID (" + permission.getId() + ") no longer exists or has been updated concurrently");
@@ -737,13 +737,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     public void deletePermission(long id)
     {
-        Pair<Long, PermissionEntity> entityPair = permissionCache.getByKey(id);
+        Pair<Long, PermissionEntity> entityPair = permissionEntityCache.getByKey(id);
         if (entityPair == null)
         {
             return;
         }
         
-        int deleted = permissionCache.deleteByKey(id);
+        int deleted = permissionEntityCache.deleteByKey(id);
         if (deleted < 1)
         {
             throw new ConcurrencyFailureException("PermissionEntity with ID " + id + " no longer exists");
@@ -829,13 +829,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         
         entity.setVersion(0L);
         
-        Pair<Long, AuthorityEntity> entityPair = authorityCache.getOrCreateByValue(entity);
+        Pair<Long, AuthorityEntity> entityPair = authorityEntityCache.getOrCreateByValue(entity);
         return entityPair.getSecond();
     }
     
     public Authority getAuthority(long id)
     {
-        Pair<Long, AuthorityEntity> entityPair = authorityCache.getByKey(id);
+        Pair<Long, AuthorityEntity> entityPair = authorityEntityCache.getByKey(id);
         if (entityPair == null)
         {
             return null;
@@ -855,7 +855,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         AuthorityEntity authority = new AuthorityEntity();
         authority.setAuthority(authorityName);
         
-        Pair<Long, AuthorityEntity> entityPair = authorityCache.getByValue(authority);
+        Pair<Long, AuthorityEntity> entityPair = authorityEntityCache.getByValue(authority);
         if (entityPair == null)
         {
             return null;
@@ -904,7 +904,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             entity.setAuthority(after);
             entity.setCrc(CrcHelper.getStringCrcPair(after, 32, true, true).getSecond());
             
-            int updated = authorityCache.updateValue(entity.getId(), entity);
+            int updated = authorityEntityCache.updateValue(entity.getId(), entity);
             if (updated < 1)
             {
                 throw new ConcurrencyFailureException("AuthorityEntity with ID (" + entity.getId() + ") no longer exists or has been updated concurrently");
@@ -914,13 +914,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     public void deleteAuthority(long id)
     {
-        Pair<Long, AuthorityEntity> entityPair = authorityCache.getByKey(id);
+        Pair<Long, AuthorityEntity> entityPair = authorityEntityCache.getByKey(id);
         if (entityPair == null)
         {
             return;
         }
         
-        int deleted = authorityCache.deleteByKey(id);
+        int deleted = authorityEntityCache.deleteByKey(id);
         if (deleted < 1)
         {
             throw new ConcurrencyFailureException("AuthorityEntity with ID " + id + " no longer exists");

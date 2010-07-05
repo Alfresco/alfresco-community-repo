@@ -116,7 +116,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                     if(child.isPrimary())
                     {
                         /**
-                         * yes its a primary assoc
+                         * yes it is a primary assoc
                          * should it be there ?
                          */
                         NodeRef childNodeRef = child.getChildRef();
@@ -128,11 +128,10 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                              * it needs to be deleted.  If it is a local node then we don't 
                              * touch it. 
                              */
-                            log.debug("unexpected child:" + child);
-                            if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED));
+                            log.debug("an unexpected child node:" + child);
+                            if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED))
                             {
-                                // Destination 
-//                                log.debug("destination node has been transferred");                               
+                                // Destination node needs to be deleted.                              
                                 nodeService.deleteNode(childNodeRef);
                                 log.debug("deleted node:" + childNodeRef);
                             }

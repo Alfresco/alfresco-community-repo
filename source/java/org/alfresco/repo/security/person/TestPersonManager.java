@@ -62,7 +62,6 @@ public class TestPersonManager
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            @Override
             public NodeRef doWork() throws Exception
             {
                 if (authenticationService.authenticationExists(userName) == false)
@@ -114,7 +113,6 @@ public class TestPersonManager
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
                 {
-            @Override
             public Void doWork() throws Exception
             {
                 for (String user : people.keySet()) {

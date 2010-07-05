@@ -963,6 +963,18 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the node was created correctly
         checkContentDetails(newNode, name, title, mimetype, content);
         
+        // get the form for the new content and check the form data
+        List<String> fields = new ArrayList<String>(2);
+        fields.add("cm:name");
+        fields.add("cm:content");
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, newNode.toString()), fields);
+        assertNotNull(form);
+        assertEquals(name, form.getFormData().getFieldData("prop_cm_name").getValue().toString());
+        String contentUrl = form.getFormData().getFieldData("prop_cm_content").getValue().toString();
+        assertTrue("Expected content url to contain mimetype", (contentUrl.indexOf("mimetype=") != -1));
+        assertTrue("Expected content url to contain encoding", (contentUrl.indexOf("encoding=") != -1));
+        assertTrue("Expected content url to contain size", (contentUrl.indexOf("size=") != -1));
+        
         // create another node without supplying the mimetype and check the details
         String name2 = "created2-" + this.documentName;
         data = createContentFormData(name2, title, null, content);

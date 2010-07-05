@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.AssociationFieldDefinition;
 import org.alfresco.repo.forms.FieldDefinition;
@@ -69,6 +68,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.StringUtils;
 
 /**
@@ -328,6 +328,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 // a separate field for each value once we have full
                 // UI support in place.
                 propValue = StringUtils.collectionToCommaDelimitedString((List) propValue);
+            }
+            else if (propValue instanceof ContentData)
+            {
+                // for content properties retrieve the info URL rather than the
+                // the object value itself
+                propValue = ((ContentData)propValue).getInfoUrl();
             }
 
             form.addData(dataKeyName, propValue);

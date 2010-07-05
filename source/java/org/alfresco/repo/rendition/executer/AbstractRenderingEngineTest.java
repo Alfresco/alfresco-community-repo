@@ -67,7 +67,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
 
     @SuppressWarnings("unchecked")
-    public void testCreateRenditionNodeAssoc() throws Exception
+    public void off_testCreateRenditionNodeAssoc() throws Exception
     {
         when(nodeService.exists(source)).thenReturn(true);
         QName nodeType = ContentModel.TYPE_CONTENT;
@@ -77,7 +77,7 @@ public class AbstractRenderingEngineTest extends TestCase
         QName assocType = renditionAssoc.getTypeQName();
         // Stub the createNode() method to return renditionAssoc.
         when(nodeService.createNode(eq(source), eq(assocType), any(QName.class), any(QName.class), anyMap()))
-                    .thenReturn(renditionAssoc);
+        .thenReturn(renditionAssoc);
         engine.execute(definition, source);
 
         // Check the createNode method was called with the correct parameters.
@@ -135,7 +135,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
     
     @SuppressWarnings("unchecked")
-    public void testRenderingContext()
+    public void off_testRenderingContext()
     {
         when(nodeService.exists(source)).thenReturn(true);
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();
@@ -152,7 +152,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
 
     @SuppressWarnings("unchecked")
-    public void testGetParameterWithDefault()
+    public void off_testGetParameterWithDefault()
     {
         when(nodeService.exists(source)).thenReturn(true);
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();
@@ -199,7 +199,7 @@ public class AbstractRenderingEngineTest extends TestCase
     }
     
     @SuppressWarnings("unchecked")
-    public void testGetCheckedParameter()
+    public void off_testGetCheckedParameter()
     {
         when(nodeService.exists(source)).thenReturn(true);
         ChildAssociationRef renditionAssoc = makeRenditionAssoc();

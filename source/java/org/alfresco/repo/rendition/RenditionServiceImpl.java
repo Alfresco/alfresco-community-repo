@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -177,7 +177,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public ChildAssociationRef render(NodeRef sourceNode, RenditionDefinition definition)
     {
-        ChildAssociationRef result = createAndExecuteRenditionAction(sourceNode, definition, false);
+        ChildAssociationRef result = executeRenditionAction(sourceNode, definition, false);
         
         return result;
     }
@@ -189,21 +189,22 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         // asynchronously after this method returns.
         definition.setCallback(callback);
         
-        createAndExecuteRenditionAction(sourceNode, definition, true);
+        executeRenditionAction(sourceNode, definition, true);
         
         return;
     }
 
     /**
-     * This methods creates a containing 'perform-rendition' action, within which the renditions
-     * will be performed.
+     * This method delegates the execution of the specified RenditionDefinition
+     * to the {@link ActionService action service}.
      * 
      * @param sourceNode the source node which is to be rendered.
      * @param definition the rendition definition to be used.
-     * @param asynchronous
-     * @return
+     * @param asynchronous <code>true</code> for asynchronous execution,
+     *                     <code>false</code> for synchronous.
+     * @return the ChildAssociationRef whose child is the rendition node.
      */
-    private ChildAssociationRef createAndExecuteRenditionAction(NodeRef sourceNode,
+    private ChildAssociationRef executeRenditionAction(NodeRef sourceNode,
             RenditionDefinition definition, boolean asynchronous)
     {
         if (log.isDebugEnabled())
@@ -221,13 +222,10 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
                 .append(" with ").append(definition.getRenditionName());
             log.debug(msg.toString());
         }
-        Action performRenditionAction = actionService.createAction(PerformRenditionActionExecuter.NAME);
-        performRenditionAction.setParameterValue(PerformRenditionActionExecuter.PARAM_RENDITION_DEFINITION, definition);
-        
         final boolean checkConditions = false;
-        actionService.executeAction(performRenditionAction, sourceNode, checkConditions, asynchronous);
+        actionService.executeAction(definition, sourceNode, checkConditions, asynchronous);
         
-        ChildAssociationRef result = (ChildAssociationRef)performRenditionAction.getParameterValue(PerformRenditionActionExecuter.PARAM_RESULT);
+        ChildAssociationRef result = (ChildAssociationRef)definition.getParameterValue(ActionExecuter.PARAM_RESULT);
         return result;
     }
 

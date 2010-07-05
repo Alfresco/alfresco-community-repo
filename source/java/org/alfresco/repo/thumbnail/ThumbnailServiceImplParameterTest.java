@@ -31,18 +31,15 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.rendition.PerformRenditionActionExecuter;
 import org.alfresco.repo.rendition.RenditionServiceImpl;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
@@ -82,8 +79,6 @@ public class ThumbnailServiceImplParameterTest
     @Before
     public void initMockObjects()
     {
-        when(mockActionService.createAction(PerformRenditionActionExecuter.NAME))
-            .thenReturn(new ActionImpl(dummyNodeRef2, "id", PerformRenditionActionExecuter.NAME, new HashMap<String, Serializable>()));
         renditionService = new RenditionServiceImpl()
         {
             @Override
@@ -169,8 +164,8 @@ public class ThumbnailServiceImplParameterTest
         
         ArgumentCaptor<Action> argument = ArgumentCaptor.forClass(Action.class);
         verify(mockActionService).executeAction(argument.capture(), any(NodeRef.class), anyBoolean(), anyBoolean());
-        final Action performRenditionAction = argument.getValue();
-        final RenditionDefinition renditionDefn = (RenditionDefinition) performRenditionAction.getParameterValue(PerformRenditionActionExecuter.PARAM_RENDITION_DEFINITION);
+        final Action action = argument.getValue();
+        final RenditionDefinition renditionDefn = (RenditionDefinition)action;
         Map<String, Serializable> parameters = renditionDefn.getParameterValues();
         
         for (String s : parametersUnderTest.keySet())

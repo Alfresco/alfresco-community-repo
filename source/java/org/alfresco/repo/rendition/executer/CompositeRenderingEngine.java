@@ -23,6 +23,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.rendition.CompositeRenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,13 +51,11 @@ public class CompositeRenderingEngine extends AbstractRenderingEngine
     private ActionService actionService;
 
     /*
-     * @see
-     * org.alfresco.repo.rendition.executer.AbstractRenderingEngine#executeImpl
-     * (org.alfresco.service.cmr.action.Action,
-     * org.alfresco.service.cmr.repository.NodeRef)
+     * (non-Javadoc)
+     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#executeRenditionImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef sourceNode)
+    protected void executeRenditionImpl(Action action, NodeRef sourceNode)
     {
         checkSourceNodeExists(sourceNode);
         if (action instanceof CompositeRenditionDefinition)
@@ -95,6 +94,13 @@ public class CompositeRenderingEngine extends AbstractRenderingEngine
         return result;
     }
 
+    /**
+     * Executes the specified subdefinition. Note that each of these component rendition definitions
+     * will be executed with the {@link RenditionService#PARAM_IS_COMPONENT_RENDITION is-component-rendition}
+     * flag set to true. This is so that the common pre- and post-rendition code in
+     * {@link AbstractRenderingEngine#executeImpl(Action, NodeRef)} will only be executed at the start
+     * and at the end of the chain of components.
+     */
     private ChildAssociationRef executeSubDefinition(NodeRef source,//
                 RenditionDefinition subDefinition,//
                 NodeRef parent,//
@@ -102,6 +108,8 @@ public class CompositeRenderingEngine extends AbstractRenderingEngine
     {
         subDefinition.setRenditionParent(parent);
         subDefinition.setRenditionAssociationType(assocType);
+
+        subDefinition.setParameterValue(RenditionService.PARAM_IS_COMPONENT_RENDITION, true);
         actionService.executeAction(subDefinition, source);
         ChildAssociationRef newResult = (ChildAssociationRef) subDefinition.getParameterValue(PARAM_RESULT);
         return newResult;

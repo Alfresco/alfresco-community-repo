@@ -18,26 +18,45 @@
  */
 package org.alfresco.repo.rendition.executer;
 
-import static org.alfresco.service.cmr.rendition.RenditionService.*;
+import static org.alfresco.model.ContentModel.PROP_NODE_DBID;
+import static org.alfresco.model.ContentModel.PROP_NODE_REF;
+import static org.alfresco.model.ContentModel.PROP_NODE_UUID;
+import static org.alfresco.model.ContentModel.PROP_STORE_IDENTIFIER;
+import static org.alfresco.model.ContentModel.PROP_STORE_NAME;
+import static org.alfresco.model.ContentModel.PROP_STORE_PROTOCOL;
+import static org.alfresco.service.cmr.rendition.RenditionService.PARAM_DESTINATION_PATH_TEMPLATE;
+import static org.alfresco.service.cmr.rendition.RenditionService.PARAM_IS_COMPONENT_RENDITION;
+import static org.alfresco.service.cmr.rendition.RenditionService.PARAM_ORPHAN_EXISTING_RENDITION;
+import static org.alfresco.service.cmr.rendition.RenditionService.PARAM_RENDITION_NODETYPE;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.rendition.RenderingEngineDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionDefinitionImpl;
+import org.alfresco.repo.rendition.RenditionLocation;
+import org.alfresco.repo.rendition.RenditionLocationResolver;
+import org.alfresco.repo.rendition.RenditionNodeManager;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.rendition.NodeLocator;
+import org.alfresco.service.cmr.rendition.RenderCallback;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -68,8 +87,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /** Logger */
     private static Log logger = LogFactory.getLog(AbstractRenderingEngine.class);
+    private static final String LINE_BREAK = System.getProperty("line.separator", "\n");
 
     protected static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Cannot find Content Reader for document. Operation can't be performed";
+    private static final String DEFAULT_RUN_AS_NAME = AuthenticationUtil.getSystemUserName();
 
     // A word on the default* fields below:
     //
@@ -117,7 +138,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /* Injected Services */
     protected ContentService contentService;
     protected MimetypeMap mimetypeMap;
-    protected NodeService nodeService;
 
     /* Parameter names common to all Rendering Actions */
     /**
@@ -173,6 +193,70 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      */
     public static final String PARAM_ENCODING = "encoding";
 
+    private static final List<QName> unchangedProperties = Arrays.asList(PROP_NODE_DBID, PROP_NODE_REF, PROP_NODE_UUID,
+            PROP_STORE_IDENTIFIER, PROP_STORE_NAME, PROP_STORE_PROTOCOL);
+	/**
+	 * Default {@link NodeLocator} simply returns the source node.
+	 */
+	private final static NodeLocator defaultNodeLocator = new NodeLocator()
+	{
+	    public NodeRef getNode(NodeRef sourceNode, Map<String, Serializable> params)
+	    {
+	        return sourceNode;
+	    }
+	};
+	
+	/*
+	 * Injected beans
+	 */
+	private RenditionLocationResolver renditionLocationResolver;
+	protected NodeService nodeService;
+	private RenditionService renditionService;
+	
+	private final NodeLocator temporaryParentNodeLocator;
+	private final QName temporaryRenditionLinkType;
+
+    /**
+     * Injects the nodeService bean.
+     * 
+     * @param nodeService
+     *            the nodeService.
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Injects the renditionService bean.
+     * 
+     * @param renditionService
+     */
+    public void setRenditionService(RenditionService renditionService)
+    {
+        this.renditionService = renditionService;
+    }
+
+    public void setRenditionLocationResolver(RenditionLocationResolver renditionLocationResolver)
+    {
+        this.renditionLocationResolver = renditionLocationResolver;
+    }
+    
+    public AbstractRenderingEngine(NodeLocator temporaryParentNodeLocator, QName temporaryRenditionLinkType)
+    {
+        this.temporaryParentNodeLocator = temporaryParentNodeLocator != null ? temporaryParentNodeLocator
+                    : defaultNodeLocator;
+        this.temporaryRenditionLinkType = temporaryRenditionLinkType != null ? temporaryRenditionLinkType
+                    : RenditionModel.ASSOC_RENDITION;
+    }
+
+    public AbstractRenderingEngine()
+    {
+        this(null, null);
+    }
+
+
+    
     /**
      * Sets the default rendition-node type.
      * 
@@ -272,16 +356,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         this.contentService = contentService;
     }
 
-    /**
-     * This method sets the nodeService.
-     * 
-     * @param nodeService the namespaceService
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
     public void setMimetypeMap(MimetypeMap mimetypeMap)
     {
         this.mimetypeMap = mimetypeMap;
@@ -294,7 +368,82 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     @Override
-    protected void executeImpl(Action action, NodeRef sourceNode)
+    protected void executeImpl(final Action action, final NodeRef sourceNode)
+    {
+    	final RenditionDefinition renditionDef = (RenditionDefinition)action;
+    	
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Rendering node ").append(sourceNode).append(" with rendition definition ").append(
+            		renditionDef.getRenditionName());
+            msg.append("\n").append("  parameters:").append("\n");
+            if (renditionDef.getParameterValues().isEmpty() == false)
+            {
+            	for (String paramKey : renditionDef.getParameterValues().keySet())
+            	{
+            		msg.append("    ").append(paramKey).append("=").append(renditionDef.getParameterValue(paramKey)).append("\n");
+            	}
+            }
+            else
+            {
+            	msg.append("    [None]");
+            }
+            logger.debug(msg.toString());
+        }
+
+        Serializable runAsParam = action.getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS);
+        String runAsName = runAsParam == null ? DEFAULT_RUN_AS_NAME : (String) runAsParam;
+
+        // Renditions should all be created by system by default.
+        // When renditions are created by a user and are to be created under a
+        // node
+        // other than the source node, it is possible that the user will not
+        // have
+        // permissions to create content under that node.
+        // For that reason, we execute all rendition actions as system
+        // by default.
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+            	ChildAssociationRef result = null;
+            	try
+            	{
+					boolean isComponentRendition = isComponentRendition(action);
+					if (isComponentRendition == false)
+					{
+						preRendition(renditionDef, sourceNode);
+					}
+
+					executeRenditionImpl(action, sourceNode);
+					result = (ChildAssociationRef)action.getParameterValue(PARAM_RESULT);
+
+					if (isComponentRendition == false)
+					{
+						postRendition(renditionDef, sourceNode, result);
+					}
+				} catch (Throwable t)
+	            {
+	                notifyCallbackOfException(renditionDef, t);
+	                throwWrappedException(t);
+	            }
+	            if (result != null)
+	            {
+	                notifyCallbackOfResult(renditionDef, result);
+	            }
+	            	return null;
+	            }
+        }, runAsName);
+    }
+
+	private boolean isComponentRendition(Action action) {
+		Serializable s = action.getParameterValue(PARAM_IS_COMPONENT_RENDITION);
+		boolean result = s == null ? false : (Boolean)s;
+		return result;
+	}
+    
+    protected void executeRenditionImpl(Action action, NodeRef sourceNode)
     {
     	if (logger.isDebugEnabled())
     	{
@@ -448,6 +597,12 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
         paramList.add(new ParameterDefinitionImpl(PARAM_ORPHAN_EXISTING_RENDITION, DataTypeDefinition.BOOLEAN, false,
         		getParamDisplayLabel(PARAM_ORPHAN_EXISTING_RENDITION)));
+
+        paramList.add(new ParameterDefinitionImpl(PARAM_RESULT, DataTypeDefinition.CHILD_ASSOC_REF, false,
+                getParamDisplayLabel(PARAM_RESULT)));
+
+        paramList.add(new ParameterDefinitionImpl(PARAM_IS_COMPONENT_RENDITION, DataTypeDefinition.BOOLEAN, false,
+        		getParamDisplayLabel(PARAM_IS_COMPONENT_RENDITION)));
         return paramList;
     }
 
@@ -638,5 +793,251 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                 return number.intValue();
             }
         }
+    }
+    
+    
+    
+    
+    protected void preRendition(final RenditionDefinition renditionDef, final NodeRef actionedUponNodeRef)
+    {
+        setTemporaryRenditionProperties(actionedUponNodeRef, renditionDef);
+
+        // Adds the 'Renditioned' aspect to the source node if it
+        // doesn't exist.
+        if (!nodeService.hasAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED))
+        {
+            nodeService.addAspect(actionedUponNodeRef, RenditionModel.ASPECT_RENDITIONED, null);
+        }
+    }
+
+    protected void postRendition(final RenditionDefinition renditionDef, final NodeRef actionedUponNodeRef, ChildAssociationRef tempRendAssoc)
+    {
+        ChildAssociationRef result = createOrUpdateRendition(actionedUponNodeRef, tempRendAssoc, renditionDef);
+        renditionDef.setParameterValue(PARAM_RESULT, result);
+    }
+
+    protected void notifyCallbackOfException(RenditionDefinition renditionDefinition, Throwable t)
+    {
+    	// Rendition has failed. If there is a callback, it needs to be notified
+        if (renditionDefinition != null)
+        {
+            RenderCallback callback = renditionDefinition.getCallback();
+            if (callback != null)
+            {
+                callback.handleFailedRendition(t);
+            }
+        }
+    }
+
+    protected void throwWrappedException(Throwable t)
+    {
+    	// and rethrow Exception
+        if (t instanceof AlfrescoRuntimeException)
+        {
+            throw (AlfrescoRuntimeException) t;
+        } else
+        {
+            throw new RenditionServiceException(t.getMessage(), t);
+        }
+    }
+
+    protected void notifyCallbackOfResult(RenditionDefinition renditionDefinition, ChildAssociationRef result)
+    {
+        // Rendition was successful. Notify the callback object.
+        if (renditionDefinition != null)
+        {
+            RenderCallback callback = renditionDefinition.getCallback();
+            if (callback != null)
+            {
+                callback.handleSuccessfulRendition(result);
+            }
+        }
+    }
+
+    /**
+     * This method sets the temporary rendition parent node and the rendition assocType on the
+     * rendition definition.
+     * 
+     * @param sourceNode
+     * @param definition the rendition definition.
+     */
+    private void setTemporaryRenditionProperties(NodeRef sourceNode, RenditionDefinition definition)
+    {
+        // Set the parent and assoc type for the temporary rendition to be
+        // created.
+        NodeRef parent = temporaryParentNodeLocator.getNode(sourceNode, definition.getParameterValues());
+        definition.setRenditionParent(parent);
+        definition.setRenditionAssociationType(temporaryRenditionLinkType);
+    }
+
+    private ChildAssociationRef createOrUpdateRendition(NodeRef sourceNode, ChildAssociationRef tempRendition,
+                RenditionDefinition renditionDefinition)
+    {
+        NodeRef tempRenditionNode = tempRendition.getChildRef();
+        RenditionLocation renditionLocation = resolveRenditionLocation(sourceNode, renditionDefinition, tempRenditionNode);
+        QName renditionQName = renditionDefinition.getRenditionName();
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Creating/updating rendition based on:").append(LINE_BREAK).append("    sourceNode: ").append(
+                        sourceNode).append(LINE_BREAK).append("    tempRendition: ").append(tempRendition).append(
+                        LINE_BREAK).append("    parentNode: ").append(renditionLocation.getParentRef()).append(LINE_BREAK).append(
+                        "    childName: ").append(renditionLocation.getChildName()).append(LINE_BREAK).append(
+                        "    renditionDefinition.name: ").append(renditionQName);
+            logger.debug(msg.toString());
+        }
+        NodeRef oldRendition=getOldRenditionIfExists(sourceNode, renditionDefinition);
+        
+        RenditionNodeManager renditionNodeManager = new RenditionNodeManager(sourceNode, oldRendition,
+                renditionLocation, renditionDefinition, nodeService);
+        ChildAssociationRef primaryAssoc = renditionNodeManager.findOrCreateRenditionNode();
+
+        // Copy relevant properties from the temporary node to the new rendition
+        // node.
+        NodeRef renditionNode = primaryAssoc.getChildRef();
+        transferNodeProperties(tempRenditionNode, renditionNode);
+
+        // Set the name property on the rendition if it has not already been
+        // set.
+        String renditionName = getRenditionName(tempRenditionNode, renditionLocation, renditionDefinition);
+        nodeService.setProperty(renditionNode, ContentModel.PROP_NAME, renditionName);
+
+        // Delete the temporary rendition.
+        nodeService.removeChildAssociation(tempRendition);
+
+        // Handle the rendition aspects
+        manageRenditionAspects(sourceNode, primaryAssoc);
+        ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionQName);
+        if (renditionAssoc == null)
+        {
+            String msg = "A rendition of type: " + renditionQName + " should have been created for source node: "
+                        + sourceNode;
+            throw new RenditionServiceException(msg);
+        }
+        return renditionAssoc;
+    }
+
+    /**
+     * This method returns the rendition on the given sourceNode with the given renditionDefinition, if such
+     * a rendition exists.
+     * 
+     * @param sourceNode
+     * @param renditionDefinition
+     * @return the rendition node if one exists, else null.
+     */
+    private NodeRef getOldRenditionIfExists(NodeRef sourceNode, RenditionDefinition renditionDefinition)
+    {
+        QName renditionName=renditionDefinition.getRenditionName();
+        ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionName);
+        
+        NodeRef result = (renditionAssoc == null) ? null : renditionAssoc.getChildRef();
+        if (logger.isDebugEnabled())
+        {
+        	StringBuilder msg = new StringBuilder();
+        	msg.append("Existing rendition with name ")
+        	   .append(renditionName)
+        	   .append(": ")
+        	   .append(result);
+        	logger.debug(msg.toString());
+        }
+        
+        return result;
+    }
+
+    /**
+     * This method manages the <code>rn:rendition</code> aspects on the rendition node. It applies the
+     * correct rendition aspect based on the rendition node's location and removes any out-of-date rendition
+     * aspect.
+     */
+    private void manageRenditionAspects(NodeRef sourceNode, ChildAssociationRef renditionParentAssoc)
+    {
+        NodeRef renditionNode = renditionParentAssoc.getChildRef();
+        NodeRef primaryParent = renditionParentAssoc.getParentRef();
+
+        // If the rendition is located directly underneath its own source node
+        if (primaryParent.equals(sourceNode))
+        {
+            // It should be a 'hidden' rendition.
+            nodeService.addAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION, null);
+            nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION);
+            // We remove the other aspect to cover the potential case where a
+            // rendition
+            // has been updated in a different location.
+        } else
+        {
+            // Renditions stored underneath any node other than their source are
+            // 'visible'.
+            nodeService.addAspect(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION, null);
+            nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_HIDDEN_RENDITION);
+        }
+    }
+
+    /**
+     * This method calculates the name for a rendition node. The following approaches are attempted in
+     * the order given below.
+     * <ol>
+     *    <li>If a name is defined in the {@link RenditionLocation} then that is used.</li>
+     *    <li>If the temporary rendition has a <code>cm:name</code> value, then that is used.</li>
+     *    <li>Otherwise use the rendition definition's rendition name.</li>
+     * </ol>
+     * 
+     * @param tempRenditionNode the temporary rendition node.
+     * @param location a RenditionLocation struct.
+     * @param renditionDefinition the rendition definition.
+     * @return the name for the rendition.
+     */
+    private String getRenditionName(NodeRef tempRenditionNode, RenditionLocation location,
+                RenditionDefinition renditionDefinition)
+    {
+        // If a location name is set then use it.
+        String locName = location.getChildName();
+        if (locName != null && locName.length() > 0)
+        {
+            return locName;
+        }
+        // Else if the temporary rendition specifies a name property use that.
+        Serializable tempName = nodeService.getProperty(tempRenditionNode, ContentModel.PROP_NAME);
+        if (tempName != null)
+        {
+            return (String) tempName;
+        }
+        // Otherwise use the rendition definition local name.
+        return renditionDefinition.getRenditionName().getLocalName();
+    }
+
+    /**
+     * This method copies properties from the sourceNode onto the targetNode as well as the node type.
+     * {@link NewPerformRenditionActionExecuter#unchangedProperties Some properties} are not copied.
+     * 
+     * @param sourceNode the node from which the type and properties should be copied.
+     * @param targetNode the node to which the type and properties are copied.
+     */
+    private void transferNodeProperties(NodeRef sourceNode, NodeRef targetNode)
+    {
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Transferring some properties from ").append(sourceNode).append(" to ").append(targetNode);
+            logger.debug(msg.toString());
+        }
+
+        QName type = nodeService.getType(sourceNode);
+        nodeService.setType(targetNode, type);
+        Map<QName, Serializable> newProps = nodeService.getProperties(sourceNode);
+        for (QName propKey : unchangedProperties)
+        {
+            newProps.remove(propKey);
+        }
+        nodeService.setProperties(targetNode, newProps);
+    }
+
+    /**
+     * Given a rendition definition, a source node and a temporary rendition node, this method uses a
+     * {@link RenditionLocationResolver} to calculate the {@link RenditionLocation} of the rendition.
+     */
+    private RenditionLocation resolveRenditionLocation(NodeRef sourceNode, RenditionDefinition definition,
+                NodeRef tempRendition)
+    {
+        return renditionLocationResolver.getRenditionLocation(sourceNode, definition, tempRendition);
     }
 }

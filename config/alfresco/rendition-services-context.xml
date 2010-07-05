@@ -47,14 +47,12 @@
         <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
 	</bean>
 
+    <!-- From Alfresco 3.4 onwards, this bean is deprecated and should not be used. -->
     <bean id="perform-rendition" class="org.alfresco.repo.rendition.PerformRenditionActionExecuter" parent="action-executer">
        <property name="publicAction">
           <value>false</value>
        </property>
-       <property name="nodeService" ref="NodeService" />
        <property name="actionService" ref="ActionService"/>
-       <property name="renditionService" ref="RenditionService" />
-       <property name="renditionLocationResolver" ref="renditionLocationResolver" />
     </bean>
 
     <bean id="renditionDefinitionPersister" class="org.alfresco.repo.rendition.RenditionDefinitionPersisterImpl" >
@@ -91,9 +89,6 @@
       <property name="defaultRenditionNodeType"
          value="{http://www.alfresco.org/model/content/1.0}content" />
       <property name="mimetypeMap" ref="mimetypeService" />
-      <property name="nodeService">
-         <ref bean="NodeService" />
-      </property>
       <property name="contentService">
          <ref bean="ContentService" />
       </property>
@@ -102,6 +97,9 @@
             <value>{http://www.alfresco.org/model/content/1.0}content</value>
          </list>
       </property>
+       <property name="nodeService" ref="NodeService" />
+       <property name="renditionService" ref="RenditionService" />
+       <property name="renditionLocationResolver" ref="renditionLocationResolver" />
    </bean>
 
    <bean id="baseTemplateRenderingAction" abstract="true" parent="baseRenderingAction"

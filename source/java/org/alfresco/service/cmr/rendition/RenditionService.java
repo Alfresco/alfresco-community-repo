@@ -72,7 +72,15 @@ public interface RenditionService extends RenditionDefinitionPersister
      * source node to the old rendition will be deleted.
      */
     public static final String PARAM_ORPHAN_EXISTING_RENDITION = "orphan-existing-rendition";
-    
+
+    /**
+     * This optional boolean parameter specified whether the rendition is a component within
+     * a composite rendition. Such component renditions should not execute the standard
+     * pre- and post-rendition behaviour as it will be taken care of by the CompositeRenderingEngine's
+     * execution.
+     */
+    public static final String PARAM_IS_COMPONENT_RENDITION = "is-component-rendition";
+
     /**
      * Returns the {@link RenderingEngineDefinition} associated with the
      * specified rendering engine name.

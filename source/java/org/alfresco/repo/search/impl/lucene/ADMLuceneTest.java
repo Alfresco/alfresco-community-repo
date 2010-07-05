@@ -1228,6 +1228,38 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, "modified:*", 2, Arrays.asList(new NodeRef[]{n14,n15}));
         ftsQueryWithCount(searcher, "modified:[MIN TO NOW]", 2, Arrays.asList(new NodeRef[]{n14,n15}));
     }
+    
+    
+    private ADMLuceneSearcherImpl buildSearcher()
+    {
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+        return searcher;
+    }
+    
+    public void testFTSandSort() throws Exception
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+        ADMLuceneSearcherImpl searcher = buildSearcher();
+        
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery( "PATH:\"//.\"");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("@"+ContentModel.PROP_CONTENT.toString()+".size", true);
+        ResultSet results = searcher.query(sp);
+        assertEquals(16, results.length());
+        results.close();
+    }
 
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
     {
@@ -2960,6 +2992,10 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         }
         results.close();
 
+        // sort by content size
+        
+        
+        
         // sort by ML text
 
         //Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH, Locale.CHINESE };
@@ -3030,6 +3066,58 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         luceneFTS.resume();
+        
+
+        // sort by content size
+        
+        SearchParameters sp20 = new SearchParameters();
+        sp20.addStore(rootNodeRef.getStoreRef());
+        sp20.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp20.setQuery("PATH:\"//.\"");
+        sp20.addSort("@" + ContentModel.PROP_CONTENT+".size", false);
+        results = searcher.query(sp20);
+
+        Long size = null;
+        for (ResultSetRow row : results)
+        {
+            ContentData currentBun = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_CONTENT));
+            // System.out.println(currentBun);
+            if ((size != null) && (currentBun != null))
+            {
+                assertTrue(size.compareTo(currentBun.getSize()) >= 0);
+            }
+            if(currentBun != null)
+            {
+                size = currentBun.getSize();
+            }
+        }
+        results.close();
+        
+        // sort by content mimetype
+        
+        SearchParameters sp21 = new SearchParameters();
+        sp21.addStore(rootNodeRef.getStoreRef());
+        sp21.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp21.setQuery("PATH:\"//.\"");
+        sp21.addSort("@" + ContentModel.PROP_CONTENT+".mimetype", false);
+        results = searcher.query(sp21);
+
+        String mimetype = null;
+        for (ResultSetRow row : results)
+        {
+            ContentData currentBun = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_CONTENT));
+            // System.out.println(currentBun);
+            if ((mimetype != null) && (currentBun != null))
+            {
+                assertTrue(mimetype.compareTo(currentBun.getMimetype()) >= 0);
+            }
+            if(currentBun != null)
+            {
+                mimetype = currentBun.getMimetype();
+            }
+        }
+        results.close();
+
     }
 
     /**

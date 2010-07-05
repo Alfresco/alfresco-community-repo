@@ -316,85 +316,112 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                 field = expandAttributeFieldName(field);
                                 PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
 
-                                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
-                                {
-                                    throw new SearcherException("Order on content properties is not curently supported");
-                                }
-                                else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
-                                        || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
-                                {
-                                    List<Locale> locales = searchParameters.getLocales();
-                                    if (((locales == null) || (locales.size() == 0)))
+                                // Handle .size and .mimetype
+                                if(propertyDef == null)
+                                {   
+                                    if(field.endsWith(".size"))
                                     {
-                                        locales = Collections.singletonList(I18NUtil.getLocale());
-                                    }
-
-                                    if (locales.size() > 1)
-                                    {
-                                        throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
-                                    }
-
-                                    sortLocale = locales.get(0);
-                                    // find best field match
-
-                                    MLAnalysisMode analysisMode = getLuceneConfig().getDefaultMLSearchAnalysisMode();
-                                    HashSet<String> allowableLocales = new HashSet<String>();
-                                    for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
-                                    {
-                                        allowableLocales.add(l.toString());
-                                    }
-
-                                    String sortField = field;
-
-                                    for (Object current : searcher.getReader().getFieldNames(FieldOption.INDEXED))
-                                    {
-                                        String currentString = (String) current;
-                                        if (currentString.startsWith(field) && currentString.endsWith(".sort"))
+                                        propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1, field.length()-5)));
+                                        if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
                                         {
-                                            String fieldLocale = currentString.substring(field.length() + 1, currentString.length() - 5);
-                                            if (allowableLocales.contains(fieldLocale))
+                                            throw new SearcherException("Order for .size only supported on content properties");
+                                        }
+                                    }
+                                    else if (field.endsWith(".mimetype"))
+                                    {
+                                        propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1, field.length()-9)));
+                                        if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                                        {
+                                            throw new SearcherException("Order for .mimetype only supported on content properties");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // nothing
+                                    }
+                                }
+                                else
+                                {
+                                    if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                                    {
+                                        throw new SearcherException("Order on content properties is not curently supported");
+                                    }
+                                    else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                                            || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+                                    {
+                                        List<Locale> locales = searchParameters.getLocales();
+                                        if (((locales == null) || (locales.size() == 0)))
+                                        {
+                                            locales = Collections.singletonList(I18NUtil.getLocale());
+                                        }
+
+                                        if (locales.size() > 1)
+                                        {
+                                            throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
+                                        }
+
+                                        sortLocale = locales.get(0);
+                                        // find best field match
+
+                                        MLAnalysisMode analysisMode = getLuceneConfig().getDefaultMLSearchAnalysisMode();
+                                        HashSet<String> allowableLocales = new HashSet<String>();
+                                        for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
+                                        {
+                                            allowableLocales.add(l.toString());
+                                        }
+
+                                        String sortField = field;
+
+                                        for (Object current : searcher.getReader().getFieldNames(FieldOption.INDEXED))
+                                        {
+                                            String currentString = (String) current;
+                                            if (currentString.startsWith(field) && currentString.endsWith(".sort"))
                                             {
-                                                if (fieldLocale.equals(sortLocale.toString()))
+                                                String fieldLocale = currentString.substring(field.length() + 1, currentString.length() - 5);
+                                                if (allowableLocales.contains(fieldLocale))
                                                 {
-                                                    sortField = currentString;
-                                                    break;
-                                                }
-                                                else if (sortLocale.toString().startsWith(fieldLocale))
-                                                {
-                                                    if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                                    if (fieldLocale.equals(sortLocale.toString()))
                                                     {
                                                         sortField = currentString;
+                                                        break;
                                                     }
-                                                }
-                                                else if (fieldLocale.startsWith(sortLocale.toString()))
-                                                {
-                                                    if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                                    else if (sortLocale.toString().startsWith(fieldLocale))
                                                     {
-                                                        sortField = currentString;
+                                                        if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                                        {
+                                                            sortField = currentString;
+                                                        }
+                                                    }
+                                                    else if (fieldLocale.startsWith(sortLocale.toString()))
+                                                    {
+                                                        if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                                        {
+                                                            sortField = currentString;
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
+
+                                        field = sortField;
+
                                     }
-
-                                    field = sortField;
-
-                                }
-                                else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
-                                {
-                                    DataTypeDefinition dataType = propertyDef.getDataType();
-                                    String analyserClassName = dataType.getAnalyserClassName();
-                                    if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
+                                    else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
                                     {
-                                        field = field + ".sort";
-                                    }
-                                    else
-                                    {
-                                        requiresPostSort = true;
+                                        DataTypeDefinition dataType = propertyDef.getDataType();
+                                        String analyserClassName = dataType.getAnalyserClassName();
+                                        if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
+                                        {
+                                            field = field + ".sort";
+                                        }
+                                        else
+                                        {
+                                            requiresPostSort = true;
+                                        }
                                     }
                                 }
-
                             }
+                            
                             if (fieldHasTerm(searcher.getReader(), field))
                             {
                                 fields[index++] = new SortField(field, sortLocale, !sd.isAscending());

@@ -108,6 +108,26 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
             }
             normalNode.setParentAssocs(mappedParentAssocs);
         }
+        
+        /**
+         * Fiddle with the child assocs
+         */
+        if (newNode instanceof TransferManifestNormalNode)
+        {
+            TransferManifestNormalNode normalNode = (TransferManifestNormalNode) newNode;
+            List<ChildAssociationRef> assocs = normalNode.getChildAssocs();
+            List<ChildAssociationRef> mappedChildAssocs = new ArrayList<ChildAssociationRef>();
+            for (ChildAssociationRef assoc : assocs)
+            {
+                NodeRef before = assoc.getChildRef();
+                NodeRef mappedChildNodeRef = mapNodeRef(before);
+                
+                ChildAssociationRef replace = new ChildAssociationRef(assoc.getTypeQName(), mappedParentNodeRef,
+                        assoc.getQName(), mappedChildNodeRef, assoc.isPrimary(), assoc.getNthSibling());
+                mappedChildAssocs.add(replace);
+            }
+            normalNode.setChildAssocs(mappedChildAssocs);
+        }
 
         /**
          * Fiddle with the UUID property

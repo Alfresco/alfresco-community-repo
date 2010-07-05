@@ -387,6 +387,11 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 header.setNodeCount(Integer.parseInt(buffer.toString()));
                 buffer = null;
             }
+            else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_COMPLETE))
+            { 
+                TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
+                header.setComplete(true);
+            }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID))
             {
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");

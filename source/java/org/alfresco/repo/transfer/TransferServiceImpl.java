@@ -565,6 +565,7 @@ public class TransferServiceImpl implements TransferService
             header.setRepositoryId(descriptor.getId());
             header.setCreatedDate(new Date());
             header.setNodeCount(nodes.size());
+            header.setComplete(definition.isComplete());
             formatter.startTransferManifest(snapshotWriter);
             formatter.writeTransferManifestHeader(header);
             for(NodeRef nodeRef : nodes)

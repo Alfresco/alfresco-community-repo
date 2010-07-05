@@ -1855,6 +1855,497 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 //        } 
 //    }
 
+    /**
+     * Test the transfer method behaviour with respect to sync folders - sending a complete set of nodes and implying delete from
+     * absence of a node.
+     * 
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     * 
+     * Tree of nodes
+     * 
+     *      A1
+     *   |      |
+     *   A2     A3 (Content)
+     *   |
+     * A4 A5 (content)
+     * 
+     * Test steps - 
+     * 1 add A1
+     * 2 add A2, A3, A4, A5
+     * 3 remove A2 (A4 and A5 should cascade delete on source)
+     * 4 remove A3
+     * 5 add back A3
+     * 6 add A2, A4, A5
+     * 
+     */
+    public void testTransferSyncNodes() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "Hello";
+
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+          
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testTransferSyncNodes";
+        TransferTarget transferMe;
+        NodeRef A1NodeRef;
+        NodeRef A2NodeRef;
+        NodeRef A3NodeRef;
+        NodeRef A4NodeRef;
+        NodeRef A5NodeRef;
+        
+        NodeRef destNodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test nodes A1 through A5 that we will read and write
+             */
+            {
+                // Node A1
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                A1NodeRef = child.getChildRef();
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_NAME, name);
+            }
+       
+            {
+                // Node A2
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_FOLDER);
+                A2NodeRef = child.getChildRef();
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_NAME, "A2");
+            }
+            
+            {
+                // Node A3
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A3"), ContentModel.TYPE_CONTENT);
+                A3NodeRef = child.getChildRef();
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_NAME, "A3");
+            
+                ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A4
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A4"), ContentModel.TYPE_CONTENT);
+                A4NodeRef = child.getChildRef();
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
+            
+                ContentWriter writer = contentService.getWriter(A4NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A5
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_CONTENT);
+                A5NodeRef = child.getChildRef();
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
+            
+                ContentWriter writer = contentService.getWriter(A5NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+ 
+            // Create the transfer target if it does not already exist
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+
+        
+        /**
+         * Step 1.   Add Node A1.
+         */
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Node A with no children
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                definition.setNodes(nodes);
+                definition.setComplete(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
+            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
+            assertEquals("type is wrong", nodeService.getType(A1NodeRef), nodeService.getType(destNodeRef));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 2.   Add Node A2, A3, A4, A5.
+         */
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Node A 1-5
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                nodes.add(A2NodeRef);
+                nodes.add(A3NodeRef);
+                nodes.add(A4NodeRef);
+                nodes.add(A5NodeRef);
+                definition.setNodes(nodes);
+                definition.setComplete(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref A1 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertTrue("dest node ref A2 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A2NodeRef)));
+            assertTrue("dest node ref A3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A3NodeRef)));
+            assertTrue("dest node ref A4 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertTrue("dest node ref A5 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 3 - remove folder node A2
+         */
+        startNewTransaction();
+        try 
+        {
+            nodeService.deleteNode(A2NodeRef);
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Node A 1-5
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                //nodes.add(A2NodeRef);
+                nodes.add(A3NodeRef);
+                //nodes.add(A4NodeRef);
+                //nodes.add(A5NodeRef);
+                definition.setNodes(nodes);
+                definition.setComplete(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref A1 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertFalse("dest node ref A2 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A2NodeRef)));
+            assertTrue("dest node ref A3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A3NodeRef)));
+            assertFalse("dest node ref A4 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertFalse("dest node ref A5 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 4 - remove content node A3
+         */
+        startNewTransaction();
+        try 
+        {
+            nodeService.deleteNode(A3NodeRef);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Node A 1-5
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                //nodes.add(A2NodeRef);
+                //nodes.add(A3NodeRef);
+                //nodes.add(A4NodeRef);
+                //nodes.add(A5NodeRef);
+                definition.setNodes(nodes);
+                definition.setComplete(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref A1 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertFalse("dest node ref A2 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A2NodeRef)));
+            assertFalse("dest node ref A3 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A3NodeRef)));
+            assertFalse("dest node ref A4 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertFalse("dest node ref A5 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 5.   Add back A3.
+         */
+        startNewTransaction();
+        try 
+        {
+            ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A3"), ContentModel.TYPE_CONTENT);
+            A3NodeRef = child.getChildRef();
+            nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(A3NodeRef, ContentModel.PROP_NAME, "A3");
+        
+            ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Node A 1-5
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                //nodes.add(A2NodeRef);
+                nodes.add(A3NodeRef);
+                //nodes.add(A4NodeRef);
+                //nodes.add(A5NodeRef);
+                definition.setNodes(nodes);
+                definition.setComplete(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref A1 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertFalse("dest node ref A2 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A2NodeRef)));
+            assertTrue("dest node A3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A3NodeRef)));
+            assertFalse("dest node ref A4 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertFalse("dest node ref A5 has not been deleted", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 6.   add A2, A4, A5
+         */
+        startNewTransaction();
+        try 
+        {
+            
+            {
+                // Node A2
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_FOLDER);
+                A2NodeRef = child.getChildRef();
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_NAME, "A2");
+            }
+            
+
+            {
+                // Node A4
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A4"), ContentModel.TYPE_CONTENT);
+                A4NodeRef = child.getChildRef();
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
+            
+                ContentWriter writer = contentService.getWriter(A4NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A5
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_CONTENT);
+                A5NodeRef = child.getChildRef();
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
+            
+                ContentWriter writer = contentService.getWriter(A5NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Node A 1-5
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                nodes.add(A2NodeRef);
+                nodes.add(A3NodeRef);
+                nodes.add(A4NodeRef);
+                nodes.add(A5NodeRef);
+                definition.setNodes(nodes);
+                definition.setComplete(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node A1 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertTrue("dest node A2 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A2NodeRef)));
+            assertTrue("dest node A3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A3NodeRef)));
+            assertTrue("dest node A4 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertTrue("dest node A5 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+    }
 
     private TransferTarget createTransferTarget(String name)
     {

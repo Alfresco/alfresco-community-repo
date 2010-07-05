@@ -117,49 +117,64 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         {
             // Start Header
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                        ManifestModel.LOCALNAME_TRANSFER_HEADER, PREFIX + ":"
-                                    + ManifestModel.LOCALNAME_TRANSFER_HEADER, EMPTY_ATTRIBUTES);
+                    ManifestModel.LOCALNAME_TRANSFER_HEADER, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_TRANSFER_HEADER, EMPTY_ATTRIBUTES);
 
             // Created Date
             writer
-                        .startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                                    ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":"
-                                                + ManifestModel.LOCALNAME_HEADER_CREATED_DATE,
-                                    EMPTY_ATTRIBUTES);
+            .startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_CREATED_DATE,
+                    EMPTY_ATTRIBUTES);
             writeDate(header.getCreatedDate());
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                        ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":"
-                                    + ManifestModel.LOCALNAME_HEADER_CREATED_DATE);
-
+                    ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_CREATED_DATE);
+        }
+        
+        if(header.getNodeCount() > 0)
+        {
             // Node count
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                        ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":"
-                                    + ManifestModel.LOCALNAME_HEADER_NODE_COUNT, EMPTY_ATTRIBUTES);
+                ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":"
+                + ManifestModel.LOCALNAME_HEADER_NODE_COUNT, EMPTY_ATTRIBUTES);
             char[] nodeCountChars = Integer.toString(header.getNodeCount()).toCharArray();
             writer.characters(nodeCountChars, 0, nodeCountChars.length);
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                        ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":"
-                                    + ManifestModel.LOCALNAME_HEADER_NODE_COUNT);
-            
-            if(header.getRepositoryId() != null)
-            {
-                // Repository Id
-                writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":"
+                + ManifestModel.LOCALNAME_HEADER_NODE_COUNT);
+        }
+        
+        if(header.getRepositoryId() != null)
+        {
+            // Repository Id
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, PREFIX + ":"
-                                + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, EMPTY_ATTRIBUTES);
-                char[] repositoryId = header.getRepositoryId().toCharArray();
-                writer.characters(repositoryId, 0, repositoryId.length);
-                writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, EMPTY_ATTRIBUTES);
+            char[] repositoryId = header.getRepositoryId().toCharArray();
+            writer.characters(repositoryId, 0, repositoryId.length);
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID);
-            }
-                        
-
-            // End Header
-            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                        ManifestModel.LOCALNAME_TRANSFER_HEADER, PREFIX + ":"
-                                    + ManifestModel.LOCALNAME_TRANSFER_HEADER);
         }
+        
+        if(header.isComplete())
+        {
+            // Is this a complete transfer
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_COMPLETE, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_COMPLETE, EMPTY_ATTRIBUTES);
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_COMPLETE, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_COMPLETE);
+        }
+
+
+        // End Header
+        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                ManifestModel.LOCALNAME_TRANSFER_HEADER, PREFIX + ":"
+                + ManifestModel.LOCALNAME_TRANSFER_HEADER);
+
     }
 
     /**

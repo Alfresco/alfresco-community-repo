@@ -31,6 +31,7 @@ public class TransferManifestHeader
     private Date createdDate;
     private int nodeCount; 
     private String repositoryId;
+    private boolean isComplete;
     
     public void setCreatedDate(Date createDate)
     {
@@ -58,14 +59,32 @@ public class TransferManifestHeader
         this.nodeCount = nodeCount;
     }
 
+    /**
+     * The repository ID of this, the sending system
+     * @param repositoryId
+     */
     public void setRepositoryId(String repositoryId)
     {
         this.repositoryId = repositoryId;
     }
 
+    /**
+     * Get the repository ID of this, the sending system
+     * @return the repository Id
+     */
     public String getRepositoryId()
     {
         return repositoryId;
+    }
+
+    public void setComplete(boolean isComplete)
+    {
+        this.isComplete = isComplete;
+    }
+
+    public boolean isComplete()
+    {
+        return isComplete;
     }
 
     

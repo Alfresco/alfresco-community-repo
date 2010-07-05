@@ -357,6 +357,7 @@
                 <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
                 <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>
                 <prop key="spaces.rendition.rendering_actions.childname">${spaces.rendition.rendering_actions.childname}</prop>
+                <prop key="spaces.replication.replication_actions.childname">${spaces.replication.replication_actions.childname}</prop>
                 <prop key="spaces.wcm_deployed.childname">${spaces.wcm_deployed.childname}</prop>
             </props>
         </property>

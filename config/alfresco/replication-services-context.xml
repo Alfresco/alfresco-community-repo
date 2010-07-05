@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Replication Service -->
+
+   <bean id="ReplicationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.replication.ReplicationService</value>
+      </property>
+      <property name="target">
+         <ref bean="replicationService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="ReplicationService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref local="ReplicationService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Replication service transaction bean -->
+   <bean id="ReplicationService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Replication service security bean -->
+   <bean id="ReplicationService_security"
+      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+   <!-- Replication Service base bean -->
+	<bean id="replicationService" class="org.alfresco.repo.replication.ReplicationServiceImpl" >
+      <property name="nodeService" ref="NodeService" />
+      <property name="actionService" ref="ActionService"/>
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="transferService" ref="TransferService" />
+      <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
+	</bean>
+
+<!--
+   <bean id="perform-replication" class="org.alfresco.repo.replication.PerformReplicationActionExecuter" parent="action-executer">
+       <property name="publicAction">
+          <value>false</value>
+       </property>
+       <property name="nodeService" ref="NodeService" />
+       <property name="actionService" ref="ActionService"/>
+       <property name="replicationService" ref="replicationService" />
+       <property name="transferService" ref="TransferService" />
+    </bean>
+-->
+
+    <bean id="replicationDefinitionPersister" class="org.alfresco.repo.replication.ReplicationDefinitionPersisterImpl" >
+        <property name="runtimeActionService" ref="actionService" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+
+   <!-- JavaScript API support -->
+<!--
+   <bean id="replicationServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.replication.script.ScriptReplicationService">
+        <property name="extensionName">
+            <value>replicationService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+-->
+   
+</beans>

@@ -2344,5 +2344,27 @@
             </list>
         </property>
     </bean>
+ 
+    <bean id="patch.replication.replication_actions" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.replication.replication_actions</value></property>
+        <property name="description"><value>patch.replication.replication_actions.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4107</value></property>
+        <property name="targetSchema"><value>4108</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.replication.replication_actions.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/replicationActionSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
 
 </beans>

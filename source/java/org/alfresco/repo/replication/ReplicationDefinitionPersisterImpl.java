@@ -20,6 +20,7 @@
 package org.alfresco.repo.replication;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,9 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
     /** Reference to the replication action space node */
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final NodeRef REPLICATION_ACTION_ROOT_NODE_REF = new NodeRef(SPACES_STORE, "replication_actions_space");
+    protected static final Set<QName> ACTION_TYPES = new HashSet<QName>(
+          Arrays.asList(new QName[] { ActionModel.TYPE_ACTION }));
+    
 
     /* Injected services */
     private NodeService nodeService;
@@ -79,10 +83,8 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
         // Note that in the call to getChildAssocs below, only the specified
         // types are included.
         // Subtypes of the type action:action will not be returned.
-        Set<QName> actionTypes = new HashSet<QName>();
-        actionTypes.add(ActionModel.TYPE_ACTION);
 
-        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(REPLICATION_ACTION_ROOT_NODE_REF, actionTypes);
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(REPLICATION_ACTION_ROOT_NODE_REF, ACTION_TYPES);
 
         List<ReplicationDefinition> renderingActions = new ArrayList<ReplicationDefinition>(childAssocs.size());
         for (ChildAssociationRef actionAssoc : childAssocs)

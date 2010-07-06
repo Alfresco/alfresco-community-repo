@@ -41,11 +41,9 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     private static final long serialVersionUID = 3183721054220388564L;
 
     public static final String REPLICATION_DEFINITION_NAME = "replicationActionName";
-
-    public String description; 
-    public String targetName;
-    public List<NodeRef> payload;
-    public NodeRef localTransferReport;
+    public static final String REPLICATION_DEFINITION_TARGET = "replicationTarget";
+    public static final String REPLICATION_DEFINITION_PAYLOAD = "replicationPayload";
+    public static final String REPLICATION_DEFINITION_TRANSFER_REPORT = "replicationTransferReport";
 
     /**
      * @param id
@@ -68,7 +66,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
     public ReplicationDefinitionImpl(String id, QName replicationName, String description)
     {
-        super(null, id);
+        super(null, id, description);
         setParameterValue(REPLICATION_DEFINITION_NAME, replicationName);
         setDescription(description);
     }
@@ -91,11 +89,15 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      * @see
      * org.alfresco.service.cmr.replication.ReplicationDefinition#getPayload()
      */
+   @SuppressWarnings("unchecked")
    public List<NodeRef> getPayload() {
-      if(this.payload == null) {
-         this.payload = new ArrayList<NodeRef>(); 
+      List<NodeRef> payload = (List<NodeRef>)
+            getParameterValue(REPLICATION_DEFINITION_PAYLOAD);
+      if(payload == null) {
+         payload = new ArrayList<NodeRef>();
+         setParameterValue(REPLICATION_DEFINITION_PAYLOAD, (Serializable)payload);
       }
-      return this.payload;
+      return payload;
    }
 
    /*
@@ -103,7 +105,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     * org.alfresco.service.cmr.replication.ReplicationDefinition#getTargetName()
     */
    public String getTargetName() {
-      return this.targetName;
+      return (String)getParameterValue(REPLICATION_DEFINITION_TARGET);
    }
 
    /*
@@ -111,7 +113,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     * org.alfresco.service.cmr.replication.ReplicationDefinition#setTargetName(String)
     */
    public void setTargetName(String targetName) {
-      this.targetName = targetName;
+      setParameterValue(REPLICATION_DEFINITION_TARGET, targetName);
    }
 
    /*
@@ -119,7 +121,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     * org.alfresco.service.cmr.replication.ReplicationDefinition#getLocalTransferReport()
     */
    public NodeRef getLocalTransferReport() {
-      return localTransferReport;
+      return (NodeRef)getParameterValue(REPLICATION_DEFINITION_TRANSFER_REPORT);
    }
    
    /*
@@ -127,6 +129,6 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     * org.alfresco.service.cmr.replication.ReplicationDefinition#setLocalTransferReport(NodeRef)
     */
    public void setLocalTransferReport(NodeRef report) {
-      this.localTransferReport = report;
+      setParameterValue(REPLICATION_DEFINITION_TRANSFER_REPORT, report);
    }
 }

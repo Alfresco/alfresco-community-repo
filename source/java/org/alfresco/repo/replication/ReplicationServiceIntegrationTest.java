@@ -38,6 +38,8 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     private ReplicationService replicationService;
     private NodeService nodeService;
     
+    private NodeRef replicationRoot;
+    
     private final QName ACTION_NAME  = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
     private final QName ACTION_NAME2 = QName.createQName(NamespaceService.ALFRESCO_URI, "testName2");
     
@@ -52,7 +54,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         // Zap any existing entries
-        NodeRef replicationRoot = ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF;
+        replicationRoot = ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF;
         for(ChildAssociationRef child : nodeService.getChildAssocs(replicationRoot)) {
            QName type = nodeService.getType( child.getChildRef() );
            if(ReplicationDefinitionPersisterImpl.ACTION_TYPES.contains(type)) {
@@ -137,4 +139,31 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals(0, replicationService.loadReplicationDefinitions("TestTarget2").size());
     }
 
+    /**
+     * Test that the action service can find the executor
+     *  for us, and that it has everything it needs
+     */
+    public void testBasicExecution() throws Exception
+    {
+       // First with a transient definition
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName("TestTarget");
+       rd.getPayload().add(
+             new NodeRef("workspace://SpacesStore/Testing")
+       );
+       
+       actionService.executeAction(rd, replicationRoot);
+       
+       // Now with one that's in the repo
+    }
+    
+    /**
+     * Test that, with a mock transfer service, we
+     *  pick the right things to replicate and call
+     *  the transfer service correctly.
+     */
+    public void testReplicationExecution() throws Exception
+    {
+       // TODO
+    }
 }

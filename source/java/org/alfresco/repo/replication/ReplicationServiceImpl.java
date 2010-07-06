@@ -155,6 +155,9 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * (ReplicationDefinition)
     */
    public void replicate(ReplicationDefinition replicationDefinition) {
-      // TODO Implement the replication work
+      actionService.executeAction(
+            replicationDefinition,
+            ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF
+      );
    }
 }

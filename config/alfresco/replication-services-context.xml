@@ -48,22 +48,30 @@
       <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
 	</bean>
 
-<!--
-   <bean id="perform-replication" class="org.alfresco.repo.replication.PerformReplicationActionExecuter" parent="action-executer">
-       <property name="publicAction">
-          <value>false</value>
-       </property>
-       <property name="nodeService" ref="NodeService" />
-       <property name="actionService" ref="ActionService"/>
-       <property name="replicationService" ref="replicationService" />
-       <property name="transferService" ref="TransferService" />
-    </bean>
--->
-
     <bean id="replicationDefinitionPersister" class="org.alfresco.repo.replication.ReplicationDefinitionPersisterImpl" >
         <property name="runtimeActionService" ref="actionService" />
         <property name="nodeService" ref="NodeService" />
     </bean>
+
+
+   <!-- Replication Action executor -->
+
+   <bean id="replicationActionExecutor" parent="action-executer"
+      class="org.alfresco.repo.replication.ReplicationActionExecutor">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+      <property name="applicableTypes">
+         <list>
+            <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+         </list>
+      </property>
+       <property name="nodeService" ref="NodeService" />
+       <property name="jobLockService" ref="JobLockService" />
+       <property name="transferService" ref="TransferService" />
+       <property name="replicationService" ref="ReplicationService" />
+   </bean>
 
 
    <!-- JavaScript API support -->

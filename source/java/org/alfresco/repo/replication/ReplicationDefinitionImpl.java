@@ -66,7 +66,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
     public ReplicationDefinitionImpl(String id, QName replicationName, String description)
     {
-        super(null, id, description);
+        super(null, id, "replicationActionExecutor");
         setParameterValue(REPLICATION_DEFINITION_NAME, replicationName);
         setDescription(description);
     }

@@ -46,14 +46,14 @@ public class ContentFullContextTestSuite extends TestSuite
         
         // These tests need a full context, at least for now
         suite.addTestSuite(ContentStoreCleanerTest.class);
-        suite.addTestSuite(CharsetFinderTest.class);
+        //suite.addTestSuite(CharsetFinderTest.class);
         suite.addTestSuite(FileContentStoreTest.class);
         suite.addTestSuite(NoRandomAccessFileContentStoreTest.class);
         suite.addTestSuite(ReadOnlyFileContentStoreTest.class);
         suite.addTestSuite(ContentStoreReplicatorTest.class);
         suite.addTestSuite(ReplicatingContentStoreTest.class);
         suite.addTestSuite(ContentDataTest.class);
-        suite.addTestSuite(MimetypeMapTest.class);
+        //suite.addTestSuite(MimetypeMapTest.class);
         suite.addTestSuite(RoutingContentServiceTest.class);
         suite.addTestSuite(RoutingContentStoreTest.class);
         

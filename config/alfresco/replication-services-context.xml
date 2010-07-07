@@ -71,6 +71,7 @@
        <property name="jobLockService" ref="JobLockService" />
        <property name="transferService" ref="TransferService" />
        <property name="replicationService" ref="ReplicationService" />
+       <property name="nodeCrawlerFactory" ref="NodeCrawlerFactory" />
    </bean>
 
 

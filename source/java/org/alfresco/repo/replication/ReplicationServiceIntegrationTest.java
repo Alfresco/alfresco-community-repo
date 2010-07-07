@@ -19,16 +19,24 @@
 
 package org.alfresco.repo.replication;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
+import org.alfresco.service.cmr.replication.ReplicationServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.GUID;
 
 /**
  * @author Nick Burch
@@ -36,9 +44,21 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private ReplicationService replicationService;
+    private JobLockService jobLockService;
     private NodeService nodeService;
+    private Repository repositoryHelper;
     
     private NodeRef replicationRoot;
+    
+    private NodeRef folder1;
+    private NodeRef folder2;
+    private NodeRef folder2a;
+    private NodeRef folder2b;
+    private NodeRef content1_1;
+    private NodeRef content1_2;
+    private NodeRef thumbnail1_3;
+    private NodeRef content2a_1;
+    private NodeRef thumbnail2a_2;
     
     private final QName ACTION_NAME  = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
     private final QName ACTION_NAME2 = QName.createQName(NamespaceService.ALFRESCO_URI, "testName2");
@@ -48,12 +68,14 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     {
         super.onSetUpInTransaction();
         replicationService = (ReplicationService) this.applicationContext.getBean("replicationService");
+        jobLockService = (JobLockService) this.applicationContext.getBean("jobLockService");
         nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
         
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        // Zap any existing entries
+        // Zap any existing replication entries
         replicationRoot = ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF;
         for(ChildAssociationRef child : nodeService.getChildAssocs(replicationRoot)) {
            QName type = nodeService.getType( child.getChildRef() );
@@ -61,9 +83,34 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
               nodeService.deleteNode(child.getChildRef());
            }
         }
+        
+        // Create the test folder structure
+        folder1 = makeNode(repositoryHelper.getCompanyHome(), ContentModel.TYPE_FOLDER);
+        folder2 = makeNode(repositoryHelper.getCompanyHome(), ContentModel.TYPE_FOLDER);
+        folder2a = makeNode(folder2, ContentModel.TYPE_FOLDER);
+        folder2b = makeNode(folder2, ContentModel.TYPE_FOLDER);
+        
+        content1_1 = makeNode(folder1, ContentModel.TYPE_CONTENT);
+        content1_2 = makeNode(folder1, ContentModel.TYPE_CONTENT);
+        thumbnail1_3 = makeNode(folder1, ContentModel.TYPE_THUMBNAIL);
+        content2a_1 = makeNode(folder2a, ContentModel.TYPE_CONTENT);
+        thumbnail2a_2 = makeNode(folder2a, ContentModel.TYPE_THUMBNAIL);
     }
     
-    public void testCreation() throws Exception
+    @Override
+   protected void onTearDownInTransaction() throws Exception {
+      super.onTearDownInTransaction();
+      if(folder1 != null) {
+         nodeService.deleteNode(folder1);
+      }
+      if(folder2 != null) {
+         nodeService.deleteNode(folder2);
+      }
+   }
+
+
+
+   public void testCreation() throws Exception
     {
        ReplicationDefinition replicationAction =
           replicationService.createReplicationDefinition(ACTION_NAME, "Test Definition");
@@ -145,16 +192,70 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     public void testBasicExecution() throws Exception
     {
-       // First with a transient definition
+       // First one with no target, which isn't allowed
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
-       rd.setTargetName("TestTarget");
-       rd.getPayload().add(
-             new NodeRef("workspace://SpacesStore/Testing")
-       );
+       try {
+          actionService.executeAction(rd, replicationRoot);
+          fail("Shouldn't be permitted with no Target defined");
+       } catch(ReplicationServiceException e) {}
        
+       
+       // Now no payload, also not allowed
+       rd.setTargetName("TestTarget");
+       try {
+          actionService.executeAction(rd, replicationRoot);
+          fail("Shouldn't be permitted with no payload defined");
+       } catch(ReplicationServiceException e) {}
+       
+       
+       // Next a proper one with a transient definition
+       rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName("TestTarget");
+       rd.getPayload().add( folder1 );
+       // Will execute without error
        actionService.executeAction(rd, replicationRoot);
        
+       
        // Now with one that's in the repo
+       ReplicationDefinition rd2 = replicationService.createReplicationDefinition(ACTION_NAME2, "Test");
+       rd2.setTargetName("TestTarget");
+       rd2.getPayload().add(
+             folder2
+       );
+       replicationService.saveReplicationDefinition(rd2);
+       rd2 = replicationService.loadReplicationDefinition(ACTION_NAME2);
+       // Again no errors
+       actionService.executeAction(rd2, replicationRoot);
+    }
+    
+    /**
+     * Check that the locking works.
+     * Take a 5 second lock on the job, then execute.
+     * Ensure that we really wait a little over 5 seconds.
+     */
+    public void testReplicationExectionLocking() throws Exception
+    {
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName("TestTarget");
+       rd.getPayload().add(folder1);
+       rd.getPayload().add(folder2a);
+       
+       // Get the lock, and run
+       long start = System.currentTimeMillis();
+       String token = jobLockService.getLock(
+             rd.getReplicationName(),
+             5 * 1000,
+             1,
+             1
+       );
+       actionService.executeAction(rd, replicationRoot);
+       long end = System.currentTimeMillis();
+       
+       assertTrue(
+            "Should wait for the lock, but didn't (waited " + 
+               ((end-start)/1000.0) + " seconds, not 5)",
+            end-start > 5000
+       );
     }
     
     /**
@@ -165,5 +266,16 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     public void testReplicationExecution() throws Exception
     {
        // TODO
+    }
+    
+
+    private NodeRef makeNode(NodeRef parent, QName nodeType)
+    {
+        String uuid = GUID.generate();
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, uuid);
+        ChildAssociationRef assoc = nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, QName.createQName(
+                NamespaceService.APP_MODEL_1_0_URI, uuid), nodeType, props);
+        return assoc.getChildRef();
     }
 }

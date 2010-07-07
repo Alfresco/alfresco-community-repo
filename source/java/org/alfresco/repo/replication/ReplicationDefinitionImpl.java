@@ -91,12 +91,24 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
    @SuppressWarnings("unchecked")
    public List<NodeRef> getPayload() {
-      List<NodeRef> payload = (List<NodeRef>)
-            getParameterValue(REPLICATION_DEFINITION_PAYLOAD);
-      if(payload == null) {
+      Object payloadO =
+         getParameterValue(REPLICATION_DEFINITION_PAYLOAD);
+      
+      List<NodeRef> payload;
+      if(payloadO == null) {
          payload = new ArrayList<NodeRef>();
          setParameterValue(REPLICATION_DEFINITION_PAYLOAD, (Serializable)payload);
+      } else {
+         // If there's only one entry, comes back as just
+         //  that, unwrapped from the list
+         if(payloadO instanceof List) {
+            payload = (List<NodeRef>)payloadO;
+         } else {
+            payload = new ArrayList<NodeRef>();
+            payload.add((NodeRef)payloadO);
+         }
       }
+
       return payload;
    }
 

@@ -80,7 +80,7 @@ public class DirectProperty extends AbstractSimpleProperty
             // find best field match
 
             HashSet<String> allowableLocales = new HashSet<String>();
-            MLAnalysisMode analysisMode = lqp.getConfig().getDefaultMLSearchAnalysisMode();
+            MLAnalysisMode analysisMode = lqp.getDefaultSearchMLAnalysisMode();
             for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
             {
                 allowableLocales.add(l.toString());

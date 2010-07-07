@@ -57,7 +57,7 @@ public class LuceneQueryBuilderContext
         lqp.setNamespacePrefixResolver(namespacePrefixResolver);
         lqp.setTenantService(tenantService);
         lqp.setSearchParameters(searchParameters);
-        lqp.setLuceneConfig(config);
+        lqp.setDefaultSearchMLAnalysisMode(config.getDefaultMLSearchAnalysisMode());
         lqp.setIndexReader(indexReader);
         lqp.setAllowLeadingWildcard(true);
         this.namespacePrefixResolver = namespacePrefixResolver;

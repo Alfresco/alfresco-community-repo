@@ -286,7 +286,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 ClosingIndexSearcher searcher = getSearcher(indexer);
                 Query query = LuceneQueryParser.parse(parameterisedQueryString, searchParameters.getDefaultFieldName(), new LuceneAnalyser(getDictionaryService(),
                         searchParameters.getMlAnalaysisMode() == null ? getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
-                        namespacePrefixResolver, getDictionaryService(), tenantService, defaultOperator, searchParameters, getLuceneConfig(), searcher.getIndexReader());
+                        namespacePrefixResolver, getDictionaryService(), tenantService, defaultOperator, searchParameters, getLuceneConfig().getDefaultMLSearchAnalysisMode(), searcher.getIndexReader());
                 if (s_logger.isDebugEnabled())
                 {
                     s_logger.debug("Query is " + query.toString());

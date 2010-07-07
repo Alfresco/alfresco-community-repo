@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -73,7 +74,7 @@ public class RepositoryStartStopTest extends TestCase
      *  ApplicationContextHelper is empty
      */
     public static void assertNoCachedApplicationContext() throws Exception {
-       Field instanceF = ApplicationContextHelper.class.getDeclaredField("instance");
+       Field instanceF = BaseApplicationContextHelper.class.getDeclaredField("instance");
        instanceF.setAccessible(true);
        assertNull( 
              "Instance cache on ApplicationContextHelper was populated instead of empty",

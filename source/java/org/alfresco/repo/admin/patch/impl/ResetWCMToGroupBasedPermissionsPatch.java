@@ -35,6 +35,7 @@ import org.alfresco.repo.domain.avm.AVMStoreDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
 import org.alfresco.repo.domain.permissions.AclEntity;
+import org.alfresco.repo.domain.permissions.AclUpdateEntity;
 import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.permissions.Permission;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
@@ -1058,14 +1059,14 @@ public class ResetWCMToGroupBasedPermissionsPatch extends MoveWCMToGroupBasedPer
         
         private void updateAclInheritsFrom(final long aclId, final long inheritsFromId) throws Exception
         {
-            AclEntity aclEntity = aclCrudDAO.getAclForUpdate(aclId);
+            AclUpdateEntity aclEntity = aclCrudDAO.getAclForUpdate(aclId);
             aclEntity.setInheritsFrom(inheritsFromId);
             aclCrudDAO.updateAcl(aclEntity);
         }
         
         private void updateAclInherited(final long aclId, final long inheritedAclId) throws Exception
         {
-            AclEntity aclEntity = aclCrudDAO.getAclForUpdate(aclId);
+            AclUpdateEntity aclEntity = aclCrudDAO.getAclForUpdate(aclId);
             aclEntity.setInheritedAcl(inheritedAclId);
             aclCrudDAO.updateAcl(aclEntity);
         }

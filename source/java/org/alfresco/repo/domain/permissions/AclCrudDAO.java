@@ -57,10 +57,10 @@ public interface AclCrudDAO
     
     public Acl createAcl(AclEntity entity);
     public Acl getAcl(long aclEntityId);
-    public AclEntity getAclForUpdate(long aclEntityId);
+    public AclUpdateEntity getAclForUpdate(long aclEntityId);
     public List<Long> getAclsThatInheritFromAcl(long aclEntityId);
     public Long getLatestAclByGuid(String aclGuid);
-    public void updateAcl(AclEntity entity);
+    public void updateAcl(AclUpdateEntity entity);
     public void deleteAcl(long aclEntityId);
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults);
     public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults);

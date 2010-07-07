@@ -423,7 +423,7 @@ public class AclDAOImpl implements AclDAO
     private AclChange getWritable(final Long id, final Long parent, List<? extends AccessControlEntry> exclude, List<Ace> acesToAdd, Long inheritsFrom,
             List<Ace> inherited, List<Integer> positions, int depth, WriteMode mode, boolean requiresVersion)
     {
-        AclEntity acl = (AclEntity)aclCrudDAO.getAcl(id);
+        AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (!acl.isLatest())
         {
             aclCache.remove(id);
@@ -590,7 +590,7 @@ public class AclDAOImpl implements AclDAO
                 if (parent != null)
                 {
                     Long writableParentAcl = getWritable(parent, null, null, null, null, null, null, 0, WriteMode.COPY_ONLY, false).getAfter();
-                    AclEntity parentAcl = aclCrudDAO.getAclForUpdate(writableParentAcl);
+                    AclUpdateEntity parentAcl = aclCrudDAO.getAclForUpdate(writableParentAcl);
                     parentAcl.setInheritedAcl(created);
                     aclCrudDAO.updateAcl(parentAcl);
                 }
@@ -851,7 +851,7 @@ public class AclDAOImpl implements AclDAO
         
         List<AclChange> acls = new ArrayList<AclChange>();
         
-        final AclEntity acl = aclCrudDAO.getAclForUpdate(id);
+        final AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (!acl.isLatest())
         {
             throw new UnsupportedOperationException("Old ACL versions can not be updated");
@@ -894,7 +894,7 @@ public class AclDAOImpl implements AclDAO
                 
                 if (inherited.isVersioned())
                 {
-                    AclEntity inheritedForUpdate = aclCrudDAO.getAclForUpdate(inherited.getId());
+                    AclUpdateEntity inheritedForUpdate = aclCrudDAO.getAclForUpdate(inherited.getId());
                     if (inheritedForUpdate != null)
                     {
                         inheritedForUpdate.setLatest(Boolean.FALSE);
@@ -1075,7 +1075,7 @@ public class AclDAOImpl implements AclDAO
      */
     public Long getInheritedAccessControlList(Long id)
     {
-        AclEntity acl = aclCrudDAO.getAclForUpdate(id);
+        AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (acl.getAclType() == ACLType.OLD)
         {
             return null;
@@ -1260,7 +1260,7 @@ public class AclDAOImpl implements AclDAO
     {
         List<AclChange> changes = new ArrayList<AclChange>();
         
-        AclEntity acl = aclCrudDAO.getAclForUpdate(id);
+        AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         
         switch (acl.getAclType())
         {
@@ -1305,7 +1305,7 @@ public class AclDAOImpl implements AclDAO
      */
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl)
     {
-        AclEntity acl = aclCrudDAO.getAclForUpdate(id);
+        AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         List<AclChange> changes = new ArrayList<AclChange>(1);
         switch (acl.getAclType())
         {
@@ -1330,7 +1330,7 @@ public class AclDAOImpl implements AclDAO
     
     private Long getCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
     {
-        AclEntity aclToCopy;
+        AclUpdateEntity aclToCopy;
         Long inheritedId;
         Acl aclToInheritFrom;
         switch (mode)
@@ -1352,7 +1352,7 @@ public class AclDAOImpl implements AclDAO
             inheritedId = getInheritedAccessControlList(toCopy);
             if ((inheritedId != null) && (!inheritedId.equals(toCopy)))
             {
-                AclEntity inheritedAcl = aclCrudDAO.getAclForUpdate(inheritedId);
+                AclUpdateEntity inheritedAcl = aclCrudDAO.getAclForUpdate(inheritedId);
                 inheritedAcl.setRequiresVersion(true);
                 aclCrudDAO.updateAcl(inheritedAcl);
                 aclCache.remove(inheritedId);
@@ -1502,18 +1502,18 @@ public class AclDAOImpl implements AclDAO
         return acl;
     }
     
-    private List<AclChange> disableInheritanceImpl(Long id, boolean setInheritedOnAcl, AclEntity acl)
+    private List<AclChange> disableInheritanceImpl(Long id, boolean setInheritedOnAcl, AclEntity aclIn)
     {
         List<AclChange> changes = new ArrayList<AclChange>();
         
-        if (!acl.getInherits())
+        if (!aclIn.getInherits())
         {
             return Collections.<AclChange> emptyList();
         }
         
         // Manages caching
         getWritable(id, null, null, null, null, false, changes, WriteMode.COPY_ONLY);
-        acl = aclCrudDAO.getAclForUpdate(changes.get(0).getAfter());
+        AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(changes.get(0).getAfter());
         final Long inheritsFrom = acl.getInheritsFrom();
         acl.setInherits(Boolean.FALSE);
         aclCrudDAO.updateAcl(acl);

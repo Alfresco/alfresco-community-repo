@@ -206,7 +206,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return entityPair.getSecond();
     }
     
-    public AclEntity getAclForUpdate(long id)
+    public AclUpdateEntity getAclForUpdate(long id)
     {
         AclEntity acl = getAclImpl(id);
         if (acl == null)
@@ -215,7 +215,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         }
         
         // copy for update
-        AclEntity aclEntity = new AclEntity();
+        AclUpdateEntity aclEntity = new AclUpdateEntity();
         aclEntity.setId(acl.getId());
         aclEntity.setVersion(acl.getVersion());
         aclEntity.setAclChangeSetId(acl.getAclChangeSetId());
@@ -254,7 +254,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return getAVMNodeEntityIdsByAcl(aclEntityId, maxResults);
     }
     
-    public void updateAcl(AclEntity entity)
+    public void updateAcl(AclUpdateEntity entity)
     {
         ParameterCheck.mandatory("entity", entity);
         ParameterCheck.mandatory("entity.id", entity.getId());

@@ -57,6 +57,9 @@
           
     <bean id="typeFilterRegistry"
           class="org.alfresco.repo.forms.processor.FilterRegistry" />
+          
+    <bean id="workflowFilterRegistry"
+          class="org.alfresco.repo.forms.processor.FilterRegistry" />
     
     <!-- Form processors  -->
     <bean id="baseFormProcessor" abstract="true" init-method="register"
@@ -93,6 +96,21 @@
         <property name="contentService" ref="ContentService" />
         <property name="matchPattern">
             <value>type</value>
+        </property>
+    </bean>
+    
+    <bean id="workflowFormProcessor" 
+          class="org.alfresco.repo.forms.processor.workflow.WorkflowFormProcessor" 
+          parent="filteredFormProcessor">
+        <property name="filterRegistry" ref="workflowFilterRegistry" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="workflowService" ref="WorkflowService" />
+        <property name="matchPattern">
+            <value>workflow</value>
         </property>
     </bean>
     

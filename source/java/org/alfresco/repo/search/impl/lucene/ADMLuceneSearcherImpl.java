@@ -422,7 +422,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                 }
                             }
                             
-                            if (fieldHasTerm(searcher.getReader(), field))
+                            if (LuceneUtils.fieldHasTerm(searcher.getReader(), field))
                             {
                                 fields[index++] = new SortField(field, sortLocale, !sd.isAscending());
                             }
@@ -518,34 +518,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         }
     }
 
-    public static boolean fieldHasTerm(IndexReader indexReader, String field)
-    {
-        try
-        {
-            TermEnum termEnum = indexReader.terms(new Term(field, ""));
-            try
-            {
-                if (termEnum.next())
-                {
-                    Term first = termEnum.term();
-                    return first.field().equals(field);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            finally
-            {
-                termEnum.close();
-            }
-        }
-        catch (IOException e)
-        {
-            throw new SearcherException("Could not find terms for sort field ", e);
-        }
 
-    }
 
     public ResultSet query(StoreRef store, String language, String query)
     {

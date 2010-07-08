@@ -88,6 +88,8 @@ public class WorkflowModelBuilderTest extends TestCase
         task.properties.put(testDate, date);
         
         Map<String, Object> model = builder.buildSimple(task, null);
+        Object id = model.get(WorkflowModelBuilder.TASK_ID);
+        assertEquals(task.id, id);
         Object url = model.get(WorkflowModelBuilder.TASK_URL);
         assertEquals("api/task-instance/"+task.id, url);
         assertEquals(task.name, model.get(WorkflowModelBuilder.TASK_NAME));

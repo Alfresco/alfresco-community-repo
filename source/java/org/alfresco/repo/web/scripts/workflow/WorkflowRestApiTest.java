@@ -66,7 +66,8 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         personManager.setUser(USER2);
         Response response = sendRequest(new GetRequest(URL_TASKS), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
-        JSONObject json = new JSONObject(response.getContentAsString());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
         JSONArray results = json.getJSONArray("data");
         assertNotNull(results);
         assertTrue(results.length()==0);
@@ -88,13 +89,12 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
         WorkflowTask task = tasks.get(0);
         
-        Serializable actors = task.properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
-        System.out.println("Pooled Actors: " + actors);
-        
         personManager.setUser(USER2);
         response = sendRequest(new GetRequest(URL_TASKS), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
-        json = new JSONObject(response.getContentAsString());
+        jsonStr = response.getContentAsString();
+        System.out.println(jsonStr);
+        json = new JSONObject(jsonStr);
         results = json.getJSONArray("data");
         assertNotNull(results);
         assertTrue(results.length()==tasks.size());
@@ -115,12 +115,6 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(personManager.getLastName(USER2), owner.getString("lastName"));
         
         JSONObject properties = result.getJSONObject("properties");
-        Collection<Serializable> values = task.properties.values();
-        while(values.contains(null))
-        {
-            values.remove(null);
-        }
-        assertEquals(values.size(), properties.length());
         
         //TODO Add more tests to check property filtering and pooled actors.
     }

@@ -22,12 +22,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -56,6 +60,7 @@ public class WorkflowModelBuilder
     public static final String TASK_NAME = "name";
     public static final String TASK_URL = "url";
     public static final String TASK_IS_POOLED = "isPooled";
+    public static final String TASK_ID = "id";
     
     private static final String PREFIX_SEPARATOR = Character.toString(QName.NAMESPACE_PREFIX);
 
@@ -79,6 +84,7 @@ public class WorkflowModelBuilder
     public Map<String, Object> buildSimple(WorkflowTask task, Collection<String> propertyFilters)
     {
         HashMap<String, Object> model = new HashMap<String, Object>();
+        model.put(TASK_ID, task.id);
         model.put(TASK_URL, getUrl(task));
         model.put(TASK_NAME, task.name);
         model.put(TASK_TITLE, task.title);
@@ -88,11 +94,9 @@ public class WorkflowModelBuilder
 
         model.put(TASK_IS_POOLED, isPooled(task.properties));
         Serializable owner = task.properties.get(ContentModel.PROP_OWNER);
-        if (owner != null && owner instanceof String) {
-            model.put(TASK_OWNER, getPersonModel((String) owner));
-        }
+        model.put(TASK_OWNER, getPersonModel((String) owner));
         
-        model.put(TASK_PROPERTIES, buildProperties(task.properties, propertyFilters));
+        model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
         return model;
     }
 
@@ -102,19 +106,33 @@ public class WorkflowModelBuilder
         return actors!=null && !actors.isEmpty();
     }
 
-    private Map<String, Object> buildProperties(Map<QName, Serializable> properties, Collection<String> propertyFilters)
+    private Map<String, Object> buildProperties(WorkflowTask task, Collection<String> propertyFilters)
     {
+        Map<QName, Serializable> properties = task.properties;
         Collection<QName> keys;
         if (propertyFilters == null || propertyFilters.size() == 0)
-            keys = properties.keySet();
+        {
+            Map<QName, PropertyDefinition> propDefs = task.definition.metadata.getProperties();
+            Map<QName, AssociationDefinition> assocDefs = task.definition.metadata.getAssociations();
+            Set<QName> propKeys = properties.keySet();
+            keys = new HashSet<QName>(propDefs.size() + assocDefs.size() + propKeys.size());
+            keys.addAll(propDefs.keySet());
+            keys.addAll(assocDefs.keySet());
+            keys.addAll(propKeys);
+        }
         else
             keys = buildQNameKeys(propertyFilters);
+        return buildQNameProperties(properties, keys);
+    }
+
+    private Map<String, Object> buildQNameProperties(Map<QName, Serializable> properties, Collection<QName> keys)
+    {
         Map<String, Object> model = new HashMap<String, Object>();
         for (QName key : keys)
         {
             Object value = convertValue(properties.get(key));
-            String preixedKey = key.toPrefixString(namespaceService);
-            String strKey = preixedKey.replace(PREFIX_SEPARATOR, "_");
+            String prefixedKey = key.toPrefixString(namespaceService);
+            String strKey = prefixedKey.replace(PREFIX_SEPARATOR, "_");
             model.put(strKey, value);
         }
         return model;
@@ -160,8 +178,12 @@ public class WorkflowModelBuilder
         return qKeys;
     }
 
-    private Map<String, Object> getPersonModel(String name)
+    private Map<String, Object> getPersonModel(Serializable nameSer)
     {
+        if (!(nameSer instanceof String))
+            return null;
+
+        String name = (String) nameSer;
         NodeRef person = personService.getPerson(name);
         Map<QName, Serializable> properties = nodeService.getProperties(person);
 

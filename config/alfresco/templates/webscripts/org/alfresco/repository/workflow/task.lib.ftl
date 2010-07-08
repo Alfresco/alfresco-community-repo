@@ -1,6 +1,7 @@
 <#-- Renders a task instance. -->
 <#macro taskJSON task >
         {
+            "id": "${task.id}",
             "url": "${task.url}",
             "name": "${task.name}",
             "title": "${task.title}",
@@ -8,16 +9,18 @@
             "state": "${task.state}",
             "typeDefinitionTitle": "${task.typeDefinitionTitle}",
             "isPooled": ${task.isPooled?string},
+            "owner":
             <#if task.owner??>
-                "owner":
-                {
-                    "userName": "${task.owner.userName}",
-                    "firstName": "${task.owner.firstName}",
-                    "lastName": "${task.owner.lastName}"
-                },
+            {
+                "userName": "${task.owner.userName}",
+                "firstName": "${task.owner.firstName}",
+                "lastName": "${task.owner.lastName}"
+            },
+            <#else>
+                null
             </#if>
             "properties":
-                <@propertiesJSON properties=task.properties />
+            <@propertiesJSON properties=task.properties />
         }
 </#macro>
 
@@ -25,9 +28,9 @@
 <#macro propertiesJSON properties>
     {
     <#list properties?keys as key>
+        "${key}" :
         <#if properties[key]??>
             <#assign val=properties[key]>
-                "${key}" :
             <#if val?is_boolean == true>
                 ${val?string}
             <#elseif val?is_number == true>
@@ -41,8 +44,10 @@
             <#else>
                 "${jsonUtils.encodeJSONString(shortQName(val?string))}"
             </#if>
-            <#if (key_has_next)>,</#if>
+        <#else>
+            null
         </#if>
+        <#if (key_has_next)>,</#if>
     </#list>
     }    
 </#macro>

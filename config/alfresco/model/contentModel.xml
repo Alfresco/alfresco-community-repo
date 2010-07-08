@@ -422,6 +422,45 @@
          </mandatory-aspects>
       </type>
 
+      <type name="cm:rating">
+         <title>Rating</title>
+         <properties>
+            <property name="cm:ratingScore">
+               <title>Rating</title>
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:ratingScheme">
+               <title>Rating Scheme</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="cm:ratedAt">
+               <title>Rated at</title>
+               <type>d:date</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>true</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+
       <!--              -->
       <!--  DEPRECATED  -->
       <!--              -->
@@ -940,6 +979,24 @@
                <protected>true</protected>
             </property>        
          </properties>    
+      </aspect>
+      
+      <aspect name="cm:rateable">
+         <title>Rateable</title>
+         <associations>
+            <child-association name="cm:ratings">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:rating</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
       </aspect>
    
       <aspect name="cm:attachable">

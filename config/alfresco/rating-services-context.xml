@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Rating Service -->
+   <bean id="RatingService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.rating.RatingService</value>
+      </property>
+      <property name="target">
+         <ref bean="ratingService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="RatingService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref local="RatingService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Rating service transaction bean -->
+   <bean id="RatingService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Rating service security bean -->
+   <bean id="RatingService_security"
+      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+   <!-- Rating Service base bean -->
+	<bean id="ratingService" class="org.alfresco.repo.rating.RatingServiceImpl" >
+	    <property name="ratingSchemeRegistry">
+	       <ref local="ratingSchemeRegistry"/>
+	    </property>
+	    <property name="nodeService" ref="nodeService"/>
+	</bean>
+
+   <!-- i18n TODO Needed? -->
+   <!--
+   <bean id="ratingResourceBundles"
+      class="org.springframework.extensions.surf.util.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.messages.rating-config</value>
+         </list>
+      </property>
+   </bean>
+   -->
+   
+   <!-- The rating scheme registry maintains the collection of registered rating schemes. -->   
+   <bean id="ratingSchemeRegistry" class="org.alfresco.repo.rating.RatingSchemeRegistry" />
+   
+   <!-- The base rating scheme bean provides for automatic registration of rating schemes. -->
+   <bean name="baseRatingScheme" abstract="true" init-method="init">
+      <constructor-arg ref="ratingSchemeRegistry"/>
+   </bean>
+   
+   <!-- Out of the box rating schemes -->
+   <bean name="likesRatingScheme" parent="baseRatingScheme"
+         class="org.alfresco.repo.rating.RatingSchemeImpl">
+      <property name="minRating" value="1"/>
+      <property name="maxRating" value="1"/>
+   </bean>
+
+   <bean name="fiveStarRatingScheme" parent="baseRatingScheme"
+         class="org.alfresco.repo.rating.RatingSchemeImpl">
+      <property name="minRating" value="0"/>
+      <property name="maxRating" value="5"/>
+   </bean>
+</beans>

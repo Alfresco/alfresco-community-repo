@@ -21,6 +21,7 @@ package org.alfresco.repo.domain;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -43,7 +44,7 @@ public interface AccessControlListDAO
      * @return The ACL.
      * @throws InvalidNodeRefException
      */
-    public DbAccessControlList getAccessControlList(NodeRef nodeRef);
+    public Acl getAccessControlList(NodeRef nodeRef);
 
     /**
      * Set the ACL on a node.
@@ -54,7 +55,7 @@ public interface AccessControlListDAO
      *            The ACL.
      * @throws InvalidNodeRefException
      */
-    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl);
+    public void setAccessControlList(NodeRef nodeRef, Acl acl);
 
     /**
      * Set the ACL on a node.
@@ -85,9 +86,9 @@ public interface AccessControlListDAO
     
     public Map<ACLType, Integer> patchAcls();
 
-    public DbAccessControlList getAccessControlList(StoreRef storeRef);
+    public Acl getAccessControlList(StoreRef storeRef);
     
-    public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl);
+    public void setAccessControlList(StoreRef storeRef, Acl acl);
     
     public void updateInheritance(Long childNodeId, Long oldParentNodeId, Long newParentNodeId);
 }

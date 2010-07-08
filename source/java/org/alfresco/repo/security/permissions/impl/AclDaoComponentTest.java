@@ -216,12 +216,12 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long id = aclDaoComponent.createAccessControlList(properties);
         
-        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        AccessControlListProperties aclProps = aclDaoComponent.createAccessControlList(properties);
         assertEquals(aclProps.getAclType(), ACLType.DEFINING);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
+        assertEquals(aclDaoComponent.getAccessControlListProperties(aclProps.getId()), aclProps);
     }
     
     public void testCreateShared()
@@ -229,19 +229,19 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long id = aclDaoComponent.createAccessControlList(properties);
         
-        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        AccessControlListProperties aclProps = aclDaoComponent.createAccessControlList(properties);
         assertEquals(aclProps.getAclType(), ACLType.DEFINING);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
+        assertEquals(aclDaoComponent.getAccessControlListProperties(aclProps.getId()), aclProps);
         
-        Long shared = aclDaoComponent.getInheritedAccessControlList(id);
+        Long shared = aclDaoComponent.getInheritedAccessControlList(aclProps.getId());
         AccessControlListProperties sharedProps = aclDaoComponent.getAccessControlListProperties(shared);
         assertEquals(sharedProps.getAclType(), ACLType.SHARED);
         assertEquals(sharedProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(sharedProps.getInherits(), Boolean.TRUE);
-        assertEquals(aclDaoComponent.getInheritedAccessControlList(id), shared);
+        assertEquals(aclDaoComponent.getInheritedAccessControlList(aclProps.getId()), shared);
     }
     
     public void testCreateOld()
@@ -249,13 +249,13 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.OLD);
         properties.setVersioned(false);
-        Long id = aclDaoComponent.createAccessControlList(properties);
         
-        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        AccessControlListProperties aclProps = aclDaoComponent.createAccessControlList(properties);
         assertEquals(aclProps.getAclType(), ACLType.OLD);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
-        assertEquals(aclDaoComponent.getInheritedAccessControlList(id), null);
+        assertEquals(aclDaoComponent.getAccessControlListProperties(aclProps.getId()), aclProps);
+        assertEquals(aclDaoComponent.getInheritedAccessControlList(aclProps.getId()), null);
     }
     
     public void testFixed()
@@ -263,12 +263,13 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.FIXED);
         properties.setVersioned(true);
-        Long id = aclDaoComponent.createAccessControlList(properties);
         
-        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        AccessControlListProperties aclProps = aclDaoComponent.createAccessControlList(properties);
+        Long id = aclProps.getId();
         assertEquals(aclProps.getAclType(), ACLType.FIXED);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
+        assertEquals(aclDaoComponent.getAccessControlListProperties(aclProps.getId()), aclProps);
         assertEquals(aclDaoComponent.getInheritedAccessControlList(id), id);
     }
     
@@ -277,12 +278,13 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.GLOBAL);
         properties.setVersioned(false);
-        Long id = aclDaoComponent.createAccessControlList(properties);
         
-        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        AccessControlListProperties aclProps = aclDaoComponent.createAccessControlList(properties);
+        Long id = aclProps.getId();
         assertEquals(aclProps.getAclType(), ACLType.GLOBAL);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
+        assertEquals(aclDaoComponent.getAccessControlListProperties(aclProps.getId()), aclProps);
         assertEquals(aclDaoComponent.getInheritedAccessControlList(id), id);
     }
     
@@ -291,12 +293,13 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long id = aclDaoComponent.createAccessControlList(properties);
         
-        AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
+        AccessControlListProperties aclProps = aclDaoComponent.createAccessControlList(properties);
+        long id = aclProps.getId();
         assertEquals(aclProps.getAclType(), ACLType.DEFINING);
         assertEquals(aclProps.getAclVersion(), Long.valueOf(1l));
         assertEquals(aclProps.getInherits(), Boolean.TRUE);
+        assertEquals(aclDaoComponent.getAccessControlListProperties(id), aclProps);
         
         SimpleAccessControlEntry ace1 = new SimpleAccessControlEntry();
         ace1.setAccessStatus(AccessStatus.ALLOWED);
@@ -359,12 +362,12 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long def1 = aclDaoComponent.createAccessControlList(properties);
+        Long def1 = aclDaoComponent.createAccessControlList(properties).getId();
         Long shared1 = aclDaoComponent.getInheritedAccessControlList(def1);
-        Long def2 = aclDaoComponent.createAccessControlList(properties);
+        Long def2 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared1, def2);
         Long shared2 = aclDaoComponent.getInheritedAccessControlList(def2);
-        Long def3 = aclDaoComponent.createAccessControlList(properties);
+        Long def3 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared2, def3);
         Long shared3 = aclDaoComponent.getInheritedAccessControlList(def3);
         
@@ -397,23 +400,23 @@ public class AclDaoComponentTest extends TestCase
         assertTrue(hasAce(aclDaoComponent.getAccessControlList(shared3).getEntries(), ace1, 5));
         
         
-        Long def4 = aclDaoComponent.createAccessControlList(properties);
+        Long def4 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared3, def4);
         Long shared4 = aclDaoComponent.getInheritedAccessControlList(def4);
         
-        Long def5 = aclDaoComponent.createAccessControlList(properties);
+        Long def5 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared4, def5);
         Long shared5 = aclDaoComponent.getInheritedAccessControlList(def5);
         
-        Long def6_1 = aclDaoComponent.createAccessControlList(properties);
+        Long def6_1 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared5, def6_1);
         Long shared6_1 = aclDaoComponent.getInheritedAccessControlList(def6_1);
         
-        Long def6_2 = aclDaoComponent.createAccessControlList(properties);
+        Long def6_2 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared5, def6_2);
         Long shared6_2 = aclDaoComponent.getInheritedAccessControlList(def6_2);
         
-        Long def6_3 = aclDaoComponent.createAccessControlList(properties);
+        Long def6_3 = aclDaoComponent.createAccessControlList(properties).getId();
         aclDaoComponent.mergeInheritedAccessControlList(shared5, def6_3);
         Long shared6_3 = aclDaoComponent.getInheritedAccessControlList(def6_3);
         
@@ -1064,7 +1067,7 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long defined = aclDaoComponent.createAccessControlList(properties);
+        Long defined = aclDaoComponent.createAccessControlList(properties).getId();
         
         SimpleAccessControlEntry ace1 = new SimpleAccessControlEntry();
         ace1.setAccessStatus(AccessStatus.ALLOWED);
@@ -1092,17 +1095,17 @@ public class AclDaoComponentTest extends TestCase
         properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.FIXED);
         properties.setVersioned(true);
-        Long fixed = aclDaoComponent.createAccessControlList(properties);
+        Long fixed = aclDaoComponent.createAccessControlList(properties).getId();
         
         properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.GLOBAL);
         properties.setVersioned(true);
-        Long global = aclDaoComponent.createAccessControlList(properties);
+        Long global = aclDaoComponent.createAccessControlList(properties).getId();
         
         properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.OLD);
         properties.setVersioned(false);
-        Long old = aclDaoComponent.createAccessControlList(properties);
+        Long old = aclDaoComponent.createAccessControlList(properties).getId();
         
      
         aclDaoComponent.setAccessControlEntry(defined, ace1);
@@ -1142,7 +1145,7 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long id = aclDaoComponent.createAccessControlList(properties);
+        Long id = aclDaoComponent.createAccessControlList(properties).getId();
         
         AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
         assertEquals(aclProps.getAclType(), ACLType.DEFINING);
@@ -1196,27 +1199,27 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long i_1 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1 = aclDaoComponent.getInheritedAccessControlList(i_1);
         
-        Long i_1_2 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_2 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_2 = aclDaoComponent.getInheritedAccessControlList(i_1_2);
         aclDaoComponent.mergeInheritedAccessControlList(s_1, i_1_2);
-        Long i_1_3 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_3 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_3 = aclDaoComponent.getInheritedAccessControlList(i_1_3);
         aclDaoComponent.mergeInheritedAccessControlList(s_1, i_1_3);
         
-        Long i_1_2_4 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_2_4 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_2_4 = aclDaoComponent.getInheritedAccessControlList(i_1_2_4);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_2, i_1_2_4);
-        Long i_1_2_4_5 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_2_4_5 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_2_4_5 = aclDaoComponent.getInheritedAccessControlList(i_1_2_4_5);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_2_4, i_1_2_4_5);
         
-        Long i_1_3_6 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_3_6 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_3_6 = aclDaoComponent.getInheritedAccessControlList(i_1_3_6);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_3, i_1_3_6);
-        Long i_1_3_6_7 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_3_6_7 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_3_6_7 = aclDaoComponent.getInheritedAccessControlList(i_1_3_6_7);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_3_6, i_1_3_6_7);
         
@@ -1264,28 +1267,28 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(true);
-        Long i_1 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1 = aclDaoComponent.getInheritedAccessControlList(i_1);
         
-        Long i_1_2 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_2 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_2 = aclDaoComponent.getInheritedAccessControlList(i_1_2);
         aclDaoComponent.mergeInheritedAccessControlList(s_1, i_1_2);
-        Long i_1_3 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_3 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_3 = aclDaoComponent.getInheritedAccessControlList(i_1_3);
         aclDaoComponent.mergeInheritedAccessControlList(s_1, i_1_3);
         
-        Long i_1_2_4 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_2_4 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_2_4 = aclDaoComponent.getInheritedAccessControlList(i_1_2_4);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_2, i_1_2_4);
-        Long i_1_2_4_5 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_2_4_5 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_2_4_5 = aclDaoComponent.getInheritedAccessControlList(i_1_2_4_5);
         assertNotNull(s_1_2_4_5);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_2_4, i_1_2_4_5);
         
-        Long i_1_3_6 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_3_6 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_3_6 = aclDaoComponent.getInheritedAccessControlList(i_1_3_6);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_3, i_1_3_6);
-        Long i_1_3_6_7 = aclDaoComponent.createAccessControlList(properties);
+        Long i_1_3_6_7 = aclDaoComponent.createAccessControlList(properties).getId();
         Long s_1_3_6_7 = aclDaoComponent.getInheritedAccessControlList(i_1_3_6_7);
         aclDaoComponent.mergeInheritedAccessControlList(s_1_3_6, i_1_3_6_7);
         
@@ -1325,7 +1328,7 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.OLD);
         properties.setVersioned(false);
-        Long id = aclDaoComponent.createAccessControlList(properties);
+        Long id = aclDaoComponent.createAccessControlList(properties).getId();
         
         AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(id);
         assertEquals(aclProps.getAclType(), ACLType.OLD);
@@ -1370,9 +1373,9 @@ public class AclDaoComponentTest extends TestCase
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.DEFINING);
         properties.setVersioned(false);
-        Long id1 = aclDaoComponent.createAccessControlList(properties);
+        Long id1 = aclDaoComponent.createAccessControlList(properties).getId();
         Long shared1 = aclDaoComponent.getInheritedAccessControlList(id1);
-        Long id2 = aclDaoComponent.createAccessControlList(properties);
+        Long id2 = aclDaoComponent.createAccessControlList(properties).getId();
         Long shared2 = aclDaoComponent.getInheritedAccessControlList(id2);
         aclDaoComponent.mergeInheritedAccessControlList(shared1, id2);
         

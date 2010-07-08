@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.util.EqualsHelper;
 
@@ -35,7 +34,7 @@ import org.alfresco.util.EqualsHelper;
  * @author janv
  * @since 3.4
  */
-public class AclEntity implements Acl, DbAccessControlList
+public class AclEntity implements Acl
 {
     private Long id;
     private Long version;

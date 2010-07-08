@@ -18,7 +18,7 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 
@@ -46,7 +46,7 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
      * Create a new one from scratch.
      * @param store The store it's being created in.
      */
-    public DeletedNodeImpl(AVMStore store, DbAccessControlList acl)
+    public DeletedNodeImpl(AVMStore store, Acl acl)
     {
         super(store);
         this.setAcl(acl);

@@ -26,7 +26,6 @@ package org.alfresco.repo.domain.permissions;
 
 import java.util.List;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -52,9 +51,11 @@ public interface AclDAO
     public Acl getAcl(Long id);
     
     /**
-     * Get an ACL
+     * Get the ACL properties
+     * 
+     * @return - the id of all ACLs affected
      */
-    public DbAccessControlList getDbAccessControlList(Long id);
+    public AccessControlListProperties getAccessControlListProperties(Long id);
     
     /**
      * Delete an ACL
@@ -110,13 +111,6 @@ public interface AclDAO
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl);
     
     /**
-     * Get the ACL properties
-     * 
-     * @return - the id of all ACLs affected
-     */
-    public AccessControlListProperties getAccessControlListProperties(Long id);
-    
-    /**
      * Create a new ACL with default properties
      * 
      * @see #getDefaultProperties()
@@ -134,23 +128,15 @@ public interface AclDAO
     /**
      * Create a new ACL with the given properties. Unset properties are assigned defaults.
      * 
-     * @return ID of AccessControlList
+     * @return Acl
      */
-    public Long createAccessControlList(AccessControlListProperties properties);
-    
-    public DbAccessControlList createDbAccessControlList(AccessControlListProperties properties);
+    public Acl createAccessControlList(AccessControlListProperties properties);
     
     /**
      * @see #createAccessControlList(AccessControlListProperties)
      * @return Acl
      */
-    public Acl createAcl(AccessControlListProperties properties);
-    
-    /**
-     * @see #createAccessControlList(AccessControlListProperties)
-     * @return Acl
-     */
-    public Acl createAcl(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited);
+    public Acl createAccessControlList(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited);
     
     /**
      * Get the id of the ACL inherited from the one given
@@ -163,13 +149,13 @@ public interface AclDAO
      */
     public List<AclChange> mergeInheritedAccessControlList(Long inherited, Long target);
     
-    public DbAccessControlList getDbAccessControlListCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode);
+    public Acl getAclCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode);
     
     public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults);
     
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults);
     
-    public DbAccessControlList createLayeredAcl(Long indirectedAcl);
+    public Acl createLayeredAcl(Long indirectedAcl);
     
     public void renameAuthority(String before, String after);
     

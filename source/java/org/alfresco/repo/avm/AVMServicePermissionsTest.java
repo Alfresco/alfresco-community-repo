@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -512,20 +512,20 @@ public class AVMServicePermissionsTest extends TestCase
 
             AVMNodeDescriptor desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base");
             AVMNode node = avmNodeDAO.getByID(desc.getId());
-            DbAccessControlList acl = node.getAcl();
+            Acl acl = node.getAcl();
             assertNotNull(acl);
-            acl = aclDaoComponent.getDbAccessControlList(aclDaoComponent.getInheritedAccessControlList(acl.getId()));
+            acl = aclDaoComponent.getAcl(aclDaoComponent.getInheritedAccessControlList(acl.getId()));
             assertNotNull(acl);
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir");
             node = avmNodeDAO.getByID(desc.getId());
-            DbAccessControlList dirAcl = node.getAcl();
+            Acl dirAcl = node.getAcl();
             assertNotNull(dirAcl);
             assertEquals(acl.getId(), dirAcl.getId());
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
             node = avmNodeDAO.getByID(desc.getId());
-            DbAccessControlList fileAcl = node.getAcl();
+            Acl fileAcl = node.getAcl();
             assertNotNull(fileAcl);
             assertEquals(acl.getId(), fileAcl.getId());
 
@@ -595,20 +595,20 @@ public class AVMServicePermissionsTest extends TestCase
 
             AVMNodeDescriptor desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base");
             AVMNode node = avmNodeDAO.getByID(desc.getId());
-            DbAccessControlList acl = node.getAcl();
+            Acl acl = node.getAcl();
             assertNotNull(acl);
-            acl = aclDaoComponent.getDbAccessControlList(aclDaoComponent.getInheritedAccessControlList(acl.getId()));
+            acl = aclDaoComponent.getAcl(aclDaoComponent.getInheritedAccessControlList(acl.getId()));
             assertNotNull(acl);
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir");
             node = avmNodeDAO.getByID(desc.getId());
-            DbAccessControlList dirAcl = node.getAcl();
+            Acl dirAcl = node.getAcl();
             assertNotNull(dirAcl);
             assertEquals(acl.getId(), dirAcl.getId());
 
             desc = avmService.lookup(-1, storeName + "-layer-base:/layer-to-base/update-dir/update-file");
             node = avmNodeDAO.getByID(desc.getId());
-            DbAccessControlList fileAcl = node.getAcl();
+            Acl fileAcl = node.getAcl();
             assertNotNull(fileAcl);
             assertEquals(acl.getId(), fileAcl.getId());
 
@@ -811,7 +811,7 @@ public class AVMServicePermissionsTest extends TestCase
             // debugPermissions(storeName + ":/base");
             // debugPermissions(storeName + "-layer-base:/layer-to-base");
             //
-            // DbAccessControlList acl = avmACLDAO.getAccessControlList(nodeRef);
+            // Acl acl = avmACLDAO.getAccessControlList(nodeRef);
             // List<Long> nodes = aclDaoComponent.getAvmNodesByACL(acl.getId());
             // for (Long id : nodes)
             // {
@@ -3346,7 +3346,7 @@ public class AVMServicePermissionsTest extends TestCase
     {
         AVMNodeDescriptor desc = avmService.lookup(-1, path);
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
-        DbAccessControlList acl = avmACLDAO.getAccessControlList(nodeRef);
+        Acl acl = avmACLDAO.getAccessControlList(nodeRef);
         System.out.println(path);
         System.out.println("\t => Ind="
                 + desc.getIndirection() + ",Deleted=" + desc.isDeleted() + ",LD=" + desc.isLayeredDirectory() + ",LF=" + desc.isLayeredFile() + ",PD=" + desc.isPlainDirectory()
@@ -3916,7 +3916,7 @@ public class AVMServicePermissionsTest extends TestCase
         builder.append(" - ");
         
         AVMNode layeredNode = avmNodeDAO.getByID(desc.getId());
-        DbAccessControlList acl = layeredNode.getAcl();
+        Acl acl = layeredNode.getAcl();
         builder.append(acl);
         
         builder.append('\n');

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
@@ -69,13 +69,13 @@ public interface AVMStore
      * Get the Acl associated with this store.
      * @return
      */
-    public DbAccessControlList getStoreAcl();
+    public Acl getStoreAcl();
 
     /**
      * Set the acl on this store.
      * @param acl
      */
-    public void setStoreAcl(DbAccessControlList acl);
+    public void setStoreAcl(Acl acl);
 
     /**
      * Snapshots this store.  This sets all nodes in the
@@ -478,7 +478,7 @@ public interface AVMStore
      * @param path The path to the node.
      * @param acl The ACL to set.
      */
-    public void setACL(String path, DbAccessControlList acl);
+    public void setACL(String path, Acl acl);
 
     /**
      * Get the ACL on a node.
@@ -486,7 +486,7 @@ public interface AVMStore
      * @param path The path to the node.
      * @return The ACL.
      */
-    public DbAccessControlList getACL(int version, String path);
+    public Acl getACL(int version, String path);
 
     /**
      * Link a node into a directory, directly.

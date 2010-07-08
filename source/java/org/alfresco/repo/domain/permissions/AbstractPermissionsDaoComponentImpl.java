@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
@@ -154,15 +153,14 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         return ret;
     }
 
-    protected DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    protected Acl getAccessControlList(NodeRef nodeRef)
     {
-        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
-        return acl;
+        return getACLDAO(nodeRef).getAccessControlList(nodeRef);
     }
 
     protected CreationReport getMutableAccessControlList(NodeRef nodeRef)
     {
-        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        Acl acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if (acl == null)
         {
             return createAccessControlList(nodeRef, INHERIT_PERMISSIONS_DEFAULT, null);
@@ -195,7 +193,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         // If the object does not exist it will repeatedly query to check its
         // non existence.
         NodePermissionEntry npe = null;
-        DbAccessControlList acl = null;
+        Acl acl = null;
         try
         {
             acl = getAccessControlList(nodeRef);
@@ -238,7 +236,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     private SimpleNodePermissionEntry createSimpleNodePermissionEntry(NodeRef nodeRef)
     {
-        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        Acl acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
@@ -270,7 +268,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
     
     private SimpleNodePermissionEntry createSimpleNodePermissionEntry(StoreRef storeRef)
     {
-        DbAccessControlList acl = getACLDAO(storeRef).getAccessControlList(storeRef);
+        Acl acl = getACLDAO(storeRef).getAccessControlList(storeRef);
         if (acl == null)
         {
             // there isn't an access control list for the node - spoof a null one
@@ -294,7 +292,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-        DbAccessControlList acl = null;
+        Acl acl = null;
         try
         {
             acl = getAccessControlList(nodeRef);
@@ -322,7 +320,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public void deletePermissions(NodeRef nodeRef, final String authority)
     {
-        DbAccessControlList acl = null;
+        Acl acl = null;
         try
         {
             AccessControlListDAO aclDAO = getACLDAO(nodeRef);
@@ -368,7 +366,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
      */
     public void deletePermission(NodeRef nodeRef, String authority, PermissionReference permission)
     {
-        DbAccessControlList acl = null;
+        Acl acl = null;
         try
         {
             AccessControlListDAO aclDAO = getACLDAO(nodeRef);
@@ -453,7 +451,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
         // Get the access control list
         // Note the logic here requires to know whether it was created or not
-        DbAccessControlList existing = getAccessControlList(nodeRef);
+        Acl existing = getAccessControlList(nodeRef);
         if (existing != null)
         {
             deletePermissions(nodeRef);
@@ -483,7 +481,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
         
-        DbAccessControlList acl = getAccessControlList(nodeRef);
+        Acl acl = getAccessControlList(nodeRef);
         if ((acl == null) && (inheritParentPermissions == INHERIT_PERMISSIONS_DEFAULT))
         {
             return;
@@ -515,7 +513,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
     
     public void deletePermission(StoreRef storeRef, String authority, PermissionReference permission)
     {
-        DbAccessControlList acl = getAccessControlList(storeRef);
+        Acl acl = getAccessControlList(storeRef);
         if(acl == null)
         {
             return;
@@ -528,9 +526,9 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         aclDaoComponent.deleteAccessControlEntries(acl.getId(), pattern);
     }
 
-    private DbAccessControlList getMutableAccessControlList(StoreRef storeRef)
+    private Acl getMutableAccessControlList(StoreRef storeRef)
     {
-        DbAccessControlList acl = getACLDAO(storeRef).getAccessControlList(storeRef);
+        Acl acl = getACLDAO(storeRef).getAccessControlList(storeRef);
         if(acl == null)
         {
             SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
@@ -538,7 +536,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             properties.setInherits(false);
             properties.setVersioned(false);
             
-            acl = aclDaoComponent.createDbAccessControlList(properties);
+            acl = aclDaoComponent.createAccessControlList(properties);
             getACLDAO(storeRef).setAccessControlList(storeRef, acl);
         }
         return acl;
@@ -554,14 +552,14 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         return ret;
     }
 
-    private DbAccessControlList getAccessControlList(StoreRef storeRef)
+    private Acl getAccessControlList(StoreRef storeRef)
     {
        return getACLDAO(storeRef).getAccessControlList(storeRef);
     }
 
     public void deletePermissions(StoreRef storeRef, String authority)
     {
-        DbAccessControlList acl = getAccessControlList(storeRef);
+        Acl acl = getAccessControlList(storeRef);
         if(acl == null)
         {
             return;
@@ -580,7 +578,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public void setPermission(StoreRef storeRef, String authority, PermissionReference permission, boolean allow)
     {
-        DbAccessControlList acl = getMutableAccessControlList(storeRef);
+        Acl acl = getMutableAccessControlList(storeRef);
     
         SimpleAccessControlEntry entry = new SimpleAccessControlEntry();
         entry.setAuthority(authority);
@@ -600,7 +598,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         // If the object does not exist it will repeatedly query to check its
         // non existence.
         NodePermissionEntry npe = null;
-        DbAccessControlList acl = null;
+        Acl acl = null;
         try
         {
             acl = getAccessControlList(storeRef);
@@ -626,7 +624,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     public AccessControlListProperties getAccessControlListProperties(NodeRef nodeRef)
     {
-        DbAccessControlList acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+        Acl acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
         if(acl == null)
         {
             return null;
@@ -634,7 +632,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         return aclDaoComponent.getAccessControlListProperties(acl.getId());
     }
 
-    protected abstract CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, DbAccessControlList existing);
+    protected abstract CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, Acl existing);
 
     
     /**
@@ -644,11 +642,11 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
      */        
     static class CreationReport
     {
-        DbAccessControlList created;
+        Acl created;
 
         List<AclChange> changes;
 
-        CreationReport(DbAccessControlList created, List<AclChange> changes)
+        CreationReport(Acl created, List<AclChange> changes)
         {
             this.created = created;
             this.changes = changes;
@@ -668,7 +666,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
          * Set the ACL that was created
          * @param created
          */
-        public void setCreated(DbAccessControlList created)
+        public void setCreated(Acl created)
         {
             this.created = created;
         }
@@ -686,7 +684,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
          * Get the created ACL
          * @return - the acl
          */
-        public DbAccessControlList getCreated()
+        public Acl getCreated()
         {
             return created;
         }

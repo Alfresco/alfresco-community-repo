@@ -32,9 +32,9 @@ import java.util.SortedMap;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -1024,7 +1024,7 @@ public class AVMRepository
         {
             AVMNode node = fAVMNodeDAO.getByID(vr.getRoot().getId());
             
-            root.setIsRoot(false);
+            node.setIsRoot(false);
             fAVMNodeDAO.update(node);
             
             fVersionLayeredNodeEntryDAO.delete(vr);
@@ -2758,7 +2758,7 @@ public class AVMRepository
      * @param acl
      *            The ACL to set.
      */
-    public void setACL(String path, DbAccessControlList acl)
+    public void setACL(String path, Acl acl)
     {
         fLookupCount.set(1);
         try
@@ -2787,7 +2787,7 @@ public class AVMRepository
      *            The path to the node.
      * @return The ACL.
      */
-    public DbAccessControlList getACL(int version, String path)
+    public Acl getACL(int version, String path)
     {
         fLookupCount.set(1);
         try
@@ -3233,7 +3233,7 @@ public class AVMRepository
      */
     public boolean can(AVMStore store, AVMNode node, String permission, boolean isDirectlyContained)
     {
-        DbAccessControlList acl = node.getAcl();
+        Acl acl = node.getAcl();
 
         QName type;
         if (node.getType() == AVMNodeType.PLAIN_DIRECTORY)
@@ -3335,7 +3335,7 @@ public class AVMRepository
         }
         if (store != null)
         {
-            DbAccessControlList storeAcl = store.getStoreAcl();
+            Acl storeAcl = store.getStoreAcl();
             if (storeAcl != null)
             {
                 Long storeAclID = storeAcl.getId();
@@ -3407,7 +3407,7 @@ public class AVMRepository
      * @param storeName
      * @param acl
      */
-    public void setStoreAcl(String storeName, DbAccessControlList acl)
+    public void setStoreAcl(String storeName, Acl acl)
     {
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)
@@ -3425,7 +3425,7 @@ public class AVMRepository
      * @param storeName
      * @return
      */
-    public DbAccessControlList getStoreAcl(String storeName)
+    public Acl getStoreAcl(String storeName)
     {
         AVMStore store = getAVMStoreByName(storeName);
         if (store == null)

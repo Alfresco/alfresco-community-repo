@@ -31,8 +31,8 @@ import java.util.SortedMap;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.util.AVMUtil;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
@@ -1502,17 +1502,17 @@ public class AVMServiceImpl implements AVMService
     }
     
     
-    private DbAccessControlList getAclAsSystem(final int version, final String path)
+    private Acl getAclAsSystem(final int version, final String path)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>(){
+        return AuthenticationUtil.runAs(new RunAsWork<Acl>(){
 
-            public DbAccessControlList doWork() throws Exception
+            public Acl doWork() throws Exception
             {
                 return fAVMRepository.getACL(version, path);
             }}, AuthenticationUtil.getSystemUserName());
     }
     
-    private void setAclAsSystem(final String path, final DbAccessControlList acl)
+    private void setAclAsSystem(final String path, final Acl acl)
     {
         AuthenticationUtil.runAs(new RunAsWork<Object>(){
 
@@ -1533,13 +1533,13 @@ public class AVMServiceImpl implements AVMService
     {
         String newPath = path + '/' + name;
         AVMNodeDescriptor existing = lookup(-1, newPath);
-        DbAccessControlList parentAcl = getAclAsSystem(-1, path);
+        Acl parentAcl = getAclAsSystem(-1, path);
         Long parentAclId = null;
         if(parentAcl != null)
         {
             parentAclId = parentAcl.getId();
         }
-        DbAccessControlList acl = getAclAsSystem(version, desc.getPath());
+        Acl acl = getAclAsSystem(version, desc.getPath());
         
         if (desc.isFile())
         {
@@ -1552,7 +1552,7 @@ public class AVMServiceImpl implements AVMService
             createFile(path, name, in);
             if (acl != null)
             {
-                setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
+                setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getAclCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
             }
             ContentData cd = getContentDataForRead(version, desc.getPath());
             setEncoding(newPath, cd.getEncoding());
@@ -1571,7 +1571,7 @@ public class AVMServiceImpl implements AVMService
                 // Set acl before creating children as acls inherit :-)
                 if (acl != null)
                 {
-                    setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
+                    setAclAsSystem(newPath, AVMDAOs.Instance().fAclDAO.getAclCopy(acl.getId(), parentAclId, ACLCopyMode.COPY));
                 }
             }
             Map<String, AVMNodeDescriptor> listing = getDirectoryListing(desc); 

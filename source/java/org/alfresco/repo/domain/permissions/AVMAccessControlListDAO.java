@@ -37,7 +37,6 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
@@ -140,7 +139,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             if (descriptor.isPrimary())
             {
-                DbAccessControlList acl = getAclAsSystem(descriptor.getIndirectionVersion(), descriptor.getIndirection());
+                Acl acl = getAclAsSystem(descriptor.getIndirectionVersion(), descriptor.getIndirection());
                 if (acl == null)
                 {
                     return null;
@@ -152,7 +151,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             else
             {
-                DbAccessControlList acl = getAclAsSystem(version, path);
+                Acl acl = getAclAsSystem(version, path);
                 if (acl == null)
                 {
                     return null;
@@ -183,7 +182,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             return null;
         }
 
-        DbAccessControlList acl = getAclAsSystem(avmVersionPath.getFirst(), splitPath[0]);
+        Acl acl = getAclAsSystem(avmVersionPath.getFirst(), splitPath[0]);
         if (acl == null)
         {
             return null;
@@ -203,7 +202,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
      * @return The ACL.
      * @throws InvalidNodeRefException
      */
-    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    public Acl getAccessControlList(NodeRef nodeRef)
     {
         Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = avmVersionPath.getFirst();
@@ -227,7 +226,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
      *            The ACL.
      * @throws InvalidNodeRefException
      */
-    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
+    public void setAccessControlList(NodeRef nodeRef, Acl acl)
     {
         Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = avmVersionPath.getFirst();
@@ -537,7 +536,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                         for (Pair<Integer, String> layerPath : layerPaths)
                         {
-                            DbAccessControlList target = getAclAsSystem(-1, layerPath.getSecond());
+                            Acl target = getAclAsSystem(-1, layerPath.getSecond());
                             if (target != null)
                             {
                                 if (target.getAclType() == ACLType.LAYERED)
@@ -590,7 +589,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                     for (Pair<Integer, String> path : paths)
                     {
                         // No need to force COW - any inherited ACL will have COWED if the top ACL required it
-                        setAclAsSystem(path.getSecond(), aclDaoComponent.getDbAccessControlList(change.getAfter()));
+                        setAclAsSystem(path.getSecond(), aclDaoComponent.getAcl(change.getAfter()));
                         NodeRef layeredNode = AVMNodeConverter.ToNodeRef(-1, path.getSecond());
                         updateInheritedChangedAcls(layeredNode, changeMap, unchanged, aclDaoComponent.getInheritedAccessControlList(change.getAfter()), SetMode.DIRECT_ONLY,
                                 indirections);
@@ -637,7 +636,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
     private void fixUpAcls(AVMNodeDescriptor descriptor, Map<Long, Long> changes, Set<Long> unchanged, Long unsetAcl, SetMode mode, Map<Long, Set<Long>> indirections)
     {
-        DbAccessControlList acl = getAclAsSystem(-1, descriptor.getPath());
+        Acl acl = getAclAsSystem(-1, descriptor.getPath());
         Long id = null;
         if (acl != null)
         {
@@ -647,7 +646,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         if (id == null)
         {
             // No need to force COW - ACL should have COWed if required
-            setAclAsSystem(descriptor.getPath(), aclDaoComponent.getDbAccessControlList(unsetAcl));
+            setAclAsSystem(descriptor.getPath(), aclDaoComponent.getAcl(unsetAcl));
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, descriptor.getPath());
             updateReferencingLayeredAcls(nodeRef, unsetAcl, indirections);
         }
@@ -656,7 +655,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             Long updateId = changes.get(id);
             if (updateId != id)
             {
-                DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(updateId);
+                Acl newAcl = aclDaoComponent.getAcl(updateId);
                 // No need to force COW - ACL should have COWed if required
                 setAclAsSystem(descriptor.getPath(), newAcl);
             }
@@ -767,8 +766,8 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                 // Simple set does not require any special COW wire up
                 // The AVM node will COW as required
-                DbAccessControlList previous = getAclAsSystem(-1, descriptor.getPath());
-                setAclAsSystem(descriptor.getPath(), aclDaoComponent.getDbAccessControlList(mergeFrom));
+                Acl previous = getAclAsSystem(-1, descriptor.getPath());
+                setAclAsSystem(descriptor.getPath(), aclDaoComponent.getAcl(mergeFrom));
                 if (previous == null)
                 {
                     NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, descriptor.getPath());
@@ -801,7 +800,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
                     AVMNodeDescriptor child = children.get(key);
 
-                    DbAccessControlList acl = getAclAsSystem(-1, child.getPath());
+                    Acl acl = getAclAsSystem(-1, child.getPath());
 
                     if (acl == null)
                     {
@@ -823,7 +822,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                         {
                             if (change.getBefore().equals(acl.getId()))
                             {
-                                setAclAsSystem(child.getPath(), aclDaoComponent.getDbAccessControlList(change.getAfter()));
+                                setAclAsSystem(child.getPath(), aclDaoComponent.getAcl(change.getAfter()));
                                 setFixedAcls(child, change.getAfter(), null, newChanges, SetMode.DIRECT_ONLY, false, indirections);
                                 changes.addAll(newChanges);
                                 break;
@@ -928,7 +927,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
         }
 
-        DbAccessControlList existingAcl = getAclAsSystem(-1, node.getPath());
+        Acl existingAcl = getAclAsSystem(-1, node.getPath());
 
         if (existingAcl != null)
         {
@@ -940,7 +939,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                 properties.setAclType(ACLType.DEFINING);
                 properties.setVersioned(true);
                 
-                DbAccessControlList newAcl = aclDaoComponent.createDbAccessControlList(properties);
+                Acl newAcl = aclDaoComponent.createAccessControlList(properties);
                 long id = newAcl.getId();
                 
                 AccessControlList existing = aclDaoComponent.getAccessControlList(existingAcl.getId());
@@ -982,7 +981,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                 AVMNodeDescriptor referencedNode = fAVMService.lookup(-1, node.getIndirection(), false);
                 if ((referencedNode != null) && (referencedNode.isDirectory()))
                 {
-                    DbAccessControlList acl = getAclAsSystem(-1, referencedNode.getPath());
+                    Acl acl = getAclAsSystem(-1, referencedNode.getPath());
                     if (acl != null)
                     {
                         setAclAsSystem(node.getPath(), aclDaoComponent.createLayeredAcl(acl.getId()));
@@ -1129,19 +1128,19 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    private DbAccessControlList getStoreAclAsSystem(final String storeName)
+    private Acl getStoreAclAsSystem(final String storeName)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>()
+        return AuthenticationUtil.runAs(new RunAsWork<Acl>()
         {
 
-            public DbAccessControlList doWork() throws Exception
+            public Acl doWork() throws Exception
             {
                 return fAVMRepository.getStoreAcl(storeName);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private void setStoreAclAsSystem(final String storeName, final DbAccessControlList acl)
+    private void setStoreAclAsSystem(final String storeName, final Acl acl)
     {
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
@@ -1154,19 +1153,19 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private DbAccessControlList getAclAsSystem(final int version, final String path)
+    private Acl getAclAsSystem(final int version, final String path)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<DbAccessControlList>()
+        return AuthenticationUtil.runAs(new RunAsWork<Acl>()
         {
 
-            public DbAccessControlList doWork() throws Exception
+            public Acl doWork() throws Exception
             {
                 return fAVMRepository.getACL(version, path);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private void setAclAsSystem(final String path, final DbAccessControlList acl)
+    private void setAclAsSystem(final String path, final Acl acl)
     {
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
@@ -1179,7 +1178,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    public DbAccessControlList getAccessControlList(StoreRef storeRef)
+    public Acl getAccessControlList(StoreRef storeRef)
     {
         try
         {
@@ -1191,7 +1190,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl)
+    public void setAccessControlList(StoreRef storeRef, Acl acl)
     {
         try
         {

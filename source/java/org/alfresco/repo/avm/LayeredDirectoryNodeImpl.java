@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
@@ -872,7 +872,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         {
             if ((getAcl() == null) || (getAcl().getAclType() == ACLType.LAYERED))
             {
-                DbAccessControlList acl = null;
+                Acl acl = null;
                 Lookup lookup = AVMRepository.GetInstance().lookupDirectory(-1, getIndirection());
                 if (lookup != null)
                 {
@@ -886,7 +886,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                         else
                         {
                             
-                            acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(getAcl().getId(), dir.getAcl().getId(), ACLCopyMode.REDIRECT);
+                            acl = AVMDAOs.Instance().fAclDAO.getAclCopy(getAcl().getId(), dir.getAcl().getId(), ACLCopyMode.REDIRECT);
                         }
                     }
                     else
@@ -897,7 +897,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                         }
                         else
                         {
-                            acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(getAcl().getId(), null, ACLCopyMode.REDIRECT);
+                            acl = AVMDAOs.Instance().fAclDAO.getAclCopy(getAcl().getId(), null, ACLCopyMode.REDIRECT);
                         }
                     }
                 }
@@ -908,21 +908,21 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
         {
             if (getAcl().getAclType() == ACLType.LAYERED)
             {
-                DbAccessControlList acl = null;
+                Acl acl = null;
                 if (getAcl() == null)
                 {
                     acl = AVMDAOs.Instance().fAclDAO.createLayeredAcl(null);
                 }
                 else
                 {
-                    acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(getAcl().getId(), null, ACLCopyMode.REDIRECT);
+                    acl = AVMDAOs.Instance().fAclDAO.getAclCopy(getAcl().getId(), null, ACLCopyMode.REDIRECT);
                 }
                 setAclAndInherit(this, acl, null);
             }
         }
     }
 
-    public void setAclAndInherit(LayeredDirectoryNode layeredDirectory, DbAccessControlList acl, String name)
+    public void setAclAndInherit(LayeredDirectoryNode layeredDirectory, Acl acl, String name)
     {
         // Note ACLS may COW on next ACL change
         layeredDirectory.setAcl(acl);
@@ -937,7 +937,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
             if (node instanceof LayeredDirectoryNode)
             {
                 LayeredDirectoryNode childNode = (LayeredDirectoryNode) node;
-                DbAccessControlList currentAcl = node.getAcl();
+                Acl currentAcl = node.getAcl();
                 if (currentAcl == null)
                 {
                     if (acl == null)
@@ -946,7 +946,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                     }
                     else
                     {
-                        childNode.setAclAndInherit(childNode, AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(acl.getId(), acl.getId(), ACLCopyMode.REDIRECT), key);
+                        childNode.setAclAndInherit(childNode, AVMDAOs.Instance().fAclDAO.getAclCopy(acl.getId(), acl.getId(), ACLCopyMode.REDIRECT), key);
                     }
                 }
                 else
@@ -957,14 +957,14 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                     }
                     else
                     {
-                        childNode.setAclAndInherit(childNode, AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(currentAcl.getId(), acl.getId(), ACLCopyMode.REDIRECT), key);
+                        childNode.setAclAndInherit(childNode, AVMDAOs.Instance().fAclDAO.getAclCopy(currentAcl.getId(), acl.getId(), ACLCopyMode.REDIRECT), key);
                     }
                 }
             }
             else if (node instanceof PlainFileNode)
             {
                 PlainFileNode childNode = (PlainFileNode) node;
-                DbAccessControlList currentAcl = node.getAcl();
+                Acl currentAcl = node.getAcl();
                 if (currentAcl == null)
                 {
                     if (acl == null)
@@ -973,7 +973,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                     }
                     else
                     {
-                        childNode.setAcl(AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(acl.getId(), acl.getId(), ACLCopyMode.REDIRECT));
+                        childNode.setAcl(AVMDAOs.Instance().fAclDAO.getAclCopy(acl.getId(), acl.getId(), ACLCopyMode.REDIRECT));
                     }
                 }
                 else
@@ -984,7 +984,7 @@ public class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements Layer
                     }
                     else
                     {
-                        childNode.setAcl(AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(currentAcl.getId(), acl.getId(), ACLCopyMode.REDIRECT));
+                        childNode.setAcl(AVMDAOs.Instance().fAclDAO.getAclCopy(currentAcl.getId(), acl.getId(), ACLCopyMode.REDIRECT));
                     }
                 }
                 

@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.permissions.Acl;
 
 /**
  * Interface for Layered Directories.
@@ -110,5 +110,5 @@ public interface LayeredDirectoryNode extends DirectoryNode, Layered
      */
     public boolean getOpacity();
     
-    public void setAclAndInherit(LayeredDirectoryNode layeredDirectory, DbAccessControlList acl, String name);
+    public void setAclAndInherit(LayeredDirectoryNode layeredDirectory, Acl acl, String name);
 }

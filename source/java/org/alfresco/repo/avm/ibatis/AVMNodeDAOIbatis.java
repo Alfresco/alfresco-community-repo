@@ -43,12 +43,12 @@ import org.alfresco.repo.avm.PlainDirectoryNode;
 import org.alfresco.repo.avm.PlainDirectoryNodeImpl;
 import org.alfresco.repo.avm.PlainFileNode;
 import org.alfresco.repo.avm.PlainFileNodeImpl;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
 import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.avm.AVMVersionRootEntity;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -486,10 +486,10 @@ class AVMNodeDAOIbatis implements AVMNodeDAO
         
         node.setStoreNew(store);
         
-        DbAccessControlList acl = null;
+        Acl acl = null;
         if (nodeEntity.getAclId() != null)
         {
-            acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlList(nodeEntity.getAclId());
+            acl = AVMDAOs.Instance().fAclDAO.getAcl(nodeEntity.getAclId());
         }
         node.setAcl(acl);
         

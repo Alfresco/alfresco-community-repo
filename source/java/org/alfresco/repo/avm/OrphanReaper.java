@@ -21,9 +21,9 @@ package org.alfresco.repo.avm;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
 import org.alfresco.repo.domain.avm.AVMMergeLinkEntity;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
@@ -362,7 +362,8 @@ public class OrphanReaper
                     AVMDAOs.Instance().fAVMNodeDAO.deleteAspects(node.getId());
                     
                     // Get rid of ACL.
-                    DbAccessControlList acl = node.getAcl();
+                    @SuppressWarnings("unused")
+                    Acl acl = node.getAcl();
                     node.setAcl(null);
                     // Unused acls will be garbage collected
                     // Many acls will be shared

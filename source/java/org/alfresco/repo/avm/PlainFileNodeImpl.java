@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -116,9 +116,9 @@ public class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              ContentData content,
                              Map<QName, PropertyValue> props,
                              Set<QName> aspects,
-                             DbAccessControlList acl,
+                             Acl acl,
                              int versionID,
-                             DbAccessControlList parentAcl,
+                             Acl parentAcl,
                              ACLCopyMode mode)
     {
         super(store);

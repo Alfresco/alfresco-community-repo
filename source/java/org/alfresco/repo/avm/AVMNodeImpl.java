@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.avm.util.RawServices;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMHistoryLinkEntity;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMReadOnlyException;
 import org.alfresco.service.namespace.QName;
@@ -72,7 +72,7 @@ public abstract class AVMNodeImpl implements AVMNode
     /**
      * The ACL on this node.
      */
-    private DbAccessControlList fACL;
+    private Acl fACL;
     
     /**
      * The Store that we're new in.
@@ -364,12 +364,12 @@ public abstract class AVMNodeImpl implements AVMNode
     
     public void copyACLs(AVMNode other, ACLCopyMode mode)
     {
-        DbAccessControlList otherAcl = other.getAcl();
+        Acl otherAcl = other.getAcl();
         Long otherAclId = (otherAcl == null ? null : otherAcl.getId());
         copyACLs(otherAclId, otherAclId, mode);
     }
     
-    public void copyACLs(DbAccessControlList otherAcl, DbAccessControlList parentAcl, ACLCopyMode mode)
+    public void copyACLs(Acl otherAcl, Acl parentAcl, ACLCopyMode mode)
     {
         Long otherAclId = (otherAcl == null ? null : otherAcl.getId());
         Long parentAclId = (parentAcl == null ? null : parentAcl.getId());
@@ -379,7 +379,7 @@ public abstract class AVMNodeImpl implements AVMNode
     
     protected void copyACLs(AVMNode other, Long parentAcl, ACLCopyMode mode)
     {
-        DbAccessControlList otherAcl = other.getAcl();
+        Acl otherAcl = other.getAcl();
         copyACLs((otherAcl == null ? null : otherAcl.getId()), parentAcl, mode);
     }
     
@@ -387,7 +387,7 @@ public abstract class AVMNodeImpl implements AVMNode
     {
         if (otherAcl != null)
         {
-            DbAccessControlList aclCopy = AVMDAOs.Instance().fAclDAO.getDbAccessControlListCopy(otherAcl, parentAcl, mode);
+            Acl aclCopy = AVMDAOs.Instance().fAclDAO.getAclCopy(otherAcl, parentAcl, mode);
             setAcl(aclCopy);
         }
         else
@@ -498,7 +498,7 @@ public abstract class AVMNodeImpl implements AVMNode
      * Set the ACL on this node.
      * @param acl The ACL to set.
      */
-    public void setAcl(DbAccessControlList acl)
+    public void setAcl(Acl acl)
     {
         fACL = acl;
     }
@@ -507,7 +507,7 @@ public abstract class AVMNodeImpl implements AVMNode
      * Get the ACL on this node.
      * @return The ACL on this node.
      */
-    public DbAccessControlList getAcl()
+    public Acl getAcl()
     {
         return fACL;
     }

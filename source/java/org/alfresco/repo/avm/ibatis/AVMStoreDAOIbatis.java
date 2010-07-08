@@ -27,8 +27,8 @@ import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.AVMStoreDAO;
 import org.alfresco.repo.avm.AVMStoreImpl;
 import org.alfresco.repo.avm.DirectoryNode;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.avm.AVMStoreEntity;
+import org.alfresco.repo.domain.permissions.Acl;
 
 /**
  * iBATIS DAO wrapper for AVMStore
@@ -127,10 +127,10 @@ class AVMStoreDAOIbatis implements AVMStoreDAO
         store.setNextVersionID(storeEntity.getVersion().intValue());
         store.setVers(storeEntity.getVers());
         
-        DbAccessControlList acl = null;
+        Acl acl = null;
         if (storeEntity.getAclId() != null)
         {
-            acl = AVMDAOs.Instance().fAclDAO.getDbAccessControlList(storeEntity.getAclId());
+            acl = AVMDAOs.Instance().fAclDAO.getAcl(storeEntity.getAclId());
         }
         store.setStoreAcl(acl);
         

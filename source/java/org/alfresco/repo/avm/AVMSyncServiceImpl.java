@@ -27,11 +27,10 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.repo.avm.util.AVMUtil;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
-import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -661,7 +660,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
     /*
      * Get acl
      */
-    private DbAccessControlList getACL(String path)
+    private Acl getACL(String path)
     {
         Lookup lookup = AVMRepository.GetInstance().lookup(-1, path, false);
         if (lookup != null)
@@ -680,8 +679,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void setACL(String parentPath, String toCopyPath, String newPath)
     {
-        DbAccessControlList parentAcl= getACL(parentPath);
-        DbAccessControlList acl = getACL(toCopyPath);
+        Acl parentAcl= getACL(parentPath);
+        Acl acl = getACL(toCopyPath);
         
         Lookup lookup = AVMRepository.GetInstance().lookup(-1, newPath, false);
         if (lookup != null)
@@ -1046,8 +1045,8 @@ public class AVMSyncServiceImpl implements AVMSyncService
     // compare ACLs
     private int compareACLs(AVMNodeDescriptor srcDesc, AVMNodeDescriptor dstDesc)
     {
-        DbAccessControlList srcAcl = getACL(srcDesc.getPath());
-        DbAccessControlList dstAcl = getACL(dstDesc.getPath());
+        Acl srcAcl = getACL(srcDesc.getPath());
+        Acl dstAcl = getACL(dstDesc.getPath());
         
         if ((srcAcl == null) && (dstAcl == null))
         {

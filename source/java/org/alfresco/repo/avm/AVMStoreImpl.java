@@ -36,8 +36,8 @@ import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -101,7 +101,7 @@ public class AVMStoreImpl implements AVMStore
     /**
      * Acl for this store.
      */
-    private DbAccessControlList fACL;
+    private Acl fACL;
     
     /**
      * The AVMRepository.
@@ -1168,12 +1168,12 @@ public class AVMStoreImpl implements AVMStore
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMStore#getAcl()
      */
-    public DbAccessControlList getStoreAcl()
+    public Acl getStoreAcl()
     {
         return fACL;
     }
 
-    public void setStoreAcl(DbAccessControlList acl)
+    public void setStoreAcl(Acl acl)
     {
         fACL = acl;
     }
@@ -1772,7 +1772,7 @@ public class AVMStoreImpl implements AVMStore
      * @param path The path to the node.
      * @param acl The ACL to set.
      */
-    public void setACL(String path, DbAccessControlList acl)
+    public void setACL(String path, Acl acl)
     {
         Lookup lPath = lookup(-1, path, true, true);
         if (lPath == null)
@@ -1796,7 +1796,7 @@ public class AVMStoreImpl implements AVMStore
      * @param path The path to the node.
      * @return The ACL.
      */
-    public DbAccessControlList getACL(int version, String path)
+    public Acl getACL(int version, String path)
     {
         Lookup lPath = lookup(version, path, false, false);
         if (lPath == null)

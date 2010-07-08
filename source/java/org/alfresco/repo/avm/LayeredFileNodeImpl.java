@@ -18,7 +18,7 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -82,7 +82,7 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      * @param store
      *            The store we belong to.
      */
-    public LayeredFileNodeImpl(String indirection, AVMStore store, DbAccessControlList acl)
+    public LayeredFileNodeImpl(String indirection, AVMStore store, Acl acl)
     {
         super(store);
         setIndirection(indirection);
@@ -142,7 +142,7 @@ public class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
             throw new AVMException("Unbacked layered file node.");
         }
         DirectoryNode dir = lPath.getCurrentNodeDirectory();
-        DbAccessControlList parentAcl = null;
+        Acl parentAcl = null;
         if ((dir != null) && (dir.getAcl() != null))
         {
             parentAcl = dir.getAcl();

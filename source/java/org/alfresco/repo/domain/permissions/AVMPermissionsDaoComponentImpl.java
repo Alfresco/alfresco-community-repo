@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -47,7 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoComponentImpl
 {
     @Override
-    protected CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, DbAccessControlList existing)
+    protected CreationReport createAccessControlList(NodeRef nodeRef, boolean inherit, Acl existing)
     {
         if (existing == null)
         {
@@ -55,7 +54,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             properties.setAclType(ACLType.DEFINING);
             properties.setVersioned(true);
             
-            DbAccessControlList acl = aclDaoComponent.createDbAccessControlList(properties);
+            Acl acl = aclDaoComponent.createAccessControlList(properties);
             long id = acl.getId();
             
             List<AclChange> changes = new ArrayList<AclChange>();
@@ -67,7 +66,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
         SimpleAccessControlListProperties properties;
         Long id;
         List<AclChange> changes;
-        DbAccessControlList acl;
+        Acl acl;
         switch (existing.getAclType())
         {
         case OLD:
@@ -83,7 +82,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             properties.setInherits(existing.getInherits());
             properties.setVersioned(true);
             
-            acl = aclDaoComponent.createDbAccessControlList(properties);
+            acl = aclDaoComponent.createAccessControlList(properties);
             id = acl.getId();
             
             changes = new ArrayList<AclChange>();
@@ -108,7 +107,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             }
             properties.setVersioned(true);
             
-            acl = aclDaoComponent.createDbAccessControlList(properties);
+            acl = aclDaoComponent.createAccessControlList(properties);
             id = acl.getId();
             
             changes = new ArrayList<AclChange>();
@@ -140,7 +139,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
     
     public void deletePermissions(NodeRef nodeRef)
     {
-        DbAccessControlList acl = null;
+        Acl acl = null;
         try
         {
             acl = getAccessControlList(nodeRef);
@@ -159,7 +158,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
                 if (acl.getInheritsFrom() != null)
                 {
                     Long inheritsFrom = acl.getInheritsFrom();
-                    getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getDbAccessControlList(inheritsFrom));
+                    getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getAcl(inheritsFrom));
                     List<AclChange> changes = new ArrayList<AclChange>();
                     changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, inheritsFrom, aclDaoComponent.getInheritedAccessControlList(acl.getId())));
                     getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
@@ -173,7 +172,7 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
                     properties.setInherits(Boolean.FALSE);
                     properties.setVersioned(true);
                     
-                    DbAccessControlList newAcl = aclDaoComponent.createDbAccessControlList(properties);
+                    Acl newAcl = aclDaoComponent.createAccessControlList(properties);
                     long id = newAcl.getId();
                     
                     getACLDAO(nodeRef).setAccessControlList(nodeRef, newAcl);

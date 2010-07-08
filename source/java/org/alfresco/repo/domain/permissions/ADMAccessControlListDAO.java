@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.domain.AccessControlListDAO;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.domain.permissions.AVMAccessControlListDAO.CounterSet;
@@ -85,14 +84,14 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         return nodePair.getFirst();
     }
 
-    public DbAccessControlList getAccessControlList(NodeRef nodeRef)
+    public Acl getAccessControlList(NodeRef nodeRef)
     {
         Long nodeId = getNodeIdNotNull(nodeRef);
         Long aclId = nodeDAO.getNodeAclId(nodeId);
-        return aclDaoComponent.getDbAccessControlList(aclId);
+        return aclDaoComponent.getAcl(aclId);
     }
 
-    public DbAccessControlList getAccessControlList(StoreRef storeRef)
+    public Acl getAccessControlList(StoreRef storeRef)
     {
         return null;
     }
@@ -114,7 +113,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         {
             return null;
         }
-        DbAccessControlList acl = getAccessControlList(parentAssocRefPair.getSecond().getParentRef());
+        Acl acl = getAccessControlList(parentAssocRefPair.getSecond().getParentRef());
         if (acl != null)
         {
             return acl.getId();
@@ -161,7 +160,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         // Do the children first
 
         Long aclId = nodeDAO.getNodeAclId(nodeId);
-        DbAccessControlList existingAcl = aclDaoComponent.getDbAccessControlList(aclId);
+        Acl existingAcl = aclDaoComponent.getAcl(aclId);
         
         Long toInherit = null;
         Long idToInheritFrom = null;
@@ -182,7 +181,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                         actuallyInherited = inherited;
                     }
                 }
-                Acl newAcl = aclDaoComponent.createAcl(properties, existing.getEntries(), actuallyInherited);
+                Acl newAcl = aclDaoComponent.createAccessControlList(properties, existing.getEntries(), actuallyInherited);
                 idToInheritFrom = newAcl.getId();
                 nodeDAO.setNodeAclId(nodeId, idToInheritFrom);
             }
@@ -200,7 +199,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                 result.increment(ACLType.DEFINING);
 
                 AccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
-                DbAccessControlList newAcl = aclDaoComponent.createDbAccessControlList(properties);
+                Acl newAcl = aclDaoComponent.createAccessControlList(properties);
                 long id = newAcl.getId();
 
                 idToInheritFrom = id;
@@ -245,7 +244,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         nodeDAO.setNodeAclId(nodeId, aclId);
     }
 
-    public void setAccessControlList(NodeRef nodeRef, DbAccessControlList acl)
+    public void setAccessControlList(NodeRef nodeRef, Acl acl)
     {
         Long aclId = null;
         if (acl != null)
@@ -255,7 +254,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         setAccessControlList(nodeRef, aclId);
     }
 
-    public void setAccessControlList(StoreRef storeRef, DbAccessControlList acl)
+    public void setAccessControlList(StoreRef storeRef, Acl acl)
     {
         throw new UnsupportedOperationException();
     }
@@ -346,7 +345,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                     }
                     else
                     {
-                        DbAccessControlList dbAcl = aclDaoComponent.getDbAccessControlList(acl);
+                        Acl dbAcl = aclDaoComponent.getAcl(acl);
                         if (dbAcl.getAclType() == ACLType.LAYERED)
                         {
                             throw new UnsupportedOperationException();
@@ -391,17 +390,17 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                 setFixedAcls(childNodeId, newParentSharedAclId, null, null, changes, true);
             }
         }
-        DbAccessControlList dbAccessControlList = aclDaoComponent.getDbAccessControlList(childAclId);
-        if(dbAccessControlList != null)
+        Acl acl = aclDaoComponent.getAcl(childAclId);
+        if(acl != null)
         {
-            if(dbAccessControlList.getInherits())
+            if(acl.getInherits())
             {
                 // Does it inherit from the old parent - if not nothing changes
                 Long oldParentAclId = nodeDAO.getNodeAclId(oldParentNodeId);
                 if(oldParentAclId != null)
                 {
                     Long oldParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(oldParentAclId);
-                    Long sharedAclchildInheritsFrom = dbAccessControlList.getInheritsFrom();
+                    Long sharedAclchildInheritsFrom = acl.getInheritsFrom();
                     if(childAclId.equals(oldParentSharedAclId))
                     {
                         // child had old shared acl
@@ -419,17 +418,17 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                     else if(sharedAclchildInheritsFrom.equals(oldParentSharedAclId))
                     {
                         // child has defining acl and needs to be remerged
-                        if (dbAccessControlList.getAclType() == ACLType.LAYERED)
+                        if (acl.getAclType() == ACLType.LAYERED)
                         {
                             throw new UnsupportedOperationException();
                         }
-                        else if (dbAccessControlList.getAclType() == ACLType.DEFINING)
+                        else if (acl.getAclType() == ACLType.DEFINING)
                         {
                             Long newParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(newParentAclId);
                             @SuppressWarnings("unused")
                             List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(newParentSharedAclId, childAclId);
                         }
-                        else if (dbAccessControlList.getAclType() == ACLType.SHARED)
+                        else if (acl.getAclType() == ACLType.SHARED)
                         {
                             throw new IllegalStateException();
                         }

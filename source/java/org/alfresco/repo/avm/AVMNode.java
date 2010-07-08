@@ -20,8 +20,8 @@ package org.alfresco.repo.avm;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.namespace.QName;
@@ -194,13 +194,13 @@ public interface AVMNode
      * Set an ACL on this node.
      * @param acl The ACL to set.
      */
-    public void setAcl(DbAccessControlList acl);
+    public void setAcl(Acl acl);
 
     /**
      * Get the ACL on this node.
      * @return The ACL on this node.
      */
-    public DbAccessControlList getAcl();
+    public Acl getAcl();
 
     /**
      * Set the store that we are new in.
@@ -222,7 +222,7 @@ public interface AVMNode
      */
     public void copyACLs(AVMNode other, ACLCopyMode mode);
     
-    public void copyACLs(DbAccessControlList otherAcl, DbAccessControlList parentAcl, ACLCopyMode mode);
+    public void copyACLs(Acl otherAcl, Acl parentAcl, ACLCopyMode mode);
     
     /**
      * Copy metadata from another node.

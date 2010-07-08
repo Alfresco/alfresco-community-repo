@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
@@ -130,7 +129,7 @@ public class AclDAOImpl implements AclDAO
      */
     public Long createAccessControlList()
     {
-        return createAccessControlList(getDefaultProperties());
+        return createAccessControlList(getDefaultProperties()).getId();
     }
     
     /* (non-Javadoc)
@@ -146,25 +145,9 @@ public class AclDAOImpl implements AclDAO
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#createAccessControlList(org.alfresco.repo.security.permissions.AccessControlListProperties)
-     */
-    public Long createAccessControlList(AccessControlListProperties properties)
-    {
-        return createAcl(properties).getId();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#createDbAccessControlList(org.alfresco.repo.security.permissions.AccessControlListProperties)
-     */
-    public DbAccessControlList createDbAccessControlList(AccessControlListProperties properties)
-    {
-        return (DbAccessControlList)createAcl(properties);
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#createAcl(org.alfresco.repo.security.permissions.AccessControlListProperties)
      */
-    public Acl createAcl(AccessControlListProperties properties)
+    public Acl createAccessControlList(AccessControlListProperties properties)
     {
         if (properties == null)
         {
@@ -201,13 +184,13 @@ public class AclDAOImpl implements AclDAO
         default:
             break;
         }
-        return createAcl(properties, null, null);
+        return createAccessControlList(properties, null, null);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#createAcl(org.alfresco.repo.security.permissions.AccessControlListProperties, java.util.List, java.lang.Long)
      */
-    public Acl createAcl(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited)
+    public Acl createAccessControlList(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited)
     {
         if (properties == null)
         {
@@ -983,11 +966,11 @@ public class AclDAOImpl implements AclDAO
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getDbAccessControlList(java.lang.Long)
+     * @see org.alfresco.repo.domain.permissions.AclDAO#getAccessControlListProperties(java.lang.Long)
      */
-    public DbAccessControlList getDbAccessControlList(Long id)
+    public AccessControlListProperties getAccessControlListProperties(Long id)
     {
-        return (DbAccessControlList)getAcl(id);
+        return aclCrudDAO.getAcl(id);
     }
     
     /* (non-Javadoc)
@@ -1012,7 +995,7 @@ public class AclDAOImpl implements AclDAO
      * @param id
      * @return the access control list
      */
-    public AccessControlList getAccessControlListImpl(final Long id)
+    private AccessControlList getAccessControlListImpl(final Long id)
     {
         SimpleAccessControlList acl = new SimpleAccessControlList();
         AccessControlListProperties properties = getAccessControlListProperties(id);
@@ -1063,14 +1046,6 @@ public class AclDAOImpl implements AclDAO
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getAccessControlListProperties(java.lang.Long)
-     */
-    public AccessControlListProperties getAccessControlListProperties(Long id)
-    {
-        return aclCrudDAO.getAcl(id);
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#getInheritedAccessControlList(java.lang.Long)
      */
     public Long getInheritedAccessControlList(Long id)
@@ -1095,7 +1070,7 @@ public class AclDAOImpl implements AclDAO
             properties.setAclType(ACLType.SHARED);
             properties.setInherits(Boolean.TRUE);
             properties.setVersioned(acl.isVersioned());
-            Long sharedId = createAcl(properties, null, null).getId();
+            Long sharedId = createAccessControlList(properties, null, null).getId();
             getWritable(sharedId, id, null, null, id, true, changes, WriteMode.ADD_INHERITED);
             acl.setInheritedAcl(sharedId);
             inheritedAclId = sharedId;
@@ -1422,7 +1397,7 @@ public class AclDAOImpl implements AclDAO
                 properties.setInherits(aclToCopy.getInherits());
                 properties.setVersioned(true);
                 
-                Long id = createAccessControlList(properties);
+                Long id = createAccessControlList(properties).getId();
                 
                 AccessControlList indirectAcl = getAccessControlList(toCopy);
                 for (AccessControlEntry entry : indirectAcl.getEntries())
@@ -1462,9 +1437,9 @@ public class AclDAOImpl implements AclDAO
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#getDbAccessControlListCopy(java.lang.Long, java.lang.Long, org.alfresco.repo.security.permissions.ACLCopyMode)
      */
-    public DbAccessControlList getDbAccessControlListCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
+    public Acl getAclCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
     {
-        return (DbAccessControlList)getAclEntityCopy(toCopy, toInheritFrom, mode);
+        return getAclEntityCopy(toCopy, toInheritFrom, mode);
     }
     
     private Acl getAclEntityCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode)
@@ -1487,12 +1462,12 @@ public class AclDAOImpl implements AclDAO
         return aclCrudDAO.getADMNodesByAcl(aclEntityId, maxResults);
     }
     
-    public DbAccessControlList createLayeredAcl(Long indirectedAcl)
+    public Acl createLayeredAcl(Long indirectedAcl)
     {
         SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
         properties.setAclType(ACLType.LAYERED);
         
-        DbAccessControlList acl = createDbAccessControlList(properties);
+        Acl acl = createAccessControlList(properties);
         long id = acl.getId();
         
         if (indirectedAcl != null)

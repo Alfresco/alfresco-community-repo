@@ -28,6 +28,7 @@ import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transfer.ChildAssociatedNodeFinder;
+import org.alfresco.repo.transfer.ContentClassFilter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -39,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.cmr.transfer.NodeCrawlerFactory;
 import org.alfresco.service.cmr.transfer.TransferCallback;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferService;
 
@@ -53,7 +55,10 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
    private ReplicationService replicationService;
    private NodeCrawlerFactory nodeCrawlerFactory;
    
-   private long replicationActionLockDuration = 10*60*1000;
+   /**
+    * By default, we lock for 30 minutes
+    */
+   private long replicationActionLockDuration = 30*60*1000;
 
    /**
     * Injects the NodeService bean.
@@ -107,7 +112,48 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
 
    @Override
    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
-      // TODO
+      // TODO Is this needed?
+   }
+   
+   /**
+    * Takes a {@link ReplicationDefinition}, which contains one or
+    *  more payloads {@link NodeRef}s, and expands them into a
+    *  full list of nodes to be transfered.
+    */
+   protected Set<NodeRef> expandPayload(ReplicationDefinition replicationDef) {
+      // Turn our payload list of root nodes into something that
+      //  the transfer service can work with
+      Set<NodeRef> toTransfer = new HashSet<NodeRef>(89);
+
+      NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler(); 
+      crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
+      crawler.setNodeFilters(new ContentClassFilter(
+            ContentModel.TYPE_FOLDER,
+            ContentModel.TYPE_CONTENT
+      ));
+      
+      for(NodeRef payload : replicationDef.getPayload()) {
+         Set<NodeRef> crawledNodes = crawler.crawl(payload);
+         toTransfer.addAll(crawledNodes);
+      }
+      
+      return toTransfer;
+   }
+   /**
+    * Takes a {@link ReplicationDefinition} and a list of
+    *  {@link NodeRef}s, and returns the 
+    *  {@link TransferDefinition} which will allow the
+    *  replication to be run.
+    */
+   protected TransferDefinition buildTransferDefinition(
+         ReplicationDefinition replicationDef, Set<NodeRef> toTransfer
+   ) {
+      TransferDefinition transferDefinition =
+         new TransferDefinition();
+      transferDefinition.setNodes(toTransfer);
+      transferDefinition.setComplete(true);
+      
+      return transferDefinition;
    }
    
    @Override
@@ -130,15 +176,9 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       
       // Turn our payload list of root nodes into something that
       //  the transfer service can work with
-      Set<NodeRef> toTransfer = new HashSet<NodeRef>(89);
+      Set<NodeRef> toTransfer;
       try {
-         NodeCrawler crawler = nodeCrawlerFactory.getNodeCrawler(); 
-         crawler.setNodeFinders(new ChildAssociatedNodeFinder(ContentModel.ASSOC_CONTAINS));
-         
-         for(NodeRef payload : replicationDef.getPayload()) {
-            Set<NodeRef> crawledNodes = crawler.crawl(payload);
-            toTransfer.addAll(crawledNodes);
-         }
+         toTransfer = expandPayload(replicationDef);
       } catch(Exception e) {
          // TODO - Record the error
          System.err.println(e);
@@ -149,9 +189,16 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       // Ask the transfer service to do the replication
       //  work for us
       try {
-         // TODO
-         System.err.println("TODO - Execute '" + replicationDef.getReplicationName() + "'");
+         // Build the definition
+         TransferDefinition transferDefinition =
+            buildTransferDefinition(replicationDef, toTransfer);
          
+         // Off we go
+//         transferService.transfer(
+//               replicationDef.getTargetName(),
+//               transferDefinition,
+//               lock
+//         );
       } catch(Exception e) {
          // TODO - Record the error
          System.err.println(e);

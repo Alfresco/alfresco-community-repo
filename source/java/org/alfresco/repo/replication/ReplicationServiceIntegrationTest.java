@@ -21,7 +21,9 @@ package org.alfresco.repo.replication;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.JobLockService;
@@ -33,6 +35,7 @@ import org.alfresco.service.cmr.replication.ReplicationServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -43,6 +46,7 @@ import org.alfresco.util.GUID;
  */
 public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
+    private ReplicationActionExecutor replicationActionExecutor;
     private ReplicationService replicationService;
     private JobLockService jobLockService;
     private NodeService nodeService;
@@ -56,9 +60,11 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     private NodeRef folder2b;
     private NodeRef content1_1;
     private NodeRef content1_2;
-    private NodeRef thumbnail1_3;
+    private NodeRef thumbnail1_3;  // Thumbnail extends content
+    private NodeRef authority1_4;  // Authority doesn't
     private NodeRef content2a_1;
-    private NodeRef thumbnail2a_2;
+    private NodeRef thumbnail2a_2; // Thumbnail extends content
+    private NodeRef zone2a_3;      // Zone doesn't
     
     private final QName ACTION_NAME  = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
     private final QName ACTION_NAME2 = QName.createQName(NamespaceService.ALFRESCO_URI, "testName2");
@@ -67,6 +73,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+        replicationActionExecutor = (ReplicationActionExecutor) this.applicationContext.getBean("replicationActionExecutor");
         replicationService = (ReplicationService) this.applicationContext.getBean("replicationService");
         jobLockService = (JobLockService) this.applicationContext.getBean("jobLockService");
         nodeService = (NodeService) this.applicationContext.getBean("nodeService");
@@ -93,8 +100,10 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
         content1_1 = makeNode(folder1, ContentModel.TYPE_CONTENT);
         content1_2 = makeNode(folder1, ContentModel.TYPE_CONTENT);
         thumbnail1_3 = makeNode(folder1, ContentModel.TYPE_THUMBNAIL);
+        authority1_4 = makeNode(folder1, ContentModel.TYPE_AUTHORITY);
         content2a_1 = makeNode(folder2a, ContentModel.TYPE_CONTENT);
         thumbnail2a_2 = makeNode(folder2a, ContentModel.TYPE_THUMBNAIL);
+        zone2a_3 = makeNode(folder2a, ContentModel.TYPE_ZONE);
     }
     
     @Override
@@ -256,6 +265,85 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
                ((end-start)/1000.0) + " seconds, not 5)",
             end-start > 5000
        );
+    }
+    
+    /**
+     * Test that we turn a list of payload node starting points
+     *  into the correct set of nodes to pass to the 
+     *  transfer service.
+     */
+    public void testReplicationPayloadExpansion() throws Exception
+    {
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       Set<NodeRef> expanded;
+       
+       // Empty folder -> just itself
+       rd.getPayload().clear();
+       rd.getPayload().add(folder2b);
+       expanded = replicationActionExecutor.expandPayload(rd);
+       assertEquals(1, expanded.size());
+       assertTrue(expanded.contains(folder2b));
+       
+       // Folder with content and thumbnails - just content + thumbnail + folder
+       rd.getPayload().clear();
+       rd.getPayload().add(folder1);
+       expanded = replicationActionExecutor.expandPayload(rd);
+       assertEquals(4, expanded.size());
+       assertTrue(expanded.contains(folder1));
+       assertTrue(expanded.contains(content1_1));
+       assertTrue(expanded.contains(content1_2));
+       assertTrue(expanded.contains(thumbnail1_3));
+       assertFalse(expanded.contains(authority1_4)); // Wrong type, won't be there
+       
+       // Folder with folders - descends properly
+       rd.getPayload().clear();
+       rd.getPayload().add(folder2);
+       expanded = replicationActionExecutor.expandPayload(rd);
+       assertEquals(5, expanded.size());
+       assertTrue(expanded.contains(folder2));
+       assertTrue(expanded.contains(folder2a));
+       assertTrue(expanded.contains(content2a_1));
+       assertTrue(expanded.contains(thumbnail2a_2));
+       assertFalse(expanded.contains(zone2a_3)); // Wrong type, won't be there
+       assertTrue(expanded.contains(folder2b));
+       
+       // Multiple things - gets each in turn
+       rd.getPayload().clear();
+       rd.getPayload().add(folder1);
+       rd.getPayload().add(folder2);
+       expanded = replicationActionExecutor.expandPayload(rd);
+       assertEquals(9, expanded.size());
+       assertTrue(expanded.contains(folder1));
+       assertTrue(expanded.contains(content1_1));
+       assertTrue(expanded.contains(content1_2));
+       assertTrue(expanded.contains(thumbnail1_3));
+       assertTrue(expanded.contains(folder2));
+       assertTrue(expanded.contains(folder2a));
+       assertTrue(expanded.contains(content2a_1));
+       assertTrue(expanded.contains(thumbnail2a_2));
+       assertTrue(expanded.contains(folder2b));
+       
+       // TODO Test how options like permissions and renditions
+       //  affects what gets sent back
+    }
+
+    /**
+     * Test that we turn a replication definition correctly
+     *  into a transfer definition
+     */
+    public void testTransferDefinitionBuilding() throws Exception
+    {
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       
+       Set<NodeRef> nodes = new HashSet<NodeRef>();
+       nodes.add(folder1);
+       nodes.add(content1_1);
+       
+       TransferDefinition td = replicationActionExecutor.buildTransferDefinition(rd, nodes);
+       assertEquals(true, td.isComplete());
+       assertEquals(2, td.getNodes().size());
+       assertEquals(true, td.getNodes().contains(folder1));
+       assertEquals(true, td.getNodes().contains(content1_1));
     }
     
     /**

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;

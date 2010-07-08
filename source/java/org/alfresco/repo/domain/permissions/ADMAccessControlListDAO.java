@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.domain.permissions.AVMAccessControlListDAO.CounterSet;

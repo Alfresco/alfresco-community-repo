@@ -21,8 +21,8 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.Map;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
+import org.alfresco.repo.domain.permissions.AccessControlListDAO;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;

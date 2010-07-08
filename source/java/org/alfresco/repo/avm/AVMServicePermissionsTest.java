@@ -32,7 +32,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.AccessControlListDAO;
+import org.alfresco.repo.domain.permissions.AccessControlListDAO;
 import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;

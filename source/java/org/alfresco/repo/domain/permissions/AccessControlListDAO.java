@@ -16,12 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
 
-package org.alfresco.repo.domain;
+package org.alfresco.repo.domain.permissions;
 
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;

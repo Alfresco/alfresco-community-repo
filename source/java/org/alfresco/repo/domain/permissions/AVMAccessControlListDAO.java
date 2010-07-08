@@ -36,7 +36,6 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.avm.util.AVMUtil;
-import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;

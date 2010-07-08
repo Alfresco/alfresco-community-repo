@@ -96,7 +96,13 @@ function main()
     var submissionUrl = formScriptObj.submissionUrl;
     if (submissionUrl === null)
     {
-        submissionUrl = '/api/' + itemKind + '/' + itemId.replace(':', '_') + '/formprocessor';
+        // replace characters that can cause issues in URLs
+        // TODO: investigate whether this is better done within the form processor
+        //       as it's the form processor that needs to decode the escaped id!
+        var escapedItemId = itemId.replace(':', '_');
+        escapedItemId = escapedItemId.replace('$', '_');
+        
+        submissionUrl = '/api/' + itemKind + '/' + escapedItemId + '/formprocessor';
     }
     
     // create form model

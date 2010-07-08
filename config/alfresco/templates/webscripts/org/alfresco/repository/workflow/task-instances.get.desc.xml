@@ -5,10 +5,10 @@
   The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.  
   </description>
   <url>/api/task-instance</url>
-  <url>/api/task-instance?autority={authority?}</url>
+  <url>/api/task-instance?authority={authority?}</url>
   <url>/api/task-instance?state={state?}</url>
   <url>/api/task-instance?properties={properties?}</url>
-  <url>/api/task-instance?autority={authority?}&amp;?state={state?}</url>
+  <url>/api/task-instance?authority={authority?}&amp;?state={state?}</url>
   <url>/api/task-instance?authority={authority?}&amp;?properties={properties?}</url>
   <url>/api/task-instance?state={state?}&amp;?properties={properties?}</url>
   <url>/api/task-instance?authority={authority?}&amp;?state={state?}&amp;?properties={properties?}</url>

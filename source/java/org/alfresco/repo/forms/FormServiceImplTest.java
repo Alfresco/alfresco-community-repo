@@ -44,6 +44,10 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -64,6 +68,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private ScriptService scriptService;
     private PersonService personService;
     private ContentService contentService;
+    private WorkflowService workflowService;
 
     private NodeRef document;
     private NodeRef associatedDoc;
@@ -106,6 +111,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static final String USER_ONE = "UserOne_FormServiceImplTest";
     private static final String NODE_FORM_ITEM_KIND = "node";
     private static final String TYPE_FORM_ITEM_KIND = "type";
+    private static final String WORKFLOW_FORM_ITEM_KIND = "workflow";
     
     /**
      * Called during the transaction setup
@@ -122,6 +128,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
+        this.workflowService = (WorkflowService)this.applicationContext.getBean("WorkflowService");
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
@@ -1219,6 +1226,77 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // retrieve the association that should now be present
         assocs = this.nodeService.getTargetAssocs(everythingNode, duplicateProperty);
         assertEquals(1, assocs.size());
+    }
+    
+    public void testWorkflowForm() throws Exception
+    {
+        // generate a form for a well known workflow-definition supplying
+        // a legitimate set of fields for the workflow
+        List<String> fields = new ArrayList<String>(8);
+        fields.add("bpm:taskId");
+        fields.add("bpm:description");
+        fields.add("bpm:workflowDueDate");
+        //fields.add("packageItems");
+        
+        String workflowDefName = "jbpm$wf:adhoc";
+        Form form = this.formService.getForm(new Item(WORKFLOW_FORM_ITEM_KIND, workflowDefName), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check item identifier matches
+        assertEquals(WORKFLOW_FORM_ITEM_KIND, form.getItem().getKind());
+        assertEquals(workflowDefName, form.getItem().getId());
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find " + fields.size() + " fields", fields.size(), fieldDefs.size());
+        
+        // check the fields are returned correctly
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition idField = (PropertyFieldDefinition)fieldDefMap.get("bpm:taskId");
+        PropertyFieldDefinition descriptionField = (PropertyFieldDefinition)fieldDefMap.get("bpm:description");
+        PropertyFieldDefinition dueDateField = (PropertyFieldDefinition)fieldDefMap.get("bpm:workflowDueDate");
+        //AssociationFieldDefinition packageItemsField = (AssociationFieldDefinition)fieldDefMap.get("packageItems");
+        
+        // check fields are present
+        assertNotNull("Expecting to find the bpm:taskId field", idField);
+        assertNotNull("Expecting to find the bpm:description field", descriptionField);
+        assertNotNull("Expecting to find the bpm:workflowDueDate field", dueDateField);
+        //assertNotNull("Expecting to find the packageItems field", packageItemsField);
+        
+        // get the number of tasks now
+        List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(USER_ONE, 
+                    WorkflowTaskState.IN_PROGRESS);
+        int tasksBefore = tasks.size();
+        
+        // persist the form
+        FormData data = new FormData();
+        data.addFieldData("prop_bpm_description", "This is a new adhoc task");
+        data.addFieldData("assoc_bpm_assignee_added", 
+                    this.personService.getPerson(USER_ONE).toString());
+        //data.addFieldData("packageItems_added", this.document.toString());
+        
+        // persist the data
+        WorkflowInstance workflow = (WorkflowInstance)this.formService.saveForm(
+                    new Item(WORKFLOW_FORM_ITEM_KIND, workflowDefName), data);
+        
+        // verify that the workflow was started by checking the user has one 
+        // more task and the details on the workflow instance
+        tasks = this.workflowService.getAssignedTasks(USER_ONE, 
+                    WorkflowTaskState.IN_PROGRESS);
+        int tasksAfter = tasks.size();
+        assertTrue("Expecting there to be more tasks", tasksAfter > tasksBefore);
+        
+        // check workflow instance details
+        assertEquals(workflowDefName, workflow.definition.name);
     }
     
     public void testNoForm() throws Exception

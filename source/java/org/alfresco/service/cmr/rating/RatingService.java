@@ -26,7 +26,18 @@ import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * The Rating service. TODO
+ * Interface for public and internal rating operations.
+ * <p/>
+ * The RatingService can be used to manage ratings on any content node in the repository.
+ * These ratings are defined by {@link RatingScheme rating schemes}
+ * which are injected via spring (see <code>rating-service-context.xml</code>). The rating
+ * schemes define a minimum and a maximum score value for that scheme.
+ * <p/>
+ * Ratings can be {@link RatingService#applyRating(NodeRef, int, String) applied},
+ * {@link RatingService#applyRating(NodeRef, int, String) updated} and
+ * {@link RatingService#removeRatingByCurrentUser(NodeRef, RatingScheme) removed}.
+ * 
+ * TODO Get average/total
  * 
  * @author Neil McErlean
  * @since 3.4
@@ -69,6 +80,24 @@ public interface RatingService
     void applyRating(NodeRef targetNode, int rating, String ratingSchemeName) throws RatingServiceException;
 
     /**
+     * This method gets the number of individual ratings which have been applied to
+     * the specified node in the specified {@link RatingScheme}.
+     * 
+     * @param targetNode the node on which the rating is sought.
+     * @param ratingScheme the rating scheme to use.
+     * 
+     * @return the number of individual ratings applied to this node.
+     * @see RatingService#getRatingSchemes()
+     * @see RatingScheme
+     */
+    @NotAuditable
+    int getRatingsCount(NodeRef targetNode, String ratingSchemeName);
+
+    int getTotalRating(NodeRef targetNode, String ratingSchemeName);
+
+    float getAverageRating(NodeRef targetNode, String ratingSchemeName);
+
+    /**
      * This method gets the {@link Rating} applied by the current user to the specified node in the specified
      * {@link RatingScheme} - if there is one.
      * 
@@ -80,10 +109,7 @@ public interface RatingService
      * @see RatingScheme
      */
     @NotAuditable
-    
-    // TODO Get average/total ratings on node
-    
-    Rating getRatingByCurrentUser(NodeRef targetNode, RatingScheme ratingScheme);
+    Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName);
     
     /**
      * This method removes any {@link Rating} applied by the current user to the specified node in the specified
@@ -97,5 +123,5 @@ public interface RatingService
      * @see RatingScheme
      */
     @NotAuditable
-    Rating removeRatingByCurrentUser(NodeRef targetNode, RatingScheme ratingScheme);
+    Rating removeRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName);
 }

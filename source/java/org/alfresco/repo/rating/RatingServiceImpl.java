@@ -20,6 +20,7 @@
 package org.alfresco.repo.rating;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -79,17 +82,39 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#applyRating(org.alfresco.service.cmr.repository.NodeRef, int, java.lang.String)
      */
-    public void applyRating(NodeRef targetNode, int rating,
-            String ratingSchemeName) throws RatingServiceException
+    public void applyRating(final NodeRef targetNode, final int rating,
+            final String ratingSchemeName) throws RatingServiceException
     {
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        this.applyRating(targetNode, rating, ratingSchemeName, currentUser);
+        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        boolean isCreator = isCurrentUserNodeCreator(targetNode);
+        if (isCreator)
+        {
+            throw new RatingServiceException("Users can't rate their own content.");
+        }
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
+            public Void doWork() throws Exception
+            {
+                applyRating(targetNode, rating, ratingSchemeName, currentUser);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private boolean isCurrentUserNodeCreator(NodeRef targetNode)
+    {
+        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        // TODO Is creator the right property here?
+        Serializable creator = nodeService.getProperty(targetNode, ContentModel.PROP_CREATOR);
+        return currentUser.equals(creator);
     }
 
     @SuppressWarnings("unchecked")
     private void applyRating(NodeRef targetNode, int rating,
             String ratingSchemeName, final String userName) throws RatingServiceException
     {
+        //TODO More logging.
+        
         // Sanity check the rating scheme being used and the rating being applied.
         final RatingScheme ratingScheme = this.getRatingScheme(ratingSchemeName);
         if (ratingScheme == null)
@@ -127,11 +152,12 @@ public class RatingServiceImpl implements RatingService
         else
         {
             // There are previous ratings by this user. Things are a little more complex.
-            if (myRatingChildren.size() > 1)
+            if (myRatingChildren.size() > 1 && log.isDebugEnabled())
             {
-                //TODO This should not happen. Log
+                log.debug("");
             }
             NodeRef myPreviousRatingsNode = myRatingChildren.get(0).getChildRef();
+            
             Map<QName, Serializable> existingProps = nodeService.getProperties(myPreviousRatingsNode);
             List<String> existingRatingSchemes = (List<String>)existingProps.get(ContentModel.PROP_RATING_SCHEME);
             List<Integer> existingRatingScores = (List<Integer>)existingProps.get(ContentModel.PROP_RATING_SCORE);
@@ -164,16 +190,16 @@ public class RatingServiceImpl implements RatingService
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#getRating(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rating.RatingScheme)
+     * @see org.alfresco.service.cmr.rating.RatingService#getRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public Rating getRatingByCurrentUser(NodeRef targetNode, RatingScheme ratingScheme)
+    public Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName)
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        return this.getRating(targetNode, ratingScheme, currentUser);
+        return this.getRating(targetNode, ratingSchemeName, currentUser);
     }
 
     @SuppressWarnings("unchecked")
-    private Rating getRating(NodeRef targetNode, RatingScheme ratingScheme, String user)
+    private Rating getRating(NodeRef targetNode, String ratingSchemeName, String user)
     {
         List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
         
@@ -188,6 +214,7 @@ public class RatingServiceImpl implements RatingService
         Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
 
         // Find the index of the rating scheme we're interested in.
+        RatingScheme ratingScheme = getRatingScheme(ratingSchemeName);
         int index = findIndexOfRatingScheme(properties, ratingScheme);
         if (index == -1)
         {
@@ -219,17 +246,17 @@ public class RatingServiceImpl implements RatingService
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#removeRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rating.RatingScheme)
+     * @see org.alfresco.service.cmr.rating.RatingService#removeRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     public Rating removeRatingByCurrentUser(NodeRef targetNode,
-            RatingScheme ratingScheme)
+            String ratingScheme)
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         return removeRating(targetNode, ratingScheme, currentUser);
     }
 
     @SuppressWarnings("unchecked")
-    private Rating removeRating(NodeRef targetNode, RatingScheme ratingScheme, String user)
+    private Rating removeRating(NodeRef targetNode, String ratingSchemeName, String user)
     {
         List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
         if (ratingChildren.isEmpty())
@@ -242,6 +269,7 @@ public class RatingServiceImpl implements RatingService
         Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
 
         // Find the index of the rating scheme we're interested in.
+        RatingScheme ratingScheme = getRatingScheme(ratingSchemeName);
         int index = this.findIndexOfRatingScheme(properties, ratingScheme);
         if (index == -1)
         {
@@ -263,23 +291,140 @@ public class RatingServiceImpl implements RatingService
                               oldScore, user, oldDate);
         }
     }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingService#getTotalRating(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    public int getTotalRating(NodeRef targetNode, String ratingSchemeName)
+    {
+        //TODO Put these in the db as properties?
+        List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
+        
+        // It's one node per user so the size of this list is the number of ratings applied.
+        // However not all of these users' ratings need be in the specified scheme.
+        // So we need to go through and check that the rating node contains a rating for the
+        // specified scheme.
+        int result = 0;
+        for (ChildAssociationRef ratingsNode : ratingsNodes)
+        {
+            List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
+            for (Rating rating : ratings)
+            {
+                if (rating.getScheme().getName().equals(ratingSchemeName))
+                {
+                    result += rating.getScore();
+                }
+            }
+        }
+        return result;
+    }
+    
+    // TODO We can at least amagamate these into one looping call.
+    public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
+    {
+        //TODO Put these in the db as properties?
+        List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
+        
+        // It's one node per user so the size of this list is the number of ratings applied.
+        // However not all of these users' ratings need be in the specified scheme.
+        // So we need to go through and check that the rating node contains a rating for the
+        // specified scheme.
+        int ratingCount = 0;
+        int ratingTotal = 0;
+        for (ChildAssociationRef ratingsNode : ratingsNodes)
+        {
+            List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
+            for (Rating rating : ratings)
+            {
+                if (rating.getScheme().getName().equals(ratingSchemeName))
+                {
+                    ratingCount++;
+                    ratingTotal += rating.getScore();
+                }
+            }
+        }
+        return (float)ratingTotal / (float)ratingCount;
+    }
+
+    public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
+    {
+        //TODO Put these in the db as properties?
+        List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
+        
+        // It's one node per user so the size of this list is the number of ratings applied.
+        // However not all of these users' ratings need be in the specified scheme.
+        // So we need to go through and check that the rating node contains a rating for the
+        // specified scheme.
+        int result = 0;
+        for (ChildAssociationRef ratingsNode : ratingsNodes)
+        {
+            List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
+            for (Rating rating : ratings)
+            {
+                if (rating.getScheme().getName().equals(ratingSchemeName))
+                {
+                    result++;
+                }
+            }
+        }
+        return result;
+    }
+
 
     /**
      * This method gets all the cm:rating child nodes of the specified targetNode that
      * have been applied by the specified user.
      * 
      * @param targetNode the target node under which the cm:rating nodes reside.
-     * @param user the user name of the user whose ratings are sought.
+     * @param user the user name of the user whose ratings are sought, <code>null</code>
+     *             for all users.
      * @return
      */
     private List<ChildAssociationRef> getRatingNodeChildren(NodeRef targetNode,
             String user)
     {
-        QName userAssocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, user);
+        QNamePattern qnamePattern = null;
+        if (user != null)
+        {
+            qnamePattern = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, user);
+        }
+        else
+        {
+            qnamePattern = RegexQNamePattern.MATCH_ALL;
+        }
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(targetNode, ContentModel.ASSOC_RATINGS, qnamePattern);
 
-        // Get all the rating nodes which are from the specified user.
-        List<ChildAssociationRef> ratingChildren =
-            nodeService.getChildAssocs(targetNode, ContentModel.ASSOC_RATINGS, userAssocQName);
-        return ratingChildren;
+        return results;
+    }
+    
+    /**
+     * This method returns a List of {@link Rating} objects for the specified cm:rating
+     * node. As it's one ratingNode the results will be form one user, but will represent
+     * 0..n schemes.
+     * @param ratingNode
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private List<Rating> getRatingsFrom(NodeRef ratingNode)
+    {
+        // The appliedBy is encoded in the parent assoc qname.
+        // It will be the same user for all ratings in this node.
+        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(ratingNode);
+        String appliedBy = parentAssoc.getQName().getLocalName();
+        
+        Map<QName, Serializable> properties = nodeService.getProperties(ratingNode);
+        List<String> ratingSchemes = (List<String>)properties.get(ContentModel.PROP_RATING_SCHEME);
+        List<Integer> ratingScores = (List<Integer>)properties.get(ContentModel.PROP_RATING_SCORE);
+        List<Date> ratingDates = (List<Date>)properties.get(ContentModel.PROP_RATED_AT);
+        
+        List<Rating> result = new ArrayList<Rating>(ratingSchemes.size());
+        for (int i = 0; i < ratingSchemes.size(); i++)
+        {
+            final String schemeName = ratingSchemes.get(i);
+            RatingScheme scheme = getRatingScheme(schemeName);
+            result.add(new Rating(scheme, ratingScores.get(i), appliedBy, ratingDates.get(i)));
+        }
+        return result;
     }
 }

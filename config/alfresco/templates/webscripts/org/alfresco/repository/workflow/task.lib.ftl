@@ -17,7 +17,7 @@
                 "lastName": "${task.owner.lastName}"
             },
             <#else>
-                null
+                null,
             </#if>
             "properties":
             <@propertiesJSON properties=task.properties />

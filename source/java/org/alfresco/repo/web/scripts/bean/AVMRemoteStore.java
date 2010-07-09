@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.SocketException;
 import java.util.SortedMap;
+import java.util.StringTokenizer;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -39,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -384,12 +386,24 @@ public class AVMRemoteStore extends BaseRemoteStore
         {
             final Writer out = res.getWriter();
             int cropPoint = store.length() + this.rootPath.length() + 1;
-            SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node, pattern);
+            StringBuilder buf = new StringBuilder(pattern.length() + 8);
+            for (StringTokenizer t = new StringTokenizer(pattern, "*"); t.hasMoreTokens(); /**/)
+            {
+                buf.append(encodePath(t.nextToken()));
+                if (t.hasMoreTokens())
+                {
+                    buf.append('*');
+                }
+            }
+            String encpattern = buf.toString();
+            boolean encoded = (encpattern.length() != pattern.length());
+            SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node, encpattern);
             for (AVMNodeDescriptor n : listing.values())
             {
                 if (n.isFile())
                 {
-                    out.write(n.getPath().substring(cropPoint));
+                    String p = n.getPath().substring(cropPoint);
+                    out.write(encoded ? URLDecoder.decode(p) : p);
                     out.write("\n");
                 }
             }

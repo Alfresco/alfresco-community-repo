@@ -386,6 +386,7 @@ public class AVMRemoteStore extends BaseRemoteStore
         {
             final Writer out = res.getWriter();
             int cropPoint = store.length() + this.rootPath.length() + 1;
+            // need to ensure match pattern is AVM file path encoded - but don't encode * character!
             StringBuilder buf = new StringBuilder(pattern.length() + 8);
             for (StringTokenizer t = new StringTokenizer(pattern, "*"); t.hasMoreTokens(); /**/)
             {
@@ -395,7 +396,8 @@ public class AVMRemoteStore extends BaseRemoteStore
                     buf.append('*');
                 }
             }
-            String encpattern = buf.toString();
+            // ensure the escape character is itself escaped
+            String encpattern = buf.toString().replace("\\", "\\\\");
             boolean encoded = (encpattern.length() != pattern.length());
             SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node, encpattern);
             for (AVMNodeDescriptor n : listing.values())

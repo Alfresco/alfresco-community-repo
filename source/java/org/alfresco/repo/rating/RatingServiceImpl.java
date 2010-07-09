@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.rating.RatingNodeProperties.RatingStruct;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingScheme;
@@ -104,16 +105,23 @@ public class RatingServiceImpl implements RatingService
     private boolean isCurrentUserNodeCreator(NodeRef targetNode)
     {
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        // TODO Is creator the right property here?
+        // TODO Is creator the right property to use here?
         Serializable creator = nodeService.getProperty(targetNode, ContentModel.PROP_CREATOR);
         return currentUser.equals(creator);
     }
 
-    @SuppressWarnings("unchecked")
     private void applyRating(NodeRef targetNode, int rating,
             String ratingSchemeName, final String userName) throws RatingServiceException
     {
-        //TODO More logging.
+        if (log.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Applying rating ")
+               .append(rating).append(" in scheme ")
+               .append(ratingSchemeName).append(" as user ")
+               .append(userName).append(" on ").append(targetNode);
+            log.debug(msg.toString());
+        }
         
         // Sanity check the rating scheme being used and the rating being applied.
         final RatingScheme ratingScheme = this.getRatingScheme(ratingSchemeName);
@@ -142,7 +150,6 @@ public class RatingServiceImpl implements RatingService
             
             // These are multivalued properties.
             Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
-            ratingProps.put(ContentModel.PROP_RATING_SCORE, new Integer[]{rating});
             ratingProps.put(ContentModel.PROP_RATING_SCORE, toSerializableList(new Integer[]{rating}));
             ratingProps.put(ContentModel.PROP_RATED_AT, toSerializableList(new Date[]{new Date()}));
             ratingProps.put(ContentModel.PROP_RATING_SCHEME, toSerializableList(new String[]{ratingSchemeName}));
@@ -159,27 +166,19 @@ public class RatingServiceImpl implements RatingService
             NodeRef myPreviousRatingsNode = myRatingChildren.get(0).getChildRef();
             
             Map<QName, Serializable> existingProps = nodeService.getProperties(myPreviousRatingsNode);
-            List<String> existingRatingSchemes = (List<String>)existingProps.get(ContentModel.PROP_RATING_SCHEME);
-            List<Integer> existingRatingScores = (List<Integer>)existingProps.get(ContentModel.PROP_RATING_SCORE);
-            List<Date> existingRatingDates = (List<Date>)existingProps.get(ContentModel.PROP_RATED_AT);
-            
-            //TODO These should all be the same length lists. Log if not.
+            RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(existingProps);
             
             // If the schemes list already contains an entry matching the rating we're setting
             // we need to delete it and then delete the score and date at the corresponding indexes.
-            int indexOfExistingRating = existingRatingSchemes.indexOf(ratingSchemeName);
+            int indexOfExistingRating = ratingProps.getIndexOfRating(ratingSchemeName);
             if (indexOfExistingRating != -1)
             {
-                existingRatingSchemes.remove(indexOfExistingRating);
-                existingRatingScores.remove(indexOfExistingRating);
-                existingRatingDates.remove(indexOfExistingRating);
+                ratingProps.removeRatingAt(indexOfExistingRating);
             }
             
-            existingRatingSchemes.add(ratingSchemeName);
-            existingRatingScores.add(rating);
-            existingRatingDates.add(new Date());
+            ratingProps.appendRating(ratingSchemeName, rating);
             
-            nodeService.setProperties(myPreviousRatingsNode, existingProps);
+            nodeService.setProperties(myPreviousRatingsNode, ratingProps.toNodeProperties());
         }
     }
     
@@ -198,7 +197,6 @@ public class RatingServiceImpl implements RatingService
         return this.getRating(targetNode, ratingSchemeName, currentUser);
     }
 
-    @SuppressWarnings("unchecked")
     private Rating getRating(NodeRef targetNode, String ratingSchemeName, String user)
     {
         List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
@@ -212,10 +210,10 @@ public class RatingServiceImpl implements RatingService
         // Take the last node pertaining to the current user.
         ChildAssociationRef lastChild = ratingChildren.get(ratingChildren.size() - 1);
         Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
-
+        
         // Find the index of the rating scheme we're interested in.
-        RatingScheme ratingScheme = getRatingScheme(ratingSchemeName);
-        int index = findIndexOfRatingScheme(properties, ratingScheme);
+        RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(properties);
+        int index = ratingProps.getIndexOfRating(ratingSchemeName);
         if (index == -1)
         {
             // There is no rating in this scheme by the specified user.
@@ -224,24 +222,16 @@ public class RatingServiceImpl implements RatingService
         else
         {
             // There is a rating and the associated data are at the index'th place in each multivalued property.
-            List<Integer> ratingScores = (List<Integer>)properties.get(ContentModel.PROP_RATING_SCORE);
-            List<Date> ratingDates = (List<Date>)properties.get(ContentModel.PROP_RATED_AT);
+            RatingStruct ratingStruct = ratingProps.getRatingAt(index);
             
-            Rating result = new Rating(ratingScheme,
-                    ratingScores.get(index),
+            Rating result = new Rating(getRatingScheme(ratingStruct.getScheme()),
+                    ratingStruct.getScore(),
                     user,
-                    ratingDates.get(index));
+                    ratingStruct.getDate());
             return result;
         }
         
         //TODO Don't forget that it is possible on read to have out-of-range ratings.
-    }
-    
-    @SuppressWarnings("unchecked")
-    private int findIndexOfRatingScheme(Map<QName, Serializable> properties, RatingScheme scheme)
-    {
-        List<String> ratingSchemes = (List<String>)properties.get(ContentModel.PROP_RATING_SCHEME);
-        return ratingSchemes.indexOf(scheme.getName());
     }
 
     /*
@@ -255,7 +245,6 @@ public class RatingServiceImpl implements RatingService
         return removeRating(targetNode, ratingScheme, currentUser);
     }
 
-    @SuppressWarnings("unchecked")
     private Rating removeRating(NodeRef targetNode, String ratingSchemeName, String user)
     {
         List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
@@ -269,8 +258,9 @@ public class RatingServiceImpl implements RatingService
         Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
 
         // Find the index of the rating scheme we're interested in.
-        RatingScheme ratingScheme = getRatingScheme(ratingSchemeName);
-        int index = this.findIndexOfRatingScheme(properties, ratingScheme);
+        RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(properties);
+        
+        int index = ratingProps.getIndexOfRating(ratingSchemeName);
         if (index == -1)
         {
             // There is no rating in this scheme by the specified user.
@@ -279,16 +269,10 @@ public class RatingServiceImpl implements RatingService
         else
         {
             // There is a rating and the associated data are at the index'th place in each property.
-            List<Integer> ratingScores = (List<Integer>)properties.get(ContentModel.PROP_RATING_SCORE);
-            List<Date> ratingDates = (List<Date>)properties.get(ContentModel.PROP_RATED_AT);
-            List<String> ratingSchemes = (List<String>)properties.get(ContentModel.PROP_RATING_SCHEME);
+            RatingStruct removed = ratingProps.removeRatingAt(index);
             
-            Integer oldScore = ratingScores.remove(index);
-            Date oldDate = ratingDates.remove(index);
-            String oldScheme = ratingSchemes.remove(index);
-            
-            return new Rating(this.getRatingScheme(oldScheme),
-                              oldScore, user, oldDate);
+            return new Rating(this.getRatingScheme(removed.getScheme()),
+                              removed.getScore(), user, removed.getDate());
         }
     }
     
@@ -320,7 +304,7 @@ public class RatingServiceImpl implements RatingService
         return result;
     }
     
-    // TODO We can at least amagamate these into one looping call.
+    // TODO We can at least amalgamate these into one looping call.
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
         //TODO Put these in the db as properties?
@@ -405,7 +389,6 @@ public class RatingServiceImpl implements RatingService
      * @param ratingNode
      * @return
      */
-    @SuppressWarnings("unchecked")
     private List<Rating> getRatingsFrom(NodeRef ratingNode)
     {
         // The appliedBy is encoded in the parent assoc qname.
@@ -414,16 +397,15 @@ public class RatingServiceImpl implements RatingService
         String appliedBy = parentAssoc.getQName().getLocalName();
         
         Map<QName, Serializable> properties = nodeService.getProperties(ratingNode);
-        List<String> ratingSchemes = (List<String>)properties.get(ContentModel.PROP_RATING_SCHEME);
-        List<Integer> ratingScores = (List<Integer>)properties.get(ContentModel.PROP_RATING_SCORE);
-        List<Date> ratingDates = (List<Date>)properties.get(ContentModel.PROP_RATED_AT);
+        RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(properties);
         
-        List<Rating> result = new ArrayList<Rating>(ratingSchemes.size());
-        for (int i = 0; i < ratingSchemes.size(); i++)
+        List<Rating> result = new ArrayList<Rating>(ratingProps.size());
+        for (int i = 0; i < ratingProps.size(); i++)
         {
-            final String schemeName = ratingSchemes.get(i);
+            final String schemeName = ratingProps.getRatingAt(i).getScheme();
             RatingScheme scheme = getRatingScheme(schemeName);
-            result.add(new Rating(scheme, ratingScores.get(i), appliedBy, ratingDates.get(i)));
+            result.add(new Rating(scheme, ratingProps.getRatingAt(i).getScore(),
+                    appliedBy, ratingProps.getRatingAt(i).getDate()));
         }
         return result;
     }

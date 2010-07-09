@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
@@ -132,6 +133,20 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(2, props.size());
         assertEquals(5, props.get("test_int"));
         assertEquals("foo bar", props.get("test_string"));
+    }
+    
+    public void testBuildWorkflowDefinition() throws Exception
+    {
+        WorkflowTaskDefinition workflowTaskDefinition = new WorkflowTaskDefinition();
+        WorkflowDefinition workflowDefinition = new WorkflowDefinition(
+                "The Id", "The Name", "The Version", "The Title", "The Description", workflowTaskDefinition);
+        
+        Map<String, Object> model = builder.buildSimple(workflowDefinition);
+        assertEquals(workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_ID));
+        assertEquals("api/workflow-definition/" + workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_URL));
+        assertEquals(workflowDefinition.name, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_NAME));
+        assertEquals(workflowDefinition.title, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_TITLE));
+        assertEquals(workflowDefinition.description, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_DESCRIPTION));
     }
     
     @Override

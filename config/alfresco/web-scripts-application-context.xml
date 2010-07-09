@@ -741,8 +741,8 @@
 
     <!-- abstract workflow web script -->
     <bean id="abstractWorkflowWebScript"
-    class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript"
-    parent="webscript" abstract="true">
+          class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript"
+          parent="webscript" abstract="true">
         <property name="namespaceService" ref="NamespaceService" />
         <property name="nodeService" ref="NodeService"/>
         <property name="personService" ref="PersonService"/>
@@ -751,8 +751,13 @@
 
     <!-- Lists the task instances, filtered by task owner and state. -->
     <bean id="webscript.org.alfresco.repository.workflow.task-instances.get"
-    class="org.alfresco.repo.web.scripts.workflow.TaskInstancesGet"
-    parent="abstractWorkflowWebScript">
+          class="org.alfresco.repo.web.scripts.workflow.TaskInstancesGet"
+          parent="abstractWorkflowWebScript">
     </bean>
+
+    <!-- Lists all workflow definitions -->
+    <bean id="webscript.org.alfresco.repository.workflow.workflow-definitions.get"
+          class="org.alfresco.repo.web.scripts.workflow.WorkflowDefinitionsGet"
+          parent="abstractWorkflowWebScript"></bean>
 
 </beans>

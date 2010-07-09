@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -61,6 +62,12 @@ public class WorkflowModelBuilder
     public static final String TASK_URL = "url";
     public static final String TASK_IS_POOLED = "isPooled";
     public static final String TASK_ID = "id";
+    
+    public static final String WORKFLOW_DEFINITION_ID = "id";
+    public static final String WORKFLOW_DEFINITION_URL = "url";
+    public static final String WORKFLOW_DEFINITION_NAME = "name";
+    public static final String WORKFLOW_DEFINITION_TITLE = "title";
+    public static final String WORKFLOW_DEFINITION_DESCRIPTION = "description";
     
     private static final String PREFIX_SEPARATOR = Character.toString(QName.NAMESPACE_PREFIX);
 
@@ -97,6 +104,25 @@ public class WorkflowModelBuilder
         model.put(TASK_OWNER, getPersonModel((String) owner));
         
         model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
+        return model;
+    }
+
+    /**
+     * Returns a simple representation of a {@link WorkflowDefinition}.
+     * 
+     * @param workflowDefinition the WorkflowDefinition object to be represented.
+     * @return
+     */
+    public Map<String, Object> buildSimple(WorkflowDefinition workflowDefinition)
+    {
+        HashMap<String, Object> model = new HashMap<String, Object>();
+        
+        model.put(WORKFLOW_DEFINITION_ID, workflowDefinition.id);
+        model.put(WORKFLOW_DEFINITION_URL, getUrl(workflowDefinition));
+        model.put(WORKFLOW_DEFINITION_NAME, workflowDefinition.name);
+        model.put(WORKFLOW_DEFINITION_TITLE, workflowDefinition.title);
+        model.put(WORKFLOW_DEFINITION_DESCRIPTION, workflowDefinition.description);        
+        
         return model;
     }
 
@@ -207,6 +233,11 @@ public class WorkflowModelBuilder
     private String getUrl(WorkflowTask task)
     {
         return "api/task-instance/" + task.id;
+    }
+
+    private String getUrl(WorkflowDefinition workflowDefinition)
+    {
+        return "api/workflow-definition/" + workflowDefinition.id;
     }
 
 }

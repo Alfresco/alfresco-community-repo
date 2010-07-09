@@ -19,7 +19,6 @@
 package org.alfresco.repo.web.scripts.workflow;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +54,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     private final static String USER1 = "Bob"+GUID.generate();
     private final static String USER2 = "Jane"+GUID.generate();
     private static final String URL_TASKS = "api/task-instance";
+    private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     
     private TestPersonManager personManager;
     private WorkflowService workflowService;
@@ -117,6 +117,37 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject properties = result.getJSONObject("properties");
         
         //TODO Add more tests to check property filtering and pooled actors.
+    }
+    
+    public void testWorkflowDefinitionsGet() throws Exception
+    {
+        Response response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        JSONObject json = new JSONObject(response.getContentAsString());
+        JSONArray results = json.getJSONArray("data");
+        assertNotNull(results);
+        
+        for (int i = 0; i < results.length(); i++)
+        {
+            JSONObject workflowDefinitionJSON = results.getJSONObject(i);
+            
+            assertTrue(workflowDefinitionJSON.has("id"));
+            assertTrue(workflowDefinitionJSON.getString("id").length() > 0);
+            
+            assertTrue(workflowDefinitionJSON.has("url"));
+            String url = workflowDefinitionJSON.getString("url");
+            assertTrue(url.length() > 0);
+            assertTrue(url.startsWith("api/workflow-definition/"));
+            
+            assertTrue(workflowDefinitionJSON.has("name"));
+            assertTrue(workflowDefinitionJSON.getString("name").length() > 0);
+            
+            assertTrue(workflowDefinitionJSON.has("title"));
+            assertTrue(workflowDefinitionJSON.getString("title").length() > 0);
+            
+            assertTrue(workflowDefinitionJSON.has("description"));
+            assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
+        }
     }
     
     @Override

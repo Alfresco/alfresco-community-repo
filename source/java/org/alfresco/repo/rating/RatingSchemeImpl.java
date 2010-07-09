@@ -20,14 +20,15 @@
 package org.alfresco.repo.rating;
 
 import org.alfresco.service.cmr.rating.RatingScheme;
+import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.InitializingBean;
 
-/**
- * TODO
+/*
  * @author Neil McErlean
  * @since 3.4
  */
-public class RatingSchemeImpl implements RatingScheme, BeanNameAware
+public class RatingSchemeImpl implements RatingScheme, BeanNameAware, InitializingBean
 {
     private final RatingSchemeRegistry ratingSchemeRegistry;
     
@@ -62,19 +63,45 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware
     {
         this.maxRating = maxRating;
     }
-    
-    //TODO afterPropertiesSet assert Max > Min
 
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        if (this.minRating > this.maxRating)
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Illegal rating limits for ").append(name)
+               .append(". Min > Max. ")
+               .append(minRating).append(" > ").append(maxRating);
+            throw new RatingServiceException(msg.toString());
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingScheme#getMaxRating()
+     */
     public int getMaxRating()
     {
         return this.maxRating;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingScheme#getMinRating()
+     */
     public int getMinRating()
     {
         return this.minRating;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.rating.RatingScheme#getName()
+     */
     public String getName()
     {
         return this.name;

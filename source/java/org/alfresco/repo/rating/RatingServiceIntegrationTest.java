@@ -135,7 +135,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         RatingScheme fiveStarRS = schemes.get(FIVE_STAR_SCHEME_NAME);
         assertNotNull("'5*' rating scheme was missing.", fiveStarRS);
         assertEquals("'5*' rating scheme had wrong name.", FIVE_STAR_SCHEME_NAME, fiveStarRS.getName());
-        assertEquals("'5*' rating scheme had wrong min.", 0, fiveStarRS.getMinRating());
+        assertEquals("'5*' rating scheme had wrong min.", 1, fiveStarRS.getMinRating());
         assertEquals("'5*' rating scheme had wrong max.", 5, fiveStarRS.getMaxRating());
     }
     

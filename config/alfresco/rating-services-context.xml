@@ -75,7 +75,7 @@
 
    <bean name="fiveStarRatingScheme" parent="baseRatingScheme"
          class="org.alfresco.repo.rating.RatingSchemeImpl">
-      <property name="minRating" value="0"/>
+      <property name="minRating" value="1"/>
       <property name="maxRating" value="5"/>
    </bean>
 </beans>

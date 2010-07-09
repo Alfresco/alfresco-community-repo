@@ -22,6 +22,7 @@ package org.alfresco.repo.replication;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,17 +30,30 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transfer.TransferServiceImpl;
+import org.alfresco.repo.transfer.TransferTransmitter;
+import org.alfresco.repo.transfer.UnitTestInProcessTransmitterImpl;
+import org.alfresco.repo.transfer.UnitTestTransferManifestNodeFactory;
+import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 
 /**
  * @author Nick Burch
@@ -48,12 +62,14 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private ReplicationActionExecutor replicationActionExecutor;
     private ReplicationService replicationService;
+    private TransferService transferService;
     private JobLockService jobLockService;
     private NodeService nodeService;
     private Repository repositoryHelper;
     
     private NodeRef replicationRoot;
     
+    private NodeRef destinationFolder;
     private NodeRef folder1;
     private NodeRef folder2;
     private NodeRef folder2a;
@@ -69,19 +85,30 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     private final QName ACTION_NAME  = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
     private final QName ACTION_NAME2 = QName.createQName(NamespaceService.ALFRESCO_URI, "testName2");
     
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    private final String TRANSFER_TARGET = "TestTransferTarget";
+    
+    public ReplicationServiceIntegrationTest()
     {
-        super.onSetUpInTransaction();
+       super();
+       preventTransaction();
+    }
+    
+    @Override
+    protected void onSetUp() throws Exception
+    {
+        super.onSetUp();
         replicationActionExecutor = (ReplicationActionExecutor) this.applicationContext.getBean("replicationActionExecutor");
-        replicationService = (ReplicationService) this.applicationContext.getBean("replicationService");
-        jobLockService = (JobLockService) this.applicationContext.getBean("jobLockService");
-        nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        replicationService = (ReplicationService) this.applicationContext.getBean("ReplicationService");
+        transactionService = (TransactionService) this.applicationContext.getBean("transactionService");
+        transferService = (TransferService) this.applicationContext.getBean("TransferService");
+        jobLockService = (JobLockService) this.applicationContext.getBean("JobLockService");
+        actionService = (ActionService) this.applicationContext.getBean("ActionService");
+        nodeService = (NodeService) this.applicationContext.getBean("NodeService");
         repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
         
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-
+        
         // Zap any existing replication entries
         replicationRoot = ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF;
         for(ChildAssociationRef child : nodeService.getChildAssocs(replicationRoot)) {
@@ -92,6 +119,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
         }
         
         // Create the test folder structure
+        destinationFolder = makeNode(repositoryHelper.getCompanyHome(), ContentModel.TYPE_FOLDER, "ReplicationTransferDestination");
         folder1 = makeNode(repositoryHelper.getCompanyHome(), ContentModel.TYPE_FOLDER);
         folder2 = makeNode(repositoryHelper.getCompanyHome(), ContentModel.TYPE_FOLDER);
         folder2a = makeNode(folder2, ContentModel.TYPE_FOLDER);
@@ -104,17 +132,30 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
         content2a_1 = makeNode(folder2a, ContentModel.TYPE_CONTENT);
         thumbnail2a_2 = makeNode(folder2a, ContentModel.TYPE_THUMBNAIL);
         zone2a_3 = makeNode(folder2a, ContentModel.TYPE_ZONE);
+        
+        // Tell the transfer service not to use HTTP
+        makeTransferServiceLocal();
     }
     
     @Override
-   protected void onTearDownInTransaction() throws Exception {
-      super.onTearDownInTransaction();
+    protected void onTearDown() throws Exception {
+      super.onTearDown();
+      
+      // Zap our test folders
       if(folder1 != null) {
          nodeService.deleteNode(folder1);
       }
       if(folder2 != null) {
          nodeService.deleteNode(folder2);
       }
+      if(destinationFolder != null) {
+         nodeService.deleteNode(destinationFolder);
+      }
+      
+      // Zap our test transfer target
+      try {
+         transferService.deleteTransferTarget(TRANSFER_TARGET);
+      } catch(TransferException e) {}
    }
 
 
@@ -201,6 +242,14 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     public void testBasicExecution() throws Exception
     {
+       // We need the test transfer target for this test
+       makeTransferTarget();
+       
+       // Ensure the destination is empty 
+       // (don't want to get confused with older runs)
+       assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
+       
+       
        // First one with no target, which isn't allowed
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
        try {
@@ -210,61 +259,146 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        
        
        // Now no payload, also not allowed
-       rd.setTargetName("TestTarget");
+       rd.setTargetName(TRANSFER_TARGET);
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be permitted with no payload defined");
        } catch(ReplicationServiceException e) {}
        
        
-       // Next a proper one with a transient definition
+       // Invalid Transfer Target, not allowed
        rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
-       rd.setTargetName("TestTarget");
+       rd.setTargetName("I am an invalid target that isn't there");
        rd.getPayload().add( folder1 );
+       try {
+          actionService.executeAction(rd, replicationRoot);
+          fail("Shouldn't be permitted with an invalid transfer target");
+       } catch(ReplicationServiceException e) {}
+       
+       
+       // Can't send Folder2a if Folder2 isn't there, as it
+       //  won't have anywhere to put it
+       rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName(TRANSFER_TARGET);
+       rd.getPayload().add( folder2a );
+       try {
+          actionService.executeAction(rd, replicationRoot);
+          fail("Shouldn't be able to send Folder2a when Folder2 is missing!");
+       } catch(ReplicationServiceException e) {}
+       
+       
+       // Next a proper one with a transient definition,
+       //  and a sensible set of folders
+       rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName(TRANSFER_TARGET);
+       rd.getPayload().add( folder1 );
+       
        // Will execute without error
+       startNewTransaction();
        actionService.executeAction(rd, replicationRoot);
+       endTransaction();
        
        
        // Now with one that's in the repo
        ReplicationDefinition rd2 = replicationService.createReplicationDefinition(ACTION_NAME2, "Test");
-       rd2.setTargetName("TestTarget");
+       rd2.setTargetName(TRANSFER_TARGET);
        rd2.getPayload().add(
              folder2
        );
        replicationService.saveReplicationDefinition(rd2);
        rd2 = replicationService.loadReplicationDefinition(ACTION_NAME2);
+       
        // Again no errors
+       startNewTransaction();
        actionService.executeAction(rd2, replicationRoot);
+       endTransaction();
     }
     
     /**
      * Check that the locking works.
-     * Take a 5 second lock on the job, then execute.
-     * Ensure that we really wait a little over 5 seconds.
+     * Take a 10 second lock on the job, then execute.
+     * Ensure that we really wait a little over 10 seconds.
      */
     public void testReplicationExectionLocking() throws Exception
     {
+       // We need the test transfer target for this test
+       makeTransferTarget();
+
+       // Create a task
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
-       rd.setTargetName("TestTarget");
+       rd.setTargetName(TRANSFER_TARGET);
        rd.getPayload().add(folder1);
-       rd.getPayload().add(folder2a);
+       rd.getPayload().add(folder2);
        
        // Get the lock, and run
        long start = System.currentTimeMillis();
        String token = jobLockService.getLock(
              rd.getReplicationName(),
-             5 * 1000,
+             10 * 1000,
              1,
              1
        );
+       startNewTransaction();
        actionService.executeAction(rd, replicationRoot);
+       endTransaction();
        long end = System.currentTimeMillis();
        
        assertTrue(
             "Should wait for the lock, but didn't (waited " + 
-               ((end-start)/1000.0) + " seconds, not 5)",
-            end-start > 5000
+               ((end-start)/1000.0) + " seconds, not 10)",
+            end-start > 10000
        );
+    }
+    
+    /**
+     * Test that when we execute a replication task, the
+     *  right stuff ends up being moved for us
+     */
+    public void DISABLEDtestExecutionResult() throws Exception
+    {
+       // Destination is empty
+       assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
+       
+       // We need the test transfer target for this test
+       makeTransferTarget();
+       
+       // Put in Folder 2, so we can send Folder 2a
+       // TODO Finish creating it properly
+       NodeRef folderT2 = makeNode(destinationFolder, ContentModel.TYPE_FOLDER, folder2.getId());
+       
+       // Run a transfer
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName(TRANSFER_TARGET);
+       rd.getPayload().add(folder1);
+       rd.getPayload().add(folder2a);
+       
+       startNewTransaction();
+       actionService.executeAction(rd, replicationRoot);
+       endTransaction();
+       
+       // Correct things have turned up
+       assertEquals(2, nodeService.getChildAssocs(destinationFolder).size());
+       NodeRef c1 = nodeService.getChildAssocs(destinationFolder).get(0).getChildRef();
+       NodeRef c2 = nodeService.getChildAssocs(destinationFolder).get(1).getChildRef();
+       
+       NodeRef folderT1 = null;
+       NodeRef folderT2a = null;
+       if(c1.getId().equals(folder1.getId())) {
+          folderT1 = c1;
+          folderT2a = c2;
+       } else if(c2.getId().equals(folder1.getId())) {
+          folderT1 = c2;
+          folderT2a = c1;
+       } else {
+          fail("Folders 1 and 2a not found in the destination");
+       }
+       
+       // Folder 1 has 2*content + thumbnail
+       assertEquals(3, nodeService.getChildAssocs(folderT1).size());
+       // Folder 2 has 
+       assertEquals(3, nodeService.getChildAssocs(folderT1).size());
+       
+       // And the correct things were left behind
     }
     
     /**
@@ -360,10 +494,57 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     private NodeRef makeNode(NodeRef parent, QName nodeType)
     {
         String uuid = GUID.generate();
+        return makeNode(parent, nodeType, uuid);
+    }
+    private NodeRef makeNode(NodeRef parent, QName nodeType, String name)
+    {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        props.put(ContentModel.PROP_NAME, uuid);
-        ChildAssociationRef assoc = nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                NamespaceService.APP_MODEL_1_0_URI, uuid), nodeType, props);
+        
+        QName newName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
+        NodeRef existing = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, name);
+        if(existing != null) {
+           System.err.println("Zapped existing node " + existing + " for name " + name);
+           nodeService.deleteNode(existing);
+        }
+        
+        props.put(ContentModel.PROP_NAME, name);
+        ChildAssociationRef assoc = nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, newName, nodeType, props);
         return assoc.getChildRef();
+    }
+    
+    private void makeTransferTarget() {
+       String name = TRANSFER_TARGET;
+       String title = "title";
+       String description = "description";
+       String endpointProtocol = "http";
+       String endpointHost = "localhost";
+       int endpointPort = 8080;
+       String endpointPath = "rhubarb";
+       String username = "admin";
+       char[] password = "password".toCharArray();
+     
+       TransferTarget ret = transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
+       assertNotNull("Transfer Target not correctly built", ret);
+    }
+    
+    private void makeTransferServiceLocal() {
+       TransferReceiver receiver = (TransferReceiver)this.applicationContext.getBean("transferReceiver");
+       TransferManifestNodeFactory transferManifestNodeFactory = (TransferManifestNodeFactory)this.applicationContext.getBean("transferManifestNodeFactory");
+       TransferServiceImpl transferServiceImpl = (TransferServiceImpl) this.applicationContext.getBean("transferService");
+       
+       TransferTransmitter transmitter = 
+          new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+       transferServiceImpl.setTransmitter(transmitter);
+       
+       UnitTestTransferManifestNodeFactory testNodeFactory = 
+          new UnitTestTransferManifestNodeFactory(transferManifestNodeFactory); 
+       transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
+       
+       // Map company_home to the special destination folder
+       List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+       pathMap.add(new Pair<Path,Path>(
+             nodeService.getPath(repositoryHelper.getCompanyHome()),
+             nodeService.getPath(destinationFolder)
+       ));
     }
 }

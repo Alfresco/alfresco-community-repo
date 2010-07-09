@@ -64,7 +64,7 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
      * 
      * @param realFactory
      */
-    UnitTestTransferManifestNodeFactory(TransferManifestNodeFactory realFactory)
+    public UnitTestTransferManifestNodeFactory(TransferManifestNodeFactory realFactory)
     {
         this.realFactory = realFactory;
     }

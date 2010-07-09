@@ -194,11 +194,11 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
             buildTransferDefinition(replicationDef, toTransfer);
          
          // Off we go
-//         transferService.transfer(
-//               replicationDef.getTargetName(),
-//               transferDefinition,
-//               lock
-//         );
+         transferService.transfer(
+               replicationDef.getTargetName(),
+               transferDefinition,
+               lock
+         );
       } catch(Exception e) {
          // TODO - Record the error
          System.err.println(e);

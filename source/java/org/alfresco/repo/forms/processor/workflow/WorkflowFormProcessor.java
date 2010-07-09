@@ -24,10 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.forms.AssociationFieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
+import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -35,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -42,9 +46,11 @@ import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * Temporary FormProcessor implementation that can generate and persist 
@@ -57,8 +63,12 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
     /** Logger */
     private static Log logger = LogFactory.getLog(WorkflowFormProcessor.class);
     
+    public static final String TRANSIENT_PACKAGE_ITEMS = "packageItems";
+    
     /** workflow service */
     protected WorkflowService workflowService;
+    
+    protected NodeService unprotectedNodeService;
     
     /**
      * Sets the workflow service
@@ -68,6 +78,11 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
+    }
+    
+    public void setSmallNodeService(NodeService nodeService)
+    {
+        this.unprotectedNodeService = nodeService;
     }
     
     /*
@@ -151,9 +166,35 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
             generateAllAssociationFields(typeDef, form);
         }
         
+        // add the "packageItems" transient field
+        generatePackageItemsTransientField(form);
+        
         if (logger.isDebugEnabled()) logger.debug("Generating form: " + form);
     }
 
+    /**
+     * Generates the 'packageItems' field
+     * 
+     * @param form The Form instance to populate
+     */
+    protected void generatePackageItemsTransientField(Form form)
+    {
+        // setup basic field info
+        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(TRANSIENT_PACKAGE_ITEMS, 
+                    "cm:content", Direction.TARGET);
+        fieldDef.setLabel("Items");
+        fieldDef.setDescription("Items that are part of the workflow");
+        fieldDef.setProtectedField(false);
+        fieldDef.setEndpointMandatory(false);
+        fieldDef.setEndpointMany(true);
+
+        // define the data key name and set
+        fieldDef.setDataKeyName(ASSOC_DATA_PREFIX + TRANSIENT_PACKAGE_ITEMS);
+
+        // add definition to the form
+        form.addFieldDefinition(fieldDef);
+    }
+    
     /**
      * Sets up the field definitions for all the type's properties.
      * 
@@ -230,14 +271,27 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
         // TODO: iterate through form data to collect properties, for now
         //       just hardcode the ones we know
         params.put(WorkflowModel.PROP_DESCRIPTION, 
-                    (Serializable)data.getFieldData("prop_bpm_description").getValue());
+                    (Serializable)data.getFieldData("prop_bpm_workflowDescription").getValue());
         
         NodeRef assignee = new NodeRef(data.getFieldData("assoc_bpm_assignee_added").getValue().toString());
         ArrayList<NodeRef> assigneeList = new ArrayList<NodeRef>(1);
         assigneeList.add(assignee);
         params.put(WorkflowModel.ASSOC_ASSIGNEE, assigneeList);
         
-        // TODO: add any package items
+        // add any package items
+        Object items = data.getFieldData("assoc_packageItems_added").getValue();
+        if (items != null)
+        {
+            String[] nodeRefs = StringUtils.tokenizeToStringArray(items.toString(), ",");
+            for (int x = 0; x < nodeRefs.length; x++)
+            {
+                NodeRef item = new NodeRef(nodeRefs[x]);
+                this.unprotectedNodeService.addChild(workflowPackage, item, 
+                            WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            QName.createValidLocalName((String)this.nodeService.getProperty(
+                                  item, ContentModel.PROP_NAME))));
+            }
+        }
         
         // TODO: add any context (this could re-use alf_destination)
         

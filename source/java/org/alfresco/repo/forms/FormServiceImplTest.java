@@ -1234,9 +1234,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // a legitimate set of fields for the workflow
         List<String> fields = new ArrayList<String>(8);
         fields.add("bpm:taskId");
-        fields.add("bpm:description");
+        fields.add("bpm:workflowDescription");
         fields.add("bpm:workflowDueDate");
-        //fields.add("packageItems");
+        fields.add("packageItems");
         
         String workflowDefName = "jbpm$wf:adhoc";
         Form form = this.formService.getForm(new Item(WORKFLOW_FORM_ITEM_KIND, workflowDefName), fields);
@@ -1262,15 +1262,15 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // find the fields
         PropertyFieldDefinition idField = (PropertyFieldDefinition)fieldDefMap.get("bpm:taskId");
-        PropertyFieldDefinition descriptionField = (PropertyFieldDefinition)fieldDefMap.get("bpm:description");
+        PropertyFieldDefinition descriptionField = (PropertyFieldDefinition)fieldDefMap.get("bpm:workflowDescription");
         PropertyFieldDefinition dueDateField = (PropertyFieldDefinition)fieldDefMap.get("bpm:workflowDueDate");
-        //AssociationFieldDefinition packageItemsField = (AssociationFieldDefinition)fieldDefMap.get("packageItems");
+        AssociationFieldDefinition packageItemsField = (AssociationFieldDefinition)fieldDefMap.get("packageItems");
         
         // check fields are present
         assertNotNull("Expecting to find the bpm:taskId field", idField);
-        assertNotNull("Expecting to find the bpm:description field", descriptionField);
+        assertNotNull("Expecting to find the bpm:workflowDescription field", descriptionField);
         assertNotNull("Expecting to find the bpm:workflowDueDate field", dueDateField);
-        //assertNotNull("Expecting to find the packageItems field", packageItemsField);
+        assertNotNull("Expecting to find the packageItems field", packageItemsField);
         
         // get the number of tasks now
         List<WorkflowTask> tasks = this.workflowService.getAssignedTasks(USER_ONE, 
@@ -1279,10 +1279,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // persist the form
         FormData data = new FormData();
-        data.addFieldData("prop_bpm_description", "This is a new adhoc task");
+        data.addFieldData("prop_bpm_workflowDescription", "This is a new adhoc task");
         data.addFieldData("assoc_bpm_assignee_added", 
                     this.personService.getPerson(USER_ONE).toString());
-        //data.addFieldData("packageItems_added", this.document.toString());
+        data.addFieldData("assoc_packageItems_added", this.document.toString());
         
         // persist the data
         WorkflowInstance workflow = (WorkflowInstance)this.formService.saveForm(

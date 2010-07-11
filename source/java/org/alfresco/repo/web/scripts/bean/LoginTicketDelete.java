@@ -80,7 +80,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
         
         try
         {
-            String ticketUser = ticketComponent.validateTicket(ticket, null);
+            String ticketUser = ticketComponent.validateTicket(ticket);
 
             // do not go any further if tickets are different
             if (!AuthenticationUtil.getFullyAuthenticatedUser().equals(ticketUser))
@@ -91,7 +91,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
             else
             {
                 // delete the ticket
-                authenticationService.invalidateTicket(ticket, null);
+                authenticationService.invalidateTicket(ticket);
                 status.setMessage("Deleted Ticket " + ticket);
             }
         }

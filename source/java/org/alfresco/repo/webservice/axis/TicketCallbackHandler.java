@@ -74,7 +74,7 @@ public class TicketCallbackHandler implements CallbackHandler
             // ensure the ticket is valid
             try
             {
-               this.authenticationService.validate(ticket, null);
+               this.authenticationService.validate(ticket);
             }
             catch (AuthenticationException ae)
             {

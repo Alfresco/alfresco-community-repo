@@ -201,7 +201,7 @@ public abstract class BaseAuthenticationFilter
         {
             try
             {
-                authenticationService.validate(sessionUser.getTicket(), session.getId());
+                authenticationService.validate(sessionUser.getTicket());
                 setExternalAuth(session, externalAuth);
             }
             catch (AuthenticationException e)
@@ -227,11 +227,10 @@ public abstract class BaseAuthenticationFilter
                // If we have been authenticated by other means, just propagate through the user identity
                authenticationComponent.setCurrentUser(userId);
                session = httpServletRequest.getSession();
-               String sessionId = session.getId();
 
                try
                {
-                   sessionUser = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(sessionId), true);
+                   sessionUser = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), true);
                }
                catch (Throwable e)
                {
@@ -374,7 +373,7 @@ public abstract class BaseAuthenticationFilter
                     public SessionUser execute() throws Throwable
                     {
                         authenticationComponent.setCurrentUser(userName);
-                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(session.getId()), true);
+                        return createUserEnvironment(session, userName, authenticationService.getCurrentTicket(), true);
                     }
                 });
     }
@@ -437,7 +436,7 @@ public abstract class BaseAuthenticationFilter
 
             authenticationService.authenticate(username, password.toCharArray());
             session = req.getSession();            
-            createUserEnvironment(session, username, authenticationService.getCurrentTicket(session.getId()), false);
+            createUserEnvironment(session, username, authenticationService.getCurrentTicket(), false);
             res.setStatus(HttpServletResponse.SC_NO_CONTENT);
         }
         catch (AuthenticationException e)

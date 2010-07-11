@@ -220,36 +220,36 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     	
     	if (ticket != null && ticket.length() != 0)
     	{
-            if (getLogger().isDebugEnabled())
-                getLogger().debug("Logon via ticket from " + req.getRemoteHost() + " (" +
-                        req.getRemoteAddr() + ":" + req.getRemotePort() + ")" + " ticket=" + ticket);
-            
-    		UserTransaction tx = null;
-    		try
-    		{
-    		    // Get a cached user with a valid ticket
-    		    SessionUser user = getSessionUser(servletContext, req, resp, true);
-				
-    		    // If this isn't the same ticket, invalidate the session
-				if (user != null && !ticket.equals(user.getTicket()))
-				{
-				    invalidateSession(req);
-					user = null;
-				}
-    		    
-				// If we don't yet have a valid cached user, validate the ticket and create one
-                if ( user == null )
-                {
-                    HttpSession session = req.getSession();
-                    String sessionId = session.getId();
-                    authenticationService.validate(ticket, sessionId);
-                    user = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(sessionId), true);
-                }
-    		    
-    		    // Indicate the ticket parameter was specified, and valid
-                
-                ticketValid = true;
-    		}
+         if (getLogger().isDebugEnabled())
+            getLogger().debug(
+                  "Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":"
+                        + req.getRemotePort() + ")" + " ticket=" + ticket);
+
+         UserTransaction tx = null;
+         try
+         {
+            // Get a cached user with a valid ticket
+            SessionUser user = getSessionUser(servletContext, req, resp, true);
+
+            // If this isn't the same ticket, invalidate the session
+            if (user != null && !ticket.equals(user.getTicket()))
+            {
+               invalidateSession(req);
+               user = null;
+            }
+
+            // If we don't yet have a valid cached user, validate the ticket and create one
+            if (user == null)
+            {
+               authenticationService.validate(ticket);
+               user = createUserEnvironment(req.getSession(), authenticationService.getCurrentUserName(),
+                     authenticationService.getCurrentTicket(), true);
+            }
+
+            // Indicate the ticket parameter was specified, and valid
+
+            ticketValid = true;
+         }
     		catch (AuthenticationException authErr)
         	{
         		if (getLogger().isDebugEnabled())

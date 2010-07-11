@@ -70,7 +70,7 @@ public class LoginTicket extends DeclarativeWebScript
         
         try
         {
-            String ticketUser = ticketComponent.validateTicket(ticket, null);
+            String ticketUser = ticketComponent.validateTicket(ticket);
             
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
 

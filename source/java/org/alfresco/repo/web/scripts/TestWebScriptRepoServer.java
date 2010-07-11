@@ -190,7 +190,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                     {
                         public Object execute() throws Exception
                         {
-                            authenticationService.validate(username, null);
+                            authenticationService.validate(username);
                             return null;
                         }
                     });

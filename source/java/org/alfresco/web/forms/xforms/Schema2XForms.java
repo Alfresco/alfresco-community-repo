@@ -71,8 +71,10 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * An abstract implementation of the Schema2XForms interface allowing
@@ -234,7 +236,7 @@ public class Schema2XForms implements Serializable
             {
                continue;
             }
-            final String prefix = this.addNamespace(xformsDocument.getDocumentElement(),
+            final String prefix = addNamespace(xformsDocument.getDocumentElement(),
                                                     schemaDocument.lookupPrefix(schemaNamespaces.item(i)),
                                                     schemaNamespaces.item(i));
             if (LOGGER.isDebugEnabled())
@@ -273,7 +275,7 @@ public class Schema2XForms implements Serializable
       this.setXFormsId(instanceElement);
 
       final Element defaultInstanceDocumentElement = xformsDocument.createElement(rootElementName);
-      this.addNamespace(defaultInstanceDocumentElement,
+      addNamespace(defaultInstanceDocumentElement,
                         NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX,
                         NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
       if (this.targetNamespace != null)
@@ -287,21 +289,21 @@ public class Schema2XForms implements Serializable
                       " to xform and default instance element");
          }
          
-         this.addNamespace(defaultInstanceDocumentElement,
+         addNamespace(defaultInstanceDocumentElement,
                            targetNamespacePrefix,
                            this.targetNamespace);
-         this.addNamespace(xformsDocument.getDocumentElement(),
+         addNamespace(xformsDocument.getDocumentElement(),
                            targetNamespacePrefix,
                            this.targetNamespace);
       }
 
-      Element importedInstanceDocumentElement = null;
+      Element prototypeInstanceElement = null;
       if (instanceDocument == null || instanceDocument.getDocumentElement() == null)
       {
          instanceElement.appendChild(defaultInstanceDocumentElement);
       }
       else
-      {
+      {         
          Element instanceDocumentElement = instanceDocument.getDocumentElement();
          if (!instanceDocumentElement.getNodeName().equals(rootElementName))
          {
@@ -312,16 +314,8 @@ public class Schema2XForms implements Serializable
          
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("[buildXForm] importing rootElement from other document");
-         
-         importedInstanceDocumentElement = (Element)
-            xformsDocument.importNode(instanceDocumentElement, true);
-         //add XMLSchema instance NS
-         this.addNamespace(importedInstanceDocumentElement,
-                           NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX,
-                           NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
-         instanceElement.appendChild(importedInstanceDocumentElement);
 
-         final Element prototypeInstanceElement =
+         prototypeInstanceElement =
             xformsDocument.createElementNS(NamespaceConstants.XFORMS_NS,
                                            NamespaceConstants.XFORMS_PREFIX + ":instance");
          modelSection.appendChild(prototypeInstanceElement);
@@ -349,18 +343,10 @@ public class Schema2XForms implements Serializable
       }
       this.setXFormsId(rootGroup, "alfresco-xforms-root-group");
 
-      if (importedInstanceDocumentElement != null)
+      if (prototypeInstanceElement != null)
       {
-         Schema2XForms.removeRemovedNodes(importedInstanceDocumentElement,
-                                          defaultInstanceDocumentElement,
-                                          schemaNamespacesMap);
-         Schema2XForms.insertUpdatedNodes(importedInstanceDocumentElement,
-                                          defaultInstanceDocumentElement,
-                                          schemaNamespacesMap);
-         Schema2XForms.insertPrototypeNodes(importedInstanceDocumentElement,
-                                            defaultInstanceDocumentElement,
-                                            schemaNamespacesMap);
-         
+         Schema2XForms.rebuildInstance(prototypeInstanceElement, instanceDocument,
+               instanceElement, schemaNamespacesMap);
       }
 
       this.createSubmitElements(xformsDocument, modelSection, rootGroup);
@@ -388,137 +374,15 @@ public class Schema2XForms implements Serializable
       this.counter.clear();
    }
 
-   /**
-    * Inserts nodes that exist in the prototype document that are absent in the imported instance.
-    * This is to handle the case where a schema has been updated since the last time the
-    * imported document was modified.
-    *
-    * @param instanceDocumentElement the user provided instance document
-    * @param prototypeInstanceElement the generated prototype instance document
-    * @param schemaNamespaces the namespaces used by the instance document needed for
-    * initializing the xpath context.
-    */
    @SuppressWarnings("unchecked")
-   public static void insertUpdatedNodes(final Element instanceDocumentElement,
-                                         final Element prototypeDocumentElement,
-                                         final HashMap<String, String> schemaNamespaces)
-   {
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("[insertUpdatedNodes] updating imported instance document");
-      
-      final JXPathContext prototypeContext =
-         JXPathContext.newContext(prototypeDocumentElement);
-      prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
-                                         NamespaceService.ALFRESCO_URI);
-      final JXPathContext instanceContext =
-         JXPathContext.newContext(instanceDocumentElement);
-      instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
-                                        NamespaceService.ALFRESCO_URI);
+   public static void rebuildInstance(final Node prototypeNode, final Node oldInstanceNode,
+         final Node newInstanceNode,
 
-      // identify all non prototype elements in the prototypeDocument
-      for (final String prefix : schemaNamespaces.keySet())
-      {
-         prototypeContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
-         instanceContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
-      }
-
-      final Iterator it =
-         prototypeContext.iteratePointers("//*[not(@" + NamespaceService.ALFRESCO_PREFIX +
-                                          ":prototype='true')] | //@*[name()!='" + NamespaceService.ALFRESCO_PREFIX + 
-                                          ":prototype']");
-      while (it.hasNext())
-      {
-         final Pointer p = (Pointer)it.next();
-         if (LOGGER.isDebugEnabled())
-         {
-            LOGGER.debug("[insertUpdatedNodes] evaluating prototype node " + p.asPath() +
-                         " normalized " + p.asPath().replaceAll("\\[\\d+\\]", ""));
-         }
-
-         String path = p.asPath().replaceAll("\\[\\d+\\]", "");
-         if (path.lastIndexOf("/") == 0)
-         {
-            if (instanceContext.selectNodes(path).size() == 0)
-            {
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug("[insertUpdatedNodes] copying " + path + " into imported instance");
-               
-               // remove child elements - we want attributes but don't want to
-               // copy any potential prototyp nodes
-               final Node clone = ((Node)p.getNode()).cloneNode(true);
-               if (clone instanceof Attr)
-               {
-                  instanceDocumentElement.setAttributeNode((Attr)clone);
-               }
-               else
-               {
-                  final NodeList children = clone.getChildNodes();
-                  for (int i = 0; i < children.getLength(); i++)
-                  {
-                     if (children.item(i) instanceof Element)
-                     {
-                        clone.removeChild(children.item(i));
-                     }
-                  }
-                  instanceDocumentElement.appendChild(clone);
-               }
-            }
-         }
-         else
-         {
-            // change path /foo/bar into /foo[not(child::bar)]
-            if (path.indexOf("@") >= 0)
-            {
-               path = path.replaceAll("\\/(@.+)$", "[not($1)]");
-            }
-            else
-            {
-               path = path.replaceAll("\\/([^/]+)$", "[not(child::$1)]");
-            }
-            final List<Node> l = (List<Node>)instanceContext.selectNodes(path);
-            
-            if (LOGGER.isDebugEnabled())
-            {
-               LOGGER.debug("[insertUpdatedNodes] appending node " + ((Node)p.getNode()).getNodeName() +
-                            " to the " + l.size() + " selected nodes matching path " + path);
-            }
-            
-            for (Node n : l)
-            {
-               // remove child elements - we want attributes but don't want to
-               // copy any potential prototyp nodes
-               final Node clone = ((Node)p.getNode()).cloneNode(true);
-               if (clone instanceof Attr)
-               {
-                  ((Element)n).setAttributeNode((Attr)clone);
-               }
-               else
-               {
-                  final NodeList children = clone.getChildNodes();
-                  for (int i = 0; i < children.getLength(); i++)
-                  {
-                     if (children.item(i) instanceof Element)
-                     {
-                        clone.removeChild(children.item(i));
-                     }
-                  }
-                  n.appendChild(clone);
-               }
-            }
-         }
-      }
-   }
-
-   @SuppressWarnings("unchecked")
-   public static void removeRemovedNodes(final Element instanceDocumentElement, final Element prototypeDocumentElement,
          final HashMap<String, String> schemaNamespaces)
    {
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("[removeRemovedNodes] updating imported instance document");
-
-      final JXPathContext prototypeContext = JXPathContext.newContext(prototypeDocumentElement);
+      final JXPathContext prototypeContext = JXPathContext.newContext(prototypeNode);
       prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI);
-      final JXPathContext instanceContext = JXPathContext.newContext(instanceDocumentElement);
+      final JXPathContext instanceContext = JXPathContext.newContext(oldInstanceNode);
       instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI);
 
       for (final String prefix : schemaNamespaces.keySet())
@@ -527,225 +391,162 @@ public class Schema2XForms implements Serializable
          instanceContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
       }
 
-      // Check all elements and attributes in the instance document
-      OUTER: for (;;)
-      {
-         final Iterator<Pointer> it = instanceContext.iteratePointers("//* | //@*");
-         while (it.hasNext())
-         {
-            final Pointer p = it.next();
-            String path = p.asPath().replaceAll("\\[\\d+\\]", "");
-            if (LOGGER.isDebugEnabled())
-            {
-               LOGGER.debug("[removeRemovedNodes] evaluating instance node " + p.asPath() + " normalized "
-                     + path + " in prototype document");
-            }
-
-            final List<Node> l = (List<Node>) prototypeContext.selectNodes(path);
-            if (l.isEmpty())
-            {
-               final Node node = (Node) p.getNode();
-               if (LOGGER.isDebugEnabled())
-               {
-                  LOGGER.debug("[removeRemovedNodes] removing instance node " + node.getNodeName() +" with no prototype nodes matching path " + path);
-               }
-               if (node instanceof Attr)
-               {
-                  ((Attr) node).getOwnerElement().removeAttributeNode((Attr) node);
-               }
-               else
-               {
-                  node.getParentNode().removeChild(node);
-               }
-
-               // We have removed a node and potentially an entire sub-tree of paths. Restart the search
-               continue OUTER;
-            }
-         }
-         // We completed the search
-         break OUTER;
-      }
-
-   }
-   
-   /**
-    * Inserts prototype nodes into the provided instance document by aggregating insertion
-    * points from the generated prototype instance docment.
-    *
-    * @param instanceDocumentElement the user provided instance document
-    * @param prototypeInstanceElement the generated prototype instance document
-    * @param schemaNamespaces the namespaces used by the instance document needed for
-    * initializing the xpath context.
-    */
-   @SuppressWarnings("unchecked")
-   public static void insertPrototypeNodes(final Element instanceDocumentElement,
-                                           final Element prototypeDocumentElement,
-                                           final HashMap<String, String> schemaNamespaces)
-   {
-      final JXPathContext prototypeContext =
-         JXPathContext.newContext(prototypeDocumentElement);
-      prototypeContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
-                                         NamespaceService.ALFRESCO_URI);
-      final JXPathContext instanceContext =
-         JXPathContext.newContext(instanceDocumentElement);
-      instanceContext.registerNamespace(NamespaceService.ALFRESCO_PREFIX,
-                                        NamespaceService.ALFRESCO_URI);
-      for (final String prefix : schemaNamespaces.keySet())
-      {
-         prototypeContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
-         instanceContext.registerNamespace(prefix, schemaNamespaces.get(prefix));
-      }
-
-      class PrototypeInsertionData
-      {
-         final Node prototype;
-         final List<Node> nodes;
-         final boolean append;
-
-         PrototypeInsertionData(final Node prototype,
-                                final List<Node> nodes,
-                                final boolean append)
-         {
-            this.prototype = prototype;
-            this.nodes = nodes;
-            this.append = append;
-         }
-      };
-
-      final HashMap<String, PrototypeInsertionData> prototypesToInsert = 
-         new HashMap<String, PrototypeInsertionData>();
-      // find all prototype nodes
-      final Iterator it =
-         prototypeContext.iteratePointers("//*[@" + NamespaceService.ALFRESCO_PREFIX +
-                                          ":prototype='true'][ancestor::*[not(@" + NamespaceService.ALFRESCO_PREFIX +
-                                          ":prototype)]]");
-
-      // find all relevant insertion points within the instance document
+      // Evaluate non-recursive XPaths for all prototype elements at this level
+      final Iterator<Pointer> it = prototypeContext.iteratePointers("*");
       while (it.hasNext())
       {
-         final Pointer p = (Pointer)it.next();
-         if (LOGGER.isDebugEnabled())
+         final Pointer p = it.next();
+         Element proto = (Element) p.getNode();
+         String path = p.asPath();
+         // check if this is a prototype element with the attribute set
+         boolean isPrototype = proto.hasAttributeNS(NamespaceService.ALFRESCO_URI, "prototype")
+               && proto.getAttributeNS(NamespaceService.ALFRESCO_URI, "prototype").equals("true");
+
+         // We shouldn't locate a repeatable child with a fixed path
+         if (isPrototype)
          {
-            LOGGER.debug("[insertPrototypeNodes] evaluating prototype node " + p.asPath());
+            path = path.replaceAll("\\[(\\d+)\\]", "[position() >= $1]");
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("[rebuildInstance] evaluating prototyped nodes " + path);
+            }
          }
-         String path = p.asPath().replaceAll("\\[\\d+\\]", "") + "[last()]";
-         if (prototypesToInsert.containsKey(path))
+         else
          {
             if (LOGGER.isDebugEnabled())
             {
-               LOGGER.debug("[insertPrototypeNodes] already checked path " + path + " - ignoring.");
-            }
-            continue;
+               LOGGER.debug("[rebuildInstance] evaluating child node with positional path " + path);
+            }            
          }
 
-         if (LOGGER.isDebugEnabled())
-         {
-            LOGGER.debug("[insertPrototypeNodes] evaluating " + path + " against instance document");
-         }
+         Document newInstanceDocument = newInstanceNode.getOwnerDocument(); 
 
-         List<Node> l = (List<Node>)instanceContext.selectNodes(path);
-         if (l.size() != 0)
+         // Locate the corresponding nodes in the instance document
+         List<Node> l = (List<Node>) instanceContext.selectNodes(path);
+         
+         // If the prototype node isn't a prototype element, copy it in as a missing node, complete with all its children. We won't need to recurse on this node
+         if (l.isEmpty())
          {
-            // this is a 1 to n repeat - add a prototype node to the list of repeat instances
-            if (LOGGER.isDebugEnabled())
+            if (!isPrototype)
             {
-               LOGGER.debug("[insertPrototypeNodes] path " + path + " evaluated to " + l.size() + " nodes");
-            }
-            prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
-                                                                    l,
-                                                                    false));
-         }
+               LOGGER.debug("[rebuildInstance] copying in missing node " + proto.getNodeName() + " to "
+                     + XMLUtil.buildXPath(newInstanceNode, newInstanceDocument.getDocumentElement()));
 
-         if (path.lastIndexOf("/") != 0)
-         {
-            // this could be a 0 to n repeat - check if there are any relevant parent
-            // insertion points
-            path = path.replaceAll("\\/([^/]+)\\[last\\(\\)\\]$", "[not(child::$1)]");
-
-            l = (List<Node>)instanceContext.selectNodes(path);
-            if (LOGGER.isDebugEnabled())
-            {
-               LOGGER.debug("[insertPrototypeNodes] path " + path + " evaluated to " + l.size() + " nodes");
-            }
-            prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
-                                                                    l,
-                                                                    true));
-         }
-         else 
-         {
-            // this could be a repeat at the root of the document
-            path = path.replaceAll("\\[last\\(\\)\\]$", "");
-            l = (List<Node>)instanceContext.selectNodes(path);
-            if (LOGGER.isDebugEnabled())
-            {
-               LOGGER.debug("[insertPrototypeNodes] path " + path + " evaluated to " + l.size() + " nodes");
-            }
-            if (l.size() == 0)
-            {
-               l.add(instanceDocumentElement);
-               prototypesToInsert.put(path, new PrototypeInsertionData((Node)p.getNode(),
-                                                                       l,
-                                                                       true));
-            }
-         }
-      }
-
-      // apply prototype nodes to all discovered insertion points
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("[insertPrototypeNodes] instance dcoument before mutation =\n" + 
-                      XMLUtil.toString(instanceDocumentElement, true));
-      }
-      for (Map.Entry<String, PrototypeInsertionData> me : prototypesToInsert.entrySet())
-      {
-         final PrototypeInsertionData data = me.getValue();
-         if (LOGGER.isDebugEnabled())
-         {
-            LOGGER.debug("[insertPrototypeNodes] adding prototype for " + data.prototype.getNodeName() + 
-                         " from path " + me.getKey() +
-                         " to " + data.nodes.size() + " nodes");
-         }
-
-         for (final Node n : data.nodes)
-         {
-            if (data.append)
-            {
-               if (LOGGER.isDebugEnabled())
+               // Clone the prototype node and all its children
+               Element clone = (Element)proto.cloneNode(true);
+               newInstanceNode.appendChild(clone);
+               
+               if (oldInstanceNode instanceof Document)
                {
-                  LOGGER.debug("[insertPrototypeNodes] appending " + data.prototype.getNodeName() +
-                               " to " + XMLUtil.buildXPath(n, instanceDocumentElement));
-               }
-               n.appendChild(data.prototype.cloneNode(true));
-            }
-            else if (n.getNextSibling() != null)
-            {
-               if (LOGGER.isDebugEnabled())
-               {
-                  LOGGER.debug("[insertPrototypeNodes] inserting " + data.prototype.getNodeName() +
-                               " into " + XMLUtil.buildXPath(n.getParentNode(), 
-                                                             instanceDocumentElement) +
-                               " before " + XMLUtil.buildXPath(n.getNextSibling(),
-                                                               instanceDocumentElement));
-               }
-               n.getParentNode().insertBefore(data.prototype.cloneNode(true),
-                                              n.getNextSibling());
-            }
-            else
-            {
-               if (LOGGER.isDebugEnabled())
-               {
-                  LOGGER.debug("[insertPrototypeNodes] appending " + data.prototype.getNodeName() +
-                               " to " + XMLUtil.buildXPath(n.getParentNode(),
-                                                           instanceDocumentElement));
-               }
-               n.getParentNode().appendChild(data.prototype.cloneNode(true));
+                  // add XMLSchema instance NS
+                  addNamespace(clone, NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX,
+                        NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
+               }               
             }
          }
-         if (LOGGER.isDebugEnabled())
+         else
          {
-            LOGGER.debug("[insertPrototypeNodes] instance dcoument after mutation =\n" + 
-                         XMLUtil.toString(instanceDocumentElement, true));
+            // Otherwise, append the matches from the old instance document in order
+            for (Node old : l)
+            {
+               Element oldEl = (Element)old;
+   
+               // Copy the old instance element rather than cloning it, so we don't copy over attributes
+               Element clone = newInstanceDocument.createElementNS(oldEl.getNamespaceURI(), oldEl.getTagName());
+               newInstanceNode.appendChild(clone);
+               
+               if (oldInstanceNode instanceof Document)
+               {
+                  // add XMLSchema instance NS
+                  addNamespace(clone, NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX,
+                        NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
+               }
+               
+               // Copy over child text if this is not a complex type
+               boolean isEmpty = true;
+               for (Node n = old.getFirstChild(); n != null; n = n.getNextSibling())
+               {
+                  if (n instanceof Text)
+                  {
+                     clone.appendChild(newInstanceDocument.importNode(n, false));
+                     isEmpty = false;
+                  }
+                  else if (n instanceof Element)
+                  {
+                     break;
+                  }
+               }
+
+               // Check the nil attribute
+               if (oldEl.getAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS, "nil").equals("true"))
+               {
+                  clone.setAttributeNS(NamespaceConstants.XMLSCHEMA_INSTANCE_NS,
+                        NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX + ":nil", "true");
+               }
+               
+               // Copy over attributes present in the prototype
+               NamedNodeMap attributes = proto.getAttributes();
+               for (int i = 0; i < attributes.getLength(); i++)
+               {
+                  Attr attribute = (Attr) attributes.item(i);
+                  String localName = attribute.getLocalName();
+                  if (localName == null)
+                  {
+                     String name = attribute.getName();
+                     if (oldEl.hasAttribute(name))
+                     {
+                        clone.setAttributeNode((Attr) newInstanceDocument.importNode(oldEl.getAttributeNode(name),
+                              false));
+                     }
+                     else
+                     {
+                        LOGGER.debug("[rebuildInstance] copying in missing attribute " + attribute.getNodeName()
+                              + " to " + XMLUtil.buildXPath(clone, newInstanceDocument.getDocumentElement()));
+
+                        clone.setAttributeNode((Attr) attribute.cloneNode(false));
+                     }
+                  }
+                  else
+                  {
+                     String namespace = attribute.getNamespaceURI();
+                     if (!((!isEmpty
+                           && (namespace.equals(NamespaceConstants.XMLSCHEMA_INSTANCE_NS) && localName.equals("nil")) || (namespace
+                           .equals(NamespaceService.ALFRESCO_URI) && localName.equals("prototype")))))
+                     {
+                        if (oldEl.hasAttributeNS(namespace, localName))
+                        {
+                           clone.setAttributeNodeNS((Attr) newInstanceDocument.importNode(oldEl.getAttributeNodeNS(
+                                 namespace, localName), false));
+                        }
+                        else
+                        {
+                           LOGGER.debug("[rebuildInstance] copying in missing attribute " + attribute.getNodeName()
+                                 + " to " + XMLUtil.buildXPath(clone, newInstanceDocument.getDocumentElement()));
+
+                           clone.setAttributeNodeNS((Attr) attribute.cloneNode(false));
+                        }
+                     }
+                  }
+               }
+
+               // recurse on children
+               rebuildInstance(proto, oldEl, clone, schemaNamespaces);
+            }
          }
+
+         // Now add in a new copy of the prototype
+         if (isPrototype)
+         {
+            if (LOGGER.isDebugEnabled())
+            {
+               LOGGER.debug("[rebuildInstance] appending "
+                     + proto.getNodeName()
+                     + " to "
+                     + XMLUtil.buildXPath(newInstanceNode, newInstanceDocument
+                           .getDocumentElement()));
+            }
+            newInstanceNode.appendChild(proto.cloneNode(true));
+         }         
       }
    }
 
@@ -2349,19 +2150,19 @@ public class Schema2XForms implements Serializable
       xformsDocument.appendChild(envelopeElement);
 
       //set namespace attribute
-      this.addNamespace(envelopeElement,
+      addNamespace(envelopeElement,
                         NamespaceConstants.XHTML_PREFIX,
                         NamespaceConstants.XHTML_NS);
-      this.addNamespace(envelopeElement,
+      addNamespace(envelopeElement,
                         NamespaceConstants.XFORMS_PREFIX,
                         NamespaceConstants.XFORMS_NS);
-      this.addNamespace(envelopeElement,
+      addNamespace(envelopeElement,
                         NamespaceConstants.XMLEVENTS_PREFIX,
                         NamespaceConstants.XMLEVENTS_NS);
-      this.addNamespace(envelopeElement,
+      addNamespace(envelopeElement,
                         NamespaceConstants.XMLSCHEMA_INSTANCE_PREFIX,
                         NamespaceConstants.XMLSCHEMA_INSTANCE_NS);
-      this.addNamespace(envelopeElement,
+      addNamespace(envelopeElement,
                         NamespaceService.ALFRESCO_PREFIX,
                         NamespaceService.ALFRESCO_URI);
 
@@ -3164,9 +2965,7 @@ public class Schema2XForms implements Serializable
       return elementName;
    }
 
-   private String addNamespace(final Element e,
-                               String nsPrefix,
-                               final String ns)
+   private static String addNamespace(final Element e, String nsPrefix, final String ns)
    {
       String prefix;
       if ((prefix = NamespaceResolver.getPrefix(e, ns)) != null)

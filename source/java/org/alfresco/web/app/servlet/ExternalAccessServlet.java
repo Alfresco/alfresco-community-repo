@@ -327,7 +327,8 @@ public class ExternalAccessServlet extends BaseServlet
       else if (OUTCOME_LOGOUT.equals(outcome))
       {
          // special case for logout
-         req.getSession().invalidate();
+         // invalidate ticket and clear the Security context for this thread
+         Application.logOut(fc);
          res.sendRedirect(req.getContextPath() + FACES_SERVLET + Application.getLoginPage(getServletContext()));
          return;
       }

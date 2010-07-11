@@ -18,8 +18,6 @@
  */
 package org.alfresco.web.app;
 
-import java.util.Enumeration;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -28,7 +26,6 @@ import javax.servlet.http.HttpSessionListener;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.ServiceRegistry;
@@ -36,10 +33,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -156,16 +151,5 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    {
       if (logger.isDebugEnabled())
          logger.debug("HTTP session destroyed: " + event.getSession().getId());
-      
-      SessionUser user = (SessionUser)event.getSession().getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-      if (user != null)
-      {
-         // invalidate ticket and clear the Security context for this thread
-         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-         AuthenticationService authService = (AuthenticationService)ctx.getBean("authenticationService");
-         authService.invalidateTicket(user.getTicket(), event.getSession().getId());
-         authService.clearCurrentSecurityContext();
-         event.getSession().removeAttribute(AuthenticationHelper.AUTHENTICATION_USER);
-      }
    }
 }

@@ -28,12 +28,15 @@ import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
 import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -69,6 +72,7 @@ public class Application
    public static final String BEAN_CONFIG_SERVICE = "webClientConfigService";
    public static final String BEAN_DATA_DICTIONARY = "dataDictionary";
    public static final String BEAN_IMPORTER_BOOTSTRAP = "spacesBootstrap";
+   private static final String BEAN_UNPROTECTED_AUTH_SERVICE = "authenticationService";
    
    public static final String MESSAGE_BUNDLE = "alfresco.messages.webclient";
    
@@ -289,6 +293,60 @@ public class Application
       }
    }
    
+   /**
+    * Invalidate Alfresco ticket and Web/Portlet session and clear the Security context for this thread.
+    * @param context
+    */
+   public static void logOut(FacesContext context)
+   {
+      String ticket = null;
+      if (Application.inPortalServer())
+      {
+         ticket = AlfrescoFacesPortlet.onLogOut(context.getExternalContext().getRequest());
+      }
+      else
+      {
+         SessionUser user = getCurrentUser(context);
+         if (user != null)
+         {
+            ticket = user.getTicket();
+         }
+         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+         HttpSession session = request.getSession(false);
+         if (session != null)
+         {
+            session.invalidate();
+         }
+
+         // remove the username cookie value
+         Cookie authCookie = AuthenticationHelper.getAuthCookie(request);
+         if (authCookie != null)
+         {
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            if (response.isCommitted())
+            {
+               // It's too late to do it now, but we can ask the login page to do it
+               request.getSession().setAttribute(AuthenticationHelper.SESSION_INVALIDATED, true);
+            }
+            else
+            {
+               authCookie.setMaxAge(0);
+               response.addCookie(authCookie);
+            }
+         }
+      }
+      
+      // Explicitly invalidate the Alfresco ticket. This no longer happens on session expiry to allow for ticket
+      // 'sharing'
+      WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);
+      AuthenticationService unprotAuthService = (AuthenticationService) wc.getBean(BEAN_UNPROTECTED_AUTH_SERVICE);
+      if (ticket != null)
+      {
+         unprotAuthService.invalidateTicket(ticket);
+      }
+      unprotAuthService.clearCurrentSecurityContext();      
+   }
+
    /**
     * @return Returns the repository store URL (retrieved from config service)
     */

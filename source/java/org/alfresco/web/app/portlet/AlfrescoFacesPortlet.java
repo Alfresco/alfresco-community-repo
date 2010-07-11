@@ -20,6 +20,7 @@ package org.alfresco.web.app.portlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -179,7 +180,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                   WebApplicationContext ctx = (WebApplicationContext)getPortletContext().getAttribute(
                         WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
                   AuthenticationService auth = (AuthenticationService)ctx.getBean("AuthenticationService");
-                  auth.validate(user.getTicket(), null);
+                  auth.validate(user.getTicket());
                   
                   // save last username into portlet preferences, get from LoginBean state
                   LoginBean loginBean = (LoginBean)request.getPortletSession().getAttribute(AuthenticationHelper.LOGIN_BEAN);
@@ -361,7 +362,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
                         logger.debug("Validating ticket: " + user.getTicket());
                      
                      // setup the authentication context
-                     auth.validate(user.getTicket(), null);
+                     auth.validate(user.getTicket());
                   }
                   
                   // do the normal JSF processing
@@ -580,6 +581,38 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
       return FacesHelper.getFacesContext(portletReq, portletRes, portletConfig.getPortletContext());      
    }
    
+   public static String onLogOut(Object req)
+   {
+      PortletRequest portletReq = null;
+      if (req instanceof ServletRequest)
+      {
+         portletReq = (PortletRequest) ((ServletRequest) req).getAttribute("javax.portlet.request");
+      }
+      else if (req instanceof PortletRequest)
+      {
+         portletReq = (PortletRequest) req;
+      }
+
+      if (portletReq == null)
+      {
+         return null;
+      }
+
+      // remove all objects from our session by hand
+      // we do this as invalidating the Portal session would invalidate all other portlets!
+      PortletSession session = portletReq.getPortletSession();
+      SessionUser user = (SessionUser) session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER,
+            PortletSession.APPLICATION_SCOPE);
+      Enumeration<String> i = session.getAttributeNames();
+      while (i.hasMoreElements())
+      {
+         session.removeAttribute(i.nextElement());
+      }
+      session.setAttribute(AuthenticationHelper.SESSION_INVALIDATED, true);
+
+      return user == null ? null : user.getTicket();
+   }   
+   
    /**
     * Handles errors that occur during a render request
     */
@@ -641,7 +674,7 @@ public class AlfrescoFacesPortlet extends MyFacesGenericPortlet
     */
    private static User portalGuestAuthenticate(WebApplicationContext ctx, PortletSession session, AuthenticationService auth)
    {
-      User user = AuthenticationHelper.portalGuestAuthenticate(ctx, session.getId(), auth);
+      User user = AuthenticationHelper.portalGuestAuthenticate(ctx, auth);
       
       if (user != null)
       {

@@ -436,8 +436,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         if (ignorePolicy(childNodeRef))
         {
             // special case
-            qnames = new HashSet<QName>(1);
-            qnames.add(ContentModel.ASPECT_VERSIONABLE);
+            if (childAspectQnames.contains(ContentModel.ASPECT_VERSIONABLE) || childNodeTypeQName.equals(ContentModel.ASPECT_VERSIONABLE))
+            {
+                qnames = new HashSet<QName>(1);
+                qnames.add(ContentModel.ASPECT_VERSIONABLE);
+            }
         }
         else
         {

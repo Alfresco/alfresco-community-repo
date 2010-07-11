@@ -70,7 +70,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
-        getCurrentTicket(null);       
+        getCurrentTicket();       
     }
     
     public String getCurrentUserName() throws AuthenticationException
@@ -88,9 +88,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     	return ticketComponent.getUsersWithTickets(nonExpiredOnly);
     }
 
-    public void invalidateTicket(String ticket, String sessionId) throws AuthenticationException
+    public void invalidateTicket(String ticket) throws AuthenticationException
     {
-        ticketComponent.invalidateTicketById(ticket, sessionId);
+        ticketComponent.invalidateTicketById(ticket);
     }
     
     public int countTickets(boolean nonExpiredOnly)
@@ -104,7 +104,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     }
     
 
-    public void validate(String ticket, String sessionId) throws AuthenticationException
+    public void validate(String ticket) throws AuthenticationException
     {
         String currentUser = null;
         try
@@ -112,7 +112,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
 
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
             clearCurrentSecurityContext();
-            currentUser = ticketComponent.validateTicket(ticket, sessionId);
+            currentUser = ticketComponent.validateTicket(ticket);
             authenticationComponent.setCurrentUser(currentUser, UserNameValidationMode.CHECK);
         }
         catch (AuthenticationException ae)
@@ -122,22 +122,22 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
     }
 
-    public String getCurrentTicket(String sessionId) throws AuthenticationException
+    public String getCurrentTicket() throws AuthenticationException
     {
         String userName = getCurrentUserName();
         // So that preAuthenticationCheck can constrain the creation of new tickets, we first ask for the current ticket
         // without auto-creation
-        String ticket = ticketComponent.getCurrentTicket(userName, sessionId, false);
+        String ticket = ticketComponent.getCurrentTicket(userName, false);
         if (ticket == null)
         {
             // If we get through the authentication check then it's safe to issue a new ticket (e.g. for
             // SSO/external-based login)
-            return getNewTicket(sessionId);
+            return getNewTicket();
         }
         return ticket;
     }
 
-    public String getNewTicket(String sessionId)
+    public String getNewTicket()
     {
         String userName = getCurrentUserName();
         try
@@ -149,7 +149,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             clearCurrentSecurityContext();
             throw e;
         }
-        return ticketComponent.getNewTicket(userName, sessionId);
+        return ticketComponent.getNewTicket(userName);
     }
     
     public void clearCurrentSecurityContext()
@@ -174,7 +174,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         authenticationComponent.setGuestUserAsCurrentUser();
         String guestUser = authenticationComponent.getCurrentUserName();
         ticketComponent.clearCurrentTicket();
-        ticketComponent.getCurrentTicket(guestUser, null, true); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
+        ticketComponent.getCurrentTicket(guestUser, true); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
     }
     
     public boolean guestUserAuthenticationAllowed()

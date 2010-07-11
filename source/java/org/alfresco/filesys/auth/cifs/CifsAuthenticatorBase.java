@@ -433,7 +433,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
                     {
                         try
                         {
-                            getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
+                            getAuthenticationService().validate(alfClient.getAuthenticationTicket());
                         }
                         catch (AuthenticationException e)
                         {

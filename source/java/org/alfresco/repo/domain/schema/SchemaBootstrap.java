@@ -1018,6 +1018,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     fetchColumnName = assigns[1];
                     continue;
                 }
+                // Allow transaction delineation
+                else if (sql.startsWith("--BEGIN TXN"))
+                {
+                   connection.setAutoCommit(false);
+                }
+                else if (sql.startsWith("--END TXN"))
+                {
+                   connection.commit();
+                   connection.setAutoCommit(true);                   
+                }
+
                 // Check for comments
                 if (sql.length() == 0 ||
                     sql.startsWith( "--" ) ||

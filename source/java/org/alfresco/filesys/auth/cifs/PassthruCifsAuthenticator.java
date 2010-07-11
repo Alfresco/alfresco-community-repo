@@ -188,7 +188,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                     {
                         // Use the existing authentication token
                         
-                        getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
+                        getAuthenticationService().validate(alfClient.getAuthenticationTicket());
             
                         // Debug
                         
@@ -269,41 +269,32 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                             else
                             {
                                 // Map the passthru username to an Alfresco person
-
+            
                                 String username = client.getUserName();
-                                String personName = getPersonService().getUserIdentifier(username);
-                                if (null == personName)
-                                {
-                                    personName = username;
-                                }
-                                if ( personName != null)
-                                {
-                                    // Use the person name as the current user
 
-                                    getAuthenticationComponent().setCurrentUser(personName);
-                                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
-                                    
-                                    // DEBUG
-                                    
-                                    if ( logger.isDebugEnabled())
-                                        logger.debug("Setting current user using person " + personName + " (username " + username + ")");
-            
-                                    // Allow the user full access to the server
-            
-                                    authSts = ICifsAuthenticator.AUTH_ALLOW;
-            
-                                    // Debug
-            
-                                    if (logger.isDebugEnabled())
-                                        logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
-                                }
-                                else if ( logger.isDebugEnabled())
-                                    logger.debug("Failed to find person matching user " + username);
+                                // Use the person name as the current user
+                                
+                                getAuthenticationComponent().setCurrentUser(username);
+                                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                                
+                                // DEBUG
+                                
+                                if ( logger.isDebugEnabled())
+                                    logger.debug("Setting current user using person " + getAuthenticationComponent().getCurrentUserName() + " (username " + username + ")");
+        
+                                // Allow the user full access to the server
+        
+                                authSts = ICifsAuthenticator.AUTH_ALLOW;
+        
+                                // Debug
+        
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Passthru authenticate user=" + client.getUserName() + ", FULL");
                             }
                         }
-                        catch (AuthenticationException ex)
+                        catch (AuthenticationException e)
                         {
-                            logger.debug("User invalid or max tickets exceeded", ex);                
+                            throw e;
                         }
                         catch (Exception ex)
                         {

@@ -90,56 +90,37 @@ public interface AuthenticationService
     @Auditable(parameters = {"userName"})
     public void invalidateUserSession(String userName) throws AuthenticationException;
     
-    /**
-     * Invalidate a single ticket by ID or remove its association with a given session ID.
-     *
-     * @param sessionId
-     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
-     * @throws AuthenticationException
-     */
-    @Auditable(parameters = {"ticket", "sessionId"}, recordable = {false, false})
-    public void invalidateTicket(String ticket, String sessionId) throws AuthenticationException;
+   /**
+    * Invalidate a single ticket by ID
+    * 
+    * @param ticket
+    * @throws AuthenticationException
+    */
+    @Auditable(parameters = {"ticket"}, recordable = {false})
+    public void invalidateTicket(String ticket) throws AuthenticationException;
+    
+   /**
+    * Validate a ticket. Set the current user name accordingly. 
+    * 
+    * @param ticket
+    * @throws AuthenticationException
+    */
+    @Auditable(parameters = {"ticket"}, recordable = {false})
+    public void validate(String ticket) throws AuthenticationException;
     
     /**
-     * Validate a ticket and associate it with a given app server session ID. Set the current user name accordingly. 
-     * 
-     * @param ticket
-     * @param sessionId
-     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
-     * @throws AuthenticationException
-     */
-    @Auditable(parameters = {"ticket", "sessionId"}, recordable = {false, false})
-    public void validate(String ticket, String sessionId) throws AuthenticationException;
-
-    /**
-     * Gets the current ticket as a string. If there isn't an appropriate current ticket, a new ticket will be made the
-     * current ticket.
-     * 
-     * @param sessionId
-     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable. If non-null,
-     *            the ticket returned is either a new one or one previously associated with the same sessionId by
-     *            {@link #validate(String, String)} or {@link #getCurrentTicket(String)}.
-     * @return the current ticket as a string
-     */
-    @Auditable(parameters = {"sessionId"}, recordable = {false})
-    public String getCurrentTicket(String sessionId);
-    
-    /**
-     * Gets the current ticket as a string. If there isn't an appropriate current ticket, a new ticket will be made the
-     * current ticket.
-     * 
-     * @return the current ticket as a string
+     * Get the current ticket as a string
+     * @return
      */
     @Auditable
     public String getCurrentTicket();
-
+    
     /**
      * Get a new ticket as a string
-     * @param sessionId
-     *            the app server session ID (e.g. HttpSession ID) or <code>null</code> if not applicable.
+     * @return
      */
-    @Auditable(parameters = {"sessionId"}, recordable = {false})
-    public String getNewTicket(String sessionId);
+    @Auditable
+    public String getNewTicket();
     
     /**
      * Remove the current security information

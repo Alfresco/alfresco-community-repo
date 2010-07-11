@@ -65,7 +65,7 @@ public class AVMSyncServiceTransportImpl implements AVMSyncServiceTransport
     public List<AVMDifference> compare(String ticket, int srcVersion,
             String srcPath, int dstVersion, String dstPath, NameMatcher excluder) 
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fSyncService.compare(srcVersion, srcPath, dstVersion, dstPath, excluder);
     }
 
@@ -74,7 +74,7 @@ public class AVMSyncServiceTransportImpl implements AVMSyncServiceTransport
      */
     public void flatten(String ticket, String layerPath, String underlyingPath) 
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fSyncService.flatten(layerPath, underlyingPath);
     }
 
@@ -83,7 +83,7 @@ public class AVMSyncServiceTransportImpl implements AVMSyncServiceTransport
      */
     public void resetLayer(String ticket, String layerPath)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fSyncService.resetLayer(layerPath);
     }
 
@@ -95,7 +95,7 @@ public class AVMSyncServiceTransportImpl implements AVMSyncServiceTransport
             boolean overrideConflicts, boolean overrideOlder, String tag,
             String description) 
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fSyncService.update(diffList, excluder, ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder, tag, description);
     }
 }

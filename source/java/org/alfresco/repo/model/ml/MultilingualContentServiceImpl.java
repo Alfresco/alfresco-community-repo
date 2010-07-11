@@ -291,10 +291,21 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             // set the pivot language and the functional name
             nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE, locale);
             nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_NAME, containerFunctionalName);
-
         }
         else
         {
+            // ALF-2200: Create the translation as the same type as the pivot
+            NodeRef pivotNodeRef = this.getPivotTranslation(mlContainerNodeRef);
+            if (pivotNodeRef != null && !pivotNodeRef.equals(contentNodeRef))
+            {
+                QName pivotNodeType = nodeService.getType(pivotNodeRef);
+                QName contentNodeType = nodeService.getType(contentNodeRef);
+                if (!pivotNodeType.equals(contentNodeType))
+                {
+                    nodeService.setType(contentNodeRef, pivotNodeType);
+                }
+            }
+            
             // Check that the language is not duplicated
             Map<Locale, NodeRef> existingLanguages = this.getTranslations(mlContainerNodeRef);
             if (existingLanguages.containsKey(locale))
@@ -379,7 +390,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     /** @inheritDoc */
     public void deleteTranslationContainer(NodeRef mlContainerNodeRef)
     {
-        if(!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerNodeRef)))
+        if (!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerNodeRef)))
         {
             throw new IllegalArgumentException(
                     "Node type must be " + ContentModel.TYPE_MULTILINGUAL_CONTAINER);
@@ -394,30 +405,17 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // remove the translations
         for(NodeRef translationToRemove : translations.values())
         {
-            if(nodeService.exists(translationToRemove))
+            // unmake the translation, ignore any parent-child logic
+            this.unmakeTranslationSimple(translationToRemove);
+            // remove it, if necessary
+            if (nodeService.exists(translationToRemove))
             {
-                // unmake the translation
-                this.unmakeTranslation(translationToRemove);
-
-                // remove it
-                if(nodeService.exists(translationToRemove))
-                {
-                    nodeService.deleteNode(translationToRemove);
-                }
+                nodeService.deleteNode(translationToRemove);
             }
         }
 
-        // if the mlContainer is not removed with the pivot,
-        if(nodeService.exists(mlContainerNodeRef))
-        {
-            // force its deletion
-            nodeService.deleteNode(mlContainerNodeRef);
-
-            if (logger.isWarnEnabled())
-            {
-                logger.warn("The ML container " + mlContainerNodeRef + " was not removed with it's pivot translation in the unmakeTranslation process.");
-            }
-        }
+        // force its deletion
+        nodeService.deleteNode(mlContainerNodeRef);
 
         // done
         if (logger.isDebugEnabled())
@@ -427,26 +425,37 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     "   Number of translations: " + translationCount);
         }
     }
+    
+    /**
+     * Does the work of making the translation a simple node again.  No parent-child relationships
+     * are modified and the pivot-container logic is not done here.
+     * 
+     * @param translationNodeRef                a translation
+     */
+    private void unmakeTranslationSimple(NodeRef translationNodeRef)
+    {
+        if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+        {
+            nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+            nodeService.addAspect(translationNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+        }
+        else
+        {
+            nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+        }
+    }
 
     /** @inheritDoc */
     public void unmakeTranslation(NodeRef translationNodeRef)
     {
-        // Get the container
         NodeRef containerNodeRef = getMLContainer(translationNodeRef, true);
         if (containerNodeRef == null)
         {
-            if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-            {
-                nodeService.deleteNode(translationNodeRef);
-            }
-            else
-            {
-                nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
-            }
+            unmakeTranslationSimple(translationNodeRef);
         }
         else if (isPivotTranslation(translationNodeRef))
         {
-            // Get all translation child associations
+            // Pivot nodes are handled by unmaking all translations and removing the container
             List<ChildAssociationRef> mlChildAssocs = nodeService.getChildAssocs(
                     containerNodeRef,
                     ContentModel.ASSOC_MULTILINGUAL_CHILD,
@@ -455,30 +464,15 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
             {
                 NodeRef mlChildNodeRef = mlChildAssoc.getChildRef();
                 // Delete empty translations
-                if (nodeService.hasAspect(mlChildNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-                {
-                    nodeService.deleteNode(mlChildNodeRef);
-                }
-                else
-                {
-                    nodeService.removeAspect(mlChildNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
-                }
+                unmakeTranslationSimple(mlChildNodeRef);
             }
             // Now delete the container
             nodeService.deleteNode(containerNodeRef);
         }
         else
         {
-            if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-            {
-                nodeService.deleteNode(translationNodeRef);
-            }
-            else
-            {
-                // Get the container and break the association to it
-                nodeService.removeChild(containerNodeRef, translationNodeRef);
-                nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
-            }
+            nodeService.removeChild(containerNodeRef, translationNodeRef);
+            unmakeTranslationSimple(translationNodeRef);
         }
     }
 
@@ -739,11 +733,13 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // Create the document in the space of the node of reference
         NodeRef parentNodeRef = nodeService.getPrimaryParent(translationOfNodeRef).getParentRef();
 
-        // Create the empty translation
+        // Create the empty translation.
+        // ALF-2200: Create the translation as the same type as the pivot
+        QName newTranslationType = nodeService.getType(translationOfNodeRef);
         NodeRef newTranslationNodeRef = fileFolderService.create(
                 parentNodeRef,
                 name,
-                ContentModel.TYPE_CONTENT).getNodeRef();
+                newTranslationType).getNodeRef();
 
         // add the translation to the container
         addTranslation(newTranslationNodeRef, translationOfNodeRef, locale);

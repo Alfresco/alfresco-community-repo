@@ -523,13 +523,13 @@
             <ref bean="ticketsCache"/>
         </property>
         <!-- The period for which tickets are valid in XML duration format. -->
-        <!-- The default is P1H for one hour.                               -->
+        <!-- The default is PT1H for one hour.                               -->
         <property name="validDuration">
-            <value>PT1H</value>
+            <value>${authentication.ticket.validDuration}</value>
         </property>
         <!-- Do tickets expire or live for ever?                            -->
         <property name="ticketsExpire">
-            <value>false</value>
+            <value>${authentication.ticket.ticketsExpire}</value>
         </property>
         <!-- Are tickets only valid for a single use?                       -->
         <property name="oneOff">
@@ -539,7 +539,7 @@
         <!-- AFTER_INACTIVITY, AFTER_FIXED_TIME, DO_NOT_EXPIRE  -->
         <!-- The default is AFTER_FIXED_TIME -->
         <property name="expiryMode">
-            <value>AFTER_FIXED_TIME</value>
+            <value>${authentication.ticket.expiryMode}</value>
         </property>
     </bean>
     

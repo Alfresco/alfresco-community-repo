@@ -282,6 +282,7 @@ INSERT INTO t_summary_nstat (node_id, transaction_id)
   SELECT node_id, transaction_id FROM alf_node_status WHERE node_id IS NOT NULL;
 
 -- Copy data over
+--BEGIN TXN
 LOCK TABLES
    t_alf_node WRITE,
    alf_node AS n READ,
@@ -303,6 +304,7 @@ INSERT INTO t_alf_node
       JOIN t_summary_nstat nstat ON (nstat.node_id = n.id)
       JOIN t_alf_store s ON (s.protocol = n.protocol AND s.identifier = n.identifier)
 ;
+--END TXN
 UNLOCK TABLES;
 DROP TABLE t_summary_nstat;
 
@@ -371,6 +373,7 @@ CREATE TABLE t_alf_child_assoc
    UNIQUE (parent_node_id, type_qname_id, child_node_name_crc, child_node_name)
 ) TYPE=InnoDB;
 
+--BEGIN TXN
 LOCK TABLES
    t_alf_child_assoc WRITE,
    alf_child_assoc AS ca READ,
@@ -400,6 +403,7 @@ INSERT INTO t_alf_child_assoc
       JOIN t_qnames_dyn tqndyn ON (ca.qname = tqndyn.qname)
       JOIN t_qnames tqn ON (ca.type_qname = tqn.qname)
 ;
+--END TXN
 UNLOCK TABLES;
 
 -- Clean up
@@ -428,6 +432,7 @@ CREATE TABLE t_alf_node_assoc
    UNIQUE (source_node_id, target_node_id, type_qname_id)
 ) TYPE=InnoDB;
 
+--BEGIN TXN
 LOCK TABLES
    t_alf_node_assoc WRITE,
    alf_node_assoc AS na READ,
@@ -447,6 +452,7 @@ INSERT INTO t_alf_node_assoc
       alf_node_assoc na
       JOIN t_qnames tqn ON (na.type_qname = tqn.qname)
 ;
+--END TXN
 UNLOCK TABLES;
 
 -- Clean up
@@ -501,6 +507,7 @@ CREATE TABLE t_alf_node_aspects
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
 
+--BEGIN TXN
 LOCK TABLES
    t_alf_node_aspects WRITE,
    alf_node_aspects AS na READ,
@@ -520,6 +527,7 @@ INSERT INTO t_alf_node_aspects
    WHERE
       tqn.qname != '{http://www.alfresco.org/model/system/1.0}referenceable'
 ;
+--END TXN
 UNLOCK TABLES;
 
 -- Clean up
@@ -761,6 +769,7 @@ CREATE TABLE t_alf_node_properties
    PRIMARY KEY (node_id, qname_id, list_index, locale_id)
 ) TYPE=InnoDB;
 
+--BEGIN TXN
 -- Copy values over
 LOCK TABLES
    t_alf_node_properties WRITE,
@@ -791,7 +800,9 @@ INSERT INTO t_alf_node_properties
    WHERE
       np.attribute_value IS NULL
 ;
+--END TXN
 UNLOCK TABLES;
+
 -- Update cm:auditable properties on the nodes
 UPDATE t_alf_node n SET audit_creator =
 (

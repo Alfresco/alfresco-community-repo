@@ -32,8 +32,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
  * 
  * @author dward
  */
-public abstract class AbstractChainingAuthenticationService extends AbstractAuthenticationService implements
-        MutableAuthenticationService
+public abstract class AbstractChainingAuthenticationService extends AbstractAuthenticationService implements MutableAuthenticationService
 {
     /**
      * Instantiates a new abstract chaining authentication service.
@@ -57,8 +56,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
      */
     protected abstract List<AuthenticationService> getUsableAuthenticationServices();
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.security.AuthenticationService#createAuthentication(java.lang.String, char[])
      */
     public void createAuthentication(String userName, char[] password) throws AuthenticationException
@@ -71,10 +69,8 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         getMutableAuthenticationService().createAuthentication(userName, password);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthenticationService#updateAuthentication(java.lang.String, char[],
-     * char[])
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.AuthenticationService#updateAuthentication(java.lang.String, char[], char[])
      */
     public void updateAuthentication(String userName, char[] oldPassword, char[] newPassword)
             throws AuthenticationException
@@ -249,7 +245,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         // it doesn't exist in any of the authentication components
         return false;
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -293,13 +289,13 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     /**
      * {@inheritDoc}
      */
-    public void invalidateTicket(String ticket, String sessionId) throws AuthenticationException
+    public void invalidateTicket(String ticket) throws AuthenticationException
     {
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
             {
-                authService.invalidateTicket(ticket, sessionId);
+                authService.invalidateTicket(ticket);
                 return;
             }
             catch (AuthenticationException e)
@@ -314,13 +310,13 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     /**
      * {@inheritDoc}
      */
-    public void validate(String ticket, String sessionId) throws AuthenticationException
+    public void validate(String ticket) throws AuthenticationException
     {
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
             {
-                authService.validate(ticket, sessionId);
+                authService.validate(ticket);
                 return;
             }
             catch (AuthenticationException e)
@@ -335,13 +331,13 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     /**
      * {@inheritDoc}
      */
-    public String getCurrentTicket(String sessionId)
+    public String getCurrentTicket()
     {
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
             {
-                return authService.getCurrentTicket(sessionId);
+                return authService.getCurrentTicket();
             }
             catch (AuthenticationException e)
             {
@@ -354,13 +350,13 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     /**
      * {@inheritDoc}
      */
-    public String getNewTicket(String sessionId)
+    public String getNewTicket()
     {
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try
             {
-                return authService.getNewTicket(sessionId);
+                return authService.getNewTicket();
             }
             catch (AuthenticationException e)
             {
@@ -552,5 +548,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
         }
         return defaultGuestUserNames;
     }
+    
+    
 
 }

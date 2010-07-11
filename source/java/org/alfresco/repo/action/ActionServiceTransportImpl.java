@@ -59,7 +59,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public Action createAction(String ticket, String name)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.createAction(name);
     }
 
@@ -69,7 +69,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public Action createAction(String ticket, String name,
             Map<String, Serializable> params)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.createAction(name, params);
     }
 
@@ -78,7 +78,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public ActionCondition createActionCondition(String ticket, String name)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.createActionCondition(name);
     }
 
@@ -88,7 +88,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public ActionCondition createActionCondition(String ticket, String name,
             Map<String, Serializable> params)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.createActionCondition(name, params);
     }
 
@@ -97,7 +97,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public CompositeAction createCompositeAction(String ticket)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.createCompositeAction();
     }
 
@@ -107,7 +107,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public boolean evaluateAction(String ticket, Action action,
             NodeRef actionedUponNodeRef)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.evaluateAction(action, actionedUponNodeRef);
     }
 
@@ -117,7 +117,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public boolean evaluateActionCondition(String ticket,
             ActionCondition condition, NodeRef actionedUponNodeRef)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.evaluateActionCondition(condition, actionedUponNodeRef);
     }
 
@@ -127,7 +127,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public void executeAction(String ticket, Action action,
             NodeRef actionedUponNodeRef)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fActionService.executeAction(action, actionedUponNodeRef);
     }
 
@@ -137,7 +137,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public void executeAction(String ticket, Action action,
             NodeRef actionedUponNodeRef, boolean checkConditions)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fActionService.executeAction(action, actionedUponNodeRef, checkConditions);
     }
 
@@ -148,7 +148,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
             NodeRef actionedUponNodeRef, boolean checkConditions,
             boolean executeAsynchronously)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fActionService.executeAction(action, actionedUponNodeRef, checkConditions, executeAsynchronously);   
     }
 
@@ -157,7 +157,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public Action getAction(String ticket, NodeRef nodeRef, String actionId)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getAction(nodeRef, actionId);
     }
 
@@ -167,7 +167,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public ActionConditionDefinition getActionConditionDefinition(
             String ticket, String name)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getActionConditionDefinition(name);
     }
 
@@ -177,7 +177,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public List<ActionConditionDefinition> getActionConditionDefinitions(
             String ticket)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getActionConditionDefinitions();
     }
 
@@ -186,7 +186,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public ActionDefinition getActionDefinition(String ticket, String name)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getActionDefinition(name);
     }
 
@@ -195,7 +195,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public List<ActionDefinition> getActionDefinitions(String ticket)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getActionDefinitions();
     }
 
@@ -205,7 +205,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
     public List<ActionDefinition> getActionDefinitions(String ticket,
             NodeRef nodeRef)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getActionDefinitions(nodeRef);
     }
     
@@ -214,7 +214,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public ParameterConstraint getParameterConstraint(String ticket, String name)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getParameterConstraint(name);
     }
     
@@ -223,7 +223,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public List<ParameterConstraint> getParameterConstraints(String ticket)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getParameterConstraints();
     }
 
@@ -232,7 +232,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public List<Action> getActions(String ticket, NodeRef nodeRef)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         return fActionService.getActions(nodeRef);
     }
 
@@ -241,7 +241,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public void removeAction(String ticket, NodeRef nodeRef, Action action)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fActionService.removeAction(nodeRef, action);
     }
 
@@ -250,7 +250,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public void removeAllActions(String ticket, NodeRef nodeRef)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fActionService.removeAllActions(nodeRef);
     }
 
@@ -259,7 +259,7 @@ public class ActionServiceTransportImpl implements ActionServiceTransport
      */
     public void saveAction(String ticket, NodeRef nodeRef, Action action)
     {
-        fAuthenticationService.validate(ticket, null);
+        fAuthenticationService.validate(ticket);
         fActionService.saveAction(nodeRef, action);
     }
 }

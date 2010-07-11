@@ -257,7 +257,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public String getInputHandle(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         InputStream in = fAVMService.getFileInputStream(version, path);
         String handle = GUID.generate();
         synchronized (this)
@@ -274,7 +274,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public String getInputHandle(String ticket, AVMNodeDescriptor desc) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         InputStream in = fAVMService.getFileInputStream(desc);
         String handle = GUID.generate();
         synchronized (this)
@@ -294,7 +294,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public byte [] readInput(String ticket, String handle, int count)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         InputStream in = null;
         synchronized (this)
         {
@@ -347,7 +347,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public synchronized void closeInputHandle(String ticket, String handle)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         InputStream in = fInputStreams.get(handle);
         if (in != null)
         {
@@ -372,7 +372,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public String getOutputHandle(String ticket, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         OutputStream out = fAVMService.getFileOutputStream(path);
         String handle = GUID.generate();
         synchronized (this)
@@ -394,7 +394,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void writeOutput(String ticket, String handle, byte [] buff, int count)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         OutputStream out = null;
         synchronized (this)
         {
@@ -429,7 +429,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public synchronized void closeOutputHandle(String ticket, String handle)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         OutputStream out = fOutputStreams.get(handle);
         if (out != null)
         {
@@ -456,7 +456,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
     public SortedMap<String, AVMNodeDescriptor>
         getDirectoryListingDirect(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getDirectoryListingDirect(version, path);        
     }
     
@@ -469,7 +469,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
     public SortedMap<String, AVMNodeDescriptor>
         getDirectoryListing(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getDirectoryListing(version, path);
     }
     
@@ -481,7 +481,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
     public SortedMap<String, AVMNodeDescriptor>
         getDirectoryListing(String ticket, AVMNodeDescriptor dir)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getDirectoryListing(dir);
     }
     
@@ -493,7 +493,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public List<String> getDeleted(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getDeleted(version, path);
     }
     
@@ -505,7 +505,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public String createFile(String ticket, String path, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         OutputStream out = fAVMService.createFile(path, name);
         String handle = GUID.generate();
         synchronized (this)
@@ -524,7 +524,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void createDirectory(String ticket, String path, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.createDirectory(path, name);
     }
     
@@ -536,7 +536,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void createLayeredFile(String ticket, String targetPath, String parent, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.createLayeredFile(targetPath, parent, name);
     }
     
@@ -548,7 +548,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void createLayeredDirectory(String ticket, String targetPath, String parent, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.createLayeredDirectory(targetPath, parent, name);
     }
     
@@ -559,7 +559,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void retargetLayeredDirectory(String ticket, String path, String target)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.retargetLayeredDirectory(path, target);
     }
     
@@ -569,7 +569,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void createStore(String ticket, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.createStore(name);
     }
     
@@ -582,7 +582,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void createBranch(String ticket, int version, String srcPath, String dstPath, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.createBranch(version, srcPath, dstPath, name);
     }
     
@@ -593,7 +593,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void removeNode(String ticket, String parent, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.removeNode(parent, name);
     }
     
@@ -606,7 +606,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void rename(String ticket, String srcParent, String srcName, String dstParent, String dstName)
     {        
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.rename(srcParent, srcName, dstParent, dstName);
     }
 
@@ -617,7 +617,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void uncover(String ticket, String dirPath, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.uncover(dirPath, name);
     }
 
@@ -628,7 +628,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public int getNextVersionID(String ticket, String storeName)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getNextVersionID(storeName);
     }
     
@@ -649,7 +649,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Map<String, Integer> createSnapshot(String ticket, String store, String label, String comment)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.createSnapshot(store, label, comment);
     }
     
@@ -660,7 +660,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public List<VersionDescriptor> getStoreVersions(String ticket, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStoreVersions(name);
     }
     
@@ -673,7 +673,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public List<VersionDescriptor> getStoreVersions(String ticket, String name, Date from, Date to)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStoreVersions(name, from, to);
     }
     
@@ -683,7 +683,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public List<AVMStoreDescriptor> getStores(String ticket)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStores();
     }
     
@@ -694,7 +694,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMStoreDescriptor getStore(String ticket, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStore(name);
     }
     
@@ -706,7 +706,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMNodeDescriptor getStoreRoot(String ticket, int version, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStoreRoot(version, name);
     }
     
@@ -718,7 +718,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMNodeDescriptor lookup(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.lookup(version, path);
     }
 
@@ -734,7 +734,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMNodeDescriptor lookup(String ticket, int version, String path, boolean includeDeleted) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.lookup(version, path, includeDeleted);
     }
 
@@ -747,7 +747,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMNodeDescriptor lookup(String ticket, AVMNodeDescriptor dir, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.lookup(dir, name);
     }
 
@@ -765,7 +765,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMNodeDescriptor lookup(String ticket, AVMNodeDescriptor dir, String name, boolean includeDeleted) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.lookup(dir, name, includeDeleted);
     }
 
@@ -778,7 +778,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public String getIndirectionPath(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getIndirectionPath(version, path);
     }
     
@@ -788,7 +788,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void purgeStore(String ticket, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.purgeStore(name);
     }
     
@@ -799,7 +799,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void purgeVersion(String ticket, int version, String name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.purgeVersion(version, name);
     }
     
@@ -809,7 +809,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void makePrimary(String ticket, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.makePrimary(path);
     }
     
@@ -821,7 +821,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public List<AVMNodeDescriptor> getHistory(String ticket, AVMNodeDescriptor desc, int count)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getHistory(desc, count);
     }
     
@@ -832,7 +832,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setOpacity(String ticket, String path, boolean opacity)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setOpacity(path, opacity);
     }
     
@@ -844,7 +844,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public AVMNodeDescriptor getCommonAncestor(String ticket, AVMNodeDescriptor left, AVMNodeDescriptor right)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getCommonAncestor(left, right);
     }
     
@@ -856,7 +856,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public LayeringDescriptor getLayeringInfo(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getLayeringInfo(version, path);
     }
     
@@ -868,7 +868,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setNodeProperty(String ticket, String path, QName name, PropertyValue value)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setNodeProperty(path, name, value);
     }
     
@@ -879,7 +879,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setNodeProperties(String ticket, String path, Map<QName, PropertyValue> properties)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setNodeProperties(path, properties);
     }
     
@@ -892,7 +892,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public PropertyValue getNodeProperty(String ticket, int version, String path, QName name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getNodeProperty(version, path, name);
     }
     
@@ -904,7 +904,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Map<QName, PropertyValue> getNodeProperties(String ticket, int version, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getNodeProperties(version, path);
     }
     
@@ -915,7 +915,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void deleteNodeProperty(String ticket, String path, QName name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.deleteNodeProperty(path, name);
     }
     
@@ -925,7 +925,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void deleteNodeProperties(String ticket, String path)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.deleteNodeProperties(path);
     }
     
@@ -937,7 +937,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setStoreProperty(String ticket, String store, QName name, PropertyValue value)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setStoreProperty(store, name, value);
     }
     
@@ -948,7 +948,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setStoreProperties(String ticket, String store, Map<QName, PropertyValue> props)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setStoreProperties(store, props);
     }
     
@@ -960,7 +960,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public PropertyValue getStoreProperty(String ticket, String store, QName name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStoreProperty(store, name);
     }
     
@@ -972,7 +972,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Map<QName, PropertyValue> queryStorePropertyKey(String ticket, String store, QName keyPattern)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.queryStorePropertyKey(store, keyPattern);
     }
     
@@ -983,7 +983,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Map<String, Map<QName, PropertyValue>> queryStoresPropertyKey(String ticket, QName keyPattern)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.queryStoresPropertyKeys(keyPattern);
     }
 
@@ -994,7 +994,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Map<QName, PropertyValue> getStoreProperties(String ticket, String store)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getStoreProperties(store);
     }
     
@@ -1005,7 +1005,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void deleteStoreProperty(String ticket, String store, QName name)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.deleteStoreProperty(store, name);
     }
 
@@ -1014,7 +1014,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void renameStore(String ticket, String sourceName, String destName) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.renameStore(sourceName, destName);
     }
 
@@ -1023,7 +1023,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void addAspect(String ticket, String path, QName aspectName) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.addAspect(path, aspectName);
     }
 
@@ -1032,7 +1032,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Set<QName> getAspects(String ticket, int version, String path) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getAspects(version, path);
     }
 
@@ -1041,7 +1041,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public boolean hasAspect(String ticket, int version, String path, QName aspectName) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.hasAspect(version, path, aspectName);
     }
 
@@ -1050,7 +1050,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void removeAspect(String ticket, String path, QName aspectName) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.removeAspect(path, aspectName);
     }
 
@@ -1059,7 +1059,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void revert(String ticket, String path, AVMNodeDescriptor toRevertTo) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.revert(path, toRevertTo);
     }
 
@@ -1068,7 +1068,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public Pair<Integer, String> getAPath(String ticket, AVMNodeDescriptor desc) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         return fAVMService.getAPath(desc);
     }
 
@@ -1077,7 +1077,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setGuid(String ticket, String path, String guid) 
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setGuid(path, guid);
     }
 
@@ -1086,7 +1086,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setEncoding(String ticket, String path, String encoding)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setEncoding(path, encoding);
     }
 
@@ -1095,7 +1095,7 @@ public class AVMRemoteTransportService implements AVMRemoteTransport, Runnable
      */
     public void setMimeType(String ticket, String path, String mimeType)
     {
-        fAuthService.validate(ticket, null);
+        fAuthService.validate(ticket);
         fAVMService.setMimeType(path, mimeType);
     }
 }

@@ -116,7 +116,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             {
                 // Use the existing authentication token
                 
-                getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
+                getAuthenticationService().validate(alfClient.getAuthenticationTicket());
     
                 // Debug
                 

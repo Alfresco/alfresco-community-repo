@@ -313,7 +313,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
             {
                 // Set the authentication context for the request
                 
-                getAuthenticationService().validate(alfClient.getAuthenticationTicket(), null);
+                getAuthenticationService().validate(alfClient.getAuthenticationTicket());
                 
                 // DEBUG
                 

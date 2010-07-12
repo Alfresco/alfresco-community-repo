@@ -39,6 +39,12 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+/**
+ * This class tests the ReST API of the {@link RatingService}.
+ * 
+ * @author Neil McErlean
+ * @since 3.4
+ */
 public class RatingRestApiTest extends BaseWebScriptTest
 {
     private static final String USER_ONE = "UserOne";
@@ -109,12 +115,8 @@ public class RatingRestApiTest extends BaseWebScriptTest
                 });        
     }
 
-    //TODO test POST out-of-range.
-    //TODO test GET average
-    
     public void testGetRatingSchemeDefinitions() throws Exception
     {
-        // May as well return all of them in one call.
         final int expectedStatus = 200;
         Response rsp = sendRequest(new GetRequest(GET_RATING_DEFS_URL), expectedStatus);
 
@@ -182,6 +184,8 @@ public class RatingRestApiTest extends BaseWebScriptTest
         assertNotNull("JSON 'data' object was null", dataObj);
         String returnedUrl =  dataObj.getString("ratedNodeUrl");
         assertEquals(ratingUrl, returnedUrl);
+        assertEquals("fiveStarRatingScheme", dataObj.getString("ratingScheme"));
+        assertEquals(ratingValue, dataObj.getInt("rating"));
         
         // Now GET the ratings via that returned URL
         rsp = sendRequest(new GetRequest(ratingUrl), 200);

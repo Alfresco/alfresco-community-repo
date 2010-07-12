@@ -2,7 +2,9 @@
 {
    "data":
    {
-      "ratedNodeUrl": "${ratedNode!""}"
+      "ratedNodeUrl": "${ratedNode!""}",
+      "rating": ${rating?c},
+      "ratingScheme": "${ratingScheme!""}"
    }
 }
 </#escape>

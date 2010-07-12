@@ -73,7 +73,7 @@ public class RatingPost extends AbstractRatingWebScript
             }
             
             // Check that the scheme name actually exists
-            String schemeName = json.getString(RATING_SCHEME);
+            final String schemeName = json.getString(RATING_SCHEME);
             RatingScheme scheme = ratingService.getRatingScheme(schemeName);
             if (scheme == null)
             {
@@ -82,7 +82,7 @@ public class RatingPost extends AbstractRatingWebScript
             
             // Range checking of the rating score will be done within the RatingService.
             // So we can just apply the rating.
-            int rating = json.getInt(RATING);
+            final int rating = json.getInt(RATING);
             ratingService.applyRating(nodeRefToBeRated, rating, schemeName);
 
             // We'll return the URL to the ratings of the just-rated node.
@@ -90,6 +90,8 @@ public class RatingPost extends AbstractRatingWebScript
             String ratedNodeUrl = MessageFormat.format(NODE_RATINGS_URL_FORMAT, ratedNodeUrlFragment);
 
             model.put(RATED_NODE, ratedNodeUrl);
+            model.put(RATING, rating);
+            model.put(RATING_SCHEME, schemeName);
         }
         catch (IOException iox)
         {

@@ -37,6 +37,13 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RatingsGet extends AbstractRatingWebScript
 {
+    private static final String NODE_REF = "nodeRef";
+    private static final String RATINGS = "ratings";
+    
+    private static final String AVERAGE_RATINGS = "averageRatings";
+    private static final String RATINGS_TOTALS = "ratingsTotals";
+    private static final String RATINGS_COUNTS = "ratingsCounts";
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -44,20 +51,33 @@ public class RatingsGet extends AbstractRatingWebScript
 
         NodeRef nodeRef = parseRequestForNodeRef(req);
         
-        List<Rating> ratings = new ArrayList<Rating>();
+        // These are the data for the current user's ratings of this node, if any.
+        List<Rating> myRatings = new ArrayList<Rating>();
+        
+        // These maps hold the average rating, accumulated total of all ratings and
+        // the number of ratings applied for this node as a function of rating scheme.
+        Map<String, Float> averageRatings = new HashMap<String, Float>();
+        Map<String, Integer> ratingsTotals = new HashMap<String, Integer>();
+        Map<String, Integer> ratingsCounts = new HashMap<String, Integer>();
 
         for (String schemeName : ratingService.getRatingSchemes().keySet())
         {
             final Rating ratingByCurrentUser = ratingService.getRatingByCurrentUser(nodeRef, schemeName);
             if (ratingByCurrentUser != null)
             {
-                ratings.add(ratingByCurrentUser);
+                myRatings.add(ratingByCurrentUser);
             }
+            averageRatings.put(schemeName, ratingService.getAverageRating(nodeRef, schemeName));
+            ratingsTotals.put(schemeName, ratingService.getTotalRating(nodeRef, schemeName));
+            ratingsCounts.put(schemeName, ratingService.getRatingsCount(nodeRef, schemeName));
         }
 
-        model.put("nodeRef", nodeRef.toString());
-        model.put("ratings", ratings);
-
+        model.put(NODE_REF, nodeRef.toString());
+        model.put(RATINGS, myRatings);
+        model.put(AVERAGE_RATINGS, averageRatings);
+        model.put(RATINGS_TOTALS, ratingsTotals);
+        model.put(RATINGS_COUNTS, ratingsCounts);
+      
         return model;
     }
 }

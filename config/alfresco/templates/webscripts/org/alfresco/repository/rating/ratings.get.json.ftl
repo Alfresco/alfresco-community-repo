@@ -14,7 +14,18 @@
             "appliedBy": "${rating.appliedBy!""}"
          }<#if rating_has_next>,</#if>
          </#list>
-      ]
+      ],
+      "nodeStatistics":
+      {
+         <#list averageRatings?keys as schemeName>
+         "${schemeName!""}":
+         {
+            "averageRating": ${averageRatings[schemeName]?c},
+            "ratingsTotal": ${ratingsTotals[schemeName]?c},
+            "ratingsCount": ${ratingsCounts[schemeName]?c}
+         }<#if schemeName_has_next>,</#if>
+         </#list>
+      }
    }
 }
 </#escape>

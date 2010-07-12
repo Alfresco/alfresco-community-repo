@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -47,8 +48,9 @@ import org.alfresco.util.PropertyMap;
  */
 public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
-    private static final String USER_ERNIE = "Ernie";
-    private static final String USER_ERIC = "Eric";
+    private static final String USER_ONE = "UserOne";
+    private static final String USER_USERTWO = "UserTwo";
+    private CopyService copyService;
     private PersonService personService;
     private RatingService ratingService;
     private Repository repositoryHelper;
@@ -56,9 +58,10 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     // These NodeRefs are used by the test methods.
     private NodeRef testFolder;
+    private NodeRef testFolderCopyDest;
     private NodeRef testDoc_Admin;
-    private NodeRef testDoc_Eric;
-    private NodeRef testDoc_Ernie;
+    private NodeRef testDoc_UserOne;
+    private NodeRef testDoc_UserTwo;
     
     // The out of the box scheme names.
     private static final String LIKES_SCHEME_NAME = "likesRatingScheme";
@@ -68,6 +71,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+        this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.ratingService = (RatingService) this.applicationContext.getBean("ratingService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
@@ -79,15 +83,16 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         
         //TODO These could be created @BeforeClass
         testFolder = createNode(companyHome, "testFolder", ContentModel.TYPE_FOLDER);
+        testFolderCopyDest = createNode(companyHome, "testFolderCopyDest", ContentModel.TYPE_FOLDER);
         testDoc_Admin = createNode(testFolder, "testDocInFolder", ContentModel.TYPE_CONTENT);
         
-        createUser(USER_ERIC);
-        createUser(USER_ERNIE);
+        createUser(USER_USERTWO);
+        createUser(USER_ONE);
         
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ERIC);
-        testDoc_Eric = createNode(testFolder, "ericsDoc", ContentModel.TYPE_CONTENT);
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ERNIE);
-        testDoc_Ernie = createNode(testFolder, "erniesDoc", ContentModel.TYPE_CONTENT);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
+        testDoc_UserOne = createNode(testFolder, "userOnesDoc", ContentModel.TYPE_CONTENT);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        testDoc_UserTwo = createNode(testFolder, "userTwosDoc", ContentModel.TYPE_CONTENT);
         
         // And back to admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -97,8 +102,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     protected void onTearDownInTransaction() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        deleteUser(USER_ERIC);
-        deleteUser(USER_ERNIE);
+        deleteUser(USER_USERTWO);
+        deleteUser(USER_ONE);
     }
     
     private NodeRef createNode(NodeRef parentNode, String name, QName type)
@@ -167,8 +172,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 
     public void testApplyUpdateDeleteRatings_SingleUserMultipleSchemes() throws Exception
     {
-        // We'll do all this as user 'eric'.
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ERIC);
+        // We'll do all this as user 'UserOne'.
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
         
         //Before we start, let's ensure the read behaviour on a pristine node is correct.
         Rating nullRating = ratingService.getRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME);
@@ -282,10 +287,10 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     public void testApplyRating_MultipleUsers() throws Exception
     {
         // 2 different users rating the same piece of content in the same rating scheme
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ERNIE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         ratingService.applyRating(testDoc_Admin, 4, FIVE_STAR_SCHEME_NAME);
         
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ERIC);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
         ratingService.applyRating(testDoc_Admin, 2, FIVE_STAR_SCHEME_NAME);
         
         float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
@@ -302,8 +307,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     {
         try
         {
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ERNIE);
-            ratingService.applyRating(testDoc_Ernie, 4, FIVE_STAR_SCHEME_NAME);
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+            ratingService.applyRating(testDoc_UserTwo, 4, FIVE_STAR_SCHEME_NAME);
         } catch (RatingServiceException expected)
         {
             return;

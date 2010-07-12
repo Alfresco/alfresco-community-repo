@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>GET rating scheme definitions</shortname>
+   <description><![CDATA[
+   Gets the list of rating scheme definitions.<br/>
+   ]]>
+   </description>
+   <url>/api/rating/schemedefinitions</url>
+   <format default="json" />
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

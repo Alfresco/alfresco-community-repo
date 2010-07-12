@@ -734,6 +734,30 @@
     <!-- adds a new action to the execution queue. -->
     <bean id="webscript.org.alfresco.repository.rule.actionQueue.post" class="org.alfresco.repo.web.scripts.rule.ActionQueuePost" parent="abstractRuleWebScript">
     </bean>
+    
+    <!--                                     -->
+    <!--      Rating Service REST API        -->
+    <!--                                     -->
+    
+    <!-- abstract rating web script -->
+    <bean id="abstractRatingWebScript"
+          class="org.alfresco.repo.web.scripts.rating.AbstractRatingWebScript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="ratingService" ref="RatingService"/>
+    </bean>
+   
+    <!-- Basic web scripts -->
+    <bean id="webscript.org.alfresco.repository.rating.ratings.get"
+          class="org.alfresco.repo.web.scripts.rating.RatingsGet"
+          parent="abstractRatingWebScript">
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.rating.ratingdefinitions.get"
+          class="org.alfresco.repo.web.scripts.rating.RatingDefinitionsGet"
+          parent="abstractRatingWebScript">
+    </bean>
+    
 	
     <!--                                   -->
     <!--      Workflow Service REST API        -->

@@ -1,0 +1,16 @@
+<webscript>
+   <shortname>GET rating</shortname>
+   <description><![CDATA[
+   Gets the list of ratings for the specified NodeRef if there are any.<br/>
+   The ratings returned will be those applied by the currently authenticated user. There
+   will be one for each rating scheme in which the user has submitted a rating. If the
+   currently authenticated user has not applied any ratings to this content the list
+   will be empty.
+   ]]>
+   </description>
+   <url>/api/node/{store_type}/{store_id}/{id}/ratings</url>
+   <format default="json" />
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

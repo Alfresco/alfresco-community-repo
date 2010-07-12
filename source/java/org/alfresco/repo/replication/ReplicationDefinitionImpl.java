@@ -91,9 +91,14 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
    @SuppressWarnings("unchecked")
    public List<NodeRef> getPayload() {
+      // Retrieve the previous payload
+      // Could be null, could be a list, or could be a single
+      //  NodeRef (if the list had one entry when saved)
       Object payloadO =
          getParameterValue(REPLICATION_DEFINITION_PAYLOAD);
       
+      // Ensure we always have a list, no matter what
+      //  we got back
       List<NodeRef> payload;
       if(payloadO == null) {
          payload = new ArrayList<NodeRef>();
@@ -104,8 +109,11 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
          if(payloadO instanceof List) {
             payload = (List<NodeRef>)payloadO;
          } else {
+            // Turn it into a list
             payload = new ArrayList<NodeRef>();
             payload.add((NodeRef)payloadO);
+            // And switch to using the list from now on
+            setParameterValue(REPLICATION_DEFINITION_PAYLOAD, (Serializable)payload);
          }
       }
 

@@ -43,6 +43,16 @@ public interface ReplicationDefinitionPersister
     void saveReplicationDefinition(ReplicationDefinition replicationDefinition);
 
     /**
+     * This method removes the previously serializes {@link ReplicationDefinition}
+     * from the repository. The {@link ReplicationDefinition} will then no longer
+     * be available using the load methods.
+     * 
+     * @param replicationDefinition The {@link ReplicationDefinition} to be
+     *            deleted.
+     */
+    void deleteReplicationDefinition(ReplicationDefinition replicationDefinition);
+
+    /**
      * This method retrieves a {@link ReplicationDefinition} that has been stored
      * in the repository using the <code>save()</code> method. If no
      * {@link ReplicationDefinition} exists in the repository with the specified

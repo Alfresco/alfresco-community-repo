@@ -151,6 +151,17 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    /*
     * (non-Javadoc)
     * @see
+    * org.alfresco.service.cmr.replication.ReplicationService#deleteReplicationDefinition
+    * (ReplicationDefinition)
+    */
+   public void deleteReplicationDefinition(
+         ReplicationDefinition replicationDefinition) {
+      replicationDefinitionPersister.deleteReplicationDefinition(replicationDefinition);
+   }
+
+   /*
+    * (non-Javadoc)
+    * @see
     * org.alfresco.service.cmr.replication.ReplicationService#replication
     * (ReplicationDefinition)
     */

@@ -235,6 +235,121 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals(1, replicationService.loadReplicationDefinitions("TestTarget").size());
        assertEquals(0, replicationService.loadReplicationDefinitions("TestTarget2").size());
     }
+    
+    /**
+     * Ensures that deletion works correctly
+     */
+    public void testDeletion() throws Exception
+    {
+       // Delete does nothing if not persisted
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       ReplicationDefinition rd1 = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       
+       replicationService.deleteReplicationDefinition(rd1);
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // Create and save two
+       ReplicationDefinition rd2 = replicationService.createReplicationDefinition(ACTION_NAME2, "Test2");
+       replicationService.saveReplicationDefinition(rd1);
+       replicationService.saveReplicationDefinition(rd2);
+       assertEquals(2, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // Delete one - the correct one goes!
+       replicationService.deleteReplicationDefinition(rd2);
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertEquals(ACTION_NAME, replicationService.loadReplicationDefinitions().get(0).getReplicationName());
+       
+       
+       // Re-delete already deleted, no change
+       replicationService.deleteReplicationDefinition(rd2);
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertEquals(ACTION_NAME, replicationService.loadReplicationDefinitions().get(0).getReplicationName());
+       
+       
+       // Delete the 2nd
+       replicationService.deleteReplicationDefinition(rd1);
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // Can add back in again after being deleted
+       replicationService.saveReplicationDefinition(rd1);
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertEquals(ACTION_NAME, replicationService.loadReplicationDefinitions().get(0).getReplicationName());
+    }
+    
+    /**
+     * Ensures that we can create, save, edit, save
+     *  load, edit, save, load etc, all without
+     *  problems, and without creating duplicates
+     * DISABLED until Derek can look at it
+     */
+    public void DISABLEDtestEditing() throws Exception
+    {
+       ReplicationDefinition rdTT = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rdTT.setTargetName("TestTarget");
+       replicationService.saveReplicationDefinition(rdTT);
+       
+       // Load, and check it hasn't changed
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(ACTION_NAME, rdTT.getReplicationName());
+       assertEquals("Test", rdTT.getDescription());
+       assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(0, rdTT.getPayload().size());
+       
+       // Save and re-load without changes
+       replicationService.saveReplicationDefinition(rdTT);
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(ACTION_NAME, rdTT.getReplicationName());
+       assertEquals("Test", rdTT.getDescription());
+       assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(0, rdTT.getPayload().size());
+       
+       // Make some small changes
+       rdTT.setDescription("Test Description");
+       rdTT.getPayload().add(folder2a);
+       
+       // Check we see them on save/load
+       replicationService.saveReplicationDefinition(rdTT);
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(ACTION_NAME, rdTT.getReplicationName());
+       assertEquals("Test Description", rdTT.getDescription());
+       assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(1, rdTT.getPayload().size());
+       assertEquals(folder2a, rdTT.getPayload().get(0));
+       
+       // And some more changes
+       rdTT.setDescription("Another One");
+       rdTT.getPayload().clear();
+       rdTT.getPayload().add(folder1);
+       rdTT.getPayload().add(folder2b);
+       assertEquals(2, rdTT.getPayload().size());
+       
+       // Ensure these also come with save/load
+       replicationService.saveReplicationDefinition(rdTT);
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(ACTION_NAME, rdTT.getReplicationName());
+       assertEquals("Another One", rdTT.getDescription());
+       assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(2, rdTT.getPayload().size());
+       assertEquals(folder1, rdTT.getPayload().get(0));
+       assertEquals(folder2b, rdTT.getPayload().get(0));
+       
+       // And more payload changes
+       rdTT.getPayload().clear();
+       rdTT.getPayload().add(content1_1);
+       assertEquals(1, rdTT.getPayload().size());
+       
+       replicationService.saveReplicationDefinition(rdTT);
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertEquals(ACTION_NAME, rdTT.getReplicationName());
+       assertEquals("Another One", rdTT.getDescription());
+       assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(1, rdTT.getPayload().size());
+       assertEquals(content1_1, rdTT.getPayload().get(0));
+    }
 
     /**
      * Test that the action service can find the executor
@@ -361,10 +476,14 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        
        // We need the test transfer target for this test
        makeTransferTarget();
-       
+
        // Put in Folder 2, so we can send Folder 2a
        // TODO Finish creating it properly
        NodeRef folderT2 = makeNode(destinationFolder, ContentModel.TYPE_FOLDER, folder2.getId());
+System.err.println("F2 = " + folder2);
+System.err.println("F2 @ " + nodeService.getPath(folder2));
+System.err.println("FT2 = " + folderT2);
+System.err.println("FT2 @ " + nodeService.getPath(folderT2));
        
        // Run a transfer
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");

@@ -141,6 +141,15 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
         runtimeActionService.saveActionImpl(actionNodeRef, replicationAction);
     }
     
+    public void deleteReplicationDefinition(ReplicationDefinition replicationAction)
+    {
+       QName actionName = replicationAction.getReplicationName();
+       NodeRef actionNode = findActionNode(actionName);
+       if(actionNode != null) {
+          nodeService.deleteNode(actionNode);
+       }
+    }
+    
     private NodeRef findActionNode(QName replicationDefinitionName)
     {
         checkReplicationActionRootNodeExists();

@@ -328,7 +328,14 @@ public class RatingServiceImpl implements RatingService
                 }
             }
         }
-        return (float)ratingTotal / (float)ratingCount;
+        if (ratingCount == 0)
+        {
+            return -1;
+        }
+        else
+        {
+            return (float)ratingTotal / (float)ratingCount;
+        }
     }
 
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)

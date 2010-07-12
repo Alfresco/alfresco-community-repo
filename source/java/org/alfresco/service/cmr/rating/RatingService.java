@@ -95,6 +95,13 @@ public interface RatingService
 
     int getTotalRating(NodeRef targetNode, String ratingSchemeName);
 
+    /**
+     * This method returns the average (mean) rating in the specified scheme for the
+     * specified nodeRef. If there have been no ratings applied, -1 is returned.
+     * @param targetNode the node for which an average is sought.
+     * @param ratingSchemeName the rating scheme name in which the average is defined.
+     * @return the average (mean) value if there is one, else -1.
+     */
     float getAverageRating(NodeRef targetNode, String ratingSchemeName);
 
     /**

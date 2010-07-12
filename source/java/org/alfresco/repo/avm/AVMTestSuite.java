@@ -71,8 +71,6 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(AVMServiceTestBase.class);
         suite.addTestSuite(AVMServiceTest.class);
         
-        suite.addTestSuite(PurgeTestP.class);
-        
         suite.addTestSuite(AVMServiceLocalTest.class);
         suite.addTestSuite(AVMLockingServiceTest.class);
         

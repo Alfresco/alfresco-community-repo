@@ -14,6 +14,17 @@
 #db.password=alfresco
 
 #
+# External locations
+#-------------
+#ooo.exe=soffice
+#ooo.enabled=false
+#jodconverter.officeHome=./OpenOffice.org
+#jodconverter.portNumbers=8101
+#jodconverter.enabled=true
+#img.root=./ImageMagick
+#swf.exe=./bin/pdf2swf
+
+#
 # Property to control whether schema updates are performed automatically.
 # Updates must be enabled during upgrades as, apart from the static upgrade scripts,
 # there are also auto-generated update scripts that will need to be executed.  After
@@ -49,6 +60,70 @@
 #
 #db.driver=org.postgresql.Driver
 #db.url=jdbc:postgresql://localhost:5432/alfresco
+
+#
+# Index Recovery Mode
+#-------------
+#index.recovery.mode=AUTO
+
+#
+# Outbound Email Configuration
+#-------------
+#mail.host=
+#mail.port=25
+#mail.username=anonymous
+#mail.password=
+#mail.encoding=UTF-8
+#mail.from.default=alfresco@alfresco.org
+#mail.smtp.auth=false
+
+#
+# Alfresco Email Service and Email Server
+#-------------
+
+# Enable/Disable the inbound email service.  The service could be used by processes other than
+# the Email Server (e.g. direct RMI access) so this flag is independent of the Email Service.
+#-------------
+#email.inbound.enabled=true
+
+# Email Server properties 
+#-------------
+#email.server.enabled=true
+#email.server.port=25
+#email.server.domain=alfresco.com
+#email.inbound.unknownUser=anonymous
+
+# A comma separated list of email REGEX patterns of allowed senders.
+# If there are any values in the list then all sender email addresses
+# must match. For example:
+#   .*\@alfresco\.com, .*\@alfresco\.org
+# Allow anyone:
+#-------------
+#email.server.allowed.senders=.*
+
+#
+# The default authentication chain
+# To configure external authentication subsystems see:
+# http://wiki.alfresco.com/wiki/Alfresco_Authentication_Subsystems
+#-------------
+#authentication.chain=alfrescoNtlm1:alfrescoNtlm
+
+#
+# URL Generation Parameters (The ${localname} token is replaced by the local server name)
+#-------------
+#alfresco.context=alfresco
+#alfresco.host=${localname}
+#alfresco.port=8080
+#alfresco.protocol=http
+#
+#share.context=share
+#share.host=${localname}
+#share.port=8080
+#share.protocol=http
+
+#imap.server.enabled=true
+#imap.server.port=143
+#imap.server.host=localhost
 
 # The RMI registry host and port is defined in the alfresco-shared.properties file
 #

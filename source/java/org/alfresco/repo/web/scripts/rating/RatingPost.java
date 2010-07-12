@@ -18,21 +18,88 @@
  */
 package org.alfresco.repo.web.scripts.rating;
 
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.rating.RatingScheme;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * @author unknown
- *
+ * This class is the controller for the rating.post webscript.
+ * 
+ * @author Neil McErlean
+ * @since 3.4
  */
 public class RatingPost extends AbstractRatingWebScript
 {
+    // Web script parameters.
+    private static final String RATING_SCHEME = "ratingScheme";
+    private static final String RATING = "rating";
+    private static final String RATED_NODE = "ratedNode";
+
+    // Url format
+    private final static String NODE_RATINGS_URL_FORMAT = "/api/node/{0}/ratings";
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        return null;
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        NodeRef nodeRefToBeRated = parseRequestForNodeRef(req);
+
+        JSONObject json = null;
+        try
+        {
+            // read request json
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+            
+            // Check mandatory parameters.
+            if (json.has(RATING) == false)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "rating parameter missing when applying rating");
+            }
+            if (json.has(RATING_SCHEME) == false)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "schemeName parameter missing when applying rating");
+            }
+            
+            // Check that the scheme name actually exists
+            String schemeName = json.getString(RATING_SCHEME);
+            RatingScheme scheme = ratingService.getRatingScheme(schemeName);
+            if (scheme == null)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unknown scheme name: " + schemeName);
+            }
+            
+            // Range checking of the rating score will be done within the RatingService.
+            // So we can just apply the rating.
+            int rating = json.getInt(RATING);
+            ratingService.applyRating(nodeRefToBeRated, rating, schemeName);
+
+            // We'll return the URL to the ratings of the just-rated node.
+            String ratedNodeUrlFragment = nodeRefToBeRated.toString().replace("://", "/");
+            String ratedNodeUrl = MessageFormat.format(NODE_RATINGS_URL_FORMAT, ratedNodeUrlFragment);
+
+            model.put(RATED_NODE, ratedNodeUrl);
+        }
+        catch (IOException iox)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
+        }
+
+        return model;
     }
 }

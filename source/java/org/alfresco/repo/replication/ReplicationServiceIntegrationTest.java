@@ -58,6 +58,7 @@ import org.alfresco.util.Pair;
 /**
  * @author Nick Burch
  */
+@SuppressWarnings("deprecation")
 public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private ReplicationActionExecutor replicationActionExecutor;
@@ -469,7 +470,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
      * Test that when we execute a replication task, the
      *  right stuff ends up being moved for us
      */
-    public void DISABLEDtestExecutionResult() throws Exception
+    public void testExecutionResult() throws Exception
     {
        // Destination is empty
        assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
@@ -478,12 +479,8 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        makeTransferTarget();
 
        // Put in Folder 2, so we can send Folder 2a
-       // TODO Finish creating it properly
-       NodeRef folderT2 = makeNode(destinationFolder, ContentModel.TYPE_FOLDER, folder2.getId());
-System.err.println("F2 = " + folder2);
-System.err.println("F2 @ " + nodeService.getPath(folder2));
-System.err.println("FT2 = " + folderT2);
-System.err.println("FT2 @ " + nodeService.getPath(folderT2));
+       String folder2Name = (String)nodeService.getProperties(folder2).get(ContentModel.PROP_NAME);
+       NodeRef folderT2 = makeNode(destinationFolder, ContentModel.TYPE_FOLDER, folder2Name);
        
        // Run a transfer
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
@@ -500,24 +497,66 @@ System.err.println("FT2 @ " + nodeService.getPath(folderT2));
        NodeRef c1 = nodeService.getChildAssocs(destinationFolder).get(0).getChildRef();
        NodeRef c2 = nodeService.getChildAssocs(destinationFolder).get(1).getChildRef();
        
+       // The destination should have folder 1 (transfered) 
+       //  and folder 2 (created). folder 2 will have
+       //  folder 2a (transfered) but not 2b
        NodeRef folderT1 = null;
-       NodeRef folderT2a = null;
-       if(c1.getId().equals(folder1.getId())) {
+       boolean foundT1 = false;
+       boolean foundT2 = false;
+       if(nodeService.getProperty(folder1, ContentModel.PROP_NAME).equals(
+             nodeService.getProperty(c1, ContentModel.PROP_NAME) )) {
           folderT1 = c1;
-          folderT2a = c2;
-       } else if(c2.getId().equals(folder1.getId())) {
+          foundT1 = true;
+       }
+       if(nodeService.getProperty(folder1, ContentModel.PROP_NAME).equals(
+             nodeService.getProperty(c2, ContentModel.PROP_NAME) )) {
           folderT1 = c2;
-          folderT2a = c1;
-       } else {
-          fail("Folders 1 and 2a not found in the destination");
+          foundT1 = true;
+       }
+       if(c1.equals(folderT2) || c2.equals(folderT2)) {
+          foundT2 = true;
+       }
+
+       if(!foundT1) {
+          fail("Folder 1 not found in the destination");
+       }
+       if(!foundT2) {
+          fail("Folder 2 not found in the destination");
        }
        
        // Folder 1 has 2*content + thumbnail
        assertEquals(3, nodeService.getChildAssocs(folderT1).size());
-       // Folder 2 has 
-       assertEquals(3, nodeService.getChildAssocs(folderT1).size());
+       // Won't have the authority, as that gets skipped
+       for(ChildAssociationRef r : nodeService.getChildAssocs(folderT1)) {
+          if(nodeService.getType(r.getChildRef()).equals(ContentModel.TYPE_AUTHORITY)) {
+             fail("Found authority as " + r.getChildRef() + " but it shouldn't be transfered!");
+          }
+       }
        
-       // And the correct things were left behind
+       // Folder 2 has 2a but not 2b, since only
+       //  2a was transfered
+       assertEquals(1, nodeService.getChildAssocs(folderT2).size());
+       NodeRef folderT2a = nodeService.getChildAssocs(folderT2).get(0).getChildRef();
+       assertEquals(
+             nodeService.getProperty(folder2a, ContentModel.PROP_NAME),
+             nodeService.getProperty(folderT2a, ContentModel.PROP_NAME)
+       );
+       // Won't have Folder 2b, as it wasn't on the payload
+       for(ChildAssociationRef r : nodeService.getChildAssocs(folderT2)) {
+          assertNotSame(
+                nodeService.getProperty(folder2b, ContentModel.PROP_NAME),
+                nodeService.getProperty(r.getChildRef(), ContentModel.PROP_NAME)
+          );
+       }
+       
+       // Folder 2a has content + thumbnail
+       assertEquals(2, nodeService.getChildAssocs(folderT2a).size());
+       // Won't have the zone, as that gets skipped
+       for(ChildAssociationRef r : nodeService.getChildAssocs(folderT2a)) {
+          if(nodeService.getType(r.getChildRef()).equals(ContentModel.TYPE_ZONE)) {
+             fail("Found zone as " + r.getChildRef() + " but it shouldn't be transfered!");
+          }
+       }
     }
     
     /**
@@ -597,16 +636,6 @@ System.err.println("FT2 @ " + nodeService.getPath(folderT2));
        assertEquals(2, td.getNodes().size());
        assertEquals(true, td.getNodes().contains(folder1));
        assertEquals(true, td.getNodes().contains(content1_1));
-    }
-    
-    /**
-     * Test that, with a mock transfer service, we
-     *  pick the right things to replicate and call
-     *  the transfer service correctly.
-     */
-    public void testReplicationExecution() throws Exception
-    {
-       // TODO
     }
     
 

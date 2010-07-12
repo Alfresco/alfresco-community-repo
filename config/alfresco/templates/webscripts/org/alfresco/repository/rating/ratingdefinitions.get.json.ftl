@@ -7,8 +7,8 @@
          <#list schemeDefs?keys as key>
          {
             "name": "${schemeDefs[key].name!""}",
-            "minRating": ${schemeDefs[key].minRating},
-            "maxRating": ${schemeDefs[key].maxRating}
+            "minRating": ${schemeDefs[key].minRating?c},
+            "maxRating": ${schemeDefs[key].maxRating?c}
          }<#if key_has_next>,</#if>
          </#list>
       ]

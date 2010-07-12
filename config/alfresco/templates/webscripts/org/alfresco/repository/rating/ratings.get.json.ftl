@@ -1,3 +1,4 @@
+<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "data":
@@ -8,9 +9,9 @@
          <#list ratings as rating>
          {
             "ratingScheme": "${rating.scheme.name!""}",
-            "rating": ${rating.score},
-            "appliedAt": "${rating.appliedAt}",
-            "appliedBy": "${rating.appliedBy}"
+            "rating": ${rating.score?c},
+            "appliedAt": "<@dateFormat rating.appliedAt />",
+            "appliedBy": "${rating.appliedBy!""}"
          }<#if rating_has_next>,</#if>
          </#list>
       ]

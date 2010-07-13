@@ -427,7 +427,7 @@
          <properties>
             <property name="cm:ratingScore">
                <title>Rating</title>
-               <type>d:int</type>
+               <type>d:float</type>
                <mandatory>true</mandatory>
                <multiple>true</multiple>
                <index enabled="true">

@@ -47,14 +47,14 @@ public class RatingNodeProperties
 {
     // These lists are declared as the concrete type 'ArrayList' as they must implement Serializable
     private final ArrayList<String> schemes;
-    private final ArrayList<Integer> scores;
+    private final ArrayList<Float> scores;
     private final ArrayList<Date> dates;
 
-    public RatingNodeProperties(List<String> schemes, List<Integer> scores, List<Date> dates)
+    public RatingNodeProperties(List<String> schemes, List<Float> scores, List<Date> dates)
     {
         // No null lists.
         if (schemes == null) schemes = new ArrayList<String>();
-        if (scores == null)  scores = new ArrayList<Integer>();
+        if (scores == null)  scores = new ArrayList<Float>();
         if (dates == null)   dates = new ArrayList<Date>();
         
         // All lists must be the same length.
@@ -69,8 +69,8 @@ public class RatingNodeProperties
         for (String s : schemes)
             this.schemes.add(s);
         
-        this.scores = new ArrayList<Integer>(scores.size());
-        for (Integer i : scores)
+        this.scores = new ArrayList<Float>(scores.size());
+        for (Float i : scores)
             this.scores.add(i);
         
         this.dates = new ArrayList<Date>(dates.size());
@@ -89,7 +89,7 @@ public class RatingNodeProperties
     public static RatingNodeProperties createFrom(Map<QName, Serializable> props)
     {
         List<String> schemes = (List<String>) props.get(ContentModel.PROP_RATING_SCHEME);
-        List<Integer> scores = (List<Integer>)props.get(ContentModel.PROP_RATING_SCORE);
+        List<Float> scores = (List<Float>)props.get(ContentModel.PROP_RATING_SCORE);
         List<Date> dates     = (List<Date>)   props.get(ContentModel.PROP_RATED_AT);
         
         return new RatingNodeProperties(schemes, scores, dates);
@@ -112,7 +112,7 @@ public class RatingNodeProperties
     public RatingStruct getRatingAt(int index)
     {
         String scheme = this.schemes.get(index);
-        int score = this.scores.get(index);
+        float score = this.scores.get(index);
         Date d = this.dates.get(index);
         return new RatingStruct(scheme, score, d);
     }
@@ -124,7 +124,7 @@ public class RatingNodeProperties
      * @param schemeName the scheme name.
      * @param score the score.
      */
-    public void appendRating(String schemeName, int score)
+    public void appendRating(String schemeName, float score)
     {
         this.schemes.add(schemeName);
         this.scores.add(score);
@@ -142,7 +142,7 @@ public class RatingNodeProperties
      * @param scheme the new rating scheme name.
      * @param score the new rating score.
      */
-    public void setRatingAt(int index, String scheme, int score)
+    public void setRatingAt(int index, String scheme, float score)
     {
         this.schemes.set(index, scheme);
         this.scores.set(index, score);
@@ -157,7 +157,7 @@ public class RatingNodeProperties
     public RatingStruct removeRatingAt(int index)
     {
         String removedScheme = this.schemes.remove(index);
-        int removedScore = this.scores.remove(index);
+        float removedScore = this.scores.remove(index);
         Date removedDate = this.dates.remove(index);
         
         return new RatingStruct(removedScheme, removedScore, removedDate);
@@ -237,10 +237,10 @@ public class RatingNodeProperties
     public class RatingStruct
     {
         private String scheme;
-        private int score;
+        private float score;
         private Date date;
         
-        public RatingStruct(String scheme, int score, Date d)
+        public RatingStruct(String scheme, float score, Date d)
         {
             RatingStruct.this.scheme = scheme;
             RatingStruct.this.score = score;
@@ -252,7 +252,7 @@ public class RatingNodeProperties
             return scheme;
         }
 
-        public int getScore()
+        public float getScore()
         {
             return score;
         }
@@ -278,7 +278,7 @@ public class RatingNodeProperties
         @Override
         public int hashCode()
         {
-            return scheme.hashCode() + 7 * score + 11 * date.hashCode();
+            return scheme.hashCode() + (int)(7 * score) + 11 * date.hashCode();
         }
 
         @Override

@@ -19,8 +19,12 @@
 
 package org.alfresco.service.cmr.rating;
 
+import org.alfresco.repo.rating.RatingSchemeRegistry;
+
 /**
- * TODO
+ * This data type represents a rating scheme as used in the {@link RatingService}.
+ * These schemes are defined within spring context files and injected into the
+ * {@link RatingSchemeRegistry} at startup.
  * 
  * @author Neil McErlean
  * @since 3.4
@@ -39,12 +43,12 @@ public interface RatingScheme
      * 
      * @return the minimum rating.
      */
-    public int getMinRating();
+    public float getMinRating();
 
     /**
      * This method returns the maximum rating defined for this scheme.
      * 
      * @return the maximum rating.
      */
-    public int getMaxRating();
+    public float getMaxRating();
 }

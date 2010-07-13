@@ -33,8 +33,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * which are injected via spring (see <code>rating-service-context.xml</code>). The rating
  * schemes define a minimum and a maximum score value for that scheme.
  * <p/>
- * Ratings can be {@link RatingService#applyRating(NodeRef, int, String) applied},
- * {@link RatingService#applyRating(NodeRef, int, String) updated} and
+ * Ratings can be {@link RatingService#applyRating(NodeRef, float, String) applied},
+ * {@link RatingService#applyRating(NodeRef, float, String) updated} and
  * {@link RatingService#removeRatingByCurrentUser(NodeRef, RatingScheme) removed}.
  * 
  * TODO Get average/total
@@ -77,7 +77,7 @@ public interface RatingService
      * @see RatingScheme
      */
     @NotAuditable
-    void applyRating(NodeRef targetNode, int rating, String ratingSchemeName) throws RatingServiceException;
+    void applyRating(NodeRef targetNode, float rating, String ratingSchemeName) throws RatingServiceException;
 
     /**
      * This method gets the number of individual ratings which have been applied to
@@ -93,7 +93,7 @@ public interface RatingService
     @NotAuditable
     int getRatingsCount(NodeRef targetNode, String ratingSchemeName);
 
-    int getTotalRating(NodeRef targetNode, String ratingSchemeName);
+    float getTotalRating(NodeRef targetNode, String ratingSchemeName);
 
     /**
      * This method returns the average (mean) rating in the specified scheme for the

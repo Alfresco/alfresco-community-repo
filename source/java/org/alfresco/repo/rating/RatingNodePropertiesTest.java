@@ -50,14 +50,14 @@ public class RatingNodePropertiesTest
     
     // These are declared as ArrayLists in order to be Serializable.
     private ArrayList<String> testSchemes;
-    private ArrayList<Integer> testScores;
+    private ArrayList<Float> testScores;
     private ArrayList<Date>    testDates;
     private RatingNodeProperties testProps;
     
     @Before public void initTestData()
     {
         testSchemes = new ArrayList<String>();
-        testScores = new ArrayList<Integer>();
+        testScores = new ArrayList<Float>();
         testDates = new ArrayList<Date>();
         // These correspond to two ratings:
         // '1' in the 'like' scheme at 'now'.
@@ -65,8 +65,8 @@ public class RatingNodePropertiesTest
         testSchemes.add(LIKE);
         testSchemes.add(FIVESTAR);
         
-        testScores.add(1);
-        testScores.add(5);
+        testScores.add(1.0f);
+        testScores.add(5.0f);
         
         testDates.add(new Date());
         testDates.add(new Date());
@@ -87,7 +87,7 @@ public class RatingNodePropertiesTest
     @Test public void noNullPropertyLists() throws Exception
     {
         List<String> schemes = null;
-        List<Integer> scores = null;
+        List<Float> scores = null;
         List<Date> dates = null;
         RatingNodeProperties nullProps = new RatingNodeProperties(schemes, scores, dates);
         
@@ -104,20 +104,20 @@ public class RatingNodePropertiesTest
         
         final RatingStruct firstRating = testProps.getRatingAt(0);
         assertEquals(LIKE, firstRating.getScheme());
-        assertEquals(1, firstRating.getScore());
+        assertEquals(1.0f, firstRating.getScore(), 0.1f);
         final Date recoveredLikeDate = firstRating.getDate();
         assertNotNull(recoveredLikeDate);
         
         final RatingStruct secondRating = testProps.getRatingAt(1);
         assertEquals(FIVESTAR, secondRating.getScheme());
-        assertEquals(5, secondRating.getScore());
+        assertEquals(5, secondRating.getScore(), 0.1f);
         final Date recoveredSecondDate = secondRating.getDate();
         assertNotNull(recoveredSecondDate);
         
         RatingStruct l = testProps.getRating(LIKE);
         assertNotNull(l);
         assertEquals(LIKE, l.getScheme());
-        assertEquals(1, l.getScore());
+        assertEquals(1, l.getScore(), 0.1f);
         assertEquals(recoveredLikeDate, l.getDate());
     }
     
@@ -165,7 +165,7 @@ public class RatingNodePropertiesTest
         assertNotNull(testProps.getRating(FIVESTAR));
         final RatingStruct fooRating = testProps.getRating("foo");
         assertNotNull(fooRating);
-        assertEquals(42, fooRating.getScore());
+        assertEquals(42, fooRating.getScore(), 0.1f);
     }
     
     @SuppressWarnings("unchecked")
@@ -176,14 +176,14 @@ public class RatingNodePropertiesTest
         final int numberOfProperties = 3;
         assertEquals(numberOfProperties, alfProps.size());
         final List<String> ratingSchemes = (List<String>)alfProps.get(ContentModel.PROP_RATING_SCHEME);
-        final List<Integer> ratingScores = (List<Integer>)alfProps.get(ContentModel.PROP_RATING_SCORE);
+        final List<Float> ratingScores = (List<Float>)alfProps.get(ContentModel.PROP_RATING_SCORE);
         final List<Date> ratingDates = (List<Date>)alfProps.get(ContentModel.PROP_RATED_AT);
         final int numberOfRatings = 2;
         assertEquals(numberOfRatings, ratingSchemes.size());
         assertEquals(numberOfRatings, ratingScores.size());
         assertEquals(numberOfRatings, ratingDates.size());
         assertEquals(Arrays.asList(new String[]{LIKE, FIVESTAR}), ratingSchemes);
-        assertEquals(Arrays.asList(new Integer[]{1, 5}), ratingScores);
+        assertEquals(Arrays.asList(new Float[]{1.0f, 5.0f}), ratingScores);
         // No Date checks
     }
 }

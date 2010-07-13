@@ -33,7 +33,7 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
     private final RatingSchemeRegistry ratingSchemeRegistry;
     
     private String name;
-    private int minRating, maxRating;
+    private float minRating, maxRating;
     
     public RatingSchemeImpl(RatingSchemeRegistry registry)
     {
@@ -54,12 +54,12 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
         this.name = name;
     }
 
-    public void setMinRating(int minRating)
+    public void setMinRating(float minRating)
     {
         this.minRating = minRating;
     }
 
-    public void setMaxRating(int maxRating)
+    public void setMaxRating(float maxRating)
     {
         this.maxRating = maxRating;
     }
@@ -84,7 +84,7 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingScheme#getMaxRating()
      */
-    public int getMaxRating()
+    public float getMaxRating()
     {
         return this.maxRating;
     }
@@ -93,7 +93,7 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingScheme#getMinRating()
      */
-    public int getMinRating()
+    public float getMinRating()
     {
         return this.minRating;
     }

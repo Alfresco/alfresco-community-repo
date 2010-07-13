@@ -134,14 +134,14 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         RatingScheme likesRS = schemes.get(LIKES_SCHEME_NAME);
         assertNotNull("'likes' rating scheme was missing.", likesRS);
         assertEquals("'likes' rating scheme had wrong name.", LIKES_SCHEME_NAME, likesRS.getName());
-        assertEquals("'likes' rating scheme had wrong min.", 1, likesRS.getMinRating());
-        assertEquals("'likes' rating scheme had wrong max.", 1, likesRS.getMaxRating());
+        assertEquals("'likes' rating scheme had wrong min.", 1.0f, likesRS.getMinRating());
+        assertEquals("'likes' rating scheme had wrong max.", 1.0f, likesRS.getMaxRating());
         
         RatingScheme fiveStarRS = schemes.get(FIVE_STAR_SCHEME_NAME);
         assertNotNull("'5*' rating scheme was missing.", fiveStarRS);
         assertEquals("'5*' rating scheme had wrong name.", FIVE_STAR_SCHEME_NAME, fiveStarRS.getName());
-        assertEquals("'5*' rating scheme had wrong min.", 1, fiveStarRS.getMinRating());
-        assertEquals("'5*' rating scheme had wrong max.", 5, fiveStarRS.getMaxRating());
+        assertEquals("'5*' rating scheme had wrong min.", 1.0f, fiveStarRS.getMinRating());
+        assertEquals("'5*' rating scheme had wrong max.", 5.0f, fiveStarRS.getMaxRating());
     }
     
     /**
@@ -151,14 +151,14 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     public void testApplyIllegalRatings() throws Exception
     {
         // See rating-services-context.xml for definitions of these rating schemes.
-        int[] illegalRatings = new int[]{0, 2};
-        for (int illegalRating : illegalRatings)
+        float[] illegalRatings = new float[]{0.0f, 2.0f};
+        for (float illegalRating : illegalRatings)
         {
             applyIllegalRating(testDoc_Admin, illegalRating, LIKES_SCHEME_NAME);
         }
     }
 
-    private void applyIllegalRating(NodeRef nodeRef, int illegalRating, String schemeName)
+    private void applyIllegalRating(NodeRef nodeRef, float illegalRating, String schemeName)
     {
         try
         {
@@ -180,8 +180,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertNull("Expected a null rating,", nullRating);
         assertNull("Expected a null remove result.", ratingService.removeRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME));
         
-        final int likesScore = 1;
-        final int fiveStarScore = 5;
+        final float likesScore = 1;
+        final float fiveStarScore = 5;
         
         ratingService.applyRating(testDoc_Admin, likesScore, LIKES_SCHEME_NAME);
         ratingService.applyRating(testDoc_Admin, fiveStarScore, FIVE_STAR_SCHEME_NAME);
@@ -221,7 +221,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertDateIsCloseToNow(fiveStarRatingAppliedAt);
         
         // Now we'll update a rating
-        final int updatedFiveStarScore = 3;
+        final float updatedFiveStarScore = 3;
         ratingService.applyRating(testDoc_Admin, updatedFiveStarScore, FIVE_STAR_SCHEME_NAME);
         
         // Some basic node structure tests.
@@ -290,16 +290,16 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     {
         // 2 different users rating the same piece of content in the same rating scheme
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
-        ratingService.applyRating(testDoc_Admin, 4, FIVE_STAR_SCHEME_NAME);
+        ratingService.applyRating(testDoc_Admin, 4.0f, FIVE_STAR_SCHEME_NAME);
         
         AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
-        ratingService.applyRating(testDoc_Admin, 2, FIVE_STAR_SCHEME_NAME);
+        ratingService.applyRating(testDoc_Admin, 2.0f, FIVE_STAR_SCHEME_NAME);
         
         float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
         assertEquals("Document had wrong mean rating.", 3f, meanRating);
 
-        int totalRating = ratingService.getTotalRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
-        assertEquals("Document had wrong total rating.", 6, totalRating);
+        float totalRating = ratingService.getTotalRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong total rating.", 6.0f, totalRating);
 
         int ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
         assertEquals("Document had wrong ratings count.", 2, ratingsCount);

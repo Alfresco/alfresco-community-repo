@@ -81,9 +81,9 @@ public class RatingServiceImpl implements RatingService
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.service.cmr.rating.RatingService#applyRating(org.alfresco.service.cmr.repository.NodeRef, int, java.lang.String)
+     * @see org.alfresco.service.cmr.rating.RatingService#applyRating(org.alfresco.service.cmr.repository.NodeRef, float, java.lang.String)
      */
-    public void applyRating(final NodeRef targetNode, final int rating,
+    public void applyRating(final NodeRef targetNode, final float rating,
             final String ratingSchemeName) throws RatingServiceException
     {
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -110,7 +110,7 @@ public class RatingServiceImpl implements RatingService
         return currentUser.equals(creator);
     }
 
-    private void applyRating(NodeRef targetNode, int rating,
+    private void applyRating(NodeRef targetNode, float rating,
             String ratingSchemeName, final String userName) throws RatingServiceException
     {
         if (log.isDebugEnabled())
@@ -150,7 +150,7 @@ public class RatingServiceImpl implements RatingService
             
             // These are multivalued properties.
             Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
-            ratingProps.put(ContentModel.PROP_RATING_SCORE, toSerializableList(new Integer[]{rating}));
+            ratingProps.put(ContentModel.PROP_RATING_SCORE, toSerializableList(new Float[]{rating}));
             ratingProps.put(ContentModel.PROP_RATED_AT, toSerializableList(new Date[]{new Date()}));
             ratingProps.put(ContentModel.PROP_RATING_SCHEME, toSerializableList(new String[]{ratingSchemeName}));
 
@@ -230,8 +230,6 @@ public class RatingServiceImpl implements RatingService
                     ratingStruct.getDate());
             return result;
         }
-        
-        //TODO Don't forget that it is possible on read to have out-of-range ratings.
     }
 
     /*
@@ -280,16 +278,17 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#getTotalRating(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public int getTotalRating(NodeRef targetNode, String ratingSchemeName)
+    public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
-        //TODO Put these in the db as properties?
+        //TODO Performance improvement? : put node rating total/count/average into a multi-valued
+        //                                property in the db.
         List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
         
         // It's one node per user so the size of this list is the number of ratings applied.
         // However not all of these users' ratings need be in the specified scheme.
         // So we need to go through and check that the rating node contains a rating for the
         // specified scheme.
-        int result = 0;
+        float result = 0;
         for (ChildAssociationRef ratingsNode : ratingsNodes)
         {
             List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
@@ -304,10 +303,8 @@ public class RatingServiceImpl implements RatingService
         return result;
     }
     
-    // TODO We can at least amalgamate these into one looping call.
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
-        //TODO Put these in the db as properties?
         List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
         
         // It's one node per user so the size of this list is the number of ratings applied.
@@ -315,7 +312,7 @@ public class RatingServiceImpl implements RatingService
         // So we need to go through and check that the rating node contains a rating for the
         // specified scheme.
         int ratingCount = 0;
-        int ratingTotal = 0;
+        float ratingTotal = 0;
         for (ChildAssociationRef ratingsNode : ratingsNodes)
         {
             List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
@@ -340,7 +337,6 @@ public class RatingServiceImpl implements RatingService
 
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
     {
-        //TODO Put these in the db as properties?
         List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
         
         // It's one node per user so the size of this list is the number of ratings applied.

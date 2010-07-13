@@ -29,12 +29,12 @@ import java.util.Date;
  */
 public class Rating
 {
-    private final int ratingScore;
+    private final float ratingScore;
     private final String ratingAppliedBy;
     private final Date ratingAppliedAt;
     private final RatingScheme ratingScheme;
     
-    public Rating(RatingScheme scheme, int score, String appliedBy, Date appliedAt)
+    public Rating(RatingScheme scheme, float score, String appliedBy, Date appliedAt)
     {
         this.ratingScheme = scheme;
         this.ratingScore = score;
@@ -48,7 +48,7 @@ public class Rating
      * 
      * @return the score.
      */
-    public int getScore()
+    public float getScore()
     {
         return ratingScore;
     }

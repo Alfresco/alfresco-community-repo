@@ -184,6 +184,10 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                 idToInheritFrom = newAcl.getId();
                 nodeDAO.setNodeAclId(nodeId, idToInheritFrom);
             }
+            if (existingAcl.getAclType() == ACLType.SHARED)
+            {
+                // nothing to do just cascade into the children - we most likely did a bulk set above.
+            }
             else
             {
                 // Already fixed up
@@ -228,12 +232,18 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
             }
 
         }
+        
+        if(children.size() > 0)
+        {
+            nodeDAO.setPrimaryChildrenSharedAclId(nodeId, null, toInherit);
+        }
+
         for (NodeIdAndAclId child : children)
         {
             CounterSet update = fixOldDmAcls(child.getId(), toInherit, false);
             result.add(update);
         }
-
+        
         return result;
     }
 

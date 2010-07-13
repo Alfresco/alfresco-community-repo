@@ -19,8 +19,7 @@
 package org.alfresco.repo.action;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +44,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -55,7 +55,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 
 /**
@@ -1138,6 +1137,83 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                     
                 });
         
+    }
+    
+    /**
+     * Tests that we can read, save, load etc the various
+     *  execution related details such as started at,
+     *  ended at, status and exception
+     */
+    public void testExecutionTrackingDetails() {
+       Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+       String actionId = action.getId();
+       
+       assertNull(action.getExecutionStartDate());
+       assertNull(action.getExecutionEndDate());
+       assertNull(action.getExecutionFailureMessage());
+       assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+       
+       // Save and load, details shouldn't have changed
+       this.actionService.saveAction(this.nodeRef, action);
+       action = (Action)this.actionService.getAction(this.nodeRef, actionId);
+       
+       assertNull(action.getExecutionStartDate());
+       assertNull(action.getExecutionEndDate());
+       assertNull(action.getExecutionFailureMessage());
+       assertEquals(ActionStatus.New, action.getExecutionStatus());
+       
+       
+       // Set some details, ensure they survive a save/load
+       ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
+       ((ActionImpl)action).setExecutionStartDate(new Date(12345));
+       
+       this.actionService.saveAction(this.nodeRef, action);
+       action = (Action)this.actionService.getAction(this.nodeRef, actionId);
+       
+       assertEquals(ActionStatus.Running, action.getExecutionStatus());
+       assertEquals(12345, action.getExecutionStartDate().getTime());
+       assertNull(action.getExecutionEndDate());
+       assertNull(action.getExecutionFailureMessage());
+       
+       
+       // Set the rest, and change some, ensure they survive a save/load
+       ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
+       ((ActionImpl)action).setExecutionStartDate(new Date(123450));
+       ((ActionImpl)action).setExecutionEndDate(new Date(123455));
+       ((ActionImpl)action).setExecutionFailureMessage("Testing");
+       
+       this.actionService.saveAction(this.nodeRef, action);
+       action = (Action)this.actionService.getAction(this.nodeRef, actionId);
+       
+       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+       assertEquals(123450, action.getExecutionStartDate().getTime());
+       assertEquals(123455, action.getExecutionEndDate().getTime());
+       assertEquals("Testing", action.getExecutionFailureMessage());
+       
+       
+       // Unset a few, ensure they survive a save/load
+       ((ActionImpl)action).setExecutionStatus(null);
+       ((ActionImpl)action).setExecutionStartDate(new Date(123450));
+       ((ActionImpl)action).setExecutionFailureMessage(null);
+       
+       this.actionService.saveAction(this.nodeRef, action);
+       action = (Action)this.actionService.getAction(this.nodeRef, actionId);
+       
+       assertEquals(ActionStatus.New, action.getExecutionStatus()); // Default
+       assertEquals(123450, action.getExecutionStartDate().getTime());
+       assertEquals(123455, action.getExecutionEndDate().getTime());
+       assertEquals(null, action.getExecutionFailureMessage());
+    }
+    
+    /**
+     * Tests that when we run an action, either
+     *  synchronously or asynchronously, with it
+     *  working or failing, that the action execution
+     *  service correctly sets the flags
+     */
+    public void testExecutionTrackingOnExecution() {
+       // TODO
     }
     
     /**

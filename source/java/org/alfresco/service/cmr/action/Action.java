@@ -208,4 +208,38 @@ public interface Action extends ParameterizedItem
      * @param values A map of values to be added
      */
     void addParameterValues(Map<String, Serializable> values);
+ 
+    /**
+     * Gets the date that the action (last) began executing at.
+     * Null if the action has not yet been run.
+     * For a saved action, this will be the last time at ran.
+     * @return The date the action (last) began executing at, or null.
+     */
+    Date getExecutionStartDate();
+    
+    /**
+     * Gets the date that the action (last) finished
+     *  execution at.
+     * Null if the action has not yet been run, or is
+     *  currently running.
+     * For a saved action, this will normally be the last
+     *  time it finished running.
+     * @return The date the action last finished exeucting at, or null.
+     */
+    Date getExecutionEndDate();
+    
+    /**
+     * Gets the current execution status of the action,
+     *  such as Running or Completed.
+     * @return The current execution status
+     */
+    ActionStatus getExecutionStatus();
+    
+    /**
+     * Gets the message of the exception which caused the 
+     *  Action execution failure, or null if the Action
+     *  hasn't failed / has been retried.
+     * @return The exception message, if the action has failed
+     */
+    String getExecutionFailureMessage();
 }

@@ -15,6 +15,20 @@
       <namespace uri="http://www.alfresco.org/model/action/1.0" prefix="act"/>
    </namespaces>
 
+    <constraints>
+        <constraint name="act:allowedExecutionstatuses" type="LIST">
+            <parameter name="allowedValues">
+                <list>
+                    <value>New</value>
+                    <value>Pending</value>
+                    <value>Running</value>
+                    <value>Completed</value>
+                    <value>Cancelled</value>
+                    <value>Failed</value>
+                </list>
+            </parameter>
+        </constraint>
+    </constraints>
    
    <types>
    
@@ -61,6 +75,25 @@
                <mandatory>false</mandatory>
             </property>
             <property name="act:runAsPassword">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executionStartDate">
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executionEndDate">
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="act:executionActionStatus">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <constraints>
+                   <constraint ref="act:allowedExecutionstatuses" />
+               </constraints>
+            </property>
+            <property name="act:executionFailureMessage">
                <type>d:text</type>
                <mandatory>false</mandatory>
             </property>

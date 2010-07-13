@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionList;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.action.ParameterConstraint;
@@ -879,6 +880,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         props.put(ActionModel.PROP_ACTION_TITLE, action.getTitle());
         props.put(ActionModel.PROP_ACTION_DESCRIPTION, action.getDescription());
         props.put(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY, action.getExecuteAsychronously());
+        
+        props.put(ActionModel.PROP_EXECUTION_START_DATE, action.getExecutionStartDate());
+        props.put(ActionModel.PROP_EXECUTION_END_DATE, action.getExecutionEndDate());
+        props.put(ActionModel.PROP_EXECUTION_ACTION_STATUS, action.getExecutionStatus());
+        props.put(ActionModel.PROP_EXECUTION_FAILURE_MESSAGE, action.getExecutionFailureMessage());
+        
         this.nodeService.setProperties(actionNodeRef, props);
 
         // Update the compensating action (model should enforce the singularity
@@ -1283,6 +1290,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         ((ActionImpl) action).setCreatedDate((Date) props.get(ContentModel.PROP_CREATED));
         ((ActionImpl) action).setModifier((String) props.get(ContentModel.PROP_MODIFIER));
         ((ActionImpl) action).setModifiedDate((Date) props.get(ContentModel.PROP_MODIFIED));
+        
+        ((ActionImpl) action).setExecutionStartDate((Date) props.get(ActionModel.PROP_EXECUTION_START_DATE));
+        ((ActionImpl) action).setExecutionEndDate((Date) props.get(ActionModel.PROP_EXECUTION_END_DATE));
+        ((ActionImpl) action).setExecutionStatus(ActionStatus.valueOf(props.get(ActionModel.PROP_EXECUTION_ACTION_STATUS)));
+        ((ActionImpl) action).setExecutionFailureMessage((String) props.get(ActionModel.PROP_EXECUTION_FAILURE_MESSAGE));
 
         // Get the compensating action
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionNodeRef, RegexQNamePattern.MATCH_ALL,

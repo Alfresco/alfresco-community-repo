@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -104,6 +105,29 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
      * Action conditions
      */
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
+    
+    /**
+     * When the action started executing,
+     *  or null if it hasn't yet.
+     */
+    private Date executionStartDate;
+    
+    /**
+     * When the action finished executing,
+     *  or null if it hasn't yet.
+     */
+    private Date executionEndDate;
+    
+    /**
+     * The status of the action's execution
+     */
+    private ActionStatus executionStatus = ActionStatus.New;
+    
+    /**
+     * Why the action failed to execute fully,
+     *  if exists.
+     */
+    private String executionFailureMessage;
 
     /**
      * Constructor
@@ -146,6 +170,10 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
         this.modifier = action.getModifier();
         this.nodeRef = action.getNodeRef();
         this.title = action.getTitle();
+        this.executionStartDate = action.getExecutionStartDate();
+        this.executionEndDate = action.getExecutionEndDate();
+        this.executionStatus = action.getExecutionStatus();
+        this.executionFailureMessage = action.getExecutionFailureMessage();
         if (action instanceof ActionImpl)
         {
             ActionImpl actionImpl = (ActionImpl) action;
@@ -437,5 +465,55 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     {
         getParameterValues().putAll(values);
     }
+    
+    public Date getExecutionStartDate() {
+       return executionStartDate;
+    }
 
+    /**
+     * Records the date when the action began execution,
+     *  normally called by the {@link ActionService} when
+     *  it starts running the action.
+     */
+    public void setExecutionStartDate(Date startDate) {
+       this.executionStartDate = startDate;
+    }
+    
+    public Date getExecutionEndDate() {
+       return executionEndDate;
+    }
+
+    /**
+     * Records the date when the action finished execution,
+     *  normally called by the {@link ActionService} when
+     *  the action completes or fails.
+     */
+    public void setExecutionEndDate(Date endDate) {
+       this.executionEndDate = endDate;
+    }
+    
+    public ActionStatus getExecutionStatus() {
+       return executionStatus;
+    }
+
+    /**
+     * Updates the current execution status. This is 
+     *  normally called by the {@link ActionService} as
+     *  it progresses the Action's execution.
+     */
+    public void setExecutionStatus(ActionStatus status) {
+       this.executionStatus = status;
+    }
+    
+    public String getExecutionFailureMessage() {
+       return executionFailureMessage;
+    }
+
+    /**
+     * Records the message of the exception which caused the 
+     *  Action to fail, if any.
+     */
+    public void setExecutionFailureMessage(String message) {
+       this.executionFailureMessage = message;
+    }
 }

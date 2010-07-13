@@ -20,14 +20,17 @@
 package org.alfresco.repo.rating;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingService;
@@ -35,6 +38,8 @@ import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -49,11 +54,13 @@ import org.alfresco.util.PropertyMap;
 public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String USER_ONE = "UserOne";
-    private static final String USER_USERTWO = "UserTwo";
+    private static final String USER_TWO = "UserTwo";
     private CopyService copyService;
     private PersonService personService;
     private RatingService ratingService;
     private Repository repositoryHelper;
+    private ScriptService scriptService;
+    private RetryingTransactionHelper transactionHelper;
     private NodeRef companyHome;
     
     // These NodeRefs are used by the test methods.
@@ -75,6 +82,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.ratingService = (RatingService) this.applicationContext.getBean("ratingService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
+        this.scriptService = (ScriptService) this.applicationContext.getBean("scriptService");
 
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -86,10 +95,10 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         testFolderCopyDest = createNode(companyHome, "testFolderCopyDest", ContentModel.TYPE_FOLDER);
         testDoc_Admin = createNode(testFolder, "testDocInFolder", ContentModel.TYPE_CONTENT);
         
-        createUser(USER_USERTWO);
         createUser(USER_ONE);
+        createUser(USER_TWO);
         
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         testDoc_UserOne = createNode(testFolder, "userOnesDoc", ContentModel.TYPE_CONTENT);
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         testDoc_UserTwo = createNode(testFolder, "userTwosDoc", ContentModel.TYPE_CONTENT);
@@ -102,7 +111,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     protected void onTearDownInTransaction() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        deleteUser(USER_USERTWO);
+        deleteUser(USER_TWO);
         deleteUser(USER_ONE);
     }
     
@@ -173,7 +182,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
     public void testApplyUpdateDeleteRatings_SingleUserMultipleSchemes() throws Exception
     {
         // We'll do all this as user 'UserOne'.
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         //Before we start, let's ensure the read behaviour on a pristine node is correct.
         Rating nullRating = ratingService.getRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME);
@@ -292,7 +301,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         ratingService.applyRating(testDoc_Admin, 4.0f, FIVE_STAR_SCHEME_NAME);
         
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_USERTWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         ratingService.applyRating(testDoc_Admin, 2.0f, FIVE_STAR_SCHEME_NAME);
         
         float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
@@ -344,5 +353,14 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         {
             personService.deletePerson(userName);
         }
+    }
+
+    public void testJavascriptAPI() throws Exception
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("testNode", this.testDoc_UserOne);
+        
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/rating/script/test_ratingService.js");
+        this.scriptService.executeScript(location, model);
     }
 }

@@ -78,4 +78,13 @@
       <property name="minRating" value="1"/>
       <property name="maxRating" value="5"/>
    </bean>
+
+   <!-- JavaScript API support -->
+   <bean id="ratingServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.rating.script.ScriptRatingService">
+        <property name="extensionName">
+            <value>ratingService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
 </beans>

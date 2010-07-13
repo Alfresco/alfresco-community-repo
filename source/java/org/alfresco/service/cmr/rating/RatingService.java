@@ -37,8 +37,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * {@link RatingService#applyRating(NodeRef, float, String) updated} and
  * {@link RatingService#removeRatingByCurrentUser(NodeRef, RatingScheme) removed}.
  * 
- * TODO Get average/total
- * 
  * @author Neil McErlean
  * @since 3.4
  */

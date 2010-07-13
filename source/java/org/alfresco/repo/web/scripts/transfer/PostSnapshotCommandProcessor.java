@@ -19,6 +19,8 @@
 
 package org.alfresco.repo.web.scripts.transfer;
 
+import java.io.OutputStream;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.transfer.TransferCommons;
@@ -109,6 +111,17 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
           
             logger.debug("success");
             resp.setStatus(Status.STATUS_OK);
+            
+            OutputStream out = resp.getOutputStream();
+            resp.setContentType("text/xml");
+            resp.setContentEncoding("utf-8");
+   
+            receiver.generateRequsite(transferId, out);
+            
+            out.close();
+            
+            // TODO Does out need closing ?
+                        
         } 
         catch (Exception ex) 
         {

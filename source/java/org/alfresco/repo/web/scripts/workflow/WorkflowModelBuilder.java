@@ -232,12 +232,12 @@ public class WorkflowModelBuilder
 
     private String getUrl(WorkflowTask task)
     {
-        return "api/task-instance/" + task.id;
+        return "api/task-instances/" + task.id;
     }
 
     private String getUrl(WorkflowDefinition workflowDefinition)
     {
-        return "api/workflow-definition/" + workflowDefinition.id;
+        return "api/workflow-definitions/" + workflowDefinition.id;
     }
 
 }

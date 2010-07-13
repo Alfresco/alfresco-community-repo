@@ -92,7 +92,7 @@ public class WorkflowModelBuilderTest extends TestCase
         Object id = model.get(WorkflowModelBuilder.TASK_ID);
         assertEquals(task.id, id);
         Object url = model.get(WorkflowModelBuilder.TASK_URL);
-        assertEquals("api/task-instance/"+task.id, url);
+        assertEquals("api/task-instances/"+task.id, url);
         assertEquals(task.name, model.get(WorkflowModelBuilder.TASK_NAME));
         assertEquals(task.title, model.get(WorkflowModelBuilder.TASK_TITLE));
         assertEquals(task.description, model.get(WorkflowModelBuilder.TASK_DESCRIPTION));
@@ -143,7 +143,7 @@ public class WorkflowModelBuilderTest extends TestCase
         
         Map<String, Object> model = builder.buildSimple(workflowDefinition);
         assertEquals(workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_ID));
-        assertEquals("api/workflow-definition/" + workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_URL));
+        assertEquals("api/workflow-definitions/" + workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_URL));
         assertEquals(workflowDefinition.name, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_NAME));
         assertEquals(workflowDefinition.title, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_TITLE));
         assertEquals(workflowDefinition.description, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_DESCRIPTION));

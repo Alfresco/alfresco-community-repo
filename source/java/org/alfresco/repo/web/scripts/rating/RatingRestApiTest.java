@@ -149,11 +149,11 @@ public class RatingRestApiTest extends BaseWebScriptTest
         JSONObject scheme2 = ratingSchemesArray.getJSONObject(1);
         
         assertEquals(LIKES_RATING_SCHEME, scheme1.getString(NAME));
-        assertEquals(1, scheme1.getInt(MIN_RATING));
-        assertEquals(1, scheme1.getInt(MAX_RATING));
+        assertEquals(1.0, scheme1.getDouble(MIN_RATING));
+        assertEquals(1.0, scheme1.getDouble(MAX_RATING));
         assertEquals(FIVE_STAR_RATING_SCHEME, scheme2.getString(NAME));
-        assertEquals(1, scheme2.getInt(MIN_RATING));
-        assertEquals(5, scheme2.getInt(MAX_RATING));
+        assertEquals(1.0, scheme2.getDouble(MIN_RATING));
+        assertEquals(5.0, scheme2.getDouble(MAX_RATING));
     }
     
     public void testGetRatingsFromUnratedNodeRef() throws Exception
@@ -178,7 +178,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
         JSONObject likesStats = statsObject.getJSONObject(LIKES_RATING_SCHEME);
         assertEquals("Average rating was wrong.", -1.0, likesStats.getDouble(AVERAGE_RATING));
         assertEquals("Ratings count rating was wrong.", 0, likesStats.getInt(RATINGS_COUNT));
-        assertEquals("Ratings total was wrong.", 0, likesStats.getInt(RATINGS_TOTAL));
+        assertEquals("Ratings total was wrong.", 0.0, likesStats.getDouble(RATINGS_TOTAL));
     }
 
     /**
@@ -193,7 +193,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
 
         final String testNodeRatingUrl = getRatingUrl(testNode);
         
-        final int userOneRatingValue = 5;
+        final float userOneRatingValue = 4.5f;
         String jsonString = new JSONStringer().object()
             .key("rating").value(userOneRatingValue)
             .key("ratingScheme").value(FIVE_STAR_RATING_SCHEME)
@@ -213,7 +213,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
         String returnedUrl =  dataObj.getString("ratedNodeUrl");
         assertEquals(testNodeRatingUrl, returnedUrl);
         assertEquals(FIVE_STAR_RATING_SCHEME, dataObj.getString("ratingScheme"));
-        assertEquals(userOneRatingValue, dataObj.getInt("rating"));
+        assertEquals(userOneRatingValue, (float)dataObj.getDouble("rating"));
         
         // Now GET the ratings via that returned URL
         rsp = sendRequest(new GetRequest(testNodeRatingUrl), 200);
@@ -227,21 +227,21 @@ public class RatingRestApiTest extends BaseWebScriptTest
         final JSONArray ratingsArray = dataObj.getJSONArray(RATINGS);
         assertEquals(1, ratingsArray.length());
         JSONObject recoveredRating = (JSONObject)ratingsArray.get(0);
-        assertEquals(userOneRatingValue, recoveredRating.getInt("rating"));
+        assertEquals(userOneRatingValue, (float)recoveredRating.getDouble("rating"));
         assertEquals(FIVE_STAR_RATING_SCHEME, recoveredRating.getString("ratingScheme"));
 
         // As well as the average, total ratings.
         JSONObject statsObject = dataObj.getJSONObject(NODE_STATISTICS);
         JSONObject fiveStarStats = statsObject.getJSONObject(FIVE_STAR_RATING_SCHEME);
-        assertEquals("Average rating was wrong.", (double)userOneRatingValue, fiveStarStats.getDouble(AVERAGE_RATING));
+        assertEquals("Average rating was wrong.", userOneRatingValue, (float)fiveStarStats.getDouble(AVERAGE_RATING));
         assertEquals("Ratings count rating was wrong.", 1, fiveStarStats.getInt(RATINGS_COUNT));
-        assertEquals("Ratings total was wrong.", userOneRatingValue, fiveStarStats.getInt(RATINGS_TOTAL));
+        assertEquals("Ratings total was wrong.", userOneRatingValue, (float)fiveStarStats.getDouble(RATINGS_TOTAL));
         
 
         // Now POST a second new rating to the testNode - as User Two.
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
 
-        final int userTwoRatingValue = 3;
+        final float userTwoRatingValue = 3.5f;
         jsonString = new JSONStringer().object()
             .key("rating").value(userTwoRatingValue)
             .key("ratingScheme").value(FIVE_STAR_RATING_SCHEME)
@@ -272,7 +272,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
         final JSONArray userTwoRatingsArray = dataObj.getJSONArray(RATINGS);
         assertEquals(1, userTwoRatingsArray.length());
         JSONObject secondRating = (JSONObject)userTwoRatingsArray.get(0);
-        assertEquals(userTwoRatingValue, secondRating.getInt("rating"));
+        assertEquals(userTwoRatingValue, (float)secondRating.getDouble("rating"));
         assertEquals(FIVE_STAR_RATING_SCHEME, secondRating.getString("ratingScheme"));
 
         // Now the average should have changed.
@@ -282,7 +282,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
                                                   fiveStarStats.getDouble(AVERAGE_RATING));
         assertEquals("Ratings count rating was wrong.", 2, fiveStarStats.getInt(RATINGS_COUNT));
         assertEquals("Ratings total was wrong.", userOneRatingValue + userTwoRatingValue,
-                                                 fiveStarStats.getInt(RATINGS_TOTAL));
+                                                 (float)fiveStarStats.getDouble(RATINGS_TOTAL));
     }
     
     /**

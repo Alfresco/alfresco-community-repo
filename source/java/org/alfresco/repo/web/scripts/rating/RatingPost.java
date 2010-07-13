@@ -82,7 +82,7 @@ public class RatingPost extends AbstractRatingWebScript
             
             // Range checking of the rating score will be done within the RatingService.
             // So we can just apply the rating.
-            final int rating = json.getInt(RATING);
+            final float rating = (float)json.getDouble(RATING);
             ratingService.applyRating(nodeRefToBeRated, rating, schemeName);
 
             // We'll return the URL to the ratings of the just-rated node.

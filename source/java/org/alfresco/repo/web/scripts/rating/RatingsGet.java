@@ -57,7 +57,7 @@ public class RatingsGet extends AbstractRatingWebScript
         // These maps hold the average rating, accumulated total of all ratings and
         // the number of ratings applied for this node as a function of rating scheme.
         Map<String, Float> averageRatings = new HashMap<String, Float>();
-        Map<String, Integer> ratingsTotals = new HashMap<String, Integer>();
+        Map<String, Float> ratingsTotals = new HashMap<String, Float>();
         Map<String, Integer> ratingsCounts = new HashMap<String, Integer>();
 
         for (String schemeName : ratingService.getRatingSchemes().keySet())

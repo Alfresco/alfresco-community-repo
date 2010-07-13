@@ -30,21 +30,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.forms.AssociationFieldDefinition;
+import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldDefinition;
-import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
-import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
-import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.FilteredFormProcessor;
+import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -60,7 +57,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -69,7 +65,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.StringUtils;
 
 /**
  * Abstract FormProcessor implementation that provides common functionality for
@@ -201,563 +196,53 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         this.contentService = contentService;
     }
 
-    /**
-     * Sets up a field definition for the given property.
-     * <p>
-     * NOTE: This method is static so that it can serve as a helper method for
-     * FormFilter implementations as adding additional property fields is likely
-     * to be a common extension.
-     * </p>
-     * 
-     * @param propDef The PropertyDefinition of the field to generate
-     * @param form The Form instance to populate
-     * @param namespaceService NamespaceService instance
-     */
-    public static void generatePropertyField(PropertyDefinition propDef, Form form, NamespaceService namespaceService)
+    @Override
+    protected List<Field> generateDefaultFields(FormCreationData data)
     {
-        generatePropertyField(propDef, form, null, null, namespaceService);
+        DefaultFieldBuilder defaultFieldBuilder = new DefaultFieldBuilder(data, fieldProcessorRegistry);
+        return defaultFieldBuilder.buildDefaultFields();
     }
 
-    /**
-     * Sets up a field definition for the given property.
-     * <p>
-     * NOTE: This method is static so that it can serve as a helper method for
-     * FormFilter implementations as adding additional property fields is likely
-     * to be a common extension.
-     * </p>
-     * 
-     * @param propDef The PropertyDefinition of the field to generate
-     * @param form The Form instance to populate
-     * @param propValue The value of the property field
-     * @param namespaceService NamespaceService instance
-     */
-    public static void generatePropertyField(PropertyDefinition propDef, Form form, Serializable propValue,
-                NamespaceService namespaceService)
+    protected Map<QName, AssociationDefinition> populateAssociations(TypeDefinition typeDef)
     {
-        generatePropertyField(propDef, form, propValue, null, namespaceService);
+        // we only get the associations of the actual type so
+        // we also need to manually get associations from any
+        // mandatory aspects
+        HashMap<QName, AssociationDefinition> allAssocs = new HashMap<QName, AssociationDefinition>();
+        allAssocs.putAll(typeDef.getAssociations());
+        List<AspectDefinition> aspects = typeDef.getDefaultAspects(true);
+        for (AspectDefinition aspect : aspects) {
+            allAssocs.putAll(aspect.getAssociations());
+        }
+        return Collections.unmodifiableMap(allAssocs);
     }
 
-    /**
-     * Sets up a field definition for the given property.
-     * <p>
-     * NOTE: This method is static so that it can serve as a helper method for
-     * FormFilter implementations as adding additional property fields is likely
-     * to be a common extension.
-     * </p>
-     * 
-     * @param propDef The PropertyDefinition of the field to generate
-     * @param form The Form instance to populate
-     * @param propValue The value of the property field
-     * @param group The FieldGroup the property field belongs to, can be null
-     * @param namespaceService NamespaceService instance
-     */
-    @SuppressWarnings("unchecked")
-    public static void generatePropertyField(PropertyDefinition propDef, Form form, Serializable propValue,
-                FieldGroup group, NamespaceService namespaceService)
+    @Override
+    protected ItemData<ItemType> makeItemData(ItemType item)
     {
-        String propName = propDef.getName().toPrefixString(namespaceService);
-        String[] nameParts = QName.splitPrefixedQName(propName);
-        PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(propName, propDef.getDataType().getName()
-                    .getLocalName());
-
-        String title = propDef.getTitle();
-        if (title == null)
-        {
-            title = propName;
-        }
-        fieldDef.setLabel(title);
-        fieldDef.setDefaultValue(propDef.getDefaultValue());
-        fieldDef.setDescription(propDef.getDescription());
-        fieldDef.setMandatory(propDef.isMandatory());
-        fieldDef.setProtectedField(propDef.isProtected());
-        fieldDef.setRepeating(propDef.isMultiValued());
-        fieldDef.setGroup(group);
-
-        // any property from the system model (sys prefix) should be protected
-        // the model doesn't currently enforce this so make sure they are not
-        // editable
-        if (NamespaceService.SYSTEM_MODEL_1_0_URI.equals(propDef.getName().getNamespaceURI()))
-        {
-            fieldDef.setProtectedField(true);
-        }
-
-        // define the data key name and set
-        String dataKeyName = PROP_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
-        fieldDef.setDataKeyName(dataKeyName);
-
-        // setup any parameters requried for the data type
-        if (propDef.getDataType().getName().equals(DataTypeDefinition.PERIOD))
-        {
-            // if the property data type is d:period we need to setup a data
-            // type parameters object to represent the options and rules
-            PeriodDataTypeParameters periodOptions = new PeriodDataTypeParameters();
-            Set<String> providers = Period.getProviderNames();
-            for (String provider : providers)
-            {
-                periodOptions.addPeriodProvider(Period.getProvider(provider));
-            }
-
-            fieldDef.setDataTypeParameters(periodOptions);
-        }
-
-        // setup constraints for the property
-        List<ConstraintDefinition> constraints = propDef.getConstraints();
-        if (constraints != null && constraints.size() > 0)
-        {
-            List<FieldConstraint> fieldConstraints = new ArrayList<FieldConstraint>(constraints.size());
-
-            for (ConstraintDefinition constraintDef : constraints)
-            {
-                Constraint constraint = constraintDef.getConstraint();
-                FieldConstraint fieldConstraint = new FieldConstraint(constraint.getType(), constraint.getParameters());
-                fieldConstraints.add(fieldConstraint);
-            }
-
-            fieldDef.setConstraints(fieldConstraints);
-        }
-
-        form.addFieldDefinition(fieldDef);
-
-        // add the property value to the form
-        if (propValue != null)
-        {
-            if (propValue instanceof List)
-            {
-                // temporarily add repeating field data as a comma
-                // separated list, this will be changed to using
-                // a separate field for each value once we have full
-                // UI support in place.
-                propValue = StringUtils.collectionToCommaDelimitedString((List) propValue);
-            }
-            else if (propValue instanceof ContentData)
-            {
-                // for content properties retrieve the info URL rather than the
-                // the object value itself
-                propValue = ((ContentData)propValue).getInfoUrl();
-            }
-
-            form.addData(dataKeyName, propValue);
-        }
+        TypeDefinition baseType = getBaseType(item);
+        Set<QName> aspects = getAspectNames(item);
+        TypeDefinition anonType = dictionaryService.getAnonymousType(baseType.getName(), aspects);
+        Map<QName, PropertyDefinition> propDefs = anonType.getProperties();
+        Map<QName, AssociationDefinition> assocDefs = anonType.getAssociations();
+        Map<QName, Serializable> propValues = getPropertyValues(item);
+        Map<QName, Serializable> assocValues = getAssociationValues(item);
+        Map<String, Object> transientValues = getTransientValues(item);
+        return new ItemData<ItemType>(item, propDefs, assocDefs, propValues, assocValues, transientValues);
     }
 
-    /**
-     * Sets up a field definition for the given association.
-     * <p>
-     * NOTE: This method is static so that it can serve as a helper method for
-     * FormFilter implementations as adding additional association fields is
-     * likely to be a common extension.
-     * </p>
-     * 
-     * @param assocDef The AssociationDefinition of the field to generate
-     * @param form The Form instance to populate
-     * @param namespaceService NamespaceService instance
-     */
-    public static void generateAssociationField(AssociationDefinition assocDef, Form form,
-                NamespaceService namespaceService)
+    protected Set<QName> getAspectNames(ItemType item)
     {
-        generateAssociationField(assocDef, form, null, null, namespaceService);
+        return getBaseType(item).getDefaultAspectNames();
     }
 
-    /**
-     * Sets up a field definition for the given association.
-     * <p>
-     * NOTE: This method is static so that it can serve as a helper method for
-     * FormFilter implementations as adding additional association fields is
-     * likely to be a common extension.
-     * </p>
-     * 
-     * @param assocDef The AssociationDefinition of the field to generate
-     * @param form The Form instance to populate
-     * @param assocValues The values of the association field, can be null
-     * @param namespaceService NamespaceService instance
-     */
-    @SuppressWarnings("unchecked")
-    public static void generateAssociationField(AssociationDefinition assocDef, Form form, List assocValues,
-                NamespaceService namespaceService)
-    {
-        generateAssociationField(assocDef, form, assocValues, null, namespaceService);
-    }
+    protected abstract Map<QName, Serializable> getAssociationValues(ItemType item);
 
-    /**
-     * Sets up a field definition for the given association.
-     * <p>
-     * NOTE: This method is static so that it can serve as a helper method for
-     * FormFilter implementations as adding additional association fields is
-     * likely to be a common extension.
-     * </p>
-     * 
-     * @param assocDef The AssociationDefinition of the field to generate
-     * @param form The Form instance to populate
-     * @param assocValues The values of the association field, can be null
-     * @param group The FieldGroup the association field belongs to, can be null
-     * @param namespaceService NamespaceService instance
-     */
-    @SuppressWarnings("unchecked")
-    public static void generateAssociationField(AssociationDefinition assocDef, Form form, List assocValues,
-                FieldGroup group, NamespaceService namespaceService)
-    {
-        String assocName = assocDef.getName().toPrefixString(namespaceService);
-        String[] nameParts = QName.splitPrefixedQName(assocName);
-        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(assocName, assocDef.getTargetClass()
-                    .getName().toPrefixString(namespaceService), Direction.TARGET);
-        String title = assocDef.getTitle();
-        if (title == null)
-        {
-            title = assocName;
-        }
-        fieldDef.setLabel(title);
-        fieldDef.setDescription(assocDef.getDescription());
-        fieldDef.setProtectedField(assocDef.isProtected());
-        fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
-        fieldDef.setEndpointMany(assocDef.isTargetMany());
-        fieldDef.setGroup(group);
+    protected abstract Map<QName, Serializable> getPropertyValues(ItemType item);
 
-        // define the data key name and set
-        String dataKeyName = ASSOC_DATA_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
-        fieldDef.setDataKeyName(dataKeyName);
+    protected abstract Map<String, Object> getTransientValues(ItemType item);
 
-        // add definition to the form
-        form.addFieldDefinition(fieldDef);
-
-        if (assocValues != null)
-        {
-            // add the association value to the form
-            // determine the type of association values data and extract
-            // accordingly
-            List<String> values = new ArrayList<String>(4);
-            for (Object value : assocValues)
-            {
-                if (value instanceof ChildAssociationRef)
-                {
-                    values.add(((ChildAssociationRef) value).getChildRef().toString());
-                }
-                else if (value instanceof AssociationRef)
-                {
-                    values.add(((AssociationRef) value).getTargetRef().toString());
-                }
-                else
-                {
-                    values.add(value.toString());
-                }
-            }
-
-            // Add the list as the value for the association.
-            form.addData(dataKeyName, values);
-        }
-    }
-
-    /**
-     * Retrieves a logger instance to log to.
-     * 
-     * @return Log instance to log to.
-     */
-    protected abstract Log getLogger();
-
-    /**
-     * Sets up the field definitions for all the requested fields.
-     * <p>
-     * A NodeRef or TypeDefinition can be provided, however, if a NodeRef is
-     * provided all type information will be derived from the NodeRef and the
-     * TypeDefinition will be ignored.
-     * </p>
-     * <p>
-     * If any of the requested fields are not present on the type and they
-     * appear in the forcedFields list an attempt to find a model definition for
-     * those fields is made so they can be included.
-     * </p>
-     * 
-     * @param nodeRef The NodeRef of the item being generated
-     * @param typeDef The TypeDefiniton of the item being generated
-     * @param fields Restricted list of fields to include
-     * @param forcedFields List of field names that should be included even if
-     *            the field is not currently present
-     * @param form The Form instance to populate
-     */
-    protected void generateSelectedFields(NodeRef nodeRef, TypeDefinition typeDef, List<String> fields,
-                List<String> forcedFields, Form form)
-    {
-        // ensure a NodeRef or TypeDefinition is provided
-        if (nodeRef == null && typeDef == null) { throw new IllegalArgumentException(
-                    "A NodeRef or TypeDefinition must be provided"); }
-
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Generating selected fields: " + fields + " and forcing: " + forcedFields);
-
-        // get data dictionary definition for node if it is provided
-        QName type = null;
-        Map<QName, Serializable> propValues = Collections.emptyMap();
-        Map<QName, PropertyDefinition> propDefs = null;
-        Map<QName, AssociationDefinition> assocDefs = null;
-
-        if (nodeRef != null)
-        {
-            type = this.nodeService.getType(nodeRef);
-            typeDef = this.dictionaryService.getAnonymousType(type, this.nodeService.getAspects(nodeRef));
-
-            // NOTE: the anonymous type returns all property and association
-            // defs
-            // for all aspects applied as well as the type
-            propDefs = typeDef.getProperties();
-            assocDefs = typeDef.getAssociations();
-            propValues = this.nodeService.getProperties(nodeRef);
-        }
-        else
-        {
-            type = typeDef.getName();
-
-            // we only get the properties and associations of the actual type so
-            // we also need to manually get properties and associations from any
-            // mandatory aspects
-            propDefs = new HashMap<QName, PropertyDefinition>(16);
-            assocDefs = new HashMap<QName, AssociationDefinition>(16);
-            propDefs.putAll(typeDef.getProperties());
-            assocDefs.putAll(typeDef.getAssociations());
-
-            List<AspectDefinition> aspects = typeDef.getDefaultAspects(true);
-            for (AspectDefinition aspect : aspects)
-            {
-                propDefs.putAll(aspect.getProperties());
-                assocDefs.putAll(aspect.getAssociations());
-            }
-        }
-
-        for (String fieldName : fields)
-        {
-            // try and split the field name
-            String[] parts = fieldName.split(":");
-            if (parts.length == 2 || parts.length == 3)
-            {
-                boolean foundField = false;
-                boolean tryProperty = true;
-                boolean tryAssociation = true;
-                String qNamePrefix = null;
-                String localName = null;
-
-                if (parts.length == 2)
-                {
-                    qNamePrefix = parts[0];
-                    localName = parts[1];
-                }
-                else
-                {
-                    // if there are 3 parts to the field name the first one
-                    // represents
-                    // whether the field is a property or association i.e.
-                    // prop:prefix:local
-                    // or assoc:prefix:local, determine the prefix and ensure
-                    // it's valid
-                    if (PROP.equals(parts[0]))
-                    {
-                        tryAssociation = false;
-                    }
-                    else if (ASSOC.equals(parts[0]))
-                    {
-                        tryProperty = false;
-                    }
-                    else
-                    {
-                        if (getLogger().isWarnEnabled())
-                            getLogger()
-                                        .warn(
-                                                    "\""
-                                                                + parts[0]
-                                                                + "\" is an invalid prefix for requesting a property or association");
-
-                        continue;
-                    }
-
-                    qNamePrefix = parts[1];
-                    localName = parts[2];
-                }
-
-                // create qname of field name
-                QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
-
-                // try the field as a property
-                if (tryProperty)
-                {
-                    // lookup property def on node
-                    PropertyDefinition propDef = propDefs.get(fullQName);
-                    if (propDef != null)
-                    {
-                        // generate the property field
-                        generatePropertyField(propDef, form, propValues.get(fullQName), this.namespaceService);
-
-                        // no need to try and find an association
-                        tryAssociation = false;
-                        foundField = true;
-                    }
-                }
-
-                // try the field as an association
-                if (tryAssociation)
-                {
-                    AssociationDefinition assocDef = assocDefs.get(fullQName);
-                    if (assocDef != null)
-                    {
-                        // generate the association field
-                        generateAssociationField(assocDef, form, (nodeRef != null) ? retrieveAssociationValues(nodeRef,
-                                    assocDef) : null, this.namespaceService);
-
-                        foundField = true;
-                    }
-                }
-
-                // still not found the field, is it a force'd field?
-                if (!foundField)
-                {
-                    if (forcedFields != null && forcedFields.size() > 0 && forcedFields.contains(fieldName))
-                    {
-                        generateForcedField(fieldName, form);
-                    }
-                    else if (getLogger().isDebugEnabled())
-                    {
-                        getLogger().debug(
-                                    "Ignoring field \"" + fieldName + "\" as it is not defined for the current "
-                                                + ((nodeRef != null) ? "node" : "type")
-                                                + " and it does not appear in the 'force' list");
-                    }
-                }
-            }
-            else
-            {
-                // see if the fieldName is a well known transient property
-                if (TRANSIENT_MIMETYPE.equals(fieldName) || TRANSIENT_ENCODING.equals(fieldName)
-                            || TRANSIENT_SIZE.equals(fieldName))
-                {
-                    // if the node type is content or sublcass thereof generate appropriate field
-                    if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
-                    {
-                        ContentData content = null;
-                        
-                        if (nodeRef != null)
-                        {
-                            content = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-                        }
-                        
-                        if (TRANSIENT_MIMETYPE.equals(fieldName))
-                        {
-                            generateMimetypePropertyField(content, form);
-                        }
-                        else if (TRANSIENT_ENCODING.equals(fieldName))
-                        {
-                            generateEncodingPropertyField(content, form);
-                        }
-                        else if (TRANSIENT_SIZE.equals(fieldName))
-                        {
-                            generateSizePropertyField(content, form);
-                        }
-                    }
-                }
-                else if (getLogger().isWarnEnabled())
-                {
-                    getLogger().warn("Ignoring unrecognised field \"" + fieldName + "\"");
-                }
-            }
-        }
-    }
-
-    /**
-     * Generates a field definition for the given field that is being forced to
-     * show.
-     * 
-     * @param fieldName Name of the field to force
-     * @param form The Form instance to populated
-     */
-    protected void generateForcedField(String fieldName, Form form)
-    {
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Attempting to force the inclusion of field \"" + fieldName + "\"");
-
-        String[] parts = fieldName.split(":");
-        if (parts.length == 2 || parts.length == 3)
-        {
-            boolean foundField = false;
-            boolean tryProperty = true;
-            boolean tryAssociation = true;
-            String qNamePrefix = null;
-            String localName = null;
-
-            if (parts.length == 2)
-            {
-                qNamePrefix = parts[0];
-                localName = parts[1];
-            }
-            else
-            {
-                // if there are 3 parts to the field name the first one
-                // represents
-                // whether the field is a property or association i.e.
-                // prop:prefix:local
-                // or assoc:prefix:local, determine the prefix and ensure it's
-                // valid
-                if (PROP.equals(parts[0]))
-                {
-                    tryAssociation = false;
-                }
-                else if (ASSOC.equals(parts[0]))
-                {
-                    tryProperty = false;
-                }
-                else
-                {
-                    if (getLogger().isWarnEnabled())
-                        getLogger().warn(
-                                    "\"" + parts[0]
-                                                + "\" is an invalid prefix for requesting a property or association");
-
-                    return;
-                }
-
-                qNamePrefix = parts[1];
-                localName = parts[2];
-            }
-
-            // create qname of field name
-            QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
-
-            if (tryProperty)
-            {
-                // lookup the field as a property in the whole model
-                PropertyDefinition propDef = this.dictionaryService.getProperty(fullQName);
-                if (propDef != null)
-                {
-                    // generate the property field
-                    generatePropertyField(propDef, form, this.namespaceService);
-
-                    // no need to try and find an association
-                    tryAssociation = false;
-                    foundField = true;
-                }
-            }
-
-            if (tryAssociation)
-            {
-                // lookup the field as an association in the whole model
-                AssociationDefinition assocDef = this.dictionaryService.getAssociation(fullQName);
-                if (assocDef != null)
-                {
-                    // generate the association field
-                    generateAssociationField(assocDef, form, this.namespaceService);
-
-                    foundField = true;
-                }
-            }
-
-            if (!foundField && getLogger().isDebugEnabled())
-            {
-                getLogger()
-                            .debug(
-                                        "Ignoring field \""
-                                                    + fieldName
-                                                    + "\" as it is not defined for the current node and can not be found in any model");
-            }
-        }
-        else if (getLogger().isWarnEnabled())
-        {
-            getLogger().warn("Ignoring unrecognised field \"" + fieldName + "\"");
-        }
-    }
+    protected abstract TypeDefinition getBaseType(ItemType item);
 
     /**
      * Generates the field definition for the transient mimetype property

@@ -19,9 +19,12 @@
 
 package org.alfresco.repo.forms.processor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.Item;
@@ -39,6 +42,8 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
     private static final Log logger = LogFactory.getLog(FilteredFormProcessor.class);
 
     protected FilterRegistry<ItemType, PersistType> filterRegistry;
+
+    protected FieldProcessorRegistry fieldProcessorRegistry;
 
     /**
      * Sets the filter registry
@@ -130,6 +135,79 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
     }
 
     /**
+     * Generates the form.
+     * 
+     * @param item The object to generate a form for
+     * @param fields Restricted list of fields to include
+     * @param forcedFields List of fields to forcibly include
+     * @param form The form object being generated
+     * @param context Map representing optional context that can be used during
+     *            retrieval of the form
+     */
+    protected void internalGenerate(ItemType item, List<String> fields, List<String> forcedFields, Form form, Map<String, Object> context)
+    {
+        Log log = getLogger();
+        if (log.isDebugEnabled()) log.debug("Generating form for: " + item);
+    
+        // generate the form type and URI for the item.
+        Item formItem = form.getItem();
+        formItem.setType(getItemType(item));
+        formItem.setUrl(getItemURI(item));
+    
+        Object itemData = makeItemData(item);
+        FormCreationData data = new FormCreationData(itemData, forcedFields, context); 
+        List<Field> fieldsToAdd;
+        if (fields != null && fields.size() > 0)
+        {
+            fieldsToAdd = generateSelectedFields(fields, data);
+        }
+        else
+        {
+            fieldsToAdd = generateDefaultFields(data);
+        }
+        form.addFields(fieldsToAdd);
+        if (log.isDebugEnabled()) //
+            log.debug("Generated form: " + form);
+    }
+
+    /**
+     * Generates a list of default fields to add if no field names are specified.
+     * @param data Used for field creation.
+     * @return a {@link List} of {@link Field Fields} which may be empty.
+     */
+    protected List<Field> generateDefaultFields(FormCreationData data)
+    {
+        return Collections.emptyList();
+    }
+
+    protected List<Field> generateSelectedFields(List<String> fields, FormCreationData data)
+    {
+        List<Field> fieldData = new ArrayList<Field>(fields.size());
+        for (String fieldName : fields)
+        {
+            Field field = fieldProcessorRegistry.buildField(fieldName, data);
+            if (field == null)
+            {
+                if (getLogger().isWarnEnabled()) {
+                    String msg = "Ignoring unrecognised field \"" + fieldName + "\"";
+                    getLogger().warn(msg);
+                }
+            }
+            else
+            {
+                fieldData.add(field);
+            }
+        }
+        return fieldData;
+    }
+
+    /**
+     * Creates a data object used by the {@link FormProcessor} and {@link FieldProcessor FieldProcessors} to create {@link Field Fields}
+     * @return
+     */
+    protected abstract Object makeItemData(ItemType item);
+
+    /**
      * Returns a typed Object representing the given item.
      * <p>
      * Subclasses that represent a form type will return a typed object that is
@@ -142,18 +220,37 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
     protected abstract ItemType getTypedItem(Item item);
 
     /**
-     * Generates the form.
+     * Retrieves a logger instance to log to.
      * 
-     * @param item The object to generate a form for
-     * @param fields Restricted list of fields to include
-     * @param forcedFields List of fields to forcibly include
-     * @param form The form object being generated
-     * @param context Map representing optional context that can be used during
-     *            retrieval of the form
+     * @return Log instance to log to.
      */
-    protected abstract void internalGenerate(ItemType item, List<String> fields, List<String> forcedFields, Form form,
-                Map<String, Object> context);
+    protected abstract Log getLogger();
 
+    /**
+     * Returns a {@link String} describing the type fo the specified item.
+     * @param item
+     * @return
+     */
+    protected abstract String getItemType(ItemType item);
+
+    /**
+     * Returns the URI location of the specified item.
+     * @param item
+     * @return
+     */
+    protected abstract String getItemURI(ItemType item);
+
+    /**
+     * Sets the field processor registry.
+     * 
+     * @param fieldProcessorRegistry
+     *            The {@link FieldProcessorRegistry} to use.
+     */
+    public void setFieldProcessorRegistry(FieldProcessorRegistry fieldProcessorRegistry)
+    {
+        this.fieldProcessorRegistry = fieldProcessorRegistry;
+    }
+    
     /**
      * Persists the form data.
      * 

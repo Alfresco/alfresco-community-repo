@@ -69,7 +69,10 @@
     
     <bean id="filteredFormProcessor" abstract="true"
           class="org.alfresco.repo.forms.processor.FilteredFormProcessor" 
-          parent="baseFormProcessor" />
+          parent="baseFormProcessor" >
+        <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
+    </bean>
+          
      
     <bean id="nodeFormProcessor" 
           class="org.alfresco.repo.forms.processor.node.NodeFormProcessor" 
@@ -133,5 +136,50 @@
         </property>
         <property name="formService" ref="FormService"/>
     </bean>
+    
+       <!--  Field Processor Config -->
+
+   <!-- The Field Processor Registry -->
+   <bean id="fieldProcessorRegistry"
+      class="org.alfresco.repo.forms.processor.node.ContentModelFieldProcessorRegistry">
+      <property name="defaultProcessor" ref="defaultFieldProcessor" />
+   </bean>
+
+   <!-- The Field Processors -->
+   <bean id="baseFieldProcessor" abstract="true"
+      class="org.alfresco.repo.forms.processor.AbstractFieldProcessor">
+      <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
+   </bean>
+
+   <bean id="qnameFieldProcessor" abstract="true"
+      class="org.alfresco.repo.forms.processor.node.QNameFieldProcessor"
+      parent="baseFieldProcessor">
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+   </bean>
+
+   <bean id="propertyFieldProcessor"
+      class="org.alfresco.repo.forms.processor.node.PropertyFieldProcessor"
+      parent="qnameFieldProcessor" />
+
+   <bean id="associationFieldProcessor"
+      class="org.alfresco.repo.forms.processor.node.AssociationFieldProcessor"
+      parent="qnameFieldProcessor" />
+
+   <bean id="encodingFieldProcessor"
+      class="org.alfresco.repo.forms.processor.node.TransientEncodingFieldProcessor"
+      parent="baseFieldProcessor" />
+
+   <bean id="mimetypeFieldProcessor"
+      class="org.alfresco.repo.forms.processor.node.TransientMimetypeFieldProcessor"
+      parent="baseFieldProcessor" />
+
+   <bean id="sizeFieldProcessor"
+      class="org.alfresco.repo.forms.processor.node.TransientSizeFieldProcessor"
+      parent="baseFieldProcessor" />
+
+   <bean id="defaultFieldProcessor"
+      class="org.alfresco.repo.forms.processor.node.DefaultFieldProcessor"
+      parent="qnameFieldProcessor" />
     
 </beans>

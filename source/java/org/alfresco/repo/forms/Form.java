@@ -185,6 +185,41 @@ public class Form
         this.data.addFieldData(fieldName, fieldData);
     }
     
+     /**
+     * Adds a {@link Field} to the form by adding the {@link FieldDefinition}
+     * and the value if any.
+     * 
+     * @param field
+     */
+    public void addField(Field field)
+    {
+        if (field == null)
+        {
+            return;
+        }
+        
+        FieldDefinition fieldDefinition = field.getFieldDefinition();
+        addFieldDefinition(fieldDefinition);
+        Object value = field.getValue();
+        
+        if (value != null)
+        {
+            addData(fieldDefinition.getDataKeyName(), value);
+        }
+    }
+    
+    /**
+     * Adds a {@link Collection} of {@link Field Fields} to the form by adding the {@link FieldDefinition FieldDefinitions}
+     * and the values if any.
+     */
+    public void addFields(Collection<Field> fields)
+    {
+        for (Field field : fields) 
+        {
+            addField(field);
+        }
+    }
+    
     /*
      * @see java.lang.Object#toString()
      */

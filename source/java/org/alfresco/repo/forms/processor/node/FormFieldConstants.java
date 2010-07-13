@@ -31,6 +31,8 @@ public interface FormFieldConstants
 
     public static final String ASSOC = "assoc";
 
+    public static final String FIELD_NAME_SEPARATOR = ":";
+
     public static final String DATA_KEY_SEPARATOR = "_";
 
     public static final String PROP_DATA_PREFIX = PROP + DATA_KEY_SEPARATOR;
@@ -47,4 +49,7 @@ public interface FormFieldConstants
 
     public static final String TRANSIENT_ENCODING = "encoding";
 
+    public static final String ADDED = "added";
+
+    public static final String REMOVED = "removed";
 }

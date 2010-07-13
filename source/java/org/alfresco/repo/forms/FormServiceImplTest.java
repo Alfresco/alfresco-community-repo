@@ -30,10 +30,10 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -129,9 +129,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
         this.workflowService = (WorkflowService)this.applicationContext.getBean("WorkflowService");
-        
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
-                .getBean("authenticationComponent");
         
         // Do the tests as userOne
         createUser(USER_ONE);
@@ -1091,6 +1088,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         QName underscoreProperty = QName.createQName(fdkUri, "with_underscore");
         QName dashProperty = QName.createQName(fdkUri, "with-dash");
         QName duplicateProperty = QName.createQName(fdkUri, "duplicate");
+        QName periodProperty = QName.createQName(fdkUri, "period");
         
         String guid = GUID.generate();
         String name = "everything" + guid + ".txt";
@@ -1098,6 +1096,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String underscoreValue = "Property with an underscore in the name.";
         String dashValue = "Property with a dash in the name.";
         String duplicateValue = "Property with the same name as an association.";
+        String periodValue = "day|1";
         
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(4);
         docProps.put(ContentModel.PROP_NAME, name);
@@ -1105,6 +1104,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         docProps.put(underscoreProperty, underscoreValue);
         docProps.put(dashProperty, dashValue);
         docProps.put(duplicateProperty, duplicateValue);
+        docProps.put(periodProperty, periodValue);
         NodeRef everythingNode = this.nodeService.createNode(this.folder, ContentModel.ASSOC_CONTAINS, 
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), everythingType,
                     docProps).getChildRef();
@@ -1117,6 +1117,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         fields.add("fdk:with-dash");
         fields.add("prop:fdk:duplicate");
         fields.add("assoc:fdk:duplicate");
+        fields.add("fdk:period");
         
         Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, everythingNode.toString()), fields);
         
@@ -1136,6 +1137,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         PropertyFieldDefinition textField = null;
         PropertyFieldDefinition underscoreField = null;
         PropertyFieldDefinition dashField = null;
+        PropertyFieldDefinition periodField = null;
         PropertyFieldDefinition duplicatePropField = null;
         AssociationFieldDefinition duplicateAssocField = null;
         
@@ -1168,12 +1170,17 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     duplicateAssocField = (AssociationFieldDefinition)field;
                 }
             }
+            else if (field.getName().equals("fdk:period"))
+            {
+                periodField = (PropertyFieldDefinition)field;
+            }
         }
         
         assertNotNull("Expected to find nameField", nameField);
         assertNotNull("Expected to find textField", textField);
         assertNotNull("Expected to find underscoreField", underscoreField);
         assertNotNull("Expected to find dashField", dashField);
+        assertNotNull("Expected to find periodField", periodField);
         assertNotNull("Expected to find duplicatePropField", duplicatePropField);
         assertNotNull("Expected to find duplicateAssocField", duplicateAssocField);
         
@@ -1183,10 +1190,17 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(textValue, values.getFieldData(textField.getDataKeyName()).getValue());
         assertEquals(underscoreValue, values.getFieldData(underscoreField.getDataKeyName()).getValue());
         assertEquals(dashValue, values.getFieldData(dashField.getDataKeyName()).getValue());
+        assertEquals(periodValue, values.getFieldData(periodField.getDataKeyName()).getValue().toString());
         assertEquals(duplicateValue, values.getFieldData(duplicatePropField.getDataKeyName()).getValue());
-        List assocs = (List)values.getFieldData(duplicateAssocField.getDataKeyName()).getValue();
+        FieldData fieldData = values.getFieldData(duplicateAssocField.getDataKeyName());
+        assertNotNull(fieldData);
+        List assocs = (List)fieldData.getValue();
         assertNotNull(assocs);
         assertEquals(0, assocs.size());
+        
+        // check the period property data type parameters were returned
+        DataTypeParameters dtp = periodField.getDataTypeParameters();
+        assertNotNull("Expected to find data type parameters for the fdk:period field", dtp);
         
         // update the properties via FormService
         FormData data = new FormData();

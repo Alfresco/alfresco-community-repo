@@ -21,20 +21,15 @@ package org.alfresco.repo.forms.processor.node;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.InvalidQNameException;
@@ -113,8 +108,11 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
             // retrieve the type from the dictionary
             typeDef = this.dictionaryService.getType(type);
 
-            if (typeDef == null) { throw new FormNotFoundException(item,
-                        new IllegalArgumentException("Type does not exist: " + item.getId())); }
+            if (typeDef == null) 
+            { 
+                throw new FormNotFoundException(item, 
+                            new IllegalArgumentException("Type does not exist: " + item.getId())); 
+            }
         }
         catch (InvalidQNameException iqne)
         {
@@ -127,141 +125,35 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
 
     /*
      * @see
-     * org.alfresco.repo.forms.processor.FilteredFormProcessor#internalGenerate
-     * (java.lang.Object, java.util.List, java.util.List,
-     * org.alfresco.repo.forms.Form, java.util.Map)
-     */
-    @Override
-    protected void internalGenerate(TypeDefinition item, List<String> fields,
-                List<String> forcedFields, Form form, Map<String, Object> context)
-    {
-        if (logger.isDebugEnabled()) logger.debug("Generating form for item: " + item);
-
-        // generate the form for the node
-        generateType(item, fields, forcedFields, form);
-        if (logger.isDebugEnabled()) logger.debug("Generating form: " + form);
-    }
-
-    /**
-     * Sets up the Form object for the given NodeRef
-     * 
-     * @param nodeRef The NodeRef to generate a Form for
-     * @param fields Restricted list of fields to include
-     * @param forcedFields List of fields to forcibly include
-     * @param form The Form instance to populate
-     */
-    protected void generateType(TypeDefinition typeDef, List<String> fields,
-                List<String> forcedFields, Form form)
-    {
-        // set the type and URL of the item
-        form.getItem().setType(typeDef.getName().toPrefixString(this.namespaceService));
-        form.getItem().setUrl(
-                    "/api/classes/"
-                                + typeDef.getName().toPrefixString(this.namespaceService).replace(
-                                            ":", "_"));
-
-        if (fields != null && fields.size() > 0)
-        {
-            generateSelectedFields(null, typeDef, fields, forcedFields, form);
-        }
-        else
-        {
-            // setup field definitions and data
-            generateAllPropertyFields(typeDef, form);
-            generateAllAssociationFields(typeDef, form);
-
-            // TODO: generate transient properties for content types?
-        }
-    }
-
-    /**
-     * Sets up the field definitions for all the type's properties.
-     * 
-     * @param typeDef The type being setup
-     * @param form The Form instance to populate
-     */
-    protected void generateAllPropertyFields(TypeDefinition typeDef, Form form)
-    {
-        // iterate round the property defintions and setup field definition
-        Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
-        for (PropertyDefinition propDef : propDefs.values())
-        {
-            generatePropertyField(propDef, form, this.namespaceService);
-        }
-
-        // get all default aspects for the type and iterate round their
-        // property definitions too
-        List<AspectDefinition> aspects = typeDef.getDefaultAspects(true);
-        for (AspectDefinition aspect : aspects)
-        {
-            propDefs = aspect.getProperties();
-            for (PropertyDefinition propDef : propDefs.values())
-            {
-                generatePropertyField(propDef, form, this.namespaceService);
-            }
-        }
-    }
-
-    /**
-     * Sets up the field definitions for all the type's associations.
-     * 
-     * @param typeDef The type being setup
-     * @param form The Form instance to populate
-     */
-    protected void generateAllAssociationFields(TypeDefinition typeDef, Form form)
-    {
-        // iterate round the association defintions and setup field definition
-        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
-        for (AssociationDefinition assocDef : assocDefs.values())
-        {
-            generateAssociationField(assocDef, form, this.namespaceService);
-        }
-
-        // get all default aspects for the type and iterate round their
-        // association definitions too
-        List<AspectDefinition> aspects = typeDef.getDefaultAspects(true);
-        for (AspectDefinition aspect : aspects)
-        {
-            assocDefs = aspect.getAssociations();
-            for (AssociationDefinition assocDef : assocDefs.values())
-            {
-                generateAssociationField(assocDef, form, this.namespaceService);
-            }
-        }
-    }
-
-    /*
-     * @see
      * org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist
      * (java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
     protected NodeRef internalPersist(TypeDefinition item, final FormData data)
     {
-        if (logger.isDebugEnabled()) logger.debug("Persisting form for: " + item);
+        if (logger.isDebugEnabled()) 
+            logger.debug("Persisting form for: " + item);
 
         // create a new instance of the type
         final NodeRef nodeRef = createNode(item, data);
 
         if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
         {
-        	// persist the form data as the admin user
-        	AuthenticationUtil.runAs(
-    			new AuthenticationUtil.RunAsWork<Object>()
-    			{
-					public Object doWork() throws Exception 
-					{
-						persistNode(nodeRef, data);
-						return null;
-					}
-    				
-    			}, 
-    			AuthenticationUtil.getSystemUserName());
+            // persist the form data as the admin user
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception 
+                {
+                    persistNode(nodeRef, data);
+                    return null;
+                }
+            }, 
+            AuthenticationUtil.getSystemUserName());
         }
         else
         {
-	        // persist the form data	     
-        	persistNode(nodeRef, data);
+            // persist the form data
+            persistNode(nodeRef, data);
         }
 
         // return the newly created node
@@ -293,9 +185,12 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
             // firstly, ensure we have a destination to create the node in
             NodeRef parentRef = null;
             FieldData destination = data.getFieldData(DESTINATION);
-            if (destination == null) { throw new FormException("Failed to persist form for '"
-                        + typeDef.getName().toPrefixString(this.namespaceService) + "' as '"
-                        + DESTINATION + "' data was not provided."); }
+            if (destination == null) 
+            { 
+                throw new FormException("Failed to persist form for '"
+                        + typeDef.getName().toPrefixString(this.namespaceService) + 
+                        "' as '" + DESTINATION + "' data was not provided."); 
+            }
 
             // create the parent NodeRef
             parentRef = new NodeRef((String) destination.getValue());
@@ -339,5 +234,47 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
         }
 
         return nodeRef;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object)
+     */
+    @Override
+    protected String getItemType(TypeDefinition item)
+    {
+        return item.getName().toPrefixString(namespaceService);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object)
+     */
+    @Override
+    protected String getItemURI(TypeDefinition item)
+    {
+        return "/api/classes/" + getItemType(item).replace(":", "_");
+    }
+    
+    @Override
+    protected TypeDefinition getBaseType(TypeDefinition type) 
+    {
+        return type;
+    }
+    
+    @Override
+    protected Map<QName, Serializable> getAssociationValues(TypeDefinition item)
+    {
+        return null;
+    }
+    
+    @Override
+    protected Map<QName, Serializable> getPropertyValues(TypeDefinition item) 
+    {
+        return null;
+    }
+    
+    @Override
+    protected Map<String, Object> getTransientValues(TypeDefinition item)
+    {
+        return null;
     }
 }

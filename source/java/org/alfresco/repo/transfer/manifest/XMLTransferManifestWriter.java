@@ -158,15 +158,15 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID);
         }
         
-        if(header.isComplete())
+        if(header.isSync())
         {
             // Is this a complete transfer
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                    ManifestModel.LOCALNAME_HEADER_COMPLETE, PREFIX + ":"
-                    + ManifestModel.LOCALNAME_HEADER_COMPLETE, EMPTY_ATTRIBUTES);
+                    ManifestModel.LOCALNAME_HEADER_SYNC, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_SYNC, EMPTY_ATTRIBUTES);
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
-                    ManifestModel.LOCALNAME_HEADER_COMPLETE, PREFIX + ":"
-                    + ManifestModel.LOCALNAME_HEADER_COMPLETE);
+                    ManifestModel.LOCALNAME_HEADER_SYNC, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_SYNC);
         }
 
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
+import org.alfresco.repo.transfer.requisite.TransferRequsiteWriter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -100,6 +101,22 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     public void setNodeResolverFactory(CorrespondingNodeResolverFactory nodeResolverFactory)
     {
         this.nodeResolverFactory = nodeResolverFactory;
+    }
+
+    /**
+     * 
+     */
+    public TransferManifestProcessor getRequsiteProcessor(
+            TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
+    {
+        RepoRequsiteManifestProcessorImpl processor = new RepoRequsiteManifestProcessorImpl(receiver, transferId, out);
+       
+        CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();
+       
+        processor.setNodeResolver(nodeResolver);
+        processor.setNodeService(nodeService);
+       
+        return processor;
     }
 
 }

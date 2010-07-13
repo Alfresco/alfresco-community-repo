@@ -21,7 +21,9 @@ package org.alfresco.repo.transfer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Set;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -32,6 +34,8 @@ import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class delegates transfer service to the transfer receiver without 
@@ -44,6 +48,8 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
 {
+    private static final Log log = LogFactory.getLog(UnitTestInProcessTransmitterImpl.class);
+    
     private TransferReceiver receiver;
     
     private ContentService contentService;
@@ -118,20 +124,34 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
         }
     }
 
-    public DeltaList sendManifest(Transfer transfer, File manifest) throws TransferException
+    public void sendManifest(Transfer transfer, File manifest, OutputStream result) throws TransferException
     {
         try
         {
             String transferId = transfer.getTransferId();
             FileInputStream fs = new FileInputStream(manifest);
             receiver.saveSnapshot(transferId, fs);
+            
+            // Now get the requsite
+            try
+            {
+                receiver.generateRequsite(transferId, result);
+                result.close();
+                                   
+                return;
+                
+            }
+            catch(IOException ie)
+            {
+                log.error("Error in unit test code: should not get this", ie);
+                return;
+            }
+           
         }
         catch (FileNotFoundException error)
         {
             throw new TransferException("test error", error);
         }
-        return null;
-
     }
 
     public void verifyTarget(TransferTarget target) throws TransferException
@@ -159,6 +179,5 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
     {
         return contentService;
     }
-
-
+    
 }

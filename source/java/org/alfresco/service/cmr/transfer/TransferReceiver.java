@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.transfer;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.alfresco.repo.transfer.TransferProgressMonitor;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -77,7 +78,21 @@ public interface TransferReceiver
      */
     void saveSnapshot(String transferId, InputStream snapshotStream) throws TransferException;
     
+    /**
+     * Save a content item
+     * @param transferId
+     * @param contentId
+     * @param contentStream
+     * @throws TransferException
+     */
     void saveContent(String transferId, String contentId, InputStream contentStream) throws TransferException;
+    
+    /**
+     * Write the requsite (the bits required to support the Manifest) to the output stream.
+     * @param requsiteStream an open stream to receive the requisite
+     * @throws TransferException
+     */
+    void generateRequsite(String transferId, OutputStream requsiteStream) throws TransferException;
     
     /**
      * Prepare 

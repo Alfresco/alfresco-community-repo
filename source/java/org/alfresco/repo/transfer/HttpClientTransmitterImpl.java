@@ -19,7 +19,13 @@
 
 package org.alfresco.repo.transfer;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -254,7 +260,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         }
     }
 
-    public DeltaList sendManifest(Transfer transfer, File manifest) throws TransferException
+    public void sendManifest(Transfer transfer, File manifest, OutputStream result) throws TransferException
     {
         TransferTarget target = transfer.getTransferTarget();
         PostMethod postSnapshotRequest = new PostMethod();
@@ -288,7 +294,23 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 
                 int responseStatus = httpClient.executeMethod(hostConfig, postSnapshotRequest, httpState);
                 checkResponseStatus("sendManifest", responseStatus, postSnapshotRequest);
-                return null;
+                
+               
+                InputStream is = postSnapshotRequest.getResponseBodyAsStream();
+                InputStreamReader reader = new InputStreamReader(is);
+                
+                BufferedReader br = new BufferedReader(reader);                
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(result));
+
+                String s = br.readLine();
+                while(s != null)
+                {
+                    bw.write(s);
+                    s = br.readLine();
+                }
+                bw.close();
+                           
+                return;
             } 
             catch (RuntimeException e)
             {
@@ -453,7 +475,6 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 int index = 0;
                 for(ContentData content : data)
                 {  
-                    // TODO Encapsulate the URL to FileName algorithm
                     String contentUrl = content.getContentUrl();
                     String fileName = TransferCommons.URLToPartName(contentUrl);
                     log.debug("content partName: " + fileName);

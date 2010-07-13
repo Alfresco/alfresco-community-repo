@@ -20,6 +20,7 @@
 package org.alfresco.repo.transfer;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentData;
@@ -53,10 +54,12 @@ public interface TransferTransmitter
     /**
      * @param manifest, the transfer manifest file
      * @param transfer the transfer object returned by an earlier call to begin
-     * @return the delta list.
+     * @param results - where to write the results, probably a temporary file the output steam should be 
+     * open and will be closed before the method returns.
+     * @return the transfer requisite.   
      * @throws TransferException
      */
-    DeltaList sendManifest(Transfer transfer, File manifest) throws TransferException;
+    void sendManifest(Transfer transfer, File manifest, OutputStream results) throws TransferException;
     
     /**
      * Send the content of the specified urls

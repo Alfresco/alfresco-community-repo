@@ -20,6 +20,7 @@ package org.alfresco.repo.transfer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -57,6 +58,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestWriter;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
 import org.alfresco.repo.transfer.report.TransferReporter;
+import org.alfresco.repo.transfer.requisite.DeltaListRequsiteProcessor;
+import org.alfresco.repo.transfer.requisite.XMLTransferRequsiteReader;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -530,6 +533,8 @@ public class TransferServiceImpl implements TransferService
         eventProcessor.addObserver(reportCallback);
         
         File snapshotFile = null;
+        File reqFile = null;
+        
         TransferTarget target = null;
         try
         { 
@@ -555,6 +560,8 @@ public class TransferServiceImpl implements TransferService
             // where to put snapshot ?
             File tempDir = TempFileProvider.getLongLifeTempDir("transfer");
             snapshotFile = TempFileProvider.createTempFile(prefix, suffix, tempDir);
+            reqFile = TempFileProvider.createTempFile("TRX-REQ", suffix, tempDir);
+            FileOutputStream reqOutput = new FileOutputStream(reqFile);
   
             FileWriter snapshotWriter = new FileWriter(snapshotFile);
             
@@ -565,7 +572,7 @@ public class TransferServiceImpl implements TransferService
             header.setRepositoryId(descriptor.getId());
             header.setCreatedDate(new Date());
             header.setNodeCount(nodes.size());
-            header.setComplete(definition.isComplete());
+            header.setSync(definition.isSync());
             formatter.startTransferManifest(snapshotWriter);
             formatter.writeTransferManifestHeader(header);
             for(NodeRef nodeRef : nodes)
@@ -612,12 +619,41 @@ public class TransferServiceImpl implements TransferService
                     checkCancel(transferId);
                     
                     /**
-                     * send Manifest
+                     * send Manifest, get the requsite back.
                      */
                     eventProcessor.sendSnapshot(1,1);
-                    transmitter.sendManifest(transfer, snapshotFile);
+                    transmitter.sendManifest(transfer, snapshotFile, reqOutput);
+                    
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("requsite file written to local filesystem");
+                        try
+                        {
+                            outputFile(reqFile);
+                        }
+                        catch (IOException error)
+                        {
+                            // This is debug code - so an exception thrown while debugging
+                            logger.debug("error while outputting snapshotFile");
+                            error.printStackTrace();
+                        }
+                    }
+
                     
                     logger.debug("manifest sent");
+                    
+                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                    SAXParser parser;
+                    parser = saxParserFactory.newSAXParser(); 
+                    
+                    /**
+                     * Parse the requsite file to generate the delta list
+                     */
+                    DeltaListRequsiteProcessor reqProcessor = new DeltaListRequsiteProcessor(); 
+                    XMLTransferRequsiteReader reqReader = new XMLTransferRequsiteReader(reqProcessor);
+                    parser.parse(reqFile, reqReader);
+                    
+                    final DeltaList deltaList = reqProcessor.getDeltaList();
         
                     /**
                      * Parse the manifest file and transfer chunks over
@@ -657,7 +693,23 @@ public class TransferServiceImpl implements TransferService
                             {
                                 checkCancel(transfer.getTransferId());
                                 logger.debug("add content to chunker");
-                                chunker.addContent(d);
+                                
+                                /**
+                                 * Check with the deltaList whether we need to send the content item
+                                 */
+                                if(deltaList != null)
+                                {
+                                    if(deltaList.getRequiredURLs().contains(d.getContentUrl()))
+                                    {
+                                        logger.debug("content is required :" + d.getContentUrl());
+                                        chunker.addContent(d);
+                                    }
+                                }
+                                else
+                                {
+                                    // No delta list - so send all content items
+                                    chunker.addContent(d);
+                                }
                             }
                         }
 
@@ -672,13 +724,11 @@ public class TransferServiceImpl implements TransferService
                     /**
                      * Step 3: wire up the manifest reader to a manifest processor
                      */
-                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-                    SAXParser parser;
-                    parser = saxParserFactory.newSAXParser();                   
+               
                     XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
 
                     /**
-                     * Step 4: start the magic Give the manifest file to the manifest reader
+                     * Step 4: start the magic - Give the manifest file to the manifest reader
                      */
                     parser.parse(snapshotFile, reader);
                     chunker.flush();
@@ -821,6 +871,13 @@ public class TransferServiceImpl implements TransferService
                 snapshotFile.delete();
             }
             logger.debug("snapshot file deleted");
+            
+            if(reqFile != null)
+            {
+                reqFile.delete();
+            }
+            logger.debug("req file deleted");
+
         } 
     } // end of transferImpl
     

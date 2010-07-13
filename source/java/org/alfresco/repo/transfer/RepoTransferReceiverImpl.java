@@ -23,7 +23,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +48,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
+import org.alfresco.repo.transfer.requisite.XMLTransferRequsiteWriter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -127,7 +131,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     private static final String MSG_ERROR_WHILE_STAGING_CONTENT = "transfer_service.receiver.error_staging_content";
     private static final String MSG_NO_SNAPSHOT_RECEIVED = "transfer_service.receiver.no_snapshot_received";
     private static final String MSG_ERROR_WHILE_COMMITTING_TRANSFER = "transfer_service.receiver.error_committing_transfer";
-
+    private static final String MSG_ERROR_WHILE_GENERATING_REQUISITE = "transfer_service.receiver.error_generating_requsite";
+    
     private static final String LOCK_FILE_NAME = ".lock";
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, LOCK_FILE_NAME);
     private static final String SNAPSHOT_FILE_NAME = "snapshot.xml";
@@ -846,4 +851,55 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         return this.ruleService;
     }
 
+    /**
+     * Generate the requsite
+     */
+    public void generateRequsite(String transferId, OutputStream out) throws TransferException
+    {
+        log.debug("Generate Requsite for transfer:" + transferId);
+        try 
+        {
+            File snapshotFile = getSnapshotFile(transferId);
+
+            if (snapshotFile.exists())
+            {
+                log.debug("snapshot does exist");
+                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                SAXParser parser = saxParserFactory.newSAXParser();  
+                OutputStreamWriter dest = new OutputStreamWriter(out, "UTF-8");
+                
+                XMLTransferRequsiteWriter writer = new XMLTransferRequsiteWriter(dest);
+                TransferManifestProcessor processor = manifestProcessorFactory.getRequsiteProcessor(
+                        RepoTransferReceiverImpl.this, 
+                        transferId,
+                        writer);
+
+                XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
+
+                /**
+                 * Now run the parser
+                 */
+                parser.parse(snapshotFile, reader);
+                
+                /**
+                 * And flush the destination in case any content remains in the writer.
+                 */
+                dest.flush();
+                
+            }
+            log.debug("Generate Requsite done transfer:" + transferId);
+            
+        }
+        catch (Exception ex)
+        {
+            if (TransferException.class.isAssignableFrom(ex.getClass()))
+            {
+                throw (TransferException) ex;
+            }
+            else
+            {
+                throw new TransferException(MSG_ERROR_WHILE_GENERATING_REQUISITE, ex);
+            }
+        }
+    }
 }

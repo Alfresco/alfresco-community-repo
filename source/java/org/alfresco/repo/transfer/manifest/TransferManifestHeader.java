@@ -31,7 +31,7 @@ public class TransferManifestHeader
     private Date createdDate;
     private int nodeCount; 
     private String repositoryId;
-    private boolean isComplete;
+    private boolean isSync;
     
     public void setCreatedDate(Date createDate)
     {
@@ -77,14 +77,14 @@ public class TransferManifestHeader
         return repositoryId;
     }
 
-    public void setComplete(boolean isComplete)
+    public void setSync(boolean isSync)
     {
-        this.isComplete = isComplete;
+        this.isSync = isSync;
     }
 
-    public boolean isComplete()
+    public boolean isSync()
     {
-        return isComplete;
+        return isSync;
     }
 
     

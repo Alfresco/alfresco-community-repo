@@ -151,7 +151,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       TransferDefinition transferDefinition =
          new TransferDefinition();
       transferDefinition.setNodes(toTransfer);
-      transferDefinition.setComplete(true);
+      transferDefinition.setSync(true);
       
       return transferDefinition;
    }

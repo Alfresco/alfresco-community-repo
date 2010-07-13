@@ -56,9 +56,9 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     private static final Log log = LogFactory.getLog(RepoTertiaryManifestProcessorImpl.class);
 
     /**
-     *  Is this a "complete" transfer.  If not then does nothing.
+     *  Is this a "sync" transfer.  If not then does nothing.
      */
-    boolean isComplete = false;
+    boolean isSync = false;
 
     /**
      * @param receiver 
@@ -84,7 +84,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
         NodeRef nodeRef = node.getNodeRef();
         log.debug("processNode " + nodeRef);
         
-        if(isComplete)
+        if(isSync)
         {
             
             List<ChildAssociationRef> expectedChildren = node.getChildAssocs();
@@ -144,8 +144,8 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     
     protected void processHeader(TransferManifestHeader header)
     {
-        isComplete = header.isComplete();
-        log.debug("isComplete :" + isComplete);
+        isSync = header.isSync();
+        log.debug("isSync :" + isSync);
     }
 
     /*

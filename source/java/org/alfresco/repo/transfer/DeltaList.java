@@ -18,12 +18,31 @@
  */
 package org.alfresco.repo.transfer;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+
 /**
- * Details back from the manifest to say which nodes the remote server already has.
+ * Details back from reading the manifest to say what is required to fulfill the manifest.
  *
  * @author Mark Rogers
  */
 public class DeltaList
 {
+    /**
+     * The set of requiredURLs
+     */
+    
+    private TreeSet<String> requiredURLs = new TreeSet<String>();
+    
+    /**
+     * get the list of URLs reqired by the manifest.
+     * @return the list of required URLs
+     */
+    public Set<String> getRequiredURLs()
+    {
+        return requiredURLs;
+    }
      
 }

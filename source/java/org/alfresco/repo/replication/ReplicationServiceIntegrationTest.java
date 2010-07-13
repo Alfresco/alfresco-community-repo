@@ -632,7 +632,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        nodes.add(content1_1);
        
        TransferDefinition td = replicationActionExecutor.buildTransferDefinition(rd, nodes);
-       assertEquals(true, td.isComplete());
+       assertEquals(true, td.isSync());
        assertEquals(2, td.getNodes().size());
        assertEquals(true, td.getNodes().contains(folder1));
        assertEquals(true, td.getNodes().contains(content1_1));

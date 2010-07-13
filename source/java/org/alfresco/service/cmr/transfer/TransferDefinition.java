@@ -31,10 +31,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * nodes Specifies which node to transfer
  * <p>
- * isComplete specifies whether the list of nodes is complete.  If complete then the transfer 
- * machinery can determine by the absence of a node that the missing node should be deleted.
- * if the transfer is not complete (a partial transfer) then the archive node ref is required 
- * to delete a remote node.
+ * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
+ * machinery can determine by the absence of a node or association in the transfer that the missing 
+ * nodes should be deleted on the destination.
+ * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+ *
  *
  */
 public class TransferDefinition implements Serializable
@@ -48,7 +49,7 @@ public class TransferDefinition implements Serializable
     private Set<NodeRef> nodes;
     
     // is complete
-    private boolean isComplete = false;
+    private boolean isSync = false;
 
     /**
      * Set which nodes to transfer
@@ -74,23 +75,25 @@ public class TransferDefinition implements Serializable
     }
     
     /**
-    * isComplete specifies whether the list of nodes is complete.  If complete then the transfer 
-    * machinery can determine by the absence of a node in the transfer that the missing node should be deleted.
-    * Else with a partial transfer then the archive node ref is required to delete a remote node.
+    * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
+    * machinery can determine by the absence of a node or association in the transfer that the missing 
+    * nodes should be deleted on the destination.
+    * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
     */ 
-    public void setComplete(boolean isComplete)
+    public void setSync(boolean isSync)
     {
-        this.isComplete = isComplete;
+        this.isSync = isSync;
     }
 
     /**
-     * isComplete specifies whether the list of nodes is complete.  If complete then the transfer 
-     * machinery can determine by the absence of a node in the transfer that the missing node should be deleted.
-     * Else with a partial transfer then the archive node ref is required to delete a remote node.
-     * @return true if the transfer contains a full list of dependent nodes.
+     * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
+     * machinery can determine by the absence of a node or association in the transfer that missing 
+     * nodes should be deleted on the destination.
+     * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+     * @return true if the transfer is in "sync" mode.
      */
-    public boolean isComplete()
+    public boolean isSync()
     {
-        return isComplete;
+        return isSync;
     }
 }

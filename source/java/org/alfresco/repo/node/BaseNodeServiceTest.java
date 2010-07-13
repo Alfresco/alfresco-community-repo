@@ -1893,6 +1893,40 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
+     * Ensures that d:any types are handled correctly when adding values
+     */
+    public void testMultivaluedSerializable() throws Exception
+    {
+        ArrayList<String> listProp = new ArrayList<String>();
+
+        listProp.clear();
+        nodeService.addProperties(
+                    rootNodeRef,
+                    Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
+        listProp.add("ONE");
+        nodeService.addProperties(
+                    rootNodeRef,
+                    Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
+        listProp.add("TWO");
+        nodeService.addProperties(
+                    rootNodeRef,
+                    Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
+
+        listProp.clear();
+        nodeService.addProperties(
+                    rootNodeRef,
+                    Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
+        listProp.add("ONE");
+        nodeService.addProperties(
+                    rootNodeRef,
+                    Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
+        listProp.add("TWO");
+        nodeService.addProperties(
+                    rootNodeRef,
+                    Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
+    }
+    
+    /**
      * Checks that the {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties
      * are present
      */

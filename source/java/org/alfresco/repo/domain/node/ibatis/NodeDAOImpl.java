@@ -468,14 +468,14 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected void deleteNodeProperties(Long nodeId, List<NodePropertyKey> propKeys)
+    protected int deleteNodeProperties(Long nodeId, List<NodePropertyKey> propKeys)
     {
         Assert.notNull(nodeId, "Must have 'nodeId'");
         Assert.notNull(nodeId, "Must have 'propKeys'");
         
         if (propKeys.size() == 0)
         {
-            return;
+            return 0;
         }
         
         NodePropertyEntity prop = new NodePropertyEntity();
@@ -483,18 +483,20 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         prop.setNodeId(nodeId);
         
         startBatch();
+        int count = 0;
         try
         {
             for (NodePropertyKey propKey : propKeys)
             {
                 prop.setKey(propKey);
-                template.delete(DELETE_NODE_PROPERTIES, prop);
+                count += template.delete(DELETE_NODE_PROPERTIES, prop);
             }
         }
         finally
         {
             executeBatch();
         }
+        return count;
     }
 
     @Override

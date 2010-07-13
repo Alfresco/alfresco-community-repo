@@ -938,13 +938,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         Long id = null;
+        Savepoint savepoint = controlDAO.createSavepoint("newNodeImpl");
         try
         {
             // First try a straight insert and risk the constraint violation if the node exists
             id = insertNode(node);
+            controlDAO.releaseSavepoint(savepoint);
         }
         catch (Throwable e)
         {
+            controlDAO.rollbackToSavepoint(savepoint);
             // This is probably because there is an existing node.  We can handle existing deleted nodes.
             NodeRef targetNodeRef = node.getNodeRef();
             NodeEntity deletedNode = selectNodeByNodeRef(targetNodeRef, true);           // Only look for deleted nodes
@@ -3071,7 +3074,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId);
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId, Set<Long> qnameIds);
     protected abstract int deleteNodeProperties(Long nodeId, Set<Long> qnameIds);
-    protected abstract void deleteNodeProperties(Long nodeId, List<NodePropertyKey> propKeys);
+    protected abstract int deleteNodeProperties(Long nodeId, List<NodePropertyKey> propKeys);
     protected abstract void insertNodeProperties(Long nodeId, Map<NodePropertyKey, NodePropertyValue> persistableProps);
     protected abstract Set<Long> selectNodeAspectIds(Long nodeId);
     protected abstract void insertNodeAspect(Long nodeId, Long qnameId);

@@ -191,9 +191,10 @@ public class NodePropertyHelper
             // Check that multi-valued properties are supported if the property is a collection
             if (!isMultiValued)
             {
-                throw new DictionaryException("A single-valued property of this type may not be a collection: \n"
-                        + "   Property: " + propertyDef + "\n" + "   Type: " + propertyTypeQName + "\n" + "   Value: "
-                        + value);
+                throw new DictionaryException("A single-valued property of this type may not be a collection: \n" +
+                        "   Property: " + propertyDef + "\n" +
+                        "   Type: " + propertyTypeQName + "\n" +
+                        "   Value: " + value);
             }
             // We have an allowable collection.
             @SuppressWarnings("unchecked")
@@ -327,8 +328,7 @@ public class NodePropertyHelper
     }
 
     public Serializable getPublicProperty(
-            Map<NodePropertyKey,
-            NodePropertyValue> propertyValues,
+            Map<NodePropertyKey, NodePropertyValue> propertyValues,
             QName propertyQName)
     {
         // Get the qname ID
@@ -409,16 +409,24 @@ public class NodePropertyHelper
                     // There is more than one value so the list indexes need to be collapsed
                     collapsedValue = collapsePropertiesWithSameQName(currentPropertyDef, scratch);
                 }
+                boolean forceCollection = false;
                 // If the property is multi-valued then the output property must be a collection
                 if (currentPropertyDef != null && currentPropertyDef.isMultiValued())
                 {
-                    if (collapsedValue != null && !(collapsedValue instanceof Collection<?>))
-                    {
-                        // Can't use Collections.singletonList: ETHREEOH-1172
-                        ArrayList<Serializable> collection = new ArrayList<Serializable>(1);
-                        collection.add(collapsedValue);
-                        collapsedValue = collection;
-                    }
+                    forceCollection = true;
+                }
+                else if (scratch.size() == 1 && scratch.firstKey().getListIndex().intValue() > -1)
+                {
+                    // This is to handle cases of collections where the property is d:any but not
+                    // declared as multiple.
+                    forceCollection = true;
+                }
+                if (forceCollection && collapsedValue != null && !(collapsedValue instanceof Collection<?>))
+                {
+                    // Can't use Collections.singletonList: ETHREEOH-1172
+                    ArrayList<Serializable> collection = new ArrayList<Serializable>(1);
+                    collection.add(collapsedValue);
+                    collapsedValue = collection;
                 }
                 // Store the value
                 propertyMap.put(currentQName, collapsedValue);
@@ -534,12 +542,23 @@ public class NodePropertyHelper
         if (propertyValuesSize == 0)
         {
             // Nothing to do
+            return value;
         }
+        Integer listIndex = null;
         for (Map.Entry<NodePropertyKey, NodePropertyValue> entry : propertyValues.entrySet())
         {
             NodePropertyKey propertyKey = entry.getKey();
             NodePropertyValue propertyValue = entry.getValue();
 
+            if (listIndex == null)
+            {
+                listIndex = propertyKey.getListIndex();
+            }
+            else if (!listIndex.equals(propertyKey.getListIndex()))
+            {
+                throw new IllegalStateException("Expecting to collapse properties with same list index: " + propertyValues);
+            }
+            
             if (propertyValuesSize == 1
                     && (propertyDef == null || !propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
             {

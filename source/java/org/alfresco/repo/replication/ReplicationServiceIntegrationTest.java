@@ -287,7 +287,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
      *  problems, and without creating duplicates
      * DISABLED until Derek can look at it
      */
-    public void DISABLEDtestEditing() throws Exception
+    public void testEditing() throws Exception
     {
        ReplicationDefinition rdTT = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
        rdTT.setTargetName("TestTarget");
@@ -336,7 +336,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals("TestTarget", rdTT.getTargetName());
        assertEquals(2, rdTT.getPayload().size());
        assertEquals(folder1, rdTT.getPayload().get(0));
-       assertEquals(folder2b, rdTT.getPayload().get(0));
+       assertEquals(folder2b, rdTT.getPayload().get(1));
        
        // And more payload changes
        rdTT.getPayload().clear();

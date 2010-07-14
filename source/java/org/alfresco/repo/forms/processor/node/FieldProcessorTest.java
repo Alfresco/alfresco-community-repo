@@ -182,7 +182,7 @@ public class FieldProcessorTest extends TestCase
     private NamespaceService makeNamespaceService()
     {
         NamespaceServiceMemoryImpl nsService = new NamespaceServiceMemoryImpl();
-        namespaceService.registerNamespace(PREFIX, URI);
+        nsService.registerNamespace(PREFIX, URI);
         return nsService;
     }
 

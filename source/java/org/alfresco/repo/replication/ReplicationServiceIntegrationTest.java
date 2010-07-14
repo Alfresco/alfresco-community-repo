@@ -285,7 +285,6 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
      * Ensures that we can create, save, edit, save
      *  load, edit, save, load etc, all without
      *  problems, and without creating duplicates
-     * DISABLED until Derek can look at it
      */
     public void testEditing() throws Exception
     {

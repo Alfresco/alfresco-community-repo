@@ -618,7 +618,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             logger.debug(builder.toString());
             logger.debug("Current action = " + action.getId());
         }
-
+        
         // get the current user early in case the process fails and we are
         // unable to do it later
         String currentUserName = this.authenticationContext.getCurrentUserName();
@@ -655,8 +655,21 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     // Check and execute now
                     if (checkConditions == false || evaluateAction(action, actionedUponNodeRef) == true)
                     {
+                        // Mark the action as starting
+                        ((ActionImpl)action).setExecutionStartDate(new Date());
+                        ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
+
                         // Execute the action
                         directActionExecution(action, actionedUponNodeRef);
+                        
+                        // Mark it as having worked
+                        ((ActionImpl)action).setExecutionEndDate(new Date());
+                        ((ActionImpl)action).setExecutionStatus(ActionStatus.Completed);
+                        ((ActionImpl)action).setExecutionFailureMessage(null);
+                        if(action.getNodeRef() != null)
+                        {
+                           saveActionImpl(action.getNodeRef(), action);
+                        }
                     }
                 }
                 finally
@@ -693,6 +706,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                         queueAction(compensatingAction, actionedUponNodeRef);
                     }
                 }
+                
+                // Have the failure logged on the action
+                recordActionFailure(action, exception);
 
                 // Rethrow the exception
                 if (exception instanceof RuntimeException)
@@ -706,6 +722,27 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
             }
         }
+    }
+    
+    /**
+     * Schedule the recording of the action failure to occur
+     *  in another transaction
+     */
+    protected void recordActionFailure(Action action, Throwable exception)
+    {
+       if (logger.isDebugEnabled() == true)
+       {
+          logger.debug("Recording failure of action " + action + " due to " + exception.getMessage());
+       }
+       
+       ((ActionImpl)action).setExecutionEndDate(new Date());
+       ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
+       ((ActionImpl)action).setExecutionFailureMessage(exception.getMessage());
+       
+       if(action.getNodeRef() != null)
+       {
+          // TODO
+       }
     }
 
     /**
@@ -1531,6 +1568,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             if (pendingActions.contains(pendingAction) == false)
             {
                 pendingActions.add(pendingAction);
+                ((ActionImpl)action).setExecutionStatus(ActionStatus.Pending);
             }
         }
     }

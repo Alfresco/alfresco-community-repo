@@ -23,6 +23,7 @@ import java.io.Serializable;
 /**
  * Action execution status enumeration
  * 
+ * @deprecated Use {@link ActionStatus} instead
  * @author Roy Wetherall
  */
 public enum ActionExecutionStatus implements Serializable

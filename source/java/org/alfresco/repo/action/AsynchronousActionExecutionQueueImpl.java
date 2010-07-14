@@ -41,6 +41,7 @@ import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -304,7 +305,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         		msg.append("Executing action ").append(action);
         		logger.debug(msg.toString());
         	}
-
+        	
         	// Queue it and do it.
         	ongoingActions.add(nodeBeingNewlyActioned);
         	threadPoolExecutor.execute(runnable);

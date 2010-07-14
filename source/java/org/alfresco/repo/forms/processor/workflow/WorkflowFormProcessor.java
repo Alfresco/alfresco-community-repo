@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
@@ -177,7 +178,7 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
         String defName = itemId;
         if (itemId.contains("$")==false)
         {
-            defName = itemId.replaceFirst("_", "$");
+            defName = itemId.replaceFirst("_", Matcher.quoteReplacement("$"));
         }
         if (itemId.contains(":")==false)
         {

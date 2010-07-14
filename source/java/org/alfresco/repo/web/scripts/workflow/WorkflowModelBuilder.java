@@ -32,12 +32,16 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -62,18 +66,42 @@ public class WorkflowModelBuilder
     public static final String TASK_URL = "url";
     public static final String TASK_IS_POOLED = "isPooled";
     public static final String TASK_ID = "id";
-    
+    public static final String TASK_PATH = "path";
+    public static final String TASK_DEFINITION = "definition";
+
+    public static final String TASK_DEFINITION_ID = "id";
+    public static final String TASK_DEFINITION_URL = "url";
+    public static final String TASK_DEFINITION_TYPE = "type";
+    public static final String TASK_DEFINITION_NODE = "node";
+
+    public static final String TYPE_DEFINITION_NAME = "name";
+    public static final String TYPE_DEFINITION_TITLE = "title";
+    public static final String TYPE_DEFINITION_DESCRIPTION = "description";
+    public static final String TYPE_DEFINITION_URL = "url";
+
+    public static final String WORKFLOW_NODE_NAME = "name";
+    public static final String WORKFLOW_NODE_TITLE = "title";
+    public static final String WORKFLOW_NODE_DESCRIPTION = "description";
+    public static final String WORKFLOW_NODE_IS_TASK_NODE = "isTaskNode";
+    public static final String WORKFLOW_NODE_TRANSITIONS = "transitions";
+
+    public static final String WORKFLOW_NODE_TRANSITION_ID = "id";
+    public static final String WORKFLOW_NODE_TRANSITION_TITLE = "title";
+    public static final String WORKFLOW_NODE_TRANSITION_DESCRIPTION = "description";
+    public static final String WORKFLOW_NODE_TRANSITION_IS_DEFAULT = "isDefault";
+    public static final String WORKFLOW_NODE_TRANSITION_IS_HIDDEN = "isHidden";
+
     public static final String WORKFLOW_DEFINITION_ID = "id";
     public static final String WORKFLOW_DEFINITION_URL = "url";
     public static final String WORKFLOW_DEFINITION_NAME = "name";
     public static final String WORKFLOW_DEFINITION_TITLE = "title";
     public static final String WORKFLOW_DEFINITION_DESCRIPTION = "description";
-    
+
     private static final String PREFIX_SEPARATOR = Character.toString(QName.NAMESPACE_PREFIX);
 
     private final NamespaceService namespaceService;
-    private final NodeService      nodeService;
-    private final PersonService    personService;
+    private final NodeService nodeService;
+    private final PersonService personService;
 
     public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, PersonService personService)
     {
@@ -102,8 +130,25 @@ public class WorkflowModelBuilder
         model.put(TASK_IS_POOLED, isPooled(task.properties));
         Serializable owner = task.properties.get(ContentModel.PROP_OWNER);
         model.put(TASK_OWNER, getPersonModel((String) owner));
-        
+
         model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
+        return model;
+    }
+
+    /**
+     * Returns a detailed representation of a {@link WorkflowTask}.
+     * @param workflowTask The task to be represented.     
+     * @return
+     */
+    public Map<String, Object> buildDetailed(WorkflowTask workflowTask)
+    {
+        Map<String, Object> model = buildSimple(workflowTask, null);
+
+        model.put(TASK_PATH, getUrl(workflowTask) + "/paths/" + workflowTask.path.id);
+
+        // definition part
+        model.put(TASK_DEFINITION, buildTaskDefinition(workflowTask.definition, workflowTask));
+
         return model;
     }
 
@@ -116,20 +161,20 @@ public class WorkflowModelBuilder
     public Map<String, Object> buildSimple(WorkflowDefinition workflowDefinition)
     {
         HashMap<String, Object> model = new HashMap<String, Object>();
-        
+
         model.put(WORKFLOW_DEFINITION_ID, workflowDefinition.id);
         model.put(WORKFLOW_DEFINITION_URL, getUrl(workflowDefinition));
         model.put(WORKFLOW_DEFINITION_NAME, workflowDefinition.name);
         model.put(WORKFLOW_DEFINITION_TITLE, workflowDefinition.title);
-        model.put(WORKFLOW_DEFINITION_DESCRIPTION, workflowDefinition.description);        
-        
+        model.put(WORKFLOW_DEFINITION_DESCRIPTION, workflowDefinition.description);
+
         return model;
     }
 
     private Object isPooled(Map<QName, Serializable> properties)
     {
         Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
-        return actors!=null && !actors.isEmpty();
+        return actors != null && !actors.isEmpty();
     }
 
     private Map<String, Object> buildProperties(WorkflowTask task, Collection<String> propertyFilters)
@@ -166,18 +211,15 @@ public class WorkflowModelBuilder
 
     private Object convertValue(Object value)
     {
-        if(value == null
-                || value instanceof Boolean
-                || value instanceof Number
-                || value instanceof String)
+        if (value == null || value instanceof Boolean || value instanceof Number || value instanceof String)
         {
             return value;
         }
-        if(value instanceof Collection<?>)
+        if (value instanceof Collection<?>)
         {
-            Collection<?> collection = (Collection<?>)value;
+            Collection<?> collection = (Collection<?>) value;
             ArrayList<Object> results = new ArrayList<Object>(collection.size());
-            for (Object obj : collection) 
+            for (Object obj : collection)
             {
                 results.add(convertValue(obj));
             }
@@ -189,16 +231,17 @@ public class WorkflowModelBuilder
     private Collection<QName> buildQNameKeys(Collection<String> keys)
     {
         List<QName> qKeys = new ArrayList<QName>(keys.size());
-        for (String key : keys) 
+        for (String key : keys)
         {
             String prefixedName = key.replaceFirst("_", PREFIX_SEPARATOR);
             try
             {
                 QName qKey = QName.createQName(prefixedName, namespaceService);
                 qKeys.add(qKey);
-            } catch(NamespaceException e)
+            }
+            catch (NamespaceException e)
             {
-                throw new AlfrescoRuntimeException("Invalid property key: "+key, e);
+                throw new AlfrescoRuntimeException("Invalid property key: " + key, e);
             }
         }
         return qKeys;
@@ -221,14 +264,69 @@ public class WorkflowModelBuilder
         return model;
     }
 
-//    private String getURl(WorkflowPath path)
-//    {
-//        StringBuilder builder = new StringBuilder("api/workflow-instances/");
-//        builder.append(path.instance.id);
-//        builder.append("/paths/");
-//        builder.append(path.id);
-//        return builder.toString();
-//    }
+    private Map<String, Object> buildTaskDefinition(WorkflowTaskDefinition workflowTaskDefinition, WorkflowTask workflowTask)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        model.put(TASK_DEFINITION_ID, workflowTaskDefinition.id);
+        model.put(TASK_DEFINITION_URL, getUrl(workflowTaskDefinition));
+        model.put(TASK_DEFINITION_TYPE, buildTypeDefinition(workflowTaskDefinition.metadata));
+        model.put(TASK_DEFINITION_NODE, buildWorkflowNode(workflowTaskDefinition.node, workflowTask));
+
+        return model;
+    }
+
+    private Map<String, Object> buildTypeDefinition(TypeDefinition typeDefinition)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        model.put(TYPE_DEFINITION_NAME, typeDefinition.getName());
+        model.put(TYPE_DEFINITION_TITLE, typeDefinition.getTitle());
+        model.put(TYPE_DEFINITION_DESCRIPTION, typeDefinition.getDescription());
+        model.put(TYPE_DEFINITION_URL, getUrl(typeDefinition));
+
+        return model;
+    }
+
+    private Map<String, Object> buildWorkflowNode(WorkflowNode workflowNode, WorkflowTask workflowTask)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        model.put(WORKFLOW_NODE_NAME, workflowNode.name);
+        model.put(WORKFLOW_NODE_TITLE, workflowNode.title);
+        model.put(WORKFLOW_NODE_DESCRIPTION, workflowNode.description);
+        model.put(WORKFLOW_NODE_IS_TASK_NODE, workflowNode.isTaskNode);
+
+        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+
+        Object hiddenTransitions = workflowTask.properties.get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
+
+        for (WorkflowTransition workflowTransition : workflowNode.transitions)
+        {
+            Map<String, Object> transitionMap = new HashMap<String, Object>();
+
+            transitionMap.put(WORKFLOW_NODE_TRANSITION_ID, workflowTransition.id);
+            transitionMap.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.title);
+            transitionMap.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.description);
+            transitionMap.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault);
+            transitionMap.put(WORKFLOW_NODE_TRANSITION_IS_HIDDEN, (hiddenTransitions == null ? false : hiddenTransitions.toString().contains(workflowTransition.id)));
+
+            results.add(transitionMap);
+        }
+
+        model.put(WORKFLOW_NODE_TRANSITIONS, results);
+
+        return model;
+    }
+
+    //    private String getURl(WorkflowPath path)
+    //    {
+    //        StringBuilder builder = new StringBuilder("api/workflow-instances/");
+    //        builder.append(path.instance.id);
+    //        builder.append("/paths/");
+    //        builder.append(path.id);
+    //        return builder.toString();
+    //    }
 
     private String getUrl(WorkflowTask task)
     {
@@ -238,6 +336,16 @@ public class WorkflowModelBuilder
     private String getUrl(WorkflowDefinition workflowDefinition)
     {
         return "api/workflow-definitions/" + workflowDefinition.id;
+    }
+
+    private String getUrl(WorkflowTaskDefinition workflowTaskDefinition)
+    {
+        return "api/task-definitions/" + workflowTaskDefinition.id;
+    }
+
+    private String getUrl(TypeDefinition typeDefinition)
+    {
+        return "api/classes/" + typeDefinition.getName().toPrefixString().replace(PREFIX_SEPARATOR, "_");
     }
 
 }

@@ -5,7 +5,7 @@
    "data": 
    [
       <#list taskInstances as task>
-         <@taskLib.taskJSON task=task />
+         <@taskLib.taskJSON task=task detailed=false />
          <#if task_has_next>,</#if>
       </#list>
    ]

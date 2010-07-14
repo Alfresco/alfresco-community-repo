@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -38,9 +39,12 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowNode;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
@@ -92,7 +96,7 @@ public class WorkflowModelBuilderTest extends TestCase
         Object id = model.get(WorkflowModelBuilder.TASK_ID);
         assertEquals(task.id, id);
         Object url = model.get(WorkflowModelBuilder.TASK_URL);
-        assertEquals("api/task-instances/"+task.id, url);
+        assertEquals("api/task-instances/" + task.id, url);
         assertEquals(task.name, model.get(WorkflowModelBuilder.TASK_NAME));
         assertEquals(task.title, model.get(WorkflowModelBuilder.TASK_TITLE));
         assertEquals(task.description, model.get(WorkflowModelBuilder.TASK_DESCRIPTION));
@@ -101,9 +105,9 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_POOLED));
         
         Map<String, Object> owner = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_OWNER);
-        assertEquals( userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
-        assertEquals( firstName, owner.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
-        assertEquals( lastName, owner.get(WorkflowModelBuilder.PERSON_LAST_NAME));
+        assertEquals(userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
+        assertEquals(firstName, owner.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
+        assertEquals(lastName, owner.get(WorkflowModelBuilder.PERSON_LAST_NAME));
         
         Map<String, Object> props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
         assertEquals(task.properties.size(), props.size());
@@ -126,7 +130,7 @@ public class WorkflowModelBuilderTest extends TestCase
         model = builder.buildSimple(task, Arrays.asList("test_int", "test_string"));
         //Check task owner still created properly.
         owner = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_OWNER);
-        assertEquals( userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
+        assertEquals(userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
 
         // Check properties populated correctly
         props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
@@ -134,12 +138,99 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(5, props.get("test_int"));
         assertEquals("foo bar", props.get("test_string"));
     }
+
+    @SuppressWarnings("unchecked")
+    public void testBuildWorkflowTaskDetailed() throws Exception
+    {
+        WorkflowTask workflowTask = new WorkflowTask();
+        workflowTask.id = "testId$1";
+        workflowTask.name = "Task Name";
+        workflowTask.title = "Task Title";
+        workflowTask.description = "The Description";
+        workflowTask.state = WorkflowTaskState.IN_PROGRESS;
+
+        workflowTask.path = new WorkflowPath();
+        workflowTask.path.id = "pathId$1";
+
+        workflowTask.definition = new WorkflowTaskDefinition();
+        workflowTask.definition.id = "The Definition Id";
+        workflowTask.definition.metadata = mock(TypeDefinition.class);
+        when(workflowTask.definition.metadata.getName()).thenReturn(QName.createQName("The Type Name"));
+        when(workflowTask.definition.metadata.getTitle()).thenReturn("The Type Title");
+        when(workflowTask.definition.metadata.getDescription()).thenReturn("The Type Description");
+
+        WorkflowNode workflowNode = new WorkflowNode();
+        workflowNode.name = "The Node Name";
+        workflowNode.title = "The Node Title";
+        workflowNode.description = "The Node Description";
+        workflowNode.isTaskNode = true;
+        WorkflowTransition workflowTransition = new WorkflowTransition();
+        workflowTransition.id = "The Transition Id";
+        workflowTransition.title = "The Transition Title";
+        workflowTransition.description = "The Transition Description";
+        workflowTransition.isDefault = true;
+        workflowNode.transitions = new WorkflowTransition[] { workflowTransition };
+        workflowTask.definition.node = workflowNode;
+
+        workflowTask.properties = new HashMap<QName, Serializable>();
+        workflowTask.properties.put(ContentModel.PROP_OWNER, userName);
+
+        Map<String, Object> model = builder.buildDetailed(workflowTask);
+
+        Object id = model.get(WorkflowModelBuilder.TASK_ID);
+        assertEquals(workflowTask.id, id);
+        Object url = model.get(WorkflowModelBuilder.TASK_URL);
+        assertEquals("api/task-instances/" + workflowTask.id, url);
+        assertEquals(workflowTask.name, model.get(WorkflowModelBuilder.TASK_NAME));
+        assertEquals(workflowTask.title, model.get(WorkflowModelBuilder.TASK_TITLE));
+        assertEquals(workflowTask.description, model.get(WorkflowModelBuilder.TASK_DESCRIPTION));
+        assertEquals(workflowTask.state.name(), model.get(WorkflowModelBuilder.TASK_STATE));
+        assertEquals(workflowTask.definition.metadata.getTitle(), model.get(WorkflowModelBuilder.TASK_TYPE_DEFINITION_TITLE));
+        assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_POOLED));
+
+        Map<String, Object> owner = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_OWNER);
+        assertEquals(userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
+        assertEquals(firstName, owner.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
+        assertEquals(lastName, owner.get(WorkflowModelBuilder.PERSON_LAST_NAME));
+
+        Map<String, Object> props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
+        assertEquals(workflowTask.properties.size(), props.size());
+
+        Map<String, Object> definition = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_DEFINITION);
+
+        assertEquals(workflowTask.definition.id, definition.get(WorkflowModelBuilder.TASK_DEFINITION_ID));
+
+        Map<String, Object> type = (Map<String, Object>) definition.get(WorkflowModelBuilder.TASK_DEFINITION_TYPE);
+
+        assertEquals(workflowTask.definition.metadata.getName(), type.get(WorkflowModelBuilder.TYPE_DEFINITION_NAME));
+        assertEquals(workflowTask.definition.metadata.getTitle(), type.get(WorkflowModelBuilder.TYPE_DEFINITION_TITLE));
+        assertEquals(workflowTask.definition.metadata.getDescription(), type.get(WorkflowModelBuilder.TYPE_DEFINITION_DESCRIPTION));
+
+        Map<String, Object> node = (Map<String, Object>) definition.get(WorkflowModelBuilder.TASK_DEFINITION_NODE);
+
+        assertEquals(workflowTask.definition.node.name, node.get(WorkflowModelBuilder.WORKFLOW_NODE_NAME));
+        assertEquals(workflowTask.definition.node.title, node.get(WorkflowModelBuilder.WORKFLOW_NODE_TITLE));
+        assertEquals(workflowTask.definition.node.description, node.get(WorkflowModelBuilder.WORKFLOW_NODE_DESCRIPTION));
+        assertEquals(workflowTask.definition.node.isTaskNode, node.get(WorkflowModelBuilder.WORKFLOW_NODE_IS_TASK_NODE));
+
+        List<Map<String, Object>> transitions = (List<Map<String, Object>>) node.get(WorkflowModelBuilder.WORKFLOW_NODE_TRANSITIONS);
+
+        int i = 0;
+        for (Map<String, Object> transition : transitions)
+        {
+            assertEquals(workflowTask.definition.node.transitions[i].id, transition.get(WorkflowModelBuilder.WORKFLOW_NODE_TRANSITION_ID));
+            assertEquals(workflowTask.definition.node.transitions[i].title, transition.get(WorkflowModelBuilder.WORKFLOW_NODE_TRANSITION_TITLE));
+            assertEquals(workflowTask.definition.node.transitions[i].description, transition.get(WorkflowModelBuilder.WORKFLOW_NODE_TRANSITION_DESCRIPTION));
+            assertEquals(workflowTask.definition.node.transitions[i].isDefault, transition.get(WorkflowModelBuilder.WORKFLOW_NODE_TRANSITION_IS_DEFAULT));
+            assertEquals(false, transition.get(WorkflowModelBuilder.WORKFLOW_NODE_TRANSITION_IS_HIDDEN));
+            i++;
+        }
+    }
     
     public void testBuildWorkflowDefinition() throws Exception
     {
         WorkflowTaskDefinition workflowTaskDefinition = new WorkflowTaskDefinition();
-        WorkflowDefinition workflowDefinition = new WorkflowDefinition(
-                "The Id", "The Name", "The Version", "The Title", "The Description", workflowTaskDefinition);
+        WorkflowDefinition workflowDefinition = new WorkflowDefinition("The Id", "The Name", "The Version", "The Title", "The Description", workflowTaskDefinition);
         
         Map<String, Object> model = builder.buildSimple(workflowDefinition);
         assertEquals(workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_ID));

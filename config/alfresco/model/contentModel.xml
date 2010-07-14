@@ -449,7 +449,7 @@
             </property>
             <property name="cm:ratedAt">
                <title>Rated at</title>
-               <type>d:date</type>
+               <type>d:datetime</type>
                <mandatory>true</mandatory>
                <multiple>true</multiple>
                <index enabled="true">

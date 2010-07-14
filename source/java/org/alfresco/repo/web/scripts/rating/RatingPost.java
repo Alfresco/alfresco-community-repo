@@ -41,11 +41,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RatingPost extends AbstractRatingWebScript
 {
-    // Web script parameters.
-    private static final String RATING_SCHEME = "ratingScheme";
-    private static final String RATING = "rating";
-    private static final String RATED_NODE = "ratedNode";
-
     // Url format
     private final static String NODE_RATINGS_URL_FORMAT = "/api/node/{0}/ratings";
 

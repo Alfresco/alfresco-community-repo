@@ -39,6 +39,18 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public abstract class AbstractRatingWebScript extends DeclarativeWebScript
 {
+    // Web script parameters.
+    protected static final String RATING_SCHEME = "ratingScheme";
+    protected static final String RATING = "rating";
+    protected static final String RATED_NODE = "ratedNode";
+    protected static final String NODE_REF = "nodeRef";
+    protected static final String RATINGS = "ratings";
+    
+    protected static final String AVERAGE_RATINGS = "averageRatings";
+    protected static final String RATINGS_TOTALS = "ratingsTotals";
+    protected static final String RATINGS_COUNTS = "ratingsCounts";
+
+    // Injected services
     protected NodeService nodeService;
     protected RatingService ratingService;
 

@@ -1,0 +1,14 @@
+<webscript>
+   <shortname>DELETE rating</shortname>
+   <description><![CDATA[
+   Deletes the specified rating from the specified NodeRef.<br/>
+   The rated node is identified by the {store_type}/{store_id}/{id} part of the URL.<br/>
+   The rating scheme name in which to delete the rating is indicated by {scheme}.<br/>
+   ]]>
+   </description>
+   <url>/api/node/{store_type}/{store_id}/{id}/ratings/{scheme}</url>
+   <format default="json" />
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

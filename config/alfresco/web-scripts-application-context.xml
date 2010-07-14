@@ -758,6 +758,11 @@
           parent="abstractRatingWebScript">
     </bean>
     
+    <bean id="webscript.org.alfresco.repository.rating.rating.delete"
+          class="org.alfresco.repo.web.scripts.rating.RatingDelete"
+          parent="abstractRatingWebScript">
+    </bean>
+    
     <bean id="webscript.org.alfresco.repository.rating.ratingdefinitions.get"
           class="org.alfresco.repo.web.scripts.rating.RatingDefinitionsGet"
           parent="abstractRatingWebScript">

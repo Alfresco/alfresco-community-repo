@@ -35,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -282,6 +283,35 @@ public class RatingRestApiTest extends BaseWebScriptTest
                                                   fiveStarStats.getDouble(AVERAGE_RATING));
         assertEquals("Ratings count rating was wrong.", 2, fiveStarStats.getInt(RATINGS_COUNT));
         assertEquals("Ratings total was wrong.", userOneRatingValue + userTwoRatingValue,
+                                                 (float)fiveStarStats.getDouble(RATINGS_TOTAL));
+        
+        
+        // Now DELETE user two's rating.
+        // Now POST a second new rating to the testNode - as User Two.
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+
+        rsp = sendRequest(new DeleteRequest(testNodeRatingUrl + "/" + FIVE_STAR_RATING_SCHEME), 200);
+        rspContent = rsp.getContentAsString();
+        
+        // GET the ratings again. Although user_one's rating will still be there,
+        // user two can't see it and so we should see zero ratings.
+        rsp = sendRequest(new GetRequest(returnedUrl), 200);
+
+        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        
+        dataObj = (JSONObject)jsonRsp.get(DATA);
+        assertNotNull("JSON 'data' object was null", dataObj);
+
+        final JSONArray remainingRatings = dataObj.getJSONArray(RATINGS);
+        assertEquals(0, remainingRatings.length());
+
+        // Now the average should have changed.
+        statsObject = dataObj.getJSONObject(NODE_STATISTICS);
+        fiveStarStats = statsObject.getJSONObject(FIVE_STAR_RATING_SCHEME);
+        assertEquals("Average rating was wrong.", userOneRatingValue,
+                                                  (float)fiveStarStats.getDouble(AVERAGE_RATING));
+        assertEquals("Ratings count rating was wrong.", 1, fiveStarStats.getInt(RATINGS_COUNT));
+        assertEquals("Ratings total was wrong.", userOneRatingValue,
                                                  (float)fiveStarStats.getDouble(RATINGS_TOTAL));
     }
     

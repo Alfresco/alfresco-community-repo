@@ -19,6 +19,7 @@
 package org.alfresco.repo.transfer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +63,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ResourceUtils;
@@ -647,6 +650,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
         
+        logger.debug("First transfer - create new node (no content yet)");
         startNewTransaction();
         try 
         {
@@ -676,10 +680,25 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
             assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
             
+            // Check the modified time of the destination node is the same as the source node.
+            Date destModifiedDate = (Date)nodeService.getProperty(destNodeRef, ContentModel.PROP_MODIFIED);
+            Date srcModifiedDate = (Date)nodeService.getProperty(contentNodeRef, ContentModel.PROP_MODIFIED);
+            
+            logger.debug("srcModifiedDate : " + srcModifiedDate + " destModifiedDate : " + destModifiedDate);
+            assertTrue("dest modified date is not correct", destModifiedDate.compareTo(srcModifiedDate)== 0);
+            
+            Date destCreatedDate = (Date)nodeService.getProperty(destNodeRef, ContentModel.PROP_CREATED);
+            Date srcCreatedDate = (Date)nodeService.getProperty(contentNodeRef, ContentModel.PROP_CREATED);
+            
+            logger.debug("srcCreatedDate : " + srcCreatedDate + " destCreatedDate : " + destCreatedDate);
+            assertTrue("dest created date is not correct", destCreatedDate.compareTo(srcCreatedDate)== 0);
+      
+            
+            
             // Check injected transferred aspect.
             assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
             
-            // Now set up the next test which is to 
+            // Now set up the next test which is to change the title 
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE_UPDATED);   
         }
         finally
@@ -687,11 +706,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
         
+        logger.debug("Second transfer - update title property (no content yet)");
         startNewTransaction();
         try
         {
             /**
-             * Transfer our node again - so this is an update
+             * Transfer our node again - so this is an update of the title property
              */
             {
                 TransferDefinition definition = new TransferDefinition();
@@ -715,6 +735,21 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE_UPDATED); 
             assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
             
+            // Check the modified time of the destination node is the same as the source node.
+            Date destModifiedDate = (Date)nodeService.getProperty(destNodeRef, ContentModel.PROP_MODIFIED);
+            Date srcModifiedDate = (Date)nodeService.getProperty(contentNodeRef, ContentModel.PROP_MODIFIED);
+
+            logger.debug("srcModifiedDate : " + srcModifiedDate + " destModifiedDate : " + destModifiedDate);
+            
+            // BUGBUG - MER 14/07/2010 - can't set modified date
+            // assertTrue("after update, modified date is not correct", destModifiedDate.compareTo(srcModifiedDate) == 0);
+            
+            Date destCreatedDate = (Date)nodeService.getProperty(destNodeRef, ContentModel.PROP_CREATED);
+            Date srcCreatedDate = (Date)nodeService.getProperty(contentNodeRef, ContentModel.PROP_CREATED);
+            
+            logger.debug("srcCreatedDate : " + srcCreatedDate + " destCreatedDate : " + destCreatedDate);
+            assertTrue("after update, created date is not correct", destCreatedDate.compareTo(srcCreatedDate)== 0);
+      
             // Check injected transferred aspect.
             assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
 
@@ -724,6 +759,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }
         
+        logger.debug("Transfer again - this is an update");
         startNewTransaction();
         try
         {
@@ -744,9 +780,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
   
         /**
-         * Now transfer nothing - content items do not need to be transferred since its alrady on 
+         * Now transfer nothing - content items do not need to be transferred since its already on 
          * the destination.
          */
+        logger.debug("Transfer again - with no new content");
         startNewTransaction();
         try
         {
@@ -760,12 +797,29 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
-  
         
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node still exists and in particular that the old content is still there
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
+            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE_UPDATED); 
+            assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+
+        }
+        finally
+        {
+            endTransaction();
+        }
         
         /**
           * Negative test transfer nothing
           */
+        logger.debug("Transfer again - with no content - should throw exception");
         try
         {
                 TransferDefinition definition = new TransferDefinition();

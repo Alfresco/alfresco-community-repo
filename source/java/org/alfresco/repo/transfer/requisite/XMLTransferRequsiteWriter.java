@@ -90,7 +90,7 @@ public class XMLTransferRequsiteWriter implements TransferRequsiteWriter
         {
             this.writer.startDocument();
 
-            this.writer.startPrefixMapping(PREFIX, TransferModel.TRANSFER_MODEL_1_0_URI);
+            this.writer.startPrefixMapping(PREFIX, RequsiteModel.TRANSFER_MODEL_1_0_URI);
             this.writer.startPrefixMapping("cm", NamespaceService.CONTENT_MODEL_1_0_URI);
 
             // Start Transfer Manifest // uri, name, prefix

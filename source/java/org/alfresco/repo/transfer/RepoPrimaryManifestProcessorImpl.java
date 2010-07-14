@@ -290,7 +290,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
 
         // Split out the content properties and sanitise the others
-        Map<QName, Serializable> contentProps = processProperties(null, props, true);
+        Map<QName, Serializable> contentProps = processProperties(null, props, null);
         
         // inject transferred property here
         if(!contentProps.containsKey(TransferModel.PROP_REPOSITORY_ID))
@@ -390,6 +390,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             // We need to process content properties separately.
             // First, create a shallow copy of the supplied property map...
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
+            Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
             
             // inject transferred property here
             if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
@@ -399,14 +400,14 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
 
             // Split out the content properties and sanitise the others
-            Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, false);
+            Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, existingProps);
 
             // Update the non-content properties
             nodeService.setProperties(nodeToUpdate, props);
 
             // Deal with the content properties
             writeContent(nodeToUpdate, contentProps);
-
+            
             // Blend the aspects together
             Set<QName> suppliedAspects = new HashSet<QName>(node.getAspects());
             Set<QName> existingAspects = nodeService.getAspects(nodeToUpdate);
@@ -448,17 +449,19 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      * @param nodeToUpdate
      *            The noderef of the existing node in the local repo that is to be updated with these properties. May be
      *            null, indicating that these properties are destined for a brand new local node.
-     * @param props
-     * @return A map containing the content properties from the supplied "props" map
+     * @param props the new properties
+     * @param the existing properties, null if this is a create
+     * @return A map containing the content properties which are going to be replaced from the supplied "props" map
      */
     private Map<QName, Serializable> processProperties(NodeRef nodeToUpdate, Map<QName, Serializable> props,
-            boolean isNew)
+            Map<QName, Serializable> existingProps)
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         // ...and copy any supplied content properties into this new map...
         for (Map.Entry<QName, Serializable> propEntry : props.entrySet())
         {
             Serializable value = propEntry.getValue();
+            QName key = propEntry.getKey();
             if (log.isDebugEnabled())
             {
                 if (value == null)
@@ -468,7 +471,42 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
             if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
             {
-                contentProps.put(propEntry.getKey(), propEntry.getValue());
+                if(existingProps != null)
+                {
+                    // This is an update and we have content data 
+                    File stagingDir = getStagingFolder();
+                    ContentData contentData = (ContentData) propEntry.getValue();
+                    String contentUrl = contentData.getContentUrl();
+                    String fileName = TransferCommons.URLToPartName(contentUrl);
+                    File stagedFile = new File(stagingDir, fileName);
+                    if (stagedFile.exists())
+                    {
+                        if(log.isDebugEnabled())
+                        {
+                            log.debug("replace content for node:" + nodeToUpdate + ", " + key);
+                        }
+                        // Yes we are going to replace the content item
+                        contentProps.put(propEntry.getKey(), propEntry.getValue());
+                    }
+                    else
+                    {    
+                        // Staging file does not exist
+                        if(props.containsKey(key))
+                        {
+                            if(log.isDebugEnabled())
+                            {
+                                log.debug("keep existing content for node:" + nodeToUpdate + ", " + key);
+                            }
+                            // keep the existing content value
+                            props.put(propEntry.getKey(), existingProps.get(key));
+                        } 
+                    }
+                }
+                else
+                {
+                    // This is a create so all content items are new
+                    contentProps.put(propEntry.getKey(), propEntry.getValue());
+                }                  
             }
         }
 
@@ -480,13 +518,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             props.remove(contentPropertyName);
         }
 
-        if (!isNew)
+        if (existingProps != null)
         {
             // Finally, overlay the repo-specific properties from the existing
             // node (if there is one)
-            Map<QName, Serializable> existingProps = (nodeToUpdate == null) ? new HashMap<QName, Serializable>()
-                    : nodeService.getProperties(nodeToUpdate);
-
             for (QName localProperty : getLocalProperties())
             {
                 Serializable existingValue = existingProps.get(localProperty);
@@ -515,7 +550,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             ContentData contentData = (ContentData) contentEntry.getValue();
             String contentUrl = contentData.getContentUrl();
-            String fileName = contentUrl.substring(contentUrl.lastIndexOf('/') + 1);
+            String fileName = TransferCommons.URLToPartName(contentUrl);
             File stagedFile = new File(stagingDir, fileName);
             if (!stagedFile.exists())
             {

@@ -699,7 +699,8 @@ public class TransferServiceImpl implements TransferService
                                  */
                                 if(deltaList != null)
                                 {
-                                    if(deltaList.getRequiredURLs().contains(d.getContentUrl()))
+                                    String partName = TransferCommons.URLToPartName(d.getContentUrl());
+                                    if(deltaList.getRequiredParts().contains(partName))
                                     {
                                         logger.debug("content is required :" + d.getContentUrl());
                                         chunker.addContent(d);

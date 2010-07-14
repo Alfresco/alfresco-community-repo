@@ -38,7 +38,7 @@ public class DeltaListRequsiteProcessor implements TransferRequsiteProcessor
     
     public void missingContent(NodeRef node, QName qname, String name)
     {
-        deltaList.getRequiredURLs().add(name);
+        deltaList.getRequiredParts().add(name);
     }
     
     public void startTransferRequsite()

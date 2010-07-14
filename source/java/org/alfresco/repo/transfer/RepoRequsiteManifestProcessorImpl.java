@@ -22,6 +22,7 @@ package org.alfresco.repo.transfer;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,9 +106,9 @@ public class RepoRequsiteManifestProcessorImpl extends AbstractManifestProcessor
              */
             NodeRef destinationNode = resolvedNodes.resolvedChild;
             
-//            Serializable yy = node.getProperties().get(ContentModel.PROP_MODIFIED);
             Map<QName, Serializable> destProps = nodeService.getProperties(destinationNode);
-//            Serializable xx = destProps.get(ContentModel.PROP_MODIFIED);
+            
+
             
             for (Map.Entry<QName, Serializable> propEntry : node.getProperties().entrySet())
             {
@@ -128,26 +129,33 @@ public class RepoRequsiteManifestProcessorImpl extends AbstractManifestProcessor
                         ContentData destContent = (ContentData)destProps.get(propEntry.getKey());
                         
                         /**
-                         * If the URLs are the same then the content is already on the server
+                         * If the modification dates for the node are different
                          */
-                        if(TransferCommons.URLToPartName(destContent.getContentUrl()).equalsIgnoreCase(
-                           TransferCommons.URLToPartName(srcContent.getContentUrl())))
+                        Serializable srcModified = node.getProperties().get(ContentModel.PROP_MODIFIED);
+                        Serializable destModified = destProps.get(ContentModel.PROP_MODIFIED);
+                        
+                        log.debug ("srcModified :" + srcModified + "destModified :" + destModified);
+                        
+                        if(srcModified != null && 
+                           destModified != null &&
+                           srcModified instanceof Date && 
+                           destModified instanceof Date &&
+                           ((Date)srcModified).getTime() >= ((Date)destModified).getTime())
                         {
                             if(log.isDebugEnabled())
                             {
-                                log.debug("the url is the same - no need to send it:" + destContent.getContentUrl());
+                                log.debug("the modified date is the same - no need to send it:" + destContent.getContentUrl());
                             }
                         }
                         else
                         {
-                            //  We need to diff the property
-                            out.missingContent(node.getNodeRef(), propEntry.getKey(), srcContent.getContentUrl());
+                            out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                         }
                     }
                     else
                     {
                         //  We don't have the property on the destination node 
-                        out.missingContent(node.getNodeRef(), propEntry.getKey(), srcContent.getContentUrl());
+                        out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                     }
                 }
             }
@@ -171,7 +179,7 @@ public class RepoRequsiteManifestProcessorImpl extends AbstractManifestProcessor
                 {
                     ContentData content = (ContentData)value;
                     // 
-                    out.missingContent(node.getNodeRef(), propEntry.getKey(), content.getContentUrl());
+                    out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(content.getContentUrl()));
                 }
             }
         }        

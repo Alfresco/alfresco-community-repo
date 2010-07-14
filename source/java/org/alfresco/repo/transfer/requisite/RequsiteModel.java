@@ -25,6 +25,8 @@ import org.alfresco.repo.transfer.TransferModel;
  */
 public interface RequsiteModel extends TransferModel
 {
+    static final String REQUSITE_MODEL_1_0_URI = "http://www.alfresco.org/model/requsite/1.0";
+    
     static final String LOCALNAME_TRANSFER_REQUSITE = "transferRequsite";
     
     static final String LOCALNAME_ELEMENT_NODES = "nodes";
@@ -37,5 +39,5 @@ public interface RequsiteModel extends TransferModel
 
     
     // Manifest file prefix
-    static final String REQUSITE_PREFIX = "xferreq";
+    static final String REQUSITE_PREFIX = "xferr";
 }

@@ -51,7 +51,7 @@ public class XMLTransferRequsiteReader extends DefaultHandler implements Content
      */ 
     LinkedList<HashMap<String, String>> namespaces = new LinkedList<HashMap<String, String>>();
 
-    final String TRANSFER_URI = RequsiteModel.TRANSFER_MODEL_1_0_URI;
+    final String REQUSITE_URI = RequsiteModel.REQUSITE_MODEL_1_0_URI;
     final String XMLNS_URI = "http://www.w3.org/XML/1998/namespace"; 
     
     /*
@@ -191,7 +191,7 @@ public class XMLTransferRequsiteReader extends DefaultHandler implements Content
             return;
         }
         
-        if(elementQName.getNamespaceURI().equals(TRANSFER_URI));
+        if(elementQName.getNamespaceURI().equals(REQUSITE_URI));
         {
             // This is one of the transfer manifest elements
             String elementName = elementQName.getLocalName();

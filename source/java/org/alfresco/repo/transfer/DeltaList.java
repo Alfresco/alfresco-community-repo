@@ -31,18 +31,18 @@ import java.util.TreeSet;
 public class DeltaList
 {
     /**
-     * The set of requiredURLs
+     * The set of requiredParts
      */
     
-    private TreeSet<String> requiredURLs = new TreeSet<String>();
+    private TreeSet<String> requiredParts = new TreeSet<String>();
     
     /**
      * get the list of URLs reqired by the manifest.
      * @return the list of required URLs
      */
-    public Set<String> getRequiredURLs()
+    public Set<String> getRequiredParts()
     {
-        return requiredURLs;
+        return requiredParts;
     }
      
 }

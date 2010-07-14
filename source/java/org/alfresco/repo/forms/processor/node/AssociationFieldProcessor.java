@@ -72,7 +72,7 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
         {
             return getValues((Collection<?>) values);
         }
-        return Collections.singletonList(values); 
+        return Collections.singletonList(values.toString()); 
     }
 
     private List<String> getValues(Collection<?> collection)

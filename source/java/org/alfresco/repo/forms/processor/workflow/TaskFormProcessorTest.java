@@ -155,14 +155,14 @@ public class TaskFormProcessorTest extends TestCase
         List<String> fields = Arrays.asList(fieldName);
         Form form = processForm(fields);
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
-//        checkSingleAssociation(form, fieldName, fieldData);
+        checkSingleAssociation(form, fieldName, fieldData);
 
         // Check Assignee field is added to Form, when explicitly typed as an
         // association.
         String fullAssociationName = "assoc:" + fieldName;
         fields = Arrays.asList(fullAssociationName);
         form = processForm(fields);
-//        checkSingleAssociation(form, fieldName, fieldData);
+        checkSingleAssociation(form, fieldName, fieldData);
     }
 
     public void testIgnoresUnknownFields() throws Exception
@@ -187,7 +187,7 @@ public class TaskFormProcessorTest extends TestCase
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
         FormData formData = form.getFormData();
         assertEquals(4, formData.getNumberOfFields());
-//        assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
+        assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
         assertEquals(WorkflowTaskState.IN_PROGRESS, formData.getFieldData("prop_bpm_status").getValue());
     }
 

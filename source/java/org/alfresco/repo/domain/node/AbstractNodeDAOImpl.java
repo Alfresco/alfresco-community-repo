@@ -1154,9 +1154,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * Updates the node's transaction and <b>cm:auditable</b> properties only.
      * 
-     * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
+     * @see #touchNodeImpl(Long, AuditablePropertiesEntity)
      */
     private void touchNodeImpl(Long nodeId)
+    {
+        touchNodeImpl(nodeId, null);
+    }
+    /**
+     * Updates the node's transaction and <b>cm:auditable</b> properties only.
+     * 
+     * @param auditableProps            optionally override the <b>cm:auditable</b> values
+     * 
+     * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
+     */
+    private void touchNodeImpl(Long nodeId, AuditablePropertiesEntity auditableProps)
     {
         Node node = null;
         try
@@ -1171,6 +1182,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
         nodeUpdate.setId(nodeId);
+        if (auditableProps != null)
+        {
+            nodeUpdate.setAuditableProperties(auditableProps);
+        }
         updateNodeImpl(node, nodeUpdate);
     }
     
@@ -1247,11 +1262,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 nodeUpdate.setAuditableProperties(auditableProps);
                 nodeUpdate.setUpdateAuditableProperties(updateAuditableProperties);
             }
-            else
+            else if (nodeUpdate.getAuditableProperties() == null)
             {
-                // else: The auditable aspect is manual, so we expect the client code to have done
-                //       the necessary updates on the 'nodeUpdate'
-                
                 // cache the explicit setting of auditable properties when creating node (note: auditable aspect is not yet present)
                 AuditablePropertiesEntity auditableProps = oldNode.getAuditableProperties();
                 if (auditableProps != null)
@@ -1259,6 +1271,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     nodeUpdate.setAuditableProperties(auditableProps);
                 }
             }
+            // else
+            // {
+            //     // SAIL-390: NodeDAO: Allow cm:auditable to be set
+            //     // The nodeUpdate had auditable properties set, so we just use that directly
+            // }
         }
         else
         {
@@ -1577,6 +1594,15 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Node node = getNodeNotNull(nodeId);
         // Copy inbound values
         newProps = new HashMap<QName, Serializable>(newProps);
+
+        // Copy cm:auditable
+        AuditablePropertiesEntity auditableProps = null;
+        if (!policyBehaviourFilter.isEnabled(node.getNodeRef(), ContentModel.ASPECT_AUDITABLE))
+        {
+            auditableProps = new AuditablePropertiesEntity();
+            auditableProps.setAuditValues(null, null, newProps);
+        }
+        
         // Remove cm:auditable
         newProps.keySet().removeAll(AuditablePropertiesEntity.getAuditablePropertyQNames());
         // Remove sys:referenceable
@@ -1694,12 +1720,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
         
-        // Shortcut if there are no diffs
-        if (propsToDelete.isEmpty() && propsToAdd.isEmpty())
-        {
-            return false;
-        }
-        
         // Remove by key
         List<NodePropertyKey> propKeysToDeleteList = new ArrayList<NodePropertyKey>(propsToDelete.keySet());
         deleteNodeProperties(nodeId, propKeysToDeleteList);
@@ -1738,8 +1758,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
             // Update cache
             setNodePropertiesCached(nodeId, propsToCache);
-            // Touch to bring into current txn
-            touchNodeImpl(nodeId);
+        }
+        // Touch to bring into current transaction
+        if (updated || auditableProps != null)
+        {
+            touchNodeImpl(nodeId, auditableProps);
         }
         
         // Done

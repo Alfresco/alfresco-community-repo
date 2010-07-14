@@ -24,14 +24,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.springframework.context.ApplicationContext;
 
@@ -39,35 +45,39 @@ import org.springframework.context.ApplicationContext;
  * Checks that the behaviour of the {@link org.alfresco.repo.audit.AuditableAspect auditable aspect}
  * is correct.
  * 
- * @author Roy Wetherall
+ * @author Derek Hulley
  */
-public class AuditableAspectTest extends BaseSpringTest 
+public class AuditableAspectTest extends TestCase
 {
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    /*
-     * Services used by the tests
-     */
+    private TransactionService transactionService;
     private NodeService nodeService;
+    private BehaviourFilter behaviourFilter;
     
-    /**
-     * Data used by the tests
-     */
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
     
-    /**
-     * On setup in transaction implementation
-     */
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    public void setUp() throws Exception
     {
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         // Set the services
-        this.nodeService = (NodeService)ctx.getBean("dbNodeService");
+        this.transactionService = serviceRegistry.getTransactionService();
+        this.nodeService = serviceRegistry.getNodeService();
+        this.behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
+        
+        AuthenticationUtil.setRunAsUserSystem();
         
         // Create the store and get the root node reference
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(storeRef);
+    }
+    
+    @Override
+    protected void tearDown() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     public void testAudit()
@@ -93,6 +103,7 @@ public class AuditableAspectTest extends BaseSpringTest
         personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
         
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,
@@ -124,6 +135,7 @@ public class AuditableAspectTest extends BaseSpringTest
         personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
         
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,
@@ -160,6 +172,7 @@ public class AuditableAspectTest extends BaseSpringTest
         personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name ");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
         
         long t1 = System.currentTimeMillis();
         this.wait(100);                             // Needed for system clock inaccuracies
@@ -224,8 +237,9 @@ public class AuditableAspectTest extends BaseSpringTest
         personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name ");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
         // Add some auditable properties
-        Map<QName, Serializable> auditableProps = new HashMap<QName, Serializable>();
+        final Map<QName, Serializable> auditableProps = new HashMap<QName, Serializable>();
         auditableProps.put(ContentModel.PROP_CREATED, new Date(0L));
         auditableProps.put(ContentModel.PROP_CREATOR, "ZeroPerson");
         auditableProps.put(ContentModel.PROP_MODIFIED, new Date(1L));
@@ -239,8 +253,27 @@ public class AuditableAspectTest extends BaseSpringTest
                     QName.createQName("{test}testperson"),
                     ContentModel.TYPE_PERSON,
                     personProps);
-        NodeRef nodeRef = childAssocRef.getChildRef();
+        final NodeRef nodeRef = childAssocRef.getChildRef();
+        // Check
+        assertAuditableProperties(nodeRef, auditableProps);
         
+        // Now modify the node so that the auditable values advance
+        nodeService.setProperty(nodeRef, ContentModel.PROP_FIRSTNAME, "TEST-FIRST-NAME-" + System.currentTimeMillis());
+        
+        RetryingTransactionCallback<Void> setAuditableCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);        // Lasts for txn
+                // Set the auditable properties explicitly
+                auditableProps.put(ContentModel.PROP_MODIFIER, "ThisUser");
+                nodeService.addProperties(nodeRef, auditableProps);
+                // Done
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(setAuditableCallback);
+        // Check
         assertAuditableProperties(nodeRef, auditableProps);
     }
     
@@ -251,6 +284,8 @@ public class AuditableAspectTest extends BaseSpringTest
     
     private void assertAuditableProperties(NodeRef nodeRef, Map<QName, Serializable> checkProps)
     {
+        assertTrue("Auditable aspect not present", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE));
+        
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
         assertNotNull(props.get(ContentModel.PROP_CREATED));
         assertNotNull(props.get(ContentModel.PROP_MODIFIED));

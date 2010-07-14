@@ -502,6 +502,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected void insertNodeProperties(Long nodeId, Map<NodePropertyKey, NodePropertyValue> persistableProps)
     {
+        if (persistableProps.isEmpty())
+        {
+            return;
+        }
+        
         List<NodePropertyEntity> rows = makePersistentRows(nodeId, persistableProps);
         
         startBatch();

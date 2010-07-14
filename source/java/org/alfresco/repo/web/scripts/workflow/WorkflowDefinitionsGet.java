@@ -33,6 +33,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * workflow definitions.
  * 
  * @author Gavin Cornwell
+ * @author Nick Smith
  */
 public class WorkflowDefinitionsGet extends AbstractWorkflowWebscript
 {

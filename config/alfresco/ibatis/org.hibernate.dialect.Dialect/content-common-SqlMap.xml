@@ -221,7 +221,7 @@
         where
             id = #id# and
             <isNull property="oldOrphanTime">orphan_time is null</isNull>
-            <isNotNull property="oldOrphanTime">orphan_time = oldOrphanTime</isNotNull>
+            <isNotNull property="oldOrphanTime">orphan_time = #oldOrphanTime#</isNotNull>
     </update>
 
     <!-- Delete ContentUrl entity -->

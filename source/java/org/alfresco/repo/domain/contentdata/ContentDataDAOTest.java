@@ -224,6 +224,19 @@ public class ContentDataDAOTest extends TestCase
         }
     }
     
+    /**
+     * Check that orphaned content can be re-instated.
+     */
+    public void testReinstate_ALF3867()
+    {
+        ContentData contentData = getContentData();
+        Pair<Long, ContentData> resultPair = create(contentData);
+        getAndCheck(resultPair.getFirst(), contentData);
+        delete(resultPair.getFirst());
+        // Now create a ContentData with the same URL
+        create(contentData);
+    }
+    
     public void testContentUrl_FetchingOrphansNoLimit() throws Exception
     {
         ContentData contentData = getContentData();

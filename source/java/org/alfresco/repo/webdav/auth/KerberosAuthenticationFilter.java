@@ -20,13 +20,11 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.alfresco.repo.SessionUser;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,35 +37,18 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
 {
     // Debug logging
     
-    private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);
-
-
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#init()
-     */
-    @Override
-    protected void init() throws ServletException
-    {
-        // Call the base Kerberos filter initialization
-
-        super.init();
-    	
-    	// Enable ticket based logons
-    	
-    	setTicketLogons(true);
-    }
+    private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onValidateFailed(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
      */
     @Override
-    protected void onValidateFailed(HttpServletRequest req, HttpServletResponse res, HttpSession session)
+    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
         throws IOException
     {
         // Restart the login challenge process if validation fails
     	
-        restartLoginChallenge(req, res, session);
+        restartLoginChallenge(sc, req, res);
     }
     
 	/* (non-Javadoc)

@@ -26,11 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -170,89 +167,64 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         	
             m_ntlmFlags = NTLM_FLAGS_NTLM1;
         }
-    }
-
+    }    
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(javax.servlet.ServletContext, javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
-     */
-    public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
-            throws IOException, ServletException
+    public boolean authenticateRequest(ServletContext context, HttpServletRequest sreq, HttpServletResponse sresp) throws IOException, ServletException
     {
-        // Get the HTTP request/response/session
-        HttpServletRequest req = (HttpServletRequest) sreq;
-        HttpServletResponse resp = (HttpServletResponse) sresp;
-        
-        // If a filter up the chain has marked the request as not requiring auth then respect it
-        
-        if (req.getAttribute( NO_AUTH_REQUIRED) != null)
-        {
-            if ( getLogger().isDebugEnabled())
-                getLogger().debug("Authentication not required (filter), chaining ...");
-            
-            // Chain to the next filter
-            chain.doFilter(sreq, sresp);
-            return;
-        }
-        
         // Check if there is an authorization header with an NTLM security blob
-        String authHdr = req.getHeader(AUTHORIZATION);
+        String authHdr = sreq.getHeader(AUTHORIZATION);
         boolean reqAuth = false;
         
         // Check if an NTLM authorization header was received
         
         if ( authHdr != null)
         {
-        	// Check for an NTLM authorization header
-        	
-        	if ( authHdr.startsWith(AUTH_NTLM))
-        		reqAuth = true;
-        	else if ( authHdr.startsWith( "Negotiate"))
-        	{
-        		if ( getLogger().isDebugEnabled())
-        			getLogger().debug("Received 'Negotiate' from client, may be SPNEGO/Kerberos logon");
-        		
-        		// Restart the authentication
-        		
-            	restartLoginChallenge(req, resp, req.getSession());
-        		return;
-        	}
+            // Check for an NTLM authorization header
+            
+            if ( authHdr.startsWith(AUTH_NTLM))
+                reqAuth = true;
+            else if ( authHdr.startsWith( "Negotiate"))
+            {
+                if ( getLogger().isDebugEnabled())
+                    getLogger().debug("Received 'Negotiate' from client, may be SPNEGO/Kerberos logon");
+                
+                // Restart the authentication
+                
+                restartLoginChallenge(context, sreq, sresp);
+                return false;
+            }
         }
         
         // Check if the user is already authenticated
-        SessionUser user = getSessionUser(context, req, resp, true);
-        
-        HttpSession httpSess = req.getSession(true);
+        SessionUser user = getSessionUser(context, sreq, sresp, true);
 
         // If the user has been validated and we do not require re-authentication then continue to
         // the next filter
         if (user != null && reqAuth == false)
         {
             // Filter validate hook
-            onValidate( context, req, resp);
+            onValidate( context, sreq, sresp);
 
             if (getLogger().isDebugEnabled())
                 getLogger().debug("Authentication not required (user), chaining ...");
             
             // Chain to the next filter
-            chain.doFilter(sreq, sresp);
-            return;
+            return true;
         }
 
         // Check if the login page is being accessed, do not intercept the login page
-        if (hasLoginPage() && req.getRequestURI().endsWith(getLoginPage()) == true)
+        if (hasLoginPage() && sreq.getRequestURI().endsWith(getLoginPage()) == true)
         {
             if (getLogger().isDebugEnabled())
                 getLogger().debug("Login page requested, chaining ...");
             
             // Chain to the next filter
-            chain.doFilter( sreq, sresp);
-            return;
+            return true;
         }
         
         // Check if the browser is Opera, if so then display the login page as Opera does not
         // support NTLM and displays an error page if a request to use NTLM is sent to it
-        String userAgent = req.getHeader("user-agent");
+        String userAgent = sreq.getHeader("user-agent");
         if (userAgent != null && userAgent.indexOf("Opera ") != -1)
         {
             if (getLogger().isDebugEnabled())
@@ -261,10 +233,10 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             // If there is no login page configured (WebDAV) then just keep requesting the user details from the client
             
             if ( hasLoginPage())
-            	redirectToLoginPage(req, resp);
+                redirectToLoginPage(sreq, sresp);
             else
-            	restartLoginChallenge(req, resp, httpSess);
-            return;
+                restartLoginChallenge(context, sreq, sresp);
+            return false;
         }
         
         // Check the authorization header
@@ -274,26 +246,25 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             
             if ( allowsTicketLogons())
             {
-            	// Check if the request includes an authentication ticket
-            	
-            	if (checkForTicketParameter(context, req, resp))
+                // Check if the request includes an authentication ticket
+                
+                if (checkForTicketParameter(context, sreq, sresp))
                 {
-            		
-        		    // Authentication was bypassed using a ticket parameter
-            		
-        		    chain.doFilter(sreq, sresp);
-        		    return;
-            	}
+                    
+                    // Authentication was bypassed using a ticket parameter
+                    return true;
+                }
             }
             
             // DEBUG
-            	
+                
             if (getLogger().isDebugEnabled())
-                getLogger().debug("New NTLM auth request from " + req.getRemoteHost() + " (" +
-                        req.getRemoteAddr() + ":" + req.getRemotePort() + ") SID:" + req.getSession().getId());
+                getLogger().debug("New NTLM auth request from " + sreq.getRemoteHost() + " (" +
+                        sreq.getRemoteAddr() + ":" + sreq.getRemotePort() + ") SID:" + sreq.getSession().getId());
             
             // Send back a request for NTLM authentication
-            restartLoginChallenge(req, resp, httpSess);
+            restartLoginChallenge(context, sreq, sresp);
+            return false;
         }
         else
         {
@@ -304,24 +275,30 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 // Process the type 1 NTLM message
                 Type1NTLMMessage type1Msg = new Type1NTLMMessage(ntlmByts);
-                processType1(type1Msg, req, resp);
+                processType1(type1Msg, sreq, sresp);
+                return false;
             }
             else if (ntlmTyp == NTLM.Type3)
             {
                 // Process the type 3 NTLM message
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
-                processType3(type3Msg, context, req, resp, chain);
+                return processType3(type3Msg, context, sreq, sresp);
             }
             else
             {
                 if (getLogger().isDebugEnabled())
                     getLogger().debug("NTLM blob not handled, redirecting to login page.");
                 
-                redirectToLoginPage(req, resp);
+                if ( hasLoginPage())
+                    redirectToLoginPage(sreq, sresp);
+                else
+                    restartLoginChallenge(context, sreq, sresp);
+                return false;
             }
         }
     }
-    
+
+
     /**
      * Process a type 1 NTLM message
      * 
@@ -444,7 +421,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      * @exception IOException
      * @exception ServletException
      */
-    protected void processType3(Type3NTLMMessage type3Msg, ServletContext context, HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException
+    protected boolean processType3(Type3NTLMMessage type3Msg, ServletContext context, HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
     {
         Log logger = getLogger();
         
@@ -484,8 +461,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             onValidate(context, req, res);
             
             // Allow the user to access the requested page
-            chain.doFilter(req, res);
-            return;
+            return true;
         }
         else
         {
@@ -599,8 +575,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                         if (logger.isDebugEnabled())
                             logger.debug("Failed to validate user " + userName, ex);
 
-                        onValidateFailed(req, res, session);
-                        return;
+                        onValidateFailed(context, req, res, session);
+                        return false;
                     }
                 }
                 
@@ -634,14 +610,15 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 if (onLoginComplete(context, req, res, userInit))
                 {
                     // Allow the user to access the requested page
-                    chain.doFilter(req, res);
+                    return true;
                 }
             }
             else
             {
-                restartLoginChallenge(req, res, session);
+                restartLoginChallenge(context, req, res);
             }
         }
+        return false;
     }
     
     /**
@@ -1001,15 +978,19 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
     /**
      * Restart the NTLM logon process
      * 
+     * @param context
      * @param resp
      * @param httpSess
      * @throws IOException
      */
-    protected void restartLoginChallenge(HttpServletRequest req, HttpServletResponse res, HttpSession session) throws IOException
+    public void restartLoginChallenge(ServletContext context, HttpServletRequest req, HttpServletResponse res) throws IOException
     {
         // Remove any existing session and NTLM details from the session
-        session.removeAttribute(NTLM_AUTH_SESSION);
-        session.removeAttribute(NTLM_AUTH_DETAILS);
+        HttpSession session = req.getSession(false);
+        if (session != null)
+        {
+            session.invalidate();
+        }
         
         // Force the logon to start again
         res.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
@@ -1017,6 +998,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         writeLoginPageLink(req, res);
         res.flushBuffer();
     }
+    
     
     /**
      * Disable NTLMv2 support, must be called from the implementation constructor

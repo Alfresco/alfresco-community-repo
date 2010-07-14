@@ -23,8 +23,11 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -48,7 +51,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author gkspencer
  * @author kroast
  */
-public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter, ActivateableBean, InitializingBean
+public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter, AuthenticationDriver, ActivateableBean, InitializingBean
 {   
     // Allow an authentication ticket to be passed as part of a request to bypass authentication
 
@@ -110,6 +113,27 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
             init();
         }
     }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(javax.servlet.ServletContext,
+     * javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     */
+    public void doFilter(ServletContext context, ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException
+    {
+        // If a filter up the chain has marked the request as not requiring auth then respect it        
+        if (request.getAttribute( NO_AUTH_REQUIRED) != null)
+        {
+            if ( getLogger().isDebugEnabled())
+                getLogger().debug("Authentication not required (filter), chaining ...");
+            chain.doFilter(request, response);
+        }
+        else if (authenticateRequest(context, (HttpServletRequest) request, (HttpServletResponse) response))
+        {
+            chain.doFilter(request, response);
+        }
+    }
 
     /**
      * Initializes the filter. Only called if the filter is active, as indicated by {@link #isActive()}. Subclasses
@@ -138,11 +162,12 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     /**
      * Callback executed on failed authentication of a user ticket during Type3 Message processing
      * 
+     *  @param sc the servlet context
      *  @param req HttpServletRequest
      *  @param res HttpServletResponse
      *  @param session HttpSession
      */
-    protected void onValidateFailed(HttpServletRequest req, HttpServletResponse res, HttpSession session)
+    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
         throws IOException
     {
     }
@@ -339,7 +364,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * 
      * @param ticketsAllowed boolean
      */
-    protected final void setTicketLogons( boolean ticketsAllowed)
+    public final void setTicketLogons( boolean ticketsAllowed)
     {
     	m_ticketLogons = ticketsAllowed;
     }

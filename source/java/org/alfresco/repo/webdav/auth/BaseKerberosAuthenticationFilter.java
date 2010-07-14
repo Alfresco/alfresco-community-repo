@@ -34,11 +34,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
-import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -237,30 +234,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     }
 
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(javax.servlet.ServletContext,
-     * javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
-     */
-    public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
+    public boolean authenticateRequest(ServletContext context, HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException
     {
-        // Get the HTTP request/response/session        
-        HttpServletRequest req = (HttpServletRequest) sreq;
-        HttpServletResponse resp = (HttpServletResponse) sresp;
-        
-        // If a filter up the chain has marked the request as not requiring auth then respect it
-        
-        if (req.getAttribute( NO_AUTH_REQUIRED) != null)
-        {
-            if ( getLogger().isDebugEnabled())
-                getLogger().debug("Authentication not required (filter), chaining ...");
-            
-            // Chain to the next filter
-            chain.doFilter(sreq, sresp);
-            return;
-        }
-        
         // Check if there is an authorization header with an SPNEGO security blob
         
         String authHdr = req.getHeader("Authorization");
@@ -279,10 +255,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		
         		// Restart the authentication
         		
-            	restartLoginChallenge(req, resp, req.getSession());
-
-            	chain.doFilter(sreq, sresp);
-        		return;
+            	restartLoginChallenge(context, req, resp);
+        		return false;
         	}
         }
         
@@ -304,8 +278,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             // Chain to the next filter
             
-            chain.doFilter(sreq, sresp);
-            return;
+            return true;
         }
 
         // Check if the login page is being accessed, do not intercept the login page
@@ -315,8 +288,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 getLogger().debug("Login page requested, chaining ...");
             
             // Chain to the next filter
-            chain.doFilter( sreq, sresp);
-            return;
+
+            return true;
         }
 
         // Check the authorization header
@@ -336,8 +309,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
 
                     // Chain to the next filter
                     
-                    chain.doFilter(sreq, sresp);
-        	        return;
+        	        return true;
         		}
         	}
         	
@@ -349,7 +321,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             // Send back a request for SPNEGO authentication
             
-            restartLoginChallenge(req,  resp, httpSess);
+            restartLoginChallenge(context, req, resp);
+            return false;
         }
         else
         {
@@ -366,8 +339,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             	
         		// Restart the authentication
         		
-            	restartLoginChallenge(req, resp, httpSess);
-        		return;
+            	restartLoginChallenge(context, req, resp);
+        		return false;
             }
             	
             //  Check the received SPNEGO token type
@@ -412,22 +385,23 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             {
                                 // Allow the user to access the requested page
                                 onValidate(context, req, resp);
-                                    
-                                chain.doFilter( req, resp);
+                                
+                                return true;
                             }
                             else
                             {
                                 // Send back a request for SPNEGO authentication
                                 
-                            	restartLoginChallenge(req,  resp, httpSess);
+                            	restartLoginChallenge(context, req, resp);
+                            	return false;
                             }
                         }
                         catch (AuthenticationException ex)
                         {
                             // Even though the user successfully authenticated, the ticket may not be granted, e.g. to
                             // max user limit
-                            onValidateFailed(req, resp, httpSess);
-                            return;
+                            onValidateFailed(context, req, resp, httpSess);
+                            return false;
                         }                        
                     }
                 }
@@ -448,9 +422,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
 
                 // Send back a request for SPNEGO authentication
                 
-            	restartLoginChallenge(req,  resp, httpSess);
+            	restartLoginChallenge(context, req,  resp);
             }
         }
+        return false;
     }
 
     /**
@@ -571,6 +546,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         return negTokenTarg;
     }
     
+    
     /**
      * Restart the Kerberos logon process
      * 
@@ -578,8 +554,14 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
      * @param httpSess HttpSession
      * @throws IOException
      */
-    protected void restartLoginChallenge(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws IOException
+    public void restartLoginChallenge(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
+        HttpSession session = req.getSession(false);
+        if (session != null)
+        {
+            session.invalidate();
+        }
+
         // Force the logon to start again
 
         resp.setHeader("WWW-Authenticate", "Negotiate");

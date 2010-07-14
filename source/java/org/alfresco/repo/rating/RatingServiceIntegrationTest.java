@@ -276,6 +276,10 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals("Wrong score for rating", updatedFiveStarScore, deletedStarRating.getScore());
         assertEquals("Wrong user for rating", AuthenticationUtil.getFullyAuthenticatedUser(), deletedStarRating.getAppliedBy());
         assertEquals("Wrong date for rating", updatedFiveStarRating.getAppliedAt(), deletedStarRating.getAppliedAt());
+        
+        // And the deleted ratings should be gone.
+        assertNull("5* rating not null.", ratingService.getRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME));
+        assertNull("likes rating not null", ratingService.getRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME));
     }
     
     /**

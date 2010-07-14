@@ -268,6 +268,10 @@ public class RatingServiceImpl implements RatingService
         {
             // There is a rating and the associated data are at the index'th place in each property.
             RatingStruct removed = ratingProps.removeRatingAt(index);
+
+            // Now apply the properties with one deleted.
+            Map<QName, Serializable> props = ratingProps.toNodeProperties();
+            nodeService.setProperties(lastChild.getChildRef(), props);
             
             return new Rating(this.getRatingScheme(removed.getScheme()),
                               removed.getScore(), user, removed.getDate());

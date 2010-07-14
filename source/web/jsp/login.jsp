@@ -210,7 +210,7 @@
 
     function validate()
     {
-        return validateName(document.getElementById("loginForm:user-name"), null, false);
+        return validateUserNameForLogin(document.getElementById("loginForm:user-name"), null, false);
     }
 
     function updateButtonState()

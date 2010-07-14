@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.web.sharepoint.auth.ntlm;
+package org.alfresco.web.sharepoint.auth.kerberos;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
-import org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter;
+import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
 import org.alfresco.repo.webdav.auth.SharepointConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.bean.repository.User;
@@ -36,13 +36,13 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>
- * NTLM SSO web authentication implementation.
+ * Kerberos SSO web authentication implementation.
  * </p>
  */
-public class NtlmAuthenticationHandler extends BaseNTLMAuthenticationFilter
+public class KerberosAuthenticationHandler extends BaseKerberosAuthenticationFilter
 {
     // Debug logging
-    private static Log logger = LogFactory.getLog(NtlmAuthenticationHandler.class);
+    private static Log logger = LogFactory.getLog(KerberosAuthenticationHandler.class);
 
     @Override
     protected void init() throws ServletException

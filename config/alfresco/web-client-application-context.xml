@@ -284,7 +284,7 @@
       </property>
       <property name="interfaces">
          <list>
-            <value>org.alfresco.web.sharepoint.auth.AuthenticationHandler</value>
+            <value>org.alfresco.repo.webdav.auth.AuthenticationDriver</value>
          </list>
       </property>
       <property name="sourceBeanName">

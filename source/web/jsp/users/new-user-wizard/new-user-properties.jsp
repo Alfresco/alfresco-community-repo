@@ -78,7 +78,7 @@ function validate()
       finishButtonPressed = false;
 
       var message = $("wizard:wizard-body:validation_invalid_character").textContent ? $("wizard:wizard-body:validation_invalid_character").textContent : $("wizard:wizard-body:validation_invalid_character").innerText;
-      return validateName(document.getElementById("wizard:wizard-body:userName"),
+      return validateUserNameForCreate(document.getElementById("wizard:wizard-body:userName"),
             message,
             true);
    }

@@ -157,8 +157,40 @@ function validateRegex(control, expression, requiresMatch, matchMessage, noMatch
  */
 function validateName(control, message, showMessage)
 {
-   var result = true;
    var pattern = /([\"\*\\\>\<\?\/\:\|]+)|([ ]+$)|([\.]?[\.]+$)/;
+   return validateValue(control, pattern, message, showMessage);
+}
+
+/**
+ * Ensures the user name value does not contain any illegal characters while user creating.
+ * 
+ * @return true if the user name is valid
+ */
+function validateUserNameForCreate(control, message, showMessage)
+{
+   var pattern = /([\"\*\\\>\<\?\:\|]+)|([ ]+$)|([\.]?[\.]+$)/;
+   return validateValue(control, pattern, message, showMessage);
+}
+
+/**
+ * Ensures the user name value does not contain any illegal characters while login.
+ * 
+ * @return true if the user name is valid
+ */
+function validateUserNameForLogin(control, message, showMessage)
+{
+   var pattern = /([\"\*\>\<\?\:\|]+)|([ ]+$)|([\.]?[\.]+$)/;
+   return validateValue(control, pattern, message, showMessage);
+}
+
+/**
+ * Ensures the value of the 'control' coresponds to required pattern.
+ * 
+ * @return true if the file name is valid
+ */
+function validateValue(control, pattern, message, showMessage)
+{
+   var result = true;
    var trimed = control.value.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
    var idx = trimed.search(pattern);
    if (idx != -1)

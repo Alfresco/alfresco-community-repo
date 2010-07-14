@@ -18,12 +18,17 @@
  */
 package org.alfresco.web.sharepoint.auth;
 
+import java.io.IOException;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.webdav.auth.SharepointConstants;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.codec.binary.Base64;
 
@@ -33,19 +38,20 @@ import org.apache.commons.codec.binary.Base64;
  * @author PavelYur
  *
  */
-public class BasicAuthenticationHandler extends AbstractAuthenticationHandler
+public class BasicAuthenticationHandler extends AbstractAuthenticationHandler implements SharepointConstants
 {
+    private final static String HEADER_AUTHORIZATION = "Authorization";
+
+    private final static String BASIC_START = "BASIC";
+
+    
     /* (non-Javadoc)
-     * @see org.alfresco.web.vti.auth.AuthenticationHandler#authenticateRequest(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.alfresco.web.vti.auth.SiteMemberMapper, java.lang.String)
+     * @see org.alfresco.repo.webdav.auth.SharepointAuthenticationHandler#authenticateRequest(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    public SessionUser authenticateRequest(HttpServletRequest request, HttpServletResponse response,
-            SiteMemberMapper mapper, String alfrescoContext)
+    public boolean authenticateRequest(ServletContext context, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException
     {
-        SessionUser user = null;
-        
         String authHdr = request.getHeader(HEADER_AUTHORIZATION);
-        HttpSession session = request.getSession();
-        
         if (authHdr != null && authHdr.length() > 5 && authHdr.substring(0, 5).equalsIgnoreCase(BASIC_START))
         {
             String basicAuth = new String(Base64.decodeBase64(authHdr.substring(5).getBytes()));
@@ -76,21 +82,42 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler
                 
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticated user '" + username + "'");
-
-                if (mapper.isSiteMember(request, alfrescoContext, username))
-                {
-                    user = new User(username, authenticationService.getCurrentTicket(), personService.getPerson(username));
-                    if (session != null)
-                        session.setAttribute(USER_SESSION_ATTRIBUTE, user);
-                }
+                
+                request.getSession().setAttribute(USER_SESSION_ATTRIBUTE, new User(username, authenticationService.getCurrentTicket(), personService.getPerson(username)));                
+                
+                return true;
             }
             catch (AuthenticationException ex)
             {
                 // Do nothing, user object will be null
             }
         }
+        else
+        {
+            HttpSession session = request.getSession(false);
+            if (session == null)
+            {
+                return false;
+            }
 
-        return user;
+            SessionUser user = (SessionUser) session
+                    .getAttribute(USER_SESSION_ATTRIBUTE);
+            if (user == null)
+            {
+                return false;
+            }
+            try
+            {
+                authenticationService.validate(user.getTicket());
+                return true;
+            }
+            catch (AuthenticationException ex)
+            {
+                session.invalidate();
+            }                        
+        }
+
+        return false;
     }
 
     

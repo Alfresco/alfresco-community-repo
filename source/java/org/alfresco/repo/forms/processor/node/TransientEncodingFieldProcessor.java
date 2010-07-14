@@ -22,6 +22,7 @@ package org.alfresco.repo.forms.processor.node;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIENT_ENCODING;
 
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.apache.commons.logging.Log;
@@ -42,7 +43,7 @@ public class TransientEncodingFieldProcessor extends TransientFieldProcessor
     }
 
     @Override
-    protected PropertyFieldDefinition makeTransientPropertyDefinition() 
+    protected FieldDefinition makeTransientPropertyDefinition() 
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_ENCODING;
         PropertyFieldDefinition encodingField = new PropertyFieldDefinition(TRANSIENT_ENCODING, 

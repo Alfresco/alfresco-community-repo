@@ -40,10 +40,34 @@ public class WorkflowTaskDefinition
     /** Task Metadata */
     public TypeDefinition metadata;
 
+    /**
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+    
+    /**
+     * @return the metadata
+     */
+    public TypeDefinition getMetadata()
+    {
+        return metadata;
+    }
+    
+    /**
+     * @return the node
+     */
+    public WorkflowNode getNode()
+    {
+        return node;
+    }
     
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         return "WorkflowTaskDefinition[id=" + id + ",metadata=" + metadata + "]";

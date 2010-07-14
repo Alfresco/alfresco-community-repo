@@ -22,6 +22,7 @@ package org.alfresco.repo.forms.processor.node;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIENT_SIZE;
 
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.apache.commons.logging.Log;
@@ -41,7 +42,7 @@ public class TransientSizeFieldProcessor extends TransientFieldProcessor
     }
 
     @Override
-    protected PropertyFieldDefinition makeTransientPropertyDefinition() 
+    protected FieldDefinition makeTransientPropertyDefinition() 
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_SIZE;
         PropertyFieldDefinition sizeField = new PropertyFieldDefinition(TRANSIENT_SIZE, 

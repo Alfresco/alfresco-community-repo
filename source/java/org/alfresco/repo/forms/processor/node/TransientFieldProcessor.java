@@ -20,6 +20,7 @@
 package org.alfresco.repo.forms.processor.node;
 
 import org.alfresco.repo.forms.Field;
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.processor.AbstractFieldProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
@@ -32,7 +33,7 @@ public abstract class TransientFieldProcessor extends AbstractFieldProcessor<Tra
     @Override
     protected Field generateTypedField(String fieldName, FormCreationData formData, TransientValueGetter typedData)
     {
-        PropertyFieldDefinition transientPropDef = makeTransientPropertyDefinition();
+        FieldDefinition transientPropDef = makeTransientPropertyDefinition();
         Field fieldInfo = null;
         Object value = getValue(fieldName, typedData);
         if (transientPropDef != null)
@@ -59,5 +60,5 @@ public abstract class TransientFieldProcessor extends AbstractFieldProcessor<Tra
         return TransientValueGetter.class;
     }
 
-    protected abstract PropertyFieldDefinition makeTransientPropertyDefinition();
+    protected abstract FieldDefinition makeTransientPropertyDefinition();
 }

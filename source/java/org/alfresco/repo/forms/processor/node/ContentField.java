@@ -35,13 +35,11 @@ public class ContentField implements Field
 {
     private final FieldDefinition fieldDefinition;
     private final ClassAttributeDefinition classDefinition;
-    private final boolean isProperty;
     private final Object value;
     
     public ContentField(PropertyDefinition propertyDefinition, 
             PropertyFieldDefinition fieldDef, Object value)
     {
-        this.isProperty = true;
         this.classDefinition = propertyDefinition;
         this.fieldDefinition = fieldDef;
         this.value = value;
@@ -50,7 +48,6 @@ public class ContentField implements Field
     public ContentField(AssociationDefinition assocDefinition, 
             AssociationFieldDefinition fieldDef, Object value)
     {
-        this.isProperty = false;
         this.classDefinition = assocDefinition;
         this.fieldDefinition = fieldDef;
         this.value = value;
@@ -60,10 +57,9 @@ public class ContentField implements Field
      * This constructor should only be used to create FieldInfo for transient properties such as encoding, mimetype or size.
      * @param fieldDef The PropertyFieldDefinition for the transient property.
      */
-    public ContentField(PropertyFieldDefinition fieldDef, Object value)
+    public ContentField(FieldDefinition fieldDef, Object value)
     {
         this.classDefinition = null;
-        this.isProperty = true;
         this.fieldDefinition = fieldDef;
         this.value = value;
     }
@@ -74,6 +70,14 @@ public class ContentField implements Field
     public boolean isTransient()
     {
         return classDefinition == null;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.task.Field#isTransient()
+     */
+    public boolean isProperty()
+    {
+        return fieldDefinition instanceof PropertyFieldDefinition;
     }
     
     /* (non-Javadoc)
@@ -112,7 +116,7 @@ public class ContentField implements Field
     public String toString()
     {
         String type = isTransient()?"Transient ":"";
-        type += isProperty ? "Property" : "Association";
+        type += isProperty() ? "Property" : "Association";
         return "Field: " + getFieldName() + " Type: " + type;
     }
 

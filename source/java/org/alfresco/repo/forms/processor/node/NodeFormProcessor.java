@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.forms.FieldDefinition;
+import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
@@ -221,6 +223,52 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
             content = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         }
         return content;
+    }
+
+    /**
+     * Determines whether the given node represents a working copy, if it does
+     * the name field is searched for and set to protected as the name field
+     * should not be edited for a working copy.
+     * 
+     * If the node is not a working copy this method has no effect.
+     * 
+     * @param nodeRef NodeRef of node to check and potentially process
+     * @param form The generated form
+     */
+    protected void processWorkingCopy(NodeRef nodeRef, Form form)
+    {
+        // if the node is a working copy ensure that the name field (id present)
+        // is set to be protected as it can not be edited
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            // go through fields looking for name field
+            for (FieldDefinition fieldDef : form.getFieldDefinitions())
+            {
+                if (fieldDef.getName().equals(ContentModel.PROP_NAME.toPrefixString(this.namespaceService)))
+                {
+                    fieldDef.setProtectedField(true);
+                    
+                    if (getLogger().isDebugEnabled())
+                    {
+                        getLogger().debug("Set " + ContentModel.PROP_NAME.toPrefixString(this.namespaceService) +
+                                    "field to protected as it is a working copy");
+                    }
+                    
+                    break;
+                }
+            }
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
+     */
+    @Override
+    protected void internalGenerate(NodeRef item, List<String> fields, List<String> forcedFields, Form form,
+            Map<String, Object> context)
+    {
+        super.internalGenerate(item, fields, forcedFields, form, context);
+        processWorkingCopy(item, form);
     }
 
     /*

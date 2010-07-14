@@ -105,6 +105,17 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     }
     
     /**
+     * Removes any rating by the current user in the specified scheme from the specified
+     * noderef.
+     * @param node
+     * @param ratingSchemeName
+     */
+    public void removeRating(ScriptNode node, String ratingSchemeName)
+    {
+        ratingService.removeRatingByCurrentUser(node.getNodeRef(), ratingSchemeName);
+    }
+    
+    /**
      * Gets the rating applied to the specified node in the specified scheme by
      * the currently authenticated user.
      * @param node

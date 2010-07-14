@@ -12,7 +12,7 @@ function testRatingSchemes()
     test.assertEquals(5, ratingService.getMax('fiveStarRatingScheme'));
 }
 
-function testApplyAndGetRatings()
+function testApplyUpdateDeleteRatings()
 {
 	// Check the pristine state of the test node.
 	test.assertEquals(0, ratingService.getRatingsCount(testNode, 'fiveStarRatingScheme'));
@@ -39,8 +39,13 @@ function testApplyAndGetRatings()
 	test.assertEquals(1, ratingService.getRatingsCount(testNode, 'fiveStarRatingScheme'));
 	test.assertEquals(4.5, ratingService.getTotalRating(testNode, 'fiveStarRatingScheme'));
 	test.assertEquals(4.5, ratingService.getAverageRating(testNode, 'fiveStarRatingScheme'));
+	
+	
+	// Now delete them.
+	ratingService.removeRating(testNode, 'fiveStarRatingScheme');
+	test.assertEquals(-1, ratingService.getRating(testNode, 'fiveStarRatingScheme'));
 }
 
 // Execute tests
 testRatingSchemes();
-testApplyAndGetRatings();
+testApplyUpdateDeleteRatings();

@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -209,10 +210,24 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
         params.put(WorkflowModel.PROP_DESCRIPTION, 
                     (Serializable)data.getFieldData("prop_bpm_workflowDescription").getValue());
         
-        NodeRef assignee = new NodeRef(data.getFieldData("assoc_bpm_assignee_added").getValue().toString());
-        ArrayList<NodeRef> assigneeList = new ArrayList<NodeRef>(1);
-        assigneeList.add(assignee);
-        params.put(WorkflowModel.ASSOC_ASSIGNEE, assigneeList);
+        // look for assignee and group assignee
+        FieldData assigneeField = data.getFieldData("assoc_bpm_assignee_added");
+        if (assigneeField != null)
+        {
+            NodeRef assignee = new NodeRef(assigneeField.getValue().toString());
+            ArrayList<NodeRef> assigneeList = new ArrayList<NodeRef>(1);
+            assigneeList.add(assignee);
+            params.put(WorkflowModel.ASSOC_ASSIGNEE, assigneeList);
+        }
+        else
+        {
+            Object groupValue = data.getFieldData("assoc_bpm_groupAssignee_added").getValue();
+            NodeRef group = new NodeRef(groupValue.toString());
+            ArrayList<NodeRef> groupList = new ArrayList<NodeRef>(1);
+            groupList.add(group);
+            params.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignee"), 
+                        groupList);
+        }
         
         // add any package items
         Object items = data.getFieldData("assoc_packageItems_added").getValue();

@@ -39,6 +39,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.debug.NodeStoreInspector;
+import org.apache.chemistry.tck.atompub.fixture.AssertNotExistVisitor;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -259,8 +260,12 @@ public class AuditableAspectTest extends TestCase
         
         // Now modify the node so that the auditable values advance
         nodeService.setProperty(nodeRef, ContentModel.PROP_FIRSTNAME, "TEST-FIRST-NAME-" + System.currentTimeMillis());
+        String modifiedBy = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals(
+                    "The modifier should have changed to reflect the current user",
+                    AuthenticationUtil.getRunAsUser(), modifiedBy);
         
-        RetryingTransactionCallback<Void> setAuditableCallback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Void> setAuditableCallback1 = new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
@@ -272,7 +277,22 @@ public class AuditableAspectTest extends TestCase
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(setAuditableCallback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(setAuditableCallback1);
+        // Check
+        assertAuditableProperties(nodeRef, auditableProps);
+        
+        RetryingTransactionCallback<Void> setAuditableCallback2 = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);        // Lasts for txn
+                // Set some other property and ensure that the cm:auditable does not change
+                nodeService.setProperty(nodeRef, ContentModel.PROP_FIRSTNAME, "TEST-FIRST-NAME-" + System.currentTimeMillis());
+                // Done
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(setAuditableCallback2);
         // Check
         assertAuditableProperties(nodeRef, auditableProps);
     }

@@ -1600,7 +1600,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (!policyBehaviourFilter.isEnabled(node.getNodeRef(), ContentModel.ASPECT_AUDITABLE))
         {
             auditableProps = new AuditablePropertiesEntity();
-            auditableProps.setAuditValues(null, null, newProps);
+            boolean containedAuditProperties = auditableProps.setAuditValues(null, null, newProps);
+            if (!containedAuditProperties)
+            {
+                // The behaviour is disabled, but no audit properties were passed in
+                auditableProps = null;
+            }
         }
         
         // Remove cm:auditable

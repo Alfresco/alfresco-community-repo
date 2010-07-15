@@ -51,6 +51,7 @@
    
    <bean id="transferManifestNodeFactory" class="org.alfresco.repo.transfer.manifest.TransferManifestNodeFactoryImpl" init-method="init" >
 		<property name="nodeService" ref="NodeService" />
+		<property name="permissionService" ref="PermissionService" />
 	</bean>
 
 
@@ -101,8 +102,9 @@
 	<bean id="transferManifestProcessorFactory"
 		class="org.alfresco.repo.transfer.DefaultManifestProcessorFactoryImpl">
 		<property name="nodeService" ref="NodeService" />
-		<property name="contentService" ref="ContentService" />
-		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="contentService" ref="ContentService"></property>
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="permissionService" ref="PermissionService" />
 		<property name="nodeResolverFactory" ref="transferNodeResolverFactory" />
 	</bean>
 

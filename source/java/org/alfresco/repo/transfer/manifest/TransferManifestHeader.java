@@ -32,6 +32,7 @@ public class TransferManifestHeader
     private int nodeCount; 
     private String repositoryId;
     private boolean isSync;
+    private boolean isReadOnly;
     
     public void setCreatedDate(Date createDate)
     {
@@ -85,6 +86,16 @@ public class TransferManifestHeader
     public boolean isSync()
     {
         return isSync;
+    }
+
+    public void setReadOnly(boolean isReadOnly)
+    {
+        this.isReadOnly = isReadOnly;
+    }
+
+    public boolean isReadOnly()
+    {
+        return isReadOnly;
     }
 
     

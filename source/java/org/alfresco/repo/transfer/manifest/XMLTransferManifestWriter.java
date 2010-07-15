@@ -168,6 +168,17 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_HEADER_SYNC, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_SYNC);
         }
+        
+        if(header.isReadOnly())
+        {
+            // Is this a read only transfer
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_RONLY, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_RONLY, EMPTY_ATTRIBUTES);
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_HEADER_RONLY, PREFIX + ":"
+                    + ManifestModel.LOCALNAME_HEADER_RONLY);
+        }
 
 
         // End Header
@@ -259,6 +270,8 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         writeTargetAssocs(node.getTargetAssocs());
 
         writeSourceAssocs(node.getSourceAssocs());
+        
+        writeAccessControl(node.getAccessControl());
 
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_NODE, PREFIX + ":"
@@ -653,5 +666,50 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_ASSOC, PREFIX + ":"
                                 + ManifestModel.LOCALNAME_ELEMENT_ASSOC);
+    }
+    
+    private void writeAccessControl(ManifestAccessControl acl) throws SAXException
+    {
+        if(acl != null)
+        {
+            AttributesImpl attributes = new AttributesImpl();
+            attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "isInherited", "isInherited", "boolean",
+                        acl.isInherited()?"true":"false");
+
+            writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                        ManifestModel.LOCALNAME_ELEMENT_ACL, PREFIX + ":"
+                                    + ManifestModel.LOCALNAME_ELEMENT_ACL, attributes);
+            
+            if(acl.getPermissions() != null)
+            {
+                for(ManifestPermission permission : acl.getPermissions())
+                {
+                    writePermission(permission);
+                }
+            }
+            
+            writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                        ManifestModel.LOCALNAME_ELEMENT_ACL, PREFIX + ":"
+                                    + ManifestModel.LOCALNAME_ELEMENT_ACL);
+        }
+    }
+    
+    private void writePermission(ManifestPermission permission) throws SAXException
+    {
+        AttributesImpl attributes = new AttributesImpl();
+        attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "status", "status", "String",
+                    permission.getStatus());
+        attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "authority", "authority", "String",
+                permission.getAuthority());
+        attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "permission", "permission", "String",
+                permission.getPermission());
+
+        writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION, PREFIX + ":"
+                            + ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION, attributes);
+        
+        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION, PREFIX + ":"
+                            + ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION);
     }
 }

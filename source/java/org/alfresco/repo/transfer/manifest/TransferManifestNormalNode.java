@@ -49,6 +49,7 @@ public class TransferManifestNormalNode implements TransferManifestNode
     private List<AssociationRef> sourceAssocs;
     private List<AssociationRef> targetAssocs; 
     private Path parentPath; 
+    private ManifestAccessControl accessControl;
 
     public void setNodeRef(NodeRef nodeRef)
     {
@@ -79,29 +80,6 @@ public class TransferManifestNormalNode implements TransferManifestNode
     {
         return properties;
     }
-//
-//    /**
-//     * Gets the property data type
-//     * 
-//     * @param propertyName  name of property
-//     * @return  data type of named property
-//     */
-//    public DataTypeDefinition getPropertyDataType(QName propertyName);
-//    
-//    /**
-//     * @return  the aspects of this node
-//     */
-//    public Set<QName> getNodeAspects();
-//    
-//    /**
-//     * @return  true => the node inherits permissions from its parent
-//     */
-//    public boolean getInheritPermissions();
-//    
-//    /**
-//     * @return  the permissions applied to this node
-//     */
-//    public List<AccessPermission> getAccessControlEntries();
 
     public void setProperties(Map<QName,Serializable> properties)
     {
@@ -186,6 +164,16 @@ public class TransferManifestNormalNode implements TransferManifestNode
     public ChildAssociationRef getPrimaryParentAssoc()
     {
         return primaryParentAssoc;
+    }
+
+    public void setAccessControl(ManifestAccessControl accessControl)
+    {
+        this.accessControl = accessControl;
+    }
+
+    public ManifestAccessControl getAccessControl()
+    {
+        return accessControl;
     }
 
 }

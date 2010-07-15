@@ -18,12 +18,18 @@
  */
 package org.alfresco.repo.transfer.manifest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
@@ -36,6 +42,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFactory
 {
     private NodeService nodeService;
+    private PermissionService permissionService;
     
     public void init()
     {
@@ -113,6 +120,28 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             node.setTargetAssocs(nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL ));
             node.setSourceAssocs(nodeService.getSourceAssocs(nodeRef, RegexQNamePattern.MATCH_ALL));
         
+            boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
+            
+            ManifestAccessControl acl = new ManifestAccessControl();
+            acl.setInherited(inherit);
+            node.setAccessControl(acl);
+            
+            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
+                
+            List<ManifestPermission> mps = new ArrayList<ManifestPermission>(permissions.size()); 
+            for(AccessPermission permission : permissions)
+            {
+               if(permission.isSetDirectly())
+               {
+                   ManifestPermission mp = new ManifestPermission();
+                   mp.setStatus(permission.getAccessStatus().toString());
+                   mp.setAuthority(permission.getAuthority());
+                   mp.setPermission(permission.getPermission());
+                   mps.add(mp);
+               }
+            }   
+            acl.setPermissions(mps);
+            
             return node;
         }
     }
@@ -126,5 +155,15 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     public NodeService getNodeService()
     {
         return nodeService;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public PermissionService getPermissionService()
+    {
+        return permissionService;
     }
 }

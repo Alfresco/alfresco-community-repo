@@ -47,9 +47,20 @@ public class TransferDefinition implements Serializable
     
     // Which nodes to deploy
     private Set<NodeRef> nodes;
-    
-    // is complete
+
+    /**
+     * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
+     * machinery can determine by the absence of a node or association in the transfer that the missing 
+     * nodes should be deleted on the destination.
+     * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+     */
     private boolean isSync = false;
+    
+    /**
+     * isReadOnly specifies whether the transferred nodes should be editable on the destination system.
+     */
+    private boolean isReadOnly = false;
+
 
     /**
      * Set which nodes to transfer
@@ -95,5 +106,21 @@ public class TransferDefinition implements Serializable
     public boolean isSync()
     {
         return isSync;
+    }
+    
+    /**
+     * isReadOnly specifies whether the transferred nodes should be editable on the destination system.
+     */
+    public void setReadOnly(boolean isReadOnly)
+    {
+        this.isReadOnly = isReadOnly;
+    }
+
+    /**
+     * isReadOnly specifies whether the transferred nodes should be editable on the destination system.
+     */
+    public boolean isReadOnly()
+    {
+        return isReadOnly;
     }
 }

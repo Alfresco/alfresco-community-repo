@@ -30,6 +30,7 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_HEADER_CREATED_DATE = "createdDate";
     static final String LOCALNAME_HEADER_NODE_COUNT = "nodeCount";
     static final String LOCALNAME_HEADER_SYNC = "sync";
+    static final String LOCALNAME_HEADER_RONLY = "readOnly";
     static final String LOCALNAME_HEADER_REPOSITORY_ID = "repositoryId";
     static final String LOCALNAME_ELEMENT_NODES = "nodes";
     static final String LOCALNAME_ELEMENT_NODE = "node";
@@ -53,6 +54,8 @@ public interface ManifestModel extends TransferModel
     static final String LOCALNAME_ELEMENT_VALUE_SERIALIZED = "serializedValue";
     static final String LOCALNAME_ELEMENT_MLVALUE = "mlvalue";
     static final String LOCALNAME_ELEMENT_CONTENT_HEADER = "content";
+    static final String LOCALNAME_ELEMENT_ACL = "acl";
+    static final String LOCALNAME_ELEMENT_ACL_PERMISSION = "permission";
     
     // Manifest file prefix
     static final String MANIFEST_PREFIX = "xfer";

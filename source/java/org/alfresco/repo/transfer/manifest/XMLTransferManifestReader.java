@@ -312,6 +312,29 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 ContentData contentHeader = new ContentData(contentURL, mimetype, size.longValue(), encoding, locale);
                 props.put("contentHeader", contentHeader);
             }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL))
+            {
+                String isInherited = (String)atts.getValue("", "isInherited");
+                ManifestAccessControl acl = new ManifestAccessControl();
+                
+                if("TRUE".equalsIgnoreCase(isInherited))
+                {
+                    acl.setInherited(true);
+                }
+                props.put("acl", acl);
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION))
+            {
+
+                String authority = (String)atts.getValue("", "authority");   
+                String permission = (String)atts.getValue("", "permission");
+                String status = (String)atts.getValue("", "status");
+                ManifestPermission perm = new ManifestPermission();
+                perm.setAuthority(authority);
+                perm.setPermission(permission);
+                perm.setStatus(status);
+                props.put("permission", perm);
+            }
         } // if transfer URI       
     } // startElement
 
@@ -391,6 +414,11 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             { 
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 header.setSync(true);
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_RONLY))
+            { 
+                TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
+                header.setReadOnly(true);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID))
             {
@@ -574,6 +602,20 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 ContentData data = (ContentData)props.get("contentHeader");
                 props.put("value", data);
             }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL))
+            {
+                TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
+                ManifestAccessControl acl = (ManifestAccessControl)props.get("acl");
+                node.setAccessControl(acl);
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION))
+            {
+                ManifestAccessControl acl = (ManifestAccessControl)props.get("acl");
+                ManifestPermission permission = (ManifestPermission)props.get("permission");
+                acl.addPermission(permission);
+            }
+     
+          
         } // if transfer URI
     } // end element
 

@@ -30,6 +30,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.CorrespondingNodeResolver.ResolvedParentChildPair;
+import org.alfresco.repo.transfer.manifest.ManifestAccessControl;
+import org.alfresco.repo.transfer.manifest.ManifestPermission;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
@@ -43,6 +45,9 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -78,6 +83,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     private NodeService nodeService;
+    private PermissionService permissionService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
@@ -319,6 +325,27 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             nodeService.addAspect(newNode.getChildRef(), aspect, null);
         }
+        
+        ManifestAccessControl acl = node.getAccessControl();        
+        // Apply new ACL to this node
+        if(acl != null)
+        {
+            permissionService.setInheritParentPermissions(newNode.getChildRef(), acl.isInherited());
+            
+            if(acl.getPermissions() != null)
+            {
+                for(ManifestPermission permission : acl.getPermissions())
+                {
+                    log.debug("setting permission on node");
+                    AccessStatus status = AccessStatus.valueOf(permission.getStatus());
+                    // The node has its own access control list
+                    permissionService.setPermission(newNode.getChildRef(), 
+                        permission.getAuthority(), 
+                        permission.getPermission(), 
+                        status == AccessStatus.ALLOWED);
+                }
+            }
+        }
 
         // Is the node that we've just added the parent of any orphans that
         // we've found earlier?
@@ -434,6 +461,70 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             for (QName aspect : aspectsToRemove)
             {
                 nodeService.removeAspect(nodeToUpdate, aspect);
+            }
+            
+            // Check the ACL of this updated node
+            
+            ManifestAccessControl acl = node.getAccessControl();
+            if(acl != null)
+            {
+                boolean existInherit = permissionService.getInheritParentPermissions(nodeToUpdate);
+                if(existInherit != acl.isInherited())
+                {
+                    log.debug("changed inherit permissions flag");
+                    permissionService.setInheritParentPermissions(nodeToUpdate, acl.isInherited());
+                }
+                
+                Set<AccessPermission> existingPermissions = permissionService.getAllSetPermissions(nodeToUpdate);
+                List<ManifestPermission> newPermissions = acl.getPermissions();
+                
+                if(existingPermissions.size() > 0 || newPermissions != null)
+                {
+                    // Yes we have explicit permissions on this node.
+                    log.debug("have to check permissions");
+
+                    Set<ManifestPermission>work = new HashSet<ManifestPermission>();
+                    for(AccessPermission permission : existingPermissions)
+                    {
+                        if(permission.isSetDirectly())
+                        {
+                            ManifestPermission p = new ManifestPermission();
+                            p.setAuthority(permission.getAuthority());
+                            p.setPermission(permission.getPermission());
+                            p.setStatus(permission.getAccessStatus().toString());
+                            work.add(p);
+                        }
+                    }                    
+                
+                    // Do we need to check whether to add any permissions ?
+                    if(newPermissions != null)
+                    {
+                        // Do we need to add any permissions ?
+                        for(ManifestPermission permission : acl.getPermissions())
+                        {
+                            if(!work.contains(permission))
+                            {
+                                log.debug("setting permission on node:" + permission);
+                                AccessStatus status = AccessStatus.valueOf(permission.getStatus());
+                                permissionService.setPermission(nodeToUpdate, 
+                                        permission.getAuthority(), 
+                                        permission.getPermission(), 
+                                        status == AccessStatus.ALLOWED);
+                            }
+                        }
+                    
+                        // Remove permissions from "work" that should be there
+                        work.removeAll(newPermissions);
+                    
+                    }
+                    
+                    // Do we need to remove any permissions
+                    for(ManifestPermission permission : work)
+                    {
+                        log.debug("removing permission on node:" + permission);
+                        permissionService.deletePermission(nodeToUpdate, permission.getAuthority(), permission.getPermission());
+                    }
+                }
             }
         }
     }
@@ -682,6 +773,16 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     public void setNodeResolver(CorrespondingNodeResolver nodeResolver)
     {
         this.nodeResolver = nodeResolver;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public PermissionService getPermissionService()
+    {
+        return permissionService;
     }
 
 }

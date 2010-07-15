@@ -27,17 +27,18 @@ import org.alfresco.repo.transfer.requisite.TransferRequsiteWriter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 
 /**
  * @author brian
- * 
  */
 public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFactory
 {
     private NodeService nodeService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
+    private PermissionService permissionService;
     private CorrespondingNodeResolverFactory nodeResolverFactory;
 
     /*
@@ -55,6 +56,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         primaryProcessor.setNodeResolver(nodeResolver);
         primaryProcessor.setNodeService(nodeService);
         primaryProcessor.setDictionaryService(dictionaryService);
+        primaryProcessor.setPermissionService(getPermissionService());
         processors.add(primaryProcessor);
         
         RepoSecondaryManifestProcessorImpl secondaryProcessor = new RepoSecondaryManifestProcessorImpl(receiver, transferId);
@@ -117,6 +119,16 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         processor.setNodeService(nodeService);
        
         return processor;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public PermissionService getPermissionService()
+    {
+        return permissionService;
     }
 
 }

@@ -100,20 +100,31 @@ public interface PolicyComponent
     public boolean isRegisteredPolicy(PolicyType policyType, QName policy);
 
     /**
-     * Bind a Class specific behaviour to a Class-level Policy
-     * 
-     * @param policy  the policy name
-     * @param behaviour  the behaviour
-     * @return  the registered behaviour definition
+     * Bind a Class specific behaviour to a Class-level Policy.   
+     * <p>
+     * So when the named policy, happens on the specified aspect or type, 
+     * the specified behaviour is executed.
+     * <p>
+     * Example of calling this method
+     * <pre>
+     *         this.policyComponent.bindClassBehaviour(
+     *           QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode"),
+     *           ContentModel.ASPECT_LOCKABLE,
+     *           new JavaBehaviour(this, "beforeUpdateNode"));
+     * </pre>
+     * @param policy  the fully qualified policy name
+     * @param className the qualified name of a type or aspect that the policy is bound to 
+     * @param behaviour  the behaviour, what gets executed by the policy
+     * @return the registered behaviour definition
      */
-    public BehaviourDefinition<ClassBehaviourBinding> bindClassBehaviour(QName policy, QName classRef, Behaviour behaviour);
+    public BehaviourDefinition<ClassBehaviourBinding> bindClassBehaviour(QName policy, QName className, Behaviour behaviour);
 
     /**
      * Bind a Service behaviour to a Class-level Policy
      * 
-     * @param policy  the policy name
-     * @param service  the service (any object, in fact)
-     * @param behaviour  the behaviour
+     * @param policy the fully qualified policy name
+     * @param service the service (any object, in fact)
+     * @param behaviour the behaviour, what gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ServiceBehaviourBinding> bindClassBehaviour(QName policy, Object service, Behaviour behaviour);
@@ -121,10 +132,10 @@ public interface PolicyComponent
     /**
      * Bind a Property specific behaviour to a Property-level Policy
      * 
-     * @param policy  the policy name
-     * @param className  the class to bind against
-     * @param propertyName  the property to bind against
-     * @param behaviour  the behaviour
+     * @param policy the fully qualified policy name
+     * @param className  the qualified name of the class (type or aspect) to bind against
+     * @param propertyName  the name of the property to bind against
+     * @param behaviour  the behaviour, what gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ClassFeatureBehaviourBinding> bindPropertyBehaviour(QName policy, QName className, QName propertyName, Behaviour behaviour);
@@ -133,8 +144,8 @@ public interface PolicyComponent
      * Bind a Property specific behaviour to a Property-level Policy (for all properties of a Class)
      * 
      * @param policy  the policy name
-     * @param className  the class to bind against
-     * @param behaviour  the behaviour
+     * @param className  the name of the class (type or aspect) to bind against
+     * @param behaviour  the behaviour, what gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ClassFeatureBehaviourBinding> bindPropertyBehaviour(QName policy, QName className, Behaviour behaviour);
@@ -151,11 +162,20 @@ public interface PolicyComponent
 
     /**
      * Bind an Association specific behaviour to an Association-level Policy
+     * <p>
+     * For example, before a rule folder association is created. 
+     * <pre>
+     *         policyComponent.bindAssociationBehaviour(
+     *           QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation"),
+     *           RuleModel.ASPECT_RULES,
+     *           RuleModel.ASSOC_RULE_FOLDER,
+     *           new JavaBehaviour(this, "beforeCreateChildAssociation"));
+     * </pre>          
      * 
      * @param policy  the policy name
-     * @param className  the class to bind against
-     * @param assocRef  the association to bind against
-     * @param behaviour  the behaviour
+     * @param className  the name of the class (type or aspect) to bind against
+     * @param assocName the name of the association to bind against
+     * @param behaviour  the behaviour, what gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ClassFeatureBehaviourBinding> bindAssociationBehaviour(QName policy, QName className, QName assocName, Behaviour behaviour);
@@ -164,7 +184,7 @@ public interface PolicyComponent
      * Bind an Association specific behaviour to an Association-level Policy (for all associations of a Class)
      * 
      * @param policy  the policy name
-     * @param className  the class to bind against
+     * @param className  the name of the class (type or aspect) to bind against
      * @param behaviour  the behaviour
      * @return  the registered behaviour definition
      */

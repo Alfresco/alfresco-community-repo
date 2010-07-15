@@ -38,7 +38,11 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -60,6 +64,7 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -103,6 +108,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     private NodeService nodeService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
+    private TransactionService transactionService;
     private AuthenticationContext authenticationContext;
     private PolicyComponent policyComponent;
 
@@ -179,6 +185,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * Set the transaction service
+     * 
+     * @param transactionService the transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
@@ -732,7 +748,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
        if (logger.isDebugEnabled() == true)
        {
-          logger.debug("Recording failure of action " + action + " due to " + exception.getMessage());
+          logger.debug("Will shortly record failure of action " + action + " due to " + exception.getMessage());
        }
        
        ((ActionImpl)action).setExecutionEndDate(new Date());
@@ -741,7 +757,56 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
        
        if(action.getNodeRef() != null)
        {
-          // TODO
+          // Take a local copy of the details
+          // (That way, if someone has a reference to the
+          //  action and plays with it, we still save the
+          //  correct information)
+          final String actionId = action.getId();
+          final Date startedAt = action.getExecutionStartDate();
+          final Date endedAt = action.getExecutionEndDate();
+          final String message = action.getExecutionFailureMessage();
+          final NodeRef actionNode = action.getNodeRef();
+          
+          // Have the details updated on the action as soon
+          //  as the transaction has finished rolling back
+          AlfrescoTransactionSupport.bindListener(
+             new TransactionListenerAdapter() {
+                public void afterRollback()
+                {
+                   transactionService.getRetryingTransactionHelper().doInTransaction(
+                       new RetryingTransactionCallback<Object>()
+                       {
+                          public Object execute() throws Throwable
+                          {
+                             // Update the action as the system user
+                             return AuthenticationUtil.runAs(new RunAsWork<Action>() {
+                                public Action doWork() throws Exception
+                                {
+                                   // Grab the latest version of the action
+                                   ActionImpl action = (ActionImpl)createAction(actionNode);
+                                   
+                                   // Update it
+                                   action.setExecutionStartDate(startedAt);
+                                   action.setExecutionEndDate(endedAt);
+                                   action.setExecutionStatus(ActionStatus.Failed);
+                                   action.setExecutionFailureMessage(message);
+                                   saveActionImpl(actionNode, action);
+                                   
+                                   if (logger.isDebugEnabled() == true)
+                                   {
+                                      logger.debug("Recorded failure of action " + actionId + ", node " + actionNode + " due to " + message);
+                                   }
+                                   
+                                   // All done
+                                   return action;
+                                }
+                             }, AuthenticationUtil.SYSTEM_USER_NAME);
+                          }
+                       }, false, true
+                   );
+                }
+             }
+          );
        }
     }
 

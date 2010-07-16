@@ -183,6 +183,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     {
        ReplicationDefinition replicationAction =
           replicationService.createReplicationDefinition(ACTION_NAME, "Test Definition");
+       String initialId = replicationAction.getId();
        replicationAction.getPayload().add(
              new NodeRef("workspace://SpacesStore/Testing")
        );
@@ -193,12 +194,23 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        
        replicationService.saveReplicationDefinition(replicationAction);
        
+       // Load it again, should have the same details still
        ReplicationDefinition retrieved =
           replicationService.loadReplicationDefinition(ACTION_NAME);
        assertNotNull(retrieved);
+       assertEquals(initialId, retrieved.getId());
        assertEquals(ACTION_NAME, retrieved.getReplicationName());
        assertEquals("Test Definition", retrieved.getDescription());
        assertEquals(2, retrieved.getPayload().size());
+       
+       // Load a 2nd copy, won't be any changes
+       ReplicationDefinition second =
+          replicationService.loadReplicationDefinition(ACTION_NAME);
+       assertNotNull(second);
+       assertEquals(initialId, second.getId());
+       assertEquals(ACTION_NAME, second.getReplicationName());
+       assertEquals("Test Definition", second.getDescription());
+       assertEquals(2, second.getPayload().size());
     }
     
     public void testLoadList() throws Exception

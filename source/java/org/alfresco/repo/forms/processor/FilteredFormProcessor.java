@@ -188,9 +188,10 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
             Field field = fieldProcessorRegistry.buildField(fieldName, data);
             if (field == null)
             {
-                if (getLogger().isWarnEnabled()) {
+                if (getLogger().isDebugEnabled()) 
+                {
                     String msg = "Ignoring unrecognised field \"" + fieldName + "\"";
-                    getLogger().warn(msg);
+                    getLogger().debug(msg);
                 }
             }
             else

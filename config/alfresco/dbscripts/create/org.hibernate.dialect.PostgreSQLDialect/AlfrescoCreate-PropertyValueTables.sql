@@ -110,7 +110,7 @@ CREATE TABLE alf_prop_unique_ctx
    value1_prop_id INT8 NOT NULL,
    value2_prop_id INT8 NOT NULL,
    value3_prop_id INT8 NOT NULL,
-   prop1_id INT8 NOT NULL,
+   prop1_id INT8 NULL,
    CONSTRAINT fk_alf_propuctx_v1 FOREIGN KEY (value1_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    CONSTRAINT fk_alf_propuctx_v2 FOREIGN KEY (value2_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,
    CONSTRAINT fk_alf_propuctx_v3 FOREIGN KEY (value3_prop_id) REFERENCES alf_prop_value (id) ON DELETE CASCADE,

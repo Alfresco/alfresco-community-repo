@@ -26,7 +26,6 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ public class TaskUpdater
 
     public boolean changeAssociation(QName name, String nodeRefs, boolean isAdd)
     {
-        List<NodeRef> value = getNodeRefs(nodeRefs);
+        List<NodeRef> value = NodeRef.getNodeRefs(nodeRefs, LOGGER);
         if (value == null)
         {
             return false;
@@ -120,34 +119,4 @@ public class TaskUpdater
         return map;
     }
 
-    private List<NodeRef> getNodeRefs(Object value)
-    {
-        String[] nodeRefIds = ((String) value).split(",");
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodeRefIds.length);
-        for (String nodeRefString : nodeRefIds)
-        {
-            String nodeRefId = nodeRefString.trim();
-            if (NodeRef.isNodeRef(nodeRefId))
-            {
-                NodeRef nodeRef = new NodeRef(nodeRefId);
-                nodeRefs.add(nodeRef);
-            }
-            else
-            {
-                logNodeRefError(nodeRefId);
-            }
-        }
-        return nodeRefs;
-    }
-
-    private void logNodeRefError(String nodeRefId)
-    {
-        if (LOGGER.isWarnEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Target Node: ").append(nodeRefId);
-            msg.append(" is not a valid NodeRef and has been ignored.");
-            LOGGER.warn(msg.toString());
-        }
-    }
 }

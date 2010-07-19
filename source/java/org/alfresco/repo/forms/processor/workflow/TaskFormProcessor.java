@@ -51,11 +51,11 @@ import org.apache.commons.logging.LogFactory;
 public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, WorkflowTask>
 {
     /** Logger */
-    private static final Log                      LOGGER      = LogFactory.getLog(TaskFormProcessor.class);
-    private static final TypedPropertyValueGetter valueGetter = new TypedPropertyValueGetter();
-
-    private DataKeyMatcher                        keyMatcher;
-    private WorkflowService                       workflowService;
+    private static final Log LOGGER = LogFactory.getLog(TaskFormProcessor.class);
+    
+    private TypedPropertyValueGetter valueGetter;
+    private DataKeyMatcher keyMatcher;
+    private WorkflowService workflowService;
 
     // Constructor for Spring
     public TaskFormProcessor()
@@ -72,6 +72,7 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         this.dictionaryService = dictionaryService;
         this.fieldProcessorRegistry = fieldProcessorRegistry;
         this.keyMatcher = new DataKeyMatcher(namespaceService);
+        this.valueGetter = new TypedPropertyValueGetter(dictionaryService);
     }
 
     @Override
@@ -101,31 +102,30 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
     {
         String name = fieldData.getName();
         DataKeyInfo keyInfo = keyMatcher.match(name);
-        if ((keyInfo == null || FieldType.TRANSIENT == keyInfo.getFieldType()) && 
-            LOGGER.isWarnEnabled())
+        if (keyInfo == null || 
+                    FieldType.TRANSIENT_PROPERTY == keyInfo.getFieldType() )
         {
-            LOGGER.warn("Ignoring unrecognized field: " + name);
+            if(LOGGER.isDebugEnabled())
+                LOGGER.debug("Ignoring unrecognized field: " + name);
+            return;
         }
         
-        if (keyInfo != null) 
+        QName fullName = keyInfo.getQName();
+        Object rawValue = fieldData.getValue();
+        if (FieldType.PROPERTY == keyInfo.getFieldType()) 
         {
-            QName fullName = keyInfo.getqName();
-            Object rawValue = fieldData.getValue();
-            if (FieldType.PROPERTY == keyInfo.getFieldType()) 
+            Serializable propValue = getPropertyValueToPersist(fullName, rawValue, itemData);
+            // TODO What if the user wants to set prop to null?
+            if (propValue != null)
             {
-                Serializable propValue = getPropertyValueToPersist(fullName, rawValue, itemData);
-                // TODO What if the user wants to set prop to null?
-                if (propValue != null) 
-                {
-                    updater.addProperty(fullName, propValue);
-                }
+                updater.addProperty(fullName, propValue);
             }
-            else if (FieldType.ASSOCIATION == keyInfo.getFieldType()) 
+        }
+        else if (FieldType.ASSOCIATION == keyInfo.getFieldType())
+        {
+            if (rawValue instanceof String)
             {
-                if (rawValue instanceof String) 
-                {
-                    updater.changeAssociation(fullName, (String) rawValue, keyInfo.isAdd());
-                }
+                updater.changeAssociation(fullName, (String) rawValue, keyInfo.isAdd());
             }
         }
     }
@@ -143,7 +143,7 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         {
             return valueGetter.getValue(value, propDef);
         }
-        return null;
+        return (Serializable) value;
     }
 
     /*
@@ -232,4 +232,13 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         this.keyMatcher = new DataKeyMatcher(namespaceService);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#setDictionaryService(org.alfresco.service.cmr.dictionary.DictionaryService)
+     */
+    @Override
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        super.setDictionaryService(dictionaryService);
+        this.valueGetter = new TypedPropertyValueGetter(dictionaryService);
+    }
 }

@@ -21,7 +21,6 @@ package org.alfresco.repo.forms.processor.node;
 
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldDefinition;
-import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.processor.AbstractFieldProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 

@@ -27,14 +27,14 @@ import org.alfresco.service.namespace.QName;
  */
 public class DataKeyInfo
 {
-    private final String dataKey;
+    private final String fieldName;
     private final QName qName;
     private final FieldType fieldType;
     private final boolean isAdd;
     
     private DataKeyInfo(String dataKey, QName qName, FieldType fieldType, boolean isAdd)
     {
-        this.dataKey = dataKey;
+        this.fieldName = dataKey;
         this.qName = qName;
         this.fieldType = fieldType;
         this.isAdd = isAdd;
@@ -50,23 +50,28 @@ public class DataKeyInfo
         return new DataKeyInfo(dataKey, qName, FieldType.PROPERTY, true);
     }
     
-    public static DataKeyInfo makeTransientDataKeyInfo(String dataKey)
+    public static DataKeyInfo makeTransientPropertyDataKeyInfo(String dataKey)
     {
-        return new DataKeyInfo(dataKey, null, FieldType.TRANSIENT, true);
+        return new DataKeyInfo(dataKey, null, FieldType.TRANSIENT_PROPERTY, true);
+    }
+    
+    public static DataKeyInfo makeTransientAssociationDataKeyInfo(String dataKey, boolean isAdd)
+    {
+        return new DataKeyInfo(dataKey, null, FieldType.TRANSIENT_ASSOCIATION, isAdd);
     }
     
     /**
-     * @return the dataKey
+     * @return the fieldName
      */
-    public String getDataKey()
+    public String getFieldName()
     {
-        return dataKey;
+        return fieldName;
     }
     
     /**
      * @return the qName
      */
-    public QName getqName()
+    public QName getQName()
     {
         return qName;
     }
@@ -86,6 +91,26 @@ public class DataKeyInfo
     public boolean isAdd()
     {
         return isAdd;
+    }
+
+    /**
+     * Implements the visitor pattern. Takes a DataKeyInfoVisitor and calls the
+     * appropriate visit method based on the fieldType.
+     * 
+     * @param <T>
+     * @param visitor
+     * @return
+     */
+    public <T> T visit(DataKeyInfoVisitor<T> visitor)
+    {
+        switch(fieldType)
+        {
+        case ASSOCIATION: return visitor.visitAssociation(this);
+        case PROPERTY: return visitor.visitProperty(this);
+        case TRANSIENT_ASSOCIATION: return visitor.visitTransientAssociation(this);
+        case TRANSIENT_PROPERTY: return visitor.visitTransientProperty(this);
+        default: return null; //Should never be reached.
+        }
     }
     
 }

@@ -1252,7 +1252,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         fields.add("bpm:workflowDueDate");
         fields.add("packageItems");
         
-        String workflowDefName = "jbpm$wf:adhoc";
+        // Use URL-friendly format.
+        String workflowDefName = "jbpm_wf_adhoc";
         Form form = this.formService.getForm(new Item(WORKFLOW_FORM_ITEM_KIND, workflowDefName), fields);
         
         // check a form got returned
@@ -1310,7 +1311,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue("Expecting there to be more tasks", tasksAfter > tasksBefore);
         
         // check workflow instance details
-        assertEquals(workflowDefName, workflow.definition.name);
+        assertEquals("jbpm$wf:adhoc", workflow.definition.name);
     }
     
     public void testNoForm() throws Exception

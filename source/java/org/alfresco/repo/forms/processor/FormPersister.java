@@ -19,10 +19,10 @@
 
 package org.alfresco.repo.forms.processor;
 
-import org.alfresco.repo.forms.Field;
-
-public interface FieldProcessor
+/**
+ * @author Nick Smith
+ */
+public interface FormPersister<PersistType>
 {
-    Field generateField(String fieldName, FormCreationData data);
-    
+    PersistType persist();
 }

@@ -28,11 +28,14 @@ import java.util.regex.Matcher;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
+import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -66,6 +69,10 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
     /** Unprotected Node Service */
     private NodeService unprotectedNodeService;
 
+    /** TyepdPropertyValueGetter */
+    private TypedPropertyValueGetter valueGetter;
+
+    private DataKeyMatcher keyMatcher;
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getAssociationValues(java.lang.Object)
      */
@@ -188,13 +195,39 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
         return defName;
     }
     
-    /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist
-     * (java.lang.Object, org.alfresco.repo.forms.FormData)
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
-    protected WorkflowInstance internalPersist(WorkflowDefinition workflowDef, final FormData data)
+    protected WorkflowInstance internalPersist(WorkflowDefinition definition, FormData data)
+    {
+        WorkflowBuilder builder = new WorkflowBuilder(definition, workflowService, nodeService);
+        ItemData<WorkflowDefinition> itemData = makeItemData(definition);
+        for (FieldData fieldData : data) 
+        {
+            addFieldToSerialize(builder, itemData, fieldData);
+        }
+        return builder.build();
+    }
+    
+    private void addFieldToSerialize(WorkflowBuilder builder, ItemData<WorkflowDefinition> itemData, FieldData fieldData)
+    {
+        String dataKeyName = fieldData.getName();
+        DataKeyInfo keyInfo = keyMatcher.match(dataKeyName);
+        if (keyInfo == null || 
+                    FieldType.TRANSIENT_PROPERTY == keyInfo.getFieldType() )
+        {
+            if(logger.isDebugEnabled())
+                logger.debug("Ignoring unrecognized field: " + dataKeyName);
+            return;
+        }
+        WorkflowDataKeyInfoVisitor visitor = new WorkflowDataKeyInfoVisitor(fieldData.getValue(), builder, itemData);
+        keyInfo.visit(visitor);
+    }
+
+    
+    protected WorkflowInstance oldInternalPersist(WorkflowDefinition workflowDef, final FormData data)
     {
         if (logger.isDebugEnabled()) logger.debug("Persisting form for: " + workflowDef);
 
@@ -284,5 +317,89 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#setNamespaceService(org.alfresco.service.namespace.NamespaceService)
+     */
+    @Override
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        super.setNamespaceService(namespaceService);
+        this.keyMatcher = new DataKeyMatcher(namespaceService);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#setDictionaryService(org.alfresco.service.cmr.dictionary.DictionaryService)
+     */
+    @Override
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        super.setDictionaryService(dictionaryService);
+        this.valueGetter = new TypedPropertyValueGetter(dictionaryService);
+    }
+    
+    private class WorkflowDataKeyInfoVisitor implements DataKeyInfoVisitor<Void>
+    {
+        private final Object rawValue;
+        private final WorkflowBuilder builder;
+        private final ItemData<WorkflowDefinition> itemData;
+        
+        public WorkflowDataKeyInfoVisitor(Object rawValue, WorkflowBuilder builder,
+                    ItemData<WorkflowDefinition> itemData)
+        {
+            this.rawValue = rawValue;
+            this.builder = builder;
+            this.itemData = itemData;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitAssociation(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
+         */
+        public Void visitAssociation(DataKeyInfo info)
+        {
+            QName qName = info.getQName();
+            if (rawValue instanceof String)
+            {
+                Serializable nodes = (Serializable) NodeRef.getNodeRefs((String) rawValue);
+                builder.addParameter(qName, nodes);
+            }
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitProperty(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
+         */
+        public Void visitProperty(DataKeyInfo info)
+        {
+            QName qName = info.getQName();
+            Serializable propValue = valueGetter.getPropertyValueToPersist(qName, rawValue, itemData);
+            builder.addParameter(qName, propValue);
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitTransientAssociation(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
+         */
+        public Void visitTransientAssociation(DataKeyInfo info)
+        {
+            if(PackageItemsFieldProcessor.KEY.equals(info.getFieldName()))
+            {
+                if(rawValue instanceof String)
+                {
+                    builder.addPackageItems((String)rawValue);
+                }
+            }
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitTransientProperty(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
+         */
+        public Void visitTransientProperty(DataKeyInfo info)
+        {
+            throw new FormException("This methdo should never be called!");
+        }
+       
     }
 }

@@ -33,9 +33,7 @@ public abstract class AbstractFieldProcessor<Data> implements FieldProcessor
     public Field generateField(String fieldName, FormCreationData data)
     {
         Data typedData = checkDataType(data.getItemData());
-        Field field = generateTypedField(fieldName, data, typedData);
-        logIfFieldNotFound(field, fieldName);
-        return field;
+        return generateTypedField(fieldName, data, typedData);
     }
 
     @SuppressWarnings("unchecked")
@@ -53,18 +51,6 @@ public abstract class AbstractFieldProcessor<Data> implements FieldProcessor
         }
     }
     
-    protected void logIfFieldNotFound(Field fieldInfo, String fieldName)
-    {
-        if (fieldInfo == null) 
-        {
-            Log logger = getLogger();
-            if (logger!=null && logger.isDebugEnabled())
-            {
-                logger.debug("Ignoring unrecognised field \"" + fieldName + "\"");
-            }
-        }
-    }
-
     /**
      * Registers this {@link FieldProcessor} with the supplied registry.
      * 

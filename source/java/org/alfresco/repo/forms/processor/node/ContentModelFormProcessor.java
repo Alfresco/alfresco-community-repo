@@ -31,14 +31,12 @@ import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.Field;
-import org.alfresco.repo.forms.FieldDefinition;
-import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
-import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
+import org.alfresco.repo.forms.processor.workflow.DataKeyMatcher;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -146,6 +144,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      */
     protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "([a-zA-Z0-9]+)_(.*)(_[a-zA-Z]+)");
 
+    private DataKeyMatcher keyMatcher;
+
     /**
      * Sets the node service
      * 
@@ -184,6 +184,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+        this.keyMatcher = new DataKeyMatcher(namespaceService);
     }
     
     /**
@@ -807,6 +808,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         
         return mimetype;
     }
+    
 }
 
 /**

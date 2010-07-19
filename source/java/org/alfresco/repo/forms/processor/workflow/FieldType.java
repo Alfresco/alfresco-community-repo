@@ -27,5 +27,6 @@ public enum FieldType
 {
     ASSOCIATION,
     PROPERTY,
-    TRANSIENT;
+    TRANSIENT_ASSOCIATION,
+    TRANSIENT_PROPERTY;
 }

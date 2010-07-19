@@ -40,11 +40,6 @@ public class DataKeyMatcher
      */
     private final static Pattern propertyNamePattern = Pattern.compile("(^[a-zA-Z0-9]+)_([a-zA-Z0-9_]+$)");
 
-    public DataKeyMatcher(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
     /**
      * A regular expression which can be used to match association names. These
      * names will look like <code>"assoc_cm_references_added"</code>. The
@@ -53,12 +48,20 @@ public class DataKeyMatcher
      */
     private final static Pattern associationNamePattern = Pattern.compile("(^[a-zA-Z0-9]+)_([a-zA-Z0-9_]+)(_[a-zA-Z]+$)");
 
+    private final static Pattern transientAssociationPattern = Pattern.compile("(^[a-zA-Z0-9]+)(_[a-zA-Z]+$)");
+
     private final NamespaceService namespaceService;
+
+    public DataKeyMatcher(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
     
     /**
-     * 
-     * @param dataKey
-     * @return
+     * Attempts to match the <code>dataKey</code> to either a property or association pattern.
+     * If no match can be found then returns <code>null</code>.
+     * @param dataKey the dataKey to be matched.
+     * @return a {@link DataKeyInfo} representation or <code>null</code>.
      */
     public DataKeyInfo match(String dataKey)
     {
@@ -70,7 +73,6 @@ public class DataKeyMatcher
         {
             return matchAssociation(dataKey);
         }
-        
         // No match found.
         return null;
     }
@@ -79,14 +81,33 @@ public class DataKeyMatcher
     {
         String keyName = dataKey.substring(ASSOC_DATA_PREFIX.length());
         Matcher matcher = associationNamePattern.matcher(keyName);
-        if (!matcher.matches())
+        if (matcher.matches())
         {
-            return null;
+            QName qName = getQName(matcher);
+            boolean isAdd = isAdd(matcher, 3);
+            String name = qName.toPrefixString(namespaceService);
+            return DataKeyInfo.makeAssociationDataKeyInfo(name, qName, isAdd);
         }
-        QName qName = getQName(matcher);
-        String suffix = matcher.group(3);
+        return matchTransientAssociation(keyName);
+    }
+
+    private DataKeyInfo matchTransientAssociation(String keyName)
+    {
+        Matcher matcher = transientAssociationPattern.matcher(keyName);
+        if(matcher.matches())
+        {
+            boolean isAdd = isAdd(matcher, 2);
+            String name = matcher.group(1);
+            return DataKeyInfo.makeTransientAssociationDataKeyInfo(name, isAdd);
+        }
+        return null;
+    }
+
+    private boolean isAdd(Matcher matcher, int suffixPos)
+    {
+        String suffix = matcher.group(suffixPos);
         boolean isAdd = !(ASSOC_DATA_REMOVED_SUFFIX.equals(suffix));
-        return DataKeyInfo.makeAssociationDataKeyInfo(keyName, qName, isAdd);
+        return isAdd;
     }
 
     private DataKeyInfo matchProperty(String dataKey)
@@ -96,9 +117,10 @@ public class DataKeyMatcher
         if (matcher.matches())
         {
             QName qName = getQName(matcher);
-            return DataKeyInfo.makePropertyDataKeyInfo(keyName, qName);
+            String name = qName.toPrefixString(namespaceService);
+            return DataKeyInfo.makePropertyDataKeyInfo(name, qName);
         }
-        return DataKeyInfo.makeTransientDataKeyInfo(keyName);
+        return DataKeyInfo.makeTransientPropertyDataKeyInfo(keyName);
     }
 
     private QName getQName(Matcher matcher)

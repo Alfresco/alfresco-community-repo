@@ -82,10 +82,9 @@ public interface ActionTrackingService
      * If the specified action is not a cancellable
      *  action, nothing will happen.
      * 
-     * TODO Correct param type - is key based data only.
      * @param action The action to request the cancel of
      */
-    void requestActionCancellation(Void executionSummary);
+    void requestActionCancellation(ExecutionSummary executionSummary);
     
     /**
      * Has cancellation been requested for the given
@@ -104,30 +103,25 @@ public interface ActionTrackingService
      * Retrieves the execution details on the given
      *  executing action, such as when it started,
      *  and what machine it is executing on.
-     * TODO Correct param type - is key based data only.
-     * TODO Correct return type - is all cache data
      */
-    void getExecutionDetails(Void executionSummary);
+    ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary);
     
     /**
      * Retrieve summary details of all the actions
      *  currently executing.  
-     * TODO Correct return type - is key based data only.
      */
-    List<Void> getAllExecutingActions();
+    List<ExecutionSummary> getAllExecutingActions();
     
     /**
      * Retrieve summary details of all the actions
      *  of the given type that are currently executing.  
-     * TODO Correct return type - is key based data only.
      */
-    List<Void> getExecutingActions(String type);//or is it qname?
+    List<ExecutionSummary> getExecutingActions(String type);
     
     /**
      * Retrieve summary details of all instances of
      *  the specified action that are currently
      *  executing.
-     * TODO Correct return type - is key based data only.
      */
-    List<Void> getExecutingActions(Action action);
+    List<ExecutionSummary> getExecutingActions(Action action);
 }

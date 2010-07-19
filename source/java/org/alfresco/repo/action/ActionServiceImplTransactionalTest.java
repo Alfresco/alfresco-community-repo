@@ -245,7 +245,7 @@ public class ActionServiceImplTransactionalTest extends TestCase
        // Wait for the post-rollback update to complete
        // (The stored one gets updated asynchronously)
        txn.rollback();
-       Thread.sleep(100);
+       Thread.sleep(150);
        txn = transactionService.getUserTransaction();
        txn.begin();
        
@@ -283,7 +283,7 @@ public class ActionServiceImplTransactionalTest extends TestCase
        // End the transaction. Should allow the async action
        //  to be executed
        txn.commit();
-       Thread.sleep(100);
+       Thread.sleep(150);
        
        assertNotNull(action.getExecutionStartDate());
        assertNotNull(action.getExecutionEndDate());
@@ -315,7 +315,7 @@ public class ActionServiceImplTransactionalTest extends TestCase
        // End the transaction. Should allow the async action
        //  to be executed
        txn.commit();
-       Thread.sleep(100);
+       Thread.sleep(150);
        
        assertNotNull(action.getExecutionStartDate());
        assertNotNull(action.getExecutionEndDate());
@@ -351,7 +351,7 @@ public class ActionServiceImplTransactionalTest extends TestCase
        // End the transaction. Should allow the async action
        //  to be executed
        txn.commit();
-       Thread.sleep(100);
+       Thread.sleep(150);
        txn = transactionService.getUserTransaction();
        txn.begin();
        

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -33,6 +34,8 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.CancellableAction;
+import org.alfresco.service.cmr.action.ExecutionDetails;
+import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -50,8 +53,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    private static Log logger = LogFactory.getLog(ActionTrackingServiceImpl.class);
 
-   // TODO - Fix types
-   private EhCacheAdapter<String, Void> executingActionsCache;
+   private EhCacheAdapter<String, ExecutionDetails> executingActionsCache;
    
    private TransactionService transactionService;
    private RuntimeActionService runtimeActionService;
@@ -86,9 +88,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    /**
     * Sets the cache used to store details of
     *  currently executing actions, cluster wide.
-    * TODO Fix types
     */
-   public void setExecutingActionsCache(EhCacheAdapter<String, Void> executingActionsCache)
+   public void setExecutingActionsCache(EhCacheAdapter<String, ExecutionDetails> executingActionsCache)
    {
        this.executingActionsCache = executingActionsCache;
    }
@@ -110,6 +111,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       {
          runtimeActionService.saveActionImpl(action.getNodeRef(), action);
       }
+      
+      // TODO Remove it from the cache
    }
 
    public void recordActionExecuting(Action action) 
@@ -117,6 +120,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       // Mark the action as starting
       ((ActionImpl)action).setExecutionStartDate(new Date());
       ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
+      
+      // TODO Put it into the cache
    }
 
    /**
@@ -133,6 +138,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       ((ActionImpl)action).setExecutionEndDate(new Date());
       ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
       ((ActionImpl)action).setExecutionFailureMessage(exception.getMessage());
+      
+      // TODO Take it out of the cache
       
       if(action.getNodeRef() != null)
       {
@@ -206,55 +213,70 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
    public void requestActionCancellation(CancellableAction action) 
    {
-      // See if the action is in the cache
-      // If it isn't, nothing to do
-      // If it is, update the cancelled flag on it
-      // TODO
+      requestActionCancellation(
+            generateCacheKey(action)
+      );
    }
    
-   public List<Void> getAllExecutingActions() {
+   public void requestActionCancellation(ExecutionSummary executionSummary) 
+   {
+      requestActionCancellation(
+            generateCacheKey(executionSummary)
+      );
+   }
+   
+   private void requestActionCancellation(String actionKey)
+   {
+      // See if the action is in the cache
+      ExecutionDetails details = executingActionsCache.get(actionKey);
+      
+      if(details == null) {
+         // It isn't in the cache, so nothing to do
+         return;
+      }
+      
+      // Since it is, update the cancelled flag on it
+      // TODO
+      executingActionsCache.put(actionKey, details);
+   }
+
+   
+   public List<ExecutionSummary> getAllExecutingActions() {
       Collection<String> actions = executingActionsCache.getKeys();
-      // TODO fix types
-      List<Void> details = new ArrayList<Void>(actions.size());
+      List<ExecutionSummary> details = new ArrayList<ExecutionSummary>(actions.size());
       for(String key : actions) {
-         //details.add( buildExecutionSummary(key) );
+         details.add( buildExecutionSummary(key) );
       }
       return details;
    }
 
-   public List<Void> getExecutingActions(Action action) {
+   public List<ExecutionSummary> getExecutingActions(Action action) {
       Collection<String> actions = executingActionsCache.getKeys();
-      // TODO fix types
-      List<Void> details = new ArrayList<Void>();
+      List<ExecutionSummary> details = new ArrayList<ExecutionSummary>();
       String match = action.getActionDefinitionName() + "-" + action.getId();
       for(String key : actions) {
          if(key.startsWith(match)) {
-            //details.add( buildExecutionSummary(key) );
+            details.add( buildExecutionSummary(key) );
          }
       }
       return details;
    }
 
-   public List<Void> getExecutingActions(String type) {
+   public List<ExecutionSummary> getExecutingActions(String type) {
       Collection<String> actions = executingActionsCache.getKeys();
-      // TODO fix types
-      List<Void> details = new ArrayList<Void>();
+      List<ExecutionSummary> details = new ArrayList<ExecutionSummary>();
       for(String key : actions) {
          if(key.startsWith(type)) {
-            //details.add( buildExecutionSummary(key) );
+            details.add( buildExecutionSummary(key) );
          }
       }
       return details;
    }
 
-   public void getExecutionDetails(Void executionSummary) {
-      // TODO Auto-generated method stub
-      
-   }
-
-   public void requestActionCancellation(Void executionSummary) {
-      // TODO Auto-generated method stub
-      
+   public ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary) {
+      return executingActionsCache.get(
+            generateCacheKey(executionSummary)
+      );
    }
 
    /**
@@ -262,18 +284,33 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    protected String generateCacheKey(Action action)
    {
-      // TODO
-      return null;
+      return 
+         action.getActionDefinitionName() + "-" +
+         action.getId() + "-" +
+         ""//action.getExecutionInstance // TODO
+      ;
+   }
+   protected String generateCacheKey(ExecutionSummary summary)
+   {
+      return 
+         summary.getActionType() + "-" +
+         summary.getActionId() + "-" +
+         summary.getExecutionInstance()
+      ;
    }
 
    /**
     * Turns a cache key back into its constituent
     *  parts, for easier access.
-    * TODO Fix types
     */
-   protected void buildExecutionSummary(String key)
+   protected ExecutionSummary buildExecutionSummary(String key)
    {
+      StringTokenizer st = new StringTokenizer(key, "-");
+      String actionType = st.nextToken();
+      String actionId = st.nextToken();
+      int executionInstance = Integer.parseInt(st.nextToken());
       
+      return new ExecutionSummary(actionType, actionId, executionInstance);
    }
    
 }

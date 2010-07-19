@@ -1034,4 +1034,23 @@
       </property>
    </bean>
    
+   <!-- ===================================== -->
+   <!-- Executing Actions caches              -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for AbstractRoutingContentStore -->
+   
+   <bean name="executingActionsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.executingActionsSharedCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
 </beans>

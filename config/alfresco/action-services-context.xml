@@ -123,6 +123,9 @@
         <property name="runtimeActionService">
             <ref bean="actionService" />
         </property>         
+        <property name="executingActionsCache">
+            <ref bean="executingActionsSharedCache" />
+        </property>         
     </bean>
 
 

@@ -18,8 +18,12 @@
  */
 package org.alfresco.repo.action;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
+import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -28,6 +32,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.CancellableAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -45,8 +50,18 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    private static Log logger = LogFactory.getLog(ActionTrackingServiceImpl.class);
 
+   // TODO - Fix types
+   private EhCacheAdapter<String, Void> executingActionsCache;
+   
    private TransactionService transactionService;
    private RuntimeActionService runtimeActionService;
+   
+   /**
+    * Doesn't need to be cluster unique, is just used
+    *  to try to reduce the chance of clashes in the 
+    *  quickest and easiest way.
+    */
+   private short nextExecutionId = 1;
    
    /**
     * Set the transaction service
@@ -67,7 +82,18 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    {
        this.runtimeActionService = runtimeActionService;
    }
+   
+   /**
+    * Sets the cache used to store details of
+    *  currently executing actions, cluster wide.
+    * TODO Fix types
+    */
+   public void setExecutingActionsCache(EhCacheAdapter<String, Void> executingActionsCache)
+   {
+       this.executingActionsCache = executingActionsCache;
+   }
 
+   
    
    public void recordActionPending(Action action) 
    {
@@ -163,4 +189,91 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
          );
       }
    }
+
+   public boolean isCancellationRequested(CancellableAction action) 
+   {
+      // If the action isn't in the cache, but is of
+      //  status executing, then put it back into the
+      //  cache and warn
+      // (Probably means the cache is too small)
+      
+      // Retrieve from the cache, and see if cancellation
+      //  has been requested
+      
+      // TODO
+      return false;
+   }
+
+   public void requestActionCancellation(CancellableAction action) 
+   {
+      // See if the action is in the cache
+      // If it isn't, nothing to do
+      // If it is, update the cancelled flag on it
+      // TODO
+   }
+   
+   public List<Void> getAllExecutingActions() {
+      Collection<String> actions = executingActionsCache.getKeys();
+      // TODO fix types
+      List<Void> details = new ArrayList<Void>(actions.size());
+      for(String key : actions) {
+         //details.add( buildExecutionSummary(key) );
+      }
+      return details;
+   }
+
+   public List<Void> getExecutingActions(Action action) {
+      Collection<String> actions = executingActionsCache.getKeys();
+      // TODO fix types
+      List<Void> details = new ArrayList<Void>();
+      String match = action.getActionDefinitionName() + "-" + action.getId();
+      for(String key : actions) {
+         if(key.startsWith(match)) {
+            //details.add( buildExecutionSummary(key) );
+         }
+      }
+      return details;
+   }
+
+   public List<Void> getExecutingActions(String type) {
+      Collection<String> actions = executingActionsCache.getKeys();
+      // TODO fix types
+      List<Void> details = new ArrayList<Void>();
+      for(String key : actions) {
+         if(key.startsWith(type)) {
+            //details.add( buildExecutionSummary(key) );
+         }
+      }
+      return details;
+   }
+
+   public void getExecutionDetails(Void executionSummary) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void requestActionCancellation(Void executionSummary) {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /**
+    * Generates the cache key for the specified action.
+    */
+   protected String generateCacheKey(Action action)
+   {
+      // TODO
+      return null;
+   }
+
+   /**
+    * Turns a cache key back into its constituent
+    *  parts, for easier access.
+    * TODO Fix types
+    */
+   protected void buildExecutionSummary(String key)
+   {
+      
+   }
+   
 }

@@ -18,6 +18,8 @@
  */
 package org.alfresco.service.cmr.action;
 
+import java.util.List;
+
 import org.alfresco.service.PublicService;
 
 /**
@@ -59,4 +61,73 @@ public interface ActionTrackingService
      * @param action  the action that has failed
      */
     void recordActionFailure(Action action, Throwable problem);
+    
+    /**
+     * Requests that the specified Action cancel itself
+     *  and aborts execution, as soon as possible.
+     * Cancellable actions periodically check to see
+     *  if a cancel has been requested, and will take
+     *  note of the cancel request once seen.
+     * 
+     * @param action The action to request the cancel of
+     */
+    void requestActionCancellation(CancellableAction action);
+    
+    /**
+     * Requests that the specified Action cancel itself
+     *  and aborts execution, as soon as possible.
+     * Cancellable actions periodically check to see
+     *  if a cancel has been requested, and will take
+     *  note of the cancel request once seen.
+     * If the specified action is not a cancellable
+     *  action, nothing will happen.
+     * 
+     * TODO Correct param type - is key based data only.
+     * @param action The action to request the cancel of
+     */
+    void requestActionCancellation(Void executionSummary);
+    
+    /**
+     * Has cancellation been requested for the given
+     *  action?
+     * This method is most commonly called by the
+     *  action in question, to check to see if
+     *  someone has called {@link #requestActionCancellation(CancellableAction)}
+     *  for them.
+     *  
+     * @param action The action to check about
+     * @return if cancellation has been requested or not
+     */
+    boolean isCancellationRequested(CancellableAction action);
+    
+    /**
+     * Retrieves the execution details on the given
+     *  executing action, such as when it started,
+     *  and what machine it is executing on.
+     * TODO Correct param type - is key based data only.
+     * TODO Correct return type - is all cache data
+     */
+    void getExecutionDetails(Void executionSummary);
+    
+    /**
+     * Retrieve summary details of all the actions
+     *  currently executing.  
+     * TODO Correct return type - is key based data only.
+     */
+    List<Void> getAllExecutingActions();
+    
+    /**
+     * Retrieve summary details of all the actions
+     *  of the given type that are currently executing.  
+     * TODO Correct return type - is key based data only.
+     */
+    List<Void> getExecutingActions(String type);//or is it qname?
+    
+    /**
+     * Retrieve summary details of all instances of
+     *  the specified action that are currently
+     *  executing.
+     * TODO Correct return type - is key based data only.
+     */
+    List<Void> getExecutingActions(Action action);
 }

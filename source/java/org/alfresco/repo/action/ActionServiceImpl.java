@@ -38,11 +38,7 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -51,6 +47,7 @@ import org.alfresco.service.cmr.action.ActionList;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.ActionStatus;
+import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.action.ParameterConstraint;
@@ -66,12 +63,12 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * Action service implementation
@@ -108,8 +105,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     private NodeService nodeService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
-    private TransactionService transactionService;
     private AuthenticationContext authenticationContext;
+    private ActionTrackingService actionTrackingService;
     private PolicyComponent policyComponent;
 
     /**
@@ -178,6 +175,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
+     * Set the action tracking service
+     * 
+     * @param actionTrackingService the action tracking service
+     */
+    public void setActionTrackingService(ActionTrackingService actionTrackingService)
+    {
+        this.actionTrackingService = actionTrackingService;
+    }
+
+    /**
      * Set the dictionary service
      * 
      * @param dictionaryService the dictionary service
@@ -185,16 +192,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Set the transaction service
-     * 
-     * @param transactionService the transaction service
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
     }
 
     /**
@@ -672,20 +669,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     if (checkConditions == false || evaluateAction(action, actionedUponNodeRef) == true)
                     {
                         // Mark the action as starting
-                        ((ActionImpl)action).setExecutionStartDate(new Date());
-                        ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
+                        actionTrackingService.recordActionExecuting(action);
 
                         // Execute the action
                         directActionExecution(action, actionedUponNodeRef);
                         
                         // Mark it as having worked
-                        ((ActionImpl)action).setExecutionEndDate(new Date());
-                        ((ActionImpl)action).setExecutionStatus(ActionStatus.Completed);
-                        ((ActionImpl)action).setExecutionFailureMessage(null);
-                        if(action.getNodeRef() != null)
-                        {
-                           saveActionImpl(action.getNodeRef(), action);
-                        }
+                        actionTrackingService.recordActionComplete(action);
                     }
                 }
                 finally
@@ -724,7 +714,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                 }
                 
                 // Have the failure logged on the action
-                recordActionFailure(action, exception);
+                actionTrackingService.recordActionFailure(action, exception);
 
                 // Rethrow the exception
                 if (exception instanceof RuntimeException)
@@ -740,76 +730,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
     }
     
-    /**
-     * Schedule the recording of the action failure to occur
-     *  in another transaction
-     */
-    protected void recordActionFailure(Action action, Throwable exception)
-    {
-       if (logger.isDebugEnabled() == true)
-       {
-          logger.debug("Will shortly record failure of action " + action + " due to " + exception.getMessage());
-       }
-       
-       ((ActionImpl)action).setExecutionEndDate(new Date());
-       ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
-       ((ActionImpl)action).setExecutionFailureMessage(exception.getMessage());
-       
-       if(action.getNodeRef() != null)
-       {
-          // Take a local copy of the details
-          // (That way, if someone has a reference to the
-          //  action and plays with it, we still save the
-          //  correct information)
-          final String actionId = action.getId();
-          final Date startedAt = action.getExecutionStartDate();
-          final Date endedAt = action.getExecutionEndDate();
-          final String message = action.getExecutionFailureMessage();
-          final NodeRef actionNode = action.getNodeRef();
-          
-          // Have the details updated on the action as soon
-          //  as the transaction has finished rolling back
-          AlfrescoTransactionSupport.bindListener(
-             new TransactionListenerAdapter() {
-                public void afterRollback()
-                {
-                   transactionService.getRetryingTransactionHelper().doInTransaction(
-                       new RetryingTransactionCallback<Object>()
-                       {
-                          public Object execute() throws Throwable
-                          {
-                             // Update the action as the system user
-                             return AuthenticationUtil.runAs(new RunAsWork<Action>() {
-                                public Action doWork() throws Exception
-                                {
-                                   // Grab the latest version of the action
-                                   ActionImpl action = (ActionImpl)createAction(actionNode);
-                                   
-                                   // Update it
-                                   action.setExecutionStartDate(startedAt);
-                                   action.setExecutionEndDate(endedAt);
-                                   action.setExecutionStatus(ActionStatus.Failed);
-                                   action.setExecutionFailureMessage(message);
-                                   saveActionImpl(actionNode, action);
-                                   
-                                   if (logger.isDebugEnabled() == true)
-                                   {
-                                      logger.debug("Recorded failure of action " + actionId + ", node " + actionNode + " due to " + message);
-                                   }
-                                   
-                                   // All done
-                                   return action;
-                                }
-                             }, AuthenticationUtil.SYSTEM_USER_NAME);
-                          }
-                       }, false, true
-                   );
-                }
-             }
-          );
-       }
-    }
-
     /**
      * @see org.alfresco.repo.action.RuntimeActionService#directActionExecution(org.alfresco.service.cmr.action.Action,
      *      org.alfresco.service.cmr.repository.NodeRef)
@@ -1633,7 +1553,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             if (pendingActions.contains(pendingAction) == false)
             {
                 pendingActions.add(pendingAction);
-                ((ActionImpl)action).setExecutionStatus(ActionStatus.Pending);
+                actionTrackingService.recordActionPending(action);
             }
         }
     }

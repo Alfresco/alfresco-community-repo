@@ -95,12 +95,12 @@
         <property name="authenticationContext">
             <ref bean="authenticationContext" />
         </property>        
+        <property name="actionTrackingService">
+            <ref bean="actionTrackingService" />
+        </property>        
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
         </property> 
-        <property name="transactionService">
-            <ref bean="TransactionService" />
-        </property>         
         
         <property name="asynchronousActionExecutionQueues">
             <map>
@@ -113,6 +113,16 @@
                </entry>
             </map>   
         </property>
+    </bean>
+
+    <!-- Action Tracking Service -->
+    <bean id="actionTrackingService" class="org.alfresco.repo.action.ActionTrackingServiceImpl">
+        <property name="transactionService">
+            <ref bean="TransactionService" />
+        </property>         
+        <property name="runtimeActionService">
+            <ref bean="actionService" />
+        </property>         
     </bean>
 
 

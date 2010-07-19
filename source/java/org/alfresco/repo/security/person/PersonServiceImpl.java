@@ -38,6 +38,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -114,6 +115,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private HomeFolderManager homeFolderManager;
 
     private PolicyComponent policyComponent;
+    
+    private BehaviourFilter policyBehaviourFilter;
 
     private boolean createMissingPeople;
 
@@ -133,9 +136,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 
     private PermissionsManager permissionsManager;
     
-    // Behaviours
-    JavaBehaviour onUpdatePropertiesBehaviour;
-
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, Set<NodeRef>> personCache;
     
@@ -185,22 +185,21 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "personCache", personCache);
         PropertyCheck.mandatory(this, "aclDao", aclDao);
         PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
-
+        
         this.policyComponent.bindClassBehaviour(
                 OnCreateNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "onCreateNode"));
+        
         this.policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 new JavaBehaviour(this, "beforeDeleteNode"));
         
-        onUpdatePropertiesBehaviour = new JavaBehaviour(this, "onUpdateProperties");
-        
         this.policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.TYPE_PERSON,
-                onUpdatePropertiesBehaviour);
+                new JavaBehaviour(this, "onUpdateProperties"));
     }
 
     public UserNameMatcher getUserNameMatcher()
@@ -461,7 +460,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 try
                 {
-                    onUpdatePropertiesBehaviour.disable();
+                    policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
                     
                     if (duplicateMode.equalsIgnoreCase(SPLIT))
                     {
@@ -485,7 +484,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 }
                 finally
                 {
-                    onUpdatePropertiesBehaviour.enable();
+                    policyBehaviourFilter.enableBehaviour(ContentModel.TYPE_PERSON);
                 }
                 
                 // Done
@@ -953,6 +952,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+    
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
+    {
+        this.policyBehaviourFilter = policyBehaviourFilter;
     }
 
     public void setStoreUrl(String storeUrl)

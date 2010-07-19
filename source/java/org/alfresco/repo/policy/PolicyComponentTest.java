@@ -225,14 +225,14 @@ public class PolicyComponentTest extends TestCase
         // Test NOOP Policy delegate
         Collection<TestClassPolicy> basePolicies = delegate.getList(BASE_TYPE);
         assertNotNull(basePolicies);
-        assertTrue(basePolicies.size() == 0);
+        assertEquals(0, basePolicies.size());
         TestClassPolicy basePolicy = delegate.get(BASE_TYPE);
         assertNotNull(basePolicy);
         
         // Test single Policy delegate
         Collection<TestClassPolicy> filePolicies = delegate.getList(FILE_TYPE);
         assertNotNull(filePolicies);
-        assertTrue(filePolicies.size() == 1);
+        assertEquals(1, filePolicies.size());
         TestClassPolicy filePolicy = delegate.get(FILE_TYPE);
         assertNotNull(filePolicy);
         assertEquals(filePolicies.iterator().next(), filePolicy);
@@ -244,7 +244,7 @@ public class PolicyComponentTest extends TestCase
         // Test multi Policy delegate
         Collection<TestClassPolicy> file2Policies = delegate.getList(FILE_TYPE);
         assertNotNull(file2Policies);
-        assertTrue(file2Policies.size() == 2);
+        assertEquals(2, file2Policies.size());
         TestClassPolicy filePolicy2 = delegate.get(FILE_TYPE);
         assertNotNull(filePolicy2);
         
@@ -253,7 +253,7 @@ public class PolicyComponentTest extends TestCase
         policyComponent.bindClassBehaviour(policyName, FILE_TYPE, file2Behaviour);
         Collection<TestClassPolicy> file3Policies = delegate.getList(FILE_TYPE);
         assertNotNull(file3Policies);
-        assertTrue(file3Policies.size() == 3);
+        assertEquals(3, file3Policies.size());
         TestClassPolicy filePolicy3 = delegate.get(FILE_TYPE);
         assertNotNull(filePolicy3);
     }
@@ -329,7 +329,7 @@ public class PolicyComponentTest extends TestCase
         String fileResult3 = filePolicy3.test("file");
         assertEquals("NewBase: file", fileResult3);
         TestClassPolicy folderPolicy3 = delegate.get(FOLDER_TYPE);
-        assertTrue(folderPolicy3 == folderPolicy2);
+        assertTrue(folderPolicy3 != folderPolicy2);
         String folderResult3 = folderPolicy3.test("folder");
         assertEquals("Folder: folder", folderResult3);
         
@@ -347,7 +347,7 @@ public class PolicyComponentTest extends TestCase
         String fileResult4 = filePolicy4.test("file");
         assertEquals("File: file", fileResult4);
         TestClassPolicy folderPolicy4 = delegate.get(FOLDER_TYPE);
-        assertTrue(folderPolicy4 == folderPolicy4);
+        assertTrue(folderPolicy4 == folderPolicy3);
         String folderResult4 = folderPolicy4.test("folder");
         assertEquals("Folder: folder", folderResult4);
     }
@@ -366,14 +366,14 @@ public class PolicyComponentTest extends TestCase
         // Test NOOP Policy delegate
         Collection<TestPropertyPolicy> basePolicies = delegate.getList(BASE_TYPE, BASE_PROP_A);
         assertNotNull(basePolicies);
-        assertTrue(basePolicies.size() == 0);
+        assertEquals(0, basePolicies.size());
         TestPropertyPolicy basePolicy = delegate.get(BASE_TYPE, BASE_PROP_A);
         assertNotNull(basePolicy);
         
         // Test single Policy delegate
         Collection<TestPropertyPolicy> filePolicies = delegate.getList(FILE_TYPE, FILE_PROP_B);
         assertNotNull(filePolicies);
-        assertTrue(filePolicies.size() == 1);
+        assertEquals(1, filePolicies.size());
         TestPropertyPolicy filePolicy = delegate.get(FILE_TYPE, FILE_PROP_B);
         assertNotNull(filePolicy);
         assertEquals(filePolicies.iterator().next(), filePolicy);
@@ -385,7 +385,7 @@ public class PolicyComponentTest extends TestCase
         // Test multi Policy delegate
         Collection<TestPropertyPolicy> file2Policies = delegate.getList(FILE_TYPE, FILE_PROP_B);
         assertNotNull(file2Policies);
-        assertTrue(file2Policies.size() == 2);
+        assertEquals(2, file2Policies.size());
         TestPropertyPolicy filePolicy2 = delegate.get(FILE_TYPE, FILE_PROP_B);
         assertNotNull(filePolicy2);
     }
@@ -515,7 +515,7 @@ public class PolicyComponentTest extends TestCase
         // Test single Policy delegate
         Collection<TestAssociationPolicy> filePolicies = delegate.getList(FILE_TYPE, BASE_ASSOC_A);
         assertNotNull(filePolicies);
-        assertTrue(filePolicies.size() == 1);
+        assertEquals(1, filePolicies.size());
         TestAssociationPolicy filePolicy = delegate.get(FILE_TYPE, BASE_ASSOC_A);
         assertNotNull(filePolicy);
         String fileResult = filePolicy.test("file");
@@ -528,7 +528,7 @@ public class PolicyComponentTest extends TestCase
         // Test multi Policy delegate
         Collection<TestAssociationPolicy> file2Policies = delegate.getList(FILE_TYPE, BASE_ASSOC_A);
         assertNotNull(file2Policies);
-        assertTrue(file2Policies.size() == 2);
+        assertEquals(2, file2Policies.size());
         TestAssociationPolicy filePolicy2 = delegate.get(FILE_TYPE, BASE_ASSOC_A);
         assertNotNull(filePolicy2);
     }

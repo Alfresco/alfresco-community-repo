@@ -91,6 +91,7 @@ import org.alfresco.service.namespace.QName;
     /* (non-Javadoc)
      * @see org.alfresco.repo.policy.BehaviourIndex#getAll()
      */
+    @SuppressWarnings("unchecked")
     public Collection<BehaviourDefinition> getAll()
     {
         lock.readLock().lock();
@@ -129,28 +130,25 @@ import org.alfresco.service.namespace.QName;
                 QName className = binding.getClassQName();
                 isEnabled = (nodeRef == null) ? filter.isEnabled(className) : filter.isEnabled(nodeRef, className);
             }
-
+            
             if (isEnabled)
             {
                 // Find class behaviour by scanning up the class hierarchy
                 List<BehaviourDefinition<B>> behaviour = null;
-                while(behaviour == null && binding != null)
+                while (binding != null)
                 {
                     behaviour = classMap.get(binding);
-                    if (behaviour == null)
+                    if (behaviour != null)
                     {
-                        binding = (B)binding.generaliseBinding();
+                        behaviours.addAll(0, behaviour); // note: list base/generalised before extended/specific
                     }
-                }
-                if (behaviour != null)
-                {
-                    behaviours.addAll(behaviour);
+                    binding = (B)binding.generaliseBinding();
                 }
             }
             
             // Append all service-level behaviours
             behaviours.addAll(serviceMap.getAll());
-
+            
             return behaviours;
         }
         finally

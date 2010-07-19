@@ -300,6 +300,9 @@
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
+        <property name="policyBehaviourFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
         <property name="personCache">
             <ref bean="personCache" />
         </property>

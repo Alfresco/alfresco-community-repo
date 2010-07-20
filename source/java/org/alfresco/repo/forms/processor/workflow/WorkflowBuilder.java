@@ -71,9 +71,12 @@ public class WorkflowBuilder
         params.put(name, value);
     }
     
-    public void addAssociationParameter(QName name, Serializable value)
+    public void addAssociationParameter(QName name, List<NodeRef> values)
     {
-        params.put(name, value);
+        if(values instanceof Serializable)
+        {
+            params.put(name, (Serializable) values);
+        }
     }
     
     public void addPackageItems(List<NodeRef> items)

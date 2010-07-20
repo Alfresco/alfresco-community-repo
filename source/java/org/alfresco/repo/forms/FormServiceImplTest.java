@@ -490,7 +490,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
 
         Date modifiedDate = (Date)data.getFieldData(modifiedField.getDataKeyName()).getValue();
         assertNotNull("Expecting to find modified date", modifiedDate);
-        assertTrue("Expecting modified field to return a Date", (modifiedDate instanceof Date));
         
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);

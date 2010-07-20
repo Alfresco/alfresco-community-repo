@@ -31,11 +31,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.repo.forms.FormException;
-import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -47,27 +44,6 @@ public class TypedPropertyValueGetter
 {
     public static final String ON = "on";
 
-    private final DictionaryService dictionaryService;
-    
-    public TypedPropertyValueGetter(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    public Serializable getPropertyValueToPersist(QName fullName, Object value, ItemData<?> itemData)
-    {
-        PropertyDefinition propDef = itemData.getPropertyDefinition(fullName);
-        if (propDef == null)
-        {
-            propDef = dictionaryService.getProperty(fullName);
-        }
-        if (propDef != null)
-        {
-            return getValue(value, propDef);
-        }
-        return (Serializable) value;
-    }
-    
     public Serializable getValue(Object value, PropertyDefinition propDef)
     {
         if (value == null)

@@ -20,28 +20,16 @@ package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.alfresco.repo.forms.Form;
-import org.alfresco.repo.forms.FormData;
-import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.FormData.FieldData;
-import org.alfresco.repo.forms.processor.FormCreationData;
-import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ItemData;
-import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,33 +40,10 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Nick Smith
  */
-public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDefinition, WorkflowInstance>
+public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<WorkflowDefinition, WorkflowInstance>
 {
     /** Logger */
     private final static Log logger = LogFactory.getLog(WorkflowFormProcessor.class);
-    
-    /** WorkflowService */
-    private WorkflowService workflowService;
-
-    /** TyepdPropertyValueGetter */
-    private TypedPropertyValueGetter valueGetter;
-
-    private DataKeyMatcher keyMatcher;
-
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#generateFields(org.alfresco.repo.forms.Form, java.util.List, org.alfresco.repo.forms.processor.FormCreationData)
-     */
-    @Override
-    protected void populateForm(Form form, List<String> fields, FormCreationData data)
-    {
-        super.populateForm(form, fields, data);
-
-        // Add package actions to FormData.
-        ItemData<?> itemData = (ItemData<?>) data.getItemData();
-        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
-        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
-    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getAssociationValues(java.lang.Object)
@@ -197,126 +162,13 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
         return defName;
     }
     
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object)
      */
     @Override
-    protected WorkflowInstance internalPersist(WorkflowDefinition definition, FormData data)
+    protected ContentModelFormPersister<WorkflowInstance> makeFormPersister(WorkflowDefinition item)
     {
-        WorkflowBuilder builder = new WorkflowBuilder(definition, workflowService, nodeService);
-        ItemData<WorkflowDefinition> itemData = makeItemData(definition);
-        for (FieldData fieldData : data) 
-        {
-            addFieldToSerialize(builder, itemData, fieldData);
-        }
-        return builder.build();
-    }
-    
-    private void addFieldToSerialize(WorkflowBuilder builder, ItemData<WorkflowDefinition> itemData, FieldData fieldData)
-    {
-        String dataKeyName = fieldData.getName();
-        DataKeyInfo keyInfo = keyMatcher.match(dataKeyName);
-        if (keyInfo == null || 
-                    FieldType.TRANSIENT_PROPERTY == keyInfo.getFieldType() )
-        {
-            if(logger.isDebugEnabled())
-                logger.debug("Ignoring unrecognized field: " + dataKeyName);
-            return;
-        }
-        WorkflowDataKeyInfoVisitor visitor = new WorkflowDataKeyInfoVisitor(fieldData.getValue(), builder, itemData);
-        keyInfo.visit(visitor);
-    }
-
-    /**
-     * @param workflowService the workflowService to set
-     */
-    public void setWorkflowService(WorkflowService workflowService)
-    {
-        this.workflowService = workflowService;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#setNamespaceService(org.alfresco.service.namespace.NamespaceService)
-     */
-    @Override
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        super.setNamespaceService(namespaceService);
-        this.keyMatcher = new DataKeyMatcher(namespaceService);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#setDictionaryService(org.alfresco.service.cmr.dictionary.DictionaryService)
-     */
-    @Override
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        super.setDictionaryService(dictionaryService);
-        this.valueGetter = new TypedPropertyValueGetter(dictionaryService);
-    }
-    
-    private class WorkflowDataKeyInfoVisitor implements DataKeyInfoVisitor<Void>
-    {
-        private final Object rawValue;
-        private final WorkflowBuilder builder;
-        private final ItemData<WorkflowDefinition> itemData;
-        
-        public WorkflowDataKeyInfoVisitor(Object rawValue, WorkflowBuilder builder,
-                    ItemData<WorkflowDefinition> itemData)
-        {
-            this.rawValue = rawValue;
-            this.builder = builder;
-            this.itemData = itemData;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitAssociation(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
-         */
-        public Void visitAssociation(DataKeyInfo info)
-        {
-            QName qName = info.getQName();
-            if (rawValue instanceof String)
-            {
-                Serializable nodes = (Serializable) NodeRef.getNodeRefs((String) rawValue);
-                builder.addParameter(qName, nodes);
-            }
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitProperty(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
-         */
-        public Void visitProperty(DataKeyInfo info)
-        {
-            QName qName = info.getQName();
-            Serializable propValue = valueGetter.getPropertyValueToPersist(qName, rawValue, itemData);
-            builder.addParameter(qName, propValue);
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitTransientAssociation(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
-         */
-        public Void visitTransientAssociation(DataKeyInfo info)
-        {
-            if(PackageItemsFieldProcessor.KEY.equals(info.getFieldName()))
-            {
-                if(rawValue instanceof String)
-                {
-                    builder.addPackageItems((String)rawValue);
-                }
-            }
-            return null;
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.forms.processor.workflow.DataKeyInfoVisitor#visitTransientProperty(org.alfresco.repo.forms.processor.workflow.DataKeyInfo)
-         */
-        public Void visitTransientProperty(DataKeyInfo info)
-        {
-            throw new FormException("This methdo should never be called!");
-        }
-       
+        ItemData<WorkflowDefinition> itemData = makeItemData(item);
+        return new WorkflowFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, logger);
     }
 }

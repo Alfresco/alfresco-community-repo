@@ -30,16 +30,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.Form;
-import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.FormCreationData;
-import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -52,14 +48,10 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Nick Smith
  */
-public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, WorkflowTask>
+public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTask, WorkflowTask>
 {
     /** Logger */
     private static final Log LOGGER = LogFactory.getLog(TaskFormProcessor.class);
-    
-    private TypedPropertyValueGetter valueGetter;
-    private DataKeyMatcher keyMatcher;
-    private WorkflowService workflowService;
 
     // Constructor for Spring
     public TaskFormProcessor()
@@ -75,8 +67,6 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         this.namespaceService = namespaceService;
         this.dictionaryService = dictionaryService;
         this.fieldProcessorRegistry = fieldProcessorRegistry;
-        this.keyMatcher = new DataKeyMatcher(namespaceService);
-        this.valueGetter = new TypedPropertyValueGetter(dictionaryService);
     }
 
     @Override
@@ -97,68 +87,6 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         ItemData<?> itemData = (ItemData<?>) data.getItemData();
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
-    }
-
-    @Override
-    protected WorkflowTask internalPersist(WorkflowTask task, FormData data)
-    {
-        TaskUpdater updater = new TaskUpdater(task.id, workflowService);
-        ItemData<WorkflowTask> itemData = makeItemData(task);
-        for (FieldData fieldData : data) 
-        {
-            addFieldToSerialize(updater, itemData, fieldData);
-        }
-        return updater.update();
-    }
-
-    private void addFieldToSerialize(TaskUpdater updater,
-            ItemData<?> itemData,
-            FieldData fieldData)
-    {
-        String name = fieldData.getName();
-        DataKeyInfo keyInfo = keyMatcher.match(name);
-        if (keyInfo == null || 
-                    FieldType.TRANSIENT_PROPERTY == keyInfo.getFieldType() )
-        {
-            if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Ignoring unrecognized field: " + name);
-            return;
-        }
-        
-        QName fullName = keyInfo.getQName();
-        Object rawValue = fieldData.getValue();
-        if (FieldType.PROPERTY == keyInfo.getFieldType()) 
-        {
-            Serializable propValue = getPropertyValueToPersist(fullName, rawValue, itemData);
-            // TODO What if the user wants to set prop to null?
-            if (propValue != null)
-            {
-                updater.addProperty(fullName, propValue);
-            }
-        }
-        else if (FieldType.ASSOCIATION == keyInfo.getFieldType())
-        {
-            if (rawValue instanceof String)
-            {
-                updater.changeAssociation(fullName, (String) rawValue, keyInfo.isAdd());
-            }
-        }
-    }
-
-    private Serializable getPropertyValueToPersist(QName fullName,
-            Object value,
-            ItemData<?> itemData)
-    {
-        PropertyDefinition propDef = itemData.getPropertyDefinition(fullName);
-        if (propDef == null)
-        {
-            propDef = dictionaryService.getProperty(fullName);
-        }
-        if (propDef != null)
-        {
-            return valueGetter.getValue(value, propDef);
-        }
-        return (Serializable) value;
     }
 
     /*
@@ -224,36 +152,13 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         return null;
     }
 
-    /**
-     * Sets the Workflow Service.
-     * 
-     * @param workflowService
-     */
-    public void setWorkflowService(WorkflowService workflowService)
-    {
-        this.workflowService = workflowService;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.alfresco.repo.forms.processor.task.ContentModelFormProcessor#
-     * setNamespaceService(org.alfresco.service.namespace.NamespaceService)
-     */
-    @Override
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        super.setNamespaceService(namespaceService);
-        this.keyMatcher = new DataKeyMatcher(namespaceService);
-    }
-
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#setDictionaryService(org.alfresco.service.cmr.dictionary.DictionaryService)
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object)
      */
     @Override
-    public void setDictionaryService(DictionaryService dictionaryService)
+    protected ContentModelFormPersister<WorkflowTask> makeFormPersister(WorkflowTask item)
     {
-        super.setDictionaryService(dictionaryService);
-        this.valueGetter = new TypedPropertyValueGetter(dictionaryService);
+        ItemData<WorkflowTask> itemData = makeItemData(item);
+        return new TaskFormPersister(itemData, namespaceService, dictionaryService, workflowService, LOGGER);
     }
 }

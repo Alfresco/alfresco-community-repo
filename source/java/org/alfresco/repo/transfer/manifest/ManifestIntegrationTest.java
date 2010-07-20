@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.QName;
@@ -60,6 +61,7 @@ import org.alfresco.util.TempFileProvider;
 public class ManifestIntegrationTest extends BaseAlfrescoSpringTest 
 {
     private TransferService transferService;
+    private PermissionService permissionService;
     private ContentService contentService;
     
     /**
@@ -72,6 +74,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
+        this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
     }
     
     public void testSnapshot() throws Exception
@@ -97,6 +100,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         
         TransferManifestNodeFactoryImpl nodeFactory = new TransferManifestNodeFactoryImpl();
         nodeFactory.setNodeService(nodeService);
+        nodeFactory.setPermissionService(permissionService);
              
         /**
          * Create our transfer target

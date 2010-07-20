@@ -26,14 +26,18 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
+import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -82,6 +86,17 @@ public class TaskFormProcessor extends ContentModelFormProcessor<WorkflowTask, W
         String id = item.getId();
         WorkflowTask task = workflowService.getTaskById(id);
         return task;
+    }
+
+    @Override
+    protected void populateForm(Form form, List<String> fields, FormCreationData data)
+    {
+        super.populateForm(form, fields, data);
+
+        // Add package actions to FormData.
+        ItemData<?> itemData = (ItemData<?>) data.getItemData();
+        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
+        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
     }
 
     @Override

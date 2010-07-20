@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.repo.forms.FormData.FieldData;
+
 /**
  * Data representation of a form to be displayed in the UI.
  *
@@ -167,6 +169,18 @@ public class Form
     public void setFormData(FormData data)
     {
         this.data = data;
+    }
+
+    /**
+     * Returns <code>true</code> if the Form contains {@link FieldData} for the
+     * specified <code>dataKey</code>.
+     * 
+     * @param dataKey The dataKey for the field.
+     * @return
+     */
+    public boolean dataExists(String dataKey)
+    {
+        return data.getFieldNames().contains(dataKey);
     }
     
     /**

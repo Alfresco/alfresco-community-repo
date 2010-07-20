@@ -158,7 +158,6 @@
         class="org.alfresco.repo.forms.processor.workflow.WorkflowFormProcessor"
       parent="baseFormProcessor">
         <property name="filterRegistry" ref="workflowFilterRegistry" />
-        <property name="smallNodeService" ref="nodeService" />
         <property name="workflowService" ref="WorkflowService" />
         <property name="matchPattern">
             <value>workflow</value>

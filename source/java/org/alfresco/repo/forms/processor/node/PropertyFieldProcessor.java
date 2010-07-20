@@ -94,12 +94,12 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     }
 
     @Override
-    protected Object getValue(QName name, ItemData<?> data)
+    public Object getValue(QName name, ItemData<?> data)
     {
         Serializable value = data.getPropertyValue(name);
         if (value == null)
         {
-            return null;
+            return getDefaultValue(name, data);
         }
         
         if (value instanceof Collection<?>)
@@ -119,6 +119,16 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
             return contentData.getInfoUrl();
         }
         return value;
+    }
+
+    private Object getDefaultValue(QName name, ItemData<?> data)
+    {
+        PropertyDefinition propDef = data.getPropertyDefinition(name);
+        if(propDef !=null)
+        {
+            return propDef.getDefaultValue();
+        }
+        return null;
     }
 
     private PropertyFieldDefinition makePropertyFieldDefinition(final PropertyDefinition propDef, FieldGroup group)

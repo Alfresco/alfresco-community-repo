@@ -156,6 +156,13 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
     
         Object itemData = makeItemData(item);
         FormCreationData data = new FormCreationData(itemData, forcedFields, context); 
+        populateForm(form, fields, data);
+        if (log.isDebugEnabled()) //
+            log.debug("Generated form: " + form);
+    }
+
+    protected void populateForm(Form form, List<String> fields, FormCreationData data)
+    {
         List<Field> fieldsToAdd;
         if (fields != null && fields.size() > 0)
         {
@@ -166,8 +173,6 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
             fieldsToAdd = generateDefaultFields(data);
         }
         form.addFields(fieldsToAdd);
-        if (log.isDebugEnabled()) //
-            log.debug("Generated form: " + form);
     }
 
     /**

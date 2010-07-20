@@ -19,38 +19,32 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
+import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Temporary FormProcessor implementation that can generate and persist 
@@ -65,14 +59,27 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
     
     /** WorkflowService */
     private WorkflowService workflowService;
-    
-    /** Unprotected Node Service */
-    private NodeService unprotectedNodeService;
 
     /** TyepdPropertyValueGetter */
     private TypedPropertyValueGetter valueGetter;
 
     private DataKeyMatcher keyMatcher;
+
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#generateFields(org.alfresco.repo.forms.Form, java.util.List, org.alfresco.repo.forms.processor.FormCreationData)
+     */
+    @Override
+    protected void populateForm(Form form, List<String> fields, FormCreationData data)
+    {
+        super.populateForm(form, fields, data);
+
+        // Add package actions to FormData.
+        ItemData<?> itemData = (ItemData<?>) data.getItemData();
+        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
+        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getAssociationValues(java.lang.Object)
      */
@@ -137,11 +144,6 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
     protected Log getLogger()
     {
         return logger;
-    }
-
-    public void setSmallNodeService(NodeService nodeService)
-    {
-        this.unprotectedNodeService = nodeService;
     }
     
     /*
@@ -226,91 +228,6 @@ public class WorkflowFormProcessor extends ContentModelFormProcessor<WorkflowDef
         keyInfo.visit(visitor);
     }
 
-    
-    protected WorkflowInstance oldInternalPersist(WorkflowDefinition workflowDef, final FormData data)
-    {
-        if (logger.isDebugEnabled()) logger.debug("Persisting form for: " + workflowDef);
-
-        WorkflowInstance workflow = null;
-        Map<QName, Serializable> params = new HashMap<QName, Serializable>(8);
-
-        // create a package for the workflow
-        NodeRef workflowPackage = this.workflowService.createPackage(null);
-        params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
-        
-        // TODO: iterate through form data to collect properties, for now
-        //       just hardcode the ones we know
-        params.put(WorkflowModel.PROP_DESCRIPTION, 
-                    (Serializable)data.getFieldData("prop_bpm_workflowDescription").getValue());
-        
-        // look for assignee and group assignee
-        FieldData assigneeField = data.getFieldData("assoc_bpm_assignee_added");
-        if (assigneeField != null)
-        {
-            NodeRef assignee = new NodeRef(assigneeField.getValue().toString());
-            ArrayList<NodeRef> assigneeList = new ArrayList<NodeRef>(1);
-            assigneeList.add(assignee);
-            params.put(WorkflowModel.ASSOC_ASSIGNEE, assigneeList);
-        }
-        else
-        {
-            Object groupValue = data.getFieldData("assoc_bpm_groupAssignee_added").getValue();
-            NodeRef group = new NodeRef(groupValue.toString());
-            ArrayList<NodeRef> groupList = new ArrayList<NodeRef>(1);
-            groupList.add(group);
-            params.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignee"), 
-                        groupList);
-        }
-        
-        // add any package items
-        Object items = data.getFieldData("assoc_packageItems_added").getValue();
-        if (items != null)
-        {
-            String[] nodeRefs = StringUtils.tokenizeToStringArray(items.toString(), ",");
-            for (int x = 0; x < nodeRefs.length; x++)
-            {
-                NodeRef item = new NodeRef(nodeRefs[x]);
-                this.unprotectedNodeService.addChild(workflowPackage, item, 
-                            WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                            QName.createValidLocalName((String)this.nodeService.getProperty(
-                                  item, ContentModel.PROP_NAME))));
-            }
-        }
-        
-        // TODO: add any context (this could re-use alf_destination)
-        
-        // start the workflow to get access to the start task
-        WorkflowPath path = this.workflowService.startWorkflow(workflowDef.getId(), params);
-        if (path != null)
-        {
-            // get hold of the workflow instance for returning
-            workflow = path.instance;
-            
-            // extract the start task
-            List<WorkflowTask> tasks = this.workflowService.getTasksForWorkflowPath(path.id);
-            if (tasks.size() == 1)
-            {
-                WorkflowTask startTask = tasks.get(0);
-              
-                if (logger.isDebugEnabled())
-                    logger.debug("Found start task:" + startTask);
-              
-                if (startTask.state == WorkflowTaskState.IN_PROGRESS)
-                {
-                    // end the start task to trigger the first 'proper'
-                    // task in the workflow
-                    this.workflowService.endTask(startTask.id, null);
-                }
-            }
-        
-            if (logger.isDebugEnabled())
-                logger.debug("Started workflow: " + workflowDef.getId());
-        }
-        
-        // return the workflow just started
-        return workflow;
-    }
-    
     /**
      * @param workflowService the workflowService to set
      */

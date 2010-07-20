@@ -146,6 +146,7 @@ public class TaskFormProcessorTest extends TestCase
         fields = Arrays.asList(fullPropertyName);
         form = processForm(fields);
         checkSingleProperty(form, fieldName, WorkflowTaskState.IN_PROGRESS);
+        checkPackageActionGroups(form.getFormData());
     }
 
     public void testGenerateSingleAssociation()
@@ -163,6 +164,7 @@ public class TaskFormProcessorTest extends TestCase
         fields = Arrays.asList(fullAssociationName);
         form = processForm(fields);
         checkSingleAssociation(form, fieldName, fieldData);
+        checkPackageActionGroups(form.getFormData());
     }
 
     public void testIgnoresUnknownFields() throws Exception
@@ -172,22 +174,25 @@ public class TaskFormProcessorTest extends TestCase
         List<String> fields = Arrays.asList(fakeFieldName, statusFieldName);
         Form form = processForm(fields);
         checkSingleProperty(form, statusFieldName, WorkflowTaskState.IN_PROGRESS);
+        checkPackageActionGroups(form.getFormData());
     }
 
     public void testGenerateDefaultForm() throws Exception
     {
         Form form = processForm(null);
         List<String> fieldDefs = form.getFieldDefinitionNames();
-        assertEquals(6, fieldDefs.size());
+        assertEquals(8, fieldDefs.size());
         assertTrue(fieldDefs.contains(ASSIGNEE_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(ACTORS_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(DESC_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(STATUS_NAME.toPrefixString(namespaceService)));
 
+        
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
         FormData formData = form.getFormData();
-        assertEquals(4, formData.getNumberOfFields());
+        assertEquals(6, formData.getNumberOfFields());
         assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
+        checkPackageActionGroups(formData);
         assertEquals(WorkflowTaskState.IN_PROGRESS, formData.getFieldData("prop_bpm_status").getValue());
     }
 
@@ -308,6 +313,16 @@ public class TaskFormProcessorTest extends TestCase
         Item item = new Item("task", TASK_ID);
         Form form = processor.generate(item, fields, null, null);
         return form;
+    }
+
+    private void checkPackageActionGroups(FormData formData)
+    {
+        FieldData pckgActionData = formData.getFieldData("prop_bpm_packageActionGroup");
+        assertNotNull(pckgActionData);
+        assertEquals("", pckgActionData.getValue());
+        FieldData pckgItemActionData = formData.getFieldData("prop_bpm_packageItemActionGroup");
+        assertNotNull(pckgItemActionData);
+        assertEquals("read_package_item_actions", pckgItemActionData.getValue());
     }
 
     private void checkSingleProperty(Form form, String fieldName, Serializable fieldData)
@@ -441,6 +456,18 @@ public class TaskFormProcessorTest extends TestCase
         // Add a Status property
         PropertyDefinition with_ = MockClassAttributeDefinition.mockPropertyDefinition(PROP_WITH_, textType);
         properties.put(PROP_WITH_, with_);
+        
+        // Add a Package Action property
+        QName pckgActionGroup = WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
+        PropertyDefinition pckgAction = 
+            MockClassAttributeDefinition.mockPropertyDefinition(pckgActionGroup, textType, "");
+        properties.put(pckgActionGroup, pckgAction);
+        
+        // Add a Package Action property
+        QName pckgItemActionGroup = WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
+        PropertyDefinition pckgItemAction = 
+            MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup, textType, "read_package_item_actions");
+        properties.put(pckgItemActionGroup, pckgItemAction);
 
         return properties;
     }
@@ -504,4 +531,6 @@ public class TaskFormProcessorTest extends TestCase
         when(service.updateTask(anyString(), anyMap(), anyMap(), anyMap())).thenReturn(newTask);
         return service;
     }
+    
+    
 }

@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.Field;
+import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormData.FieldData;
@@ -195,6 +196,24 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    protected void addPropertyDataIfRequired(QName propName, Form form, ItemData<?> itemData)
+    {
+        String dataKey = makePropDataKey(propName);
+        if(form.dataExists(dataKey)== false)
+        {
+            PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, dictionaryService);
+            Object value = processor.getValue(propName, itemData);
+            form.addData(dataKey, value);
+        }
+    }
+
+    private String makePropDataKey(QName propName)
+    {
+        String propPrefixName = propName.toPrefixString(namespaceService);
+        String dataKey = FormFieldConstants.PROP_DATA_PREFIX + propPrefixName.replace(':', '_');
+        return dataKey;
     }
 
     @Override

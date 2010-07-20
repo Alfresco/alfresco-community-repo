@@ -25,7 +25,8 @@
 
 package org.alfresco.repo.forms.processor.node;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -74,6 +75,14 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name);
         mockDataTypeName(dataTypeName, mock);
+        return mock;
+    }
+    
+    public static MockClassAttributeDefinition mockPropertyDefinition(QName name, QName dataTypeName, String defaultValue)
+    {
+        MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name);
+        mockDataTypeName(dataTypeName, mock);
+        mock.defaultValue = defaultValue;
         return mock;
     }
 

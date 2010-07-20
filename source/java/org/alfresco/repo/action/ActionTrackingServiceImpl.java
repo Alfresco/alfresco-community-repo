@@ -112,7 +112,9 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
          runtimeActionService.saveActionImpl(action.getNodeRef(), action);
       }
       
-      // TODO Remove it from the cache
+      // Remove it from the cache, as it's finished
+      String key = generateCacheKey(action);
+      executingActionsCache.remove(key);
    }
 
    public void recordActionExecuting(Action action) 
@@ -120,6 +122,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       // Mark the action as starting
       ((ActionImpl)action).setExecutionStartDate(new Date());
       ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
+      
+      // TODO assign it a (unique) execution ID
       
       // TODO Put it into the cache
    }
@@ -139,8 +143,11 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
       ((ActionImpl)action).setExecutionFailureMessage(exception.getMessage());
       
-      // TODO Take it out of the cache
-      
+      // Remove it from the cache, as it's no longer running
+      String key = generateCacheKey(action);
+      executingActionsCache.remove(key);
+
+      // Do we need to update the persisted details?
       if(action.getNodeRef() != null)
       {
          // Take a local copy of the details
@@ -203,12 +210,25 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       //  status executing, then put it back into the
       //  cache and warn
       // (Probably means the cache is too small)
+      String key = generateCacheKey(action);
+      ExecutionDetails details = getExecutionDetails(buildExecutionSummary(key));
+      if(details == null) {
+         logger.warn(
+               "Unable to check cancellation status for running action " +
+               action + " as it wasn't in the running actions cache! " +
+               "Your running actions cache is probably too small"
+         );
+         
+         // TODO Re-generate
+         
+         // Re-save into the cache, so it's there for
+         //  next time
+         executingActionsCache.put(key, details);
+      }
       
-      // Retrieve from the cache, and see if cancellation
+      // Check the cached details, and see if cancellation
       //  has been requested
-      
-      // TODO
-      return false;
+      return details.isCancelRequested();
    }
 
    public void requestActionCancellation(CancellableAction action) 
@@ -236,7 +256,9 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       }
       
       // Since it is, update the cancelled flag on it
-      // TODO
+      details.requestCancel();
+      
+      // Save the flag to the cache
       executingActionsCache.put(actionKey, details);
    }
 
@@ -274,9 +296,13 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    }
 
    public ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary) {
-      return executingActionsCache.get(
+      ExecutionDetails details = executingActionsCache.get(
             generateCacheKey(executionSummary)
       );
+      if(details != null) {
+         details.setExecutionSummary(executionSummary);
+      }
+      return details;
    }
 
    /**
@@ -312,5 +338,4 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       
       return new ExecutionSummary(actionType, actionId, executionInstance);
    }
-   
 }

@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.action;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -29,8 +30,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *  
  * @author Nick Burch
  */
-public class ExecutionDetails {
-    /* 
+public class ExecutionDetails implements Serializable {
+   private static final long serialVersionUID = 8002491363996364589L;
+   
+   /* 
      * Transient as all the info is held in the key,
      *  we don't need to also hold a 2nd copy of it 
      */
@@ -39,4 +42,70 @@ public class ExecutionDetails {
     private String runningOn;
     private Date startedAt;
     private boolean cancelRequested;
+    
+    public ExecutionDetails() {}
+
+    public ExecutionDetails(ExecutionSummary executionSummary,
+          NodeRef persistedActionRef, String runningOn, Date startedAt,
+          boolean cancelRequested) {
+       this.executionSummary = executionSummary;
+       this.persistedActionRef = persistedActionRef;
+       this.runningOn = runningOn;
+       this.startedAt = startedAt;
+       this.cancelRequested = cancelRequested;
+    }
+
+    public ExecutionSummary getExecutionSummary() {
+       return executionSummary;
+    }
+    public void setExecutionSummary(ExecutionSummary executionSummary) {
+       this.executionSummary = executionSummary;
+    }
+    
+    /**
+     * What kind of action is this? 
+     * @return The action type, typically an executor bean name
+     */
+    public String getActionType() {
+       return executionSummary.getActionType();
+    }
+
+    /**
+     * What is the id of the action?
+     * @return The action ID
+     */
+    public String getActionId() {
+       return executionSummary.getActionId();
+    }
+
+    /**
+     * Which instance of the action is this?
+     * Every time you start an action, it gets
+     *  a new instance ID, and this lets you
+     *  tell the difference between two copies
+     *  running in parallel.
+     * @return The instance ID
+     */
+    public int getExecutionInstance() {
+       return executionSummary.getExecutionInstance();
+    }
+    
+    public NodeRef getPersistedActionRef() {
+       return persistedActionRef;
+    }
+
+    public String getRunningOn() {
+       return runningOn;
+    }
+
+    public Date getStartedAt() {
+       return startedAt;
+    }
+
+    public boolean isCancelRequested() {
+       return cancelRequested;
+    }
+    public void requestCancel() {
+       cancelRequested = true;
+    }
  }

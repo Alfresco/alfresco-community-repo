@@ -39,14 +39,30 @@ public class ExecutionSummary {
        this.executionInstance = executionInstance;
     }
 
+    /**
+     * What kind of action is this? 
+     * @return The action type, typically an executor bean name
+     */
     public String getActionType() {
        return actionType;
     }
 
+    /**
+     * What is the id of the action?
+     * @return The action ID
+     */
     public String getActionId() {
        return actionId;
     }
 
+    /**
+     * Which instance of the action is this?
+     * Every time you start an action, it gets
+     *  a new instance ID, and this lets you
+     *  tell the difference between two copies
+     *  running in parallel.
+     * @return The instance ID
+     */
     public int getExecutionInstance() {
        return executionInstance;
     }

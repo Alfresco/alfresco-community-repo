@@ -28,6 +28,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionTrackingServiceImplTest.SleepActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -120,7 +121,8 @@ public class ActionServiceImplTransactionalTest extends TestCase
      *  service correctly sets the flags
      */
     public void testExecutionTrackingOnExecution() throws Exception {
-       final SleepActionExecuter sleepActionExec = new SleepActionExecuter();
+       final SleepActionExecuter sleepActionExec = 
+          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
        sleepActionExec.setSleepMs(10);
        Action action;
        NodeRef actionNode;

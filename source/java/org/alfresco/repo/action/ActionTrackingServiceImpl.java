@@ -103,6 +103,11 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    
    public void recordActionComplete(Action action) 
    {
+      if (logger.isDebugEnabled() == true)
+      {
+         logger.debug("Action " + action + " has completed execution");
+      }
+      
       // Mark it as having worked
       ((ActionImpl)action).setExecutionEndDate(new Date());
       ((ActionImpl)action).setExecutionStatus(ActionStatus.Completed);
@@ -119,13 +124,23 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
    public void recordActionExecuting(Action action) 
    {
+      if (logger.isDebugEnabled() == true)
+      {
+         logger.debug("Action " + action + " has begun exection");
+      }
+      
       // Mark the action as starting
       ((ActionImpl)action).setExecutionStartDate(new Date());
       ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
       
       // TODO assign it a (unique) execution ID
+      // (Keep checking to see if the key is used as we
+      //  increase nextExecutionId until it isn't)
+      String key = generateCacheKey(action);
       
-      // TODO Put it into the cache
+      // Put it into the cache
+      ExecutionDetails details = buildExecutionDetails(action);
+      executingActionsCache.put(key, details);
    }
 
    /**
@@ -219,7 +234,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
                "Your running actions cache is probably too small"
          );
          
-         // TODO Re-generate
+         // Re-generate
+         details = buildExecutionDetails(action);
          
          // Re-save into the cache, so it's there for
          //  next time
@@ -308,34 +324,59 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    /**
     * Generates the cache key for the specified action.
     */
-   protected String generateCacheKey(Action action)
+   protected static String generateCacheKey(Action action)
    {
       return 
-         action.getActionDefinitionName() + "-" +
-         action.getId() + "-" +
-         ""//action.getExecutionInstance // TODO
+         action.getActionDefinitionName() + "=" +
+         action.getId() + "=" +
+         "1"//action.getExecutionInstance // TODO
       ;
    }
-   protected String generateCacheKey(ExecutionSummary summary)
+   protected static String generateCacheKey(ExecutionSummary summary)
    {
       return 
-         summary.getActionType() + "-" +
-         summary.getActionId() + "-" +
+         summary.getActionType() + "=" +
+         summary.getActionId() + "=" +
          summary.getExecutionInstance()
       ;
+   }
+   
+   /**
+    * Builds up the details to be stored in a cache
+    *  for a specific action
+    */
+   protected static ExecutionDetails buildExecutionDetails(Action action)
+   {
+      // TODO Where are we?
+      String machine = "TODO";
+      
+      // Generate
+      return new ExecutionDetails(
+            buildExecutionSummary(action),
+            action.getNodeRef(), machine,
+            action.getExecutionStartDate(), false
+      );
    }
 
    /**
     * Turns a cache key back into its constituent
     *  parts, for easier access.
     */
-   protected ExecutionSummary buildExecutionSummary(String key)
+   protected static ExecutionSummary buildExecutionSummary(String key)
    {
-      StringTokenizer st = new StringTokenizer(key, "-");
+      StringTokenizer st = new StringTokenizer(key, "=");
       String actionType = st.nextToken();
       String actionId = st.nextToken();
       int executionInstance = Integer.parseInt(st.nextToken());
       
       return new ExecutionSummary(actionType, actionId, executionInstance);
+   }
+   protected static ExecutionSummary buildExecutionSummary(Action action)
+   {
+      return new ExecutionSummary(
+            action.getActionDefinitionName(),
+            action.getId(),
+            1 // TODO
+      );
    }
 }

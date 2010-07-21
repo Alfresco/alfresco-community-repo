@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
@@ -51,24 +52,21 @@ public class TaskUpdater
 
     private final String taskId;
     private final WorkflowService workflowService;
-    private Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-    private Map<QName, List<NodeRef>> add = new HashMap<QName, List<NodeRef>>();
-    private Map<QName, List<NodeRef>> remove = new HashMap<QName, List<NodeRef>>();
+    private final PackageManager packageMgr;
 
-    public TaskUpdater(String taskId, WorkflowService workflowService)
+    private final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+    private final Map<QName, List<NodeRef>> add = new HashMap<QName, List<NodeRef>>();
+    private final Map<QName, List<NodeRef>> remove = new HashMap<QName, List<NodeRef>>();
+
+    public TaskUpdater(String taskId,
+                WorkflowService workflowService,
+                NodeService nodeService)
     {
         this.taskId = taskId;
         this.workflowService = workflowService;
+        this.packageMgr = new PackageManager(workflowService, nodeService, LOGGER);
     }
 
-    public WorkflowTask update()
-    {
-        WorkflowTask result = workflowService.updateTask(taskId, properties, add, remove);
-        properties = new HashMap<QName, Serializable>();
-        add = new HashMap<QName, List<NodeRef>>();
-        remove = new HashMap<QName, List<NodeRef>>();
-        return result;
-    }
 
     public void addProperty(QName name, Serializable value)
     {
@@ -117,6 +115,29 @@ public class TaskUpdater
             map = remove;
         }
         return map;
+    }
+    
+    public void addPackageItems(List<NodeRef> items)
+    {
+        packageMgr.addItems(items);
+    }
+    
+    public void removePackageItems(List<NodeRef> items)
+    {
+        packageMgr.removeItems(items);
+    }
+
+    public WorkflowTask update()
+    {
+        WorkflowTask task = workflowService.getTaskById(taskId);
+        NodeRef packageNode = task.path.instance.workflowPackage;
+        packageMgr.update(packageNode);
+        
+        WorkflowTask result = workflowService.updateTask(taskId, properties, add, remove);
+        properties.clear();
+        add.clear();
+        remove.clear();
+        return result;
     }
 
 }

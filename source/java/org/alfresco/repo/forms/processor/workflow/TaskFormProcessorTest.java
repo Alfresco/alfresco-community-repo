@@ -28,9 +28,7 @@ package org.alfresco.repo.forms.processor.workflow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
@@ -58,8 +56,11 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -67,7 +68,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
-import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -76,40 +76,45 @@ import org.mockito.stubbing.Answer;
  */
 public class TaskFormProcessorTest extends TestCase
 {
-    private static final String  TASK_DEF_NAME = "TaskDef";
-    private static final String  TASK_ID       = "Real Id";
-    private static final QName   DESC_NAME     = WorkflowModel.PROP_DESCRIPTION;
-    private static final QName   STATUS_NAME   = WorkflowModel.PROP_STATUS;
-    private static final QName   PROP_WITH_    = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_prop");
-    private static final QName   ACTORS_NAME   = WorkflowModel.ASSOC_POOLED_ACTORS;
-    private static final QName   ASSIGNEE_NAME = WorkflowModel.ASSOC_ASSIGNEE;
-    private static final QName   ASSOC_WITH_   = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_assoc");
-    private static final NodeRef FAKE_NODE     = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode");
+    private static final String TASK_DEF_NAME = "TaskDef";
+    private static final String TASK_ID = "Real Id";
+    private static final QName DESC_NAME = WorkflowModel.PROP_DESCRIPTION;
+    private static final QName STATUS_NAME = WorkflowModel.PROP_STATUS;
+    private static final QName PROP_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_prop");
+    private static final QName ACTORS_NAME = WorkflowModel.ASSOC_POOLED_ACTORS;
+    private static final QName ASSIGNEE_NAME = WorkflowModel.ASSOC_ASSIGNEE;
+    private static final QName ASSOC_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_assoc");
+    private static final NodeRef FAKE_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode");
+    private static final NodeRef PCKG_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakePackage");
 
-    private WorkflowService      workflowService;
-    private TaskFormProcessor    processor;
-    private WorkflowTask         task;
-    private NamespaceService     namespaceService;
-    private WorkflowTask         newTask;
-
+    private WorkflowService workflowService;
+    private NodeService nodeService;
+    private TaskFormProcessor processor;
+    private WorkflowTask task;
+    private NamespaceService namespaceService;
+    private WorkflowTask newTask;
+    private Map<QName, Serializable> actualProperties = null;
+    private Map<QName, List<NodeRef>> actualAdded= null;
+    private Map<QName, List<NodeRef>> actualRemoved= null;
+    
     public void testGetTypedItem() throws Exception
     {
-        try 
+        try
         {
             processor.getTypedItem(null);
             fail("Should have thrown an Exception here!");
         }
-        catch (IllegalArgumentException e) 
+        catch (IllegalArgumentException e)
         {
             // Do nothing!
         }
 
-        try 
+        try
         {
             processor.getTypedItem(new Item("task", "bad id"));
             fail("Should have thrown an Exception here!");
         }
-        catch (WorkflowException e) 
+        catch (WorkflowException e)
         {
             // Do nothing!
         }
@@ -187,7 +192,6 @@ public class TaskFormProcessorTest extends TestCase
         assertTrue(fieldDefs.contains(DESC_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(STATUS_NAME.toPrefixString(namespaceService)));
 
-        
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
         FormData formData = form.getFormData();
         assertEquals(6, formData.getNumberOfFields());
@@ -204,7 +208,6 @@ public class TaskFormProcessorTest extends TestCase
 
         processPersist(dataKey, value);
 
-        Map<QName, Serializable> actualProperties = retrievePropertyies();
         assertEquals(1, actualProperties.size());
         assertEquals(value, actualProperties.get(DESC_NAME));
     }
@@ -217,17 +220,8 @@ public class TaskFormProcessorTest extends TestCase
 
         processPersist(dataKey, value);
 
-        Map<QName, Serializable> actualProperties = retrievePropertyies();
         assertEquals(1, actualProperties.size());
         assertEquals(value, actualProperties.get(PROP_WITH_));
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<QName, Serializable> retrievePropertyies()
-    {
-        ArgumentCaptor<Map> mapArg = ArgumentCaptor.forClass(Map.class);
-        verify(workflowService).updateTask(eq(TASK_ID), mapArg.capture(), anyMap(), anyMap());
-        return mapArg.getValue();
     }
 
     public void testPersistAssociationAdded() throws Exception
@@ -240,9 +234,8 @@ public class TaskFormProcessorTest extends TestCase
         String value = nodeRef1 + ", " + nodeRef2;
         processPersist(dataKey, value);
 
-        Map<QName, List<NodeRef>> actualAddedAssocs = retrieveAssociations(true);
-        assertEquals(1, actualAddedAssocs.size());
-        List<NodeRef> nodeRefs = actualAddedAssocs.get(ACTORS_NAME);
+        assertEquals(1, actualAdded.size());
+        List<NodeRef> nodeRefs = actualAdded.get(ACTORS_NAME);
         assertNotNull(nodeRefs);
         assertEquals(2, nodeRefs.size());
         assertTrue(nodeRefs.contains(new NodeRef(nodeRef1)));
@@ -257,14 +250,13 @@ public class TaskFormProcessorTest extends TestCase
         String value = FAKE_NODE.toString();
         processPersist(dataKey, value);
 
-        Map<QName, List<NodeRef>> actualRemovedAssocs = retrieveAssociations(false);
-        assertEquals(1, actualRemovedAssocs.size());
-        List<NodeRef> nodeRefs = actualRemovedAssocs.get(ASSIGNEE_NAME);
+        assertEquals(1, actualRemoved.size());
+        List<NodeRef> nodeRefs = actualRemoved.get(ASSIGNEE_NAME);
         assertNotNull(nodeRefs);
         assertEquals(1, nodeRefs.size());
         assertTrue(nodeRefs.contains(FAKE_NODE));
     }
-    
+
     public void testPersistAssociationAddedWith_() throws Exception
     {
         String fieldName = ASSOC_WITH_.toPrefixString(namespaceService);
@@ -275,30 +267,19 @@ public class TaskFormProcessorTest extends TestCase
         String value = nodeRef1 + ", " + nodeRef2;
         processPersist(dataKey, value);
 
-        Map<QName, List<NodeRef>> actualAddedAssocs = retrieveAssociations(true);
-        assertEquals(1, actualAddedAssocs.size());
-        List<NodeRef> nodeRefs = actualAddedAssocs.get(ASSOC_WITH_);
+        assertEquals(1, actualAdded.size());
+        List<NodeRef> nodeRefs = actualAdded.get(ASSOC_WITH_);
         assertNotNull(nodeRefs);
         assertEquals(2, nodeRefs.size());
         assertTrue(nodeRefs.contains(new NodeRef(nodeRef1)));
         assertTrue(nodeRefs.contains(new NodeRef(nodeRef2)));
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<QName, List<NodeRef>> retrieveAssociations(boolean added)
+    public void testPackageItems() throws Exception
     {
-        ArgumentCaptor<Map> mapArg = ArgumentCaptor.forClass(Map.class);
-        if (added) 
-        {
-            verify(workflowService).updateTask(eq(TASK_ID), anyMap(), mapArg.capture(), anyMap());
-        }
-        else 
-        {
-            verify(workflowService).updateTask(eq(TASK_ID), anyMap(), anyMap(), mapArg.capture());
-        }
-        return mapArg.getValue();
+        //TODO Implement test.
     }
-
+    
     private void processPersist(String dataKey, String value)
     {
         FormData data = new FormData();
@@ -369,19 +350,21 @@ public class TaskFormProcessorTest extends TestCase
         super.setUp();
         task = makeTask();
         workflowService = makeWorkflowService();
+        nodeService = makeNodeService();
         DictionaryService dictionaryService = makeDictionaryService();
         namespaceService = makeNamespaceService();
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
-                dictionaryService);
+                    dictionaryService);
         DefaultFieldProcessor defaultProcessor = makeDefaultFieldProcessor(dictionaryService);
         processor = makeTaskFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
     }
 
     private TaskFormProcessor makeTaskFormProcessor(DictionaryService dictionaryService,
-            MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
+                MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
     {
         TaskFormProcessor processor1 = new TaskFormProcessor();
         processor1.setWorkflowService(workflowService);
+        processor1.setNodeService(nodeService);
         processor1.setNamespaceService(namespaceService);
         processor1.setDictionaryService(dictionaryService);
         processor1.setFieldProcessorRegistry(fieldProcessorRegistry);
@@ -404,6 +387,10 @@ public class TaskFormProcessorTest extends TestCase
         result.state = WorkflowTaskState.IN_PROGRESS;
         result.definition = makeTaskDefinition();
         result.properties = makeTaskProperties();
+
+        result.path = new WorkflowPath();
+        result.path.instance = new WorkflowInstance();
+        result.path.instance.workflowPackage = PCKG_NODE;
         return result;
     }
 
@@ -456,17 +443,17 @@ public class TaskFormProcessorTest extends TestCase
         // Add a Status property
         PropertyDefinition with_ = MockClassAttributeDefinition.mockPropertyDefinition(PROP_WITH_, textType);
         properties.put(PROP_WITH_, with_);
-        
+
         // Add a Package Action property
         QName pckgActionGroup = WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
-        PropertyDefinition pckgAction = 
-            MockClassAttributeDefinition.mockPropertyDefinition(pckgActionGroup, textType, "");
+        PropertyDefinition pckgAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgActionGroup, textType,
+                    "");
         properties.put(pckgActionGroup, pckgAction);
-        
+
         // Add a Package Action property
         QName pckgItemActionGroup = WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
-        PropertyDefinition pckgItemAction = 
-            MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup, textType, "read_package_item_actions");
+        PropertyDefinition pckgItemAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup,
+                    textType, "read_package_item_actions");
         properties.put(pckgItemActionGroup, pckgItemAction);
 
         return properties;
@@ -479,17 +466,17 @@ public class TaskFormProcessorTest extends TestCase
 
         // Add Assigneee association
         MockClassAttributeDefinition assigneeDef = MockClassAttributeDefinition.mockAssociationDefinition(
-                ASSIGNEE_NAME, actorName);
+                    ASSIGNEE_NAME, actorName);
         associations.put(ASSIGNEE_NAME, assigneeDef);
 
         // Add Assigneee association
         MockClassAttributeDefinition actorsDef = MockClassAttributeDefinition.mockAssociationDefinition(ACTORS_NAME,
-                actorName);
+                    actorName);
         associations.put(ACTORS_NAME, actorsDef);
 
         // Add association with _
         MockClassAttributeDefinition with_ = MockClassAttributeDefinition.mockAssociationDefinition(ASSOC_WITH_,
-                actorName);
+                    actorName);
         associations.put(ASSOC_WITH_, with_);
 
         return associations;
@@ -516,7 +503,6 @@ public class TaskFormProcessorTest extends TestCase
         WorkflowService service = mock(WorkflowService.class);
         when(service.getTaskById(anyString())).thenAnswer(new Answer<WorkflowTask>()
         {
-
             public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
             {
                 String id = (String) invocation.getArguments()[0];
@@ -526,11 +512,34 @@ public class TaskFormProcessorTest extends TestCase
                     throw new WorkflowException("Task Id not found!");
             }
         });
+        
         this.newTask = new WorkflowTask();
         newTask.id = TASK_ID;
-        when(service.updateTask(anyString(), anyMap(), anyMap(), anyMap())).thenReturn(newTask);
+
+        when(service.updateTask(anyString(), anyMap(), anyMap(), anyMap()))
+        .thenAnswer(new Answer<WorkflowTask>()
+        {
+            public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
+            {
+                Object[] args = invocation.getArguments();
+                Map<QName, Serializable> props = (Map<QName, Serializable>) args[1];
+                actualProperties = new HashMap<QName, Serializable>(props);
+                Map<QName, List<NodeRef>> added = (Map<QName, List<NodeRef>>) args[2];
+                actualAdded = new HashMap<QName, List<NodeRef>>(added);
+                Map<QName, List<NodeRef>> removed = (Map<QName, List<NodeRef>>) args[3];
+                actualRemoved = new HashMap<QName, List<NodeRef>>(removed);
+                return newTask;
+            }
+        });
         return service;
     }
     
-    
+    private NodeService makeNodeService()
+    {
+        NodeService service = mock(NodeService.class);
+        when(service.hasAspect(PCKG_NODE, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
+            .thenReturn(true);
+        return service;
+    }
+
 }

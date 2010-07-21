@@ -118,8 +118,11 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         }
 
         // attach workflow package
-        if (nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE)) { throw new WorkflowException(
-                    "Container '" + container + "' is already a workflow package."); }
+        if (nodeService.hasAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE)) 
+        {
+            String msg = "Container '" + container + "' is already a workflow package.";
+            throw new WorkflowException(msg);
+        }
         nodeService.addAspect(container, WorkflowModel.ASPECT_WORKFLOW_PACKAGE, null);
         nodeService.setProperty(container, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, isSystemPackage);
 

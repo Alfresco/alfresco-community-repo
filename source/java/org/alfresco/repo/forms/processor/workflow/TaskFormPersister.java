@@ -25,6 +25,7 @@ import java.util.List;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
@@ -43,11 +44,12 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
                 NamespaceService namespaceService,
                 DictionaryService dictionaryService,
                 WorkflowService workflowService,
+                NodeService nodeService,
                 Log logger)
     {
         super(itemData, namespaceService, dictionaryService, logger);
         WorkflowTask item = itemData.getItem();
-        this.updater = new TaskUpdater(item.id, workflowService);
+        this.updater = new TaskUpdater(item.id, workflowService, nodeService);
     }
     
     /* (non-Javadoc)
@@ -59,7 +61,6 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         updater.addAssociation(qName, values);
         return true;
     }
-    
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#removeAssociation(org.alfresco.service.namespace.QName, java.util.List)
@@ -82,6 +83,34 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     }
 
     /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#addTransientAssociation(java.lang.String, java.util.List)
+     */
+    @Override
+    protected boolean addTransientAssociation(String fieldName, List<NodeRef> values)
+    {
+        if(PackageItemsFieldProcessor.KEY.equals(fieldName))
+        {
+            updater.addPackageItems(values);
+            return true;
+        }
+        return false;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#removeTransientAssociation(java.lang.String, java.util.List)
+     */
+    @Override
+    protected boolean removeTransientAssociation(String fieldName, List<NodeRef> values)
+    {
+        if(PackageItemsFieldProcessor.KEY.equals(fieldName))
+        {
+            updater.removePackageItems(values);
+            return true;
+        }
+        return false;
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#persist()
      */
     @Override
@@ -90,4 +119,5 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         return updater.update();
     }
 
+    
 }

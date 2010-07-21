@@ -51,18 +51,16 @@ import org.alfresco.service.namespace.QName;
 public class WorkflowBuilder
 {
     private final WorkflowService workflowService;
+    private final PackageManager packageMgr;
     private final WorkflowDefinition definition;
-    private final NodeService nodeService;
 
     private final Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-    private final Set<NodeRef> packageItems = new HashSet<NodeRef>();
     private NodeRef packageNode = null;
-    
     
     public WorkflowBuilder(WorkflowDefinition definition, WorkflowService workflowService, NodeService nodeService)
     {
         this.workflowService = workflowService;
-        this.nodeService = nodeService;
+        this.packageMgr = new PackageManager(workflowService, nodeService, null);
         this.definition = definition;
     }
     
@@ -79,41 +77,6 @@ public class WorkflowBuilder
         }
     }
     
-    public void addPackageItems(List<NodeRef> items)
-    {
-        packageItems.addAll(items);
-    }
-
-    /**
-     * Takes a comma-separated list of {@link NodeRef} ids and adds the
-     * specified NodeRefs to the package.
-     * 
-     * @param items
-     */
-    public void addPackageItems(String items)
-    {
-        List<NodeRef> nodes = NodeRef.getNodeRefs(items);
-        addPackageItems(nodes);
-    }
-    
-    public void addPackageItemsAsStrings(List<String> itemStrs)
-    {
-        for (String itemStr : itemStrs)
-        {
-            addPackageItem(itemStr);
-        }
-    }
-
-    public void addPackageItem(NodeRef item)
-    {
-        packageItems.add(item);
-    }
-    
-    public void addPackageItem(String itemStr)
-    {
-        packageItems.add(new NodeRef(itemStr));
-    }
-    
     /**
      * @param packageNode the packageNode to set
      */
@@ -122,9 +85,15 @@ public class WorkflowBuilder
         this.packageNode = packageNode;
     }
     
+    public void addPackageItems(List<NodeRef> items)
+    {
+        packageMgr.addItems(items);
+    }
+    
     public WorkflowInstance build()
     {
-        buildPackage();
+        NodeRef packageRef = packageMgr.create(packageNode);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
         WorkflowPath path = workflowService.startWorkflow(definition.id, params);
         signalStartTask(path);
         return path.instance;
@@ -142,27 +111,4 @@ public class WorkflowBuilder
             throw new WorkflowException("Start task not found! Expected 1 task but found: " + tasks.size());
     }
 
-    private void buildPackage()
-    {
-        final NodeRef packageRef = workflowService.createPackage(packageNode);
-        final String url = NamespaceService.CONTENT_MODEL_1_0_URI;
-        final QName packageContains = WorkflowModel.ASSOC_PACKAGE_CONTAINS;
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            public Void doWork() throws Exception
-            {
-                for (NodeRef item : packageItems)
-                {
-                    String name = 
-                        (String) nodeService.getProperty(item, ContentModel.PROP_NAME);
-                    String localName = QName.createValidLocalName(name);
-                    QName qName = QName.createQName(url, localName);
-                    nodeService.addChild(packageRef, item, packageContains, qName);
-                }
-                return null;
-            }
-            
-        }, AuthenticationUtil.getSystemUserName());
-        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
-    }
 }

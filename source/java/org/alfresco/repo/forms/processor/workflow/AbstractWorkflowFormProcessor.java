@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 
 /**
  * @author Nick Smith
- *
  */
 public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> extends ContentModelFormProcessor<ItemType, PersistType>
 {
@@ -49,7 +48,6 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
     }
-
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)

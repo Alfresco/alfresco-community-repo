@@ -159,6 +159,6 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     protected ContentModelFormPersister<WorkflowTask> makeFormPersister(WorkflowTask item)
     {
         ItemData<WorkflowTask> itemData = makeItemData(item);
-        return new TaskFormPersister(itemData, namespaceService, dictionaryService, workflowService, LOGGER);
+        return new TaskFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, LOGGER);
     }
 }

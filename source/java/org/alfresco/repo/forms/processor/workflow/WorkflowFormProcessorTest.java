@@ -19,11 +19,15 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
+import junit.framework.TestCase;
+
 /**
  * @author Nick Smith
- *
  */
-public class WorkflowFormProcessorTest
+public class WorkflowFormProcessorTest extends TestCase
 {
-
+    public void testNothing()
+    {
+        //Do nothings.
+    }
 }

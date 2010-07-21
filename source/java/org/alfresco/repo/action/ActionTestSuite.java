@@ -68,9 +68,7 @@ public class ActionTestSuite extends TestSuite
         suite.addTestSuite(ContentMetadataExtracterTest.class);
         suite.addTestSuite(SpecialiseTypeActionExecuterTest.class);
         suite.addTestSuite(RemoveFeaturesActionExecuterTest.class);
-        
-        // Tests which care about transactions
-        suite.addTestSuite(ActionServiceImplTransactionalTest.class);
+        suite.addTestSuite(ActionTrackingServiceImplTest.class);
         
         return suite;
     }

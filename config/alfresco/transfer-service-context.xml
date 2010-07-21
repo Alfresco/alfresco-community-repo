@@ -79,6 +79,7 @@
 		<property name="manifestProcessorFactory" ref="transferManifestProcessorFactory" />
 		<property name="behaviourFilter" ref="policyBehaviourFilter" />
 		<property name="progressMonitor" ref="transferProgressMonitor" />
+		<property name="policyComponent" ref="policyComponent" />
 	</bean>
 
 	<bean id="transferProgressMonitor"

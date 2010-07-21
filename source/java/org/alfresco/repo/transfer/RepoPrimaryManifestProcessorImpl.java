@@ -218,30 +218,15 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             if (nodeService.exists(archiveNodeRef))
             {
                 // We have found a node in the archive store that has the same
-                // UUID as the one that we've
-                // been sent. We'll restore that archived node to a temporary
-                // location and then try
-                // processing this node again
+                // UUID as the one that we've been sent.    If it remains it may cause problems later on
+                // We delete from the archive store and treat the new node as a create.
                 if (log.isInfoEnabled())
                 {
                     log.info("Located an archived node with UUID matching transferred node: " + archiveNodeRef);
                     log.info("Attempting to restore " + archiveNodeRef);
                 }
-                logProgress("Restoring node from archive: " + archiveNodeRef);
-
-                ChildAssociationRef tempLocation = getTemporaryLocation(node.getNodeRef());
-                NodeRef restoredNodeRef = nodeService.restoreNode(archiveNodeRef, tempLocation.getParentRef(),
-                        tempLocation.getTypeQName(), tempLocation.getQName());
-                if (log.isInfoEnabled())
-                {
-                    log.info("Successfully restored node as " + restoredNodeRef + "  - retrying transferred node");
-                }
-                //Check to see if the node we've just restored is the parent of any orphans
-                checkOrphans(restoredNodeRef);
-                //Process the received node information again now that we've restored it
-                //(should be handled as an update now)
-                processTransferManifestNode(node);
-                return;
+                logProgress("Delete node from archive: " + archiveNodeRef);
+                nodeService.deleteNode(archiveNodeRef);
             }
 
             if (log.isDebugEnabled())
@@ -304,6 +289,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             log.debug("injecting repositoryId property");
             props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
         }
+        props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
 
         // Create the corresponding node...
         ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName, node
@@ -425,6 +411,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 log.debug("injecting repositoryId property");
                 props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
             }
+            props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
 
             // Split out the content properties and sanitise the others
             Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, existingProps);

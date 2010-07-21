@@ -38,7 +38,11 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -76,7 +80,10 @@ import org.springframework.util.FileCopyUtils;
  * @author brian
  * 
  */
-public class RepoTransferReceiverImpl implements TransferReceiver
+public class RepoTransferReceiverImpl implements TransferReceiver,  
+    NodeServicePolicies.OnCreateChildAssociationPolicy,
+    NodeServicePolicies.BeforeDeleteNodePolicy
+    
 {
     /**
      * This embedded class is used to push requests for asynchronous commits onto a different thread
@@ -150,6 +157,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver
     private ActionService actionService;
     private TenantService tenantService;
     private RuleService ruleService;
+    private PolicyComponent policyComponent;
 
     private Map<String,NodeRef> transferLockFolderMap = new ConcurrentHashMap<String, NodeRef>();
     private Map<String,NodeRef> transferTempFolderMap = new ConcurrentHashMap<String, NodeRef>();
@@ -167,6 +175,19 @@ public class RepoTransferReceiverImpl implements TransferReceiver
         PropertyCheck.mandatory(this, "transferLockFolderPath", transferLockFolderPath);
         PropertyCheck.mandatory(this, "inboundTransferRecordsPath", inboundTransferRecordsPath);
         PropertyCheck.mandatory(this, "rootStagingDirectory", rootStagingDirectory);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        
+//        // Register policy behaviours
+//        this.getPolicyComponent().bindAssociationBehaviour(
+//                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
+//                TransferModel.ASPECT_TRANSFERRED, 
+//                new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
+//        
+//        this.getPolicyComponent().bindClassBehaviour(
+//                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
+//                this,
+//                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));         
+
     }
 
     /*
@@ -901,5 +922,99 @@ public class RepoTransferReceiverImpl implements TransferReceiver
                 throw new TransferException(MSG_ERROR_WHILE_GENERATING_REQUISITE, ex);
             }
         }
+    }
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    public PolicyComponent getPolicyComponent()
+    {
+        return policyComponent;
+    }
+
+    /**
+     * When a new node is created as a child of a Transferred node then
+     * the transferred nodes need to be marked as Alien nodes.
+     * 
+     * The tree needs to be walked upwards to mark all parent transferred nodes as alien.
+     */
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef,
+            boolean isNewNode)
+    {
+        
+        log.debug("on create child association to transferred node");
+        
+        ChildAssociationRef ref = childAssocRef;
+        
+        if(childAssocRef.isPrimary())
+        {
+            while(ref != null)
+            {
+                NodeRef parentNodeRef = ref.getParentRef();
+                NodeRef childNodeRef = ref.getChildRef();
+        
+                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+                {
+                    Boolean isAlien = (Boolean)nodeService.getProperty(parentNodeRef, TransferModel.PROP_ALIEN);
+            
+                    if (!isAlien)
+                    {
+                        log.debug("setting node as alien:" + parentNodeRef);
+                        nodeService.setProperty(parentNodeRef, TransferModel.PROP_ALIEN, Boolean.TRUE);
+                        ref = nodeService.getPrimaryParent(parentNodeRef);
+                    }
+                    else
+                    {
+                        log.debug("parent node is already alien");
+                        ref = null;
+                    }   
+                }
+                else
+                {
+                    log.debug("parent is not a transferred node");
+                    ref = null;
+                }
+            }
+        }    
+    }
+ 
+    /**
+     * When an old node is deleted that is a child of a transferred node the tree may need to be walked to
+     * mark parent folder as non alien.  
+     */
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        log.debug("on delete node - need to check for transferred node");
+        
+        ChildAssociationRef ref = nodeService.getPrimaryParent(nodeRef);
+        
+        while(ref != null)
+        {
+            NodeRef parentNodeRef = ref.getParentRef();
+            
+            /**
+             * Was the parent node transferred ?
+             */
+            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+            {
+                log.debug("parent node was transferred - check siblings");
+                
+                /**
+                 * Check the siblings of this node to see whether there are any other alien nodes.
+                 */
+                // nodeService.getChildAssocs(parentNodeRef);
+                // BUGBUG Code not complete
+                ref = null;
+        
+                
+            }
+            else
+            {
+                log.debug("parent is not a transferred node");
+                ref = null;
+            }
+        }      
     }
 }

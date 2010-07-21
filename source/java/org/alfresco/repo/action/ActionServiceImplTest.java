@@ -19,6 +19,7 @@
 package org.alfresco.repo.action;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
@@ -56,6 +58,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Action service test
@@ -107,13 +110,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 ContentModel.TYPE_FOLDER).getChildRef();
         
         // Register the test executor, if needed
-        if(!applicationContext.containsBean(SleepActionExecuter.NAME))
-        {
-           applicationContext.getBeanFactory().registerSingleton(
-                 SleepActionExecuter.NAME,
-                 new SleepActionExecuter()
-           );
-        }
+        SleepActionExecuter.registerIfNeeded(applicationContext);
     }
     
     /**
@@ -1214,8 +1211,29 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        
        return failingAction;
     }
-    protected Action createWorkingSleepAction() {
+    
+    protected Action createFailingSleepAction(String id) throws Exception {
+       return createFailingSleepAction(id, this.actionService);
+    }
+    protected static Action createFailingSleepAction(String id, ActionService actionService) throws Exception {
+       Action failingAction = createWorkingSleepAction(id, actionService);
+       failingAction.setParameterValue(SleepActionExecuter.GO_BANG, Boolean.TRUE);
+       return failingAction;
+    }
+    
+    protected Action createWorkingSleepAction() throws Exception {
+       return createWorkingSleepAction(null);
+    }
+    protected Action createWorkingSleepAction(String id) throws Exception {
+       return createWorkingSleepAction(id, this.actionService);
+    }
+    protected static Action createWorkingSleepAction(String id, ActionService actionService) throws Exception {
        Action workingAction = actionService.createAction(SleepActionExecuter.NAME);
+       if(id != null) {
+          Field idF = ParameterizedItemImpl.class.getDeclaredField("id");
+          idF.setAccessible(true);
+          idF.set(workingAction, id);
+       }
        return workingAction;
     }
     
@@ -1240,47 +1258,78 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      */
     public static class SleepActionExecuter extends ActionExecuterAbstractBase
     {
-    	public static final String NAME = "sleep-action";
-    	private int sleepMs;
-    	
-    	private int timesExecuted = 0;
-    	private void incrementTimesExecutedCount() {timesExecuted++;}
-    	public int getTimesExecuted() {return timesExecuted;}
-    	
-    	public int getSleepMs()
-    	{
-    		return sleepMs;
-    	}
-    	
-    	public void setSleepMs(int sleepMs)
-    	{
-    		this.sleepMs = sleepMs;
-    	}
-    	
-    	/**
-    	 * Add parameter definitions
-    	 */
-    	@Override
-    	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    	{
-    		// Intentionally empty
-    	}
+       public static final String NAME = "sleep-action";
+       public static final String GO_BANG = "GoBang";
+       private int sleepMs;
+      
+       private int timesExecuted = 0;
+       private void incrementTimesExecutedCount() {timesExecuted++;}
+       public int getTimesExecuted() {return timesExecuted;}
+       private Thread executingThread;
+       
+       /**
+        * Loads this executor into the ApplicationContext, if it
+        *  isn't already there
+        */
+       public static void registerIfNeeded(ConfigurableApplicationContext ctx)
+       {
+          if(!ctx.containsBean(SleepActionExecuter.NAME))
+          {
+             ctx.getBeanFactory().registerSingleton(
+                   SleepActionExecuter.NAME,
+                   new SleepActionExecuter()
+             );
+          }
+       }
+       
+       public Thread getExecutingThread()
+       {
+          return executingThread;
+       }
+      
+       public int getSleepMs()
+       {
+          return sleepMs;
+       }
+      
+       public void setSleepMs(int sleepMs)
+       {
+          this.sleepMs = sleepMs;
+       }
+      
+       /**
+        * Add parameter definitions
+        */
+       @Override
+       protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+       {
+          // Intentionally empty
+       }
 
-    	@Override
-    	protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
-    		try
-    		{
-    			Thread.sleep(sleepMs);
-    		}
-    		catch (InterruptedException ignored)
-    		{
-    			// Intentionally empty
-    		}
-    		finally
-    		{
-    			incrementTimesExecutedCount();
-    		}
-    	}
+       @Override
+       protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+          executingThread = Thread.currentThread();
+          //System.err.println("Sleeping for " + sleepMs + " for " + action);
+         
+          try
+          {
+             Thread.sleep(sleepMs);
+          }
+          catch (InterruptedException ignored)
+          {
+             // Intentionally empty
+          }
+          finally
+          {
+             incrementTimesExecutedCount();
+          }
+         
+          Boolean fail = (Boolean)action.getParameterValue(GO_BANG);
+          if(fail != null && fail) 
+          {
+             throw new RuntimeException("Bang!");
+          }
+       }
     }
     
     public static void assertBefore(Date before, Date after)

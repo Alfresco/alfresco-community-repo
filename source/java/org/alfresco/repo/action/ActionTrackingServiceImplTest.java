@@ -27,6 +27,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionServiceImplTest.CancellableSleepAction;
 import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.cache.EhCacheAdapter;
@@ -69,12 +70,10 @@ public class ActionTrackingServiceImplTest extends TestCase
     private TransactionService transactionService;
     private RuntimeActionService runtimeActionService;
     private ActionTrackingService actionTrackingService;
-    private RetryingTransactionHelper transactionHelper;
     private EhCacheAdapter<String, ExecutionDetails> executingActionsCache;
     
     @Override
     protected void setUp() throws Exception {
-        this.transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
         this.nodeService = (NodeService)ctx.getBean("nodeService");
         this.actionService = (ActionService)ctx.getBean("actionService");
         this.runtimeActionService = (RuntimeActionService)ctx.getBean("actionService");
@@ -108,6 +107,11 @@ public class ActionTrackingServiceImplTest extends TestCase
                 ContentModel.TYPE_FOLDER).getChildRef();
         
         txn.commit();
+        
+        // Cache should start empty each time
+        for(String key : executingActionsCache.getKeys()) {
+           executingActionsCache.remove(key);
+        }
         
         // Register the test executor, if needed
         SleepActionExecuter.registerIfNeeded(ctx);
@@ -336,10 +340,203 @@ public class ActionTrackingServiceImplTest extends TestCase
     /** Ensure that the listing functions work */
     public void testListings() throws Exception
     {
-       // TODO
+       // All listings start blank
+       assertEquals(
+             0, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(createWorkingSleepAction(null)).size()
+       );
+       
+       // Create some actions
+       Action sleepAction1 = createWorkingSleepAction("12345");
+       Action sleepAction2 = createWorkingSleepAction("54321");
+       Action moveAction = createFailingMoveAction();
+          
+       // Start putting them in
+       actionTrackingService.recordActionExecuting(sleepAction1);
+       assertEquals(
+             1, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(sleepAction1).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(sleepAction2).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(moveAction).size()
+       );
+       
+       actionTrackingService.recordActionExecuting(moveAction);
+       assertEquals(
+             2, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(sleepAction1).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(sleepAction2).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(moveAction).size()
+       );
+       
+       actionTrackingService.recordActionExecuting(sleepAction2);
+       assertEquals(
+             3, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             2, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(sleepAction1).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(sleepAction2).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(moveAction).size()
+       );
+       
+       // Now have some finish, should leave the cache
+       actionTrackingService.recordActionComplete(sleepAction2);
+       assertEquals(
+             2, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(sleepAction1).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(sleepAction2).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(moveAction).size()
+       );
+       
+       actionTrackingService.recordActionComplete(sleepAction1);
+       assertEquals(
+             1, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(sleepAction1).size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions(sleepAction2).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(moveAction).size()
+       );
+       
+       // TODO Multiple actions of the same instance
     }
     
-    // TODO Cancel related
+    /** Cancel related */
+    public void testCancellation() throws Exception {
+       // Ensure we get the right answers checking
+       CancellableSleepAction sleepAction1 = (CancellableSleepAction)createWorkingSleepAction(null);
+       CancellableSleepAction sleepAction2 = (CancellableSleepAction)createWorkingSleepAction(null);
+       actionTrackingService.recordActionExecuting(sleepAction1);
+       actionTrackingService.recordActionExecuting(sleepAction2);
+       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction1));
+       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction2));
+
+       // Cancel with the action
+       actionTrackingService.requestActionCancellation(sleepAction1);
+       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction1));
+       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction2));
+       
+       // Cancel with the summary
+       ExecutionSummary s2 = ActionTrackingServiceImpl.buildExecutionSummary(sleepAction2);
+       actionTrackingService.requestActionCancellation(s2);
+       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction1));
+       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction2));
+       
+       
+       // If the action had gone missing from the cache,
+       //  then a check will put it back
+       CancellableSleepAction sleepAction3 = (CancellableSleepAction)createWorkingSleepAction(null);
+       String key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
+       
+       assertNull(executingActionsCache.get(key3));
+       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertNotNull(executingActionsCache.get(key3));
+       
+       executingActionsCache.remove(key3);
+       assertNull(executingActionsCache.get(key3));
+       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertNotNull(executingActionsCache.get(key3));
+       
+       actionTrackingService.requestActionCancellation(sleepAction3);
+       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertNotNull(executingActionsCache.get(key3));
+       
+       
+       // Now have one execute and cancel it, ensure it does
+       final SleepActionExecuter sleepActionExec = 
+          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
+       sleepActionExec.setSleepMs(10000);
+       
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       executingActionsCache.remove(key3);
+       this.actionService.executeAction(sleepAction3, this.nodeRef, false, true);
+       
+       // End the transaction. Should allow the async action
+       //  to be started
+       txn.commit();
+       Thread.sleep(150);
+       
+       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertNotNull(executingActionsCache.get(key3));
+       
+       actionTrackingService.requestActionCancellation(sleepAction3);
+       
+       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
+       assertNotNull(executingActionsCache.get(key3));
+       
+       // Have it finish sleeping, will have been cancelled
+       sleepActionExec.getExecutingThread().interrupt();
+       Thread.sleep(100);
+
+       // TODO Proper cancelled exception and tracking
+       assertEquals(ActionStatus.Failed, sleepAction3.getExecutionStatus());
+       assertEquals("Cancelled!", sleepAction3.getExecutionFailureMessage());
+    }
     
     
     // =================================================================== //
@@ -673,5 +870,4 @@ public class ActionTrackingServiceImplTest extends TestCase
     private Action createWorkingSleepAction(String id) throws Exception {
        return ActionServiceImplTest.createWorkingSleepAction(id, actionService);
     }
-    
 }

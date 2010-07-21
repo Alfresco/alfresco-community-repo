@@ -65,6 +65,9 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    private short nextExecutionId = 1;
    
+   /** How we separate bits of the cache key */
+   private static final char cacheKeyPartSeparator = '=';
+   
    /**
     * Set the transaction service
     * 
@@ -291,7 +294,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    public List<ExecutionSummary> getExecutingActions(Action action) {
       Collection<String> actions = executingActionsCache.getKeys();
       List<ExecutionSummary> details = new ArrayList<ExecutionSummary>();
-      String match = action.getActionDefinitionName() + "-" + action.getId();
+      String match = action.getActionDefinitionName() + cacheKeyPartSeparator + 
+                     action.getId() + cacheKeyPartSeparator;
       for(String key : actions) {
          if(key.startsWith(match)) {
             details.add( buildExecutionSummary(key) );
@@ -303,8 +307,9 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    public List<ExecutionSummary> getExecutingActions(String type) {
       Collection<String> actions = executingActionsCache.getKeys();
       List<ExecutionSummary> details = new ArrayList<ExecutionSummary>();
+      String match = type + cacheKeyPartSeparator;
       for(String key : actions) {
-         if(key.startsWith(type)) {
+         if(key.startsWith(match)) {
             details.add( buildExecutionSummary(key) );
          }
       }
@@ -327,16 +332,16 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    protected static String generateCacheKey(Action action)
    {
       return 
-         action.getActionDefinitionName() + "=" +
-         action.getId() + "=" +
+         action.getActionDefinitionName() + cacheKeyPartSeparator +
+         action.getId() + cacheKeyPartSeparator +
          "1"//action.getExecutionInstance // TODO
       ;
    }
    protected static String generateCacheKey(ExecutionSummary summary)
    {
       return 
-         summary.getActionType() + "=" +
-         summary.getActionId() + "=" +
+         summary.getActionType() + cacheKeyPartSeparator +
+         summary.getActionId() + cacheKeyPartSeparator +
          summary.getExecutionInstance()
       ;
    }
@@ -364,7 +369,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    protected static ExecutionSummary buildExecutionSummary(String key)
    {
-      StringTokenizer st = new StringTokenizer(key, "=");
+      StringTokenizer st = new StringTokenizer(key, new String(new char[]{cacheKeyPartSeparator}));
       String actionType = st.nextToken();
       String actionId = st.nextToken();
       int executionInstance = Integer.parseInt(st.nextToken());

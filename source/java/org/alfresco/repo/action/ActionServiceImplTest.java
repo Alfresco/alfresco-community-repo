@@ -47,6 +47,8 @@ import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;
+import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.CancellableAction;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -1228,7 +1230,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        return createWorkingSleepAction(id, this.actionService);
     }
     protected static Action createWorkingSleepAction(String id, ActionService actionService) throws Exception {
-       Action workingAction = actionService.createAction(SleepActionExecuter.NAME);
+       Action workingAction = new CancellableSleepAction(
+             actionService.createAction(SleepActionExecuter.NAME));
        if(id != null) {
           Field idF = ParameterizedItemImpl.class.getDeclaredField("id");
           idF.setAccessible(true);
@@ -1267,6 +1270,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        public int getTimesExecuted() {return timesExecuted;}
        private Thread executingThread;
        
+       private ActionTrackingService actionTrackingService;
+              
        /**
         * Loads this executor into the ApplicationContext, if it
         *  isn't already there
@@ -1275,9 +1280,14 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        {
           if(!ctx.containsBean(SleepActionExecuter.NAME))
           {
+             // Create, and do dependencies
+             SleepActionExecuter executor = new SleepActionExecuter();
+             executor.actionTrackingService = (ActionTrackingService)
+                ctx.getBean("actionTrackingService");
+             // Register
              ctx.getBeanFactory().registerSingleton(
                    SleepActionExecuter.NAME,
-                   new SleepActionExecuter()
+                   executor
              );
           }
        }
@@ -1329,7 +1339,20 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
           {
              throw new RuntimeException("Bang!");
           }
+          
+          CancellableSleepAction ca = (CancellableSleepAction)action;
+          boolean cancelled = actionTrackingService.isCancellationRequested(ca);
+          if(cancelled)
+          {
+             throw new RuntimeException("Cancelled!");
+          }
        }
+    }
+    protected static class CancellableSleepAction extends ActionImpl implements CancellableAction
+    {
+      public CancellableSleepAction(Action action) {
+         super(action);
+      }
     }
     
     public static void assertBefore(Date before, Date after)

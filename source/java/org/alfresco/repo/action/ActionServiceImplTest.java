@@ -795,6 +795,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 
     	final SleepActionExecuter sleepAction = (SleepActionExecuter)applicationContext.getBean("sleep-action");
 		assertNotNull(sleepAction);
+		sleepAction.setSleepMs(10);
 		
 		final int actionSubmissonCount = 4; // Rather arbitrary count.
 		for (int i = 0; i < actionSubmissonCount; i ++)
@@ -883,7 +884,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         
         postAsyncActionTest(
                 this.transactionService,
-                1000, 
+                1000l, 
                 10, 
                 new AsyncTest()
                 {
@@ -1344,7 +1345,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
           boolean cancelled = actionTrackingService.isCancellationRequested(ca);
           if(cancelled)
           {
-             throw new RuntimeException("Cancelled!");
+             throw new ActionCancelledException(ca);
           }
        }
     }

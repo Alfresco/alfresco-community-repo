@@ -113,6 +113,10 @@ public class ActionTrackingServiceImplTest extends TestCase
            executingActionsCache.remove(key);
         }
         
+        // Reset the execution instance IDs, so we
+        //  can predict what they'll be
+        ((ActionTrackingServiceImpl)actionTrackingService).resetNextExecutionId();
+        
         // Register the test executor, if needed
         SleepActionExecuter.registerIfNeeded(ctx);
     }
@@ -120,10 +124,13 @@ public class ActionTrackingServiceImplTest extends TestCase
     /** Creating cache keys */
     public void testCreateCacheKeys() throws Exception
     {
-       Action action = createWorkingSleepAction("1234");
+       ActionImpl action = (ActionImpl)createWorkingSleepAction("1234");
        assertEquals("sleep-action", action.getActionDefinitionName());
        assertEquals("1234", action.getId());
-       // assertNull(action.getExecutionInstance()); // TODO
+       assertEquals(-1, action.getExecutionInstance());
+       
+       // Give it a predictable execution instance
+       action.setExecutionInstance(1);
        
        // From an action
        String key = ActionTrackingServiceImpl.generateCacheKey(action);
@@ -138,8 +145,11 @@ public class ActionTrackingServiceImplTest extends TestCase
     /** Creating ExecutionDetails and ExecutionSummary */
     public void testExecutionDetailsSummary() throws Exception
     {
-       // Create the ExecutionSummary from an action
+       // Create an action with a known execution instance
        Action action = createWorkingSleepAction("1234");
+       ((ActionImpl)action).setExecutionInstance(1);
+       
+       // Create the ExecutionSummary from an action
        String key = ActionTrackingServiceImpl.generateCacheKey(action);
        
        ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
@@ -161,10 +171,15 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertEquals(1, d.getExecutionInstance());
        assertEquals(null, d.getPersistedActionRef());
        assertEquals(null, d.getStartedAt());
+       
+       // TODO Check machine details
     }
     
-    // Running an action gives it an execution ID
-    // TODO
+    /** Running an action gives it an execution ID */
+    public void testExecutionInstanceAssignment()
+    {
+       // TODO
+    }
     
     /** 
      * The correct things happen with the cache
@@ -181,10 +196,12 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        // Can complete or fail, won't be there
        actionTrackingService.recordActionComplete(action);
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
        assertEquals(null, executingActionsCache.get(key));
        
        actionTrackingService.recordActionFailure(action, new Exception("Testing"));
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
        assertEquals("Testing", action.getExecutionFailureMessage());
        assertEquals(null, executingActionsCache.get(key));
@@ -192,12 +209,14 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        // Pending won't add it in either
        actionTrackingService.recordActionPending(action);
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
        assertEquals(null, executingActionsCache.get(key));
        
        
-       // Run it, will go in
+       // Run it, will go into the cache
        actionTrackingService.recordActionExecuting(action);
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertEquals(ActionStatus.Running, action.getExecutionStatus());
        assertNotNull(null, executingActionsCache.get(key));
        
@@ -213,14 +232,17 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        // Completion removes it
        actionTrackingService.recordActionComplete(action);
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
        assertEquals(null, executingActionsCache.get(key));
        
        // Failure removes it
        actionTrackingService.recordActionExecuting(action);
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertNotNull(null, executingActionsCache.get(key));
        
        actionTrackingService.recordActionFailure(action, new Exception("Testing"));
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
        assertEquals("Testing", action.getExecutionFailureMessage());
        assertEquals(null, executingActionsCache.get(key));
@@ -252,6 +274,10 @@ public class ActionTrackingServiceImplTest extends TestCase
        //  to be started
        txn.commit();
        Thread.sleep(150);
+
+       
+       // Will get an execution instance id, so a new key
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        
        
        // Check it's in the cache
@@ -307,6 +333,10 @@ public class ActionTrackingServiceImplTest extends TestCase
        //  to be started
        txn.commit();
        Thread.sleep(150);
+       
+       
+       // Will get an execution instance id, so a new key
+       key = ActionTrackingServiceImpl.generateCacheKey(action);
        
        
        // Check it's in the cache
@@ -521,6 +551,9 @@ public class ActionTrackingServiceImplTest extends TestCase
        txn.commit();
        Thread.sleep(150);
        
+       // Get the updated key, and check
+       key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
+       
        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
        assertNotNull(executingActionsCache.get(key3));
        
@@ -531,11 +564,11 @@ public class ActionTrackingServiceImplTest extends TestCase
        
        // Have it finish sleeping, will have been cancelled
        sleepActionExec.getExecutingThread().interrupt();
-       Thread.sleep(100);
+       Thread.sleep(150);
 
-       // TODO Proper cancelled exception and tracking
-       assertEquals(ActionStatus.Failed, sleepAction3.getExecutionStatus());
-       assertEquals("Cancelled!", sleepAction3.getExecutionFailureMessage());
+       // Ensure the proper cancelled tracking
+       assertEquals(ActionStatus.Cancelled, sleepAction3.getExecutionStatus());
+       assertEquals(null, sleepAction3.getExecutionFailureMessage());
     }
     
     

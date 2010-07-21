@@ -96,7 +96,12 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    {
        this.executingActionsCache = executingActionsCache;
    }
-
+   
+   
+   /** Used by unit tests only */
+   protected void resetNextExecutionId() {
+      this.nextExecutionId = 1;
+   }
    
    
    public void recordActionPending(Action action) 
@@ -139,6 +144,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       // TODO assign it a (unique) execution ID
       // (Keep checking to see if the key is used as we
       //  increase nextExecutionId until it isn't)
+      ((ActionImpl)action).setExecutionInstance(nextExecutionId++); // TODO
       String key = generateCacheKey(action);
       
       // Put it into the cache
@@ -154,12 +160,30 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    {
       if (logger.isDebugEnabled() == true)
       {
-         logger.debug("Will shortly record failure of action " + action + " due to " + exception.getMessage());
+         if(exception instanceof ActionCancelledException)
+         {
+            logger.debug("Will shortly record completed cancellation of action " + action);
+         }
+         else
+         {
+            logger.debug("Will shortly record failure of action " + action + " due to " + exception.getMessage());
+         }
       }
       
+      // Record when it finished
       ((ActionImpl)action).setExecutionEndDate(new Date());
-      ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
-      ((ActionImpl)action).setExecutionFailureMessage(exception.getMessage());
+      
+      // Record it as Failed or Cancelled, depending on the exception
+      if(exception instanceof ActionCancelledException)
+      {
+         ((ActionImpl)action).setExecutionStatus(ActionStatus.Cancelled);
+         ((ActionImpl)action).setExecutionFailureMessage(null);
+      }
+      else
+      {
+         ((ActionImpl)action).setExecutionStatus(ActionStatus.Failed);
+         ((ActionImpl)action).setExecutionFailureMessage(exception.getMessage());
+      }
       
       // Remove it from the cache, as it's no longer running
       String key = generateCacheKey(action);
@@ -334,7 +358,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       return 
          action.getActionDefinitionName() + cacheKeyPartSeparator +
          action.getId() + cacheKeyPartSeparator +
-         "1"//action.getExecutionInstance // TODO
+         ((ActionImpl)action).getExecutionInstance()
       ;
    }
    protected static String generateCacheKey(ExecutionSummary summary)
@@ -381,7 +405,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       return new ExecutionSummary(
             action.getActionDefinitionName(),
             action.getId(),
-            1 // TODO
+            ((ActionImpl)action).getExecutionInstance()
       );
    }
 }

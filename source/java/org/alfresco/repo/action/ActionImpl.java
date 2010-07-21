@@ -107,6 +107,16 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
     
     /**
+     * When there is more than one instance of the
+     *  action executing, both with the same ID, 
+     *  which one is this?
+     * This crops up most often with persisted
+     *  actions, with two copies running, one on
+     *  each of two different target nodes.
+     */
+    private int executionInstance = -1;
+    
+    /**
      * When the action started executing,
      *  or null if it hasn't yet.
      */
@@ -464,6 +474,27 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     public void addParameterValues(Map<String, Serializable> values)
     {
         getParameterValues().putAll(values);
+    }
+    
+    /**
+     * When there is more than one instance of the
+     *  action executing, both with the same ID, 
+     *  which one is this?
+     * This crops up most often with persisted
+     *  actions, with two copies running, one on
+     *  each of two different target nodes.
+     */
+    public int getExecutionInstance() 
+    {
+       return executionInstance;
+    }
+    
+    /**
+     * Called by the ActionService when the action
+     *  begins running. 
+     */
+    public void setExecutionInstance(int instance) {
+       executionInstance = instance;
     }
     
     public Date getExecutionStartDate() {

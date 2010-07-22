@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
+import javax.servlet.ServletException;
+import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +52,26 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class JBPMDeployProcessServlet extends HttpServlet
 {
     private static final long serialVersionUID = 8002539291245090187L;
+    private static final String BEAN_GLOBAL_PROPERTIES = "global-properties";
+    private static final String PROP_ENABLED = "system.workflow.deployservlet.enabled";
 
+    
+
+    /* (non-Javadoc)
+     * @see javax.servlet.GenericServlet#init()
+     */
+    @Override
+    public void init() throws ServletException
+    {
+        // Render this servlet permanently unavailable if its enablement property is not set
+        WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        Properties globalProperties = (Properties) wc.getBean(BEAN_GLOBAL_PROPERTIES);
+        String enabled = globalProperties.getProperty(PROP_ENABLED);
+        if (enabled == null || !Boolean.parseBoolean(enabled))
+        {
+            throw new UnavailableException("system.workflow.deployservlet.enabled=false");
+        }
+    }
 
     /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)

@@ -7,6 +7,8 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIEN
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIENT_SIZE;
 
 import org.alfresco.repo.forms.processor.FieldProcessor;
+import org.alfresco.repo.forms.processor.workflow.PackageItemsFieldProcessor;
+import org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 
@@ -16,10 +18,29 @@ public class MockFieldProcessorRegistry extends ContentModelFieldProcessorRegist
     {
         register(PROP, makePropertyFieldProcessor(namespaceService, dictionaryService));
         register(ASSOC, makeAssociationFieldProcessor(namespaceService, dictionaryService));
-        register(TRANSIENT_ENCODING, makeEncodingFieldProcessor(namespaceService));
-        register(TRANSIENT_MIMETYPE, makeMimetypeFieldProcessor(namespaceService));
-        register(TRANSIENT_SIZE, makeSizeFieldProcessor(namespaceService));
+        register(TRANSIENT_ENCODING, makeEncodingFieldProcessor());
+        register(TRANSIENT_MIMETYPE, makeMimetypeFieldProcessor());
+        register(TRANSIENT_SIZE, makeSizeFieldProcessor());
+        register(TransitionFieldProcessor.KEY, makeTransitionFieldProcessor());
+        register(PackageItemsFieldProcessor.KEY, makePackageItemFieldProcessor());
         setDefaultProcessor(makeDefaultFieldProcessor(namespaceService, dictionaryService));
+    }
+
+    /**
+     * @return
+     */
+    private FieldProcessor makePackageItemFieldProcessor()
+    {
+        // TODO Auto-generated method stub
+        return new PackageItemsFieldProcessor();
+    }
+
+    /**
+     * @return
+     */
+    private FieldProcessor makeTransitionFieldProcessor()
+    {
+        return new TransitionFieldProcessor();
     }
 
     private FieldProcessor makeDefaultFieldProcessor(NamespaceService namespaceService,
@@ -39,17 +60,17 @@ public class MockFieldProcessorRegistry extends ContentModelFieldProcessorRegist
         return processor;
     }
 
-    private TransientEncodingFieldProcessor makeEncodingFieldProcessor(NamespaceService namespaceService)
+    private TransientEncodingFieldProcessor makeEncodingFieldProcessor()
     {
         return new TransientEncodingFieldProcessor();
     }
 
-    private TransientMimetypeFieldProcessor makeMimetypeFieldProcessor(NamespaceService namespaceService)
+    private TransientMimetypeFieldProcessor makeMimetypeFieldProcessor()
     {
         return new TransientMimetypeFieldProcessor();
     }
 
-    private TransientSizeFieldProcessor makeSizeFieldProcessor(NamespaceService namespaceService)
+    private TransientSizeFieldProcessor makeSizeFieldProcessor()
     {
         return new TransientSizeFieldProcessor();
     }

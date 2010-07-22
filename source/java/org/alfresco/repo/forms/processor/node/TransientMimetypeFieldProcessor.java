@@ -41,7 +41,7 @@ public class TransientMimetypeFieldProcessor extends TransientFieldProcessor
 	}
 	
 	@Override
-	protected FieldDefinition makeTransientPropertyDefinition() {
+	protected FieldDefinition makeTransientFieldDefinition() {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_MIMETYPE;
         PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT
                     .getLocalName());

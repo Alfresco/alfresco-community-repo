@@ -43,7 +43,7 @@ public class TransientEncodingFieldProcessor extends TransientFieldProcessor
     }
 
     @Override
-    protected FieldDefinition makeTransientPropertyDefinition() 
+    protected FieldDefinition makeTransientFieldDefinition() 
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_ENCODING;
         PropertyFieldDefinition encodingField = new PropertyFieldDefinition(TRANSIENT_ENCODING, 

@@ -180,6 +180,8 @@ public class Form
      */
     public boolean dataExists(String dataKey)
     {
+        if(data == null)
+            return false;
         return data.getFieldNames().contains(dataKey);
     }
     

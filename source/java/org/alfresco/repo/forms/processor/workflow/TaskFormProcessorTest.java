@@ -66,6 +66,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
@@ -191,9 +192,9 @@ public class TaskFormProcessorTest extends TestCase
 
     public void testGenerateDefaultForm() throws Exception
     {
-        Form form = processForm(null);
+        Form form = processForm();
         List<String> fieldDefs = form.getFieldDefinitionNames();
-        assertEquals(8, fieldDefs.size());
+        assertEquals(9, fieldDefs.size());
         assertTrue(fieldDefs.contains(ASSIGNEE_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(ACTORS_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(DESC_NAME.toPrefixString(namespaceService)));
@@ -201,12 +202,41 @@ public class TaskFormProcessorTest extends TestCase
 
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
         FormData formData = form.getFormData();
-        assertEquals(6, formData.getNumberOfFields());
+        assertEquals(7, formData.getNumberOfFields());
         assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
         checkPackageActionGroups(formData);
         assertEquals(WorkflowTaskState.IN_PROGRESS, formData.getFieldData("prop_bpm_status").getValue());
     }
 
+    public void testGenerateTransitions() throws Exception
+    {
+        // Check empty transitions
+        String fieldName = TransitionFieldProcessor.KEY;
+        Form form = processForm(fieldName);
+        String transitionValues = "";
+        checkSingleProperty(form, fieldName, transitionValues);
+
+        // Set up transitions
+        WorkflowTransition transition1 = makeTransition("id1", "title1");
+        WorkflowTransition transition2 = makeTransition("id2", "title2");
+        WorkflowTransition transition3 = makeTransition("id3", "title3");
+        WorkflowTransition[] transitions = new WorkflowTransition[] {transition1, transition2, transition3};
+        task.definition.node = new WorkflowNode();
+        task.definition.node.transitions = transitions;
+        
+        form = processForm(fieldName);
+        transitionValues = "id1|title1,id2|title2,id3|title3";
+        checkSingleProperty(form, fieldName, transitionValues);
+    }
+
+    private WorkflowTransition makeTransition(String id, String title)
+    {
+        WorkflowTransition transition = new WorkflowTransition();
+        transition.id = id;
+        transition.title = title;
+        return transition;
+    }
+    
     public void testPersistPropertyChanged() throws Exception
     {
         String fieldName = DESC_NAME.toPrefixString(namespaceService);
@@ -296,6 +326,11 @@ public class TaskFormProcessorTest extends TestCase
         assertEquals(newTask, persistedItem);
     }
 
+    private Form processForm(String... fields)
+    {
+        return processForm(Arrays.asList(fields));
+    }
+    
     private Form processForm(List<String> fields)
     {
         Item item = new Item("task", TASK_ID);

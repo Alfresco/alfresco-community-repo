@@ -26,18 +26,16 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
-import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
-import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ItemData;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -73,19 +71,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     @Override
     protected WorkflowTask getTypedItemForDecodedId(String itemId)
     {
-        WorkflowTask task = workflowService.getTaskById(itemId);
-        return task;
-    }
-
-    @Override
-    protected void populateForm(Form form, List<String> fields, FormCreationData data)
-    {
-        super.populateForm(form, fields, data);
-
-        // Add package actions to FormData.
-        ItemData<?> itemData = (ItemData<?>) data.getItemData();
-        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
-        addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
+        return workflowService.getTaskById(itemId);
     }
 
     /*
@@ -148,7 +134,20 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     @Override
     protected Map<String, Object> getTransientValues(WorkflowTask item)
     {
-        return null;
+        StringBuilder builder = new StringBuilder();
+        WorkflowTransition[] transitions = item.definition.node.transitions;
+        if(transitions == null)
+            return Collections.<String, Object>singletonMap(TransitionFieldProcessor.KEY, "");
+        for (WorkflowTransition transition : transitions)
+        {
+            builder.append(transition.getId());
+            builder.append("|");
+            builder.append(transition.getTitle());
+            builder.append(",");
+        }
+        builder.deleteCharAt(builder.length()-1);
+        String values = builder.toString();
+        return Collections.<String, Object>singletonMap(TransitionFieldProcessor.KEY, values);
     }
 
     /* (non-Javadoc)

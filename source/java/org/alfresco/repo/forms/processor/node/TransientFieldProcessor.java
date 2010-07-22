@@ -32,7 +32,7 @@ public abstract class TransientFieldProcessor extends AbstractFieldProcessor<Tra
     @Override
     protected Field generateTypedField(String fieldName, FormCreationData formData, TransientValueGetter typedData)
     {
-        FieldDefinition transientPropDef = makeTransientPropertyDefinition();
+        FieldDefinition transientPropDef = makeTransientFieldDefinition();
         Field fieldInfo = null;
         Object value = getValue(fieldName, typedData);
         if (transientPropDef != null)
@@ -59,5 +59,5 @@ public abstract class TransientFieldProcessor extends AbstractFieldProcessor<Tra
         return TransientValueGetter.class;
     }
 
-    protected abstract FieldDefinition makeTransientPropertyDefinition();
+    protected abstract FieldDefinition makeTransientFieldDefinition();
 }

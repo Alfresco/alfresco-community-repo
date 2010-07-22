@@ -42,7 +42,7 @@ public class TransientSizeFieldProcessor extends TransientFieldProcessor
     }
 
     @Override
-    protected FieldDefinition makeTransientPropertyDefinition() 
+    protected FieldDefinition makeTransientFieldDefinition() 
     {
         String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_SIZE;
         PropertyFieldDefinition sizeField = new PropertyFieldDefinition(TRANSIENT_SIZE, 

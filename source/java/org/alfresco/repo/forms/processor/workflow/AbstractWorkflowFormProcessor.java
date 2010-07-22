@@ -20,15 +20,19 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormNotFoundException;
+import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Nick Smith
@@ -71,6 +75,57 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         this.workflowService = workflowService;
     }
 
+    
+    /*
+     * @see
+     * org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem
+     * (org.alfresco.repo.forms.Item)
+     */
+    @Override
+    protected ItemType getTypedItem(Item item)
+    {
+        try
+        {
+            ParameterCheck.mandatory("item", item);
+            String itemId = decodeId(item.getId());
+            return getTypedItemForDecodedId(itemId);
+        }
+        catch (Exception e)
+        {
+            throw new FormNotFoundException(item, e);
+        }
+    }
+
+    /**
+     * The itemId may be in a URL/Webscript-friendly format. If so it must be converted
+     * back to the proper id format.
+     * 
+     * @param itemId
+     */
+    private String decodeId(String itemId)
+    {
+        String decodedId = itemId;
+        if (itemId.contains("$")==false)
+        {
+            decodedId = itemId.replaceFirst("_", Matcher.quoteReplacement("$"));
+        }
+        return decodedId;
+    }
+
+    /**
+     * Returns an implementation of {@link ContentModelFormPersister} which is
+     * used to accumulate all the changes specified in the {@link Form} and then persist them.
+     * 
+     * @param item
+     * @return
+     */
     protected abstract ContentModelFormPersister<PersistType> makeFormPersister(ItemType item);
+
+    /**
+     * Returns the typed item.
+     * @param itemId the decoded item Id.
+     * @return
+     */
+    protected abstract ItemType getTypedItemForDecodedId(String itemId);
 
 }

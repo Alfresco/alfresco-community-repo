@@ -43,6 +43,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
@@ -77,7 +78,7 @@ import org.mockito.stubbing.Answer;
 public class TaskFormProcessorTest extends TestCase
 {
     private static final String TASK_DEF_NAME = "TaskDef";
-    private static final String TASK_ID = "Real Id";
+    private static final String TASK_ID = "foo$Real Id";
     private static final QName DESC_NAME = WorkflowModel.PROP_DESCRIPTION;
     private static final QName STATUS_NAME = WorkflowModel.PROP_STATUS;
     private static final QName PROP_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_prop");
@@ -104,7 +105,7 @@ public class TaskFormProcessorTest extends TestCase
             processor.getTypedItem(null);
             fail("Should have thrown an Exception here!");
         }
-        catch (IllegalArgumentException e)
+        catch (FormNotFoundException e)
         {
             // Do nothing!
         }
@@ -114,13 +115,19 @@ public class TaskFormProcessorTest extends TestCase
             processor.getTypedItem(new Item("task", "bad id"));
             fail("Should have thrown an Exception here!");
         }
-        catch (WorkflowException e)
+        catch (FormNotFoundException e)
         {
             // Do nothing!
         }
 
         Item item = new Item("task", TASK_ID);
         WorkflowTask result = processor.getTypedItem(item);
+        assertNotNull(result);
+        assertEquals(TASK_ID, result.id);
+        
+        // Check URI-encoded id.
+        item = new Item("task", TASK_ID.replace('$', '_'));
+        result = processor.getTypedItem(item);
         assertNotNull(result);
         assertEquals(TASK_ID, result.id);
     }

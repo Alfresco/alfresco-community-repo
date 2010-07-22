@@ -21,10 +21,7 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
-import java.util.regex.Matcher;
 
-import org.alfresco.repo.forms.FormNotFoundException;
-import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -110,27 +107,16 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     {
         return logger;
     }
-    
+
     /*
+     * (non-Javadoc)
+     * 
      * @see
-     * org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem
-     * (org.alfresco.repo.forms.Item)
+     * org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor
+     * #getTypedItemForDecodedId(java.lang.String)
      */
     @Override
-    protected WorkflowDefinition getTypedItem(Item item)
-    {
-        try
-        {
-            String itemId = item.getId();
-            return getWorkflowDefinitionForName(itemId);
-        }
-        catch (Exception e)
-        {
-            throw new FormNotFoundException(item, e);
-        }
-    }
-
-    private WorkflowDefinition getWorkflowDefinitionForName(String itemId)
+    protected WorkflowDefinition getTypedItemForDecodedId(String itemId)
     {
         String workflowDefName = decodeWorkflowDefinitionName(itemId);
         WorkflowDefinition workflowDef = workflowService.getDefinitionByName(workflowDefName);
@@ -143,25 +129,20 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     }
 
     /**
-     * The itemId may be in a URL/Webscript-friendly format. If so it must be converted
+     * The <code>name</code> may be in a URL/Webscript-friendly format. If so it must be converted
      * back to the proper workflow definition name.
-     * 
-     * @param itemId
+     * @param name
+     * @return The decoded name
      */
-    private String decodeWorkflowDefinitionName(String itemId)
+    private String decodeWorkflowDefinitionName(String name)
     {
-        String defName = itemId;
-        if (itemId.contains("$")==false)
+        if (name.contains(":")==false)
         {
-            defName = itemId.replaceFirst("_", Matcher.quoteReplacement("$"));
+            name = name.replaceFirst("_", ":");
         }
-        if (itemId.contains(":")==false)
-        {
-            defName = defName.replaceFirst("_", ":");
-        }
-        return defName;
+        return name;
     }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object)
      */

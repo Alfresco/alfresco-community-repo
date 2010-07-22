@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.Form;
-import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ItemData;
@@ -41,7 +40,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -69,12 +67,13 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         this.fieldProcessorRegistry = fieldProcessorRegistry;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#getTypedItemForDecodedId(java.lang.String)
+     */
     @Override
-    protected WorkflowTask getTypedItem(Item item)
+    protected WorkflowTask getTypedItemForDecodedId(String itemId)
     {
-        ParameterCheck.mandatory("item", item);
-        String id = item.getId();
-        WorkflowTask task = workflowService.getTaskById(id);
+        WorkflowTask task = workflowService.getTaskById(itemId);
         return task;
     }
 

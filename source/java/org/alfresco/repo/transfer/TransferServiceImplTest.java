@@ -20,6 +20,7 @@ package org.alfresco.repo.transfer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -34,10 +35,16 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -51,6 +58,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
@@ -65,6 +73,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.TransactionDefinition;
@@ -74,7 +83,7 @@ import org.springframework.util.ResourceUtils;
 /**
  * Unit test for TransferServiceImpl
  * 
- * Contains some unit tests for the transfer definitions.
+ * Contains some integration tests for the transfer service
  *
  * @author Mark Rogers
  */
@@ -89,6 +98,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     private TransferReceiver receiver;
     private TransferManifestNodeFactory transferManifestNodeFactory; 
     private PermissionService permissionService;
+    private LockService lockService;
+    private PersonService personService;
+    
+ 
     
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
@@ -123,9 +136,14 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         this.receiver = (TransferReceiver)this.applicationContext.getBean("transferReceiver");
         this.transferManifestNodeFactory = (TransferManifestNodeFactory)this.applicationContext.getBean("transferManifestNodeFactory");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
+        this.lockService = (LockService) this.applicationContext.getBean("lockService");
+        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
+        
         authenticationComponent.setSystemUserAsCurrentUser();
         setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
         assertNotNull("receiver is null", this.receiver);
+        
+
         
     }
     
@@ -3280,354 +3298,763 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 //      
 //     }
 //    
-//    /**
-//     * Test the transfer method with regard to permissions on a node.
-//     * 
-//     * Step 1:  
-//     * Create a node with a single permission 
-//     *     Inherit:false
-//     *     Read, Admin, Allow
-//     *     Transfer
-//     * 
-//     * Step 2:
-//     * Update it to have several permissions 
-//     *     Inherit:false
-//     *     Read, Everyone, DENY
-//     *     Read, Admin, Allow
-//     * 
-//     * Step 3:
-//     * Remove a permission
-//     *     Inherit:false
-//     *     Read, Admin, Allow
-//     * 
-//     * Step 4:
-//     * Revert to inherit all permissions
-//     *     Inherit:true
-//     * 
-//     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
-//     */
-//    public void testTransferWithPermissions() throws Exception
-//    {
-//        setDefaultRollback(false);
-//        
-//        String CONTENT_TITLE = "ContentTitle";
-//        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-//        Locale CONTENT_LOCALE = Locale.GERMAN; 
-//        String CONTENT_STRING = "Hello";
-//
-//        /**
-//         *  For unit test 
-//         *  - replace the HTTP transport with the in-process transport
-//         *  - replace the node factory with one that will map node refs, paths etc.
-//         */
-//        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
-//        transferServiceImpl.setTransmitter(transmitter);
-//        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
-//        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
-//        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-//        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-//        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-//          
-//        /**
-//          * Now go ahead and create our transfer target
-//          */
-//        String targetName = "testTransferWithPermissions";
-//        TransferTarget transferMe;
-//        NodeRef contentNodeRef;
-//        NodeRef destNodeRef;
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            /**
-//              * Get guest home
-//              */
-//            String guestHomeQuery = "/app:company_home/app:guest_home";
-//            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-//            assertEquals("", 1, guestHomeResult.length());
-//            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-//    
-//            /**
-//             * Create a test node that we will read and write
-//             */        
-//            String name = GUID.generate();
-//            ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_CONTENT);
-//            contentNodeRef = child.getChildRef();
-//            nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//            nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, name);
-//            
-//            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-//            writer.setLocale(CONTENT_LOCALE);
-//            writer.putContent(CONTENT_STRING);
-//            
-//            permissionService.setInheritParentPermissions(contentNodeRef, false);
-//            permissionService.setPermission(contentNodeRef, "admin", PermissionService.READ, true);
-//              
-//            if(!transferService.targetExists(targetName))
-//            {
-//                transferMe = createTransferTarget(targetName);
-//            }
-//            else
-//            {
-//                transferMe = transferService.getTransferTarget(targetName);
-//            }
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        /**
-//         * Step 1
-//         */
-//        logger.debug("First transfer - create new node with inheritParent permission off");
-//        startNewTransaction();
-//        try 
-//        {
-//           /**
-//             * Transfer our transfer target node 
-//             */
-//            {
-//                    TransferDefinition definition = new TransferDefinition();
-//                    Set<NodeRef>nodes = new HashSet<NodeRef>();
-//                    nodes.add(contentNodeRef);
-//                    definition.setNodes(nodes);
-//                    transferService.transfer(targetName, definition);
-//            }  
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//            
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists with the correct permissions 
-//            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
-//            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
-//            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
-//            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
-//            assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
-//            
-//            // Check ACL of destination node
-//            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
-//            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
-//            
-//            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
-//            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
-//            
-//            assertFalse("inherit parent permissions (src) flag is incorrect", srcInherit);
-//            assertFalse("inherit parent permissions (dest) flag is incorrect", destInherit);
-//            
-//            // Check destination has the source's permissions
-//            for (AccessPermission p : srcPerm)
-//            {
-//                logger.debug("checking permission :" + p);
-//                assertTrue("permission is missing", destPerm.contains(p));
-//            }
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }      
-//        
-//        /**
-//         * Step 2
-//         * Update it to have several permissions 
-//         *     Inherit:false
-//         *     Read, Everyone, DENY
-//         *     Read, Admin, Allow 
-//         */
-//        startNewTransaction();
-//        try
-//        {
-//            permissionService.setPermission(contentNodeRef, "EVERYONE", PermissionService.READ, false);
-//            permissionService.setPermission(contentNodeRef, "admin", PermissionService.FULL_CONTROL, true);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try 
-//        {
-//           /**
-//             * Transfer our transfer target node 
-//             */
-//            {
-//                    TransferDefinition definition = new TransferDefinition();
-//                    Set<NodeRef>nodes = new HashSet<NodeRef>();
-//                    nodes.add(contentNodeRef);
-//                    definition.setNodes(nodes);
-//                    transferService.transfer(targetName, definition);
-//            }  
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//  
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists with the correct permissions 
-//            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
-//            
-//            // Check ACL of destination node
-//            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
-//            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
-//            
-//            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
-//            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
-//            
-//            assertFalse("inherit parent permissions (src) flag is incorrect", srcInherit);
-//            assertFalse("inherit parent permissions (dest) flag is incorrect", destInherit);
-//            
-//            // Check destination has the source's permissions
-//            for (AccessPermission p : srcPerm)
-//            {
-//                logger.debug("checking permission :" + p);
-//                assertTrue("Step2, permission is missing", destPerm.contains(p));
-//            }
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }    
-//        
-//        /**
-//         * Step 3 Remove a permission
-//         */
-//        startNewTransaction();
-//        try
-//        {
-//            permissionService.deletePermission(contentNodeRef, "admin", PermissionService.FULL_CONTROL);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try 
-//        {
-//           /**
-//             * Transfer our transfer target node 
-//             */
-//            {
-//                    TransferDefinition definition = new TransferDefinition();
-//                    Set<NodeRef>nodes = new HashSet<NodeRef>();
-//                    nodes.add(contentNodeRef);
-//                    definition.setNodes(nodes);
-//                    transferService.transfer(targetName, definition);
-//            }  
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//  
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists with the correct permissions 
-//            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
-//           
-//            // Check ACL of destination node
-//            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
-//            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
-//            
-//            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
-//            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
-//            
-//            assertFalse("inherit parent permissions (src) flag is incorrect", srcInherit);
-//            assertFalse("inherit parent permissions (dest) flag is incorrect", destInherit);
-//            
-//            // Check destination has the source's permissions
-//            for (AccessPermission p : srcPerm)
-//            {
-//                logger.debug("checking permission :" + p);
-//                assertTrue("permission is missing", destPerm.contains(p));
-//            }
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }    
-//        
-//        /**
-//         * Step 4
-//         * Revert to inherit all permissions
-//         */
-//        startNewTransaction();
-//        try
-//        {
-//            permissionService.setInheritParentPermissions(contentNodeRef, true);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try 
-//        {
-//           /**
-//             * Transfer our transfer target node 
-//             */
-//            {
-//                    TransferDefinition definition = new TransferDefinition();
-//                    Set<NodeRef>nodes = new HashSet<NodeRef>();
-//                    nodes.add(contentNodeRef);
-//                    definition.setNodes(nodes);
-//                    transferService.transfer(targetName, definition);
-//            }  
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//  
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists with the correct permissions 
-//            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
-//            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
-//            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
-//            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
-//            assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
-//            
-//            // Check ACL of destination node
-//            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
-//            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
-//            
-//            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
-//            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
-//            
-//            assertTrue("inherit parent permissions (src) flag is incorrect", srcInherit);
-//            assertTrue("inherit parent permissions (dest) flag is incorrect", destInherit);
-//            
-//            // Check destination has the source's permissions
-//            for (AccessPermission p : srcPerm)
-//            {
-//                if(p.isSetDirectly())
-//                {
-//                    logger.debug("checking permission :" + p);
-//                    assertTrue("permission is missing:" + p, destPerm.contains(p));
-//                }
-//            }
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }    
-//     }
+    /**
+     * Test the transfer method with regard to permissions on a node.
+     * 
+     * Step 1:  
+     * Create a node with a single permission 
+     *     Inherit:false
+     *     Read, Admin, Allow
+     *     Transfer
+     * 
+     * Step 2:
+     * Update it to have several permissions 
+     *     Inherit:false
+     *     Read, Everyone, DENY
+     *     Read, Admin, Allow
+     * 
+     * Step 3:
+     * Remove a permission
+     *     Inherit:false
+     *     Read, Admin, Allow
+     * 
+     * Step 4:
+     * Revert to inherit all permissions
+     *     Inherit:true
+     * 
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     */
+    public void testTransferWithPermissions() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "Hello";
+
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+          
+        /**
+          * Now go ahead and create our transfer target
+          */
+        String targetName = "testTransferWithPermissions";
+        TransferTarget transferMe;
+        NodeRef contentNodeRef;
+        NodeRef destNodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test node that we will read and write
+             */        
+            String name = GUID.generate();
+            ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_CONTENT);
+            contentNodeRef = child.getChildRef();
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, name);
+            
+            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+            
+            permissionService.setInheritParentPermissions(contentNodeRef, false);
+            permissionService.setPermission(contentNodeRef, "admin", PermissionService.READ, true);
+              
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 1
+         */
+        logger.debug("First transfer - create new node with inheritParent permission off");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target node 
+             */
+            {
+                    TransferDefinition definition = new TransferDefinition();
+                    Set<NodeRef>nodes = new HashSet<NodeRef>();
+                    nodes.add(contentNodeRef);
+                    definition.setNodes(nodes);
+                    transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+            
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists with the correct permissions 
+            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
+            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
+            assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
+            
+            // Check ACL of destination node
+            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
+            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
+            
+            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
+            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
+            
+            assertFalse("inherit parent permissions (src) flag is incorrect", srcInherit);
+            assertFalse("inherit parent permissions (dest) flag is incorrect", destInherit);
+            
+            // Check destination has the source's permissions
+            for (AccessPermission p : srcPerm)
+            {
+                logger.debug("checking permission :" + p);
+                assertTrue("permission is missing", destPerm.contains(p));
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }      
+        
+        /**
+         * Step 2
+         * Update it to have several permissions 
+         *     Inherit:false
+         *     Read, Everyone, DENY
+         *     Read, Admin, Allow 
+         */
+        startNewTransaction();
+        try
+        {
+            permissionService.setPermission(contentNodeRef, "EVERYONE", PermissionService.READ, false);
+            permissionService.setPermission(contentNodeRef, "admin", PermissionService.FULL_CONTROL, true);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target node 
+             */
+            {
+                    TransferDefinition definition = new TransferDefinition();
+                    Set<NodeRef>nodes = new HashSet<NodeRef>();
+                    nodes.add(contentNodeRef);
+                    definition.setNodes(nodes);
+                    transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+  
+        
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists with the correct permissions 
+            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            
+            // Check ACL of destination node
+            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
+            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
+            
+            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
+            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
+            
+            assertFalse("inherit parent permissions (src) flag is incorrect", srcInherit);
+            assertFalse("inherit parent permissions (dest) flag is incorrect", destInherit);
+            
+            // Check destination has the source's permissions
+            for (AccessPermission p : srcPerm)
+            {
+                logger.debug("checking permission :" + p);
+                assertTrue("Step2, permission is missing", destPerm.contains(p));
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+        
+        /**
+         * Step 3 Remove a permission
+         */
+        startNewTransaction();
+        try
+        {
+            permissionService.deletePermission(contentNodeRef, "admin", PermissionService.FULL_CONTROL);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target node 
+             */
+            {
+                    TransferDefinition definition = new TransferDefinition();
+                    Set<NodeRef>nodes = new HashSet<NodeRef>();
+                    nodes.add(contentNodeRef);
+                    definition.setNodes(nodes);
+                    transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+  
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists with the correct permissions 
+            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+           
+            // Check ACL of destination node
+            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
+            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
+            
+            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
+            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
+            
+            assertFalse("inherit parent permissions (src) flag is incorrect", srcInherit);
+            assertFalse("inherit parent permissions (dest) flag is incorrect", destInherit);
+            
+            // Check destination has the source's permissions
+            for (AccessPermission p : srcPerm)
+            {
+                logger.debug("checking permission :" + p);
+                assertTrue("permission is missing", destPerm.contains(p));
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+        
+        /**
+         * Step 4
+         * Revert to inherit all permissions
+         */
+        startNewTransaction();
+        try
+        {
+            permissionService.setInheritParentPermissions(contentNodeRef, true);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target node 
+             */
+            {
+                    TransferDefinition definition = new TransferDefinition();
+                    Set<NodeRef>nodes = new HashSet<NodeRef>();
+                    nodes.add(contentNodeRef);
+                    definition.setNodes(nodes);
+                    transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+  
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists with the correct permissions 
+            destNodeRef = testNodeFactory.getMappedNodeRef(contentNodeRef);
+            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
+            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
+            assertEquals("type is wrong", nodeService.getType(contentNodeRef), nodeService.getType(destNodeRef));
+            
+            // Check ACL of destination node
+            boolean srcInherit = permissionService.getInheritParentPermissions(contentNodeRef);
+            Set<AccessPermission> srcPerm = permissionService.getAllSetPermissions(contentNodeRef);
+            
+            boolean destInherit = permissionService.getInheritParentPermissions(destNodeRef);
+            Set<AccessPermission> destPerm = permissionService.getAllSetPermissions(destNodeRef);
+            
+            assertTrue("inherit parent permissions (src) flag is incorrect", srcInherit);
+            assertTrue("inherit parent permissions (dest) flag is incorrect", destInherit);
+            
+            // Check destination has the source's permissions
+            for (AccessPermission p : srcPerm)
+            {
+                if(p.isSetDirectly())
+                {
+                    logger.debug("checking permission :" + p);
+                    assertTrue("permission is missing:" + p, destPerm.contains(p));
+                }
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+     }
+    
+    
+    /**
+     * Transfer with read only flag
+     * 
+     * Node tree for this test
+     * <pre> 
+     *           A (Folder)
+     *   |                 | 
+     *   B (Content)   C (Folder)
+     *                     |
+     *                     D (Content)
+     * </pre>
+     * Step 1
+     * transfer Nodes ABCD with read only flag set - content should all be locked on destination
+     * <p>
+     * Step 2
+     * lock B (Content node) as user fred
+     * transfer (read only) - destination lock should change to Admin
+     * <p>
+     * Step 3
+     * lock C (Folder) as user fred
+     * transfer (read only) - destination lock should change to Admin
+     * <p> 
+     * Step 4
+     * transfer without read only flag - locks should revert from Admin to Fred.
+     * <p>
+     * Step 5
+     * remove locks on A and B - transfer without read only flag - content should all be unlocked.
+     */
+    public void testReadOnlyFlag() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        String CONTENT_NAME = "Demo Node 1";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "The quick brown fox";
+        Set<NodeRef>nodes = new HashSet<NodeRef>();
+        String USER_ONE = "TransferServiceImplTest";
+        String PASSWORD = "Password";
+        
+        String targetName = "testReadOnlyFlag";
+        
+        NodeRef nodeA;
+        NodeRef nodeB;
+        NodeRef nodeC;
+        NodeRef nodeD;
+        
+        ChildAssociationRef child;
+        
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+          
+        TransferTarget transferMe;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test node that we will read and write
+             */
+            String guid = GUID.generate();
+                        
+             child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
+             nodeA = child.getChildRef();
+             nodeService.setProperty(nodeA , ContentModel.PROP_TITLE, guid);   
+             nodeService.setProperty(nodeA , ContentModel.PROP_NAME, guid);
+             nodes.add(nodeA);
+         
+             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeB"), ContentModel.TYPE_CONTENT);
+             nodeB = child.getChildRef();
+             nodeService.setProperty(nodeB , ContentModel.PROP_TITLE, CONTENT_TITLE + "B");   
+             nodeService.setProperty(nodeB , ContentModel.PROP_NAME, "DemoNodeB");
+         
+             {
+                 ContentWriter writer = contentService.getWriter(nodeB , ContentModel.PROP_CONTENT, true);
+                 writer.setLocale(CONTENT_LOCALE);
+                 writer.putContent(CONTENT_STRING);
+                 nodes.add(nodeB);
+             }
+         
+             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeC"), ContentModel.TYPE_FOLDER);
+             nodeC = child.getChildRef();
+             nodeService.setProperty(nodeC , ContentModel.PROP_TITLE, "TestNodeC");   
+             nodeService.setProperty(nodeC , ContentModel.PROP_NAME, "TestNodeC");
+             nodes.add(nodeC);
+             
+             child = nodeService.createNode(nodeC, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeD"), ContentModel.TYPE_CONTENT);
+             nodeD = child.getChildRef();
+             nodeService.setProperty(nodeD , ContentModel.PROP_TITLE, CONTENT_TITLE + "D");   
+             nodeService.setProperty(nodeD , ContentModel.PROP_NAME, "DemoNodeD");
+             {
+                 ContentWriter writer = contentService.getWriter(nodeD , ContentModel.PROP_CONTENT, true);
+                 writer.setLocale(CONTENT_LOCALE);
+                 writer.putContent(CONTENT_STRING);
+                 nodes.add(nodeD);
+             }
+      
+             // Create users
+             createUser(USER_ONE, PASSWORD);   
+                
+             /**
+              * Now go ahead and create our first transfer target
+              */
+             if(!transferService.targetExists(targetName))
+             {
+                 transferMe = createTransferTarget(targetName);
+             }
+             else
+             {
+                 transferMe = transferService.getTransferTarget(targetName);
+             }       
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 1. 
+         * transfer Nodes ABCD with read only flag set - content should all be locked on destination  
+         */
+        logger.debug("transfer read only - step 1");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target nodes 
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setReadOnly(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            // Check destination nodes are locked.
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeA)));
+            assertTrue("dest node B does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeB)));
+            assertTrue("dest node C does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeC)));
+            assertTrue("dest node D does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeD)));
+            
+            assertTrue("dest node A not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeA), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node B not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node C not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node D not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeD), ContentModel.ASPECT_LOCKABLE));
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+       /**
+         * Step 2
+         * lock B (Content node) as user ONE
+         * transfer (read only) - destination lock should change user to "Admin" 
+         */ 
+        startNewTransaction();
+        try 
+        {
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+            lockService.lock(nodeB, LockType.READ_ONLY_LOCK);
+        }    
+        finally
+        {
+            assertEquals("test error: dest node B lock ownership", nodeService.getProperty(nodeB, ContentModel.PROP_LOCK_OWNER), USER_ONE);
+            AuthenticationUtil.popAuthentication();
+            endTransaction();
+        }
+        
+        logger.debug("transfer read only - step 2");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target nodes 
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setReadOnly(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        } 
+        
+        startNewTransaction();
+        try 
+        {
+            // Check destination nodes are locked.
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeA)));
+            assertTrue("dest node B does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeB)));
+            assertTrue("dest node C does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeC)));
+            assertTrue("dest node D does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeD)));
+            
+            assertTrue("dest node A not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeA), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node B not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node C not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node D not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeD), ContentModel.ASPECT_LOCKABLE));
+            
+            // check that the lock owner is no longer USER_ONE
+            assertTrue("lock owner not changed", !USER_ONE.equalsIgnoreCase((String)nodeService.getProperty(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.PROP_LOCK_OWNER)));
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        
+        /**
+         * Step 3
+         * lock C (Folder node) as user ONE
+         * transfer (read only) - destination lock should change to Admin
+         */ 
+        startNewTransaction();
+        try 
+        {
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+            lockService.lock(nodeC, LockType.READ_ONLY_LOCK);
+        }
+        finally
+        {
+            assertEquals("test error: dest node C lock ownership", nodeService.getProperty(nodeC, ContentModel.PROP_LOCK_OWNER), USER_ONE);
+            AuthenticationUtil.popAuthentication();
+            endTransaction();
+        }
+        
+        logger.debug("transfer read only - step 3");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target nodes 
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setReadOnly(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        
+        startNewTransaction();
+        try 
+        {
+            // Check destination nodes are locked.
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeA)));
+            assertTrue("dest node B does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeB)));
+            assertTrue("dest node C does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeC)));
+            assertTrue("dest node D does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeD)));
+            
+            assertTrue("dest node A not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeA), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node B not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node C not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node D not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeD), ContentModel.ASPECT_LOCKABLE));
+            
+            // check that the lock owner is no longer USER_ONE for content node B and folder node C
+            assertTrue("lock owner not changed", !USER_ONE.equalsIgnoreCase((String)nodeService.getProperty(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.PROP_LOCK_OWNER)));
+            assertTrue("lock owner not changed", !USER_ONE.equalsIgnoreCase((String)nodeService.getProperty(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.PROP_LOCK_OWNER)));
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        
+        /**
+         * Step 4
+         * transfer without read only flag - locks should revert from Admin to USER_ONE.
+         */
+        logger.debug("transfer read only - step 4");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target nodes 
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setReadOnly(false);   // turn off read-only
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+            // Check destination nodes are not locked.
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeA)));
+            assertTrue("dest node B does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeB)));
+            assertTrue("dest node C does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeC)));
+            assertTrue("dest node D does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeD)));
+            
+            assertFalse("dest node A not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeA), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node B not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.ASPECT_LOCKABLE));
+            assertTrue("dest node C not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.ASPECT_LOCKABLE));
+            assertFalse("dest node D not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeD), ContentModel.ASPECT_LOCKABLE));
+            
+            assertEquals("dest node B lock ownership", nodeService.getProperty(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.PROP_LOCK_OWNER), USER_ONE);
+            assertEquals("dest node C lock ownership", nodeService.getProperty(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.PROP_LOCK_OWNER), USER_ONE);
+           
+        }
+        finally
+        {
+            endTransaction();
+        }  
+
+    
+       /**
+        * Step 5
+        * remove locks on A and B - transfer without read only flag - content should all be unlocked.
+        */
+        logger.debug("transfer read only - step 5");
+        startNewTransaction();
+        try 
+        {
+            lockService.unlock(nodeB);
+            lockService.unlock(nodeC);
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
+            {
+                public Void doWork()
+                {
+
+                    return null;
+                }
+            }, USER_ONE);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target nodes 
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setReadOnly(false);   // turn off read-only
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        } 
+        startNewTransaction();
+        try 
+        {
+            // Check destination nodes are not locked.
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeA)));
+            assertTrue("dest node B does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeB)));
+            assertTrue("dest node C does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeC)));
+            assertTrue("dest node D does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeD)));
+            
+            assertFalse("dest node A not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeA), ContentModel.ASPECT_LOCKABLE));
+            assertFalse("dest node B not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.ASPECT_LOCKABLE));
+            assertFalse("dest node C not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeC), ContentModel.ASPECT_LOCKABLE));
+            assertFalse("dest node D not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeD), ContentModel.ASPECT_LOCKABLE));
+        }
+        finally
+        {
+            endTransaction();
+        }  
+    } // end test read only flag
 
 
+    // Utility methods below.
     private TransferTarget createTransferTarget(String name)
     {
         String title = "title";
@@ -3644,5 +4071,22 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          */
         TransferTarget target = transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
         return target;
+    }
+    
+    private void createUser(String userName, String password)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, password.toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            this.personService.createPerson(ppOne);
+        }        
     }
 }

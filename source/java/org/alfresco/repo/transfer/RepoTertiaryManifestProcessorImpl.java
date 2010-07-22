@@ -45,7 +45,7 @@ import org.apache.commons.logging.LogFactory;
  * For a complete transfer it is responsible for deleting any replicated nodes 
  * which exist in the target repository that do not exist in the source repository.
  * 
- * If the transfer is not "complete" then this processor does nothing.
+ * If the transfer is not "sync" then this processor does nothing.
  * 
  */
 public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessorBase

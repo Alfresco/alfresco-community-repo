@@ -39,7 +39,13 @@ import org.alfresco.service.namespace.QName;
  * supports the policy interface) until the Policy is registered.  Otherwise,
  * the behaviour is validated at bind-time.
  * 
+ * Policies may be selectively "turned off" by the Behaviour Filter.
+ * 
+ * 
+ * 
  * @see org.alfresco.repo.policy.BehaviourFilter
+ * 
+ * @see org.alfresco.repo.node.NodeServicePolicies
  * 
  *
  * @author David Caruana
@@ -94,7 +100,7 @@ public interface PolicyComponent
      * Determine if the specified policy has been registered
      * 
      * @param policyType  the policy type
-     * @param policy  the policy name
+     * @param policy  the fully qualified name of the policy
      * @return  true => registered, false => not yet
      */
     public boolean isRegisteredPolicy(PolicyType policyType, QName policy);
@@ -108,13 +114,13 @@ public interface PolicyComponent
      * Example of calling this method
      * <pre>
      *         this.policyComponent.bindClassBehaviour(
-     *           QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode"),
+     *           NodeServicePolicies.BeforeUpdateNodePolicy.QNAME,
      *           ContentModel.ASPECT_LOCKABLE,
      *           new JavaBehaviour(this, "beforeUpdateNode"));
      * </pre>
      * @param policy  the fully qualified policy name
      * @param className the qualified name of a type or aspect that the policy is bound to 
-     * @param behaviour  the behaviour, what gets executed by the policy
+     * @param behaviour  the behaviour.  What gets executed by the policy
      * @return the registered behaviour definition
      */
     public BehaviourDefinition<ClassBehaviourBinding> bindClassBehaviour(QName policy, QName className, Behaviour behaviour);
@@ -124,7 +130,7 @@ public interface PolicyComponent
      * 
      * @param policy the fully qualified policy name
      * @param service the service (any object, in fact)
-     * @param behaviour the behaviour, what gets executed by the policy
+     * @param behaviour the behaviour.  What gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ServiceBehaviourBinding> bindClassBehaviour(QName policy, Object service, Behaviour behaviour);
@@ -135,7 +141,7 @@ public interface PolicyComponent
      * @param policy the fully qualified policy name
      * @param className  the qualified name of the class (type or aspect) to bind against
      * @param propertyName  the name of the property to bind against
-     * @param behaviour  the behaviour, what gets executed by the policy
+     * @param behaviour  the behaviour.  What gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ClassFeatureBehaviourBinding> bindPropertyBehaviour(QName policy, QName className, QName propertyName, Behaviour behaviour);
@@ -143,7 +149,7 @@ public interface PolicyComponent
     /**
      * Bind a Property specific behaviour to a Property-level Policy (for all properties of a Class)
      * 
-     * @param policy  the policy name
+     * @param policy  the fully qualified policy name
      * @param className  the name of the class (type or aspect) to bind against
      * @param behaviour  the behaviour, what gets executed by the policy
      * @return  the registered behaviour definition
@@ -153,7 +159,7 @@ public interface PolicyComponent
     /**
      * Bind a Service specific behaviour to a Property-level Policy
      * 
-     * @param policy  the policy name
+     * @param policy  the fully qualified policy name
      * @param service  the binding service
      * @param behaviour  the behaviour
      * @return  the registered behaviour definition
@@ -166,7 +172,7 @@ public interface PolicyComponent
      * For example, before a rule folder association is created. 
      * <pre>
      *         policyComponent.bindAssociationBehaviour(
-     *           QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateChildAssociation"),
+     *           NodeServicePolicies.BeforeCreateChildAssociationPolicy.QNAME,
      *           RuleModel.ASPECT_RULES,
      *           RuleModel.ASSOC_RULE_FOLDER,
      *           new JavaBehaviour(this, "beforeCreateChildAssociation"));
@@ -175,7 +181,7 @@ public interface PolicyComponent
      * @param policy  the policy name
      * @param className  the name of the class (type or aspect) to bind against
      * @param assocName the name of the association to bind against
-     * @param behaviour  the behaviour, what gets executed by the policy
+     * @param behaviour  the behaviour. What gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ClassFeatureBehaviourBinding> bindAssociationBehaviour(QName policy, QName className, QName assocName, Behaviour behaviour);
@@ -185,7 +191,7 @@ public interface PolicyComponent
      * 
      * @param policy  the policy name
      * @param className  the name of the class (type or aspect) to bind against
-     * @param behaviour  the behaviour
+     * @param behaviour  the behaviour. What gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ClassFeatureBehaviourBinding> bindAssociationBehaviour(QName policy, QName className, Behaviour behaviour);
@@ -195,7 +201,7 @@ public interface PolicyComponent
      * 
      * @param policy  the policy name
      * @param service  the binding service
-     * @param behaviour  the behaviour
+     * @param behaviour  the behaviour. What gets executed by the policy
      * @return  the registered behaviour definition
      */
     public BehaviourDefinition<ServiceBehaviourBinding> bindAssociationBehaviour(QName policy, Object service, Behaviour behaviour);

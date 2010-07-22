@@ -573,6 +573,7 @@ public class TransferServiceImpl implements TransferService
             header.setCreatedDate(new Date());
             header.setNodeCount(nodes.size());
             header.setSync(definition.isSync());
+            header.setReadOnly(definition.isReadOnly());
             formatter.startTransferManifest(snapshotWriter);
             formatter.writeTransferManifestHeader(header);
             for(NodeRef nodeRef : nodes)

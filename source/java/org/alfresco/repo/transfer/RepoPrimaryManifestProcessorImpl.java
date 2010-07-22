@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transfer.CorrespondingNodeResolver.ResolvedParentChildPair;
 import org.alfresco.repo.transfer.manifest.ManifestAccessControl;
 import org.alfresco.repo.transfer.manifest.ManifestPermission;
@@ -38,6 +39,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -87,6 +90,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
+    private LockService lockService;
     
     // State within this class
     /**
@@ -290,7 +294,16 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
         }
         props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
-
+        
+        // Do we need to worry about locking this new node ?
+        if(header.isReadOnly())
+        {
+            log.debug("new node needs to be locked");
+            props.put(ContentModel.PROP_LOCK_OWNER, AuthenticationUtil.getAdminUserName());
+            props.put(ContentModel.PROP_LOCK_TYPE, LockType.READ_ONLY_LOCK.toString());
+            props.put(ContentModel.PROP_EXPIRY_DATE, null);
+         }
+ 
         // Create the corresponding node...
         ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName, node
                 .getType(), props);
@@ -311,6 +324,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             nodeService.addAspect(newNode.getChildRef(), aspect, null);
         }
+        
         
         ManifestAccessControl acl = node.getAccessControl();        
         // Apply new ACL to this node
@@ -412,6 +426,15 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
             }
             props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
+            
+            // Do we need to worry about locking this updated ?
+            if(header.isReadOnly())
+            {
+                props.put(ContentModel.PROP_LOCK_OWNER, AuthenticationUtil.getAdminUserName());
+                props.put(ContentModel.PROP_LOCK_TYPE, LockType.READ_ONLY_LOCK.toString());
+                props.put(ContentModel.PROP_EXPIRY_DATE, null);
+                log.debug("updated node needs to be locked");
+            }
 
             // Split out the content properties and sanitise the others
             Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, existingProps);
@@ -432,6 +455,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             for (AspectDefinition aspectDef : aspectDefs)
             {
                 suppliedAspects.add(aspectDef.getName());
+            }
+            
+            if(header.isReadOnly())
+            {
+                suppliedAspects.add(ContentModel.ASPECT_LOCKABLE);
             }
             
             aspectsToRemove.removeAll(suppliedAspects);

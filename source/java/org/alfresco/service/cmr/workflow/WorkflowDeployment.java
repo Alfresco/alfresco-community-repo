@@ -32,9 +32,26 @@ public class WorkflowDeployment
     /** Workflow Status */
     public String[] problems;
     
+    /**
+     * @return the definition
+     */
+    public WorkflowDefinition getDefinition()
+    {
+        return definition;
+    }
+
+    /**
+     * @return the problems
+     */
+    public String[] getProblems()
+    {
+        return problems;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         return "WorkflowDeployment[def=" + definition + ",problems=" + ((problems == null) ? 0 : problems.length) + "]";

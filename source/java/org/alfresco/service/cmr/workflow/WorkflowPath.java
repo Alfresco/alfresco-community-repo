@@ -43,10 +43,42 @@ public class WorkflowPath
     /** Is the path still active? */
     public boolean active;
 
-    
+    /**
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+
+    /**
+     * @return the instance
+     */
+    public WorkflowInstance getInstance()
+    {
+        return instance;
+    }
+
+    /**
+     * @return the node
+     */
+    public WorkflowNode getNode()
+    {
+        return node;
+    }
+
+    /**
+     * @return the active
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         return "WorkflowPath[id=" + id + ",instance=" + instance.toString() + ",active=" + active + ",node=" + node.toString()+ "]";

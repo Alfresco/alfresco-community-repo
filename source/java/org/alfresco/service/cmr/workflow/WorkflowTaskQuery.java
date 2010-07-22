@@ -65,8 +65,8 @@ public class WorkflowTaskQuery
         TaskActor_Asc,
         TaskActor_Desc,
         TaskState_Asc,
-        TaskState_Desc
-    };
+        TaskState_Desc;
+    }
     
     
     /**

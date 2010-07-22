@@ -57,9 +57,74 @@ public class WorkflowTask
     /** Task Properties as described by Task Definition */
     public Map<QName, Serializable> properties;
     
+    /**
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+    
+    /**
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @return the state
+     */
+    public WorkflowTaskState getState()
+    {
+        return state;
+    }
+
+    /**
+     * @return the path
+     */
+    public WorkflowPath getPath()
+    {
+        return path;
+    }
+
+    /**
+     * @return the definition
+     */
+    public WorkflowTaskDefinition getDefinition()
+    {
+        return definition;
+    }
+
+    /**
+     * @return the properties
+     */
+    public Map<QName, Serializable> getProperties()
+    {
+        return properties;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         String propCount = (properties == null) ? "null" : "" + properties.size();

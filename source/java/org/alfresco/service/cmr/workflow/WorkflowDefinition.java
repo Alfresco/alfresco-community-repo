@@ -93,6 +93,7 @@ public class WorkflowDefinition implements Serializable
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         return "WorkflowDefinition[id=" + id + ",name=" + name + ",version=" + version + ",title=" + title + ",startTask=" + ((getStartTaskDefinition() == null) ? "undefined" : getStartTaskDefinition().toString()) + "]";

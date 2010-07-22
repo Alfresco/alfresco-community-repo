@@ -46,10 +46,58 @@ public class WorkflowNode
     /** The transitions leaving this node (or null, if none) */
     public WorkflowTransition[] transitions;
     
-    
+    /**
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @return the type
+     */
+    public String getType()
+    {
+        return type;
+    }
+
+    /**
+     * @return the isTaskNode
+     */
+    public boolean isTaskNode()
+    {
+        return isTaskNode;
+    }
+
+    /**
+     * @return the transitions
+     */
+    public WorkflowTransition[] getTransitions()
+    {
+        return transitions;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         String transitionsArray = "{";

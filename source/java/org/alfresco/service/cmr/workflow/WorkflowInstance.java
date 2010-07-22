@@ -62,9 +62,90 @@ public class WorkflowInstance implements Serializable
     /** Workflow Definition */
     public WorkflowDefinition definition;
 
+    /**
+     * @return the serialversionuid
+     */
+    public static long getSerialversionuid()
+    {
+        return serialVersionUID;
+    }
+
+    /**
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @return the active
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
+    /**
+     * @return the initiator
+     */
+    public NodeRef getInitiator()
+    {
+        return initiator;
+    }
+
+    /**
+     * @return the startDate
+     */
+    public Date getStartDate()
+    {
+        return startDate;
+    }
+
+    /**
+     * @return the endDate
+     */
+    public Date getEndDate()
+    {
+        return endDate;
+    }
+
+    /**
+     * @return the workflowPackage
+     */
+    public NodeRef getWorkflowPackage()
+    {
+        return workflowPackage;
+    }
+
+    /**
+     * @return the context
+     */
+    public NodeRef getContext()
+    {
+        return context;
+    }
+
+    /**
+     * @return the definition
+     */
+    public WorkflowDefinition getDefinition()
+    {
+        return definition;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         return "WorkflowInstance[id=" + id + ",active=" + active + ",def=" + definition.toString() + "]";

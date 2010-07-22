@@ -38,9 +38,43 @@ public class WorkflowTransition
     /** Is this the default transition */
     public boolean isDefault;
     
+    
+    /**
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+    
+    /**
+     * @return the title
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+    
+    /**
+     * @return the description
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+    
+    /**
+     * @return the isDefault
+     */
+    public boolean isDefault()
+    {
+        return isDefault;
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         return "WorkflowTransition[id=" + id + ",title=" + title + "]";

@@ -19,8 +19,15 @@
 package org.alfresco.service.cmr.lock;
 
 /**
- * Enum used to indicate lock type
- * 
- * @author Roy Wetherall
+ * The type of lock to be used by the lock service
+ * <p>
+ * The lock owner or the administrator can release the lock.
+ * <ul>
+ * <li>NODE_LOCK - no-one can update or delete the locked node.</li>
+ * <li>READ_ONLY_LOCK - no-one can update or delete the locked node. No one can add children to the locked node</li>
+ * <li>WRITE_LOCK - the owner can update or delete the locked node. The owner can add children to the locked node</li>
+ * </ul>
  */
-public enum LockType {READ_ONLY_LOCK, WRITE_LOCK}
+public enum LockType {READ_ONLY_LOCK, 
+    WRITE_LOCK, 
+    NODE_LOCK }

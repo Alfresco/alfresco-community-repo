@@ -413,7 +413,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * Gets the lock statuc for a node and a user name
+     * Gets the lock status for a node and a user name
      * 
      * @param nodeRef   the node reference
      * @param userName  the user name
@@ -516,7 +516,7 @@ public class LockServiceImpl implements LockService,
                     if (LockType.WRITE_LOCK.equals(lockType) == true && 
                         LockStatus.LOCKED.equals(currentLockStatus) == true)
                     {
-                        // Error since we are trying to preform an operation on a locked node
+                        // Lock is of type Write Lock and the node is locked by another owner.
                         throw new NodeLockedException(nodeRef);
                     }
                     else if (LockType.READ_ONLY_LOCK.equals(lockType) == true &&
@@ -526,6 +526,14 @@ public class LockServiceImpl implements LockService,
                         // modifications are prevented
                         throw new NodeLockedException(nodeRef);
                     }
+                    else if (LockType.NODE_LOCK.equals(lockType) == true &&
+                            (LockStatus.LOCKED.equals(currentLockStatus) == true || LockStatus.LOCK_OWNER.equals(currentLockStatus) == true))
+                    {
+                        // Error since there is a read only lock on this object and all
+                        // modifications are prevented
+                        throw new NodeLockedException(nodeRef);
+                    }
+
                 }
                 catch (AspectMissingException exception)
                 {
@@ -547,7 +555,20 @@ public class LockServiceImpl implements LockService,
             QName assocQName,
             boolean isNewNode)
     {
-        checkForLock(parentNodeRef);
+        LockType lockType = getLockType(parentNodeRef);
+        if(lockType != null)
+        {
+        
+            switch (lockType)
+            {
+                case WRITE_LOCK:
+                case READ_ONLY_LOCK:
+                    checkForLock(parentNodeRef);
+                    break;
+                case NODE_LOCK:
+                // don't check for lock
+            }
+        }
     }
 
     /**
@@ -612,7 +633,7 @@ public class LockServiceImpl implements LockService,
     /**
      * OnCreateVersion behaviour for the lock aspect
      * <p>
-     * Ensures that the property valies of the lock aspect are not 'frozen' in
+     * Ensures that the property values of the lock aspect are not 'frozen' in
      * the version store.
      */
     public void onCreateVersion(

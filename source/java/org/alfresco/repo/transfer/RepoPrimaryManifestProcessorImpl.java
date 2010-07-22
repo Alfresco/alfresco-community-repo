@@ -39,7 +39,6 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -90,8 +89,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
-    private LockService lockService;
-    
+       
     // State within this class
     /**
      * The header of the manifest
@@ -300,7 +298,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             log.debug("new node needs to be locked");
             props.put(ContentModel.PROP_LOCK_OWNER, AuthenticationUtil.getAdminUserName());
-            props.put(ContentModel.PROP_LOCK_TYPE, LockType.READ_ONLY_LOCK.toString());
+            props.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK.toString());
             props.put(ContentModel.PROP_EXPIRY_DATE, null);
          }
  
@@ -431,7 +429,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             if(header.isReadOnly())
             {
                 props.put(ContentModel.PROP_LOCK_OWNER, AuthenticationUtil.getAdminUserName());
-                props.put(ContentModel.PROP_LOCK_TYPE, LockType.READ_ONLY_LOCK.toString());
+                props.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK.toString());
                 props.put(ContentModel.PROP_EXPIRY_DATE, null);
                 log.debug("updated node needs to be locked");
             }

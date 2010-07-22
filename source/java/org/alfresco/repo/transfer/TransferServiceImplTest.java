@@ -4003,14 +4003,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             lockService.unlock(nodeB);
             lockService.unlock(nodeC);
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
-                public Void doWork()
-                {
-
-                    return null;
-                }
-            }, USER_ONE);
         }
         finally
         {
@@ -4041,6 +4033,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             assertTrue("dest node B does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeB)));
             assertTrue("dest node C does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeC)));
             assertTrue("dest node D does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(nodeD)));
+            
+            assertFalse("test fail: dest node B is still locked", nodeService.hasAspect(nodeB, ContentModel.ASPECT_LOCKABLE));
+            assertFalse("test fail: dest node C is still locked", nodeService.hasAspect(nodeC, ContentModel.ASPECT_LOCKABLE));
             
             assertFalse("dest node A not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeA), ContentModel.ASPECT_LOCKABLE));
             assertFalse("dest node B not locked", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(nodeB), ContentModel.ASPECT_LOCKABLE));
@@ -4089,4 +4084,137 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             this.personService.createPerson(ppOne);
         }        
     }
+    
+    public void testReadOnlyTemorary() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        String CONTENT_NAME = "Temporary";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "The quick brown fox";
+        Set<NodeRef>nodes = new HashSet<NodeRef>();
+        String USER_ONE = "TransferServiceImplTest";
+        String PASSWORD = "Password";
+        
+        String targetName = "testReadOnlyFlag";
+        
+        NodeRef nodeA;
+        NodeRef nodeB;
+        NodeRef nodeC;
+        NodeRef nodeD;
+        
+        ChildAssociationRef child;
+        
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+          
+        TransferTarget transferMe;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test node that we will read and write
+             */
+            String guid = GUID.generate();
+                        
+             child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
+             nodeA = child.getChildRef();
+             nodeService.setProperty(nodeA , ContentModel.PROP_TITLE, guid);   
+             nodeService.setProperty(nodeA , ContentModel.PROP_NAME, guid);
+             nodes.add(nodeA);
+         
+             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeB"), ContentModel.TYPE_CONTENT);
+             nodeB = child.getChildRef();
+             nodeService.setProperty(nodeB , ContentModel.PROP_TITLE, CONTENT_TITLE + "B");   
+             nodeService.setProperty(nodeB , ContentModel.PROP_NAME, "DemoNodeB");
+         
+             {
+                 ContentWriter writer = contentService.getWriter(nodeB , ContentModel.PROP_CONTENT, true);
+                 writer.setLocale(CONTENT_LOCALE);
+                 writer.putContent(CONTENT_STRING);
+                 nodes.add(nodeB);
+             }
+         
+             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeC"), ContentModel.TYPE_FOLDER);
+             nodeC = child.getChildRef();
+             nodeService.setProperty(nodeC , ContentModel.PROP_TITLE, "TestNodeC");   
+             nodeService.setProperty(nodeC , ContentModel.PROP_NAME, "TestNodeC");
+             nodes.add(nodeC);
+             
+             child = nodeService.createNode(nodeC, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeD"), ContentModel.TYPE_CONTENT);
+             nodeD = child.getChildRef();
+             nodeService.setProperty(nodeD , ContentModel.PROP_TITLE, CONTENT_TITLE + "D");   
+             nodeService.setProperty(nodeD , ContentModel.PROP_NAME, "DemoNodeD");
+             {
+                 ContentWriter writer = contentService.getWriter(nodeD , ContentModel.PROP_CONTENT, true);
+                 writer.setLocale(CONTENT_LOCALE);
+                 writer.putContent(CONTENT_STRING);
+                 nodes.add(nodeD);
+             }
+      
+             // Create users
+             createUser(USER_ONE, PASSWORD);   
+                
+             /**
+              * Now go ahead and create our first transfer target
+              */
+             if(!transferService.targetExists(targetName))
+             {
+                 transferMe = createTransferTarget(targetName);
+             }
+             else
+             {
+                 transferMe = transferService.getTransferTarget(targetName);
+             }       
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * Step 1. 
+         * transfer Nodes ABCD with read only flag set - content should all be locked on destination  
+         */
+        logger.debug("transfer read only - step 1");
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer our transfer target nodes 
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setReadOnly(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+    }
+
 }

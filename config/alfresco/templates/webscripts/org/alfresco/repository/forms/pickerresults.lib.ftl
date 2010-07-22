@@ -11,6 +11,8 @@
       ${indent}"name": "${node.properties.name!""}",
       ${indent}"title": "${node.properties.title!""}",
       ${indent}"description": "${node.properties.description!""}",
+      <#if node.properties.modified??>${indent}"modified": "${node.properties.modified?string("dd MMMM yyyy HH:mm")}",</#if>
+      <#if node.properties.modifier??>${indent}"modifier": "${node.properties.modifier}",</#if>
       ${indent}"displayPath": "${node.displayPath!""}",
       ${indent}"nodeRef": "${node.nodeRef}"
    ${indent}},
@@ -35,6 +37,8 @@
             "name": "${row.item.properties.name!""}",
             "title": "${row.item.properties.title!""}",
             "description": "${row.item.properties.description!""}",
+            <#if row.item.properties.modified??>"modified": "${row.item.properties.modified?string("dd MMMM yyyy HH:mm")}",</#if>
+            <#if row.item.properties.modifier??>"modifier": "${row.item.properties.modifier}",</#if>
             "displayPath": "${row.item.displayPath!""}",
             "nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,
             "selectable" : ${row.selectable?string}</#if>

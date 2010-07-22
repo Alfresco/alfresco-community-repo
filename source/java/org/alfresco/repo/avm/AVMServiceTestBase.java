@@ -124,7 +124,7 @@ public class AVMServiceTestBase extends TestCase
                 {
                     public void storeCreated(String name)
                     {
-                        System.err.println("Store created: " + name);
+                        //System.err.println("Store created: " + name);
                     }
                 }
             );
@@ -134,7 +134,7 @@ public class AVMServiceTestBase extends TestCase
                 {
                     public void storePurged(String name)
                     {
-                        System.err.println("Store purged: " + name);
+                        //System.err.println("Store purged: " + name);
                     }
                 }
             );
@@ -144,7 +144,7 @@ public class AVMServiceTestBase extends TestCase
                 {
                     public void versionCreated(String name, int versionID)
                     {
-                        System.err.println("Version created: " + name + " " + versionID);
+                        //System.err.println("Version created: " + name + " " + versionID);
                     }
                 }
             );
@@ -154,7 +154,7 @@ public class AVMServiceTestBase extends TestCase
                 {
                     public void versionPurged(String name, int versionID)
                     {
-                        System.err.println("Version purged: " + name + " " + versionID);
+                        //System.err.println("Version purged: " + name + " " + versionID);
                     }
                 }
             );

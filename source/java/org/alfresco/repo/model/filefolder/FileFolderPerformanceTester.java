@@ -74,14 +74,22 @@ public class FileFolderPerformanceTester extends TestCase
 {
     private static Log logger = LogFactory.getLog(FileFolderPerformanceTester.class);
     
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private RetryingTransactionHelper retryingTransactionHelper;
+    protected RetryingTransactionHelper retryingTransactionHelper;
+    protected NodeService nodeService;
+    
     private AuthenticationComponent authenticationComponent;
-    private NodeService nodeService;
     private FileFolderService fileFolderService;
+    private SearchService searchService;
     private NodeRef rootFolderRef;
     private File dataFile;
+    
+    
+    protected NodeService getNodeService()
+    {
+        return (NodeService)ctx.getBean("NodeService");
+    }
     
     @Override
     public void setUp() throws Exception
@@ -89,14 +97,27 @@ public class FileFolderPerformanceTester extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        nodeService = serviceRegistry.getNodeService();
+        
         fileFolderService = serviceRegistry.getFileFolderService();
-        SearchService searchService = serviceRegistry.getSearchService();
+        searchService = serviceRegistry.getSearchService();
+        nodeService = getNodeService();
         
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();
         
-        // find the guest folder
+        rootFolderRef = getOrCreateRootFolder();
+        
+        dataFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
+    }
+    
+    public void testSetUp() throws Exception
+    {
+        assertNotNull(dataFile);
+    }
+    
+    protected NodeRef getOrCreateRootFolder()
+    {
+     // find the guest folder
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, "/app:company_home");
         try
@@ -106,7 +127,7 @@ public class FileFolderPerformanceTester extends TestCase
                 throw new AlfrescoRuntimeException("Didn't find Company Home");
             }
             NodeRef companyHomeNodeRef = rs.getNodeRef(0);
-            rootFolderRef = fileFolderService.create(
+            return fileFolderService.create(
                     companyHomeNodeRef,
                     getName() + "_" + System.currentTimeMillis(),
                     ContentModel.TYPE_FOLDER).getNodeRef();
@@ -115,12 +136,6 @@ public class FileFolderPerformanceTester extends TestCase
         {
             rs.close();
         }
-        dataFile = AbstractContentTransformerTest.loadQuickTestFile("txt");
-    }
-    
-    public void testSetUp() throws Exception
-    {
-        assertNotNull(dataFile);
     }
     
     /**
@@ -325,13 +340,13 @@ public class FileFolderPerformanceTester extends TestCase
             }
         }
     }
-
+    
 //    /** Load 5000 files into a single folder using 2 threads */
 //    public void test_2_ordered_1_2500() throws Exception
 //    {
 //        buildStructure(rootFolderRef, 2, false, 1, 2500, new double[] {0.25, 0.50, 0.75});
 //    }
-
+    
 //    public void test_4_ordered_10_100() throws Exception
 //    {
 //        buildStructure(rootFolderRef, 4, false, 10, 100, new double[] {0.25, 0.50, 0.75});
@@ -381,7 +396,7 @@ public class FileFolderPerformanceTester extends TestCase
 //                50000,
 //                new double[] {0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90});
 //    }
-
+    
     
     /**
      * Create a bunch of files and folders in a folder and then run multi-threaded directory

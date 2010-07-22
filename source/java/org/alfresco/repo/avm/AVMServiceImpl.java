@@ -64,6 +64,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMServiceImpl implements AVMService
 {
+    /** The i18n'ized messages */
+    private static final String MSG_CYCLE_ON_CREATE = "avm.cycle.create";
+    
     public static final String SYSTEM = "system";
     
     private static Log logger = LogFactory.getLog(AVMServiceImpl.class);
@@ -488,7 +491,7 @@ public class AVMServiceImpl implements AVMService
             
             if (checkForLDCycle(srcPath, AVMUtil.extendAVMPath(parent, name)))
             {
-                throw new AVMCycleException("Cycle in lookup.");
+                throw new AVMCycleException(MSG_CYCLE_ON_CREATE);
             }
             
             if (logger.isDebugEnabled())

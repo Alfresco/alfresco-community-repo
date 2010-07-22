@@ -8,6 +8,7 @@
 --
 -- Path was previously unused and unindex - new we use it the index is required.
 
+--FOREACH alf_child_assoc.id system.upgrade.alf_child_assoc.batchsize
 UPDATE
       alf_child_assoc
    SET 
@@ -45,6 +46,7 @@ UPDATE
          qq.local_name ='userName' AND
          nn.uri = 'http://www.alfresco.org/model/content/1.0'
     )
+    AND alf_child_assoc.id >= ${LOWERBOUND} AND alf_child_assoc.id <= ${UPPERBOUND}
 ;
 
 -- Validation query

@@ -34,6 +34,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Method interceptor for atomic indexing of AVM entries The properties can defined how stores are indexed based on type
@@ -44,6 +46,8 @@ import org.aopalliance.intercept.MethodInvocation;
  */
 public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInterceptor
 {
+    private static Log logger = LogFactory.getLog(AVMSnapShotTriggeredIndexingMethodInterceptor.class);
+
     // Copy of store properties used to tag avm stores (a store propertry)
 
     public final static QName PROP_SANDBOX_STAGING_MAIN = QName.createQName(null, ".sandbox.staging.main");
@@ -106,6 +110,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                     AVMLuceneIndexer avmIndexer = getIndexer(store);
                     if (avmIndexer != null)
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("purgeStore " + store, new Exception("Stack Trace"));
+                        }
                         avmIndexer.deleteIndex(store, IndexMode.SYNCHRONOUS);
                     }
                 }
@@ -133,6 +141,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                     AVMLuceneIndexer avmIndexer = getIndexer(from);
                     if (avmIndexer != null)
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("renameStore deleteIndex " + from, new Exception("Stack Trace"));
+                        }
                         avmIndexer.deleteIndex(from, IndexMode.SYNCHRONOUS);
                     }
                 }
@@ -142,6 +154,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                     AVMLuceneIndexer avmIndexer = getIndexer(to);
                     if (avmIndexer != null)
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("renameStore createIndex " + to, new Exception("Stack Trace"));
+                        }
                         avmIndexer.createIndex(to, IndexMode.SYNCHRONOUS);
                         avmIndexer.index(to, 0, after, getIndexMode(to));
                     }
@@ -258,6 +274,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 }
                 
                 int from = before != -1 ? before : last;
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("indexSnapshotImpl " + store, new Exception("Stack Trace"));
+                }
                 avmIndexer.index(store, from, after, getIndexMode(store));
             }
         }
@@ -503,6 +523,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         AVMLuceneIndexer avmIndexer = getIndexer(store);
         if (avmIndexer != null)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("createIndex " + store, new Exception("Stack Trace"));
+            }
             avmIndexer.createIndex(store, IndexMode.SYNCHRONOUS);
         }
     }

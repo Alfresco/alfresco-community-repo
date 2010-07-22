@@ -4677,6 +4677,42 @@ public class AVMServiceTest extends AVMServiceTestBase
         try
         {
             setupBasicTree();
+            
+            // -ve test
+            try
+            {
+                // note: without trailing "/"
+                fService.rename("main:/a", "b", "main:/a/b", "b");
+                fail("Renaming folder into itself should cause cycle exception");
+            }
+            catch (AVMCycleException ace)
+            {
+                // ignore - expected
+            }
+            
+            // -ve test
+            try
+            {
+                // note: with trailing "/"
+                fService.rename("main:/a/", "b", "main:/a/b/", "b");
+                fail("Renaming folder into itself should cause cycle exception");
+            }
+            catch (AVMCycleException ace)
+            {
+                // ignore - expected
+            }
+            
+            // -ve test
+            try
+            {
+                fService.rename("main:/", "a", "main:/a/b", "c");
+                fail("Renaming folder tree into itself should cause cycle exception");
+            }
+            catch (AVMCycleException ace)
+            {
+                // ignore - expected
+            }
+            
             fService.rename("main:/a", "b", "main:/d/e", "brenamed");
             fService.createSnapshot("main", null, null);
             System.out.println(recursiveList("main", -1, true));

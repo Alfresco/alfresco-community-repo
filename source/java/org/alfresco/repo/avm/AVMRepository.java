@@ -69,6 +69,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMRepository
 {
+    /** The i18n'ized messages */
+    private static final String MSG_CYCLE_ON_CREATE = "avm.cycle.create";
+    private static final String MSG_CYCLE_ON_LOOKUP = "avm.cycle.lookup";
+    
     private static Log fgLogger = LogFactory.getLog(AVMRepository.class);
 
     /**
@@ -387,7 +391,7 @@ public class AVMRepository
     {
         if (dstPath.indexOf(srcPath) == 0)
         {
-            throw new AVMCycleException("Cycle would be created.");
+            throw new AVMCycleException(MSG_CYCLE_ON_CREATE);
         }
         fLookupCount.set(1);
         try
@@ -488,7 +492,7 @@ public class AVMRepository
     {
         if (dstPath.indexOf(srcPath) == 0)
         {
-            throw new AVMCycleException("Cycle would be created.");
+            throw new AVMCycleException(MSG_CYCLE_ON_CREATE);
         }
         // Lookup the src node.
         fLookupCount.set(1);
@@ -698,10 +702,11 @@ public class AVMRepository
      */
     public void rename(String srcPath, String srcName, String dstPath, String dstName)
     {
-        // This is about as ugly as it gets.
-        if ((dstPath + "/").indexOf(srcPath + srcName + "/") == 0)
+        String extDst = AVMUtil.extendAVMPath(dstPath, "");
+        String extSrc = AVMUtil.extendAVMPath(AVMUtil.extendAVMPath(srcPath, srcName), "");
+        if (extDst.indexOf(extSrc) == 0)
         {
-            throw new AVMCycleException("Cyclic rename.");
+            throw new AVMCycleException(MSG_CYCLE_ON_CREATE);
         }
         fLookupCount.set(1);
         String[] pathParts;
@@ -1508,7 +1513,7 @@ public class AVMRepository
             }
             if (fLookupCount.get() > 50)
             {
-                throw new AVMCycleException("Cycle in lookup.");
+                throw new AVMCycleException(MSG_CYCLE_ON_LOOKUP);
             }
             String[] pathParts = SplitPath(path);
             AVMStore store = getAVMStoreByName(pathParts[0]);
@@ -1985,7 +1990,7 @@ public class AVMRepository
             fLookupCount.set(fLookupCount.get() + 1);
             if (fLookupCount.get() > 50)
             {
-                throw new AVMCycleException("Cycle in lookup.");
+                throw new AVMCycleException(MSG_CYCLE_ON_LOOKUP);
             }
             String[] pathParts = SplitPath(path);
             AVMStore store = getAVMStoreByName(pathParts[0]);

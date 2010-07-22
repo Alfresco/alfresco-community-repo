@@ -66,6 +66,9 @@
        <property name="schemaUpdateLockRetryWaitSeconds">
           <value>${db.schema.update.lockRetryWaitSeconds}</value>
        </property>
+       <property name="globalProperties">
+          <ref bean="global-properties" />
+       </property>
        <property name="preCreateScriptUrls">
           <list>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-RepoTables.sql</value>

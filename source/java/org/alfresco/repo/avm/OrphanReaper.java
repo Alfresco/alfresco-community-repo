@@ -260,6 +260,11 @@ public class OrphanReaper
         {
             public Object execute() throws Exception
             {
+                if (fgLogger.isTraceEnabled())
+                {
+                    fgLogger.trace("Orphan reaper doBatch: batchSize="+fBatchSize+", maxQueueLength="+fQueueLength+", fActiveBaseSleep="+fActiveBaseSleep);
+                }
+                
                 if (fPurgeQueue == null)
                 {
                     List<AVMNode> nodes = AVMDAOs.Instance().fAVMNodeDAO.getOrphans(fQueueLength);
@@ -273,30 +278,43 @@ public class OrphanReaper
                         fActive = false;
                         return null;
                     }
+                    
                     fPurgeQueue = new LinkedList<Long>();
                     for (AVMNode node : nodes)
                     {
                         fPurgeQueue.add(node.getId());
                     }
+                    
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug("Queue was empty so got more orphans from DB. Orphan queue size = "+fPurgeQueue.size());
+                    }
                 }
-                
-                if (fgLogger.isDebugEnabled())
+                else
                 {
-                    fgLogger.debug("Found orphan nodes (fpurgeQueue size = "+fPurgeQueue.size()+")");
+                    if (fgLogger.isDebugEnabled())
+                    {
+                        fgLogger.debug("Queue was not empty. Orphan queue size = "+fPurgeQueue.size());
+                    }
                 }
                 
                 fActive = true;
+                
+                int reapCnt = 0;
+                
+                long start = System.currentTimeMillis();
+                
                 for (int i = 0; i < fBatchSize; i++)
                 {
                     if (fPurgeQueue.size() == 0)
                     {
-                        if (fgLogger.isDebugEnabled())
+                        if (fgLogger.isTraceEnabled())
                         {
-                            fgLogger.debug("Purge queue is empty (fpurgeQueue size = "+fPurgeQueue.size()+")");
+                            fgLogger.trace("Purge queue is empty (fpurgeQueue size = "+fPurgeQueue.size()+")");
                         }
                         
                         fPurgeQueue = null;
-                        return null;
+                        break;
                     }
                     
                     Long nodeId = fPurgeQueue.removeFirst();
@@ -396,7 +414,15 @@ public class OrphanReaper
                     {
                         fgLogger.trace("Deleted Node ["+node.getId()+"]");
                     }
+                    
+                    reapCnt++;
                 }
+                
+                if (fgLogger.isDebugEnabled())
+                {
+                    fgLogger.debug("Reaped "+reapCnt+" nodes in "+(System.currentTimeMillis()-start)+" msecs");
+                }
+                
                 return null;
             }
         }

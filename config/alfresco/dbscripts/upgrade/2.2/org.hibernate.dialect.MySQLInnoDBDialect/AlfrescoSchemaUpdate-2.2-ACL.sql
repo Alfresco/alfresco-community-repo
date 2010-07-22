@@ -29,8 +29,11 @@ ALTER TABLE alf_access_control_list
    ADD CONSTRAINT fk_alf_acl_acs FOREIGN KEY (acl_change_set) REFERENCES alf_acl_change_set (id),
    ADD INDEX idx_alf_acl_inh (inherits, inherits_from);
 
+--FOREACH alf_access_control_list.id system.upgrade.alf_access_control_list.batchsize
 UPDATE alf_access_control_list acl
-   set acl_id = (acl.id);
+   set acl_id = (acl.id)
+   WHERE acl.id >= ${LOWERBOUND} AND acl.id <= ${UPPERBOUND};
+   
 
 ALTER TABLE alf_access_control_list
    ADD UNIQUE (acl_id, latest, acl_version);
@@ -75,13 +78,18 @@ ALTER TABLE alf_authority
    ADD UNIQUE (authority, crc);
 
 -- migrate data - fix up FK refs to authority
+--FOREACH alf_access_control_entry.id system.upgrade.alf_access_control_entry.batchsize
 UPDATE alf_access_control_entry ace
-   set auth_id = (select id from alf_authority a where a.authority = ace.authority_id);
+   set auth_id = (select id from alf_authority a where a.authority = ace.authority_id)
+   WHERE ace.id >= ${LOWERBOUND} AND ace.id <= ${UPPERBOUND};
 
 
 -- migrate data - build equivalent ACL entries
+--FOREACH alf_access_control_list.id system.upgrade.alf_acl_member.batchsize
 INSERT INTO alf_acl_member (version, acl_id, ace_id, pos)
-   select 1, ace.acl_id, ace.id, 0 from alf_access_control_entry ace join alf_access_control_list acl on acl.id = ace.acl_id;
+   select 1, ace.acl_id, ace.id, 0
+   from alf_access_control_entry ace join alf_access_control_list acl on acl.id = ace.acl_id
+   where acl.id >= ${LOWERBOUND} AND acl.id <= ${UPPERBOUND};
 
 -- Create ACE context
 CREATE TABLE alf_ace_context (
@@ -134,6 +142,7 @@ CREATE TABLE alf_tmp_min_ace (
   UNIQUE (permission_id, authority_id, allowed, applies)
 ) ENGINE=InnoDB;
 
+--FOREACH alf_access_control_entry.authority_id system.upgrade.alf_tmp_min_ace.batchsize
 INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
     SELECT
        min(ace1.id),
@@ -143,12 +152,15 @@ INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
        ace1.applies
     FROM
        alf_access_control_entry ace1
+    WHERE
+       ace1.authority_id >= ${LOWERBOUND} AND ace1.authority_id <= ${UPPERBOUND}
     GROUP BY
        ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies
 ;
    
 
 -- Update members to point to the first use of an access control entry
+--FOREACH alf_acl_member.id system.upgrade.alf_acl_member.batchsize
 UPDATE alf_acl_member mem
    SET ace_id = (SELECT help.min FROM alf_access_control_entry ace 
                      JOIN alf_tmp_min_ace help
@@ -156,8 +168,8 @@ UPDATE alf_acl_member mem
                                 help.authority_id = ace.authority_id AND 
                                 help.allowed = ace.allowed AND 
                                 help.applies = ace.applies 
-                     WHERE ace.id = mem.ace_id  );
-
+                     WHERE ace.id = mem.ace_id  )
+   WHERE mem.id >= ${LOWERBOUND} AND mem.id <= ${UPPERBOUND};
 DROP TABLE alf_tmp_min_ace;
 
 -- Remove duplicate aces the mysql way (as you can not use the deleted table in the where clause ...)

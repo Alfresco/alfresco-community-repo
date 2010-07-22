@@ -31,18 +31,19 @@ public class PurgeTestP extends AVMServiceTestBase
 {
     private static Log logger = LogFactory.getLog(PurgeTestP.class);
     
-    public void testSetup()
+    @Override
+    public void setUp() throws Exception
     {
-        runOrphanReaper();
-    }
+        super.setUp();
         
+        runOrphanReaper(1000, 1000, 0);
+    }
+    
     public void testRemoveNodes() throws Throwable
     {
         try
         {
             logger.info("testRemoveNodes");
-            
-            runOrphanReaper();
             
             int fileCount = 10;
             
@@ -78,8 +79,6 @@ public class PurgeTestP extends AVMServiceTestBase
         {
             logger.info("testPurgeVersion");
             
-            runOrphanReaper();
-            
             setupBasicTree();
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
@@ -112,8 +111,6 @@ public class PurgeTestP extends AVMServiceTestBase
         try
         {
             logger.info("testPurgeOlderVersion");
-            
-            runOrphanReaper();
             
             setupBasicTree();
             BulkLoader loader = new BulkLoader();
@@ -155,8 +152,6 @@ public class PurgeTestP extends AVMServiceTestBase
         {
             logger.info("testPurgeStore");
             
-            runOrphanReaper();
-            
             setupBasicTree();
             
             BulkLoader loader = new BulkLoader();
@@ -195,7 +190,28 @@ public class PurgeTestP extends AVMServiceTestBase
     
     private void runOrphanReaper()
     {
+        // use configured defaults (eg. 50, 1000, 1000)
+        runOrphanReaper(-1, -1, -1);
+    }
+    
+    private void runOrphanReaper(int batchSize, int maxQueueLength, int activeBaseSleep)
+    {
         logger.info("Reaper started");
+        
+        if (batchSize != -1)
+        {
+            fReaper.setBatchSize(batchSize);
+        }
+        
+        if (maxQueueLength != -1)
+        {
+            fReaper.setMaxQueueLength(maxQueueLength);
+        }
+        
+        if (activeBaseSleep != -1)
+        {
+            fReaper.setActiveBaseSleep(activeBaseSleep);
+        }
         
         fReaper.activate();
         fReaper.execute();
@@ -207,7 +223,7 @@ public class PurgeTestP extends AVMServiceTestBase
         {
             try
             {
-                //System.out.print(".");
+                logger.info("Cycle: "+cycles);
                 Thread.sleep(2000);
             }
             catch (InterruptedException e)
@@ -221,9 +237,24 @@ public class PurgeTestP extends AVMServiceTestBase
         
         if (cycles > maxCycles)
         {
-            throw new AlfrescoRuntimeException("Orphan reaper still active - failed to clean orphans in "+cycles+" cycles (max "+maxCycles+")");
+            throw new AlfrescoRuntimeException("Orphan reaper still active - failed to clean orphans in "+cycles+" wait cycles (max "+maxCycles+")");
         }
         
-        logger.info("Reaper finished (in "+cycles+" cycles)");
+        if (batchSize != -1)
+        {
+            fReaper.setBatchSize(50);
+        }
+        
+        if (maxQueueLength != -1)
+        {
+            fReaper.setMaxQueueLength(1000);
+        }
+        
+        if (activeBaseSleep != -1)
+        {
+            fReaper.setActiveBaseSleep(1000);
+        }
+        
+        logger.info("Reaper finished (in "+cycles+" wait cycles)");
     }
 }

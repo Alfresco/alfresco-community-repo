@@ -98,6 +98,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 {
     /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
     private static final String PLACEHOLDER_SCRIPT_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
+    
+    /** The global property containing the default batch size used by --FOREACH */
+    private static final String PROPERTY_DEFAULT_BATCH_SIZE = "system.upgrade.default.batchsize";
 
     private static final String MSG_DIALECT_USED = "schema.update.msg.dialect_used";
     private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
@@ -203,6 +206,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private int schemaUpdateLockRetryCount = DEFAULT_LOCK_RETRY_COUNT;
     private int schemaUpdateLockRetryWaitSeconds = DEFAULT_LOCK_RETRY_WAIT_SECONDS;
     private int maximumStringLength;
+    private Properties globalProperties;
     
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
     private File xmlPreSchemaOutputFile;                // This must be set if there are any executed statements
@@ -215,6 +219,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         preUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         postUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         maximumStringLength = -1;
+        globalProperties = new Properties();
     }
     
     public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
@@ -387,6 +392,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         ActionQueue.setMAX_EXECUTIONS_SIZE(hibernateMaxExecutions);
     }
     
+    
+    /**
+     * Sets the properties map from which we look up some configuration settings.
+     * 
+     * @param globalProperties
+     *            the global properties
+     */
+    public void setGlobalProperties(Properties globalProperties)
+    {
+        this.globalProperties = globalProperties;
+    }
+
     /**
      * Helper method to generate a schema creation SQL script from the given Hibernate
      * configuration.
@@ -968,6 +985,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             StringBuilder sb = new StringBuilder(1024);
             String fetchVarName = null;
             String fetchColumnName = null;
+            boolean doBatch = false;
+            int batchUpperLimit = 0;
+            int batchSize = 1;
             Map<String, Object> varAssignments = new HashMap<String, Object>(13);
             // Special variable assignments:
             if (dialect instanceof PostgreSQLDialect)
@@ -1018,15 +1038,44 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     fetchColumnName = assigns[1];
                     continue;
                 }
+				// Handle looping control
+                else if (sql.startsWith("--FOREACH"))
+                {
+                    // --FOREACH table.column batch.size.property
+                    String[] args = sql.split("[ \\t]+");
+                    int sepIndex;
+                    if (args.length == 3 && (sepIndex = args[1].indexOf('.')) != -1)
+                    {
+                        doBatch = true;
+						// Select the upper bound of the table column
+                        String stmt = "SELECT MAX(" + args[1].substring(sepIndex+1) + ") AS upper_limit FROM " + args[1].substring(0, sepIndex);
+                        Object fetchedVal = executeStatement(connection, stmt, "upper_limit", false, line, scriptFile);                        
+                        if (fetchedVal instanceof Number)
+                        {
+                            batchUpperLimit = ((Number)fetchedVal).intValue();
+							// Read the batch size from the named property
+                            String batchSizeString = globalProperties.getProperty(args[2]);
+                            // Fall back to the default property
+                            if (batchSizeString == null)
+                            {
+                                batchSizeString = globalProperties.getProperty(PROPERTY_DEFAULT_BATCH_SIZE);
+                            }
+                            batchSize = batchSizeString == null ? 10000 : Integer.parseInt(batchSizeString);
+                        }
+                    }
+                    continue;
+                }
                 // Allow transaction delineation
                 else if (sql.startsWith("--BEGIN TXN"))
                 {
                    connection.setAutoCommit(false);
+                   continue;
                 }
                 else if (sql.startsWith("--END TXN"))
                 {
                    connection.commit();
-                   connection.setAutoCommit(true);                   
+                   connection.setAutoCommit(true);
+                   continue;
                 }
 
                 // Check for comments
@@ -1084,34 +1133,49 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 // execute, if required
                 if (execute)
                 {
-                    sql = sb.toString();
-                    
-                    // Perform variable replacement using the ${var} format
-                    for (Map.Entry<String, Object> entry : varAssignments.entrySet())
+                    // Now substitute and execute the statement the appropriate number of times
+                    String unsubstituted = sb.toString();
+                    for(int lowerBound = 0; lowerBound <= batchUpperLimit; lowerBound += batchSize)
                     {
-                        String var = entry.getKey();
-                        Object val = entry.getValue();
-                        sql = sql.replaceAll("\\$\\{" + var + "\\}", val.toString());
-                    }
-                    
-                    // Handle the 0/1 values that PostgreSQL doesn't translate to TRUE
-                    if (this.dialect != null && this.dialect instanceof PostgreSQLDialect)
-                    {
-                        sql = sql.replaceAll("\\$\\{TRUE\\}", "TRUE");
-                    }
-                    else
-                    {
-                        sql = sql.replaceAll("\\$\\{TRUE\\}", "1");
-                    }
-                    
-                    Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
-                    if (fetchVarName != null && fetchColumnName != null)
-                    {
-                        varAssignments.put(fetchVarName, fetchedVal);
-                    }
-                    sb = new StringBuilder(1024);
+                        sql = unsubstituted;
+                        
+                        // Substitute in the next pair of range parameters
+                        if (doBatch)
+                        {
+                            varAssignments.put("LOWERBOUND", String.valueOf(lowerBound));
+                            varAssignments.put("UPPERBOUND", String.valueOf(lowerBound + batchSize - 1));
+                        }
+                        
+                        // Perform variable replacement using the ${var} format
+                        for (Map.Entry<String, Object> entry : varAssignments.entrySet())
+                        {
+                            String var = entry.getKey();
+                            Object val = entry.getValue();
+                            sql = sql.replaceAll("\\$\\{" + var + "\\}", val.toString());
+                        }
+                        
+                        // Handle the 0/1 values that PostgreSQL doesn't translate to TRUE
+                        if (this.dialect != null && this.dialect instanceof PostgreSQLDialect)
+                        {
+                            sql = sql.replaceAll("\\$\\{TRUE\\}", "TRUE");
+                        }
+                        else
+                        {
+                            sql = sql.replaceAll("\\$\\{TRUE\\}", "1");
+                        }
+                        
+                        Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
+                        if (fetchVarName != null && fetchColumnName != null)
+                        {
+                            varAssignments.put(fetchVarName, fetchedVal);
+                        }                        
+                    }                        
+                    sb.setLength(0);
                     fetchVarName = null;
                     fetchColumnName = null;
+                    doBatch = false;
+                    batchUpperLimit = 0;
+                    batchSize = 1;                    
                 }
             }
         }

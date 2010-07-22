@@ -13,8 +13,8 @@
     </bean>
 
     <bean id="imapServer" class="org.alfresco.repo.imap.AlfrescoImapServer">
-        <property name="sysAdminParams">
-            <ref bean="sysAdminParams" />
+        <property name="host">
+            <value>${imap.server.host}</value>
         </property>
         <property name="port">
             <value>${imap.server.port}</value>

@@ -18,6 +18,8 @@
 
 package org.alfresco.repo.avm;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -394,7 +396,15 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             else if (nodeTypeQName.equals(WCMModel.TYPE_AVM_PLAIN_CONTENT) ||
                      nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
             {
-                fAVMService.createFile(avmPath, nodeName);
+                OutputStream os = fAVMService.createFile(avmPath, nodeName);
+                try
+                {
+                    if (os != null) { os.close(); }
+                }
+                catch (IOException ioe)
+                {
+                    fgLogger.warn("Failed to close output stream when creating file '"+AVMUtil.extendAVMPath(avmPath, nodeName)+"'"+ioe.getMessage());
+                }
             }
             else if (nodeTypeQName.equals(WCMModel.TYPE_AVM_LAYERED_CONTENT))
             {

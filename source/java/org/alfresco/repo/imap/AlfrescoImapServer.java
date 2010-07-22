@@ -19,7 +19,6 @@
 package org.alfresco.repo.imap;
 
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.alfresco.repo.admin.SysAdminParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -39,9 +38,9 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(AlfrescoImapServer.class);
 
     private ImapServer serverImpl;
-    private SysAdminParams sysAdminParams;
 
     private int port = 143;
+    private String host = "0.0.0.0";
     private ImapHostManager imapHostManager;
 
     private UserManager imapUserManager;
@@ -49,11 +48,6 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     private boolean imapServerEnabled;
     
     
-    public void setSysAdminParams(SysAdminParams sysAdminParams)
-    {
-        this.sysAdminParams = sysAdminParams;
-    }
-
     public void setImapServerEnabled(boolean imapServerEnabled)
     {
         this.imapServerEnabled = imapServerEnabled;
@@ -62,6 +56,11 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     public void setPort(int port)
     {
         this.port = port;
+    }
+
+    public void setHost(String host)
+    {
+        this.host = host;
     }
 
     public void setImapHostManager(ImapHostManager imapHostManager)
@@ -90,13 +89,12 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                     return imapUserManager;
                 }
             };
-            String currentHost = sysAdminParams.getAlfrescoHost();
             
-            serverImpl = new ImapServer(new ServerSetup(port, currentHost, ServerSetup.PROTOCOL_IMAP), imapManagers);
+            serverImpl = new ImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers);
             serverImpl.startService(null);
             if (logger.isInfoEnabled())
             {
-                logger.info("IMAP service started on host:port " + currentHost + ":" + this.port + ".");
+                logger.info("IMAP service started on host:port " + host + ":" + this.port + ".");
             }
         }
         else

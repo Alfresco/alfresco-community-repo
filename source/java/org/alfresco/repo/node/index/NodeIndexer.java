@@ -82,6 +82,10 @@ public class NodeIndexer
     {
         if (enabled)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("indexCreateNode", new Exception("Stack Trace"));
+            }
             indexer.createNode(childAssocRef);
         }
     }
@@ -90,6 +94,10 @@ public class NodeIndexer
     {
         if (enabled)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("indexUpdateNode", new Exception("Stack Trace"));
+            }
             indexer.updateNode(nodeRef);
         }
     }
@@ -98,6 +106,10 @@ public class NodeIndexer
     {
         if (enabled)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("indexDeleteNode", new Exception("Stack Trace"));
+            }
             indexer.deleteNode(childAssocRef);
         }
     }
@@ -106,6 +118,10 @@ public class NodeIndexer
     {
         if (enabled)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("indexCreateChildAssociation", new Exception("Stack Trace"));
+            }
             indexer.createChildRelationship(childAssocRef);
         }
     }
@@ -114,6 +130,10 @@ public class NodeIndexer
     {
         if (enabled)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("indexDeleteChildAssociation", new Exception("Stack Trace"));
+            }
             indexer.deleteChildRelationship(childAssocRef);
         } 
     }
@@ -122,6 +142,10 @@ public class NodeIndexer
     {
         if (enabled)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("indexUpdateChildAssociation", new Exception("Stack Trace"));
+            }
             indexer.updateChildRelationship(oldChildAssocRef, newChildAssocRef);
         }
     }

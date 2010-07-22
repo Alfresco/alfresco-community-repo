@@ -3318,20 +3318,16 @@ public class IndexInfo implements IndexMonitor
                 if (!mergingIndexes && !applyingDeletions)
                 {
 
-                    if ((indexes > mergerMergeFactor) || (deltas > mergerTargetOverlays))
+                    if (indexes > mergerMergeFactor) 
                     {
-                        if (indexes > deltas)
-                        {
-                            // Try merge
-                            action = MergeAction.MERGE_INDEX;
-                        }
-                        else
-                        {
-                            // Try delete
-                            action = MergeAction.APPLY_DELTA_DELETION;
-
-                        }
+                        // Try merge
+                        action = MergeAction.MERGE_INDEX;
                     }
+                    else if (deltas > mergerTargetOverlays)
+                    {
+                        // Try delete
+                        action = MergeAction.APPLY_DELTA_DELETION;
+                    }                    
                 }
             }
 

@@ -282,14 +282,7 @@ INSERT INTO t_summary_nstat (node_id, transaction_id)
   SELECT node_id, transaction_id FROM alf_node_status WHERE node_id IS NOT NULL;
 
 -- Copy data over
---BEGIN TXN
-LOCK TABLES
-   t_alf_node WRITE,
-   alf_node AS n READ,
-   t_summary_nstat AS nstat READ,
-   t_alf_store AS s READ,
-   t_qnames AS q READ
-;
+--FOREACH alf_node.id system.upgrade.t_alf_node.batchsize
 INSERT INTO t_alf_node
    (
       id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id, acl_id,
@@ -303,9 +296,9 @@ INSERT INTO t_alf_node
       JOIN t_qnames q ON (q.qname = n.type_qname)
       JOIN t_summary_nstat nstat ON (nstat.node_id = n.id)
       JOIN t_alf_store s ON (s.protocol = n.protocol AND s.identifier = n.identifier)
+   WHERE
+      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
 ;
---END TXN
-UNLOCK TABLES;
 DROP TABLE t_summary_nstat;
 
 -- Hook the store up to the root node
@@ -373,13 +366,7 @@ CREATE TABLE t_alf_child_assoc
    UNIQUE (parent_node_id, type_qname_id, child_node_name_crc, child_node_name)
 ) TYPE=InnoDB;
 
---BEGIN TXN
-LOCK TABLES
-   t_alf_child_assoc WRITE,
-   alf_child_assoc AS ca READ,
-   t_qnames_dyn AS tqndyn READ,
-   t_qnames AS tqn READ
-;
+--FOREACH alf_child_assoc.id system.upgrade.t_alf_child_assoc.batchsize
 INSERT INTO t_alf_child_assoc
    (
       id, version,
@@ -402,9 +389,9 @@ INSERT INTO t_alf_child_assoc
       alf_child_assoc ca
       JOIN t_qnames_dyn tqndyn ON (ca.qname = tqndyn.qname)
       JOIN t_qnames tqn ON (ca.type_qname = tqn.qname)
+   WHERE
+      ca.id >= ${LOWERBOUND} AND ca.id <= ${UPPERBOUND}
 ;
---END TXN
-UNLOCK TABLES;
 
 -- Clean up
 DROP TABLE t_qnames_dyn;
@@ -432,12 +419,7 @@ CREATE TABLE t_alf_node_assoc
    UNIQUE (source_node_id, target_node_id, type_qname_id)
 ) TYPE=InnoDB;
 
---BEGIN TXN
-LOCK TABLES
-   t_alf_node_assoc WRITE,
-   alf_node_assoc AS na READ,
-   t_qnames AS tqn READ
-;
+--FOREACH alf_node_assoc.id system.upgrade.t_alf_node_assoc.batchsize
 INSERT INTO t_alf_node_assoc
    (
       id, version,
@@ -451,9 +433,9 @@ INSERT INTO t_alf_node_assoc
    FROM
       alf_node_assoc na
       JOIN t_qnames tqn ON (na.type_qname = tqn.qname)
+   WHERE
+      na.id >= ${LOWERBOUND} AND na.id <= ${UPPERBOUND}
 ;
---END TXN
-UNLOCK TABLES;
 
 -- Clean up
 DROP TABLE alf_node_assoc;
@@ -507,12 +489,7 @@ CREATE TABLE t_alf_node_aspects
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
 
---BEGIN TXN
-LOCK TABLES
-   t_alf_node_aspects WRITE,
-   alf_node_aspects AS na READ,
-   t_qnames AS tqn READ
-;
+--FOREACH alf_node_aspects.node_id system.upgrade.t_alf_node_aspects.batchsize
 -- Note the omission of sys:referencable.  This is implicit.
 INSERT INTO t_alf_node_aspects
    (
@@ -526,9 +503,8 @@ INSERT INTO t_alf_node_aspects
       JOIN t_qnames tqn ON (na.qname = tqn.qname)
    WHERE
       tqn.qname != '{http://www.alfresco.org/model/system/1.0}referenceable'
+      AND na.node_id >= ${LOWERBOUND} AND na.node_id <= ${UPPERBOUND}
 ;
---END TXN
-UNLOCK TABLES;
 
 -- Clean up
 DROP TABLE alf_node_aspects;
@@ -549,6 +525,7 @@ CREATE TABLE t_avm_aspects
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
 
+--FOREACH avm_aspects.node_id system.upgrade.t_avm_aspects.batchsize
 INSERT INTO t_avm_aspects
    (
       node_id, qname_id
@@ -559,7 +536,10 @@ INSERT INTO t_avm_aspects
    FROM
       avm_aspects aspects_old
       JOIN t_qnames tqn ON (aspects_old.qname = tqn.qname)
+   WHERE
+      aspects_old.node_id >= ${LOWERBOUND} AND aspects_old.node_id <= ${UPPERBOUND}
 ;
+--FOREACH avm_aspects_new.id system.upgrade.t_avm_aspects.batchsize
 INSERT INTO t_avm_aspects
    (
       node_id, qname_id
@@ -573,6 +553,7 @@ INSERT INTO t_avm_aspects
       LEFT JOIN avm_aspects aold ON (anew.id = aold.node_id AND anew.name = aold.qname)
    WHERE
       aold.id IS NULL
+      AND anew.id >= ${LOWERBOUND} AND anew.id <= ${UPPERBOUND}
 ;
 
 -- Clean up
@@ -632,6 +613,7 @@ CREATE TABLE t_avm_store_properties
    CONSTRAINT fk_avm_sprop_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (id)
 ) TYPE=InnoDB;
+--FOREACH avm_store_properties.avm_store_id system.upgrade.t_avm_store_properties.batchsize
 INSERT INTO t_avm_store_properties
    (
       avm_store_id,
@@ -649,6 +631,8 @@ INSERT INTO t_avm_store_properties
       JOIN t_qnames tqn ON (p.qname = tqn.qname)
       JOIN t_prop_types ptypes_actual ON (ptypes_actual.type_name = p.actual_type)
       JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = p.persisted_type)
+   WHERE
+      p.avm_store_id >= ${LOWERBOUND} AND p.avm_store_id <= ${UPPERBOUND}
 ;
 DROP TABLE avm_store_properties;
 ALTER TABLE t_avm_store_properties RENAME TO avm_store_properties;
@@ -673,6 +657,7 @@ CREATE TABLE t_avm_node_properties
    CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
+--FOREACH avm_node_properties_new.node_id system.upgrade.t_avm_node_properties.batchsize
 INSERT INTO t_avm_node_properties
    (
       node_id,
@@ -690,7 +675,10 @@ INSERT INTO t_avm_node_properties
       JOIN t_qnames tqn ON (p.qname = tqn.qname)
       JOIN t_prop_types ptypes_actual ON (ptypes_actual.type_name = p.actual_type)
       JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = p.persisted_type)
+   WHERE
+      p.node_id >= ${LOWERBOUND} AND p.node_id <= ${UPPERBOUND}   
 ;
+--FOREACH avm_node_properties.node_id system.upgrade.t_avm_node_properties.batchsize
 INSERT INTO t_avm_node_properties
    (
       node_id,
@@ -711,6 +699,7 @@ INSERT INTO t_avm_node_properties
       LEFT OUTER JOIN t_avm_node_properties tanp ON (tqn.qname_id = tanp.qname_id)
    WHERE
       tanp.qname_id IS NULL
+      AND p.node_id >= ${LOWERBOUND} AND p.node_id <= ${UPPERBOUND}   
 ;
 
 DROP TABLE avm_node_properties_new;
@@ -771,13 +760,7 @@ CREATE TABLE t_alf_node_properties
 
 --BEGIN TXN
 -- Copy values over
-LOCK TABLES
-   t_alf_node_properties WRITE,
-   alf_node_properties AS np READ,
-   t_prop_types AS ptypes_actual READ,
-   t_prop_types AS ptypes_persisted READ,
-   t_qnames AS tqn READ
-;
+--FOREACH alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 INSERT INTO t_alf_node_properties
    (
       node_id, qname_id, locale_id, list_index,
@@ -799,11 +782,11 @@ INSERT INTO t_alf_node_properties
       JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = np.persisted_type)
    WHERE
       np.attribute_value IS NULL
+      AND np.node_id >= ${LOWERBOUND} AND np.node_id <= ${UPPERBOUND}
 ;
---END TXN
-UNLOCK TABLES;
 
 -- Update cm:auditable properties on the nodes
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_creator =
 (
    SELECT
@@ -815,8 +798,10 @@ UPDATE t_alf_node n SET audit_creator =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'creator'
+      qn.local_name = 'creator' AND
+      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
 );
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_created =
 (
    SELECT
@@ -828,8 +813,10 @@ UPDATE t_alf_node n SET audit_created =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'created'
+      qn.local_name = 'created' AND
+      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
 );
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_modifier =
 (
    SELECT
@@ -841,8 +828,10 @@ UPDATE t_alf_node n SET audit_modifier =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'modifier'
+      qn.local_name = 'modifier' AND
+      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
 );
+--FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_modified =
 (
    SELECT
@@ -854,7 +843,8 @@ UPDATE t_alf_node n SET audit_modified =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'modified'
+      qn.local_name = 'modified' AND
+      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
 );
 -- Remove the unused cm:auditable properties
 -- SHORTCUT:
@@ -870,16 +860,19 @@ UPDATE t_alf_node n SET audit_modified =
 --    FROM t_alf_node_properties
 --    WHERE
 --       qname_id IN (13, 14, 23, 24);
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 DELETE t_alf_node_properties
    FROM t_alf_node_properties
    JOIN alf_qname ON (t_alf_node_properties.qname_id = alf_qname.id)
    JOIN alf_namespace ON (alf_qname.ns_id = alf_namespace.id)
    WHERE
       alf_namespace.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      alf_qname.local_name IN ('creator', 'created', 'modifier', 'modified')
+      alf_qname.local_name IN ('creator', 'created', 'modifier', 'modified') AND
+      t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
 ;
 
 -- Copy all MLText values over
+--FOREACH alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 INSERT INTO t_alf_node_properties
    (
       node_id, qname_id, locale_id, list_index,
@@ -901,16 +894,26 @@ INSERT INTO t_alf_node_properties
       JOIN alf_map_attribute_entries ma ON (ma.map_id = a1.id)
       JOIN alf_locale loc ON (ma.mkey = loc.locale_str)
       JOIN alf_attributes a2 ON (ma.attribute_id = a2.id)
+   WHERE
+      np.node_id >= ${LOWERBOUND} AND np.node_id <= ${UPPERBOUND}
 ;  -- (OPTIONAL)
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 UPDATE t_alf_node_properties
    SET actual_type_n = 6, persisted_type_n = 6, serializable_value = NULL
    WHERE actual_type_n = -1 AND string_value IS NOT NULL
+   AND t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
 ;
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
 UPDATE t_alf_node_properties
    SET actual_type_n = 9, persisted_type_n = 9
    WHERE actual_type_n = -1 AND serializable_value IS NOT NULL
+   AND t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
 ;
-DELETE FROM t_alf_node_properties WHERE actual_type_n = -1;
+--FOREACH t_alf_node_properties.node_id system.upgrade.t_alf_node_properties.batchsize
+DELETE FROM t_alf_node_properties
+   WHERE actual_type_n = -1
+   AND t_alf_node_properties.node_id >= ${LOWERBOUND} AND t_alf_node_properties.node_id <= ${UPPERBOUND}
+;
 
 -- Delete the node properties and move the fixed values over
 DROP TABLE alf_node_properties;

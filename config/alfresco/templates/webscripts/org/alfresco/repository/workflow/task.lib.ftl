@@ -76,11 +76,11 @@
             <#elseif val?is_sequence>
                [
                <#list val as element>
-                  "${jsonUtils.encodeJSONString(element?string)}"<#if (element_has_next)>,</#if>
+                  "${element?string}"<#if (element_has_next)>,</#if>
                </#list>
                ]
             <#else>
-               "${jsonUtils.encodeJSONString(shortQName(val?string))}"
+               "${shortQName(val?string)}"
             </#if>
       <#else>
          null

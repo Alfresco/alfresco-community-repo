@@ -67,11 +67,11 @@
             <value>{http://www.alfresco.org/model/content/1.0}folder</value>
          </list>
       </property>
-       <property name="nodeService" ref="NodeService" />
        <property name="jobLockService" ref="JobLockService" />
        <property name="transferService" ref="TransferService" />
        <property name="replicationService" ref="ReplicationService" />
        <property name="nodeCrawlerFactory" ref="NodeCrawlerFactory" />
+       <property name="actionTrackingService" ref="actionTrackingService" />
    </bean>
 
 

@@ -33,7 +33,6 @@ import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionStatus;

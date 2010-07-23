@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
@@ -36,10 +40,13 @@ import org.alfresco.repo.transfer.UnitTestInProcessTransmitterImpl;
 import org.alfresco.repo.transfer.UnitTestTransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionStatus;
+import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -51,22 +58,32 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
+ * Unit tests for the Replication Service.
+ * Handles its own transactions, as in a few cases it needs
+ *  to run async actions and know how they'll behave
  * @author Nick Burch
  */
-@SuppressWarnings("deprecation")
-public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
+public class ReplicationServiceIntegrationTest extends TestCase
 {
+   private static ConfigurableApplicationContext ctx = 
+      (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
+   
     private ReplicationActionExecutor replicationActionExecutor;
     private ReplicationService replicationService;
+    private TransactionService transactionService;
     private TransferService transferService;
     private JobLockService jobLockService;
+    private ActionService actionService;
     private NodeService nodeService;
     private Repository repositoryHelper;
+    private ActionTrackingService actionTrackingService;
     
     private NodeRef replicationRoot;
     
@@ -88,27 +105,24 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     private final String TRANSFER_TARGET = "TestTransferTarget";
     
-    public ReplicationServiceIntegrationTest()
-    {
-       super();
-       preventTransaction();
-    }
-    
     @Override
-    protected void onSetUp() throws Exception
+    protected void setUp() throws Exception
     {
-        super.onSetUp();
-        replicationActionExecutor = (ReplicationActionExecutor) this.applicationContext.getBean("replicationActionExecutor");
-        replicationService = (ReplicationService) this.applicationContext.getBean("ReplicationService");
-        transactionService = (TransactionService) this.applicationContext.getBean("transactionService");
-        transferService = (TransferService) this.applicationContext.getBean("TransferService");
-        jobLockService = (JobLockService) this.applicationContext.getBean("JobLockService");
-        actionService = (ActionService) this.applicationContext.getBean("ActionService");
-        nodeService = (NodeService) this.applicationContext.getBean("NodeService");
-        repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        replicationActionExecutor = (ReplicationActionExecutor) ctx.getBean("replicationActionExecutor");
+        replicationService = (ReplicationService) ctx.getBean("replicationService");
+        transactionService = (TransactionService) ctx.getBean("transactionService");
+        transferService = (TransferService) ctx.getBean("transferService");
+        jobLockService = (JobLockService) ctx.getBean("jobLockService");
+        actionService = (ActionService) ctx.getBean("actionService");
+        nodeService = (NodeService) ctx.getBean("nodeService");
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
+        actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
         
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
         
         // Zap any existing replication entries
         replicationRoot = ReplicationDefinitionPersisterImpl.REPLICATION_ACTION_ROOT_NODE_REF;
@@ -136,12 +150,16 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
         
         // Tell the transfer service not to use HTTP
         makeTransferServiceLocal();
+        
+        // Finish setup
+        txn.commit();
     }
     
     @Override
-    protected void onTearDown() throws Exception {
-      super.onTearDown();
-      
+    protected void tearDown() throws Exception {
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       
       // Zap our test folders
       if(folder1 != null) {
          nodeService.deleteNode(folder1);
@@ -153,10 +171,16 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
          nodeService.deleteNode(destinationFolder);
       }
       
+      txn.commit();
+      txn = transactionService.getUserTransaction();
+      txn.begin();
+      
       // Zap our test transfer target
       try {
          transferService.deleteTransferTarget(TRANSFER_TARGET);
       } catch(TransferException e) {}
+      
+      txn.commit();
    }
 
 
@@ -438,9 +462,10 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        rd.getPayload().add( folder1 );
        
        // Will execute without error
-       startNewTransaction();
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
        actionService.executeAction(rd, replicationRoot);
-       endTransaction();
+       txn.commit();
        
        
        // Now with one that's in the repo
@@ -453,9 +478,10 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        rd2 = replicationService.loadReplicationDefinition(ACTION_NAME2);
        
        // Again no errors
-       startNewTransaction();
+       txn = transactionService.getUserTransaction();
+       txn.begin();
        actionService.executeAction(rd2, replicationRoot);
-       endTransaction();
+       txn.commit();
     }
     
     /**
@@ -482,9 +508,11 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
              1,
              1
        );
-       startNewTransaction();
+       
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
        actionService.executeAction(rd, replicationRoot);
-       endTransaction();
+       txn.commit();
        long end = System.currentTimeMillis();
        
        assertTrue(
@@ -495,11 +523,74 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     }
     
     /**
+     * Check that cancelling works.
+     * Does this by taking a lock on the job, cancelling,
+     *  releasing and seeing it abort.
+     */
+    public void testReplicationExectionCancelling() throws Exception
+    {
+       // We need the test transfer target for this test
+       makeTransferTarget();
+
+       // Create a task
+       ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rd.setTargetName(TRANSFER_TARGET);
+       rd.getPayload().add(folder1);
+       rd.getPayload().add(folder2);
+       
+       // Get the lock for 2 seconds
+       String token = jobLockService.getLock(
+             rd.getReplicationName(),
+             2 * 1000,
+             1,
+             1
+       );
+       
+       // Request it be run async
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       actionService.executeAction(rd, replicationRoot, false, true);
+       assertEquals(ActionStatus.Pending, rd.getExecutionStatus());
+       txn.commit();
+       
+       
+       // Let it get going, will be waiting for the lock
+       //  having registered with the action tracking service
+       Thread.sleep(500);
+       assertEquals(ActionStatus.Running, rd.getExecutionStatus());
+       
+       // Now request the cancel
+       actionTrackingService.requestActionCancellation(rd);
+       
+       // Release our lock, should allow the replication task
+       //  to get going and spot the cancel
+       jobLockService.releaseLock(token, rd.getReplicationName());
+       
+       // Let the main replication task run to cancelled/completed
+       // This can take quite some time though...
+       for(int i=0; i<10; i++) {
+          if(rd.getExecutionStatus() == ActionStatus.Running) {
+             Thread.sleep(1000);
+          } else {
+             // It has finished running, check it
+             break;
+          }
+       }
+       
+       // Ensure it was cancelled
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(ActionStatus.Cancelled, rd.getExecutionStatus());
+    }
+    
+    /**
      * Test that when we execute a replication task, the
      *  right stuff ends up being moved for us
      */
     public void testExecutionResult() throws Exception
     {
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       
        // Destination is empty
        assertEquals(0, nodeService.getChildAssocs(destinationFolder).size());
        
@@ -509,6 +600,8 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        // Put in Folder 2, so we can send Folder 2a
        String folder2Name = (String)nodeService.getProperties(folder2).get(ContentModel.PROP_NAME);
        NodeRef folderT2 = makeNode(destinationFolder, ContentModel.TYPE_FOLDER, folder2Name);
+       txn.commit();
+       
        
        // Run a transfer
        ReplicationDefinition rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
@@ -516,9 +609,10 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        rd.getPayload().add(folder1);
        rd.getPayload().add(folder2a);
        
-       startNewTransaction();
+       txn = transactionService.getUserTransaction();
+       txn.begin();
        actionService.executeAction(rd, replicationRoot);
-       endTransaction();
+       txn.commit();
        
        // Correct things have turned up
        assertEquals(2, nodeService.getChildAssocs(destinationFolder).size());
@@ -704,9 +798,10 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
     }
     
     private void makeTransferServiceLocal() {
-       TransferReceiver receiver = (TransferReceiver)this.applicationContext.getBean("transferReceiver");
-       TransferManifestNodeFactory transferManifestNodeFactory = (TransferManifestNodeFactory)this.applicationContext.getBean("transferManifestNodeFactory");
-       TransferServiceImpl transferServiceImpl = (TransferServiceImpl) this.applicationContext.getBean("transferService");
+       TransferReceiver receiver = (TransferReceiver)ctx.getBean("transferReceiver");
+       TransferManifestNodeFactory transferManifestNodeFactory = (TransferManifestNodeFactory)ctx.getBean("transferManifestNodeFactory");
+       TransferServiceImpl transferServiceImpl = (TransferServiceImpl) ctx.getBean("transferService");
+       ContentService contentService = (ContentService) ctx.getBean("contentService");
        
        TransferTransmitter transmitter = 
           new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);

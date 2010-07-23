@@ -70,6 +70,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferCallback;
+import org.alfresco.service.cmr.transfer.TransferCancelledException;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferException;
@@ -94,7 +95,6 @@ public class TransferServiceImpl implements TransferService
     private static final String MSG_NO_TARGET = "transfer_service.unable_to_find_transfer_target";
     private static final String MSG_ERR_TRANSFER_ASYNC = "transfer_service.unable_to_transfer_async";
     private static final String MSG_TARGET_EXISTS = "transfer_service.target_exists";
-    private static final String MSG_CANCELLED = "transfer_service.cancelled";
     private static final String MSG_NO_NODES = "transfer_service.no_nodes";
     
     /**
@@ -908,7 +908,7 @@ public class TransferServiceImpl implements TransferService
         {
             if(status.cancelMe)
             {
-                throw new TransferException(MSG_CANCELLED);
+                throw new TransferCancelledException();
             }
         }
     }

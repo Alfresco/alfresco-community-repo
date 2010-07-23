@@ -21,7 +21,7 @@ package org.alfresco.service.cmr.replication;
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.CancellableAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Nick Burch
  */
-public interface ReplicationDefinition extends Action, Serializable {
+public interface ReplicationDefinition extends CancellableAction, Serializable {
    /**
     * @return the name which uniquely identifies this replication definition.
     */

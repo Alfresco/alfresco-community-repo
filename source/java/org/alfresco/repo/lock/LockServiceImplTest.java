@@ -27,8 +27,10 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -362,8 +364,20 @@ public class LockServiceImplTest extends BaseSpringTest
         assertNotNull(lockType4);
         assertEquals(LockType.READ_ONLY_LOCK, lockType4);
         
+        // Lock the object for node lock
+        this.lockService.lock(this.parentNode, LockType.NODE_LOCK);
+        LockType lockType5 = this.lockService.getLockType(this.parentNode);
+        assertNotNull(lockType5);               
+        assertEquals(LockType.NODE_LOCK, lockType5);
+        
+        // Unlock the node
+        this.lockService.unlock(this.parentNode);
+        LockType lockType6 = this.lockService.getLockType(this.parentNode);
+        assertNull(lockType6);
+       
         // Test with no apect node
-        this.lockService.getLockType(this.noAspectNode);
+        LockType lockType7 = this.lockService.getLockType(this.noAspectNode);
+        assertTrue("lock type is not null", lockType7 == null);
     }
     
     public void testTimeToExpire()
@@ -415,5 +429,87 @@ public class LockServiceImplTest extends BaseSpringTest
         
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         assertEquals(LockStatus.LOCK_EXPIRED, this.lockService.getLockStatus(this.parentNode));
+    }
+    
+    /**
+     * Unit test to validate the behaviour of creating children of locked nodes.
+     * No lock - can create children
+     * READ_ONLY_LOCK - can't create children
+     * WRITE_LOCK - owner can create children
+     *      non owner can't create children
+     * NODE_LOCK non owner can create children
+     *     owner can create children     
+     */
+    public void testCreateChildrenOfLockedNodes() throws Exception
+    {
+      
+      /**
+       * Check we can create a child of an unlocked node.  
+       */
+      assertEquals(
+      LockStatus.NO_LOCK, 
+      this.lockService.getLockStatus(this.parentNode));       
+      
+      ChildAssociationRef child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildA"), ContentModel.TYPE_FOLDER);
+        
+      TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+      
+      this.lockService.lock(this.parentNode, LockType.WRITE_LOCK);
+      
+      // Owner can create children
+      child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildB"), ContentModel.TYPE_FOLDER);
+      
+      TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+      
+      try
+      {
+          // Non owner can't create children with a write lock in place
+          child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildB"), ContentModel.TYPE_FOLDER);
+          fail("could create a child with a read only lock");
+      } 
+      catch (NodeLockedException e)
+      {
+          logger.debug("exception while trying to create a child of a read only lock", e);
+      }  
+      
+      TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+      
+      this.lockService.lock(this.parentNode, LockType.NODE_LOCK);
+      
+      // owner can create children with a node lock
+      child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildD"), ContentModel.TYPE_FOLDER);
+ 
+      TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+      
+      // Non owner can create children with a node lock
+      child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildC"), ContentModel.TYPE_FOLDER);
+      
+      TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+           
+      this.lockService.lock(this.parentNode, LockType.READ_ONLY_LOCK);
+      
+      // owner should not be able to create children with a READ_ONLY_LOCK
+      try
+      {
+          child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildD"), ContentModel.TYPE_FOLDER);
+          fail("could create a child with a read only lock");
+      } 
+      catch (NodeLockedException e)
+      {
+          logger.debug("exception while trying to create a child of a read only lock", e);
+      }
+      
+      TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+      
+      // Non owner should not be able to create children with READ_ONLY_LOCK
+      try
+      {
+          child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildE"), ContentModel.TYPE_FOLDER);
+          fail("could create a child with a read only lock");
+      } 
+      catch (NodeLockedException e)
+      {
+          logger.debug("exception while trying to create a child of a read only lock", e);
+      }      
     }
 }

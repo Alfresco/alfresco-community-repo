@@ -181,5 +181,9 @@
     <bean id="packageItemsFieldProcessor"
         class="org.alfresco.repo.forms.processor.workflow.PackageItemsFieldProcessor"
         parent="baseFieldProcessor" />
+        
+    <bean id="transitionsFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor"
+        parent="baseFieldProcessor" />
 
 </beans>

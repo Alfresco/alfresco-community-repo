@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
  * accumulates a set of updates to a task and then commits all the updates when
  * the update() method is called.
  * 
+ * @since 3.4
  * @author Nick Smith
  */
 public class TaskUpdater
@@ -127,6 +128,16 @@ public class TaskUpdater
         packageMgr.removeItems(items);
     }
 
+    public WorkflowTask transition()
+    {
+        return transition(null);
+    }
+    
+    public WorkflowTask transition(String transitionId)
+    {
+        return workflowService.endTask(taskId, transitionId);
+    }
+    
     public WorkflowTask update()
     {
         WorkflowTask task = workflowService.getTaskById(taskId);

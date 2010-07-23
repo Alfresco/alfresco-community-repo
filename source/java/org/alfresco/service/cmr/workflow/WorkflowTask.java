@@ -128,6 +128,7 @@ public class WorkflowTask
     public String toString()
     {
         String propCount = (properties == null) ? "null" : "" + properties.size();
-        return "WorkflowTask[id=" + id + ",title=" + title + ",state=" + state + ",props=" + propCount + ",def=" + definition + ",path=" + path.toString() + "]";
+        String pathString = path==null ? "null" : path.toString();
+        return "WorkflowTask[id=" + id + ",title=" + title + ",state=" + state + ",props=" + propCount + ",def=" + definition + ",path=" + pathString + "]";
     }
 }

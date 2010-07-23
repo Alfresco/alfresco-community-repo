@@ -86,13 +86,13 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
         case PROPERTY:
             return addProperty(keyInfo.getQName(), fieldData);
         case TRANSIENT_PROPERTY:
-            return addTransientProperty(keyInfo.getFieldName(), fieldData);
+            return updateTransientProperty(keyInfo.getFieldName(), fieldData);
         default: // Handle properties
             return changeAssociation(keyInfo, fieldData);
         }
     }
 
-    protected boolean addTransientProperty(String fieldName, FieldData fieldData)
+    protected boolean updateTransientProperty(String fieldName, FieldData fieldData)
     {
         return false;
     }

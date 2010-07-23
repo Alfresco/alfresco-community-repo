@@ -22,6 +22,7 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,6 +40,7 @@ import org.apache.commons.logging.Log;
 public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
 {
     private final TaskUpdater updater;
+    private String transitionId = null;
     
     public TaskFormPersister(ItemData<WorkflowTask> itemData,
                 NamespaceService namespaceService,
@@ -111,12 +113,39 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#addTransientProperty(java.lang.String, org.alfresco.repo.forms.FormData.FieldData)
+     */
+    @Override
+    protected boolean updateTransientProperty(String fieldName, FieldData fieldData)
+    {
+        if(TransitionFieldProcessor.KEY.equals(fieldName))
+        {
+            Object value = fieldData.getValue();
+            if(value == null)
+            {
+                value = "";
+            }
+            transitionId = value.toString();
+            return true;
+        }
+        return false;
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.workflow.ContentModelFormPersister#persist()
      */
     @Override
     public WorkflowTask persist()
     {
+        if(transitionId == null)
+        {
         return updater.update();
+        }
+        else if(transitionId.isEmpty())
+        {
+            return updater.transition();
+        }
+        return updater.transition(transitionId);
     }
 
     

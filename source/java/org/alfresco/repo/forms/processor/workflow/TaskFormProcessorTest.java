@@ -28,7 +28,11 @@ package org.alfresco.repo.forms.processor.workflow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
@@ -333,6 +337,25 @@ public class TaskFormProcessorTest extends TestCase
         assertTrue(nodeRefs.contains(new NodeRef(nodeRef2)));
     }
     
+    @SuppressWarnings("unchecked")
+    public void testPersistTransitions() throws Exception
+    {
+        // Check updates but doesn't transition if no transition prop set.
+        processPersist("prop_bpm_foo", "foo");
+        // Check endTask is never called.
+        verify(workflowService, times(1)).updateTask(eq(TASK_ID), anyMap(), anyMap(), anyMap());
+        verify(workflowService, never()).endTask(eq(TASK_ID), anyString());
+        
+        // Check default transition.
+        String dataKey =FormFieldConstants.PROP_DATA_PREFIX+TransitionFieldProcessor.KEY;
+        processPersist(dataKey, null);
+        verify(workflowService, times(1)).endTask(TASK_ID, null);
+        
+        // Check specific transition.
+        processPersist(dataKey, "foo");
+        verify(workflowService, times(1)).endTask(TASK_ID, "foo");
+    }
+    
     private void processPersist(String dataKey, String value)
     {
         FormData data = new FormData();
@@ -589,6 +612,9 @@ public class TaskFormProcessorTest extends TestCase
                 return newTask;
             }
         });
+        
+        when(service.endTask(eq(TASK_ID), anyString()))
+            .thenReturn(newTask);
         return service;
     }
     

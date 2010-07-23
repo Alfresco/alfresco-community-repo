@@ -403,7 +403,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                 }
                 catch (IOException ioe)
                 {
-                    fgLogger.warn("Failed to close output stream when creating file '"+AVMUtil.extendAVMPath(avmPath, nodeName)+"'"+ioe.getMessage());
+                    logger.warn("Failed to close output stream when creating file '"+AVMUtil.extendAVMPath(avmPath, nodeName)+"'"+ioe.getMessage());
                 }
             }
             else if (nodeTypeQName.equals(WCMModel.TYPE_AVM_LAYERED_CONTENT))

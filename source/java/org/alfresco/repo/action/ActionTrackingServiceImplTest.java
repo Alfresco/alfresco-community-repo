@@ -175,9 +175,22 @@ public class ActionTrackingServiceImplTest extends TestCase
     }
     
     /** Running an action gives it an execution ID */
-    public void testExecutionInstanceAssignment()
+    public void testExecutionInstanceAssignment() throws Exception
     {
-       // TODO
+       ActionImpl action = (ActionImpl)createWorkingSleepAction("1234");
+       assertEquals(-1, action.getExecutionInstance());
+       
+       // Have it run, will get the ID of 1
+       actionTrackingService.recordActionExecuting(action);
+       assertEquals(1, action.getExecutionInstance());
+       
+       // And again, gets 2
+       actionTrackingService.recordActionExecuting(action);
+       assertEquals(2, action.getExecutionInstance());
+       
+       // And again, gets 3
+       actionTrackingService.recordActionExecuting(action);
+       assertEquals(3, action.getExecutionInstance());
     }
     
     /** 
@@ -489,8 +502,71 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertEquals(
              1, actionTrackingService.getExecutingActions(moveAction).size()
        );
+
        
-       // TODO Multiple actions of the same instance
+       // Check for multiple instances of the same action
+       runtimeActionService.saveActionImpl(nodeRef, sleepAction1);
+       ((ActionTrackingServiceImpl)actionTrackingService).resetNextExecutionId();
+       
+       ActionImpl sa11 = (ActionImpl)runtimeActionService.createAction(nodeRef);
+       ActionImpl sa12 = (ActionImpl)runtimeActionService.createAction(nodeRef);
+       ActionImpl sa13 = (ActionImpl)runtimeActionService.createAction(nodeRef);
+       sa11 = new ActionImpl(sa11, SleepActionExecuter.NAME);
+       sa12 = new ActionImpl(sa12, SleepActionExecuter.NAME);
+       sa13 = new ActionImpl(sa13, SleepActionExecuter.NAME);
+       
+       actionTrackingService.recordActionExecuting(sa11);
+       actionTrackingService.recordActionExecuting(sa12);
+       actionTrackingService.recordActionExecuting(sa13);
+       assertEquals(1, sa11.getExecutionInstance());
+       assertEquals(2, sa12.getExecutionInstance());
+       assertEquals(3, sa13.getExecutionInstance());
+       
+       assertEquals(
+             4, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             3, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             1, actionTrackingService.getExecutingActions(moveAction).size()
+       );
+       assertEquals(
+             3, actionTrackingService.getExecutingActions(sa11).size()
+       );
+       assertEquals(
+             3, actionTrackingService.getExecutingActions(sa12).size()
+       );
+       assertEquals(
+             3, actionTrackingService.getExecutingActions(sa13).size()
+       );
+
+       
+       actionTrackingService.recordActionComplete(sa13);
+       actionTrackingService.recordActionComplete(moveAction);
+       
+       
+       assertEquals(
+             2, actionTrackingService.getAllExecutingActions().size()
+       );
+       assertEquals(
+             0, actionTrackingService.getExecutingActions("test").size()
+       );
+       assertEquals(
+             2, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
+       );
+       assertEquals(
+             2, actionTrackingService.getExecutingActions(sa11).size()
+       );
+       assertEquals(
+             2, actionTrackingService.getExecutingActions(sa12).size()
+       );
+       assertEquals(
+             2, actionTrackingService.getExecutingActions(sa13).size() // Others still going
+       );
     }
     
     /** Cancel related */

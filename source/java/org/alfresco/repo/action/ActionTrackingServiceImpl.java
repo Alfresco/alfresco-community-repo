@@ -64,6 +64,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     *  quickest and easiest way.
     */
    private short nextExecutionId = 1;
+   private short wrapExecutionIdAfter = Short.MAX_VALUE/2;
    
    /** How we separate bits of the cache key */
    private static final char cacheKeyPartSeparator = '=';
@@ -106,10 +107,18 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    
    public void recordActionPending(Action action) 
    {
-      ((ActionImpl)action).setExecutionStatus(ActionStatus.Pending);
+      recordActionPending((ActionImpl)action);
+   }
+   public void recordActionPending(ActionImpl action)
+   {
+      action.setExecutionStatus(ActionStatus.Pending);
    }
    
    public void recordActionComplete(Action action) 
+   {
+      recordActionComplete((ActionImpl)action);
+   }
+   private void recordActionComplete(ActionImpl action)
    {
       if (logger.isDebugEnabled() == true)
       {
@@ -117,9 +126,9 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
       }
       
       // Mark it as having worked
-      ((ActionImpl)action).setExecutionEndDate(new Date());
-      ((ActionImpl)action).setExecutionStatus(ActionStatus.Completed);
-      ((ActionImpl)action).setExecutionFailureMessage(null);
+      action.setExecutionEndDate(new Date());
+      action.setExecutionStatus(ActionStatus.Completed);
+      action.setExecutionFailureMessage(null);
       if(action.getNodeRef() != null)
       {
          runtimeActionService.saveActionImpl(action.getNodeRef(), action);
@@ -132,20 +141,44 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
    public void recordActionExecuting(Action action) 
    {
+      recordActionExecuting((ActionImpl)action);
+   }
+   private void recordActionExecuting(ActionImpl action)
+   {
       if (logger.isDebugEnabled() == true)
       {
          logger.debug("Action " + action + " has begun exection");
       }
       
       // Mark the action as starting
-      ((ActionImpl)action).setExecutionStartDate(new Date());
-      ((ActionImpl)action).setExecutionStatus(ActionStatus.Running);
+      action.setExecutionStartDate(new Date());
+      action.setExecutionStatus(ActionStatus.Running);
       
-      // TODO assign it a (unique) execution ID
+      // Assign it a (unique) execution ID
       // (Keep checking to see if the key is used as we
       //  increase nextExecutionId until it isn't)
-      ((ActionImpl)action).setExecutionInstance(nextExecutionId++); // TODO
-      String key = generateCacheKey(action);
+      String key = null;
+      boolean assigned = false;
+      while(!assigned) {
+         // Try
+         action.setExecutionInstance(nextExecutionId++);
+         key = generateCacheKey(action);
+         
+         // Is it ok?
+         if(executingActionsCache.get(key) == null) {
+            assigned = true;
+         }
+         
+         // Do we need to wrap?
+         // (Wrap before absolutely needed, makes things simpler)
+         if(nextExecutionId > wrapExecutionIdAfter) {
+            synchronized (this) {
+               while(nextExecutionId > wrapExecutionIdAfter) {
+                  nextExecutionId -= wrapExecutionIdAfter;
+               }
+            }
+         }
+      }
       
       // Put it into the cache
       ExecutionDetails details = buildExecutionDetails(action);

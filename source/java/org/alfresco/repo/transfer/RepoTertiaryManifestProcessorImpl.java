@@ -59,6 +59,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
      *  Is this a "sync" transfer.  If not then does nothing.
      */
     boolean isSync = false;
+    String manifestRepositoryId;
 
     /**
      * @param receiver 
@@ -131,9 +132,21 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                             log.debug("an unexpected child node:" + child);
                             if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED))
                             {
-                                // Destination node needs to be deleted.                              
-                                nodeService.deleteNode(childNodeRef);
-                                log.debug("deleted node:" + childNodeRef);
+                                String fromRepositoryId = (String)nodeService.getProperty(childNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
+                                
+                                // Yes this is a transferred node.  When syncing we only delete nodes that are "from" 
+                                // the system that is transferring to this repo.
+                                if(fromRepositoryId != null &&  manifestRepositoryId != null)
+                                {
+                                    if(manifestRepositoryId.equalsIgnoreCase(fromRepositoryId))
+                                    {
+                                        // Yes the manifest repository Id and the from repository Id match.
+                                        
+                                        // Destination node needs to be deleted.                              
+                                        nodeService.deleteNode(childNodeRef);
+                                        log.debug("deleted node:" + childNodeRef);                 
+                                    }
+                                }    
                             }
                         }
                     }
@@ -146,6 +159,9 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     {
         isSync = header.isSync();
         log.debug("isSync :" + isSync);
+        
+        manifestRepositoryId = header.getRepositoryId();
+        log.debug("fromRepositoryId:" +  manifestRepositoryId);
     }
 
     /*

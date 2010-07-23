@@ -67,6 +67,8 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -100,6 +102,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     private PermissionService permissionService;
     private LockService lockService;
     private PersonService personService;
+    private DescriptorService descriptorService;
     
  
     
@@ -138,6 +141,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
         this.lockService = (LockService) this.applicationContext.getBean("lockService");
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
+        this.descriptorService = (DescriptorService)this.applicationContext.getBean("DescriptorService");
         
         authenticationComponent.setSystemUserAsCurrentUser();
         setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
@@ -4047,11 +4051,355 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             endTransaction();
         }  
     } // end test read only flag
+    
+    /**
+     * Transfer sync from multiple repos.
+     * 
+     * This is a unit test so does lots of shenanigans to fake transfer from three repositories on a single repo.
+     * 
+     * Multi-repo sync depends upon the following pieces of functionality
+     * a) transferred nodes are tagged with a trx:transferred aspect containing the originating repository 
+     * id and the from repository id
+     * b) to support hub and spoke - when syncing don't imply delete nodes that are not "from" the transferring system
+     * 
+     * 
+     * Q. What about non sync transfer? Assume that this will update.
+     * 
+     *      * Tree of nodes 
+     *      A1
+     *   |      |    
+     *   A2     A3 (Content Node) B6 (Content Node)   
+     *   |
+     * A4 A5 A7
+     * 
+     * Step 1
+     * Hub and Spoke Sync
+     * create Tree A1...A5
+     * transfer (sync)
+     * check the transfered aspects on destination
+     * create node B6.  Fake its transfered aspect to be from Repo B.
+     * transfer (sync)
+     *  
+     * Step 2
+     * Chain Sync
+     * Create Node A7 "from repo B".
+     * Change Nodes A1 ... A5 source to be received "from repo B"
+     * transfer 
+     * 
+     *  //TO BE INVESTIGATED - Not yet implemented 
+     *  //c) when syncing don't accept updates to nodes that are not "from" the transferring system.
+     *  //Step 3.
+     *  //Multiple repo update of the same node
+     *  //Change the transferred aspect for A5 destination to be "from" repo B
+     *  //Update A5
+     *  //Transfer (sync)
+     *  //
+     *  //Step 4.
+     *  //Change the transferred aspect for A5 destination to be "from" repo B
+     *  //Update A5
+     *  //Transfer A5 (normal) - should update
+     */
+    public void testMultiRepoSync() throws Exception
+    {
+        
+        Descriptor descriptor = descriptorService.getCurrentRepositoryDescriptor();
+        String repositoryId = descriptor.getId();
+        
+        /**
+        * Step 1
+        * create Tree A1...A6
+        * transfer (sync)
+        * check the transfered aspect
+        * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
+        * transfer (sync)
+        */
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "Hello";
+        
+        String REPO_ID_B = "RepoB";
 
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+          
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testTransferSyncNodes";
+        TransferTarget transferMe;
+        NodeRef A1NodeRef;
+        NodeRef A2NodeRef;
+        NodeRef A3NodeRef;
+        NodeRef A4NodeRef;
+        NodeRef A5NodeRef;
+        NodeRef B6NodeRef;
+        NodeRef A7NodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test nodes A1 through A5 that we will read and write
+             */
+            {
+                // Node A1
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                A1NodeRef = child.getChildRef();
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_NAME, name);
+            }
+       
+            {
+                // Node A2
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_FOLDER);
+                A2NodeRef = child.getChildRef();
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_NAME, "A2");
+            }
+            
+            {
+                // Node A3
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A3"), ContentModel.TYPE_CONTENT);
+                A3NodeRef = child.getChildRef();
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_NAME, "A3");
+            
+                ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A4
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A4"), ContentModel.TYPE_CONTENT);
+                A4NodeRef = child.getChildRef();
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
+            
+                ContentWriter writer = contentService.getWriter(A4NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A5
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_CONTENT);
+                A5NodeRef = child.getChildRef();
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
+            
+                ContentWriter writer = contentService.getWriter(A5NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+ 
+            // Create the transfer target if it does not already exist
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+        
+        Set<NodeRef>nodes = new HashSet<NodeRef>();
+        nodes.add(A1NodeRef);
+        nodes.add(A2NodeRef);
+        nodes.add(A3NodeRef);
+        nodes.add(A4NodeRef);
+        nodes.add(A5NodeRef);
+
+        /**
+          * transfer (sync)
+          * check the transfered aspect
+          * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
+          * transfer (sync)
+          */ 
+        startNewTransaction();
+        try 
+        {
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setSync(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+            // Node B6 - faked transfer from repository B.  Child of Destination node A1
+            NodeRef a1Dest = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertEquals("dest node A1 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A1 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A2 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A2 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A3 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A3 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A4 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A4 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A5 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A5 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            
+            ChildAssociationRef child = nodeService.createNode(a1Dest, ContentModel.ASSOC_CONTAINS, QName.createQName("B6"), ContentModel.TYPE_CONTENT);
+            B6NodeRef = child.getChildRef();
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_NAME, "B4");
+            nodeService.setProperty(B6NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(B6NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(B6NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+        
+            ContentWriter writer = contentService.getWriter(B6NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        
+        startNewTransaction();
+        try 
+        {
+            TransferDefinition definition = new TransferDefinition();
+            definition.setNodes(nodes);
+            definition.setSync(true);
+            transferService.transfer(targetName, definition);  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            // Does node B6 still exist ?
+            assertTrue("dest node B6 does not exist", nodeService.exists(B6NodeRef));
+        }
+        finally
+        {
+            endTransaction();
+        }         
+       
+       /** Step 2
+        * Chain Sync
+        * Change Nodes A1 ... A5 source to be received "from repo B"
+        * Create Node A7 - Fake it to be received "from repo B"
+        * transfer
+        */ 
+        String NEW_TITLE="Chain sync";
+
+        
+        startNewTransaction();
+        try 
+        {
+            nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A1NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A1NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A1NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+
+            nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A2NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A2NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A2NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+
+            nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A3NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A3NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A3NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+            
+            // Fake Node A7 
+            ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A7"), ContentModel.TYPE_CONTENT);
+            A7NodeRef = child.getChildRef();
+            nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A7NodeRef, ContentModel.PROP_NAME, "A7");
+            nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A7NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A7NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A7NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+            
+            ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        nodes.add(A7NodeRef);
+        
+        startNewTransaction();
+        try 
+        {
+            TransferDefinition definition = new TransferDefinition();
+            definition.setNodes(nodes);
+            definition.setSync(true);
+            transferService.transfer(targetName, definition);  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        try 
+        {   
+            assertTrue("dest node A7 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A7NodeRef)));
+            
+            assertEquals("dest node A1 Title", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), ContentModel.PROP_TITLE), NEW_TITLE);
+            assertEquals("dest node A1 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_REPOSITORY_ID), REPO_ID_B);
+            assertEquals("dest node A1 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+ 
+            assertEquals("dest node A2 Title", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), ContentModel.PROP_TITLE), NEW_TITLE);
+            assertEquals("dest node A2 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_REPOSITORY_ID), REPO_ID_B);
+            assertEquals("dest node A2 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+ 
+            assertEquals("dest node A3 Title", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), ContentModel.PROP_TITLE), NEW_TITLE);
+            assertEquals("dest node A3 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_REPOSITORY_ID), REPO_ID_B);
+            assertEquals("dest node A3 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+        }
+        finally
+        {
+            endTransaction();
+        }
+    }
 
     // Utility methods below.
     private TransferTarget createTransferTarget(String name)
-    {
+    {   
         String title = "title";
         String description = "description";
         String endpointProtocol = "http";
@@ -4067,6 +4415,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         TransferTarget target = transferService.createAndSaveTransferTarget(name, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
         return target;
     }
+    
+
     
     private void createUser(String userName, String password)
     {
@@ -4084,137 +4434,4 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             this.personService.createPerson(ppOne);
         }        
     }
-    
-    public void testReadOnlyTemorary() throws Exception
-    {
-        setDefaultRollback(false);
-        
-        String CONTENT_TITLE = "ContentTitle";
-        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        String CONTENT_NAME = "Temporary";
-        Locale CONTENT_LOCALE = Locale.GERMAN; 
-        String CONTENT_STRING = "The quick brown fox";
-        Set<NodeRef>nodes = new HashSet<NodeRef>();
-        String USER_ONE = "TransferServiceImplTest";
-        String PASSWORD = "Password";
-        
-        String targetName = "testReadOnlyFlag";
-        
-        NodeRef nodeA;
-        NodeRef nodeB;
-        NodeRef nodeC;
-        NodeRef nodeD;
-        
-        ChildAssociationRef child;
-        
-        /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
-         */
-        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
-        transferServiceImpl.setTransmitter(transmitter);
-        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
-        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
-        TransferTarget transferMe;
-        
-        startNewTransaction();
-        try
-        {
-            /**
-              * Get guest home
-              */
-            String guestHomeQuery = "/app:company_home/app:guest_home";
-            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-            assertEquals("", 1, guestHomeResult.length());
-            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-    
-            /**
-             * Create a test node that we will read and write
-             */
-            String guid = GUID.generate();
-                        
-             child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(guid), ContentModel.TYPE_FOLDER);
-             nodeA = child.getChildRef();
-             nodeService.setProperty(nodeA , ContentModel.PROP_TITLE, guid);   
-             nodeService.setProperty(nodeA , ContentModel.PROP_NAME, guid);
-             nodes.add(nodeA);
-         
-             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeB"), ContentModel.TYPE_CONTENT);
-             nodeB = child.getChildRef();
-             nodeService.setProperty(nodeB , ContentModel.PROP_TITLE, CONTENT_TITLE + "B");   
-             nodeService.setProperty(nodeB , ContentModel.PROP_NAME, "DemoNodeB");
-         
-             {
-                 ContentWriter writer = contentService.getWriter(nodeB , ContentModel.PROP_CONTENT, true);
-                 writer.setLocale(CONTENT_LOCALE);
-                 writer.putContent(CONTENT_STRING);
-                 nodes.add(nodeB);
-             }
-         
-             child = nodeService.createNode(nodeA, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,"testNodeC"), ContentModel.TYPE_FOLDER);
-             nodeC = child.getChildRef();
-             nodeService.setProperty(nodeC , ContentModel.PROP_TITLE, "TestNodeC");   
-             nodeService.setProperty(nodeC , ContentModel.PROP_NAME, "TestNodeC");
-             nodes.add(nodeC);
-             
-             child = nodeService.createNode(nodeC, ContentModel.ASSOC_CONTAINS, QName.createQName("testNodeD"), ContentModel.TYPE_CONTENT);
-             nodeD = child.getChildRef();
-             nodeService.setProperty(nodeD , ContentModel.PROP_TITLE, CONTENT_TITLE + "D");   
-             nodeService.setProperty(nodeD , ContentModel.PROP_NAME, "DemoNodeD");
-             {
-                 ContentWriter writer = contentService.getWriter(nodeD , ContentModel.PROP_CONTENT, true);
-                 writer.setLocale(CONTENT_LOCALE);
-                 writer.putContent(CONTENT_STRING);
-                 nodes.add(nodeD);
-             }
-      
-             // Create users
-             createUser(USER_ONE, PASSWORD);   
-                
-             /**
-              * Now go ahead and create our first transfer target
-              */
-             if(!transferService.targetExists(targetName))
-             {
-                 transferMe = createTransferTarget(targetName);
-             }
-             else
-             {
-                 transferMe = transferService.getTransferTarget(targetName);
-             }       
-        }
-        finally
-        {
-            endTransaction();
-        }
-        
-        /**
-         * Step 1. 
-         * transfer Nodes ABCD with read only flag set - content should all be locked on destination  
-         */
-        logger.debug("transfer read only - step 1");
-        startNewTransaction();
-        try 
-        {
-           /**
-             * Transfer our transfer target nodes 
-             */
-            {
-                TransferDefinition definition = new TransferDefinition();
-                definition.setNodes(nodes);
-                definition.setReadOnly(true);
-                transferService.transfer(targetName, definition);
-            }  
-        }
-        finally
-        {
-            endTransaction();
-        }
-    }
-
 }

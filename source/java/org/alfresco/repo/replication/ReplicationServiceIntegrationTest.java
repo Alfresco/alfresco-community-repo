@@ -309,6 +309,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals(ACTION_NAME, rdTT.getReplicationName());
        assertEquals("Test", rdTT.getDescription());
        assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(true, rdTT.isEnabled());
        assertEquals(0, rdTT.getPayload().size());
        
        // Save and re-load without changes
@@ -317,11 +318,13 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals(ACTION_NAME, rdTT.getReplicationName());
        assertEquals("Test", rdTT.getDescription());
        assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(true, rdTT.isEnabled());
        assertEquals(0, rdTT.getPayload().size());
        
        // Make some small changes
        rdTT.setDescription("Test Description");
        rdTT.getPayload().add(folder2a);
+       rdTT.setEnabled(false);
        
        // Check we see them on save/load
        replicationService.saveReplicationDefinition(rdTT);
@@ -329,6 +332,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals(ACTION_NAME, rdTT.getReplicationName());
        assertEquals("Test Description", rdTT.getDescription());
        assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(false, rdTT.isEnabled());
        assertEquals(1, rdTT.getPayload().size());
        assertEquals(folder2a, rdTT.getPayload().get(0));
        
@@ -345,6 +349,7 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        assertEquals(ACTION_NAME, rdTT.getReplicationName());
        assertEquals("Another One", rdTT.getDescription());
        assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(false, rdTT.isEnabled());
        assertEquals(2, rdTT.getPayload().size());
        assertEquals(folder1, rdTT.getPayload().get(0));
        assertEquals(folder2b, rdTT.getPayload().get(1));
@@ -353,12 +358,14 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        rdTT.getPayload().clear();
        rdTT.getPayload().add(content1_1);
        assertEquals(1, rdTT.getPayload().size());
+       rdTT.setEnabled(true);
        
        replicationService.saveReplicationDefinition(rdTT);
        rdTT = replicationService.loadReplicationDefinition(ACTION_NAME);
        assertEquals(ACTION_NAME, rdTT.getReplicationName());
        assertEquals("Another One", rdTT.getDescription());
        assertEquals("TestTarget", rdTT.getTargetName());
+       assertEquals(true, rdTT.isEnabled());
        assertEquals(1, rdTT.getPayload().size());
        assertEquals(content1_1, rdTT.getPayload().get(0));
     }
@@ -390,6 +397,16 @@ public class ReplicationServiceIntegrationTest extends BaseAlfrescoSpringTest
        try {
           actionService.executeAction(rd, replicationRoot);
           fail("Shouldn't be permitted with no payload defined");
+       } catch(ReplicationServiceException e) {}
+       
+       
+       // Now disabled, not allowed
+       assertEquals(true, rd.isEnabled());
+       rd.setEnabled(false);
+       assertEquals(false, rd.isEnabled());
+       try {
+          actionService.executeAction(rd, replicationRoot);
+          fail("Shouldn't be permitted when disabled");
        } catch(ReplicationServiceException e) {}
        
        

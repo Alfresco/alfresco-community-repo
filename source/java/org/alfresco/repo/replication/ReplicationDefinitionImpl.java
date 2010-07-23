@@ -43,6 +43,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     public static final String REPLICATION_DEFINITION_NAME = "replicationActionName";
     public static final String REPLICATION_DEFINITION_TARGET = "replicationTarget";
     public static final String REPLICATION_DEFINITION_PAYLOAD = "replicationPayload";
+    public static final String REPLICATION_DEFINITION_ENABLED = "replicationDefinitionEnabled";
     public static final String REPLICATION_DEFINITION_TRANSFER_REPORT = "replicationTransferReport";
 
     /**
@@ -83,6 +84,28 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     {
         Serializable parameterValue = getParameterValue(REPLICATION_DEFINITION_NAME);
         return (QName) parameterValue;
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.replication.ReplicationDefinition#isEnabled()
+     */
+    public boolean isEnabled()
+    {
+       Serializable parameterValue = getParameterValue(REPLICATION_DEFINITION_ENABLED);
+       if(parameterValue == null)
+       {
+          // Default is enabled
+          return true;
+       }
+       return ((Boolean)parameterValue).booleanValue();
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.replication.ReplicationDefinition#setEnabled(boolean)
+     */
+    public void setEnabled(boolean enabled)
+    {
+       setParameterValue(REPLICATION_DEFINITION_ENABLED, new Boolean(enabled));
     }
 
     /*

@@ -50,6 +50,20 @@ public interface ReplicationDefinition extends Action, Serializable {
     * Sets the name of the target repository.
     */
    void setTargetName(String targetName);
+
+   /**
+    * Is this Replication Definition currently
+    *  enabled (can be run), or disabled
+    *  (can't be run)?
+    * @return Whether the definition is enabled or not
+    */
+   boolean isEnabled();
+   
+   /**
+    * Enable or Disable the Replication
+    *  Definition.
+    */
+   void setEnabled(boolean enabled);
    
    /**
     * The list of Nodes to be transfered. This
@@ -75,8 +89,6 @@ public interface ReplicationDefinition extends Action, Serializable {
     *  replication.
     */
    void setLocalTransferReport(NodeRef report);
-   
-   // TODO Persistent action bits of last start, last finish, worked
    
    // TODO Replication options, such as permissions and rules
 }

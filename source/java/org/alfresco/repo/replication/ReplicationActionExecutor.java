@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.lock.JobLockService;
@@ -30,7 +29,6 @@ import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transfer.ChildAssociatedNodeFinder;
 import org.alfresco.repo.transfer.ContentClassFilter;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
@@ -168,6 +166,10 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       {
          throw new ReplicationServiceException("No payloads were specified");
       }
+      if(!replicationDef.isEnabled())
+      {
+         throw new ReplicationServiceException("Unable to execute a disabled replication definition");
+      }
       
       // Lock the service - only one instance of the replication
       //  should occur at a time
@@ -226,11 +228,15 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       }
       /**
        * No matter what the event is, refresh
-       *  our lock on the {@link ReplicationDefinition}
+       *  our lock on the {@link ReplicationDefinition}, and
+       *  handle a cancel if it was requested.
        */
       public void processEvent(TransferEvent event) 
       {
          refreshLock();
+         
+         // TODO - Check to see if cancel was requested
+         // TODO - If it was, use TransferService.cancelAsync(transferId)
       }
       /**
        * Give up our lock on the 

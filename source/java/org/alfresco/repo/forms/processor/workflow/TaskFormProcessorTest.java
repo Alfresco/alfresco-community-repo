@@ -87,6 +87,8 @@ public class TaskFormProcessorTest extends TestCase
     private static final QName ASSIGNEE_NAME = WorkflowModel.ASSOC_ASSIGNEE;
     private static final QName ASSOC_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_assoc");
     private static final NodeRef FAKE_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode");
+    private static final NodeRef FAKE_NODE2 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode2");
+    private static final NodeRef FAKE_NODE3 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode3");
     private static final NodeRef PCKG_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakePackage");
 
     private WorkflowService workflowService;
@@ -194,15 +196,15 @@ public class TaskFormProcessorTest extends TestCase
     {
         Form form = processForm();
         List<String> fieldDefs = form.getFieldDefinitionNames();
-        assertEquals(9, fieldDefs.size());
         assertTrue(fieldDefs.contains(ASSIGNEE_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(ACTORS_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(DESC_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(STATUS_NAME.toPrefixString(namespaceService)));
+        assertTrue(fieldDefs.contains(PackageItemsFieldProcessor.KEY));
+        assertTrue(fieldDefs.contains(TransitionFieldProcessor.KEY));
 
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
         FormData formData = form.getFormData();
-        assertEquals(7, formData.getNumberOfFields());
         assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
         checkPackageActionGroups(formData);
         assertEquals(WorkflowTaskState.IN_PROGRESS, formData.getFieldData("prop_bpm_status").getValue());
@@ -227,6 +229,25 @@ public class TaskFormProcessorTest extends TestCase
         form = processForm(fieldName);
         transitionValues = "id1|title1,id2|title2,id3|title3";
         checkSingleProperty(form, fieldName, transitionValues);
+    }
+
+
+    public void testGeneratePackageItems() throws Exception
+    {
+        // Check empty package
+        String fieldName = PackageItemsFieldProcessor.KEY;
+        Form form = processForm(fieldName);
+        String packageItems = "";
+        checkSingleAssociation(form, fieldName, packageItems);
+        
+        // Effectively add 3 items to package.
+        List<NodeRef> value = Arrays.asList(FAKE_NODE, FAKE_NODE2, FAKE_NODE3);
+        when(workflowService.getPackageContents(TASK_ID))
+            .thenReturn(value);
+        
+        form = processForm(fieldName);
+        packageItems = FAKE_NODE+","+FAKE_NODE2+","+FAKE_NODE3;
+        checkSingleAssociation(form, fieldName, packageItems);
     }
 
     private WorkflowTransition makeTransition(String id, String title)
@@ -310,11 +331,6 @@ public class TaskFormProcessorTest extends TestCase
         assertEquals(2, nodeRefs.size());
         assertTrue(nodeRefs.contains(new NodeRef(nodeRef1)));
         assertTrue(nodeRefs.contains(new NodeRef(nodeRef2)));
-    }
-
-    public void testPackageItems() throws Exception
-    {
-        //TODO Implement test.
     }
     
     private void processPersist(String dataKey, String value)

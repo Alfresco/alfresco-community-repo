@@ -26,13 +26,15 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.node.ItemData;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
@@ -40,6 +42,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Nick Smith
@@ -134,10 +137,28 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     @Override
     protected Map<String, Object> getTransientValues(WorkflowTask item)
     {
+        Map<String, Object> values = new HashMap<String, Object>(2);
+        values.put(TransitionFieldProcessor.KEY, getTransitionValues(item));
+        values.put(PackageItemsFieldProcessor.KEY, getPackageItemValues(item));
+        return values;
+    }
+
+    /**
+     * @param item
+     * @return
+     */
+    private Object getPackageItemValues(WorkflowTask item)
+    {
+        List<NodeRef> items = workflowService.getPackageContents(item.getId());
+        return StringUtils.collectionToCommaDelimitedString(items);
+    }
+
+    private String getTransitionValues(WorkflowTask item)
+    {
         StringBuilder builder = new StringBuilder();
         WorkflowTransition[] transitions = item.definition.node.transitions;
         if(transitions == null)
-            return Collections.<String, Object>singletonMap(TransitionFieldProcessor.KEY, "");
+            return "";
         for (WorkflowTransition transition : transitions)
         {
             builder.append(transition.getId());
@@ -146,8 +167,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
             builder.append(",");
         }
         builder.deleteCharAt(builder.length()-1);
-        String values = builder.toString();
-        return Collections.<String, Object>singletonMap(TransitionFieldProcessor.KEY, values);
+        return builder.toString();
     }
 
     /* (non-Javadoc)

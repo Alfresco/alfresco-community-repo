@@ -935,7 +935,7 @@ public class ActionTrackingServiceImplTest extends TestCase
        // Need to wait longer, as we have two async actions
        //  that need to occur - action + record
        txn.commit();
-       Thread.sleep(250);
+       Thread.sleep(350);
        txn = transactionService.getUserTransaction();
        txn.begin();
        

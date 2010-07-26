@@ -161,7 +161,10 @@ public class PackageManager
      */
     public void update(final NodeRef packageRef)
     {
-       AuthenticationUtil.runAs(new RunAsWork<Void>()
+        if(addItems.isEmpty() && removeItems.isEmpty())
+            return;
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
        {
            public Void doWork() throws Exception
            {
@@ -180,9 +183,12 @@ public class PackageManager
 
     private void checkPackage(NodeRef packageRef)
     {
-        boolean isPackage = nodeService.hasAspect(packageRef, PCKG_ASPECT);
-        if(isPackage == false)
-            throw new WorkflowException("The package NodeRef must implement the aspect: " + PCKG_ASPECT);
+        if(packageRef == null 
+          || nodeService.hasAspect(packageRef, PCKG_ASPECT)==false )
+        {
+            String msg = "The package NodeRef must implement the aspect: " + PCKG_ASPECT;
+            throw new WorkflowException(msg);
+        }
     }
 
     private void removePackageItems(NodeRef packageRef)

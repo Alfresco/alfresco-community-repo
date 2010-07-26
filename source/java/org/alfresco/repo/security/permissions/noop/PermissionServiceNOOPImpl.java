@@ -116,6 +116,7 @@ public class PermissionServiceNOOPImpl
      */
     public void deletePermissions(NodeRef nodeRef)
     {
+        // Do Nothing.
     }
 
     /* (non-Javadoc)
@@ -123,6 +124,7 @@ public class PermissionServiceNOOPImpl
      */
     public void deletePermission(NodeRef nodeRef, String authority, String perm)
     {
+        // Do Nothing.
     }
 
     /* (non-Javadoc)
@@ -130,6 +132,7 @@ public class PermissionServiceNOOPImpl
      */
     public void setPermission(NodeRef nodeRef, String authority, String perm, boolean allow)
     {
+        // Do Nothing.
     }
 
     /* (non-Javadoc)
@@ -137,6 +140,7 @@ public class PermissionServiceNOOPImpl
      */
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
+        // Do Nothing.
     }
 
     /* (non-Javadoc)
@@ -150,24 +154,24 @@ public class PermissionServiceNOOPImpl
 
    public void clearPermission(NodeRef nodeRef, String authority)
     {
-
+       // Do Nothing.
     }
 
     // SPI
 
     public void deletePermission(PermissionEntry permissionEntry)
     {
-
+        // Do Nothing.
     }
 
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
-
+        // Do Nothing.
     }
 
     public void deletePermissions(String recipient)
     {
-
+        // Do Nothing.
     }
 
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
@@ -226,12 +230,12 @@ public class PermissionServiceNOOPImpl
 
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
-        
+        // Do Nothing.
     }
 
     public void setPermission(PermissionEntry permissionEntry)
     {
-        
+        // Do Nothing.
     }
 
     public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()
@@ -256,22 +260,22 @@ public class PermissionServiceNOOPImpl
 
     public void clearPermission(StoreRef storeRef, String authority)
     {
-        
+        // Do Nothing.
     }
 
     public void deletePermission(StoreRef storeRef, String authority, String permission)
     {
-        
+        // Do Nothing.
     }
 
     public void deletePermissions(StoreRef storeRef)
     {
-        
+        // Do Nothing.
     }
 
     public void setPermission(StoreRef storeRef, String authority, String permission, boolean allow)
     {
-        
+        // Do Nothing.
     }
 
     public Set<AccessPermission> getAllSetPermissions(StoreRef storeRef)
@@ -292,7 +296,6 @@ public class PermissionServiceNOOPImpl
         return AccessStatus.ALLOWED;
     }
 
-	@Override
 	public Set<String> getAuthorisations() {
 		// TODO Auto-generated method stub
 		return new HashSet<String>();

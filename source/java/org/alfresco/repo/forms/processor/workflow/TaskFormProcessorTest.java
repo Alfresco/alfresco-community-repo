@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,8 +231,12 @@ public class TaskFormProcessorTest extends TestCase
         task.definition.node = new WorkflowNode();
         task.definition.node.transitions = transitions;
         
+        // Hide transition with id3.
+        Serializable hiddenValue = (Serializable) Collections.singletonList("id3");
+        task.properties.put(WorkflowModel.PROP_HIDDEN_TRANSITIONS, hiddenValue );
+        
         form = processForm(fieldName);
-        transitionValues = "id1|title1,id2|title2,id3|title3";
+        transitionValues = "id1|title1,id2|title2";
         checkSingleProperty(form, fieldName, transitionValues);
     }
 

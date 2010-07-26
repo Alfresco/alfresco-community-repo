@@ -26,12 +26,14 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -155,19 +157,40 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     private String getTransitionValues(WorkflowTask item)
     {
-        StringBuilder builder = new StringBuilder();
         WorkflowTransition[] transitions = item.definition.node.transitions;
-        if(transitions == null)
+        if(transitions == null || transitions.length == 0)
             return "";
+        return buildTransitionString(item, transitions);
+    }
+
+    private String buildTransitionString(WorkflowTask item, WorkflowTransition[] transitions)
+    {
+        StringBuilder builder = new StringBuilder();
+        List<?> hiddenStr = getHiddenTransitions(item);
         for (WorkflowTransition transition : transitions)
         {
-            builder.append(transition.getId());
-            builder.append("|");
-            builder.append(transition.getTitle());
-            builder.append(",");
+            String transId = transition.getId();
+            if(hiddenStr.contains(transId) == false)
+            {
+                builder.append(transId);
+                builder.append("|");
+                builder.append(transition.getTitle());
+                builder.append(",");
+            }
         }
         builder.deleteCharAt(builder.length()-1);
         return builder.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getHiddenTransitions(WorkflowTask task)
+    {
+        Serializable hiddenValues = task.getProperties().get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
+        if(hiddenValues!=null && hiddenValues instanceof List<?>)
+        {
+            return (List<String>) hiddenValues;
+        }
+        return Collections.emptyList();
     }
 
     /* (non-Javadoc)

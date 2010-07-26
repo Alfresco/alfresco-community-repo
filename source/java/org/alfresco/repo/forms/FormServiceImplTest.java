@@ -32,8 +32,10 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
+import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -44,7 +46,9 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
@@ -1239,6 +1243,62 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // retrieve the association that should now be present
         assocs = this.nodeService.getTargetAssocs(everythingNode, duplicateProperty);
         assertEquals(1, assocs.size());
+    }
+    
+    public void testGetFormForTask() throws Exception
+    {
+        WorkflowTask task = getWorkflowTask();
+        Item item = new Item("task", task.id);
+
+        Form form = formService.getForm(item);
+        assertNotNull(form);
+        assertEquals(item.getKind(), form.getItem().getKind());
+        assertEquals(item.getId(), form.getItem().getId());
+        List<String> fieldDefNames = form.getFieldDefinitionNames();
+        assertTrue(fieldDefNames.size() > 0);
+
+        List<String> expFields = getExpectedTaskFields();
+        assertTrue(fieldDefNames.containsAll(expFields));
+    }
+
+    public void testSaveTask() throws Exception
+    {
+        WorkflowTask task = getWorkflowTask();
+        QName descName = WorkflowModel.PROP_DESCRIPTION;
+        Serializable initialDesc = task.properties.get(descName);
+        String testDesc = "Foo-Bar-Test-String";
+        assertFalse(testDesc.equals(initialDesc));
+
+        Item item = new Item("task", task.id);
+        FormData data = new FormData();
+        String descFieldName = FormFieldConstants.PROP_DATA_PREFIX
+                    + descName.toPrefixString(namespaceService).replace(":", "_");
+        data.addFieldData(descFieldName, testDesc, true);
+        formService.saveForm(item, data);
+
+        WorkflowTask newTask = workflowService.getTaskById(task.id);
+        assertEquals(testDesc, newTask.properties.get(descName));
+    }
+
+    private WorkflowTask getWorkflowTask()
+    {
+        WorkflowDefinition reviewDef = workflowService.getDefinitionByName("jbpm$wf:review");
+        WorkflowPath path = workflowService.startWorkflow(reviewDef.id, null);
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+        assertNotNull(tasks);
+        assertTrue(tasks.size() > 0);
+        WorkflowTask task = tasks.get(0);
+        return task;
+    }
+
+    private List<String> getExpectedTaskFields()
+    {
+        ArrayList<String> fields = new ArrayList<String>(4);
+        fields.add(WorkflowModel.PROP_DESCRIPTION.toPrefixString(namespaceService));
+        fields.add(WorkflowModel.PROP_STATUS.toPrefixString(namespaceService));
+        fields.add(WorkflowModel.PROP_PACKAGE_ACTION_GROUP.toPrefixString(namespaceService));
+        fields.add(ContentModel.PROP_OWNER.toPrefixString(namespaceService));
+        return fields;
     }
     
     public void testWorkflowForm() throws Exception

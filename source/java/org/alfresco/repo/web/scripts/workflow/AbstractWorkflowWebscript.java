@@ -20,7 +20,9 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.util.Map;
 
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -31,14 +33,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * @author Nick Smith
- *
+ * @since 3.4
  */
 public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
 {
 
-    private NamespaceService namespaceService;
-    private NodeService nodeService;
-    private PersonService personService;
+    protected NamespaceService namespaceService;
+    protected NodeService nodeService;
+    protected PersonService personService;
+    protected DictionaryService dictionaryService;
+    protected AuthenticationService authenticationService;
     protected WorkflowService workflowService;
     
     @Override
@@ -61,6 +65,16 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+    
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
     }
     
     public void setWorkflowService(WorkflowService workflowService)

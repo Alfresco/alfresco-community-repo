@@ -775,11 +775,13 @@
 
     <!-- abstract workflow web script -->
     <bean id="abstractWorkflowWebScript"
-          class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript"
+          class="org.alfresco.repo.web.scripts.workflow.AbstractWorkflowWebscript"
           parent="webscript" abstract="true">
         <property name="namespaceService" ref="NamespaceService" />
         <property name="nodeService" ref="NodeService"/>
         <property name="personService" ref="PersonService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="authenticationService" ref="AuthenticationService"/>
         <property name="workflowService" ref="WorkflowService"/>
     </bean>
 
@@ -792,6 +794,11 @@
     <!-- Gets the details of a task -->
     <bean id="webscript.org.alfresco.repository.workflow.task-instance.get"
           class="org.alfresco.repo.web.scripts.workflow.TaskInstanceGet"
+          parent="abstractWorkflowWebScript"></bean>
+
+    <!-- Updates the details of a task -->
+    <bean id="webscript.org.alfresco.repository.workflow.task-instance.put"
+          class="org.alfresco.repo.web.scripts.workflow.TaskInstancePut"
           parent="abstractWorkflowWebScript"></bean>
 
     <!-- Lists all workflow definitions -->

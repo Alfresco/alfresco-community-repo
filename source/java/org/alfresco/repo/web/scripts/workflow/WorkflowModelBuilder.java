@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
@@ -144,7 +145,7 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = buildSimple(workflowTask, null);
 
-        model.put(TASK_PATH, getUrl(workflowTask) + "/paths/" + workflowTask.path.id);
+        model.put(TASK_PATH, getUrl(workflowTask, workflowTask.path));
 
         // definition part
         model.put(TASK_DEFINITION, buildTaskDefinition(workflowTask.definition, workflowTask));
@@ -346,6 +347,11 @@ public class WorkflowModelBuilder
     private String getUrl(TypeDefinition typeDefinition)
     {
         return "api/classes/" + typeDefinition.getName().toPrefixString().replace(PREFIX_SEPARATOR, "_");
+    }
+
+    private String getUrl(WorkflowTask task, WorkflowPath path)
+    {
+        return getUrl(task) + "/paths/" + path.id;
     }
 
 }

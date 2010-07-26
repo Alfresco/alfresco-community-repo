@@ -40,13 +40,17 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -57,11 +61,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 {
     private final static String USER1 = "Bob" + GUID.generate();
     private final static String USER2 = "Jane" + GUID.generate();
+    private final static String USER3 = "Nick" + GUID.generate();
     private static final String URL_TASKS = "api/task-instances";
     private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     
     private TestPersonManager personManager;
     private WorkflowService workflowService;
+    private NamespaceService namespaceService;
     private NodeRef packageRef;
     
     public void testTaskInstancesGet() throws Exception
@@ -213,6 +219,49 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
     }
     
+    public void testTaskInstancePut() throws Exception
+    {
+        //Start workflow as USER1 and assign task to USER2.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
+        
+        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.id), 200);        
+        
+        JSONObject jsonProperties = new JSONObject(getResponse.getContentAsString()).getJSONObject("data").getJSONObject("properties");
+        
+        // make some changes        
+        jsonProperties.remove(qnameToString(WorkflowModel.ASSOC_PACKAGE));
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_COMMENT), "Edited comment");
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_DUE_DATE), ISO8601DateFormat.format(new Date()));
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_DESCRIPTION), "Edited description");
+        jsonProperties.put(qnameToString(WorkflowModel.PROP_PRIORITY), 1);
+        
+        personManager.setUser(USER3);
+        Response unauthResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 401);
+        assertEquals(Status.STATUS_UNAUTHORIZED, unauthResponse.getStatus());
+        
+        personManager.setUser(USER1);
+        Response putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 200);
+        
+        assertEquals(Status.STATUS_OK, putResponse.getStatus());
+        String jsonStr = putResponse.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONObject result = json.getJSONObject("data");
+        assertNotNull(result);
+        
+        JSONObject editedJsonProperties = result.getJSONObject("properties");
+        
+        compareProperties(jsonProperties, editedJsonProperties);
+    }
+    
     public void testWorkflowDefinitionsGet() throws Exception
     {
         Response response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS), 200);
@@ -250,6 +299,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         super.setUp();
         ApplicationContext appContext = getServer().getApplicationContext();
         
+        namespaceService = (NamespaceService)appContext.getBean("NamespaceService");
         workflowService = (WorkflowService)appContext.getBean("WorkflowService");
         MutableAuthenticationService authenticationService = (MutableAuthenticationService)appContext.getBean("AuthenticationService");
         PersonService personService = (PersonService)appContext.getBean("PersonService");
@@ -258,6 +308,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         
         personManager.createPerson(USER1);
         personManager.createPerson(USER2);
+        personManager.createPerson(USER3);
         
         packageRef = workflowService.createPackage(null);
     }
@@ -270,5 +321,33 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     {
         super.tearDown();
         personManager.clearPeople();
+    }
+    
+    private String qnameToString(QName qName)
+    {
+        String separator = Character.toString(QName.NAMESPACE_PREFIX);
+        
+        return qName.toPrefixString(namespaceService).replaceFirst(separator, "_");
+    }
+    
+    private void compareProperties(JSONObject before, JSONObject after) throws JSONException
+    {
+        for (String name : JSONObject.getNames(after))
+        {
+            if (before.has(name))
+            {
+                if (before.get(name) instanceof JSONArray)
+                {
+                    for (int i = 0; i < before.getJSONArray(name).length(); i++)
+                    {
+                        assertEquals(before.getJSONArray(name).get(i), after.getJSONArray(name).get(i));                        
+                    }
+                }
+                else
+                {
+                    assertEquals(before.get(name), after.get(name));
+                }
+            }
+        }
     }
 }

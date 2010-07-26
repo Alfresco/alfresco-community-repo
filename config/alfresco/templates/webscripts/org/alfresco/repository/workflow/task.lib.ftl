@@ -88,5 +88,5 @@
       <#if (key_has_next)>,</#if>
    </#list>
    }
-</#escape>    
+</#escape>
 </#macro>

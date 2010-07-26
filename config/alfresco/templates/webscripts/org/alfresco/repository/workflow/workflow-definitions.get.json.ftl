@@ -6,5 +6,5 @@
          <@workflowDefLib.workflowDefinitionJSON workflowDefinition=workflowDefinition />
          <#if workflowDefinition_has_next>,</#if>
       </#list>
-  	]
+   ]
 }

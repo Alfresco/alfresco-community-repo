@@ -54,6 +54,12 @@ function main()
             
             // set simple text properties
             user.properties[propname] = propval;
+            
+            // update userStatusTime if updating userStatus
+            if (propname.toLowerCase() == "cm:userstatus")
+            {
+               user.properties["cm:userStatusTime"] = new Date();
+            }
          }
       }
    }
@@ -73,10 +79,10 @@ function main()
             user.properties[propname].content = propval;
          }
       }
-      
-      user.save();
-      model.success = true;
    }
+
+   user.save();
+   model.success = true;
 }
 
 main();

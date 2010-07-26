@@ -255,6 +255,9 @@
             <property name="cm:userStatus">
                <type>d:text</type>
             </property>
+            <property name="cm:userStatusTime">
+               <type>d:datetime</type>
+            </property>
             <property name="cm:googleusername">
                <type>d:text</type>
             </property>

@@ -159,7 +159,8 @@ public interface NodeDAO extends NodeBulkLoader
             String uuid,
             QName nodeTypeQName,
             String childNodeName,
-            Map<QName, Serializable> auditableProperties) throws InvalidTypeException;
+            Map<QName, Serializable> auditableProperties/*,
+            Map<QName, Serializable> ownableProperties*/) throws InvalidTypeException;
 
     /**
      * Update a node's primary association, giving it a new parent and new association parameters.

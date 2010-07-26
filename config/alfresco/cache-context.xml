@@ -400,7 +400,37 @@
          <value>10000</value>
       </property>
    </bean>
+
+    <!-- The cross-transaction shared cache for ACL readers -->
    
+   <bean name="readersSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.readersCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for ACL readers -->
+   
+   <bean name="readersCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="readersSharedCache" />
+      </property>
+      <!-- Eh cache area -->
+      <property name="name">
+         <value>org.alfresco.readersTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>10000</value>
+      </property>
+   </bean>
+      
    <!-- ===================================== -->
    <!-- Node owner cache                      -->
    <!-- ===================================== -->

@@ -41,7 +41,6 @@ public interface ModelDAO
      */
     public Set<PermissionReference> getAllPermissions(QName type);
     
-    
     /**
      * Get the permissions that can be set for the given type.
      * 
@@ -96,6 +95,8 @@ public interface ModelDAO
      */
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on);
 
+    public Set<PermissionReference> getUnconditionalRequiredPermissions(PermissionReference required, RequiredPermission.On on);
+    
     /**
      * Get the permissions which are granted by the supplied permission.
      * 

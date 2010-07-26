@@ -1992,5 +1992,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
         throw new UnsupportedOperationException("AVM does not support this operation.");
-    }        
+    }
+
+    public Long getNodeAclId(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+    	throw new UnsupportedOperationException("getNodeAclId is unsupported for AVMNodeService");
+    }
+
 }

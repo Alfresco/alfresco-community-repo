@@ -34,7 +34,6 @@ import org.apache.lucene.search.HitCollector;
  */
 public abstract class AbstractResultSet implements ResultSet
 {
-
     /**
      * Default constructor
      */
@@ -54,7 +53,7 @@ public abstract class AbstractResultSet implements ResultSet
     {
         // default to do nothing
     }
-
+    
     public List<NodeRef> getNodeRefs()
     {
         ArrayList<NodeRef> nodeRefs = new ArrayList<NodeRef>(length());
@@ -75,4 +74,43 @@ public abstract class AbstractResultSet implements ResultSet
         return cars;
     }
 
+    /**
+     * Bulk fetch results in the cache
+     * 
+     * @param bulkFetch
+     */
+    public boolean setBulkFetch(boolean bulkFetch)
+    {
+    	return false;
+    }
+
+    /**
+     * Do we bulk fetch
+     * 
+     * @return - true if we do
+     */
+    public boolean getBulkFetch()
+    {
+        return false;
+    }
+
+    /**
+     * Set the bulk fetch size
+     * 
+     * @param bulkFetchSize
+     */
+    public int setBulkFetchSize(int bulkFetchSize)
+    {
+    	return 0;
+    }
+
+    /**
+     * Get the bulk fetch size.
+     * 
+     * @return the fetch size
+     */
+    public int getBulkFetchSize()
+    {
+        return 0;
+    }
 }

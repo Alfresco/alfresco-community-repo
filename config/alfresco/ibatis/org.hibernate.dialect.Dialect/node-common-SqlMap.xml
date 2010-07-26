@@ -25,7 +25,7 @@
     <typeAlias alias="NodeAssoc" type="org.alfresco.repo.domain.node.NodeAssocEntity"/>
     <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
     <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
-
+    <typeAlias alias="Aspect" type="org.alfresco.repo.domain.node.AspectEntity"/>
     
     <!--                -->
     <!-- Result Maps    -->
@@ -85,6 +85,16 @@
     <resultMap id="result_NodeAcl" class="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_AspectQNameIds" class="java.lang.Long">
+        <result property="" column="qname_id"/>
+    </resultMap>
+    <resultMap id="result_NodeAspects" class="NodeAspects" groupBy="nodeId">
+        <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aspectQNameIds" resultMap="alfresco.node.result_AspectQNameIds"/>
+<!--
+        <result property="aspectQNameIds" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+-->
     </resultMap>
     <resultMap id="result_NodeProperty" class="NodeProperty">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -409,7 +419,7 @@
     <delete id="delete_NodeAspects" parameterClass="NodeAspects">
         delete from alf_node_aspects
         where
-            node_id = #id#
+            node_id = #nodeId#
             <isNotNull property="aspectQNameIds" prepend="">
                 and qname_id in
                 <iterate property="aspectQNameIds" open="(" close=")" conjunction=", ">#aspectQNameIds[]#</iterate>
@@ -592,7 +602,34 @@
                 <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
             </isNotNull>
     </select>
+
+    <sql id="select_NodeAspects_Results">
+        select
+            aspects.node_id            as node_id,
+            aspects.qname_id           as qname_id
+    </sql>
     
+    <select id="select_NodeAspects" parameterClass="NodeAspects" resultMap="result_NodeAspects">
+        <include refid="alfresco.node.select_NodeAspects_Results"/>
+        from
+            alf_node_aspects aspects
+        where
+            <dynamic>
+                <isNotNull property="nodeId">aspects.node_id = #nodeId#</isNotNull>
+                <isNotNull property="nodeIds">
+                    aspects.node_id in <iterate property="nodeIds" open="(" close=")" conjunction=",">#nodeIds[]#</iterate>
+                </isNotNull>
+            </dynamic>
+<!--
+            <isNotNull property="key.qnameId">and qname_id = #key.qnameId#</isNotNull>
+            <isNotNull property="qnameIds">
+                and qname_id in
+                <iterate property="qnameIds" open="(" close=")" conjunction=",">#qnameIds[]#</iterate>
+            </isNotNull>
+-->
+    </select>
+    
+
     <select id="select_NodeAspectIds" parameterMap="parameter_Id" resultClass="java.lang.Long">
         select
             qname_id
@@ -601,7 +638,7 @@
         where
             node_id = ?
     </select>
-    
+  
     <select id="select_NodesWithAspectId" parameterMap="parameter_NodesWithAspect" resultMap="result_NodeRef" >
         select
             node.id             as id,

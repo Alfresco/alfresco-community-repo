@@ -56,7 +56,6 @@ public class LuceneAlfrescoSqlQueryLanguage implements LuceneQueryLanguageSPI
         String sql = searchParameters.getQuery();
 
         CMISQueryOptions options = new CMISQueryOptions(sql, searchParameters.getStores().get(0));
-        options.setFetchSize(searchParameters.getBulkFecthSize());
         options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
         options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
         options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);

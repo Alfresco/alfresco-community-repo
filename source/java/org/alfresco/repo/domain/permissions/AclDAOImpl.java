@@ -24,10 +24,12 @@
  */
 package org.alfresco.repo.domain.permissions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -72,6 +74,8 @@ public class AclDAOImpl implements AclDAO
     /** a transactionally-safe cache to be injected */
     private SimpleCache<Long, AccessControlList> aclCache;
     
+    private SimpleCache<Serializable, Set<String>> readersCache;
+
     private enum WriteMode
     {
         /**
@@ -123,7 +127,15 @@ public class AclDAOImpl implements AclDAO
     {
         this.aclCache = aclCache;
     }
-    
+
+    /**
+     * @param readersCache the readersCache to set
+     */
+    public void setReadersCache(SimpleCache<Serializable, Set<String>> readersCache)
+    {
+        this.readersCache = readersCache;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.domain.permissions.AclDAO#createAccessControlList()
      */
@@ -738,6 +750,8 @@ public class AclDAOImpl implements AclDAO
                 Long aceId = member.getAceId();
                 
                 aclCache.remove(aclId);
+                readersCache.remove(aclId);
+                
                 Acl list = aclCrudDAO.getAcl(aclId);
                 acls.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
                 membersToDelete.add(aclMemberId);

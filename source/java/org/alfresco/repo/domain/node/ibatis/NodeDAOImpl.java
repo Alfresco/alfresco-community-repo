@@ -89,6 +89,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
+    private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update_PrimaryChildrenSharedAcl";
     private static final String SELECT_NODE_ASPECT_IDS = "alfresco.node.select_NodeAspectIds";
@@ -397,6 +398,21 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     
     @Override
     @SuppressWarnings("unchecked")
+    protected List<NodeAspectsEntity> selectNodeAspects(Set<Long> nodeIds)
+    {
+        if (nodeIds.size() == 0)
+        {
+            return Collections.emptyList();
+        }
+        NodeAspectsEntity aspects = new NodeAspectsEntity();
+        aspects.setNodeIds(new ArrayList<Long>(nodeIds));
+
+        List<NodeAspectsEntity> rows = template.queryForList(SELECT_NODE_ASPECTS, aspects);
+        return rows;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
     protected Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds)
     {
         if (nodeIds.size() == 0)
@@ -527,8 +543,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected Set<Long> selectNodeAspectIds(Long nodeId)
     {
-        List<Long> aspectQNameIdList = template.queryForList(SELECT_NODE_ASPECT_IDS, nodeId);
-        return new HashSet<Long>(aspectQNameIdList);
+    	Set<Long> aspectIds = new HashSet<Long>();
+    	Set<Long> nodeIds = new HashSet<Long>();
+    	nodeIds.add(nodeId);
+    	List<NodeAspectsEntity> nodeAspectEntities = selectNodeAspects(nodeIds);
+    	if(nodeAspectEntities.size() > 0)
+    	{
+    		NodeAspectsEntity nodeAspects = nodeAspectEntities.get(0);
+    		aspectIds.addAll(nodeAspects.getAspectQNameIds());
+    	}
+		return aspectIds;
     }
 
     @Override
@@ -544,7 +568,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected int deleteNodeAspects(Long nodeId, Set<Long> qnameIds)
     {
         NodeAspectsEntity nodeAspects = new NodeAspectsEntity();
-        nodeAspects.setId(nodeId);
+        nodeAspects.setNodeId(nodeId);
         if (qnameIds != null && !qnameIds.isEmpty())
         {
             nodeAspects.setAspectQNameIds(new ArrayList<Long>(qnameIds));                // Null means all

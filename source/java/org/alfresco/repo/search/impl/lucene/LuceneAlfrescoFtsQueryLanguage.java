@@ -19,14 +19,11 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
-import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -77,7 +74,6 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
                 searchParameters.getNamespace());
 
         QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
-        options.setFetchSize(searchParameters.getBulkFecthSize());
         options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
         options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
         options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
@@ -113,7 +109,8 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
         org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));
 
         QueryEngineResults results = queryEngine.executeQuery(query, options, context);
-        return results.getResults().values().iterator().next();
+        ResultSet resultSet = results.getResults().values().iterator().next();
+        return resultSet;
     }
 
     public String getName()

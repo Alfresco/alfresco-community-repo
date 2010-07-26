@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -692,4 +693,12 @@ public class NodeServiceImpl implements NodeService, VersionModel
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }        
+
+    /**
+     * Gets, converts and adds the intrinsic properties to the current node's properties
+     */
+    public Long getNodeAclId(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
 }

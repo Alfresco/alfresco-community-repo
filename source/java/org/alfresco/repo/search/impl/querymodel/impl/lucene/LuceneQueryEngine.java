@@ -136,8 +136,6 @@ public class LuceneQueryEngine implements QueryEngine
         }
 
         SearchParameters searchParameters = new SearchParameters();
-        searchParameters.setBulkFetch(options.getFetchSize() > 0);
-        searchParameters.setBulkFetchSize(options.getFetchSize());
         if(options.getLocales().size() > 0)
         {
            for(Locale locale: options.getLocales())

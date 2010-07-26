@@ -50,6 +50,8 @@ import org.apache.lucene.search.Searcher;
  */
 public class LuceneResultSet extends AbstractResultSet
 {
+    private static int DEFAULT_BULK_FETCH_SIZE = 1000;
+    
     /**
      * The underlying hits
      */
@@ -67,7 +69,10 @@ public class LuceneResultSet extends AbstractResultSet
 
     private BitSet prefetch;
 
+    private boolean bulkFetch = true;
 
+    private int bulkFetchSize = DEFAULT_BULK_FETCH_SIZE;
+    
     /**
      * Wrap a lucene seach result with node support
      * 
@@ -156,11 +161,11 @@ public class LuceneResultSet extends AbstractResultSet
             throw new SearcherException("IO Error reading reading document from the result set", e);
         }
     }
-    
+
     private void prefetch(int n) throws IOException
     {
         NodeBulkLoader bulkLoader = config.getBulkLoader();
-        if (!searchParameters.getBulkFetch() || (bulkLoader == null))
+        if (!getBulkFetch() || (bulkLoader == null))
         {
             // No prefetching
             return;
@@ -171,7 +176,7 @@ public class LuceneResultSet extends AbstractResultSet
             return;
         }
         // Start at 'n' and process the the next bulk set
-        int bulkFetchSize = searchParameters.getBulkFecthSize();
+        int bulkFetchSize = getBulkFetchSize();
         List<NodeRef> fetchList = new ArrayList<NodeRef>(bulkFetchSize);
         int totalHits = hits.length();
         for (int i = 0; i < bulkFetchSize; i++)
@@ -253,6 +258,54 @@ public class LuceneResultSet extends AbstractResultSet
     public TenantService getTenantService()
     {
         return tenantService;
+    }
+    
+    /**
+     * Bulk fetch results in the cache
+     * 
+     * @param bulkFetch
+     */
+    @Override
+    public boolean setBulkFetch(boolean bulkFetch)
+    {
+    	boolean oldBulkFetch = this.bulkFetch;
+        this.bulkFetch = bulkFetch;
+        return oldBulkFetch;
+    }
+
+    /**
+     * Do we bulk fetch
+     * 
+     * @return - true if we do
+     */
+    @Override
+    public boolean getBulkFetch()
+    {
+        return bulkFetch;
+    }
+
+    /**
+     * Set the bulk fetch size
+     * 
+     * @param bulkFetchSize
+     */
+    @Override
+    public int setBulkFetchSize(int bulkFetchSize)
+    {
+    	int oldBulkFetchSize = this.bulkFetchSize;
+        this.bulkFetchSize = bulkFetchSize;
+        return oldBulkFetchSize;
+    }
+
+    /**
+     * Get the bulk fetch size.
+     * 
+     * @return the fetch size
+     */
+    @Override
+    public int getBulkFetchSize()
+    {
+        return bulkFetchSize;
     }
     
 }

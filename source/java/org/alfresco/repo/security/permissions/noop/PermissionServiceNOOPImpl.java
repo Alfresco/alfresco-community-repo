@@ -283,6 +283,18 @@ public class PermissionServiceNOOPImpl
     {
         return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry>emptyList());
     }
-    
-    
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.PermissionService#canRead(java.lang.Long)
+     */
+    public AccessStatus hasReadPermission(NodeRef nodeRef)
+    {
+        return AccessStatus.ALLOWED;
+    }
+
+	@Override
+	public Set<String> getAuthorisations() {
+		// TODO Auto-generated method stub
+		return new HashSet<String>();
+	}
 }

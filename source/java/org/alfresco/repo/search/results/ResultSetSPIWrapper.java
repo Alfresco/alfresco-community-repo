@@ -103,12 +103,52 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     {
         return wrapped.length();
     }
-
+    
     public Iterator<ResultSetRow> iterator()
     {
         return new WrappedIterator<ROW>(wrapped.iterator());
     }
 
+    /**
+     * Bulk fetch results in the cache
+     * 
+     * @param bulkFetch
+     */
+    public boolean setBulkFetch(boolean bulkFetch)
+    {
+    	return wrapped.setBulkFetch(bulkFetch);
+    }
+
+    /**
+     * Do we bulk fetch
+     * 
+     * @return - true if we do
+     */
+    public boolean getBulkFetch()
+    {
+        return wrapped.getBulkFetch();
+    }
+
+    /**
+     * Set the bulk fetch size
+     * 
+     * @param bulkFetchSize
+     */
+    public int setBulkFetchSize(int bulkFetchSize)
+    {
+    	return wrapped.setBulkFetchSize(bulkFetchSize);
+    }
+
+    /**
+     * Get the bulk fetch size.
+     * 
+     * @return the fetch size
+     */
+    public int getBulkFetchSize()
+    {
+        return wrapped.getBulkFetchSize();
+    }
+    
     private static class WrappedIterator<ROW extends ResultSetRow> implements Iterator<ResultSetRow>
     {
         private Iterator<ROW> wrapped;

@@ -212,6 +212,14 @@
         overflowToDisk="false"
         statistics="false"
         />
+
+    <cache 
+        name="org.alfresco.cache.readersCache" 
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+
     <cache 
         name="org.alfresco.cache.nodeOwnerCache" 
         maxElementsInMemory="20000"
@@ -243,7 +251,6 @@
         overflowToDisk="false"
         statistics="false"
         />
-        
     <cache
         name="org.alfresco.cache.permissions.aclEntityCache"
         maxElementsInMemory="50000"
@@ -259,7 +266,6 @@
         overflowToDisk="false"
         statistics="false"
         />
-        
     <cache
         name="org.alfresco.cache.permissions.permissionEntityCache"
         maxElementsInMemory="10000"

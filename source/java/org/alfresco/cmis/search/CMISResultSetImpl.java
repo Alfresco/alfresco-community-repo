@@ -283,5 +283,44 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     {
         return getLength();
     }
+    
+    /**
+     * Bulk fetch results in the cache - not supported here
+     * 
+     * @param bulkFetch
+     */
+    public boolean setBulkFetch(boolean bulkFetch)
+    {
+    	return false;
+    }
 
+    /**
+     * Do we bulk fetch - not supported here
+     * 
+     * @return - true if we do
+     */
+    public boolean getBulkFetch()
+    {
+        return false;
+    }
+
+    /**
+     * Set the bulk fetch size
+     * 
+     * @param bulkFetchSize
+     */
+    public int setBulkFetchSize(int bulkFetchSize)
+    {
+    	return 0;
+    }
+
+    /**
+     * Get the bulk fetch size.
+     * 
+     * @return the fetch size
+     */
+    public int getBulkFetchSize()
+    {
+        return 0;
+    }
 }

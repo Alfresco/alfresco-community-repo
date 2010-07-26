@@ -34,7 +34,6 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -61,7 +60,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Enforce permission after the method calll
+ * Enforce permission after the method call
  * 
  * @author andyh
  */
@@ -86,6 +85,9 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     private Set<QName> unfilteredForClassQNames = new HashSet<QName>();
     
     private Set<String> unfilteredFor = null;
+
+	private boolean optimisePermissionsCheck;
+	private int optimisePermissionsBulkFetchSize;
 
     /**
      * Default constructor
@@ -156,7 +158,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     {
         this.nodeService = nodeService;
     }
-
+    
     /**
      * Set the authentication service
      * 
@@ -487,7 +489,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
         return returnedObject;
     }
-
+    
     private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PagingLuceneResultSet returnedObject) throws AccessDeniedException
 
     {
@@ -497,7 +499,24 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return newPaging;
     }
 
-    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException
+    public void setOptimisePermissionsCheck(boolean optimisePermissionsCheck)
+    {
+    	this.optimisePermissionsCheck = optimisePermissionsCheck;
+    }
+
+    public void setOptimisePermissionsBulkFetchSize(int optimisePermissionsBulkFetchSize)
+    {
+    	this.optimisePermissionsBulkFetchSize = optimisePermissionsBulkFetchSize;
+    }
+    
+	private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException
+    {
+    	ResultSet rs = optimisePermissionsCheck ? decideNew(authentication, object, config, returnedObject) :
+    			decideOld(authentication, object, config, returnedObject);
+        return rs;
+    }
+ 
+    private ResultSet decideNew(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException
 
     {
         if (returnedObject == null)
@@ -548,7 +567,126 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 {
                     filteringResultSet.setIncluded(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                        .getSearchParameters()));
+            }
+            else
+            {
+                for (int i = 0; i < maxSize.intValue(); i++)
+                {
+                    filteringResultSet.setIncluded(i, true);
+                }
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                        .getSearchParameters()));
+            }
+        }
+
+        // record the start time
+        long startTimeMillis = System.currentTimeMillis();
+        // set the default, unlimited resultset type
+        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                .getSearchParameters()));
+
+        // use the result set to do bulk loading
+        boolean oldBulkFetch = returnedObject.setBulkFetch(true);
+        int oldFetchSize = returnedObject.setBulkFetchSize(optimisePermissionsBulkFetchSize);
+
+        try
+        {
+           for (int i = 0; i < returnedObject.length(); i++)
+           {
+               long currentTimeMillis = System.currentTimeMillis();
+               if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
+               {
+                   filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
+                           .getResultSetMetaData().getSearchParameters()));
+                   break;
+               }
+   
+               // All permission checks must pass
+               filteringResultSet.setIncluded(i, true);
+   
+               NodeRef nodeRef = returnedObject.getNodeRef(i);
+   
+               if (filteringResultSet.getIncluded(i) && permissionService.hasReadPermission(nodeRef) == AccessStatus.DENIED)
+               {
+                   filteringResultSet.setIncluded(i, false);
+               }
+   
+               // Bug out if we are limiting by size
+               if ((maxSize != null) && (filteringResultSet.length() > maxSize.intValue()))
+               {
+                   // Renove the last match to fix the correct size
+                   filteringResultSet.setIncluded(i, false);
+                   filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
+                           .getSearchParameters()));
+                   break;
+               }
+           }
+        }
+        finally
+        {
+           // put them back to how they were
+           returnedObject.setBulkFetch(oldBulkFetch);
+           returnedObject.setBulkFetchSize(oldFetchSize);
+        }
+        
+        return filteringResultSet;
+    }
+
+
+    private ResultSet decideOld(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException
+
+    {
+        if (returnedObject == null)
+        {
+            return null;
+        }
+
+        FilteringResultSet filteringResultSet = new FilteringResultSet(returnedObject);
+
+        List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
+
+        Integer maxSize = null;
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems() >= 0)
+        {
+            maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems());
+        }
+        if ((maxSize == null) && (returnedObject.getResultSetMetaData().getSearchParameters().getLimitBy() == LimitBy.FINAL_SIZE))
+        {
+            maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getLimit());
+        }
+        // Allow for skip
+        if ((maxSize != null) && (returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount() >= 0))
+        {
+            maxSize = new Integer(maxSize + returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount());
+        }
+
+        int maxChecks = maxPermissionChecks;
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks() >= 0)
+        {
+            maxChecks = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks();
+        }
+
+        long maxCheckTime = maxPermissionCheckTimeMillis;
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis() >= 0)
+        {
+            maxCheckTime = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis();
+        }
+
+        if (supportedDefinitions.size() == 0)
+        {
+            if (maxSize == null)
+            {
+                return returnedObject;
+            }
+            else if (returnedObject.length() > maxSize.intValue())
+            {
+                for (int i = 0; i < maxSize.intValue(); i++)
+                {
+                    filteringResultSet.setIncluded(i, true);
+                }
+                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
                         .getSearchParameters()));
                 return filteringResultSet;
             }
@@ -610,7 +748,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             // Bug out if we are limiting by size
             if ((maxSize != null) && (filteringResultSet.length() > maxSize.intValue()))
             {
-                // Renove the last match to fix the correct size
+                // Remove the last match to fix the correct size
                 filteringResultSet.setIncluded(i, false);
                 filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
                         .getSearchParameters()));

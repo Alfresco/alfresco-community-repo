@@ -77,11 +77,17 @@
         <property name="accessCache">
             <ref bean="permissionsAccessCache" />
         </property>
+        <property name="readersCache">
+            <ref bean="readersCache" />
+        </property>
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
         <property name="aclDAO">
             <ref bean="aclDAO" />
+        </property>
+        <property name="ownableService">
+            <ref bean="ownableService" />
         </property>
         <property name="dynamicAuthorities">
             <list>
@@ -95,7 +101,6 @@
     <!-- =================== -->
     <!-- Dynamic Authorities -->
     <!-- =================== -->
-
 
     <!-- The provider to evaluate if the current authentication is the owner of a node.  -->
     <bean id="ownerDynamicAuthority" class="org.alfresco.repo.security.permissions.dynamic.OwnerDynamicAuthority">
@@ -230,6 +235,12 @@
         </property>
         <property name="maxPermissionChecks">
             <value>${system.acl.maxPermissionChecks}</value>
+        </property>
+        <property name="optimisePermissionsCheck">
+            <value>${system.readpermissions.optimise}</value>
+        </property>
+        <property name="optimisePermissionsBulkFetchSize">
+            <value>${system.readpermissions.bulkfetchsize}</value>
         </property>
     </bean>
 

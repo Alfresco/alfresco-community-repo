@@ -2816,7 +2816,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /*
      * Bulk caching
      */
-
+    
     /**
      * {@inheritDoc}
      * <p/>
@@ -2930,17 +2930,33 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     {
         // Get the nodes
         List<NodeEntity> nodes = selectNodesByUuids(storeId, uuids);
-        SortedSet<Long> nodeIds = new TreeSet<Long>();
+        SortedSet<Long> aspectNodeIds = new TreeSet<Long>();
+        SortedSet<Long> propertiesNodeIds = new TreeSet<Long>();
         for (NodeEntity node : nodes)
         {
             Long nodeId = node.getId();
             nodesCache.setValue(nodeId, node);
             if (propertiesCache.getValue(nodeId) == null)
             {
-                nodeIds.add(nodeId);
+                propertiesNodeIds.add(nodeId);
+            }
+            if (aspectsCache.getValue(nodeId) == null)
+            {
+                aspectNodeIds.add(nodeId);
             }
         }
-        Map<Long, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(nodeIds);
+        
+        List<NodeAspectsEntity> nodeAspects = selectNodeAspects(aspectNodeIds);
+        for (NodeAspectsEntity nodeAspect : nodeAspects)
+        {
+            Long nodeId = nodeAspect.getNodeId();
+            List<Long> qnameIds = nodeAspect.getAspectQNameIds();
+            HashSet<Long> qnameIdsSet = new HashSet<Long>(qnameIds);
+            Set<QName> qnames = qnameDAO.convertIdsToQNames(qnameIdsSet);
+            aspectsCache.setValue(nodeId, qnames);
+        }
+
+        Map<Long, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(propertiesNodeIds);
         for (Map.Entry<Long, Map<NodePropertyKey, NodePropertyValue>> entry : propsByNodeId.entrySet())
         {
             Long nodeId = entry.getKey();
@@ -3099,6 +3115,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted);
     protected abstract List<NodeEntity> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
     protected abstract Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds);
+    protected abstract List<NodeAspectsEntity> selectNodeAspects(Set<Long> nodeIds);
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId);
     protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId, Set<Long> qnameIds);
     protected abstract int deleteNodeProperties(Long nodeId, Set<Long> qnameIds);

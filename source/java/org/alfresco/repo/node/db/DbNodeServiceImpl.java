@@ -34,6 +34,7 @@ import java.util.Stack;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
+import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -1281,7 +1282,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // done
         return nodeProperties;
     }
+    
+    public Long getNodeAclId(NodeRef nodeRef) throws InvalidNodeRefException
+    {
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        return getAclIDImpl(nodePair);
+    }
 
+    /**
+     * Gets, converts and adds the intrinsic properties to the current node's properties
+     */
+    private Long getAclIDImpl(Pair<Long, NodeRef> nodePair) throws InvalidNodeRefException
+    {
+        Long nodeId = nodePair.getFirst();
+        Long aclID = nodeDAO.getNodeAclId(nodeId);
+        // done
+        return aclID;
+    }
+    
     /**
      * Performs additional tasks associated with setting a property.
      * 

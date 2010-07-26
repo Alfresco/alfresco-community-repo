@@ -48,6 +48,46 @@ public class EmptyResultSet implements ResultSet
         super();
     }
 
+    /**
+     * Bulk fetch results in the cache
+     * 
+     * @param bulkFetch
+     */
+    public boolean setBulkFetch(boolean bulkFetch)
+    {
+    	return false;
+    }
+
+    /**
+     * Do we bulk fetch
+     * 
+     * @return - true if we do
+     */
+    public boolean getBulkFetch()
+    {
+        return false;
+    }
+
+    /**
+     * Set the bulk fetch size
+     * 
+     * @param bulkFetchSize
+     */
+    public int setBulkFetchSize(int bulkFetchSize)
+    {
+    	return 0;
+    }
+
+    /**
+     * Get the bulk fetch size.
+     * 
+     * @return the fetch size
+     */
+    public int getBulkFetchSize()
+    {
+        return 0;
+    }
+    
     public int length()
     {
         return 0;

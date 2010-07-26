@@ -285,5 +285,45 @@ public class SortedResultSet implements ResultSet
     {
         throw new UnsupportedOperationException();
     }
+    
+    /**
+     * Bulk fetch results in the cache
+     * 
+     * @param bulkFetch
+     */
+    public boolean setBulkFetch(boolean bulkFetch)
+    {
+    	return resultSet.setBulkFetch(bulkFetch);
+    }
+
+    /**
+     * Do we bulk fetch
+     * 
+     * @return - true if we do
+     */
+    public boolean getBulkFetch()
+    {
+        return resultSet.getBulkFetch();
+    }
+
+    /**
+     * Set the bulk fetch size
+     * 
+     * @param bulkFetchSize
+     */
+    public int setBulkFetchSize(int bulkFetchSize)
+    {
+    	return resultSet.setBulkFetchSize(bulkFetchSize);
+    }
+
+    /**
+     * Get the bulk fetch size.
+     * 
+     * @return the fetch size
+     */
+    public int getBulkFetchSize()
+    {
+        return resultSet.getBulkFetchSize();
+    }
 
 }

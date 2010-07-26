@@ -20,9 +20,11 @@ package org.alfresco.repo.security.permissions.impl.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -32,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
@@ -48,6 +51,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -127,6 +131,11 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
     private Collection<QName> allAspects;
 
+    private ConcurrentHashMap<RequiredKey, Set<PermissionReference>> requiredPermissionsCache = new ConcurrentHashMap<RequiredKey, Set<PermissionReference>>(1024);
+    private PermissionGroup group;
+    
+    private ConcurrentHashMap<Pair<PermissionReference, RequiredPermission.On>, Set<PermissionReference>> unconditionalRequiredPermissionsCache = new ConcurrentHashMap<Pair<PermissionReference, RequiredPermission.On>, Set<PermissionReference>>(1024);
+    
     /**
      * Default constructor
      */
@@ -257,7 +266,7 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
         allAspects = dictionaryService.getAllAspects();
     }
-
+    
     /*
      * Create the XML document from the file location
      */
@@ -1051,10 +1060,6 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
 
     }
 
-    private ConcurrentHashMap<RequiredKey, Set<PermissionReference>> requiredPermissionsCache = new ConcurrentHashMap<RequiredKey, Set<PermissionReference>>(1024);
-
-    private PermissionGroup group;
-
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
     {
         // Cache lookup as this is static
@@ -1083,6 +1088,33 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
         return answer;
     }
 
+    public Set<PermissionReference> getUnconditionalRequiredPermissions(PermissionReference required, RequiredPermission.On on)
+    {
+        // Cache lookup as this is static
+        if(required == null)
+        {
+            return Collections.<PermissionReference>emptySet();
+        }
+        Pair<PermissionReference, RequiredPermission.On> key = new Pair<PermissionReference, RequiredPermission.On>(required, on);
+
+        Set<PermissionReference> answer = unconditionalRequiredPermissionsCache.get(key);
+        if (answer == null)
+        {
+            PermissionGroup pg = getBasePermissionGroupOrNull(getPermissionGroupOrNull(required));
+            if (pg == null)
+            {
+                answer = getRequirementsForPermission(required, on);
+            }
+            else
+            {
+                answer = getUnconditionalRequirementsForPermissionGroup(pg, on);
+            }
+            answer = Collections.unmodifiableSet(answer);
+            unconditionalRequiredPermissionsCache.put(key, answer);
+        }
+        return answer;
+    }
+    
     /**
      * Get the requirements for a permission
      * 
@@ -1155,6 +1187,45 @@ public class PermissionModel extends AbstractLifecycleBean implements ModelDAO
         return requiredPermissions;
     }
 
+    private Set<PermissionReference> getUnconditionalRequirementsForPermissionGroup(PermissionGroup target, RequiredPermission.On on)
+    {
+        HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>(16, 1.0f);
+        if (target == null)
+        {
+            return requiredPermissions;
+        }
+        for (PermissionSet ps : permissionSets.values())
+        {
+            for (PermissionGroup pg : ps.getPermissionGroups())
+            {
+                PermissionGroup base = getBasePermissionGroupOrNull(pg);
+                if ((target.equals(base) || target.isAllowFullControl()) && (!base.isTypeRequired()))
+                {
+                    // Add includes
+                    for (PermissionReference pr : pg.getIncludedPermissionGroups())
+                    {
+                        requiredPermissions.addAll(getUnconditionalRequirementsForPermissionGroup(getBasePermissionGroupOrNull(getPermissionGroupOrNull(pr)), on));
+                    }
+                }
+            }
+            for (Permission p : ps.getPermissions())
+            {
+                for (PermissionReference grantedTo : p.getGrantedToGroups())
+                {
+                    PermissionGroup base = getBasePermissionGroupOrNull(getPermissionGroupOrNull(grantedTo));
+                    if ((target.equals(base) || target.isAllowFullControl()) && (!base.isTypeRequired()))
+                    {
+                        if (on == RequiredPermission.On.NODE)
+                        {
+                            requiredPermissions.add(p);
+                        }
+                    }
+                }
+            }
+        }
+        return requiredPermissions;
+    }
+    
     /**
      * Check type specifc extension of permission sets.
      * 

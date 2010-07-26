@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.domain.permissions;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.util.EqualsHelper;
 
@@ -34,9 +36,11 @@ import org.alfresco.util.EqualsHelper;
  * @author janv
  * @since 3.4
  */
-public class AclEntity implements Acl
+public class AclEntity implements Acl, Serializable
 {
-    private Long id;
+	private static final long serialVersionUID = 1L;
+	
+	private Long id;
     private Long version;
     private String aclId;
     private boolean latest;

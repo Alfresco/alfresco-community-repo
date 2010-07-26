@@ -90,6 +90,8 @@ public class EhCacheTracerJob implements Job
         for (String cacheName : cacheNames)
         {
             Cache cache = cacheManager.getCache(cacheName);
+            //cache.getCacheEventNotificationService().
+//            cache.registerCacheUsageListener(cacheUsageListener)
             if (cache == null)  // perhaps a temporary cache
             {
                 continue;

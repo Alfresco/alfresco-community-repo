@@ -166,7 +166,7 @@ public class SearchServiceTest extends TestCase
         sp.setQuery("PATH:\"//*\"");
         sp.addStore(rootNodeRef.getStoreRef());
         ResultSet results = pubSearchService.query(sp);
-        assertEquals(results.length(), 10);
+        assertEquals(10, results.length());
         assertNotNull(results.getResultSetMetaData());
         assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
         assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);

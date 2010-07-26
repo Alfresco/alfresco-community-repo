@@ -105,8 +105,8 @@
    <bean class="org.springframework.extensions.webscripts.TemplateProcessorRegistrar" init-method="init">
       <property name="registry" ref="webscripts.repo.registry.templateprocessor" />
       <property name="factory" ref="webscripts.repo.templateprocessor.factory" />
-	  <property name="name"><value>Repository Template Processor</value></property>
-	  <property name="extension"><value>ftl</value></property>
+      <property name="name"><value>Repository Template Processor</value></property>
+      <property name="extension"><value>ftl</value></property>
    </bean>
 
    <bean class="org.springframework.extensions.webscripts.ScriptProcessorRegistrar" init-method="init">
@@ -626,67 +626,91 @@
     <!--                                   -->
     
     <!-- abstract rule web script -->
-	<bean id="abstractRuleWebScript" class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript" parent="webscript" abstract="true">
-		<property name="nodeService" ref="NodeService"/>
-    	<property name="ruleService" ref="RuleService"/>      
-		<property name="actionService" ref="ActionService"/>
-		<property name="dictionaryService" ref="DictionaryService"/>
-		<property name="fileFolderService" ref="FileFolderService"/>
-		<property name="namespaceService" ref="NamespaceService" />
+    <bean id="abstractRuleWebScript" class="org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript" parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="ruleService" ref="RuleService"/>      
+        <property name="actionService" ref="ActionService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="namespaceService" ref="NamespaceService" />
     </bean>
    
     <!-- Basic web scripts -->
-    <bean id="webscript.org.alfresco.repository.rule.ruletypes.get" class="org.alfresco.repo.web.scripts.rule.RuleTypesGet" parent="abstractRuleWebScript">    	      
-	</bean>
-   
-	<bean id="webscript.org.alfresco.repository.rule.actiondefinitions.get" class="org.alfresco.repo.web.scripts.rule.ActionDefinitionsGet" parent="abstractRuleWebScript">		      
-	</bean>
-    
-	<bean id="webscript.org.alfresco.repository.rule.actionconditiondefinitions.get" class="org.alfresco.repo.web.scripts.rule.ActionConditionDefinitionsGet" parent="abstractRuleWebScript">		      
+    <bean id="webscript.org.alfresco.repository.rule.ruletypes.get" class="org.alfresco.repo.web.scripts.rule.RuleTypesGet" parent="abstractRuleWebScript">              
     </bean>
    
-	<!-- delete rule web script -->
-	<bean id="webscript.org.alfresco.repository.rule.rule.delete" class="org.alfresco.repo.web.scripts.rule.RuleDelete" parent="abstractRuleWebScript">		      
-	</bean>
+    <bean id="webscript.org.alfresco.repository.rule.actiondefinitions.get" class="org.alfresco.repo.web.scripts.rule.ActionDefinitionsGet" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.rule.actionconditiondefinitions.get" class="org.alfresco.repo.web.scripts.rule.ActionConditionDefinitionsGet" parent="abstractRuleWebScript">              
+    </bean>
+   
+    <!-- delete rule web script -->
+    <bean id="webscript.org.alfresco.repository.rule.rule.delete" class="org.alfresco.repo.web.scripts.rule.RuleDelete" parent="abstractRuleWebScript">              
+    </bean>
     
     <!-- get rule details web script -->
-    <bean id="webscript.org.alfresco.repository.rule.rule.get" class="org.alfresco.repo.web.scripts.rule.RuleGet" parent="abstractRuleWebScript">		      
-	</bean>
-	
-	<!-- create rule web script -->
-	<bean id="webscript.org.alfresco.repository.rule.rule.post" class="org.alfresco.repo.web.scripts.rule.RulePost" parent="abstractRuleWebScript">		      
-	</bean>
-	
-	<!-- update rule web script -->
-	<bean id="webscript.org.alfresco.repository.rule.rule.put" class="org.alfresco.repo.web.scripts.rule.RulePut" parent="abstractRuleWebScript">		      
-	</bean>
+    <bean id="webscript.org.alfresco.repository.rule.rule.get" class="org.alfresco.repo.web.scripts.rule.RuleGet" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <!-- create rule web script -->
+    <bean id="webscript.org.alfresco.repository.rule.rule.post" class="org.alfresco.repo.web.scripts.rule.RulePost" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <!-- update rule web script -->
+    <bean id="webscript.org.alfresco.repository.rule.rule.put" class="org.alfresco.repo.web.scripts.rule.RulePut" parent="abstractRuleWebScript">              
+    </bean>
    
-	<!-- get all owned rules for node web script -->
-	<bean id="webscript.org.alfresco.repository.rule.rules.get" class="org.alfresco.repo.web.scripts.rule.RulesGet" parent="abstractRuleWebScript">		      
-	</bean>
+    <!-- get all owned rules for node web script -->
+    <bean id="webscript.org.alfresco.repository.rule.rules.get" class="org.alfresco.repo.web.scripts.rule.RulesGet" parent="abstractRuleWebScript">              
+    </bean>
 
-	<bean id="webscript.org.alfresco.repository.transfer.transfer.post" class="org.alfresco.repo.web.scripts.transfer.TransferWebScript" parent="webscript" >
-		<property name="enabled"><value>${transferservice.receiver.enabled}</value></property>
-		<property name="commandProcessors">
-			<map>
-				<entry key="test">
-					<bean class="org.alfresco.repo.web.scripts.transfer.TestCredentialsCommandProcessor" />
-				</entry>
-				<entry key="begin">
-					<bean class="org.alfresco.repo.web.scripts.transfer.BeginTransferCommandProcessor">
-						<property name="receiver" ref="transferReceiver" />
-					</bean>
-				</entry>
-				<entry key="post-snapshot">
-					<bean class="org.alfresco.repo.web.scripts.transfer.PostSnapshotCommandProcessor">
-						<property name="receiver" ref="transferReceiver" />
-					</bean>
-				</entry>
-				<entry key="post-content">
-					<bean class="org.alfresco.repo.web.scripts.transfer.PostContentCommandProcessor">
-						<property name="receiver" ref="transferReceiver" />
-					</bean>
-				</entry>
+    <!-- get all inherited rules for node web script -->
+    <bean id="webscript.org.alfresco.repository.rule.inheritedrules.get" class="org.alfresco.repo.web.scripts.rule.InheritedRulesGet" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <!-- get ruleset for node web script -->
+    <bean id="webscript.org.alfresco.repository.rule.ruleset.get" class="org.alfresco.repo.web.scripts.rule.RulesetGet" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <!-- get action constraints collection -->
+    <bean id="webscript.org.alfresco.repository.rule.actionConstraints.get" class="org.alfresco.repo.web.scripts.rule.ActionConstraintsGet" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <!-- get specified action constraint -->
+    <bean id="webscript.org.alfresco.repository.rule.actionConstraint.get" class="org.alfresco.repo.web.scripts.rule.ActionConstraintGet" parent="abstractRuleWebScript">              
+    </bean>
+    
+    <!-- adds a new action to the execution queue. -->
+    <bean id="webscript.org.alfresco.repository.rule.actionQueue.post" class="org.alfresco.repo.web.scripts.rule.ActionQueuePost" parent="abstractRuleWebScript">
+    </bean>
+    
+    <!--                                   -->
+    <!--      Transfer Service REST API    -->
+    <!--                                   -->
+    
+    <bean id="webscript.org.alfresco.repository.transfer.transfer.post" class="org.alfresco.repo.web.scripts.transfer.TransferWebScript" parent="webscript" >
+        <property name="enabled"><value>${transferservice.receiver.enabled}</value></property>
+        <property name="commandProcessors">
+            <map>
+                <entry key="test">
+                    <bean class="org.alfresco.repo.web.scripts.transfer.TestCredentialsCommandProcessor" />
+                </entry>
+                <entry key="begin">
+                    <bean class="org.alfresco.repo.web.scripts.transfer.BeginTransferCommandProcessor">
+                        <property name="receiver" ref="transferReceiver" />
+                    </bean>
+                </entry>
+                <entry key="post-snapshot">
+                    <bean class="org.alfresco.repo.web.scripts.transfer.PostSnapshotCommandProcessor">
+                        <property name="receiver" ref="transferReceiver" />
+                    </bean>
+                </entry>
+                <entry key="post-content">
+                    <bean class="org.alfresco.repo.web.scripts.transfer.PostContentCommandProcessor">
+                        <property name="receiver" ref="transferReceiver" />
+                    </bean>
+                </entry>
             <entry key="prepare">
                <bean class="org.alfresco.repo.web.scripts.transfer.PrepareTransferCommandProcessor">
                   <property name="receiver" ref="transferReceiver" />
@@ -712,29 +736,10 @@
                   <property name="receiver" ref="transferReceiver" />
                </bean>
             </entry>
-			</map>
-		</property>
-	</bean>
-	<!-- get all inherited rules for node web script -->
-	<bean id="webscript.org.alfresco.repository.rule.inheritedrules.get" class="org.alfresco.repo.web.scripts.rule.InheritedRulesGet" parent="abstractRuleWebScript">		      
-	</bean>
-	
-	<!-- get ruleset for node web script -->
-	<bean id="webscript.org.alfresco.repository.rule.ruleset.get" class="org.alfresco.repo.web.scripts.rule.RulesetGet" parent="abstractRuleWebScript">		      
-	</bean>
-	
-	<!-- get action constraints collection -->
-	<bean id="webscript.org.alfresco.repository.rule.actionConstraints.get" class="org.alfresco.repo.web.scripts.rule.ActionConstraintsGet" parent="abstractRuleWebScript">		      
-	</bean>
-	
-	<!-- get specified action constraint -->
-	<bean id="webscript.org.alfresco.repository.rule.actionConstraint.get" class="org.alfresco.repo.web.scripts.rule.ActionConstraintGet" parent="abstractRuleWebScript">		      
-	</bean>
-	
-    <!-- adds a new action to the execution queue. -->
-    <bean id="webscript.org.alfresco.repository.rule.actionQueue.post" class="org.alfresco.repo.web.scripts.rule.ActionQueuePost" parent="abstractRuleWebScript">
+            </map>
+        </property>
     </bean>
-    
+
     <!--                                     -->
     <!--      Rating Service REST API        -->
     <!--                                     -->
@@ -768,7 +773,7 @@
           parent="abstractRatingWebScript">
     </bean>
     
-	
+    
     <!--                                   -->
     <!--      Workflow Service REST API        -->
     <!--                                   -->

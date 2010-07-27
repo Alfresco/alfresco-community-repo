@@ -498,6 +498,23 @@
     </cache>
 
     <cache
+        name="org.alfresco.cache.readersCache"
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        >
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
         name="org.alfresco.cache.nodeOwnerCache"
         maxElementsInMemory="20000"
         eternal="true"

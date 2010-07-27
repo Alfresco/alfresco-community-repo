@@ -19,6 +19,12 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
 public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDefinition>
 {
     private static final Log logger = LogFactory.getLog(AssociationFieldProcessor.class);
@@ -50,7 +56,7 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
     public Field makeField(AssociationDefinition assocDef, Object value, FieldGroup group)
     {
         AssociationFieldDefinition fieldDef = makeAssociationFieldDefinition(assocDef, group);
-        return new ContentField(assocDef, fieldDef, value);
+        return new ContentModelField(assocDef, fieldDef, value);
     }
 
     /**

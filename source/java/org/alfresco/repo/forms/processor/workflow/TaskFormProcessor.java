@@ -47,7 +47,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
+ *
  */
 public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTask, WorkflowTask>
 {

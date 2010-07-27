@@ -28,6 +28,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
 public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDefinition> implements InitializingBean
 {
     private static final Log logger = LogFactory.getLog(DefaultFieldProcessor.class);

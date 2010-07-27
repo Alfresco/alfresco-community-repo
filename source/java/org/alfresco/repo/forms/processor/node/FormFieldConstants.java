@@ -20,6 +20,7 @@
 package org.alfresco.repo.forms.processor.node;
 
 /**
+ * @since 3.4
  * @author Nick Smith
  */
 public interface FormFieldConstants
@@ -43,13 +44,11 @@ public interface FormFieldConstants
 
     public static final String ASSOC_DATA_REMOVED_SUFFIX = DATA_KEY_SEPARATOR + "removed";
 
-    public static final String TRANSIENT_MIMETYPE = "mimetype";
-
-    public static final String TRANSIENT_SIZE = "size";
-
-    public static final String TRANSIENT_ENCODING = "encoding";
-
     public static final String ADDED = "added";
 
     public static final String REMOVED = "removed";
+    
+    /** Protected constants */
+    public static final String DEFAULT_CONTENT_MIMETYPE = "text/plain";
+    
 }

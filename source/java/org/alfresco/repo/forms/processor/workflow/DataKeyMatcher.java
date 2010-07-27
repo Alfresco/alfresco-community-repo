@@ -28,6 +28,8 @@ import org.alfresco.service.namespace.QName;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
  *
  */

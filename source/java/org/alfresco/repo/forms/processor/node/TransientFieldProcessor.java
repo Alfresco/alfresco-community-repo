@@ -24,6 +24,12 @@ import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.processor.AbstractFieldProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
 public abstract class TransientFieldProcessor extends AbstractFieldProcessor<TransientValueGetter>
 {
     /* (non-Javadoc)
@@ -37,7 +43,7 @@ public abstract class TransientFieldProcessor extends AbstractFieldProcessor<Tra
         Object value = getValue(fieldName, typedData);
         if (transientPropDef != null)
         {
-            fieldInfo = new ContentField(transientPropDef, value);
+            fieldInfo = new ContentModelField(transientPropDef, value);
         }
         return fieldInfo;
     }

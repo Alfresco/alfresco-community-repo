@@ -38,6 +38,7 @@ import org.alfresco.service.namespace.QName;
  * Simple data transfer object used by the ContentModelFormProcessor and its
  * descendants.
  * 
+ * @since 3.4
  * @author Nick Smith
  */
 public class ItemData<ItemType> implements TransientValueGetter

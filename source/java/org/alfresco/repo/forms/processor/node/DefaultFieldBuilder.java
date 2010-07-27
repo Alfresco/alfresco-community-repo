@@ -32,7 +32,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
+ *
  */
 public class DefaultFieldBuilder
 {

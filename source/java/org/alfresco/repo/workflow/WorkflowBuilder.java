@@ -17,14 +17,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.forms.processor.workflow;
+package org.alfresco.repo.workflow;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -36,10 +35,11 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 
 /**
- * A helper class used to start workflows. The builder accumuates all the
- * changes to be made to the list of parameters and package items, then starts a
- * new workflow once the build() method is called.
+ * A helper class used to start workflows. The builder is a stateful object that
+ * accumulates the various parameters and package items used to start the
+ * workflow. The workflow is started when the build() method is called.
  * 
+ * @since 3.4
  * @author Nick Smith
  */
 public class WorkflowBuilder

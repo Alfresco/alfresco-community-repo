@@ -34,8 +34,11 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
  *
+ * @param <T>
  */
 public abstract class ContentModelFormPersister<T> implements FormPersister<T>
 {

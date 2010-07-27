@@ -24,6 +24,11 @@ import java.util.Map;
 
 import org.alfresco.repo.forms.Field;
 
+/**
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
 public class FieldProcessorRegistry 
 {
     private final Map<String, FieldProcessor> processors = new HashMap<String, FieldProcessor>();

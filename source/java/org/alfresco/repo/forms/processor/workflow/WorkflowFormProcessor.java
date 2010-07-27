@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * Temporary FormProcessor implementation that can generate and persist 
  * Form objects for workflow definitions.
  *
+ *@since 3.4
  * @author Nick Smith
  */
 public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<WorkflowDefinition, WorkflowInstance>

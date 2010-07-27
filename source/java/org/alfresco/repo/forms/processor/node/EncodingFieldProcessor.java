@@ -20,7 +20,6 @@
 package org.alfresco.repo.forms.processor.node;
 
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIENT_SIZE;
 
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
@@ -29,11 +28,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-public class TransientSizeFieldProcessor extends TransientFieldProcessor 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
+public class EncodingFieldProcessor extends TransientFieldProcessor
 {
-    private static final Log logger = LogFactory.getLog(TransientSizeFieldProcessor.class);
-    private static final String MSG_SIZE_LABEL = "form_service.size.label";
-    private static final String MSG_SIZE_DESC = "form_service.size.description";
+    private static final Log logger = LogFactory.getLog(EncodingFieldProcessor.class);
+
+    public static final String KEY = "encoding";
+    
+    private static final String MSG_ENCODING_LABEL = "form_service.encoding.label";
+    private static final String MSG_ENCODING_DESC = "form_service.encoding.description";
 
     @Override
     protected Log getLogger() 
@@ -44,19 +52,18 @@ public class TransientSizeFieldProcessor extends TransientFieldProcessor
     @Override
     protected FieldDefinition makeTransientFieldDefinition() 
     {
-        String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_SIZE;
-        PropertyFieldDefinition sizeField = new PropertyFieldDefinition(TRANSIENT_SIZE, 
-                    DataTypeDefinition.LONG.getLocalName());
-        sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
-        sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
-        sizeField.setDataKeyName(dataKeyName);
-        sizeField.setProtectedField(true);
-        return sizeField;
+        String dataKeyName = PROP_DATA_PREFIX + KEY;
+        PropertyFieldDefinition encodingField = new PropertyFieldDefinition(KEY, 
+                    DataTypeDefinition.TEXT.getLocalName());
+        encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
+        encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
+        encodingField.setDataKeyName(dataKeyName);
+        return encodingField;
     }
 
     @Override
     protected String getRegistryKey() 
     {
-        return FormFieldConstants.TRANSIENT_SIZE;
+        return KEY;
     }
 }

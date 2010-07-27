@@ -22,6 +22,8 @@ package org.alfresco.repo.forms.processor.workflow;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
  *
  */
@@ -93,24 +95,4 @@ public class DataKeyInfo
         return isAdd;
     }
 
-    /**
-     * Implements the visitor pattern. Takes a DataKeyInfoVisitor and calls the
-     * appropriate visit method based on the fieldType.
-     * 
-     * @param <T>
-     * @param visitor
-     * @return
-     */
-    public <T> T visit(DataKeyInfoVisitor<T> visitor)
-    {
-        switch(fieldType)
-        {
-        case ASSOCIATION: return visitor.visitAssociation(this);
-        case PROPERTY: return visitor.visitProperty(this);
-        case TRANSIENT_ASSOCIATION: return visitor.visitTransientAssociation(this);
-        case TRANSIENT_PROPERTY: return visitor.visitTransientProperty(this);
-        default: return null; //Should never be reached.
-        }
-    }
-    
 }

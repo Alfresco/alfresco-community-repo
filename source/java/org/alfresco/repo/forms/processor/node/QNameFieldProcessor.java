@@ -30,6 +30,13 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ * @param <Type>
+ */
 public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition> extends AbstractFieldProcessor<ItemData<?>>
 {
     protected NamespaceService namespaceService;

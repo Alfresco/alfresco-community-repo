@@ -30,6 +30,7 @@ import java.util.Map;
 
 /**
  * Simple DTO containing various objects needed to generate Forms.
+ * @since 3.4
  * @author Nick Smith
  */
 public class FormCreationData

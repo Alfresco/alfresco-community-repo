@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.forms.processor.workflow;
+package org.alfresco.repo.workflow;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,6 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,7 +41,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * This helper class is used to manage a workflow package. The manager is a
+ * stateful object which accumulates all the changes to be made to the package
+ * (such as adding and removing package items). These changes are then applied
+ * to the package when either the create() or update() method is called.
+ * 
+ * @since 3.4
  * @author Nick Smith
+ * 
  */
 public class PackageManager
 {

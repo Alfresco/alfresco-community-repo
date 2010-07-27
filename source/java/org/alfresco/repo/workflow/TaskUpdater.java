@@ -23,7 +23,7 @@
  * http://www.alfresco.com/legal/licensing"
  */
 
-package org.alfresco.repo.forms.processor.workflow;
+package org.alfresco.repo.workflow;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -39,9 +39,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A utility class for updating workflow tasks. This is a stateful object that
- * accumulates a set of updates to a task and then commits all the updates when
- * the update() method is called.
+ * A helper class for updating and transitioning {@link WorkflowTask
+ * WorkflowTasks}. This is a stateful object that accumulates a set of updates
+ * to a task and then commits all the updates when either the update() or
+ * transition() method is called.
  * 
  * @since 3.4
  * @author Nick Smith

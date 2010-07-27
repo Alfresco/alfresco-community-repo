@@ -20,7 +20,6 @@
 package org.alfresco.repo.forms.processor.node;
 
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIENT_ENCODING;
 
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
@@ -29,34 +28,40 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-public class TransientEncodingFieldProcessor extends TransientFieldProcessor
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
+public class MimetypeFieldProcessor extends TransientFieldProcessor
 {
-    private static final Log logger = LogFactory.getLog(TransientEncodingFieldProcessor.class);
+	private static final Log logger = LogFactory.getLog(MimetypeFieldProcessor.class);
+	
+	public static final String KEY = "mimetype";
 
-    private static final String MSG_ENCODING_LABEL = "form_service.encoding.label";
-    private static final String MSG_ENCODING_DESC = "form_service.encoding.description";
+	private static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
+    private static final String MSG_MIMETYPE_DESC = "form_service.mimetype.description";
 
-    @Override
-    protected Log getLogger() 
-    {
-        return logger;
+	@Override
+	protected Log getLogger() {
+		return logger;
+	}
+	
+	@Override
+	protected FieldDefinition makeTransientFieldDefinition() {
+        String dataKeyName = PROP_DATA_PREFIX + KEY;
+        PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(KEY, DataTypeDefinition.TEXT
+                    .getLocalName());
+        mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
+        mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
+        mimetypeField.setDataKeyName(dataKeyName);
+        return mimetypeField;
     }
 
-    @Override
-    protected FieldDefinition makeTransientFieldDefinition() 
-    {
-        String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_ENCODING;
-        PropertyFieldDefinition encodingField = new PropertyFieldDefinition(TRANSIENT_ENCODING, 
-                    DataTypeDefinition.TEXT.getLocalName());
-        encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
-        encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
-        encodingField.setDataKeyName(dataKeyName);
-        return encodingField;
-    }
-
-    @Override
+	@Override
     protected String getRegistryKey() 
-    {
-        return FormFieldConstants.TRANSIENT_ENCODING;
-    }
+	{
+		 return KEY;
+	}
 }

@@ -40,7 +40,10 @@ import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
+ *
  */
 public class FieldProcessorTest extends TestCase
 {

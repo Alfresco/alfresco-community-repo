@@ -35,7 +35,12 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.ParameterCheck;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
+ *
+ * @param <ItemType>
+ * @param <PersistType>
  */
 public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> extends ContentModelFormProcessor<ItemType, PersistType>
 {

@@ -30,14 +30,15 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Nick Smith
+ * @since 3.4
  */
-public class ContentField implements Field
+public class ContentModelField implements Field
 {
     private final FieldDefinition fieldDefinition;
     private final ClassAttributeDefinition classDefinition;
     private final Object value;
     
-    public ContentField(PropertyDefinition propertyDefinition, 
+    public ContentModelField(PropertyDefinition propertyDefinition, 
             PropertyFieldDefinition fieldDef, Object value)
     {
         this.classDefinition = propertyDefinition;
@@ -45,7 +46,7 @@ public class ContentField implements Field
         this.value = value;
     }
 
-    public ContentField(AssociationDefinition assocDefinition, 
+    public ContentModelField(AssociationDefinition assocDefinition, 
             AssociationFieldDefinition fieldDef, Object value)
     {
         this.classDefinition = assocDefinition;
@@ -57,7 +58,7 @@ public class ContentField implements Field
      * This constructor should only be used to create FieldInfo for transient properties such as encoding, mimetype or size.
      * @param fieldDef The PropertyFieldDefinition for the transient property.
      */
-    public ContentField(FieldDefinition fieldDef, Object value)
+    public ContentModelField(FieldDefinition fieldDef, Object value)
     {
         this.classDefinition = null;
         this.fieldDefinition = fieldDef;

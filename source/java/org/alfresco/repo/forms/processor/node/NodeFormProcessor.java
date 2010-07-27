@@ -48,6 +48,7 @@ import org.apache.commons.logging.LogFactory;
  * repository nodes.
  * 
  * @author Gavin Cornwell
+ * @author Nick Smith
  */
 public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRef>
 {
@@ -193,9 +194,9 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         ContentData contentData = getContentData(item);
         if(contentData!=null)
         {
-            values.put(TRANSIENT_ENCODING, contentData.getEncoding());
-            values.put(TRANSIENT_MIMETYPE, contentData.getMimetype());
-            values.put(TRANSIENT_SIZE, contentData.getSize());
+            values.put(EncodingFieldProcessor.KEY, contentData.getEncoding());
+            values.put(MimetypeFieldProcessor.KEY, contentData.getMimetype());
+            values.put(SizeFieldProcessor.KEY, contentData.getSize());
         }
         return values;
     }

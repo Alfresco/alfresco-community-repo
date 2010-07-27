@@ -32,6 +32,8 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DA
 
 /**
  * {@link FieldProcessor} for handling package contents when displaying Workflow and Task Forms.
+ * 
+ * @since 3.4
  * @author Nick Smith
  */
 public class PackageItemsFieldProcessor extends TransientFieldProcessor

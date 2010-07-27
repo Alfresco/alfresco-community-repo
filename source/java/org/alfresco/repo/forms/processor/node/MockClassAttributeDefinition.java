@@ -40,7 +40,10 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
+ *
  */
 public class MockClassAttributeDefinition implements PropertyDefinition, AssociationDefinition
 {

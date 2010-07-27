@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.NamespaceService;
  * {@link PropertyDefinition PropertyDefinitions} and
  * {@link AssociationDefinition AssociationDefinitions}
  * 
+ * @since 3.4
  * @author Nick Smith
  * 
  */

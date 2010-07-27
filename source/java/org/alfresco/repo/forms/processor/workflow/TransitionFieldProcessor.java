@@ -29,6 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
  *
  */

@@ -39,11 +39,14 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
+
 /**
  * FormProcessor implementation that can generate and persist Form objects for
  * types in the Alfresco content model.
  * 
  * @author Gavin Cornwell
+ * @author 3.4
  */
 public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition, NodeRef>
 {

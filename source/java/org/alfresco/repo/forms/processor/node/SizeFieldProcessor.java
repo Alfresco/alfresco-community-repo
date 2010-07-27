@@ -20,7 +20,6 @@
 package org.alfresco.repo.forms.processor.node;
 
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.TRANSIENT_MIMETYPE;
 
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
@@ -29,31 +28,44 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-public class TransientMimetypeFieldProcessor extends TransientFieldProcessor
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
+public class SizeFieldProcessor extends TransientFieldProcessor 
 {
-	private static final Log logger = LogFactory.getLog(TransientMimetypeFieldProcessor.class);
-    private static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
-    private static final String MSG_MIMETYPE_DESC = "form_service.mimetype.description";
+    private static final Log logger = LogFactory.getLog(SizeFieldProcessor.class);
+    
+    
+    public static final String KEY = "size";
+    
+    private static final String MSG_SIZE_LABEL = "form_service.size.label";
+    private static final String MSG_SIZE_DESC = "form_service.size.description";
 
-	@Override
-	protected Log getLogger() {
-		return logger;
-	}
-	
-	@Override
-	protected FieldDefinition makeTransientFieldDefinition() {
-        String dataKeyName = PROP_DATA_PREFIX + TRANSIENT_MIMETYPE;
-        PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT
-                    .getLocalName());
-        mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
-        mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
-        mimetypeField.setDataKeyName(dataKeyName);
-        return mimetypeField;
+    @Override
+    protected Log getLogger() 
+    {
+        return logger;
     }
 
-	@Override
+    @Override
+    protected FieldDefinition makeTransientFieldDefinition() 
+    {
+        String dataKeyName = PROP_DATA_PREFIX + KEY;
+        PropertyFieldDefinition sizeField = new PropertyFieldDefinition(KEY, 
+                    DataTypeDefinition.LONG.getLocalName());
+        sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
+        sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
+        sizeField.setDataKeyName(dataKeyName);
+        sizeField.setProtectedField(true);
+        return sizeField;
+    }
+
+    @Override
     protected String getRegistryKey() 
-	{
-		 return FormFieldConstants.TRANSIENT_MIMETYPE;
-	}
+    {
+        return KEY;
+    }
 }

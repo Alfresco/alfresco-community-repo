@@ -45,6 +45,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ */
 public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefinition>
 {
     private static final Log logger = LogFactory.getLog(PropertyFieldProcessor.class);
@@ -83,7 +89,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     public Field makeField(PropertyDefinition propDef, Object value, FieldGroup group)
     {
         PropertyFieldDefinition fieldDef = makePropertyFieldDefinition(propDef, group);
-        return new ContentField(propDef, fieldDef, value);
+        return new ContentModelField(propDef, fieldDef, value);
     }
 
     @Override

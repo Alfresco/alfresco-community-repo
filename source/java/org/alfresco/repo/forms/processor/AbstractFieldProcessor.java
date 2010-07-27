@@ -25,6 +25,13 @@ import org.apache.commons.logging.Log;
 
 import com.sun.star.lang.IllegalArgumentException;
 
+/**
+ * 
+ * @since 3.4
+ * @author Nick Smith
+ *
+ * @param <Data>
+ */
 public abstract class AbstractFieldProcessor<Data> implements FieldProcessor
 {
     /* (non-Javadoc)

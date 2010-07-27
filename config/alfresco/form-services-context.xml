@@ -137,15 +137,15 @@
         parent="qnameFieldProcessor" />
 
     <bean id="encodingFieldProcessor"
-        class="org.alfresco.repo.forms.processor.node.TransientEncodingFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.EncodingFieldProcessor"
         parent="baseFieldProcessor" />
 
     <bean id="mimetypeFieldProcessor"
-        class="org.alfresco.repo.forms.processor.node.TransientMimetypeFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.MimetypeFieldProcessor"
         parent="baseFieldProcessor" />
 
     <bean id="sizeFieldProcessor"
-        class="org.alfresco.repo.forms.processor.node.TransientSizeFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.SizeFieldProcessor"
         parent="baseFieldProcessor" />
 
     <bean id="defaultFieldProcessor"

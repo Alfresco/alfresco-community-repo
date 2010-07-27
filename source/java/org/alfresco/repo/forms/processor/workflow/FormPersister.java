@@ -21,10 +21,12 @@ package org.alfresco.repo.forms.processor.workflow;
 
 import org.alfresco.repo.forms.FormData.FieldData;
 
-
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
  *
+ * @param <T>
  */
 public interface FormPersister<T>
 {

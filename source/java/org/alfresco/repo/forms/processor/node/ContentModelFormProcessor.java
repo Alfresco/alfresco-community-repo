@@ -18,6 +18,13 @@
  */
 package org.alfresco.repo.forms.processor.node;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ON;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DEFAULT_CONTENT_MIMETYPE;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +44,6 @@ import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
-import org.alfresco.repo.forms.processor.workflow.DataKeyMatcher;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -70,48 +76,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * form processors that deal with Alfresco content models i.e. types and nodes.
  * 
  * @author Gavin Cornwell
+ * @author Nick Smith
  */
 public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             FilteredFormProcessor<ItemType, PersistType>
 {
-    /** Public constants */
-    public static final String ON = "on";
-
-    public static final String PROP = "prop";
-
-    public static final String ASSOC = "assoc";
-
-    public static final String DATA_KEY_SEPARATOR = "_";
-
-    public static final String PROP_DATA_PREFIX = PROP + DATA_KEY_SEPARATOR;
-
-    public static final String ASSOC_DATA_PREFIX = ASSOC + DATA_KEY_SEPARATOR;
-
-    public static final String ASSOC_DATA_ADDED_SUFFIX = DATA_KEY_SEPARATOR + "added";
-
-    public static final String ASSOC_DATA_REMOVED_SUFFIX = DATA_KEY_SEPARATOR + "removed";
-
-    public static final String TRANSIENT_MIMETYPE = "mimetype";
-
-    public static final String TRANSIENT_SIZE = "size";
-
-    public static final String TRANSIENT_ENCODING = "encoding";
-
-    /** Protected constants */
-    protected static final String DEFAULT_CONTENT_MIMETYPE = "text/plain";
-    
-    protected static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
-
-    protected static final String MSG_MIMETYPE_DESC = "form_service.mimetype.description";
-
-    protected static final String MSG_ENCODING_LABEL = "form_service.encoding.label";
-
-    protected static final String MSG_ENCODING_DESC = "form_service.encoding.description";
-
-    protected static final String MSG_SIZE_LABEL = "form_service.size.label";
-
-    protected static final String MSG_SIZE_DESC = "form_service.size.description";
-
     /** Services */
     protected NodeService nodeService;
 
@@ -144,8 +113,6 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * parts.
      */
     protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "([a-zA-Z0-9]+)_(.*)(_[a-zA-Z]+)");
-
-    private DataKeyMatcher keyMatcher;
 
     /**
      * Sets the node service
@@ -185,7 +152,6 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-        this.keyMatcher = new DataKeyMatcher(namespaceService);
     }
     
     /**
@@ -509,15 +475,15 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             {
                 String fieldName = tppm.group(1);
 
-                if (fieldName.equals(TRANSIENT_MIMETYPE))
+                if (fieldName.equals(MimetypeFieldProcessor.KEY))
                 {
                     processMimetypePropertyPersist(nodeRef, fieldData, propsToPersist);
                 }
-                else if (fieldName.equals(TRANSIENT_ENCODING))
+                else if (fieldName.equals(EncodingFieldProcessor.KEY))
                 {
                     processEncodingPropertyPersist(nodeRef, fieldData, propsToPersist);
                 }
-                else if (fieldName.equals(TRANSIENT_SIZE))
+                else if (fieldName.equals(SizeFieldProcessor.KEY))
                 {
                     // the size property is well known but should never be
                     // persisted
@@ -814,7 +780,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         
         if (data != null)
         {
-            FieldData mimetypeField = data.getFieldData(PROP + DATA_KEY_SEPARATOR + TRANSIENT_MIMETYPE);
+            FieldData mimetypeField = data.getFieldData(PROP_DATA_PREFIX + MimetypeFieldProcessor.KEY);
             if (mimetypeField != null)
             {
                 String mimetypeFieldValue = (String)mimetypeField.getValue();

@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.workflow.TaskUpdater;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -34,6 +35,8 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
  *
  */

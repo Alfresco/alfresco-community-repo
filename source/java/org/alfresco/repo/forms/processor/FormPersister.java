@@ -20,7 +20,11 @@
 package org.alfresco.repo.forms.processor;
 
 /**
+ * 
+ * @since 3.4
  * @author Nick Smith
+ *
+ * @param <PersistType>
  */
 public interface FormPersister<PersistType>
 {

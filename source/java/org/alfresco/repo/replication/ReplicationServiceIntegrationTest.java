@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -79,6 +80,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private ReplicationService replicationService;
     private TransactionService transactionService;
     private TransferService transferService;
+    private ContentService contentService;
     private JobLockService jobLockService;
     private ActionService actionService;
     private NodeService nodeService;
@@ -114,6 +116,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         replicationService = (ReplicationService) ctx.getBean("replicationService");
         transactionService = (TransactionService) ctx.getBean("transactionService");
         transferService = (TransferService) ctx.getBean("transferService");
+        contentService = (ContentService) ctx.getBean("contentService");
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
         actionService = (ActionService) ctx.getBean("actionService");
         nodeService = (NodeService) ctx.getBean("nodeService");
@@ -662,6 +665,8 @@ public class ReplicationServiceIntegrationTest extends TestCase
        rd.getPayload().add(folder1);
        rd.getPayload().add(folder2a);
        
+       assertEquals(null, rd.getLocalTransferReport());
+       
        txn = transactionService.getUserTransaction();
        txn.begin();
        actionService.executeAction(rd, replicationRoot);
@@ -732,6 +737,22 @@ public class ReplicationServiceIntegrationTest extends TestCase
              fail("Found zone as " + r.getChildRef() + " but it shouldn't be transfered!");
           }
        }
+       
+       // Check we got a transfer report, and it looks sensible
+       NodeRef transferReport = rd.getLocalTransferReport();
+       assertNotNull(transferReport);
+       
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       ContentReader transferReader = 
+          contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
+       String report = transferReader.getContentString();
+       
+       assertTrue("XML not found in:\n" + report, report.contains("<?xml"));
+       assertTrue("Report XML not found in:\n" + report, report.contains("<report:transferReport"));
+       
+       txn.commit();
     }
     
     /**

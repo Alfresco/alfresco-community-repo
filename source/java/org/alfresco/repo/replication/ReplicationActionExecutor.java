@@ -182,6 +182,9 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          throw new ReplicationServiceException("Unable to execute a disabled replication definition");
       }
       
+      // Clear the previous transfer report reference
+      replicationDef.setLocalTransferReport(null);
+      
       // Lock the service - only one instance of the replication
       //  should occur at a time
       ReplicationDefinitionLockExtender lock =
@@ -205,11 +208,14 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
             buildTransferDefinition(replicationDef, toTransfer);
          
          // Off we go
-         transferService.transfer(
+         NodeRef transferReport = transferService.transfer(
                replicationDef.getTargetName(),
                transferDefinition,
                lock
          );
+         
+         // Record the details of the transfer report
+         replicationDef.setLocalTransferReport(transferReport);
       } catch(Exception e) {
          if(! (e instanceof TransferCancelledException))
          {

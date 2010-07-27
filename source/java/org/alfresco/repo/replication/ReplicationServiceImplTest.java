@@ -25,8 +25,6 @@ import junit.framework.TestCase;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * @author Nick Burch
@@ -39,8 +37,8 @@ public class ReplicationServiceImplTest extends TestCase
     private final ReplicationDefinitionPersisterImpl replicationDefinitionPersister = mock(ReplicationDefinitionPersisterImpl.class);
     private ReplicationServiceImpl replicationService;
     
-    private final QName ACTION_NAME  = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
-    private final QName ACTION_NAME2 = QName.createQName(NamespaceService.ALFRESCO_URI, "testName2");
+    private final String ACTION_NAME  = "testName";
+    private final String ACTION_NAME2 = "testName2";
 
     @Override
     protected void setUp() throws Exception

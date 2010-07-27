@@ -26,7 +26,6 @@ import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,7 +96,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * (org.alfresco.service.namespace.QName, java.lang.String)
     */
    public ReplicationDefinition createReplicationDefinition(
-         QName replicationDefinitionName, String description) {
+         String replicationDefinitionName, String description) {
       if (log.isDebugEnabled())
       {
           StringBuilder msg = new StringBuilder();
@@ -114,7 +113,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * org.alfresco.service.cmr.replication.ReplicationService#loadReplicationDefinition
     * (org.alfresco.service.namespace.QName)
     */
-   public ReplicationDefinition loadReplicationDefinition(QName replicationDefinitionName) {
+   public ReplicationDefinition loadReplicationDefinition(String replicationDefinitionName) {
       return replicationDefinitionPersister.loadReplicationDefinition(replicationDefinitionName);
    }
 
@@ -135,6 +134,17 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     */
    public List<ReplicationDefinition> loadReplicationDefinitions(String target) {
       return replicationDefinitionPersister.loadReplicationDefinitions(target); // TODO is this right
+   }
+   
+   /*
+    * (non-Javadoc)
+    * @see
+    * org.alfresco.service.cmr.replication.ReplicationService#renameReplicationDefinition
+    * (String,String)
+    */
+   public void renameReplicationDefinition(String oldReplicationName, String newReplicationName) 
+   {
+      replicationDefinitionPersister.renameReplicationDefinition(oldReplicationName, newReplicationName);
    }
 
    /*

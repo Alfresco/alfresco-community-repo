@@ -304,7 +304,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          try {
             // Quick try
             lockToken = jobLockService.getLock(
-                  replicationDef.getReplicationName(),
+                  replicationDef.getReplicationQName(),
                   replicationActionLockDuration,
                   5 * 1000, // Every 5 seconds
                   6         // 6 times = wait up to 30 seconds
@@ -312,7 +312,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          } catch(LockAcquisitionException e) {
             // Long try - every 30 seconds
             lockToken = jobLockService.getLock(
-                  replicationDef.getReplicationName(),
+                  replicationDef.getReplicationQName(),
                   replicationActionLockDuration,
                   retryTime,
                   retries
@@ -323,7 +323,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       {
          jobLockService.refreshLock(
                lockToken,
-               replicationDef.getReplicationName(),
+               replicationDef.getReplicationQName(),
                replicationActionLockDuration
          );
       }
@@ -331,7 +331,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       {
          jobLockService.releaseLock(
                lockToken,
-               replicationDef.getReplicationName()
+               replicationDef.getReplicationQName()
          );
       }
    }

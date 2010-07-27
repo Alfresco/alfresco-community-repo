@@ -22,7 +22,6 @@ package org.alfresco.repo.replication;
 import java.util.List;
 
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
-import org.alfresco.service.namespace.QName;
 
 /**
  * This class provides the implementation of ReplicationDefinition persistence.
@@ -53,16 +52,29 @@ public interface ReplicationDefinitionPersister
     void deleteReplicationDefinition(ReplicationDefinition replicationDefinition);
 
     /**
+     * This method renames a {@link ReplicationDefinition} that has been stored
+     * in the repository using the <code>save()</code> method.
+     * If no {@link ReplicationDefinition} exists in the repository with the specified
+     * replication name, then nothing happens.
+     * 
+     * @param oldReplicationName The unique identifier used to specify the
+     *            {@link ReplicationDefinition} to rename.
+     * @param newReplicationName The unique identifier used to specify the
+     *            new {@link ReplicationDefinition} name.
+     */
+    void renameReplicationDefinition(String oldReplicationName, String newReplicationName);
+    
+    /**
      * This method retrieves a {@link ReplicationDefinition} that has been stored
      * in the repository using the <code>save()</code> method. If no
      * {@link ReplicationDefinition} exists in the repository with the specified
-     * rendition name then this method returns null.
+     * replication name then this method returns null.
      * 
      * @param replicationName The unique identifier used to specify the
      *            {@link ReplicationDefinition} to retrieve.
      * @return The specified {@link ReplicationDefinition} or null.
      */
-    ReplicationDefinition loadReplicationDefinition(QName replicationName);
+    ReplicationDefinition loadReplicationDefinition(String replicationName);
 
     /**
      * This method retrieves the {@link ReplicationDefinition}s that have been

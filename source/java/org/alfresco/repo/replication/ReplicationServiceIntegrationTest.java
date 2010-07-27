@@ -100,8 +100,10 @@ public class ReplicationServiceIntegrationTest extends TestCase
     private NodeRef thumbnail2a_2; // Thumbnail extends content
     private NodeRef zone2a_3;      // Zone doesn't
     
-    private final QName ACTION_NAME  = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
-    private final QName ACTION_NAME2 = QName.createQName(NamespaceService.ALFRESCO_URI, "testName2");
+    private final String ACTION_NAME  = "testName";
+    private final String ACTION_NAME2 = "testName2";
+    private final QName  ACTION_QNAME  = QName.createQName(null, ACTION_NAME);
+    private final QName  ACTION_QNAME2 = QName.createQName(null, ACTION_NAME2);
     
     private final String TRANSFER_TARGET = "TestTransferTarget";
     
@@ -192,6 +194,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertNotNull(replicationAction);
        assertEquals("Test Definition", replicationAction.getDescription());
        assertEquals(ACTION_NAME, replicationAction.getReplicationName());
+       assertEquals(ACTION_QNAME, replicationAction.getReplicationQName());
        
        String id = replicationAction.getId();
        assertNotNull(id);
@@ -224,6 +227,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertNotNull(retrieved);
        assertEquals(initialId, retrieved.getId());
        assertEquals(ACTION_NAME, retrieved.getReplicationName());
+       assertEquals(ACTION_QNAME, retrieved.getReplicationQName());
        assertEquals("Test Definition", retrieved.getDescription());
        assertEquals(2, retrieved.getPayload().size());
        
@@ -233,6 +237,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertNotNull(second);
        assertEquals(initialId, second.getId());
        assertEquals(ACTION_NAME, second.getReplicationName());
+       assertEquals(ACTION_QNAME, second.getReplicationQName());
        assertEquals("Test Definition", second.getDescription());
        assertEquals(2, second.getPayload().size());
     }
@@ -393,6 +398,54 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(1, rdTT.getPayload().size());
        assertEquals(content1_1, rdTT.getPayload().get(0));
     }
+    
+    /**
+     * Tests that we can rename definitions
+     */
+    public void testRenaming() throws Exception
+    {
+       // Create one instance
+       ReplicationDefinition rdTT = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rdTT.setTargetName("TestTarget");
+       replicationService.saveReplicationDefinition(rdTT);
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // Rename it
+       replicationService.renameReplicationDefinition(ACTION_NAME, ACTION_NAME2);
+       
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertEquals(null, replicationService.loadReplicationDefinition(ACTION_NAME));
+       
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME2);
+       assertNotNull(rdTT);
+       assertEquals(ACTION_NAME2, rdTT.getReplicationName());
+       assertEquals(ACTION_QNAME2, rdTT.getReplicationQName());
+       
+       
+       // If the source name doesn't exist, does nothing
+       replicationService.renameReplicationDefinition(ACTION_NAME, ACTION_NAME2);
+       
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertEquals(null, replicationService.loadReplicationDefinition(ACTION_NAME));
+       
+       rdTT = replicationService.loadReplicationDefinition(ACTION_NAME2);
+       assertNotNull(rdTT);
+       assertEquals(ACTION_NAME2, rdTT.getReplicationName());
+       assertEquals(ACTION_QNAME2, rdTT.getReplicationQName());
+
+       
+       // Renaming to a duplicate name breaks
+       rdTT = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
+       rdTT.setTargetName("TestTarget");
+       replicationService.saveReplicationDefinition(rdTT);
+       assertEquals(2, replicationService.loadReplicationDefinitions().size());
+
+       try {
+          replicationService.renameReplicationDefinition(ACTION_NAME, ACTION_NAME2);
+          fail("Shouldn't be able to rename onto a duplicate name");
+       } catch(ReplicationServiceException e) {}
+    }
 
     /**
      * Test that the action service can find the executor
@@ -503,7 +556,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        // Get the lock, and run
        long start = System.currentTimeMillis();
        String token = jobLockService.getLock(
-             rd.getReplicationName(),
+             rd.getReplicationQName(),
              10 * 1000,
              1,
              1
@@ -540,7 +593,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        // Get the lock for 2 seconds
        String token = jobLockService.getLock(
-             rd.getReplicationName(),
+             rd.getReplicationQName(),
              2 * 1000,
              1,
              1
@@ -564,7 +617,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        
        // Release our lock, should allow the replication task
        //  to get going and spot the cancel
-       jobLockService.releaseLock(token, rd.getReplicationName());
+       jobLockService.releaseLock(token, rd.getReplicationQName());
        
        // Let the main replication task run to cancelled/completed
        // This can take quite some time though...

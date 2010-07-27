@@ -39,7 +39,12 @@ public interface ReplicationDefinition extends CancellableAction, Serializable {
    /**
     * @return the name which uniquely identifies this replication definition.
     */
-   QName getReplicationName();
+   String getReplicationName();
+   
+   /**
+    * @return the qualified name which uniquely identifies this replication definition.
+    */
+   QName getReplicationQName();
    
    /**
     * @return the name of the target repository.

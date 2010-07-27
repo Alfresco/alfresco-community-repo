@@ -21,7 +21,6 @@ package org.alfresco.service.cmr.replication;
 import org.alfresco.repo.replication.ReplicationDefinitionPersister;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * The Replication service.
@@ -38,7 +37,7 @@ public interface ReplicationService extends ReplicationDefinitionPersister {
     * @return the created {@link ReplicationDefinition}
     */
    @NotAuditable
-   ReplicationDefinition createReplicationDefinition(QName replicationName, String description);
+   ReplicationDefinition createReplicationDefinition(String replicationName, String description);
    
    /**
     * Runs the specified replication.

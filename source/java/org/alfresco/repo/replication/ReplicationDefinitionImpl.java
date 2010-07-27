@@ -52,7 +52,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      * @param replicationName
      *            a unique name for the replication action.
      */
-    public ReplicationDefinitionImpl(String id, QName replicationName)
+    public ReplicationDefinitionImpl(String id, String replicationName)
     {
         this(id, replicationName, null);
     }
@@ -65,10 +65,10 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      * @param description
      *            a description of the replication
      */
-    public ReplicationDefinitionImpl(String id, QName replicationName, String description)
+    public ReplicationDefinitionImpl(String id, String replicationName, String description)
     {
         super(null, id, "replicationActionExecutor");
-        setParameterValue(REPLICATION_DEFINITION_NAME, replicationName);
+        setReplicationQName(QName.createQName(null, replicationName));
         setDescription(description);
     }
 
@@ -80,10 +80,27 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     /*
      * @see org.alfresco.service.cmr.replication.ReplicationDefinition#getReplicationName()
      */
-    public QName getReplicationName()
+    public String getReplicationName()
+    {
+        return getReplicationQName().getLocalName();
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.replication.ReplicationDefinition#getReplicationQName()
+     */
+    public QName getReplicationQName()
     {
         Serializable parameterValue = getParameterValue(REPLICATION_DEFINITION_NAME);
-        return (QName) parameterValue;
+        return (QName)parameterValue;
+    }
+    
+    /*
+     * Sets or changes the replication name, which should match
+     *  the association name in the data dictionary
+     */
+    protected void setReplicationQName(QName replicationName)
+    {
+        setParameterValue(REPLICATION_DEFINITION_NAME, replicationName);
     }
     
     /*

@@ -118,6 +118,10 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
     }
 
 
+    public ReplicationDefinition loadReplicationDefinition(String replicationDefinitionName)
+    {
+       return loadReplicationDefinition( buildReplicationQName(replicationDefinitionName) );
+    }
     public ReplicationDefinition loadReplicationDefinition(QName replicationDefinitionName)
     {
         NodeRef actionNode = findActionNode(replicationDefinitionName);
@@ -130,6 +134,47 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
             return null;
     }
     
+    public void renameReplicationDefinition(String oldReplicationName, String newReplicationName)
+    {
+        renameReplicationDefinition(
+              buildReplicationQName(oldReplicationName),
+              buildReplicationQName(newReplicationName)
+        );
+    }
+    public void renameReplicationDefinition(QName oldReplicationName, QName newReplicationName)
+    {
+        NodeRef actionNode = findActionNode(oldReplicationName);
+        if(actionNode == null)
+        {
+           // No current definition with this name
+           // So, nothing to do
+           return;
+        }
+        
+        // Ensure the destination name is free
+        if(findActionNode(newReplicationName) != null)
+        {
+           throw new ReplicationServiceException("Can't rename to '" + newReplicationName + 
+                 "' as a definition with that name already exists");
+        }
+        
+        // Rename the node
+        nodeService.moveNode(
+              actionNode, REPLICATION_ACTION_ROOT_NODE_REF,
+              ContentModel.ASSOC_CONTAINS, newReplicationName
+        );
+        
+        // Update the definition properties
+        ReplicationDefinition rd = loadReplicationDefinition(newReplicationName);
+        rd.setParameterValue(
+              ReplicationDefinitionImpl.REPLICATION_DEFINITION_NAME,
+              newReplicationName
+        );
+        saveReplicationDefinition(rd);
+
+        // All done
+    }
+
     public void saveReplicationDefinition(ReplicationDefinition replicationAction)
     {
         NodeRef actionNodeRef = findOrCreateActionNode(replicationAction);
@@ -143,7 +188,7 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
     
     public void deleteReplicationDefinition(ReplicationDefinition replicationAction)
     {
-       QName actionName = replicationAction.getReplicationName();
+       QName actionName = replicationAction.getReplicationQName();
        NodeRef actionNode = findActionNode(actionName);
        if(actionNode != null) {
           nodeService.deleteNode(actionNode);
@@ -174,7 +219,7 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
 
     private NodeRef findOrCreateActionNode(ReplicationDefinition replicationAction)
     {
-        QName actionName = replicationAction.getReplicationName();
+        QName actionName = replicationAction.getReplicationQName();
         NodeRef actionNode = findActionNode(actionName);
         if (actionNode == null)
         {
@@ -199,5 +244,10 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
         {
             throw new ReplicationServiceException("Unable to find replication action root node.");
         }
+    }
+    
+    private static QName buildReplicationQName(String name)
+    {
+       return QName.createQName(null, name);
     }
 }

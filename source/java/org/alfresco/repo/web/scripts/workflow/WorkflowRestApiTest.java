@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -167,7 +168,26 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject properties = result.getJSONObject("properties");
 
         assertNotNull(properties);
+        
+        JSONObject instance = result.getJSONObject("workflowInstance");
+        WorkflowInstance startInstance = startTask.path.instance;
 
+        assertNotNull(instance);
+        
+        assertEquals(startInstance.id, instance.getString("id"));
+        assertTrue(instance.has("url"));
+        assertEquals(startInstance.definition.name, instance.getString("name"));
+        assertEquals(startInstance.definition.title, instance.getString("title"));
+        assertEquals(startInstance.definition.description, instance.getString("description"));
+        assertEquals(startInstance.active, instance.getBoolean("isActive"));
+        assertTrue(instance.has("startDate"));
+        
+        JSONObject initiator = instance.getJSONObject("initiator");
+        
+        assertEquals(USER1, initiator.getString("userName"));
+        assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
+        assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
+        
         JSONObject definition = result.getJSONObject("definition");
         WorkflowTaskDefinition startDefinitiont = startTask.definition;
 

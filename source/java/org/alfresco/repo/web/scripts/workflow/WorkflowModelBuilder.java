@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -46,6 +47,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * @author Nick Smith
@@ -75,6 +77,23 @@ public class WorkflowModelBuilder
     public static final String TASK_DEFINITION_TYPE = "type";
     public static final String TASK_DEFINITION_NODE = "node";
 
+    public static final String TASK_WORKFLOW_INSTANCE = "workflowInstance";
+    
+    public static final String TASK_WORKFLOW_INSTANCE_ID = "id";
+    public static final String TASK_WORKFLOW_INSTANCE_URL = "url";
+    public static final String TASK_WORKFLOW_INSTANCE_NAME = "name";
+    public static final String TASK_WORKFLOW_INSTANCE_TITLE = "title";
+    public static final String TASK_WORKFLOW_INSTANCE_DESCRIPTION = "description";
+    public static final String TASK_WORKFLOW_INSTANCE_IS_ACTIVE = "isActive";
+    public static final String TASK_WORKFLOW_INSTANCE_START_DATE = "startDate";
+    public static final String TASK_WORKFLOW_INSTANCE_END_DATE = "endDate";
+    public static final String TASK_WORKFLOW_INSTANCE_INITIATOR = "initiator";
+    public static final String TASK_WORKFLOW_INSTANCE_DEFINITION_URL = "definitionUrl";
+
+    public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_USERNAME = "userName";
+    public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_FIRSTNAME = "firstName";
+    public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_LASTNAME = "lastName";
+    
     public static final String TYPE_DEFINITION_NAME = "name";
     public static final String TYPE_DEFINITION_TITLE = "title";
     public static final String TYPE_DEFINITION_DESCRIPTION = "description";
@@ -146,6 +165,9 @@ public class WorkflowModelBuilder
         Map<String, Object> model = buildSimple(workflowTask, null);
 
         model.put(TASK_PATH, getUrl(workflowTask, workflowTask.path));
+
+        // workflow instance part
+        model.put(TASK_WORKFLOW_INSTANCE, buildWorkflowInstance(workflowTask.path.instance));
 
         // definition part
         model.put(TASK_DEFINITION, buildTaskDefinition(workflowTask.definition, workflowTask));
@@ -265,6 +287,48 @@ public class WorkflowModelBuilder
         return model;
     }
 
+    private Map<String, Object> buildWorkflowInstance(WorkflowInstance workflowInstance)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        model.put(TASK_WORKFLOW_INSTANCE_ID, workflowInstance.id);
+        model.put(TASK_WORKFLOW_INSTANCE_URL, getUrl(workflowInstance));
+        model.put(TASK_WORKFLOW_INSTANCE_NAME, workflowInstance.definition.name);
+        model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.definition.title);
+        model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.definition.description);
+        model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.active);
+
+        if (workflowInstance.startDate == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_START_DATE, workflowInstance.startDate);
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_START_DATE, ISO8601DateFormat.format(workflowInstance.startDate));
+        }
+
+        if (workflowInstance.endDate == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_END_DATE, workflowInstance.endDate);
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_END_DATE, ISO8601DateFormat.format(workflowInstance.endDate));
+        }
+
+        if (workflowInstance.initiator == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, null);
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
+        }
+        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.definition));
+
+        return model;
+    }
+    
     private Map<String, Object> buildTaskDefinition(WorkflowTaskDefinition workflowTaskDefinition, WorkflowTask workflowTask)
     {
         Map<String, Object> model = new HashMap<String, Object>();
@@ -352,6 +416,11 @@ public class WorkflowModelBuilder
     private String getUrl(WorkflowTask task, WorkflowPath path)
     {
         return getUrl(task) + "/paths/" + path.id;
+    }
+
+    private String getUrl(WorkflowInstance workflowInstance)
+    {
+        return "api/workflow-instances/" + workflowInstance.id;
     }
 
 }

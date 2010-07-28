@@ -24,6 +24,28 @@
          <@propertiesJSON properties=task.properties />
          <#if detailed>,
          "path": "${task.path}",
+         "workflowInstance": 
+         {
+            "id": "${task.workflowInstance.id}",
+            "url": "${task.workflowInstance.url}",
+            "name": "${task.workflowInstance.name}",
+            "title": "${task.workflowInstance.title}",
+            "description": "${task.workflowInstance.description}",
+            "isActive": ${task.workflowInstance.isActive?string},
+            "startDate": "${task.workflowInstance.startDate}",
+            "endDate": <#if task.workflowInstance.endDate??>"${task.workflowInstance.endDate}"<#else>null</#if>,
+            "initiator": 
+            <#if task.workflowInstance.initiator??>
+            {
+               "userName": "${task.workflowInstance.initiator.userName}",
+               "firstName": "${task.workflowInstance.initiator.firstName}",
+               "lastName": "${task.workflowInstance.initiator.lastName}"
+            },
+            <#else>
+            null,
+            </#if>
+            "definitionUrl": "${task.workflowInstance.definitionUrl}"
+         },
          "definition":
          {
             "id": "${task.definition.id}",

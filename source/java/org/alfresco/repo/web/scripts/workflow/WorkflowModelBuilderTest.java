@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -151,6 +152,12 @@ public class WorkflowModelBuilderTest extends TestCase
 
         workflowTask.path = new WorkflowPath();
         workflowTask.path.id = "pathId$1";
+        workflowTask.path.instance = new WorkflowInstance();
+        workflowTask.path.instance.id = "";
+        workflowTask.path.instance.active = true;
+        workflowTask.path.instance.startDate = new Date();
+        workflowTask.path.instance.definition = new WorkflowDefinition(
+                "The Id", "The Name", "1", "The Title", "The Description", null);
 
         workflowTask.definition = new WorkflowTaskDefinition();
         workflowTask.definition.id = "The Definition Id";
@@ -196,6 +203,15 @@ public class WorkflowModelBuilderTest extends TestCase
         Map<String, Object> props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
         assertEquals(workflowTask.properties.size(), props.size());
 
+        Map<String, Object> workflowInstance = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE);
+        
+        assertEquals(workflowTask.path.instance.id, workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
+        assertEquals(workflowTask.path.instance.definition.name, workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
+        assertEquals(workflowTask.path.instance.definition.title, workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
+        assertEquals(workflowTask.path.instance.definition.description, workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DESCRIPTION));
+        assertEquals(workflowTask.path.instance.active, workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));
+        assertEquals(ISO8601DateFormat.format(workflowTask.path.instance.startDate), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));        
+        
         Map<String, Object> definition = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_DEFINITION);
 
         assertEquals(workflowTask.definition.id, definition.get(WorkflowModelBuilder.TASK_DEFINITION_ID));

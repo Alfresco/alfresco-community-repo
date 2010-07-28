@@ -711,31 +711,31 @@
                         <property name="receiver" ref="transferReceiver" />
                     </bean>
                 </entry>
-            <entry key="prepare">
-               <bean class="org.alfresco.repo.web.scripts.transfer.PrepareTransferCommandProcessor">
-                  <property name="receiver" ref="transferReceiver" />
-               </bean>
-            </entry>
-            <entry key="commit">
-               <bean class="org.alfresco.repo.web.scripts.transfer.CommitTransferCommandProcessor">
-                  <property name="receiver" ref="transferReceiver" />
-               </bean>
-            </entry>
-            <entry key="abort">
-               <bean class="org.alfresco.repo.web.scripts.transfer.AbortTransferCommandProcessor">
-                  <property name="receiver" ref="transferReceiver" />
-               </bean>
-            </entry>
-           <entry key="messages">
-               <bean class="org.alfresco.repo.web.scripts.transfer.MessagesTransferCommandProcessor">
-                  <property name="receiver" ref="transferReceiver" />
-               </bean>
-            </entry>
-           <entry key="status">
-               <bean class="org.alfresco.repo.web.scripts.transfer.StatusCommandProcessor">
-                  <property name="receiver" ref="transferReceiver" />
-               </bean>
-            </entry>
+                <entry key="prepare">
+                   <bean class="org.alfresco.repo.web.scripts.transfer.PrepareTransferCommandProcessor">
+                      <property name="receiver" ref="transferReceiver" />
+                   </bean>
+                </entry>
+                <entry key="commit">
+                   <bean class="org.alfresco.repo.web.scripts.transfer.CommitTransferCommandProcessor">
+                      <property name="receiver" ref="transferReceiver" />
+                   </bean>
+                </entry>
+                <entry key="abort">
+                   <bean class="org.alfresco.repo.web.scripts.transfer.AbortTransferCommandProcessor">
+                      <property name="receiver" ref="transferReceiver" />
+                   </bean>
+                </entry>
+               <entry key="messages">
+                   <bean class="org.alfresco.repo.web.scripts.transfer.MessagesTransferCommandProcessor">
+                      <property name="receiver" ref="transferReceiver" />
+                   </bean>
+                </entry>
+               <entry key="status">
+                   <bean class="org.alfresco.repo.web.scripts.transfer.StatusCommandProcessor">
+                      <property name="receiver" ref="transferReceiver" />
+                   </bean>
+                </entry>
             </map>
         </property>
     </bean>
@@ -775,7 +775,7 @@
     
     
     <!--                                   -->
-    <!--      Workflow Service REST API        -->
+    <!--      Workflow Service REST API    -->
     <!--                                   -->
 
     <!-- abstract workflow web script -->
@@ -810,5 +810,22 @@
     <bean id="webscript.org.alfresco.repository.workflow.workflow-definitions.get"
           class="org.alfresco.repo.web.scripts.workflow.WorkflowDefinitionsGet"
           parent="abstractWorkflowWebScript"></bean>
+
+    <!--                                   -->
+    <!--      Workflow Service REST API    -->
+    <!--                                   -->
+
+    <!-- abstract audit web script -->
+    <bean id="abstractAuditWebScript"
+          class="org.alfresco.repo.web.scripts.audit.AbstractAuditWebscript"
+          parent="webscript" abstract="true">
+        <property name="auditService" ref="AuditService" />
+    </bean>
+
+    <!-- Gets the current audit state (enabled/disabled) for an application and path -->
+    <bean id="webscript.org.alfresco.repository.audit.control.get"
+          class="org.alfresco.repo.web.scripts.audit.ControlGet"
+          parent="abstractAuditWebScript">
+    </bean>
 
 </beans>

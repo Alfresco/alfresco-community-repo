@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Alfresco Audit Service Control</shortname>
+  <description>Get audit status for a given application and path</description>
+  <url>/api/audit/control?app={application?}&amp;path={path?}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  
+  <!--  turn off the multipart formdata processing -->
+  <formdata multipart-processing="false" />
+
+</webscript>

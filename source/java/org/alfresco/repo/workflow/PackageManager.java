@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.GUID;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -212,6 +214,8 @@ public class PackageManager
            {
                String name = 
                    (String) nodeService.getProperty(item, ContentModel.PROP_NAME);
+               if(name == null)
+                   name = GUID.generate();
                String localName = QName.createValidLocalName(name);
                QName qName = QName.createQName(CM_URL, localName);
                nodeService.addChild(packageRef, item, PCKG_CONTAINS, qName);
@@ -248,11 +252,12 @@ public class PackageManager
 
     private void checkRemovedItems(List<NodeRef> currentitems)
     {
-        for (NodeRef removeItem : removeItems)
+        for (Iterator<NodeRef> iter = removeItems.iterator(); iter.hasNext();)
         {
+            NodeRef removeItem= iter.next();
             if(currentitems.contains(removeItem)==false)
             {
-                removeItems.remove(removeItem);
+                iter.remove();
                 if (logger.isDebugEnabled())
                     logger.debug("Ignoring item to remove, item not in package: " + removeItem);
             }
@@ -261,11 +266,12 @@ public class PackageManager
 
     private void checkAddedItems(List<NodeRef> currentitems)
     {
-        for (NodeRef addItem : addItems)
+        for (Iterator<NodeRef> iter = addItems.iterator(); iter.hasNext();)
         {
-            if (currentitems.contains(addItem))
+            NodeRef addItem= iter.next();
+            if(currentitems.contains(addItem))
             {
-                addItems.remove(addItem);
+                iter.remove();
                 if (logger.isDebugEnabled())
                     logger.debug("Ignoring item to add, item already in package: " + addItem);
             }

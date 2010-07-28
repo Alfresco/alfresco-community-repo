@@ -34,8 +34,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,6 +63,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -75,6 +78,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -152,7 +157,7 @@ public class TaskFormProcessorTest extends TestCase
         assertEquals(item.getKind(), formItem.getKind());
         String expType = NamespaceService.BPM_MODEL_PREFIX + ":" + TASK_DEF_NAME;
         assertEquals(expType, formItem.getType());
-        assertEquals("/api/task-instances/" + TASK_ID, formItem.getUrl());
+        assertEquals("api/task-instances/" + TASK_ID, formItem.getUrl());
     }
 
     public void testGenerateSingleProperty()
@@ -249,7 +254,7 @@ public class TaskFormProcessorTest extends TestCase
         // Check empty package
         String fieldName = PackageItemsFieldProcessor.KEY;
         Form form = processForm(fieldName);
-        String packageItems = "";
+        Serializable packageItems = (Serializable) Collections.emptyList();
         checkSingleAssociation(form, fieldName, packageItems);
         
         // Effectively add 3 items to package.
@@ -258,7 +263,9 @@ public class TaskFormProcessorTest extends TestCase
             .thenReturn(value);
         
         form = processForm(fieldName);
-        packageItems = FAKE_NODE+","+FAKE_NODE2+","+FAKE_NODE3;
+        packageItems = (Serializable) Arrays.asList(FAKE_NODE.toString(),
+                    FAKE_NODE2.toString(),
+                    FAKE_NODE3.toString());
         checkSingleAssociation(form, fieldName, packageItems);
     }
 
@@ -273,7 +280,7 @@ public class TaskFormProcessorTest extends TestCase
     public void testPersistPropertyChanged() throws Exception
     {
         String fieldName = DESC_NAME.toPrefixString(namespaceService);
-        String dataKey = makeDataKeyName(fieldName, FormFieldConstants.PROP_DATA_PREFIX);
+        String dataKey = makeDataKeyName(fieldName);
         String value = "New Description";
 
         processPersist(dataKey, value);
@@ -285,7 +292,7 @@ public class TaskFormProcessorTest extends TestCase
     public void testPersistPropertyWith_() throws Exception
     {
         String fieldName = PROP_WITH_.toPrefixString(namespaceService);
-        String dataKey = makeDataKeyName(fieldName, FormFieldConstants.PROP_DATA_PREFIX);
+        String dataKey = makeDataKeyName(fieldName);
         String value = "New _ Value";
 
         processPersist(dataKey, value);
@@ -297,8 +304,7 @@ public class TaskFormProcessorTest extends TestCase
     public void testPersistAssociationAdded() throws Exception
     {
         String fieldName = ACTORS_NAME.toPrefixString(namespaceService);
-        String dataKey = makeDataKeyName(fieldName, FormFieldConstants.ASSOC_DATA_PREFIX);
-        dataKey = dataKey + FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
+        String dataKey = makeDataKeyName(fieldName, true);
         String nodeRef1 = FAKE_NODE.toString() + "1";
         String nodeRef2 = FAKE_NODE.toString() + "2";
         String value = nodeRef1 + ", " + nodeRef2;
@@ -315,8 +321,7 @@ public class TaskFormProcessorTest extends TestCase
     public void testPersistAssociationsRemoved() throws Exception
     {
         String fieldName = ASSIGNEE_NAME.toPrefixString(namespaceService);
-        String dataKey = makeDataKeyName(fieldName, FormFieldConstants.ASSOC_DATA_PREFIX);
-        dataKey = dataKey + FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
+        String dataKey = makeDataKeyName(fieldName, false);
         String value = FAKE_NODE.toString();
         processPersist(dataKey, value);
 
@@ -330,19 +335,15 @@ public class TaskFormProcessorTest extends TestCase
     public void testPersistAssociationAddedWith_() throws Exception
     {
         String fieldName = ASSOC_WITH_.toPrefixString(namespaceService);
-        String dataKey = makeDataKeyName(fieldName, FormFieldConstants.ASSOC_DATA_PREFIX);
-        dataKey = dataKey + FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
-        String nodeRef1 = FAKE_NODE.toString() + "1";
-        String nodeRef2 = FAKE_NODE.toString() + "2";
-        String value = nodeRef1 + ", " + nodeRef2;
+        String dataKey = makeDataKeyName(fieldName, true);
+        String value = FAKE_NODE + ", " + FAKE_NODE2;
         processPersist(dataKey, value);
-
         assertEquals(1, actualAdded.size());
         List<NodeRef> nodeRefs = actualAdded.get(ASSOC_WITH_);
         assertNotNull(nodeRefs);
         assertEquals(2, nodeRefs.size());
-        assertTrue(nodeRefs.contains(new NodeRef(nodeRef1)));
-        assertTrue(nodeRefs.contains(new NodeRef(nodeRef2)));
+        assertTrue(nodeRefs.contains(FAKE_NODE));
+        assertTrue(nodeRefs.contains(FAKE_NODE2));
     }
     
     @SuppressWarnings("unchecked")
@@ -355,13 +356,69 @@ public class TaskFormProcessorTest extends TestCase
         verify(workflowService, never()).endTask(eq(TASK_ID), anyString());
         
         // Check default transition.
-        String dataKey =FormFieldConstants.PROP_DATA_PREFIX+TransitionFieldProcessor.KEY;
+        String dataKey =makeDataKeyName(TransitionFieldProcessor.KEY);
         processPersist(dataKey, null);
         verify(workflowService, times(1)).endTask(TASK_ID, null);
         
         // Check specific transition.
         processPersist(dataKey, "foo");
         verify(workflowService, times(1)).endTask(TASK_ID, "foo");
+    }
+    
+    public void testPersistPackageItemsAdded() throws Exception
+    {
+        mockPackageItems(FAKE_NODE3);
+        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, true); 
+        String value = FAKE_NODE + ", " + FAKE_NODE2;
+        processPersist(dataKey, value);
+        checkAddPackageItem(FAKE_NODE, true);
+        checkAddPackageItem(FAKE_NODE2, true);
+        checkAddPackageItem(FAKE_NODE3, false);
+    }
+    
+    public void testPersistPackageItemsRemoved() throws Exception
+    {
+        mockPackageItems(FAKE_NODE, FAKE_NODE2);
+        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, false); 
+        String value = FAKE_NODE + ", " + FAKE_NODE2+ "," + FAKE_NODE3;
+        processPersist(dataKey, value);
+        
+        // Check nodes 1 and 2 removed correctly.
+        checkRemovedPackageItem(FAKE_NODE, true);
+        checkRemovedPackageItem(FAKE_NODE2, true);
+        
+        // Check node 3 is not removed as it was not in the package to start with.
+        checkRemovedPackageItem(FAKE_NODE3, false);
+    }
+
+    private void mockPackageItems(NodeRef... children)
+    {
+        ArrayList<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(children.length);
+        for (NodeRef nodeRef : children)
+        {
+            ChildAssociationRef child = new ChildAssociationRef(WorkflowModel.ASSOC_PACKAGE_CONTAINS, PCKG_NODE, null, nodeRef);
+            results.add(child);
+        }
+        when(nodeService.getChildAssocs(eq(PCKG_NODE), (QNamePattern)any(), (QNamePattern)any()))
+        .thenReturn(results);
+        
+    }
+
+    private void checkRemovedPackageItem(NodeRef child, boolean wasCalled)
+    {
+        int times = wasCalled ? 1 : 0;
+        verify(nodeService, times(times))
+            .removeChild(PCKG_NODE, child);
+    }
+
+    private void checkAddPackageItem(NodeRef child, boolean wasCalled)
+    {
+        int times = wasCalled ? 1 : 0;
+        verify(nodeService, times(times))
+            .addChild(eq(PCKG_NODE),
+                        eq(child),
+                        eq(WorkflowModel.ASSOC_PACKAGE_CONTAINS),
+                        (QName)any());
     }
     
     private void processPersist(String dataKey, String value)
@@ -397,37 +454,45 @@ public class TaskFormProcessorTest extends TestCase
 
     private void checkSingleProperty(Form form, String fieldName, Serializable fieldData)
     {
-        checkSingleField(form, fieldName, fieldData, "prop_");
+        String expDataKey = makeDataKeyName(fieldName);
+        checkSingleField(form, fieldName, fieldData, expDataKey);
 
     }
 
     private void checkSingleAssociation(Form form, String fieldName, Serializable fieldData)
     {
-        checkSingleField(form, fieldName, fieldData, "assoc_");
+        String expDataKey = makeAssociationDataKey(fieldName);
+        checkSingleField(form, fieldName, fieldData, expDataKey);
 
     }
 
-    private void checkSingleField(Form form, String fieldName, Serializable fieldData, String prefix)
+    private void checkSingleField(Form form, String fieldName, Serializable fieldData, String expDataKey)
     {
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertEquals(1, fieldDefs.size());
         FieldDefinition fieldDef = fieldDefs.get(0);
         assertEquals(fieldName, fieldDef.getName());
         String dataKey = fieldDef.getDataKeyName();
-        String expDataKey = makeDataKeyName(fieldName, prefix);
         assertEquals(expDataKey, dataKey);
         FieldData data = form.getFormData().getFieldData(dataKey);
         assertEquals(fieldData, data.getValue());
     }
 
-    /**
-     * @param fieldName
-     * @param prefix
-     * @return
-     */
-    private String makeDataKeyName(String fieldName, String prefix)
+    private String makeDataKeyName(String fieldName)
     {
-        return prefix + fieldName.replace(":", "_");
+        return PROP_DATA_PREFIX + fieldName.replace(":", "_");
+    }
+
+    private String makeDataKeyName(String fieldName, boolean added)
+    {
+        String assocDataKey = makeAssociationDataKey(fieldName);
+        String suffix = added ? ASSOC_DATA_ADDED_SUFFIX : ASSOC_DATA_REMOVED_SUFFIX;
+        return assocDataKey + suffix;
+    }
+    
+    private String makeAssociationDataKey(String fieldName)
+    {
+        return ASSOC_DATA_PREFIX + fieldName.replace(":", "_");
     }
 
     /*

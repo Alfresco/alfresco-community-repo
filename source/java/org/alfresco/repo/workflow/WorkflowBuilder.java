@@ -95,7 +95,7 @@ public class WorkflowBuilder
 
     private void signalStartTask(WorkflowPath path)
     {
-        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
         if(tasks.size() == 1)
         {
             WorkflowTask startTask = tasks.get(0);

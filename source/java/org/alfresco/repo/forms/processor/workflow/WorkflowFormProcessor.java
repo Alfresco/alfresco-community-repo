@@ -79,7 +79,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     protected Map<String, Object> getTransientValues(WorkflowDefinition item)
     {
         return Collections.<String, Object>singletonMap(
-                    PackageItemsFieldProcessor.KEY, Collections.EMPTY_LIST);
+                    PackageItemsFieldProcessor.KEY, Collections.emptyList());
     }
 
     /* (non-Javadoc)

@@ -26,6 +26,7 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * 
@@ -107,7 +107,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     protected String getItemURI(WorkflowTask item)
     {
         // TODO Check this URL is OK.
-        return "/api/task-instances/" + item.id;
+        return "api/task-instances/" + item.id;
     }
 
     /*
@@ -152,10 +152,15 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
      * @param item
      * @return
      */
-    private Object getPackageItemValues(WorkflowTask item)
+    private Object getPackageItemValues(WorkflowTask task)
     {
-        List<NodeRef> items = workflowService.getPackageContents(item.getId());
-        return StringUtils.collectionToCommaDelimitedString(items);
+        List<NodeRef> items = workflowService.getPackageContents(task.getId());
+        ArrayList<String> results = new ArrayList<String>(items.size());
+        for (NodeRef item : items)
+        {
+            results.add(item.toString());
+        }
+        return results;
     }
 
     private String getTransitionValues(WorkflowTask item)

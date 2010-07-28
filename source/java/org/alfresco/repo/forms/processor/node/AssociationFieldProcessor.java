@@ -72,7 +72,7 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
         Serializable values = data.getAssociationValue(name);
         if (values == null)
         {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         if (values instanceof Collection<?>)
         {

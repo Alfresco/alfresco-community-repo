@@ -145,6 +145,45 @@
        </isNotNull>
     </delete>
     
+    <sql id="select_AuditEntriesWhereSnippet">
+        <dynamic prepend="where">
+            <isNotNull prepend="and" property="auditAppNameId">
+                app.app_name_id = #auditAppNameId#
+            </isNotNull>
+            <isNotNull prepend="and" property="auditUserId">
+                entry.audit_user_id = #auditUserId#
+            </isNotNull>
+            <isNotNull prepend="and" property="auditFromId">
+                <![CDATA[entry.id >= #auditFromId#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="auditToId">
+                <![CDATA[entry.id < #auditToId#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="auditFromTime">
+                <![CDATA[entry.audit_time >= #auditFromTime#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="auditToTime">
+                <![CDATA[entry.audit_time < #auditToTime#]]>
+            </isNotNull>
+            <isNotNull prepend="and" property="searchKeyId">
+                sp_kpl.key_prop_id = #searchKeyId#
+            </isNotNull>
+            <isNotNull prepend="and" property="searchValueId">
+                sp_mpl.value_prop_id = #searchValueId#
+            </isNotNull>
+        </dynamic>
+    </sql>
+    <sql id="select_AuditEntriesOrderBySnippet">
+        <isEqual property="forward" compareProperty="forwardTrue">
+        order by
+            entry.id asc
+        </isEqual>
+        <isNotEqual property="forward" compareProperty="forwardTrue">
+        order by
+            entry.id desc
+        </isNotEqual>
+    </sql>
+    
     <!-- Get audit entries -->
     <select id="select_AuditEntriesWithValues" parameterClass="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
         select
@@ -181,40 +220,8 @@
             left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
             left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5))
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
-        <dynamic prepend="where">
-            <isNotNull prepend="and" property="auditAppNameId">
-                app.app_name_id = #auditAppNameId#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditUserId">
-                entry.audit_user_id = #auditUserId#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromId">
-                <![CDATA[entry.id >= #auditFromId#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToId">
-                <![CDATA[entry.id < #auditToId#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromTime">
-                <![CDATA[entry.audit_time >= #auditFromTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToTime">
-                <![CDATA[entry.audit_time < #auditToTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="searchKeyId">
-                sp_kpl.key_prop_id = #searchKeyId#
-            </isNotNull>
-            <isNotNull prepend="and" property="searchValueId">
-                sp_mpl.value_prop_id = #searchValueId#
-            </isNotNull>
-        </dynamic>
-        <isEqual property="forward" compareProperty="forwardTrue">
-        order by
-            entry.id asc
-        </isEqual>
-        <isNotEqual property="forward" compareProperty="forwardTrue">
-        order by
-            entry.id desc
-        </isNotEqual>
+        <include refid="select_AuditEntriesWhereSnippet"/>
+        <include refid="select_AuditEntriesOrderBySnippet"/>
     </select>
 
     <!-- Get audit entries -->
@@ -236,40 +243,8 @@
             join alf_prop_link sp_mpl on (sp_mpl.root_prop_id = entry.audit_values_id)
         </isNotNull>
         
-        <dynamic prepend="where">
-            <isNotNull prepend="and" property="auditAppNameId">
-                app.app_name_id = #auditAppNameId#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditUserId">
-                entry.audit_user_id = #auditUserId#
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromId">
-                <![CDATA[entry.id >= #auditFromId#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToId">
-                <![CDATA[entry.id < #auditToId#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditFromTime">
-                <![CDATA[entry.audit_time >= #auditFromTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="auditToTime">
-                <![CDATA[entry.audit_time < #auditToTime#]]>
-            </isNotNull>
-            <isNotNull prepend="and" property="searchKeyId">
-                sp_kpl.key_prop_id = #searchKeyId#
-            </isNotNull>
-            <isNotNull prepend="and" property="searchValueId">
-                sp_mpl.value_prop_id = #searchValueId#
-            </isNotNull>
-        </dynamic>
-        <isEqual property="forward" compareProperty="forwardTrue">
-        order by
-            entry.id asc
-        </isEqual>
-        <isNotEqual property="forward" compareProperty="forwardTrue">
-        order by
-            entry.id desc
-        </isNotEqual>
+        <include refid="select_AuditEntriesWhereSnippet"/>
+        <include refid="select_AuditEntriesOrderBySnippet"/>
     </select>
 
 </sqlMap>

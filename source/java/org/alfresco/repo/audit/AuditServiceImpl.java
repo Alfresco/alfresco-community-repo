@@ -18,16 +18,14 @@
  */
 package org.alfresco.repo.audit;
 
-import java.io.Serializable;
-
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * The implementation of the AuditService for application auditing.
  * 
- * @author Andy Hind
+ * @author Derek Hulley
+ * @since 3.2
  */
 public class AuditServiceImpl implements AuditService
 {
@@ -41,6 +39,15 @@ public class AuditServiceImpl implements AuditService
     public void setAuditComponent(AuditComponent auditComponent)
     {
         this.auditComponent = auditComponent;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    public boolean isAuditEnabled()
+    {
+        return auditComponent.isAuditEnabled();
     }
 
     /**
@@ -88,56 +95,5 @@ public class AuditServiceImpl implements AuditService
     public void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults)
     {
         auditComponent.auditQuery(callback, parameters, maxResults);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @since 3.2
-     */
-    public void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            int maxResults)
-
-    {
-        ParameterCheck.mandatory("callback", callback);
-        
-        AuditQueryParameters params = new AuditQueryParameters();
-        params.setForward(true);
-        params.setApplicationName(applicationName);
-        params.setUser(user);
-        params.setFromTime(from);
-        params.setToTime(to);
-        
-        auditComponent.auditQuery(callback, params, maxResults);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @since 3.2
-     */
-    public void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            String searchKey, Serializable searchValue,
-            int maxResults)
-
-    {
-        ParameterCheck.mandatory("callback", callback);
-        
-        AuditQueryParameters params = new AuditQueryParameters();
-        params.setForward(true);
-        params.setApplicationName(applicationName);
-        params.setUser(user);
-        params.setFromTime(from);
-        params.setToTime(to);
-        if (searchKey != null || searchValue != null)
-        {
-            params.addSearchKey(searchKey, searchValue);
-        }
-        
-        auditComponent.auditQuery(callback, params, maxResults);
     }
 }

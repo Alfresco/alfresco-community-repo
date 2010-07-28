@@ -32,6 +32,13 @@ import org.alfresco.service.PublicService;
 public interface AuditService
 {
     /**
+     * @return                  Returns <tt>true</tt> if auditing is globally enabled
+     * 
+     * @since 3.4
+     */
+    boolean isAuditEnabled();
+    
+    /**
      * @param applicationName   the name of the application to check 
      * @param path              the path to check
      * @return                  Returns <tt>true</tt> if auditing is enabled for the given path
@@ -122,49 +129,4 @@ public interface AuditService
      * @since 3.3
      */
     void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults);
-    
-    /**
-     * Get the audit entries that match the given criteria.
-     * 
-     * @param callback          the callback that will handle results
-     * @param forward           <tt>true</tt> for results to ordered from first to last,
-     *                          or <tt>false</tt> to order from last to first
-     * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
-     * @param user              if not <tt>null</tt>, find entries logged against this user
-     * @param from              the start search time (<tt>null</tt> to start at the beginning)
-     * @param to                the end search time (<tt>null</tt> for no limit)
-     * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
-     * 
-     * @since 3.2
-     * @deprecated              Use {@link #auditQuery(AuditQueryCallback, AuditQueryParameters)}
-     */
-    void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            int maxResults);
-    
-    /**
-     * Get the audit entries that match the given criteria.
-     * 
-     * @param callback          the callback that will handle results
-     * @param forward           <tt>true</tt> for results to ordered from first to last,
-     *                          or <tt>false</tt> to order from last to first
-     * @param applicationName   if not <tt>null</tt>, find entries logged against this application 
-     * @param user              if not <tt>null</tt>, find entries logged against this user
-     * @param from              the start search time (<tt>null</tt> to start at the beginning)
-     * @param to                the end search time (<tt>null</tt> for no limit)
-     * @param searchKey         the audit key path that must exist (<tt>null</tt> to ignore)
-     * @param searchValue       an audit value that must exist (<tt>null</tt> to ignore)
-     * @param maxResults        the maximum number of results to retrieve (zero or negative to ignore)
-     * 
-     * @since 3.2
-     * @deprecated              Use {@link #auditQuery(AuditQueryCallback, AuditQueryParameters)}
-     */
-    void auditQuery(
-            AuditQueryCallback callback,
-            boolean forward,
-            String applicationName, String user, Long from, Long to,
-            String searchKey, Serializable searchValue,
-            int maxResults);
 }

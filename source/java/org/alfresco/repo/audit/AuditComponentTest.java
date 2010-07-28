@@ -512,10 +512,10 @@ public class AuditComponentTest extends TestCase
             }
         };
         
-        auditService.clearAudit(APPLICATION_API_TEST);
+        clearAuditLog(APPLICATION_API_TEST);
         results.clear();
         sb.delete(0, sb.length());
-        auditService.auditQuery(auditQueryCallback, params, -1);
+        queryAuditLog(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
         
@@ -535,7 +535,7 @@ public class AuditComponentTest extends TestCase
         AuthenticationUtil.runAs(createAuthenticationWork, AuthenticationUtil.getSystemUserName());
         
         // Clear everything out and do a successful authentication
-        auditService.clearAudit(APPLICATION_API_TEST);
+        clearAuditLog(APPLICATION_API_TEST);
         try
         {
             AuthenticationUtil.pushAuthentication();
@@ -549,12 +549,12 @@ public class AuditComponentTest extends TestCase
         // Check that the call was audited
         results.clear();
         sb.delete(0, sb.length());
-        auditService.auditQuery(auditQueryCallback, params, -1);
+        queryAuditLog(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertFalse("Did not get any audit results after successful login", results.isEmpty());
 
         // Clear everything and check that unsuccessful authentication was audited
-        auditService.clearAudit(APPLICATION_API_TEST);
+        clearAuditLog(APPLICATION_API_TEST);
         try
         {
             authenticationService.authenticate("banana", "****".toCharArray());
@@ -566,7 +566,7 @@ public class AuditComponentTest extends TestCase
         }
         results.clear();
         sb.delete(0, sb.length());
-        auditService.auditQuery(auditQueryCallback, params, -1);
+        queryAuditLog(auditQueryCallback, params, -1);
         logger.debug(sb.toString());
         assertFalse("Did not get any audit results after failed login", results.isEmpty());
     }
@@ -606,7 +606,40 @@ public class AuditComponentTest extends TestCase
         params.setApplicationName(APPLICATION_API_TEST);
         params.setForward(false);
         params.setToId(Long.MAX_VALUE);
-        auditService.auditQuery(auditQueryCallback, params, 1);
+        queryAuditLog(auditQueryCallback, params, 1);
     }
 
+    /**
+     * Clearn the audit log as 'admin'
+     */
+    private void clearAuditLog(final String applicationName)
+    {
+        RunAsWork<Void> work = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                auditService.clearAudit(applicationName);
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
+    }
+
+    /**
+     * Clearn the audit log as 'admin'
+     */
+    private void queryAuditLog(final AuditQueryCallback callback, final AuditQueryParameters parameters, final int maxResults)
+    {
+        RunAsWork<Void> work = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                auditService.auditQuery(callback, parameters, maxResults);
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
+    }
 }

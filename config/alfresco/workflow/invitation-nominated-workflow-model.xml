@@ -44,6 +44,11 @@
 
       <type name="inwf:invitePendingTask">
          <parent>bpm:workflowTask</parent>
+         <overrides>
+                <property name="bpm:hiddenTransitions">
+                    <default>cancel</default>
+                </property>
+         </overrides>         
          <mandatory-aspects>
              <aspect>inwf:nominatedInvitationStats</aspect>
          </mandatory-aspects>

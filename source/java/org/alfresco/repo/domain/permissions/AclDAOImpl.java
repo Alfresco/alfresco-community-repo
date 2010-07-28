@@ -422,6 +422,7 @@ public class AclDAOImpl implements AclDAO
         if (!acl.isLatest())
         {
             aclCache.remove(id);
+            readersCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         
@@ -470,6 +471,7 @@ public class AclDAOImpl implements AclDAO
                 aclCrudDAO.updateAcl(acl);
             }
             aclCache.remove(id);
+            readersCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         else if ((acl.getAclChangeSetId() == getCurrentChangeSetId()) && (!requiresVersion) && (!acl.getRequiresVersion()))
@@ -508,6 +510,7 @@ public class AclDAOImpl implements AclDAO
                 aclCrudDAO.updateAcl(acl);
             }
             aclCache.remove(id);
+            readersCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         else
@@ -596,6 +599,7 @@ public class AclDAOImpl implements AclDAO
             acl.setRequiresVersion(Boolean.FALSE);
             aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
+            readersCache.remove(id);
             return new AclChangeImpl(id, created, acl.getAclType(), newAcl.getAclType());
         }
     }
@@ -802,6 +806,7 @@ public class AclDAOImpl implements AclDAO
             aclCrudDAO.deleteAcl(aclId);
             
             aclCache.remove(aclId);
+            readersCache.remove(aclId);
         }
         if (dbAcl.getAclType() == ACLType.SHARED)
         {
@@ -819,6 +824,7 @@ public class AclDAOImpl implements AclDAO
                         aclCrudDAO.deleteAcl(aclId);
                         
                         aclCache.remove(aclId);
+                        readersCache.remove(aclId);
                     }
                 }
                 else
@@ -930,6 +936,7 @@ public class AclDAOImpl implements AclDAO
         
         // remove the deleted acl from the cache
         aclCache.remove(id);
+        readersCache.remove(id);
         acls.add(new AclChangeImpl(id, null, acl.getAclType(), null));
         return acls;
     }
@@ -1260,6 +1267,7 @@ public class AclDAOImpl implements AclDAO
             acl.setInherits(Boolean.TRUE);
             aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
+            readersCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
             return changes;
         case SHARED:
@@ -1305,6 +1313,7 @@ public class AclDAOImpl implements AclDAO
             acl.setInherits(Boolean.FALSE);
             aclCrudDAO.updateAcl(acl);
             aclCache.remove(id);
+            readersCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
             return changes;
         case SHARED:
@@ -1338,6 +1347,7 @@ public class AclDAOImpl implements AclDAO
             aclToCopy.setRequiresVersion(true);
             aclCrudDAO.updateAcl(aclToCopy);
             aclCache.remove(toCopy);
+            readersCache.remove(toCopy);
             inheritedId = getInheritedAccessControlList(toCopy);
             if ((inheritedId != null) && (!inheritedId.equals(toCopy)))
             {
@@ -1345,6 +1355,7 @@ public class AclDAOImpl implements AclDAO
                 inheritedAcl.setRequiresVersion(true);
                 aclCrudDAO.updateAcl(inheritedAcl);
                 aclCache.remove(inheritedId);
+                readersCache.remove(inheritedId);
             }
             return toCopy;
         case REDIRECT:

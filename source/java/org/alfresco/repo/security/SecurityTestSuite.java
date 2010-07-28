@@ -33,6 +33,7 @@ import org.alfresco.repo.security.authority.SimpleAuthorityServiceTest;
 import org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthorityTest;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponentTest;
 import org.alfresco.repo.security.permissions.impl.PermissionServiceTest;
+import org.alfresco.repo.security.permissions.impl.ReadPermissionTest;
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationTest;
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterTest;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSetTest;
@@ -73,7 +74,8 @@ public class SecurityTestSuite extends TestSuite
         // Note  org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest has its own context and runs on its own 
         // suite.addTestSuite(ChainingUserRegistrySynchronizerTest.class);
         suite.addTestSuite(OwnableServiceTest.class);    
-       
+        suite.addTestSuite(ReadPermissionTest.class);    
+
         return suite;
     }
 }

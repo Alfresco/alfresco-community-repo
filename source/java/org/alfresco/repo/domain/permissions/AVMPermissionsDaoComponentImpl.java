@@ -181,7 +181,6 @@ public class AVMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
                     getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
                     aclDaoComponent.deleteAccessControlList(acl.getId());
                 }
-                readersCache.remove(acl.getId());
                 break;
             case FIXED:
                 throw new IllegalStateException("Delete not supported for fixed permissions");

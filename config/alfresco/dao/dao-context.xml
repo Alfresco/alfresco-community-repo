@@ -184,9 +184,6 @@
       <property name="aclDAO">
          <ref bean="aclDAO"/>
       </property>
-      <property name="readersCache">
-         <ref bean="readersCache" />
-      </property>
       <property name="protocolToACLDAO">
          <map>
             <entry key="workspace"><ref bean="admNodeACLDAO"></ref></entry>
@@ -201,9 +198,6 @@
    <bean id="admPermissionsDaoComponent" class="org.alfresco.repo.domain.permissions.ADMPermissionsDaoComponentImpl">
       <property name="aclDAO">
          <ref bean="aclDAO"/>
-      </property>
-      <property name="readersCache">
-         <ref bean="readersCache" />
       </property>
       <property name="protocolToACLDAO">
          <map>

@@ -77,8 +77,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     private AccessControlListDAO fDefaultACLDAO;
 
-    protected SimpleCache<Serializable, Set<String>> readersCache;
-    
     /** a uuid identifying this unique instance */
     private String uuid;
 
@@ -96,14 +94,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         this.aclDaoComponent = aclDaoComponent;
     }
 
-    /**
-     * @param readersCache the readersCache to set
-     */
-    public void setReadersCache(SimpleCache<Serializable, Set<String>> readersCache)
-    {
-        this.readersCache = readersCache;
-    }
-    
     /**
      * Checks equality by type and uuid
      */
@@ -367,7 +357,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             pattern.setPosition(Integer.valueOf(0));
             List<AclChange> changes = aclDaoComponent.deleteAccessControlEntries(report.getCreated().getId(), pattern);
             getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
-            readersCache.remove(acl.getId());
             break;
         }
     }
@@ -420,7 +409,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             pattern.setPosition(Integer.valueOf(0));
             List<AclChange> changes = aclDaoComponent.deleteAccessControlEntries(report.getCreated().getId(), pattern);
             getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
-            readersCache.remove(acl.getId());
             break;
         }
 
@@ -439,12 +427,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         }
         if (report.getCreated() != null)
         {
-        	Acl acl = getAccessControlList(nodeRef);
-        	if(acl != null)
-        	{
-        		readersCache.remove(acl.getId());
-        	}
-
             SimpleAccessControlEntry entry = new SimpleAccessControlEntry();
             entry.setAuthority(authority);
             entry.setPermission(permission);

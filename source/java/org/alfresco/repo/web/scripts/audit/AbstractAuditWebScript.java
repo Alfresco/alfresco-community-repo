@@ -38,6 +38,11 @@ public abstract class AbstractAuditWebScript extends AbstractWebScript
     public static final String PARAM_APP = "app";
     public static final String PARAM_PATH="path";
     
+    public static final String JSON_KEY_APPLICATIONS = "applications";
+    public static final String JSON_KEY_NAME = "name";
+    public static final String JSON_KEY_PATH = "path";
+    public static final String JSON_KEY_ENABLED = "enabled";
+    
     /**
      * Logger that can be used by subclasses.
      */

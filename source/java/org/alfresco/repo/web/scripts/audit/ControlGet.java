@@ -20,11 +20,13 @@ package org.alfresco.repo.web.scripts.audit;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Set;
 
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.extensions.webscripts.json.JSONUtils;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
@@ -36,34 +38,53 @@ public class ControlGet extends AbstractAuditWebScript
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
+        // return the unique transfer id (the lock id)
+        JSONWriter json = new JSONWriter(res.getWriter());
+
         String app = getApp(req, false);
         String path = getPath(req);
+        Set<String> apps = (app == null ? auditService.getAuditApplications() : Collections.singleton(app));
         
-        boolean enabled = false;
-        if (app == null)
+        boolean enabledGlobal = auditService.isAuditEnabled();
+        json.startObject();
         {
-            enabled = auditService.isAuditEnabled();
+            json.writeValue(JSON_KEY_ENABLED, enabledGlobal);
+            if (apps.size() > 0)
+            {
+                json.startValue(JSON_KEY_APPLICATIONS);
+                {
+                    json.startArray();
+                    {
+                        for (String appName : apps)
+                        {
+                            boolean enabled = auditService.isAuditEnabled(appName, path);
+                            json.startObject();
+                            {
+                                json.writeValue(JSON_KEY_NAME, appName);
+                                json.writeValue(JSON_KEY_PATH, path);
+                                json.writeValue(JSON_KEY_ENABLED, enabled);
+                            }
+                            json.endObject();
+                        }
+                    }
+                    json.endArray();
+                }
+                json.endValue();
+            }
         }
-        else
-        {
-            enabled = auditService.isAuditEnabled(app, path);
-        }
+        json.endObject();
         
-        // return the unique transfer id (the lock id)
-        StringWriter stringWriter = new StringWriter(300);
-        JSONWriter jsonWriter = new JSONWriter(stringWriter);
-        jsonWriter.startObject();
-        jsonWriter.writeValue("app", app);
-        jsonWriter.writeValue("path", path);
-        jsonWriter.writeValue("enabled", enabled);
-        jsonWriter.endObject();
-        String response = stringWriter.toString();
-        
+        // Close off
+        res.getWriter().close();
+
         res.setContentType("application/json");
-        res.setContentEncoding("UTF-8");
-        int length = response.getBytes("UTF-8").length;
-        res.addHeader("Content-Length", "" + length);
+        res.setContentEncoding(Charset.defaultCharset().displayName());     // TODO: Should be settable on JSONWriter
+        //        res.addHeader("Content-Length", "" + length);             // TODO: Do we need this?
         res.setStatus(Status.STATUS_OK);
-        res.getWriter().write(response);
+    }
+    
+    protected void writeResponse(JSONWriter json)
+    {
+        
     }
 }

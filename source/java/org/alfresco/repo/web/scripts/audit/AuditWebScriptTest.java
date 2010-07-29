@@ -18,9 +18,12 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
+import java.util.Set;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.audit.AuditService;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
@@ -57,7 +60,9 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     
     public void testGetWithoutPermissions() throws Exception
     {
-        
+        String url = "/api/audit/control";
+        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+        sendRequest(req, 401, AuthenticationUtil.getGuestRoleName());
     }
     
     public void testGetIsAuditEnabledGlobally() throws Exception
@@ -67,10 +72,27 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         String url = "/api/audit/control";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         
+        Response response = sendRequest(req, 200, admin);
+        JSONObject json = new JSONObject(response.getContentAsString());
+        boolean enabled = json.getBoolean("enabled");
+        assertEquals("Mismatched global audit enabled", checkEnabled, enabled);
+    }
+    
+    public void testGetIsAuditEnabledMissingApp() throws Exception
+    {
+        boolean checkEnabled = auditService.isAuditEnabled();
+        Set<String> checkApps = auditService.getAuditApplications();
+
+        String url = "/api/audit/control?app=xxx";
+        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+        
         //First, we'll try the request as a simple, non-admin user (expect a 401)
         Response response = sendRequest(req, 200, admin);
         JSONObject json = new JSONObject(response.getContentAsString());
         boolean enabled = json.getBoolean("enabled");
         assertEquals("Mismatched global audit enabled", checkEnabled, enabled);
+        JSONArray apps = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_APPLICATIONS);
+        // We expect that the unknown application is returned with the others
+        assertEquals("Incorrect number of applications reported", checkApps.size()+1, apps.length());
     }
 }

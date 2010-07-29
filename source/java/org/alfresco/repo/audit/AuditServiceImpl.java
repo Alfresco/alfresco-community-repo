@@ -47,7 +47,6 @@ public class AuditServiceImpl implements AuditService
      * {@inheritDoc}
      * @since 3.4
      */
-    @Override
     public Set<String> getAuditApplications()
     {
         return auditComponent.getAuditApplications();

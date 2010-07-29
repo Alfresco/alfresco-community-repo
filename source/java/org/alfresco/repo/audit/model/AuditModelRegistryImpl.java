@@ -91,6 +91,54 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     private final ObjectFactory objectFactory;
     
     /**
+     * Default constructor.
+     */
+    public AuditModelRegistryImpl()
+    {        
+        objectFactory = new ObjectFactory();        
+    }
+    
+    /**
+     * Sets the search path for config files.
+     */
+    public void setSearchPath(String[] searchPath)
+    {
+        this.searchPath = searchPath;
+    }
+
+    /**
+     * Service to ensure DAO calls are transactionally wrapped.
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    /**
+     * Set the DAO used to persisted the registered audit models.
+     */
+    public void setAuditDAO(AuditDAO auditDAO)
+    {
+        this.auditDAO = auditDAO;
+    }
+
+    /**
+     * Set the registry of {@link DataExtractor data extractors}.
+     */
+    public void setDataExtractors(NamedObjectRegistry<DataExtractor> dataExtractors)
+    {
+        this.dataExtractors = dataExtractors;
+    }
+
+    /**
+     * Set the registry of {@link DataGenerator data generators}.
+     */
+    public void setDataGenerators(NamedObjectRegistry<DataGenerator> dataGenerators)
+    {
+        this.dataGenerators = dataGenerators;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -116,6 +164,16 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
+    public Map<String, AuditApplication> getAuditApplications()
+    {
+        return getState(true).getAuditApplications();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public AuditApplication getAuditApplicationByKey(String key)
     {
         return getState(true).getAuditApplicationByKey(key);
@@ -124,6 +182,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public AuditApplication getAuditApplicationByName(String applicationName)
     {
         return getState(true).getAuditApplicationByName(applicationName);
@@ -132,6 +191,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public PathMapper getAuditPathMapper()
     {
         return getState(true).getAuditPathMapper();
@@ -140,6 +200,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public void loadAuditModels()
     {
         stop();
@@ -149,6 +210,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isAuditEnabled()
     {
         String value = getProperty(PROPERTY_AUDIT_ENABLED);
@@ -159,8 +221,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
      * Enables audit and registers an audit model at a given URL. Does not register across the cluster and should only
      * be used for unit test purposes.
      * 
-     * @param auditModelUrl
-     *            the source of the model
+     * @param auditModelUrl             the source of the model
      */
     public synchronized void registerModel(URL auditModelUrl)
     {
@@ -176,20 +237,15 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     {        
         /** The audit models. */
         private final Map<URL, Audit> auditModels;
-        
         /** Used to lookup path translations. */
         private PathMapper auditPathMapper;
-        
         /** Used to lookup the audit application java hierarchy. */
         private Map<String, AuditApplication> auditApplicationsByKey;
-        
         /** Used to lookup the audit application java hierarchy. */
         private Map<String, AuditApplication> auditApplicationsByName;
-        
         /** The exposed configuration properties. */
         private final Map<String, Boolean> properties;
         
-
         /**
          * Instantiates a new audit model registry state.
          */
@@ -220,8 +276,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         /**
          * Register an audit model at a given URL.
          * 
-         * @param auditModelUrl
-         *            the source of the model
+         * @param auditModelUrl         the source of the model
          */
         public void registerModel(URL auditModelUrl)
         {
@@ -250,11 +305,11 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         }
 
         /**
-         * Gets the name of an enablement property.
+         * Helper method to convert an application key into a <b>enabled-disabled</b> property.
          * 
-         * @param key
-         *            an application key
-         * @return the property name
+         * @param key                   an application key e.g. for "My App" the key might be "myapp",
+         *                              but is defined in the audit model config.
+         * @return                      the property name of the for "audit.myapp.enabled"
          */
         private String getEnabledProperty(String key)
         {
@@ -262,11 +317,12 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         }
         
         /**
-         * Checks if an application enabled.
+         * Checks if an application key is enabled.  Each application has a name and a root key
+         * value.  It is the key (which will be used as the root of all logged paths) that is
+         * used here.
          * 
-         * @param key
-         *            the application key
-         * @return true, if the application is enabled
+         * @param key                   the application key
+         * @return                      <tt>true</tt> if the application key is enabled
          */
         private boolean isApplicationEnabled(String key)
         {
@@ -311,7 +367,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             Boolean enabled = properties.get(PROPERTY_AUDIT_ENABLED);
             if (enabled != null && enabled)
             {
-
                 final RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>()
                 {
                     public Void execute() throws Throwable
@@ -366,13 +421,17 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             auditPathMapper = null;
         }
         
-                
+        /**
+         * Gets all audit applications keyed by name.
+         * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplications()
+         */
+        public Map<String, AuditApplication> getAuditApplications()
+        {
+            return auditApplicationsByName;
+        }
+        
         /**
          * Gets an audit application by key.
-         * 
-         * @param key
-         *            the application key
-         * @return the audit application
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByKey(java.lang.String)
          */
         public AuditApplication getAuditApplicationByKey(String key)
@@ -382,10 +441,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         
         /**
          * Gets an audit application by name.
-         * 
-         * @param applicationName
-         *            the application name
-         * @return the audit application
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditApplicationByName(java.lang.String)
          */
         public AuditApplication getAuditApplicationByName(String applicationName)
@@ -396,7 +451,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         /**
          * Gets the audit path mapper.
          * 
-         * @return the audit path mapper
+         * @return                      the audit path mapper
          * @see org.alfresco.repo.audit.model.AuditModelRegistry#getAuditPathMapper()
          */
         public PathMapper getAuditPathMapper()
@@ -406,11 +461,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         
         /**
          * Caches audit elements from a model.
-         * 
-         * @param auditModelId
-         *            the audit model id
-         * @param audit
-         *            the audit model
          */
         private void cacheAuditElements(Long auditModelId, Audit audit)
         {
@@ -576,9 +626,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         
         /**
          * Construct the reverse lookup maps for quick conversion of data to target maps.
-         * 
-         * @param audit
-         *            the audit model
          */
         private void buildAuditPathMap(Audit audit)
         {
@@ -613,55 +660,6 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
         return new AuditModelRegistryState();
-    }
-
-    /**
-     * Default constructor.
-     */
-    public AuditModelRegistryImpl()
-    {        
-        objectFactory = new ObjectFactory();        
-    }
-
-    
-    /**
-     * Sets the search path for config files.
-     */
-    public void setSearchPath(String[] searchPath)
-    {
-        this.searchPath = searchPath;
-    }
-
-    /**
-     * Service to ensure DAO calls are transactionally wrapped.
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
-    /**
-     * Set the DAO used to persisted the registered audit models.
-     */
-    public void setAuditDAO(AuditDAO auditDAO)
-    {
-        this.auditDAO = auditDAO;
-    }
-
-    /**
-     * Set the registry of {@link DataExtractor data extractors}.
-     */
-    public void setDataExtractors(NamedObjectRegistry<DataExtractor> dataExtractors)
-    {
-        this.dataExtractors = dataExtractors;
-    }
-
-    /**
-     * Set the registry of {@link DataGenerator data generators}.
-     */
-    public void setDataGenerators(NamedObjectRegistry<DataGenerator> dataGenerators)
-    {
-        this.dataGenerators = dataGenerators;
     }
 
     /**

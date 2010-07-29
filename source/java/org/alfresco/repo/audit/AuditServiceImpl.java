@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.audit;
 
+import java.util.Set;
+
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 
@@ -39,6 +41,16 @@ public class AuditServiceImpl implements AuditService
     public void setAuditComponent(AuditComponent auditComponent)
     {
         this.auditComponent = auditComponent;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    @Override
+    public Set<String> getAuditApplications()
+    {
+        return auditComponent.getAuditApplications();
     }
 
     /**

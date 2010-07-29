@@ -159,6 +159,16 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
+     * @since 3.4
+     */
+    public Set<String> getAuditApplications()
+    {
+        Map<String, AuditApplication> auditApps = auditModelRegistry.getAuditApplications();
+        return auditApps.keySet();
+    }
+
+    /**
+     * {@inheritDoc}
      * @since 3.2
      */
     public boolean isAuditEnabled()
@@ -199,7 +209,7 @@ public class AuditComponentImpl implements AuditComponent
 
         Set<String> disabledPaths = getDisabledPaths(application);
         
-        // Check if there are any entries that match or superced the given path
+        // Check if there are any entries that match or supercede the given path
         String disablingPath = null;;
         for (String disabledPath : disabledPaths)
         {

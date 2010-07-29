@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.audit.model;
 
+import java.util.Map;
+
 import org.alfresco.util.PathMapper;
 
 /**
@@ -43,9 +45,18 @@ public interface AuditModelRegistry
     /**
      * Determines whether audit is globally enabled or disabled.
      * 
-     * @return <code>true</code>, if audit is enabled
+     * @return                      <code>true</code> if audit is enabled
      */
     public boolean isAuditEnabled();
+    
+    /**
+     * Get a map of all audit applications key by name
+     * 
+     * @return                      the audit applications
+     * 
+     * @since 3.4
+     */
+    public Map<String, AuditApplication> getAuditApplications();
 
     /**
      * Get the application model for the given root key (as defined on the application)
@@ -65,7 +76,7 @@ public interface AuditModelRegistry
 
     /**
      * Get the path mapper.
-     * @return the path mapper
+     * @return                      the path mapper
      */
     public PathMapper getAuditPathMapper();
 }

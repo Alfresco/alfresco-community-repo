@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.audit;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.PublicService;
 
@@ -31,6 +32,15 @@ import org.alfresco.service.PublicService;
 @PublicService
 public interface AuditService
 {
+    /**
+     * Get all registered audit applications
+     * 
+     * @return                  Returns a set of all available audit applications
+     * 
+     * @since 3.4
+     */
+    Set<String> getAuditApplications();
+    
     /**
      * @return                  Returns <tt>true</tt> if auditing is globally enabled
      * 

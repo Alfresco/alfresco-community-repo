@@ -20,6 +20,7 @@ package org.alfresco.repo.audit;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
@@ -29,19 +30,26 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 
 /**
  * The audit component. Used by the AuditService and AuditMethodInterceptor to insert audit entries.
- * <p/>
- * The V3.2 audit functionality is contained within the same component.  When the newer audit
- * implementation has been tested and approved, then older ones will be deprecated as necessary.
  * 
- * @author Andy Hind
  * @author Derek Hulley
  */
 public interface AuditComponent
 {
     /**
+     * Get all registered audit applications, whether active or not.
+     * 
+     * @return                  Returns a set of registered audit applications
+     * 
+     * @since 3.4
+     */
+    public Set<String> getAuditApplications();
+    
+    /**
      * Determines whether audit is globally enabled or disabled.
      * 
-     * @return <code>true</code>, if audit is enabled
+     * @return                  Returns <code>true</code> if audit is enabled
+     * 
+     * @since 3.3
      */
     public boolean isAuditEnabled();
 
@@ -49,7 +57,9 @@ public interface AuditComponent
      * Determines whether the given source path is mapped to any audit applications. Allows optimizations to be made in
      * calling components.
      * 
-     * @return <code>true</code> if the given source path is mapped to one or more audit applications
+     * @return                  Returns <code>true</code> if the given source path is mapped to one or more
+     *                          audit applications
+     * 
      * @since 3.3
      */
     public boolean isSourcePathMapped(String sourcePath);
@@ -114,7 +124,7 @@ public interface AuditComponent
      * Remove all disabled paths i.e. enable all per-path based auditing.  Auditing may still be
      * disabled globally.  This is primarily for test purposes; applications should know which
      * paths need {@link #enableAudit(String, String) enabling} or
-     * {@link #disableAudit(String, String) disabling}.
+     * {@link #disableAudit(String, String) disabled}.
      * 
      * @param applicationName   the name of the application
      * 
@@ -125,7 +135,7 @@ public interface AuditComponent
     /**
      * Create an audit entry for the given map of values.  The map key is a path - starting with '/'
      * ({@link AuditApplication#AUDIT_PATH_SEPARATOR}) - relative to the root path provided.
-     * 
+     * <p/>
      * The root path and value keys are combined to produce a map of data keyed by full path.  This
      * fully-pathed map is then passed through the
      * {@link AuditModelRegistry#getAuditPathMapper() audit path mapper}.  The result may yield data
@@ -145,7 +155,7 @@ public interface AuditComponent
      * @param values            the values to audit mapped by {@link AuditPath} key relative to root path
      *                          (may be <tt>null</tt>)
      * @return                  Returns the values that were actually persisted, keyed by their full path.
-     * @throws IllegalStateException if there is not a writable transaction present
+     * @throws IllegalStateException if the transaction state could not be determined
      * 
      * @since 3.2
      */

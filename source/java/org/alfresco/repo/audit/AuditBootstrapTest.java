@@ -130,6 +130,12 @@ public class AuditBootstrapTest extends TestCase
         assertNotNull("No audit application ID for " + APPLICATION_TEST, appId);
     }
     
+    public void testGetApplications()
+    {
+        Map<String, AuditApplication> apps = auditModelRegistry.getAuditApplications();
+        assertTrue("Application map not complete", apps.containsKey(APPLICATION_TEST));
+    }
+    
     public void testGetApplicationByKey()
     {
         AuditApplication app = auditModelRegistry.getAuditApplicationByKey(KEY_TEST);

@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -41,7 +42,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.TransactionHelper;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -67,18 +69,22 @@ public class RetryingTransactionHelperTest extends TestCase
     private NodeService nodeService;
     private RetryingTransactionHelper txnHelper;
     
+    private Dialect dialect;
+    
     private NodeRef rootNodeRef;
     private NodeRef workingNodeRef;
     
     @Override
     public void setUp() throws Exception
     {
+        dialect = (Dialect) ctx.getBean("dialect");
+        
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-
+        
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -367,38 +373,104 @@ public class RetryingTransactionHelperTest extends TestCase
     /**
      * Checks nesting of two transactions with <code>requiresNew == true</code>,
      * but where the two transactions get involved in a concurrency struggle.
+     * 
+     * Note: skip test for PostgreSQL
      */
-    @SuppressWarnings("unchecked")
-    public void testNestedWithoutPropogationConcurrentUntilFailure()
+    public void testNestedWithoutPropogationConcurrentUntilFailureNotPostgreSQL() throws InterruptedException
     {
         final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
         txnHelperForTest.setMaxRetries(1);
-        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
+        
+        if (dialect instanceof PostgreSQLDialect)
         {
-            public Long execute() throws Throwable
-            {
-                RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
-                {
-                    public Long execute() throws Throwable
-                    {
-                        incrementCheckValue();
-                        return getCheckValue();
-                    }
-                };
-                incrementCheckValue();
-                txnHelperForTest.doInTransaction(callbackInner, false, true);
-                return getCheckValue();
-            }
-        };
-        try
-        {
-            txnHelperForTest.doInTransaction(callback);
-            fail("Concurrent nested access not leading to failure");
+            // NOOP - skip test for PostgreSQL since it does not support lock wait timeout hence will hang if concurrently "nested" (in terms of Spring) since the initial transaction does not complete
+            // see testConcurrencyRetryingNoFailure instead
         }
-        catch (Throwable e)
+        else
         {
-            Throwable validCause = ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
-            assertNotNull("Unexpected cause of the failure", validCause);
+            RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
+            {
+                public Long execute() throws Throwable
+                {
+                    RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
+                    {
+                        public Long execute() throws Throwable
+                        {
+                            incrementCheckValue();
+                            return getCheckValue();
+                        }
+                    };
+                    incrementCheckValue();
+                    txnHelperForTest.doInTransaction(callbackInner, false, true);
+                    return getCheckValue();
+                }
+            };
+            try
+            {
+                txnHelperForTest.doInTransaction(callback);
+                fail("Concurrent nested access not leading to failure");
+            }
+            catch (Throwable e)
+            {
+                Throwable validCause = ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
+                assertNotNull("Unexpected cause of the failure", validCause);
+            }
+        }
+    }
+    
+    public void testConcurrencyRetryingNoFailure() throws InterruptedException
+    {
+        Thread t1 = new Thread(new ConcurrentTransaction(5000)); 
+        t1.start();
+        
+        Thread.sleep(1000);
+        
+        Thread t2 = new Thread(new ConcurrentTransaction(10));
+        t2.start();
+        
+        t1.join();
+        t2.join();
+    }
+    
+    private class ConcurrentTransaction implements Runnable
+    {
+        private long wait;
+        
+        public ConcurrentTransaction(long wait)
+        {
+            this.wait = wait;
+        }
+        
+        public void run()
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            
+            final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
+            
+            RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
+            {
+                public Long execute() throws Throwable
+                {
+                    incrementCheckValue();
+                    
+                    System.out.println("Wait started: "+Thread.currentThread()+" ("+wait+")");
+                    Thread.sleep(wait);
+                    System.out.println("Wait finished: "+Thread.currentThread()+" ("+wait+")");
+                    
+                    return getCheckValue();
+                }
+            };
+            try
+            {
+                System.out.println("Txn start: "+Thread.currentThread()+" ("+wait+")");
+                txnHelperForTest.doInTransaction(callback);
+                System.out.println("Txn finish: "+Thread.currentThread()+" ("+wait+")");
+            }
+            catch (Throwable e)
+            {
+                Throwable validCause = ExceptionStackUtil.getCause(e, RetryingTransactionHelper.RETRY_EXCEPTIONS);
+                assertNotNull("Unexpected cause of the failure", validCause);
+            }
         }
     }
     

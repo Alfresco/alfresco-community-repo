@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.action;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -409,16 +411,25 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     */
    protected static ExecutionDetails buildExecutionDetails(Action action)
    {
-      // TODO Where are we?
-      String machine = "TODO";
+      // Where are we running?
+      if(machineName == null) {
+         try {
+            InetAddress localhost = InetAddress.getLocalHost();
+            machineName = localhost.getHostAddress() + " : " +
+               localhost.getHostName();
+         } catch(UnknownHostException e) {
+            machineName = "(machine details unavailable - server IP not known)";
+         }
+      }
       
       // Generate
       return new ExecutionDetails(
             buildExecutionSummary(action),
-            action.getNodeRef(), machine,
+            action.getNodeRef(), machineName,
             action.getExecutionStartDate(), false
       );
    }
+   private static String machineName = null;
 
    /**
     * Turns a cache key back into its constituent

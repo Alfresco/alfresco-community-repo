@@ -20,6 +20,7 @@ package org.alfresco.repo.action;
 
 import static org.alfresco.repo.action.ActionServiceImplTest.assertBefore;
 
+import java.net.InetAddress;
 import java.util.Date;
 
 import javax.transaction.UserTransaction;
@@ -171,7 +172,12 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertEquals(null, d.getPersistedActionRef());
        assertEquals(null, d.getStartedAt());
        
-       // TODO Check machine details
+       // Check the machine details
+       // Should be "IP : Name"
+       InetAddress localhost = InetAddress.getLocalHost();
+       String machineName = localhost.getHostAddress() + " : " + 
+                localhost.getHostName();
+       assertEquals(machineName, d.getRunningOn());
     }
     
     /** Running an action gives it an execution ID */

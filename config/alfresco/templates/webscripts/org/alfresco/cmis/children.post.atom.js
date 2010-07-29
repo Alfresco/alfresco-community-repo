@@ -43,7 +43,6 @@ script:
         {
             break script;
         }
-        node.save();
     }
     else if (sourceFolderId == null || sourceFolderId.length == 0)
     {

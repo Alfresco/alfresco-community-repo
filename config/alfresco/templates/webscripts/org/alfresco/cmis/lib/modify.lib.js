@@ -62,6 +62,11 @@ function createNode(parent, entry, slug, versioningState)
     var exclude = [ PROP_OBJECT_TYPE_ID, PROP_NAME ];
     var updated = updateNode(node, entry, exclude, function(propDef) {return patchValidator(propDef, true);});
 
+    if (updated)
+    {
+        node.save();
+    }
+
     // apply versioning state
     if (baseType == DOCUMENT_TYPE_ID && versioningState != null)
     {

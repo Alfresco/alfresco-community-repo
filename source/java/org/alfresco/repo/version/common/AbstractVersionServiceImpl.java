@@ -31,6 +31,7 @@ import org.alfresco.repo.version.VersionServicePolicies.AfterCreateVersionPolicy
 import org.alfresco.repo.version.VersionServicePolicies.BeforeCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy;
+import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -236,8 +237,9 @@ public abstract class AbstractVersionServiceImpl
 		Collection<CalculateVersionLabelPolicy> behaviours = this.calculateVersionLabelDelegate.getList(classRef);
 		if (behaviours.size() == 0)
 		{
-			// Default the version label to the version numbder
-			versionLabel = Integer.toString(versionNumber);
+            // Default the version label to the SerialVersionLabelPolicy
+            SerialVersionLabelPolicy defaultVersionLabelPolicy = new SerialVersionLabelPolicy();
+            versionLabel = defaultVersionLabelPolicy.calculateVersionLabel(classRef, preceedingVersion, versionNumber, versionProperties);
 		}
 		else if (behaviours.size() == 1)
 		{

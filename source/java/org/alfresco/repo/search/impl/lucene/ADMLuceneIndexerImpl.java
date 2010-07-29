@@ -1608,10 +1608,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     remainingCount = count - done;
                     return done;
                 }
-                catch (LuceneIndexException e)
-                {
-                    return 0;
-                }
                 finally
                 {
                     if (writer != null)

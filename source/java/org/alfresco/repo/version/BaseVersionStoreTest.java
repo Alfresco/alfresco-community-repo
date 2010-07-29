@@ -221,15 +221,15 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      */
     protected NodeRef createNewVersionableNode()
     {
-    	return createNode(true);
+    	return createNode(true, TEST_TYPE_QNAME);
     }
     
     protected NodeRef createNewNode()
     {
-    	return createNode(false);
+    	return createNode(false, TEST_TYPE_QNAME);
     }
     
-    protected NodeRef createNode(boolean versionable)
+    protected NodeRef createNode(boolean versionable, QName nodeType)
     {
         // Use this map to retrive the versionable nodes in later tests
         this.versionableNodes = new HashMap<String, NodeRef>();
@@ -239,7 +239,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 rootNodeRef, 
                 ContentModel.ASSOC_CHILDREN, 
                 QName.createQName("{test}MyVersionableNode"),
-                TEST_TYPE_QNAME,
+                nodeType,
                 this.nodeProperties).getChildRef();
         if (versionable)
         {
@@ -263,7 +263,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 nodeRef,
                 TEST_CHILD_ASSOC_1,
                 TEST_CHILD_ASSOC_1,
-                TEST_TYPE_QNAME,
+                nodeType,
                 this.nodeProperties).getChildRef();
         
         if (versionable)
@@ -277,7 +277,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 nodeRef,
                 TEST_CHILD_ASSOC_2,
                 TEST_CHILD_ASSOC_2,
-                TEST_TYPE_QNAME,
+                nodeType,
                 this.nodeProperties).getChildRef();
         
         if (versionable)
@@ -293,7 +293,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}MyAssocNode"),
-                TEST_TYPE_QNAME,
+                nodeType,
                 this.nodeProperties).getChildRef();
         assertNotNull(assocNode);
         this.dbNodeService.createAssociation(nodeRef, assocNode, TEST_ASSOC);

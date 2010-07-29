@@ -70,8 +70,12 @@ CREATE TABLE t_summary_nstat
    transaction_id BIGINT(20) DEFAULT NULL,
    PRIMARY KEY (node_id)
 ) TYPE=InnoDB;
+--FOREACH alf_node_status.node_id system.upgrade.t_summary_nstat.batchsize
 INSERT INTO t_summary_nstat (node_id, transaction_id) 
-  SELECT node_id, transaction_id FROM alf_node_status WHERE node_id IS NOT NULL;
+  SELECT node_id, transaction_id
+  FROM alf_node_status
+  WHERE node_id IS NOT NULL
+  AND node_id >= ${LOWERBOUND} AND node_id <= ${UPPERBOUND};
 
 -- Copy data over
 --FOREACH alf_node.id system.upgrade.t_alf_node.batchsize

@@ -37,6 +37,7 @@ import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorAsc;
+import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -265,6 +267,10 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
         else
         {
+            // ALF-3962 fix
+            // check for corrupted version histories that are marked with version label "0"
+            checkForCorruptedVersions(versionHistoryRef, nodeRef);
+            
             // Since we have an existing version history we should be able to lookup
             // the current version
             currentVersionRef = getCurrentVersionNodeRef(versionHistoryRef, nodeRef);
@@ -685,6 +691,30 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     }
 
     /**
+     * Gets all versions in version history
+     * 
+     * @param versionHistoryRef the version history nodeRef
+     * @return list of all versions
+     */
+    protected List<Version> getAllVersions(NodeRef versionHistoryRef)
+    {
+        List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
+        
+        List<Version> versions = new ArrayList<Version>(versionsAssoc.size());
+        
+        for (ChildAssociationRef versionAssoc : versionsAssoc)
+        {
+            String localName = versionAssoc.getQName().getLocalName();
+            if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
+            {
+                versions.add(getVersion(versionAssoc.getChildRef()));
+            }
+        }
+        
+        return versions;
+    }
+    
+    /**
      * Builds a version history object from the version history reference.
      * <p>
      * The node ref is passed to enable the version history to be scoped to the
@@ -703,18 +733,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         VersionHistory versionHistory = null;
         
-        List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
-        
-        List<Version> versions = new ArrayList<Version>(versionsAssoc.size());
-        
-        for (ChildAssociationRef versionAssoc : versionsAssoc)
-        {
-            String localName = versionAssoc.getQName().getLocalName();
-            if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
-            {
-                versions.add(getVersion(versionAssoc.getChildRef()));
-            }
-        }
+        List<Version> versions = getAllVersions(versionHistoryRef);
         
         Collections.sort(versions, versionComparatorAsc);
         
@@ -877,6 +896,63 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         }
 
         return result;
+    }
+
+    /**
+     * Check if versions are marked with invalid version label, if true > apply default serial version label (e.g. "1.0", "1.1") 
+     * 
+     * @param versionHistory a version histore node reference
+     * @param nodeRef a node reference
+     */
+    private void checkForCorruptedVersions(NodeRef versionHistory, NodeRef nodeRef)
+    {
+        // get the current version label in live store
+        String versionLabel = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+
+        if (versionLabel != null && versionLabel.equals("0"))
+        {
+            // need to correct version labels
+            List<Version> versions = getAllVersions(versionHistory);
+
+            // sort versions by node id
+            Collections.sort(versions, new Comparator<Version>()
+            {
+
+                public int compare(Version v1, Version v2)
+                {
+                    int result = v1.getFrozenModifiedDate().compareTo(v2.getFrozenModifiedDate());
+                    if (result == 0)
+                    {
+                        result = v1.getFrozenStateNodeRef().getId().compareTo(v2.getFrozenStateNodeRef().getId());
+                    }
+                    return result;
+                }
+
+            });
+
+            SerialVersionLabelPolicy serialVersionLabelPolicy = new SerialVersionLabelPolicy();
+            QName classRef = this.nodeService.getType(nodeRef);
+            Version preceedingVersion = null;
+
+            for (Version version : versions)
+            {
+                // re-calculate version label
+                versionLabel = serialVersionLabelPolicy.calculateVersionLabel(classRef, preceedingVersion, 0, version.getVersionProperties());
+
+                // update version with new version label
+                NodeRef versionNodeRef = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, version.getFrozenStateNodeRef().getStoreRef().getIdentifier(), version.getFrozenStateNodeRef()
+                        .getId());
+                this.dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_VERSION_LABEL, versionLabel);
+
+                version.getVersionProperties().put(VersionBaseModel.PROP_VERSION_LABEL, versionLabel);
+
+                // remember preceding version
+                preceedingVersion = version;
+            }
+
+            // update current version label in live store
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, versionLabel);
+        }
     }
 
     /**

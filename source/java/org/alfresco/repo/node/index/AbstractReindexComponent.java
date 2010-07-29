@@ -1108,7 +1108,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             // to prevent the queue from getting locked up.
             if (lastRunnable == currentRunnable)
             {
-                if (currentTimestamp - lastTimestamp > 60E9)
+                if (currentTimestamp - lastTimestamp > 600E9)
                 {
                     
                     try
@@ -1122,9 +1122,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                         }
                         else
                         {
-                            loggerOnThread.info("Terminating reindex thread for inactivity: " + currentRunnable);
-                            reindexThreadQueue.remove(currentRunnable);
-                            currentRunnable.kill();
+                            loggerOnThread.warn("Detected reindex thread inactivity: " + currentRunnable);
+                            //reindexThreadQueue.remove(currentRunnable);
+                            //currentRunnable.kill();
                         }
                         // Reset
                         lastRunnable = null;

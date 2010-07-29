@@ -1164,6 +1164,41 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(versionNodeRef, PermissionService.READ));
     }
     
+    public void testALF_3962()
+    {
+        NodeRef versionableNode = createNode(true, QName.createQName("http://www.alfresco.org/model/action/1.0", "action"));
+        // crete some versions of content without version label policy
+        createVersion(versionableNode);
+        createVersion(versionableNode);
+        createVersion(versionableNode);
+
+        // corrupt versions
+        Collection<Version> versions = versionService.getVersionHistory(versionableNode).getAllVersions();
+
+        for (Version version : versions)
+        {
+            // update version with corrupted label
+            NodeRef versionNodeRef = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, version.getFrozenStateNodeRef().getStoreRef().getIdentifier(), version.getFrozenStateNodeRef()
+                    .getId());
+            this.dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_VERSION_LABEL, "0");
+        }
+        this.nodeService.setProperty(versionableNode, ContentModel.PROP_VERSION_LABEL, "0");
+
+        // should correct version labels
+        versionService.createVersion(versionableNode, this.versionProperties);
+
+        versions = versionService.getVersionHistory(versionableNode).getAllVersions();
+
+        for (Version version : versions)
+        {
+            assertFalse(version.getVersionLabel().equals("0"));
+        }
+
+        // check live node
+        assertFalse(this.nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL).toString().equals("0"));
+
+    }
+    
     public static void main(String ... args)
     {
         try

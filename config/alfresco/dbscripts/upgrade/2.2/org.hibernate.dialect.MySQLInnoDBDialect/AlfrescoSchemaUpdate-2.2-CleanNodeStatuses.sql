@@ -40,10 +40,10 @@ INSERT INTO alf_node_status (protocol, identifier, guid, node_id, transaction_id
 );
 DROP TABLE t_node_status;
 
---FOREACH alf_node_status.node_id system.upgrade.alf_node_status.batchsize
+--FOREACH alf_transaction.id system.upgrade.alf_transaction.batchsize
 DELETE FROM alf_node_status
 WHERE node_id IS NULL
-AND node_id >= ${LOWERBOUND} AND node_id <= ${UPPERBOUND};
+AND transaction_id >= ${LOWERBOUND} AND transaction_id <= ${UPPERBOUND};
 
 --FOREACH alf_node_status.node_id system.upgrade.alf_node_status.batchsize
 UPDATE alf_node_status ns SET ns.protocol =

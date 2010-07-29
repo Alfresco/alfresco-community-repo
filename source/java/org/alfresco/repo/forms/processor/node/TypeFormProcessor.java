@@ -21,6 +21,7 @@ package org.alfresco.repo.forms.processor.node;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -277,6 +278,15 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
     
     @Override
     protected Map<String, Object> getTransientValues(TypeDefinition item)
+    {
+        return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields()
+     */
+    @Override
+    protected List<String> getDefaultIgnoredFields()
     {
         return null;
     }

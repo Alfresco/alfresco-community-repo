@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -117,6 +118,35 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         return decodedId;
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields()
+     */
+    @Override
+    protected List<String> getDefaultIgnoredFields()
+    {
+        ArrayList<String> fields = new ArrayList<String>(5);
+        fields.add("bpm:package"); 
+        fields.add("bpm:pooledActors");
+        fields.add("bpm:completedItems");
+        fields.add("sys:node-dbid");
+        fields.add("sys:store-identifier");
+        fields.add("bpm:completionDate");
+        fields.add("bpm:context");
+        fields.add("sys:node-uuid");
+        fields.add("bpm:hiddenTransitions");
+        fields.add("cm:creator");
+        fields.add("cm:modifier");
+        fields.add("bpm:packageActionGroup");
+        fields.add("bpm:packageItemActionGroup");
+        fields.add("bpm:outcome");
+        fields.add("cm:content");
+        fields.add("cm:accessed");
+        fields.add("bpm:startDate");
+        fields.add("cm:modified");
+        fields.add("cm:created");
+        fields.add("sys:store-protocol");
+        return fields;
+    }
     /**
      * Returns an implementation of {@link ContentModelFormPersister} which is
      * used to accumulate all the changes specified in the {@link Form} and then persist them.

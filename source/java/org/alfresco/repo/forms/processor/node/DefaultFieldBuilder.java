@@ -21,12 +21,14 @@ package org.alfresco.repo.forms.processor.node;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.FormCreationData;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,23 +49,40 @@ public class DefaultFieldBuilder
     private final FormCreationData formData;
     private final ItemData<?> ItemData;
     private final FieldProcessorRegistry registry;
-
+    private final NamespaceService namespaceService;
+    private final List<String> ignoredFields;
+    
     private final Log logger;
 
     public DefaultFieldBuilder(FormCreationData data,
-            FieldProcessorRegistry registry)
+            FieldProcessorRegistry registry,
+            NamespaceService namespaceService,
+            List<String> ignoredFields)
     {
-        this(data, registry, MY_LOGGER);
+        this(data, registry, namespaceService, ignoredFields, MY_LOGGER);
     }
 
     public DefaultFieldBuilder(FormCreationData formData,
                 FieldProcessorRegistry registry,
+                NamespaceService namespaceService,
+                List<String> ignoredFields,
                 Log logger)
     {
         this.logger = logger;
         this.formData = formData;
         this.registry = registry;
+        this.namespaceService = namespaceService;
+        this.ignoredFields = getNonNullList(ignoredFields );
         this.ItemData = (ItemData<?>) formData.getItemData();
+    }
+
+    /**
+     * @param ignoredTransientFields2
+     * @return
+     */
+    private <T> List<T> getNonNullList(List<T> list)
+    {
+        return list == null ? Collections.<T>emptyList() : list;
     }
 
     public List<Field> buildDefaultFields()
@@ -85,18 +104,30 @@ public class DefaultFieldBuilder
         List<Field> fields = new ArrayList<Field>(names.size());
         for (QName name : names)
         {
-            fields.add(buildPropertyField(name));
+            if(ignoreQName(name)==false)
+            {
+                fields.add(buildPropertyField(name));
+            }
         }
         return fields;
     }
     
+    private boolean ignoreQName(QName qname)
+    {
+        String name = qname.toPrefixString(namespaceService);
+        return ignoredFields.contains(name);
+    }
+
     public List<Field> buildDefaultAssociationFields()
     {
         Collection<QName> names = ItemData.getAllAssociationDefinitionNames();
         List<Field> fields = new ArrayList<Field>(names.size());
         for (QName name : names)
         {
-            fields.add(buildAssociationField(name));
+            if(ignoreQName(name)==false)
+            {
+                fields.add(buildAssociationField(name));
+            }
         }
         return fields;
     }
@@ -107,7 +138,10 @@ public class DefaultFieldBuilder
         List<Field> fields = new ArrayList<Field>(names.size());
         for (String name : names)
         {
-            fields.add(buildTransientField(name));
+            if(ignoredFields.contains(name)==false)
+            {
+                fields.add(buildTransientField(name));
+            }
         }
         return fields;
     }

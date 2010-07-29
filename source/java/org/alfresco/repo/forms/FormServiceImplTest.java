@@ -64,6 +64,7 @@ import org.springframework.util.StringUtils;
  * Form service implementation unit test.
  * 
  * @author Gavin Cornwell
+ * @author Nick Smith
  */
 public class FormServiceImplTest extends BaseAlfrescoSpringTest 
 {
@@ -1296,7 +1297,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         ArrayList<String> fields = new ArrayList<String>(4);
         fields.add(WorkflowModel.PROP_DESCRIPTION.toPrefixString(namespaceService));
         fields.add(WorkflowModel.PROP_STATUS.toPrefixString(namespaceService));
-        fields.add(WorkflowModel.PROP_PACKAGE_ACTION_GROUP.toPrefixString(namespaceService));
         fields.add(ContentModel.PROP_OWNER.toPrefixString(namespaceService));
         return fields;
     }

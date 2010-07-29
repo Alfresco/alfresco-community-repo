@@ -25,6 +25,19 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
+import static org.alfresco.repo.workflow.WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
+import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_ASSIGNEE;
+import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE_CONTAINS;
+import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_POOLED_ACTORS;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_DESCRIPTION;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_HIDDEN_TRANSITIONS;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
+import static org.alfresco.repo.workflow.WorkflowModel.PROP_STATUS;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
@@ -34,7 +47,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,10 +66,8 @@ import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
-import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -79,7 +89,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -93,11 +102,11 @@ public class TaskFormProcessorTest extends TestCase
 {
     private static final String TASK_DEF_NAME = "TaskDef";
     private static final String TASK_ID = "foo$Real Id";
-    private static final QName DESC_NAME = WorkflowModel.PROP_DESCRIPTION;
-    private static final QName STATUS_NAME = WorkflowModel.PROP_STATUS;
+    private static final QName DESC_NAME = PROP_DESCRIPTION;
+    private static final QName STATUS_NAME = PROP_STATUS;
     private static final QName PROP_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_prop");
-    private static final QName ACTORS_NAME = WorkflowModel.ASSOC_POOLED_ACTORS;
-    private static final QName ASSIGNEE_NAME = WorkflowModel.ASSOC_ASSIGNEE;
+    private static final QName ACTORS_NAME = ASSOC_POOLED_ACTORS;
+    private static final QName ASSIGNEE_NAME = ASSOC_ASSIGNEE;
     private static final QName ASSOC_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_assoc");
     private static final NodeRef FAKE_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode");
     private static final NodeRef FAKE_NODE2 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode2");
@@ -210,11 +219,17 @@ public class TaskFormProcessorTest extends TestCase
         Form form = processForm();
         List<String> fieldDefs = form.getFieldDefinitionNames();
         assertTrue(fieldDefs.contains(ASSIGNEE_NAME.toPrefixString(namespaceService)));
-        assertTrue(fieldDefs.contains(ACTORS_NAME.toPrefixString(namespaceService)));
+        assertTrue(fieldDefs.contains(ASSOC_WITH_.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(DESC_NAME.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(STATUS_NAME.toPrefixString(namespaceService)));
+        assertTrue(fieldDefs.contains(PROP_WITH_.toPrefixString(namespaceService)));
         assertTrue(fieldDefs.contains(PackageItemsFieldProcessor.KEY));
         assertTrue(fieldDefs.contains(TransitionFieldProcessor.KEY));
+
+        // Check 'default ignored fields' are proerly removed from defaults.
+        assertFalse(fieldDefs.contains(ACTORS_NAME.toPrefixString(namespaceService)));
+        assertFalse(fieldDefs.contains(PROP_PACKAGE_ACTION_GROUP.toPrefixString(namespaceService)));
+        assertFalse(fieldDefs.contains(PROP_PACKAGE_ITEM_ACTION_GROUP.toPrefixString(namespaceService)));
 
         Serializable fieldData = (Serializable) Arrays.asList(FAKE_NODE.toString());
         FormData formData = form.getFormData();
@@ -241,7 +256,7 @@ public class TaskFormProcessorTest extends TestCase
         
         // Hide transition with id3.
         Serializable hiddenValue = (Serializable) Collections.singletonList("id3");
-        task.properties.put(WorkflowModel.PROP_HIDDEN_TRANSITIONS, hiddenValue );
+        task.properties.put(PROP_HIDDEN_TRANSITIONS, hiddenValue );
         
         form = processForm(fieldName);
         transitionValues = "id1|title1,id2|title2";
@@ -396,7 +411,7 @@ public class TaskFormProcessorTest extends TestCase
         ArrayList<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(children.length);
         for (NodeRef nodeRef : children)
         {
-            ChildAssociationRef child = new ChildAssociationRef(WorkflowModel.ASSOC_PACKAGE_CONTAINS, PCKG_NODE, null, nodeRef);
+            ChildAssociationRef child = new ChildAssociationRef(ASSOC_PACKAGE_CONTAINS, PCKG_NODE, null, nodeRef);
             results.add(child);
         }
         when(nodeService.getChildAssocs(eq(PCKG_NODE), (QNamePattern)any(), (QNamePattern)any()))
@@ -417,7 +432,7 @@ public class TaskFormProcessorTest extends TestCase
         verify(nodeService, times(times))
             .addChild(eq(PCKG_NODE),
                         eq(child),
-                        eq(WorkflowModel.ASSOC_PACKAGE_CONTAINS),
+                        eq(ASSOC_PACKAGE_CONTAINS),
                         (QName)any());
     }
     
@@ -599,13 +614,13 @@ public class TaskFormProcessorTest extends TestCase
         properties.put(PROP_WITH_, with_);
 
         // Add a Package Action property
-        QName pckgActionGroup = WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
+        QName pckgActionGroup = PROP_PACKAGE_ACTION_GROUP;
         PropertyDefinition pckgAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgActionGroup, textType,
                     "");
         properties.put(pckgActionGroup, pckgAction);
 
         // Add a Package Action property
-        QName pckgItemActionGroup = WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
+        QName pckgItemActionGroup = PROP_PACKAGE_ITEM_ACTION_GROUP;
         PropertyDefinition pckgItemAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup,
                     textType, "read_package_item_actions");
         properties.put(pckgItemActionGroup, pckgItemAction);
@@ -694,7 +709,7 @@ public class TaskFormProcessorTest extends TestCase
     private NodeService makeNodeService()
     {
         NodeService service = mock(NodeService.class);
-        when(service.hasAspect(PCKG_NODE, WorkflowModel.ASPECT_WORKFLOW_PACKAGE))
+        when(service.hasAspect(PCKG_NODE, ASPECT_WORKFLOW_PACKAGE))
             .thenReturn(true);
         return service;
     }

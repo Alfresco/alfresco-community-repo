@@ -41,6 +41,8 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
 {
     private static final Log logger = LogFactory.getLog(FilteredFormProcessor.class);
 
+    private List<String> ignoredFields = null;
+    
     protected FilterRegistry<ItemType, PersistType> filterRegistry;
 
     protected FieldProcessorRegistry fieldProcessorRegistry;
@@ -56,6 +58,14 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
 
         if (logger.isDebugEnabled())
             logger.debug("Set filter registry: " + this.filterRegistry + " for processor: " + this);
+    }
+
+    /**
+     * @param ignoredFields the ignoredFields to set
+     */
+    public void setIgnoredFields(List<String> ignoredFields)
+    {
+        this.ignoredFields = ignoredFields;
     }
 
     /*
@@ -170,17 +180,25 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         }
         else
         {
-            fieldsToAdd = generateDefaultFields(data);
+            fieldsToAdd = generateDefaultFields(data, getIgnoredFields());
         }
         form.addFields(fieldsToAdd);
+    }
+
+    private List<String> getIgnoredFields()
+    {
+        if(ignoredFields != null)
+            return ignoredFields;
+        return getDefaultIgnoredFields();
     }
 
     /**
      * Generates a list of default fields to add if no field names are specified.
      * @param data Used for field creation.
+     * @param ignoredFields TODO
      * @return a {@link List} of {@link Field Fields} which may be empty.
      */
-    protected List<Field> generateDefaultFields(FormCreationData data)
+    protected List<Field> generateDefaultFields(FormCreationData data, List<String> fieldsToIgnore)
     {
         return Collections.emptyList();
     }
@@ -266,4 +284,5 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
      */
     protected abstract PersistType internalPersist(ItemType item, FormData data);
 
+    protected abstract List<String> getDefaultIgnoredFields();
 }

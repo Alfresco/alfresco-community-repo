@@ -21,9 +21,9 @@ package org.alfresco.repo.forms.processor.node;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DEFAULT_CONTENT_MIMETYPE;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ON;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DEFAULT_CONTENT_MIMETYPE;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -183,9 +183,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     }
 
     @Override
-    protected List<Field> generateDefaultFields(FormCreationData data)
+    protected List<Field> generateDefaultFields(FormCreationData data, List<String> fieldsToIgnore)
     {
-        DefaultFieldBuilder defaultFieldBuilder = new DefaultFieldBuilder(data, fieldProcessorRegistry);
+        DefaultFieldBuilder defaultFieldBuilder = 
+            new DefaultFieldBuilder(data, fieldProcessorRegistry, namespaceService, fieldsToIgnore);
         return defaultFieldBuilder.buildDefaultFields();
     }
 

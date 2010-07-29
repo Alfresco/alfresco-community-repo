@@ -288,4 +288,13 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
 
         return item;
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getDefaultIgnoredFields()
+     */
+    @Override
+    protected List<String> getDefaultIgnoredFields()
+    {
+        return null;
+    }
 }

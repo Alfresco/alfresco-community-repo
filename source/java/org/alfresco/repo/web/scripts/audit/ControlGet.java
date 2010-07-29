@@ -35,7 +35,6 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
  */
 public class ControlGet extends AbstractAuditWebScript
 {
-    @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         // return the unique transfer id (the lock id)

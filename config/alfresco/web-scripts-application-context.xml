@@ -828,4 +828,24 @@
           parent="abstractAuditWebScript">
     </bean>
 
+
+    <!--                                   -->
+    <!--      Replication Service REST API    -->
+    <!--                                   -->
+
+    <!-- abstract replication web script -->
+    <bean id="abstractReplicationWebScript"
+          class="org.alfresco.repo.web.scripts.replication.AbstractReplicationWebscript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="replicationService" ref="ReplicationService" />
+        <property name="actionTrackingService" ref="actionTrackingService" />
+    </bean>
+
+    <!-- Lists the replication definitions -->
+    <bean id="webscript.org.alfresco.repository.replication.replication-definitions.get"
+          class="org.alfresco.repo.web.scripts.replication.ReplicationDefinitionsGet"
+          parent="abstractReplicationWebScript">
+    </bean>
+
 </beans>

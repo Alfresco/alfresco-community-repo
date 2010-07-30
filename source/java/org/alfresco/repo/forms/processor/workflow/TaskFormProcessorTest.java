@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
@@ -558,7 +559,10 @@ public class TaskFormProcessorTest extends TestCase
         result.properties = makeTaskProperties();
 
         result.path = new WorkflowPath();
+        result.path.node = new WorkflowNode();
+        result.path.node.transitions = new WorkflowTransition[0];
         result.path.instance = new WorkflowInstance();
+        result.path.instance.definition = new WorkflowDefinition("42", "Test", "1.0", "Test", "Test", null);
         result.path.instance.workflowPackage = PCKG_NODE;
         return result;
     }

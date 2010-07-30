@@ -125,6 +125,8 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     protected List<String> getDefaultIgnoredFields()
     {
         ArrayList<String> fields = new ArrayList<String>(5);
+        fields.add("cm:name");
+        fields.add("cm:owner");
         fields.add("bpm:package"); 
         fields.add("bpm:pooledActors");
         fields.add("bpm:completedItems");

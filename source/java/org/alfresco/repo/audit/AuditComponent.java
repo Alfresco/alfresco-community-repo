@@ -36,6 +36,24 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 public interface AuditComponent
 {
     /**
+     * Determines whether audit is globally enabled or disabled.
+     * 
+     * @return                  Returns <code>true</code> if audit is enabled
+     * 
+     * @since 3.3
+     */
+    public boolean isAuditEnabled();
+    
+    /**
+     * Switch auditing on or off
+     * 
+     * @param enable            <tt>true</tt> to enable auditing or <tt>false</tt> to disable
+     * 
+     * @since 3.4
+     */
+    public void setAuditEnabled(boolean enable);
+
+    /**
      * Get all registered audit applications, whether active or not.
      * 
      * @return                  Returns a set of registered audit applications
@@ -44,15 +62,6 @@ public interface AuditComponent
      */
     public Set<String> getAuditApplications();
     
-    /**
-     * Determines whether audit is globally enabled or disabled.
-     * 
-     * @return                  Returns <code>true</code> if audit is enabled
-     * 
-     * @since 3.3
-     */
-    public boolean isAuditEnabled();
-
     /**
      * Determines whether the given source path is mapped to any audit applications. Allows optimizations to be made in
      * calling components.
@@ -81,7 +90,8 @@ public interface AuditComponent
      * data is audited.
      * 
      * @param applicationName   the name of the application being logged to
-     * @param path              the audit path to check
+     * @param path              the audit path to check or <tt>null</tt> to assume the
+     *                          application's root path
      * @return                  Returns <tt>true</tt> if the audit path has been disabled
      * 
      * @since 3.2
@@ -97,7 +107,8 @@ public interface AuditComponent
      * If the enabled 
      * 
      * @param applicationName   the name of the application being logged to
-     * @param path              the audit path to enable auditing on
+     * @param path              the audit path to check or <tt>null</tt> to assume the
+     *                          application's root path
      * 
      * @since 3.2
      */
@@ -114,7 +125,8 @@ public interface AuditComponent
      * the root path of the application, then auditing for that application is effectively disabled. 
      * 
      * @param applicationName   the name of the application being logged to
-     * @param path              the audit path to enable auditing on
+     * @param path              the audit path to check or <tt>null</tt> to assume the
+     *                          application's root path
      * 
      * @since 3.2
      */

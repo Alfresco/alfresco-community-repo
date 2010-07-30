@@ -33,6 +33,22 @@ import org.alfresco.service.PublicService;
 public interface AuditService
 {
     /**
+     * @return                  Returns <tt>true</tt> if auditing is globally enabled
+     * 
+     * @since 3.4
+     */
+    boolean isAuditEnabled();
+    
+    /**
+     * Enable or disable the global auditing state
+     * 
+     * @param enable            <tt>true</tt> to enable auditing globally or <tt>false</tt> to disable
+     * 
+     * @since 3.4
+     */
+    void setAuditEnabled(boolean enable);
+    
+    /**
      * Get all registered audit applications
      * 
      * @return                  Returns a set of all available audit applications
@@ -40,13 +56,6 @@ public interface AuditService
      * @since 3.4
      */
     Set<String> getAuditApplications();
-    
-    /**
-     * @return                  Returns <tt>true</tt> if auditing is globally enabled
-     * 
-     * @since 3.4
-     */
-    boolean isAuditEnabled();
     
     /**
      * @param applicationName   the name of the application to check 
@@ -83,8 +92,23 @@ public interface AuditService
      * @param applicationName   the name of the application for which to remove entries
      * 
      * @since 3.2
+     * 
+     * @deprecated          Use {@link #clearAudit(String, Long, Long)}
      */
     void clearAudit(String applicationName);
+    
+    /**
+     * Remove audit entries for the given application between the time ranges.  If no start
+     * time is given then entries are deleted as far back as they exist.  If no end time is
+     * given then entries are deleted up until the current time.
+     * 
+     * @param applicationName   the name of the application for which to remove entries
+     * @param fromTime          the start time of entries to remove (inclusive and optional)
+     * @param toTime            the end time of entries to remove (exclusive and optional)
+     * 
+     * @since 3.4
+     */
+    void clearAudit(String applicationName, Long fromTime, Long toTime);
     
     /**
      * The interface that will be used to give query results to the calling code.

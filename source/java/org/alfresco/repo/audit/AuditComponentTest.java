@@ -455,6 +455,18 @@ public class AuditComponentTest extends TestCase
                 result = auditTestAction("action-01", nodeRef, parameters);
                 checkAuditMaps(result, expectedInner);
 
+                // Disable using the root of the application by passing a null root
+                auditComponent.disableAudit(APPLICATION_ACTIONS_TEST, null);
+                expectedInner.clear();
+                result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+
+                // Enabling the root using a null root parameter should give back everything
+                auditComponent.enableAudit(APPLICATION_ACTIONS_TEST, null);
+                expectedInner = new HashMap<String, Serializable>(expected);
+                result = auditTestAction("action-01", nodeRef, parameters);
+                checkAuditMaps(result, expectedInner);
+
                 return null;
             }
         };
@@ -619,7 +631,7 @@ public class AuditComponentTest extends TestCase
             @Override
             public Void doWork() throws Exception
             {
-                auditService.clearAudit(applicationName);
+                auditService.clearAudit(applicationName, null, null);
                 return null;
             }
         };

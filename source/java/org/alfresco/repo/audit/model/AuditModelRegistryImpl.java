@@ -77,10 +77,6 @@ import org.xml.sax.SAXParseException;
  */
 public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implements AuditModelRegistry
 {
-    /** The name of the global enablement property. */
-    private static final String PROPERTY_AUDIT_ENABLED = "audit.enabled";
-    private static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
-    
     private static final Log logger = LogFactory.getLog(AuditModelRegistryImpl.class);
     
     private String[] searchPath;
@@ -213,7 +209,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     @Override
     public boolean isAuditEnabled()
     {
-        String value = getProperty(PROPERTY_AUDIT_ENABLED);
+        String value = getProperty(AUDIT_PROPERTY_AUDIT_ENABLED);
         return value != null && value.equalsIgnoreCase("true");
     }
 
@@ -226,7 +222,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     public synchronized void registerModel(URL auditModelUrl)
     {
         stop();
-        setProperty(PROPERTY_AUDIT_ENABLED, "true");
+        setProperty(AUDIT_PROPERTY_AUDIT_ENABLED, "true");
         getState(false).registerModel(auditModelUrl);
     }
         
@@ -255,7 +251,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             properties = new HashMap<String, Boolean>(7);
             
             // Default value for global enabled property
-            properties.put(PROPERTY_AUDIT_ENABLED, false);
+            properties.put(AUDIT_PROPERTY_AUDIT_ENABLED, false);
 
             // Let's search for config files in the appropriate places. The individual applications they contain can still
             // be enabled/disabled by the bean properties
@@ -364,7 +360,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
             auditPathMapper = new PathMapper();
 
             // If we are globally disabled, skip processing the models
-            Boolean enabled = properties.get(PROPERTY_AUDIT_ENABLED);
+            Boolean enabled = properties.get(AUDIT_PROPERTY_AUDIT_ENABLED);
             if (enabled != null && enabled)
             {
                 final RetryingTransactionCallback<Void> loadModelsCallback = new RetryingTransactionCallback<Void>()

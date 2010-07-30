@@ -16,7 +16,7 @@
     <bean id="auditComponent" class="org.alfresco.repo.audit.AuditComponentImpl">
         <property name="transactionService" ref="transactionService"/>
         <property name="auditDAO" ref="auditDAO"/>
-        <property name="auditModelRegistry" ref="auditModel.modelRegistry"/>
+        <property name="auditModelRegistry" ref="Audit"/>
         <property name="propertyValueDAO" ref="propertyValueDAO"/>
     </bean>
     

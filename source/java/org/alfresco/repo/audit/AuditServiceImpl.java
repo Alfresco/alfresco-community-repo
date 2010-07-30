@@ -47,6 +47,25 @@ public class AuditServiceImpl implements AuditService
      * {@inheritDoc}
      * @since 3.4
      */
+    public boolean isAuditEnabled()
+    {
+        return auditComponent.isAuditEnabled();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    @Override
+    public void setAuditEnabled(boolean enable)
+    {
+        auditComponent.setAuditEnabled(enable);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
     @Override
     public Set<String> getAuditApplications()
     {
@@ -55,20 +74,10 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
-     * @since 3.4
-     */
-    public boolean isAuditEnabled()
-    {
-        return auditComponent.isAuditEnabled();
-    }
-
-    /**
-     * {@inheritDoc}
      * @since 3.2
      */
     public boolean isAuditEnabled(String applicationName, String path)
     {
-        // Get the root path for the application
         return auditComponent.isAuditPathEnabled(applicationName, path);
     }
 
@@ -98,6 +107,17 @@ public class AuditServiceImpl implements AuditService
     {
         Long now = Long.valueOf(System.currentTimeMillis());
         auditComponent.deleteAuditEntries(applicationName, null, now);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    @Override
+    public void clearAudit(String applicationName, Long fromTime, Long toTime)
+    {
+        toTime = (toTime == null) ? Long.valueOf(System.currentTimeMillis()) : toTime;
+        auditComponent.deleteAuditEntries(applicationName, fromTime, toTime);
     }
 
     /**

@@ -30,6 +30,10 @@ import org.alfresco.util.PathMapper;
  */
 public interface AuditModelRegistry
 {
+    /** The name of the global enablement property. */
+    public static final String AUDIT_PROPERTY_AUDIT_ENABLED = "audit.enabled";
+    public static final String AUDIT_SCHEMA_LOCATION = "classpath:alfresco/audit/alfresco-audit-3.2.xsd";
+    
     public static final String AUDIT_RESERVED_KEY_USERNAME = "username";
     public static final String AUDIT_RESERVED_KEY_SYSTEMTIME = "systemTime";
 

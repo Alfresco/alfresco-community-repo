@@ -31,6 +31,7 @@ import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -60,7 +61,7 @@ public class AuditComponentImpl implements AuditComponent
 {
     private static Log logger = LogFactory.getLog(AuditComponentImpl.class);
 
-    private AuditModelRegistry auditModelRegistry;
+    private AuditModelRegistryImpl auditModelRegistry;
     private PropertyValueDAO propertyValueDAO;
     private AuditDAO auditDAO;
     private TransactionService transactionService;
@@ -76,7 +77,7 @@ public class AuditComponentImpl implements AuditComponent
      * Set the registry holding the audit models
      * @since 3.2
      */
-    public void setAuditModelRegistry(AuditModelRegistry auditModelRegistry)
+    public void setAuditModelRegistry(AuditModelRegistryImpl auditModelRegistry)
     {
         this.auditModelRegistry = auditModelRegistry;
     }
@@ -159,21 +160,40 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
+     * @since 3.2
+     */
+    public boolean isAuditEnabled()
+    {
+        return auditModelRegistry.isAuditEnabled();                
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.4
+     */
+    @Override
+    public void setAuditEnabled(boolean enable)
+    {
+        boolean alreadyEnabled = auditModelRegistry.isAuditEnabled();
+        if (alreadyEnabled != enable)
+        {
+            // It is changing
+            auditModelRegistry.stop();
+            auditModelRegistry.setProperty(
+                        AuditModelRegistry.AUDIT_PROPERTY_AUDIT_ENABLED,
+                        Boolean.toString(enable).toLowerCase());
+            auditModelRegistry.start();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
      * @since 3.4
      */
     public Set<String> getAuditApplications()
     {
         Map<String, AuditApplication> auditApps = auditModelRegistry.getAuditApplications();
         return auditApps.keySet();
-    }
-
-    /**
-     * {@inheritDoc}
-     * @since 3.2
-     */
-    public boolean isAuditEnabled()
-    {
-        return auditModelRegistry.isAuditEnabled();                
     }
 
     /**
@@ -192,7 +212,6 @@ public class AuditComponentImpl implements AuditComponent
     public boolean isAuditPathEnabled(String applicationName, String path)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
-        ParameterCheck.mandatory("path", path);
         AlfrescoTransactionSupport.checkTransactionReadState(false);
         
         AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
@@ -204,8 +223,16 @@ public class AuditComponentImpl implements AuditComponent
             }
             return false;
         }
-        // Check the path against the application
-        application.checkPath(path);
+        // Ensure that the path gets a valid value
+        if (path == null)
+        {
+            path = AuditApplication.AUDIT_PATH_SEPARATOR + application.getApplicationKey();
+        }
+        else
+        {
+            // Check the path against the application
+            application.checkPath(path);
+        }
 
         Set<String> disabledPaths = getDisabledPaths(application);
         
@@ -238,7 +265,6 @@ public class AuditComponentImpl implements AuditComponent
     public void enableAudit(String applicationName, String path)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
-        ParameterCheck.mandatory("path", path);
         AlfrescoTransactionSupport.checkTransactionReadState(true);
         
         AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
@@ -250,8 +276,16 @@ public class AuditComponentImpl implements AuditComponent
             }
             return;
         }
-        // Check the path against the application
-        application.checkPath(path);
+        // Ensure that the path gets a valid value
+        if (path == null)
+        {
+            path = AuditApplication.AUDIT_PATH_SEPARATOR + application.getApplicationKey();
+        }
+        else
+        {
+            // Check the path against the application
+            application.checkPath(path);
+        }
 
         Long disabledPathsId = application.getDisabledPathsId();
         Set<String> disabledPaths = getDisabledPaths(application);
@@ -290,7 +324,6 @@ public class AuditComponentImpl implements AuditComponent
     public void disableAudit(String applicationName, String path)
     {
         ParameterCheck.mandatory("applicationName", applicationName);
-        ParameterCheck.mandatory("path", path);
         AlfrescoTransactionSupport.checkTransactionReadState(true);
         
         AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
@@ -302,8 +335,16 @@ public class AuditComponentImpl implements AuditComponent
             }
             return;
         }
-        // Check the path against the application
-        application.checkPath(path);
+        // Ensure that the path gets a valid value
+        if (path == null)
+        {
+            path = AuditApplication.AUDIT_PATH_SEPARATOR + application.getApplicationKey();
+        }
+        else
+        {
+            // Check the path against the application
+            application.checkPath(path);
+        }
         
         Long disabledPathsId = application.getDisabledPathsId();
         Set<String> disabledPaths = getDisabledPaths(application);

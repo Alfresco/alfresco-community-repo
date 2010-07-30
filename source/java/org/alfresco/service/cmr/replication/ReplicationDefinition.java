@@ -95,5 +95,24 @@ public interface ReplicationDefinition extends CancellableAction, Serializable {
     */
    void setLocalTransferReport(NodeRef report);
    
+   /**
+    * Returns the remote side of the report on
+    *  the transfer.
+    * The transfer service generates two reports,
+    *  one on the local repository, and one on the
+    *  remote repository. This returns the 
+    *  remote version of the report.
+    * @return The transfer report on the remote repository
+    */
+   NodeRef getRemoteTransferReport();
+   
+   /**
+    * Records the location on the local repository
+    *  of the transfer service report that was
+    *  generated on the remote repository for the
+    *  replication.
+    */
+   void setRemoteTransferReport(NodeRef report);
+   
    // TODO Replication options, such as permissions and rules
 }

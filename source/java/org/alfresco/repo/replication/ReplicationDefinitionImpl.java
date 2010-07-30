@@ -44,7 +44,8 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     public static final String REPLICATION_DEFINITION_TARGET = "replicationTarget";
     public static final String REPLICATION_DEFINITION_PAYLOAD = "replicationPayload";
     public static final String REPLICATION_DEFINITION_ENABLED = "replicationDefinitionEnabled";
-    public static final String REPLICATION_DEFINITION_TRANSFER_REPORT = "replicationTransferReport";
+    public static final String REPLICATION_DEFINITION_LOCAL_TRANSFER_REPORT = "replicationTransferLocalReport";
+    public static final String REPLICATION_DEFINITION_REMOTE_TRANSFER_REPORT = "replicationTransferRemoteReport";
 
     /**
      * @param id
@@ -181,7 +182,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     * org.alfresco.service.cmr.replication.ReplicationDefinition#getLocalTransferReport()
     */
    public NodeRef getLocalTransferReport() {
-      return (NodeRef)getParameterValue(REPLICATION_DEFINITION_TRANSFER_REPORT);
+      return (NodeRef)getParameterValue(REPLICATION_DEFINITION_LOCAL_TRANSFER_REPORT);
    }
    
    /*
@@ -189,6 +190,22 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
     * org.alfresco.service.cmr.replication.ReplicationDefinition#setLocalTransferReport(NodeRef)
     */
    public void setLocalTransferReport(NodeRef report) {
-      setParameterValue(REPLICATION_DEFINITION_TRANSFER_REPORT, report);
+      setParameterValue(REPLICATION_DEFINITION_LOCAL_TRANSFER_REPORT, report);
+   }
+
+   /*
+    * @see
+    * org.alfresco.service.cmr.replication.ReplicationDefinition#getRemoteTransferReport()
+    */
+   public NodeRef getRemoteTransferReport() {
+      return (NodeRef)getParameterValue(REPLICATION_DEFINITION_REMOTE_TRANSFER_REPORT);
+   }
+   
+   /*
+    * @see
+    * org.alfresco.service.cmr.replication.ReplicationDefinition#setRemoteTransferReport(NodeRef)
+    */
+   public void setRemoteTransferReport(NodeRef report) {
+      setParameterValue(REPLICATION_DEFINITION_REMOTE_TRANSFER_REPORT, report);
    }
 }

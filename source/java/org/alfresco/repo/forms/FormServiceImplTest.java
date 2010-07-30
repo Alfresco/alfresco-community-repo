@@ -1295,9 +1295,12 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private List<String> getExpectedTaskFields()
     {
         ArrayList<String> fields = new ArrayList<String>(4);
+        fields.add(WorkflowModel.PROP_TASK_ID.toPrefixString(namespaceService));
         fields.add(WorkflowModel.PROP_DESCRIPTION.toPrefixString(namespaceService));
         fields.add(WorkflowModel.PROP_STATUS.toPrefixString(namespaceService));
-        fields.add(ContentModel.PROP_OWNER.toPrefixString(namespaceService));
+        fields.add(WorkflowModel.PROP_PRIORITY.toPrefixString(namespaceService));
+        fields.add(WorkflowModel.PROP_COMMENT.toPrefixString(namespaceService));
+        fields.add(WorkflowModel.PROP_DUE_DATE.toPrefixString(namespaceService));
         return fields;
     }
     

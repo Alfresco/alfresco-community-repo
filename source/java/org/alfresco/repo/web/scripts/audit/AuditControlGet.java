@@ -19,7 +19,6 @@
 package org.alfresco.repo.web.scripts.audit;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Set;
@@ -33,7 +32,7 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
  * @author Derek Hulley
  * @since 3.4
  */
-public class ControlGet extends AbstractAuditWebScript
+public class AuditControlGet extends AbstractAuditWebScript
 {
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
@@ -43,34 +42,44 @@ public class ControlGet extends AbstractAuditWebScript
 
         String app = getApp(req, false);
         String path = getPath(req);
-        Set<String> apps = (app == null ? auditService.getAuditApplications() : Collections.singleton(app));
+        Set<String> apps = auditService.getAuditApplications();
+        
+        // Check that the application exists
+        if (app != null)
+        {
+            if (apps.contains(app))
+            {
+                apps = Collections.singleton(app);
+            }
+            else
+            {
+                apps = Collections.emptySet();
+            }
+        }
         
         boolean enabledGlobal = auditService.isAuditEnabled();
         json.startObject();
         {
             json.writeValue(JSON_KEY_ENABLED, enabledGlobal);
-            if (apps.size() > 0)
+            json.startValue(JSON_KEY_APPLICATIONS);
             {
-                json.startValue(JSON_KEY_APPLICATIONS);
+                json.startArray();
                 {
-                    json.startArray();
+                    for (String appName : apps)
                     {
-                        for (String appName : apps)
+                        boolean enabled = auditService.isAuditEnabled(appName, path);
+                        json.startObject();
                         {
-                            boolean enabled = auditService.isAuditEnabled(appName, path);
-                            json.startObject();
-                            {
-                                json.writeValue(JSON_KEY_NAME, appName);
-                                json.writeValue(JSON_KEY_PATH, path);
-                                json.writeValue(JSON_KEY_ENABLED, enabled);
-                            }
-                            json.endObject();
+                            json.writeValue(JSON_KEY_NAME, appName);
+                            json.writeValue(JSON_KEY_PATH, path);
+                            json.writeValue(JSON_KEY_ENABLED, enabled);
                         }
+                        json.endObject();
                     }
-                    json.endArray();
                 }
-                json.endValue();
+                json.endArray();
             }
+            json.endValue();
         }
         json.endObject();
         
@@ -81,10 +90,5 @@ public class ControlGet extends AbstractAuditWebScript
         res.setContentEncoding(Charset.defaultCharset().displayName());     // TODO: Should be settable on JSONWriter
         //        res.addHeader("Content-Length", "" + length);             // TODO: Do we need this?
         res.setStatus(Status.STATUS_OK);
-    }
-    
-    protected void writeResponse(JSONWriter json)
-    {
-        
     }
 }

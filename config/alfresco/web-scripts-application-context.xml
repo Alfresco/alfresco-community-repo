@@ -812,7 +812,7 @@
           parent="abstractWorkflowWebScript"></bean>
 
     <!--                                   -->
-    <!--      Workflow Service REST API    -->
+    <!--      Audit Service REST API    -->
     <!--                                   -->
 
     <!-- abstract audit web script -->
@@ -824,10 +824,15 @@
 
     <!-- Gets the current audit state (enabled/disabled) for an application and path -->
     <bean id="webscript.org.alfresco.repository.audit.control.get"
-          class="org.alfresco.repo.web.scripts.audit.ControlGet"
+          class="org.alfresco.repo.web.scripts.audit.AuditControlGet"
           parent="abstractAuditWebScript">
     </bean>
 
+    <!-- Change audit state (enabled/disabled) for an application and path -->
+    <bean id="webscript.org.alfresco.repository.audit.control.post"
+          class="org.alfresco.repo.web.scripts.audit.AuditControlPost"
+          parent="abstractAuditWebScript">
+    </bean>
 
     <!--                                   -->
     <!--      Replication Service REST API    -->

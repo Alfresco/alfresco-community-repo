@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.audit;
 
 import java.util.Set;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -68,6 +69,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     public void testGetIsAuditEnabledGlobally() throws Exception
     {
         boolean checkEnabled = auditService.isAuditEnabled();
+        Set<String> checkApps = auditService.getAuditApplications();
 
         String url = "/api/audit/control";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
@@ -76,12 +78,13 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         JSONObject json = new JSONObject(response.getContentAsString());
         boolean enabled = json.getBoolean("enabled");
         assertEquals("Mismatched global audit enabled", checkEnabled, enabled);
+        JSONArray apps = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_APPLICATIONS);
+        assertEquals("Incorrect number of applications reported", checkApps.size(), apps.length());
     }
     
     public void testGetIsAuditEnabledMissingApp() throws Exception
     {
         boolean checkEnabled = auditService.isAuditEnabled();
-        Set<String> checkApps = auditService.getAuditApplications();
 
         String url = "/api/audit/control?app=xxx";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
@@ -93,6 +96,35 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertEquals("Mismatched global audit enabled", checkEnabled, enabled);
         JSONArray apps = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_APPLICATIONS);
         // We expect that the unknown application is returned with the others
-        assertEquals("Incorrect number of applications reported", checkApps.size()+1, apps.length());
+        assertEquals("Should not be any apps listed", 0, apps.length());
+    }
+    
+    public void testSetAuditEnabled() throws Exception
+    {
+        boolean checkEnabled = auditService.isAuditEnabled();
+
+        // We need to set this back after the test
+        try
+        {
+            if (checkEnabled)
+            {
+                String url = "/api/audit/control/disable";
+                TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+                sendRequest(req, 200, admin);
+            }
+            else
+            {
+                String url = "/api/audit/control/enable";
+                TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+                sendRequest(req, 200, admin);
+            }
+            
+            // Check that it worked
+            testGetIsAuditEnabledGlobally();
+        }
+        finally
+        {
+            auditService.setAuditEnabled(checkEnabled);
+        }
     }
 }

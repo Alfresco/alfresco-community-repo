@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
+import java.util.Map;
+
 import org.alfresco.service.cmr.audit.AuditService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,11 +39,14 @@ public abstract class AbstractAuditWebScript extends AbstractWebScript
 {
     public static final String PARAM_APP = "app";
     public static final String PARAM_PATH="path";
+    public static final String PARAM_ACTION = "action";
     
     public static final String JSON_KEY_APPLICATIONS = "applications";
     public static final String JSON_KEY_NAME = "name";
     public static final String JSON_KEY_PATH = "path";
     public static final String JSON_KEY_ENABLED = "enabled";
+    
+    private static enum AuditWebScriptAction {enable, disable};
     
     /**
      * Logger that can be used by subclasses.
@@ -86,21 +91,44 @@ public abstract class AbstractAuditWebScript extends AbstractWebScript
     }
     /**
      * Get the path from the request.  If it is mandatory, then a value must have been supplied
-     * otherwise, at the very least, '/' is returned.
+     * otherwise <tt>null</tt> is returned.
      * @param mandatory         <tt>true</tt> if the parameter is expected
-     * @return                  Returns the path or at least '/' (never <tt>null</tt>)
+     * @return                  Returns the path or <tt>null</tt> if not present
      */
     protected String getPath(WebScriptRequest req)
     {
         String paramPath = req.getParameter(PARAM_PATH);
         if (paramPath == null || paramPath.length() == 0)
         {
-            paramPath = "/";
+            paramPath = null;
         }
         else if (!paramPath.startsWith("/"))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.path.startsWith");
         }
         return paramPath;
+    }
+    
+    protected boolean getEnableDisable(WebScriptRequest req)
+    {
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String enableStr = templateVars.get(PARAM_ACTION);
+        try
+        {
+            AuditWebScriptAction action = AuditWebScriptAction.valueOf(enableStr);
+            switch (action)
+            {
+                case enable:
+                    return true;
+                case disable:
+                    return false;
+                default:
+                    return false;
+            }
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.action.invalid");
+        }
     }
 }

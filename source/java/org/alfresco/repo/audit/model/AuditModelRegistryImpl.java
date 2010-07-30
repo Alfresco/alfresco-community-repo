@@ -164,6 +164,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String, AuditApplication> getAuditApplications()
     {
         return getState(true).getAuditApplications();
@@ -172,6 +173,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public AuditApplication getAuditApplicationByKey(String key)
     {
         return getState(true).getAuditApplicationByKey(key);
@@ -180,6 +182,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public AuditApplication getAuditApplicationByName(String applicationName)
     {
         return getState(true).getAuditApplicationByName(applicationName);
@@ -188,6 +191,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public PathMapper getAuditPathMapper()
     {
         return getState(true).getAuditPathMapper();
@@ -196,6 +200,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public void loadAuditModels()
     {
         stop();
@@ -205,6 +210,7 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isAuditEnabled()
     {
         String value = getProperty(PROPERTY_AUDIT_ENABLED);

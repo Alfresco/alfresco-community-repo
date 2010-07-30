@@ -616,6 +616,7 @@ public class AuditComponentTest extends TestCase
     {
         RunAsWork<Void> work = new RunAsWork<Void>()
         {
+            @Override
             public Void doWork() throws Exception
             {
                 auditService.clearAudit(applicationName);
@@ -632,6 +633,7 @@ public class AuditComponentTest extends TestCase
     {
         RunAsWork<Void> work = new RunAsWork<Void>()
         {
+            @Override
             public Void doWork() throws Exception
             {
                 auditService.auditQuery(callback, parameters, maxResults);

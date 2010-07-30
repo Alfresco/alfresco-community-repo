@@ -1,4 +1,4 @@
-<#import "simple-replication-definition.lib.ftl" as replicationDefLib />
+<#import "replication-definition.lib.ftl" as replicationDefLib />
 {
    "data": 
    [

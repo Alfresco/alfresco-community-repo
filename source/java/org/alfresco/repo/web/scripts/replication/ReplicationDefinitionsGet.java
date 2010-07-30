@@ -18,8 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.replication;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,27 +34,13 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class ReplicationDefinitionsGet extends AbstractReplicationWebscript
 {
    @Override
-   protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+   protected Map<String, Object> buildModel(ReplicationModelBuilder modelBuilder, 
+                                            WebScriptRequest req, Status status, Cache cache)
    {
+       // Get all the defined replication definitions
        List<ReplicationDefinition> definitions = replicationService.loadReplicationDefinitions();
-       List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
        
-       for(ReplicationDefinition rd : definitions) {
-          Map<String, Object> rdm = new HashMap<String,Object>();
-
-          // Set the basic details
-          rdm.put(DEFINITION_NAME, rd.getReplicationName());
-          rdm.put(DEFINITION_ENABLED, rd.isEnabled());
-          rdm.put(DEFINITION_DETAILS_URL, getDefinitionDetailsUrl(rd));
-          
-          // TODO - Make this more efficient by getting all
-          //  the running instances in one go
-          setStatus(rd, rdm);
-       }
-      
-       // Finish up
-       Map<String, Object> model = new HashMap<String,Object>();
-       model.put(MODEL_DATA_LIST, models);
-       return model;
+       // Have them turned into simple models
+       return modelBuilder.buildSimpleList(definitions);
    }
 }

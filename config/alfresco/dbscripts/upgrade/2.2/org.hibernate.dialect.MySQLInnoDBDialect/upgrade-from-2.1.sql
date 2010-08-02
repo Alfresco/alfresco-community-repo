@@ -802,9 +802,10 @@ UPDATE t_alf_node n SET audit_creator =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'creator' AND
-      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
-);
+      qn.local_name = 'creator'
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
+
 --FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_created =
 (
@@ -817,9 +818,10 @@ UPDATE t_alf_node n SET audit_created =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'created' AND
-      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
-);
+      qn.local_name = 'created'
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
+
 --FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_modifier =
 (
@@ -832,9 +834,10 @@ UPDATE t_alf_node n SET audit_modifier =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'modifier' AND
-      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
-);
+      qn.local_name = 'modifier'
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
+
 --FOREACH t_alf_node.id system.upgrade.t_alf_node.batchsize
 UPDATE t_alf_node n SET audit_modified =
 (
@@ -847,9 +850,9 @@ UPDATE t_alf_node n SET audit_modified =
    WHERE
       np.node_id = n.id AND
       ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
-      qn.local_name = 'modified' AND
-      n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND}
-);
+      qn.local_name = 'modified'
+)
+WHERE n.id >= ${LOWERBOUND} AND n.id <= ${UPPERBOUND};
 -- Remove the unused cm:auditable properties
 -- SHORTCUT:
 -- The qname_id values can be determined up front

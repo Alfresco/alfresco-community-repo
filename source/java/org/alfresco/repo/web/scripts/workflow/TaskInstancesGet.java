@@ -43,6 +43,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_AUTHORITY = "authority";
     public static final String PARAM_STATUS= "status";
     public static final String PARAM_PROPERTIES= "properties";
+    public static final String PARAM_DETAILED= "detailed";
     
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status,
@@ -51,6 +52,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         String authority = getAuthority(req);
         WorkflowTaskState state = getState(req);
         List<String> properties = getProperties(req);
+        boolean detailed = "true".equals(req.getParameter(PARAM_DETAILED));
 
         //TODO Handle possible thrown exceptions here?
         List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
@@ -62,9 +64,14 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (WorkflowTask task : allTasks) 
         {
-            results.add(modelBuilder.buildSimple(task, properties));
+            if (detailed)
+            {
+                results.add(modelBuilder.buildDetailed(task));
+            }
+            else {
+                results.add(modelBuilder.buildSimple(task, properties));
+            }
         }
-        
         
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("taskInstances", results);

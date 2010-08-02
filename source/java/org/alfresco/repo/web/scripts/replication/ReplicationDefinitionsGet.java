@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.replication;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,19 @@ public class ReplicationDefinitionsGet extends AbstractReplicationWebscript
        // Get all the defined replication definitions
        List<ReplicationDefinition> definitions = replicationService.loadReplicationDefinitions();
        
+       // How do we need to sort them?
+       Comparator<Map<String,Object>> sorter = new ReplicationModelBuilder.SimpleSorterByName();
+       String sort = req.getParameter("sort");
+       if(sort == null) {
+          // Default was set above
+       } else if(sort.equalsIgnoreCase("status")) {
+          sorter = new ReplicationModelBuilder.SimpleSorterByStatus();
+       } else if(sort.equalsIgnoreCase("lastRun") ||
+             sort.equalsIgnoreCase("lastRunTime")) {
+          sorter = new ReplicationModelBuilder.SimpleSorterByLastRun();
+       }
+       
        // Have them turned into simple models
-       return modelBuilder.buildSimpleList(definitions);
+       return modelBuilder.buildSimpleList(definitions, sorter);
    }
 }

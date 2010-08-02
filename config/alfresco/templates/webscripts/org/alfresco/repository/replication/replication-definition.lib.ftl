@@ -4,18 +4,20 @@
       {
          "name": "${replicationDefinition.name}",
          "status" : "${replicationDefinition.status}",
-         "enabled" : "${replicationDefinition.enabled}",
-         "details": "${replicationDefinition.details_url}",
+         "startedAt" : <#if replicationDefinition.startedAt??>"${replicationDefinition.startedAt}"<#else>null</#if>,
+         "enabled" : ${replicationDefinition.enabled?string},
+         "details": "${"/api/replication-definition/" + replicationDefinition.name}",
       }
 </#escape>
 </#macro>
+
 <#-- Renders the details of a replication definition. -->
 <#macro replicationDefinitionJSON replicationDefinition>
 <#escape x as jsonUtils.encodeJSONString(x)>
       {
          "name": "${replicationDefinition.name}",
          "status" : "${replicationDefinition.status}",
-         "enabled" : "${replicationDefinition.enabled}",
+         "enabled" : ${replicationDefinition.enabled?string},
          <#-- TODO The rest of the fields -->
       }
 </#escape>

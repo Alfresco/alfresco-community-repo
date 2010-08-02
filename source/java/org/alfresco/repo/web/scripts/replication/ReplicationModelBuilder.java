@@ -19,6 +19,9 @@
 package org.alfresco.repo.web.scripts.replication;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * Builds up models from ReplicationDefinitions, either
@@ -46,7 +50,6 @@ public class ReplicationModelBuilder
     protected static final String DEFINITION_STARTED_AT = "startedAt";
     protected static final String DEFINITION_ENDED_AT = "endedAt";
     protected static final String DEFINITION_ENABLED = "enabled";
-    protected static final String DEFINITION_DETAILS_URL = "details";
     
     protected NodeService nodeService;
     protected ReplicationService replicationService;
@@ -62,10 +65,66 @@ public class ReplicationModelBuilder
     
     
     /**
+     * Sorts simple definitions by their status
+     */
+    public static class SimpleSorterByStatus implements Comparator<Map<String,Object>> {
+      private SimpleSorterByName nameSorter = new SimpleSorterByName();
+      public int compare(Map<String, Object> simpleA, Map<String, Object> simpleB) {
+         String statusA = (String)simpleA.get(DEFINITION_STATUS);
+         String statusB = (String)simpleB.get(DEFINITION_STATUS);
+         if(statusA == null || statusB == null) {
+            throw new IllegalArgumentException("Status missing during sort");
+         }
+         
+         int compare = statusA.compareTo(statusB);
+         if(compare == 0) {
+            return nameSorter.compare(simpleA, simpleB);
+         }
+         return compare;
+      }       
+    }
+    /**
+     * Sorts simple definitions by their name
+     */
+    public static class SimpleSorterByName implements Comparator<Map<String,Object>> {
+      public int compare(Map<String, Object> simpleA, Map<String, Object> simpleB) {
+         String nameA = (String)simpleA.get(DEFINITION_NAME);
+         String nameB = (String)simpleB.get(DEFINITION_NAME);
+         if(nameA == null || nameB == null) {
+            throw new IllegalArgumentException("Name missing during sort");
+         }
+         return nameA.compareTo(nameB);
+      }       
+    }
+    /**
+     * Sorts simple definitions by their last run time.
+     */
+    public static class SimpleSorterByLastRun implements Comparator<Map<String,Object>> {
+      /** Works on ISO8601 formatted date strings */
+      public int compare(Map<String, Object> simpleA, Map<String, Object> simpleB) {
+         String dateA = (String)simpleA.get(DEFINITION_STARTED_AT);
+         String dateB = (String)simpleB.get(DEFINITION_STARTED_AT);
+         if(dateA == null && dateB == null) {
+            return 0;
+         }
+         if(dateA != null && dateB == null) {
+            return 1;
+         }
+         if(dateA == null && dateB != null) {
+            return -1;
+         }
+         // We want more recent dates first
+         return 0-dateA.compareTo(dateB);
+      }       
+    }
+    
+    
+    /**
      * Build a model containing a list of simple definitions for the given
      *  list of Replication Definitions.
      */
-    protected Map<String,Object> buildSimpleList(List<ReplicationDefinition> replicationDefinitions)
+    protected Map<String,Object> buildSimpleList(List<ReplicationDefinition> replicationDefinitions,
+                                                 Comparator<Map<String,Object>> sorter)
     {
         List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
         
@@ -82,15 +141,20 @@ public class ReplicationModelBuilder
               // Set the core details
               Map<String, Object> rdm = new HashMap<String,Object>();
               rdm.put(DEFINITION_NAME, rd.getReplicationName());
-              rdm.put(DEFINITION_ENABLED, rd.isEnabled());
-              rdm.put(DEFINITION_DETAILS_URL, buildDefinitionDetailsUrl(rd));
+              rdm.put(DEFINITION_ENABLED, rd.isEnabled()); 
               
-              // Do the status
+              // Do the status - end date isn't needed
               setStatus(rd, details, rdm);
+              rdm.remove(DEFINITION_ENDED_AT);
               
               // Add to the list of finished models
               models.add(rdm);
            }
+        }
+        
+        // Sort the entries
+        if(sorter != null) {
+           Collections.sort(models, sorter);
         }
         
         // Finish up
@@ -100,11 +164,6 @@ public class ReplicationModelBuilder
     }
     
 
-    protected String buildDefinitionDetailsUrl(ReplicationDefinition replicationDefinition)
-    {
-       return "/api/replication-definition/" + replicationDefinition.getReplicationName();
-    }
-    
     /**
      * Figures out the status that's one of:
      *    New|Running|CancelRequested|Completed|Failed|Cancelled
@@ -138,8 +197,21 @@ public class ReplicationModelBuilder
         if(details == null) {
            // It isn't running, we can use the persisted details
            model.put(DEFINITION_STATUS, replicationDefinition.getExecutionStatus().toString());
-           model.put(DEFINITION_STARTED_AT, replicationDefinition.getExecutionStartDate());
-           model.put(DEFINITION_ENDED_AT,   replicationDefinition.getExecutionEndDate());
+           
+           Date startDate = replicationDefinition.getExecutionStartDate();
+           if(startDate != null) {
+              model.put(DEFINITION_STARTED_AT, ISO8601DateFormat.format(startDate));
+           } else {
+              model.put(DEFINITION_STARTED_AT, null);
+           }
+           
+           Date endDate = replicationDefinition.getExecutionEndDate();
+           if(endDate != null) {
+              model.put(DEFINITION_ENDED_AT, ISO8601DateFormat.format(endDate));
+           } else {
+              model.put(DEFINITION_ENDED_AT, null);
+           }
+           
            return;
         }
         
@@ -149,7 +221,7 @@ public class ReplicationModelBuilder
         } else {
            model.put(DEFINITION_STATUS, "Running");
         }
-        model.put(DEFINITION_STARTED_AT, details.getStartedAt());
+        model.put(DEFINITION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
         model.put(DEFINITION_ENDED_AT, null);
     }
 

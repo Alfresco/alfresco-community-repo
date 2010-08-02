@@ -326,6 +326,72 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("/api/replication-definition/Test2", jsonRD.get("details"));
     }
     
+    public void testReplicationDefinitionGet() throws Exception
+    {
+        Response response;
+        
+        
+        // Not allowed if you're not an admin
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+        response = sendRequest(new GetRequest(URL_DEFINITION + "madeup"), Status.STATUS_UNAUTHORIZED);
+        assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+        response = sendRequest(new GetRequest(URL_DEFINITION + "madeup"), Status.STATUS_UNAUTHORIZED);
+        assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+        
+       
+        // If an invalid name is given, you get a 404
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        response = sendRequest(new GetRequest(URL_DEFINITION + "madeup"), 404);
+        assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+        
+        
+        // Add a definition, it should show up
+        ReplicationDefinition rd = replicationService.createReplicationDefinition("Test1", "Testing");
+        replicationService.saveReplicationDefinition(rd);
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        String jsonStr = response.getContentAsString();
+System.err.println(jsonStr);        
+        JSONObject json = new JSONObject(jsonStr);
+        assertNotNull(json);
+        
+        // Check 
+        // TODO
+        assertEquals("Test1", json.get("name"));
+        assertEquals("New", json.get("status"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("startedAt"));
+        
+        
+        // Change the status to running, and re-check
+        actionTrackingService.recordActionExecuting(rd);
+        String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
+        
+        response = sendRequest(new GetRequest(URL_DEFINITIONS), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        
+        
+        // Add some payload details, ensure that they get expanded
+        //  as they should be
+        
+       
+        // Add a 2nd and 3rd
+        rd = replicationService.createReplicationDefinition("Test2", "2nd Testing");
+        replicationService.saveReplicationDefinition(rd);
+        
+        // Original one comes back unchanged
+        // TODO
+        
+        // They show up things as expected
+        // TODO
+    }
+    
     @Override
     protected void setUp() throws Exception
     {

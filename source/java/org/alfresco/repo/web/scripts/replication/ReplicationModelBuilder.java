@@ -43,6 +43,7 @@ import org.alfresco.util.ISO8601DateFormat;
  */
 public class ReplicationModelBuilder 
 {
+    protected static final String MODEL_DATA_ITEM = "replicationDefinition";
     protected static final String MODEL_DATA_LIST = "replicationDefinitions";
     
     protected static final String DEFINITION_NAME = "name";
@@ -161,6 +162,30 @@ public class ReplicationModelBuilder
         Map<String, Object> model = new HashMap<String,Object>();
         model.put(MODEL_DATA_LIST, models);
         return model;
+    }
+    
+    
+    /**
+     * Build a model containing the full, detailed definition for the given
+     *  Replication Definition.
+     */
+    protected Map<String, Object> buildDetails(ReplicationDefinition rd) {
+       Map<String, Object> rdm = new HashMap<String,Object>();
+       
+       // Set the core details
+       rdm.put(DEFINITION_NAME, rd.getReplicationName());
+       rdm.put(DEFINITION_ENABLED, rd.isEnabled()); 
+       // TODO
+       
+       // Do the status
+       setStatus(rd, rdm);
+       
+       // Expand out the payload details
+       // TODO
+       
+       Map<String, Object> model = new HashMap<String,Object>();
+       model.put(MODEL_DATA_ITEM, rdm);
+       return model;
     }
     
 

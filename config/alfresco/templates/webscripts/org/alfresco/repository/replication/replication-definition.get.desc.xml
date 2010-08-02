@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get Replication Definition</shortname>
+  <description>Gets the details of a persisted replication definition.</description>
+  <url>/api/replication-definition/{replication_definition_name}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

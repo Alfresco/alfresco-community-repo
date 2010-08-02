@@ -17,6 +17,8 @@
       {
          "name": "${replicationDefinition.name}",
          "status" : "${replicationDefinition.status}",
+         "startedAt" : <#if replicationDefinition.startedAt??>"${replicationDefinition.startedAt}"<#else>null</#if>,
+         "endedAt" : <#if replicationDefinition.endedAt??>"${replicationDefinition.endedAt}"<#else>null</#if>,
          "enabled" : ${replicationDefinition.enabled?string},
          <#-- TODO The rest of the fields -->
       }

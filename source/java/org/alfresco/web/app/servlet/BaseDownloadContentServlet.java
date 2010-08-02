@@ -174,7 +174,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          }
          
          // assume 'workspace' or other NodeRef based protocol for remaining URL elements
-         StoreRef storeRef = new StoreRef(t.nextToken(), t.nextToken());
+         StoreRef storeRef = new StoreRef(URLDecoder.decode(t.nextToken()), URLDecoder.decode(t.nextToken()));
          String id = URLDecoder.decode(t.nextToken());
          
          // build noderef from the appropriate URL elements

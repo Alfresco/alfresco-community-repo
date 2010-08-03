@@ -125,7 +125,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(personManager.getFirstName(USER2), owner.getString("firstName"));
         assertEquals(personManager.getLastName(USER2), owner.getString("lastName"));
         
-        JSONObject properties = result.getJSONObject("properties");
+//        JSONObject properties = result.getJSONObject("properties");
         
         //TODO Add more tests to check property filtering and pooled actors.
     }
@@ -157,7 +157,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startTask.title, result.getString("title"));
         assertEquals(startTask.description, result.getString("description"));
         assertEquals(startTask.state.name(), result.getString("state"));
-        assertEquals(URL_TASKS + "/" + startTask.id + "/paths/" + adhocPath.id, result.getString("path"));
+        assertEquals( "api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
         assertEquals(false, result.getBoolean("isPooled"));
 
         JSONObject owner = result.getJSONObject("owner");

@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,17 +140,17 @@ public class WorkflowModelBuilder
     public Map<String, Object> buildSimple(WorkflowTask task, Collection<String> propertyFilters)
     {
         HashMap<String, Object> model = new HashMap<String, Object>();
-        model.put(TASK_ID, task.id);
+        model.put(TASK_ID, task.getId());
         model.put(TASK_URL, getUrl(task));
-        model.put(TASK_NAME, task.name);
-        model.put(TASK_TITLE, task.title);
-        model.put(TASK_DESCRIPTION, task.description);
-        model.put(TASK_STATE, task.state.name());
-        model.put(TASK_TYPE_DEFINITION_TITLE, task.definition.metadata.getTitle());
+        model.put(TASK_NAME, task.getName());
+        model.put(TASK_TITLE, task.getTitle());
+        model.put(TASK_DESCRIPTION, task.getDescription());
+        model.put(TASK_STATE, task.getState().name());
+        model.put(TASK_TYPE_DEFINITION_TITLE, task.getDefinition().getMetadata().getTitle());
 
-        model.put(TASK_IS_POOLED, isPooled(task.properties));
-        Serializable owner = task.properties.get(ContentModel.PROP_OWNER);
-        model.put(TASK_OWNER, getPersonModel((String) owner));
+        model.put(TASK_IS_POOLED, isPooled(task.getProperties()));
+        Serializable owner = task.getProperties().get(ContentModel.PROP_OWNER);
+        model.put(TASK_OWNER, getPersonModel( owner));
 
         model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
         return model;
@@ -164,7 +165,7 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = buildSimple(workflowTask, null);
 
-        model.put(TASK_PATH, getUrl(workflowTask, workflowTask.path));
+        model.put(TASK_PATH, getUrl(workflowTask.getPath()));
 
         // workflow instance part
         model.put(TASK_WORKFLOW_INSTANCE, buildWorkflowInstance(workflowTask.path.instance));
@@ -185,11 +186,11 @@ public class WorkflowModelBuilder
     {
         HashMap<String, Object> model = new HashMap<String, Object>();
 
-        model.put(WORKFLOW_DEFINITION_ID, workflowDefinition.id);
+        model.put(WORKFLOW_DEFINITION_ID, workflowDefinition.getId());
         model.put(WORKFLOW_DEFINITION_URL, getUrl(workflowDefinition));
-        model.put(WORKFLOW_DEFINITION_NAME, workflowDefinition.name);
-        model.put(WORKFLOW_DEFINITION_TITLE, workflowDefinition.title);
-        model.put(WORKFLOW_DEFINITION_DESCRIPTION, workflowDefinition.description);
+        model.put(WORKFLOW_DEFINITION_NAME, workflowDefinition.getName());
+        model.put(WORKFLOW_DEFINITION_TITLE, workflowDefinition.getTitle());
+        model.put(WORKFLOW_DEFINITION_DESCRIPTION, workflowDefinition.getDescription());
 
         return model;
     }
@@ -202,12 +203,13 @@ public class WorkflowModelBuilder
 
     private Map<String, Object> buildProperties(WorkflowTask task, Collection<String> propertyFilters)
     {
-        Map<QName, Serializable> properties = task.properties;
+        Map<QName, Serializable> properties = task.getProperties();
         Collection<QName> keys;
         if (propertyFilters == null || propertyFilters.size() == 0)
         {
-            Map<QName, PropertyDefinition> propDefs = task.definition.metadata.getProperties();
-            Map<QName, AssociationDefinition> assocDefs = task.definition.metadata.getAssociations();
+            TypeDefinition taskType = task.getDefinition().getMetadata();
+            Map<QName, PropertyDefinition> propDefs = taskType.getProperties();
+            Map<QName, AssociationDefinition> assocDefs = taskType.getAssociations();
             Set<QName> propKeys = properties.keySet();
             keys = new HashSet<QName>(propDefs.size() + assocDefs.size() + propKeys.size());
             keys.addAll(propDefs.keySet());
@@ -357,55 +359,71 @@ public class WorkflowModelBuilder
     {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        model.put(WORKFLOW_NODE_NAME, workflowNode.name);
-        model.put(WORKFLOW_NODE_TITLE, workflowNode.title);
-        model.put(WORKFLOW_NODE_DESCRIPTION, workflowNode.description);
-        model.put(WORKFLOW_NODE_IS_TASK_NODE, workflowNode.isTaskNode);
+        model.put(WORKFLOW_NODE_NAME, workflowNode.getName());
+        model.put(WORKFLOW_NODE_TITLE, workflowNode.getTitle());
+        model.put(WORKFLOW_NODE_DESCRIPTION, workflowNode.getDescription());
+        model.put(WORKFLOW_NODE_IS_TASK_NODE, workflowNode.isTaskNode());
 
-        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-
-        Object hiddenTransitions = workflowTask.properties.get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
-
-        for (WorkflowTransition workflowTransition : workflowNode.transitions)
+        List<Map<String, Object>> transitions = new ArrayList<Map<String, Object>>();
+        List<?> hiddenTransitions = getHiddenTransitions(workflowTask.getProperties());
+        for (WorkflowTransition workflowTransition : workflowNode.getTransitions())
         {
-            Map<String, Object> transitionMap = new HashMap<String, Object>();
-
-            transitionMap.put(WORKFLOW_NODE_TRANSITION_ID, workflowTransition.id);
-            transitionMap.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.title);
-            transitionMap.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.description);
-            transitionMap.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault);
-            transitionMap.put(WORKFLOW_NODE_TRANSITION_IS_HIDDEN, (hiddenTransitions == null ? false : hiddenTransitions.toString().contains(workflowTransition.id)));
-
-            results.add(transitionMap);
+            Map<String, Object> transitionModel = build(workflowTransition, hiddenTransitions);
+            transitions.add(transitionModel);
         }
-
-        model.put(WORKFLOW_NODE_TRANSITIONS, results);
-
+        model.put(WORKFLOW_NODE_TRANSITIONS, transitions);
         return model;
     }
 
-    //    private String getURl(WorkflowPath path)
-    //    {
-    //        StringBuilder builder = new StringBuilder("api/workflow-instances/");
-    //        builder.append(path.instance.id);
-    //        builder.append("/paths/");
-    //        builder.append(path.id);
-    //        return builder.toString();
-    //    }
+    /**
+     * @param properties
+     * @return
+     */
+    private List<?> getHiddenTransitions(Map<QName, Serializable> properties)
+    {
+        Serializable hiddenSer = properties.get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
+        if(hiddenSer instanceof List<?>)
+            return (List<?>) hiddenSer;
+        else if(hiddenSer instanceof String)
+        {
+            String hiddenStr = (String) hiddenSer;
+            return Arrays.asList(hiddenStr.split(","));
+        }
+        return null;
+    }
+
+    public Map<String, Object> build(WorkflowTransition workflowTransition, List<?> hiddenTransitions)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+        String id = workflowTransition.getId();
+        model.put(WORKFLOW_NODE_TRANSITION_ID, id);
+        model.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.getTitle());
+        model.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.getDescription());
+        model.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault);
+        model.put(WORKFLOW_NODE_TRANSITION_IS_HIDDEN, isHiddenTransition(id, hiddenTransitions));
+        return model;
+    }
+
+    private boolean isHiddenTransition(String transitionId, List<?> hiddenTransitions)
+    {
+        if(hiddenTransitions == null)
+            return false;
+        return hiddenTransitions.contains(transitionId);
+    }
 
     private String getUrl(WorkflowTask task)
     {
-        return "api/task-instances/" + task.id;
+        return "api/task-instances/" + task.getId();
     }
 
     private String getUrl(WorkflowDefinition workflowDefinition)
     {
-        return "api/workflow-definitions/" + workflowDefinition.id;
+        return "api/workflow-definitions/" + workflowDefinition.getId();
     }
 
     private String getUrl(WorkflowTaskDefinition workflowTaskDefinition)
     {
-        return "api/task-definitions/" + workflowTaskDefinition.id;
+        return "api/task-definitions/" + workflowTaskDefinition.getId();
     }
 
     private String getUrl(TypeDefinition typeDefinition)
@@ -413,14 +431,14 @@ public class WorkflowModelBuilder
         return "api/classes/" + typeDefinition.getName().toPrefixString().replace(PREFIX_SEPARATOR, "_");
     }
 
-    private String getUrl(WorkflowTask task, WorkflowPath path)
+    private String getUrl(WorkflowPath path)
     {
-        return getUrl(task) + "/paths/" + path.id;
+        return "api/workflow-paths/" + path.getId();
     }
 
     private String getUrl(WorkflowInstance workflowInstance)
     {
-        return "api/workflow-instances/" + workflowInstance.id;
+        return "api/workflow-instances/" + workflowInstance.getId();
     }
 
 }

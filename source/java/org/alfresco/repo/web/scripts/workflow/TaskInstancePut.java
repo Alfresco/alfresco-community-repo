@@ -65,7 +65,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
 
             String currentUser = authenticationService.getCurrentUserName();
 
-            Serializable owner = workflowTask.properties.get(ContentModel.PROP_OWNER);
+            Serializable owner = workflowTask.getProperties().get(ContentModel.PROP_OWNER);
 
             Serializable initiator = getWorkflowInitiator(workflowTask);
 
@@ -150,7 +150,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                         }
                         else
                         {
-                            value = (Serializable) DefaultTypeConverter.INSTANCE.convert(NodeRef.class, jsonValue.toString().replaceAll("\\\\", ""));
+                            value = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, jsonValue.toString().replaceAll("\\\\", ""));
                         }
                     }
                 }

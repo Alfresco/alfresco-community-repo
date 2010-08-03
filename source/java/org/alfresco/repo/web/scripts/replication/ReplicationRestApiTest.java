@@ -18,15 +18,22 @@
  */
 package org.alfresco.repo.web.scripts.replication;
 
+import javax.transaction.UserTransaction;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONArray;
@@ -48,9 +55,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
     
     private static final String USER_NORMAL = "Normal" + GUID.generate();
     
+    private NodeService nodeService;
     private TestPersonManager personManager;
     private ReplicationService replicationService;
+    private TransactionService transactionService;
     private ActionTrackingService actionTrackingService;
+    
+    private Repository repositoryHelper;
     
     public void testReplicationDefinitionsGet() throws Exception
     {
@@ -369,46 +380,243 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         String jsonStr = response.getContentAsString();
-System.err.println(jsonStr);        
         JSONObject json = new JSONObject(jsonStr);
         assertNotNull(json);
         
         // Check 
-        // TODO
         assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
         assertEquals("New", json.get("status"));
-        assertEquals(true, json.get("enabled"));
         assertEquals(JSONObject.NULL, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals(JSONObject.NULL, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        // Payload is empty
+        assertEquals(0, json.getJSONArray("payload").length());
         
         
         // Ensure we didn't get any unexpected data back
-        // TODO
+        JSONArray keys = json.names();
+        for(int i=0; i<keys.length(); i++) {
+           String key = keys.getString(0);
+           if(key.equals("name") || key.equals("description") || 
+               key.equals("status") || key.equals("startedAt") ||
+               key.equals("endedAt") || key.equals("failureMessage") ||
+               key.equals("executionDetails") || key.equals("payload") ||
+               key.equals("transferLocalReport") ||
+               key.equals("transferRemoteReport") ||
+               key.equals("enabled")) {
+              // All good
+           } else {
+              fail("Unexpected key '"+key+"' found in json, raw json is\n" + jsonStr);
+           }
+        }
         
         
         // Change the status to running, and re-check
         actionTrackingService.recordActionExecuting(rd);
+        String actionId = rd.getId();
         String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
+        int instanceId = ((ActionImpl)rd).getExecutionInstance();
         
-        response = sendRequest(new GetRequest(URL_DEFINITIONS), 200);
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
         json = new JSONObject(jsonStr);
         
+        assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
+        assertEquals("Running", json.get("status"));
+        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals("/api/running-action/replicationActionExecutor="+
+              actionId + "=" + instanceId, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        // Payload is empty
+        assertEquals(0, json.getJSONArray("payload").length());
+        
+        
+        // Cancel it
+        actionTrackingService.requestActionCancellation(rd);
+        
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        
+        assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
+        assertEquals("CancelRequested", json.get("status"));
+        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals("/api/running-action/replicationActionExecutor="+
+              actionId + "=" + instanceId, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        // Payload is empty
+        assertEquals(0, json.getJSONArray("payload").length());
+
         
         // Add some payload details, ensure that they get expanded
         //  as they should be
+        rd.getPayload().add(
+              repositoryHelper.getCompanyHome()
+        );
+        NodeRef dataDictionary = 
+              nodeService.getChildByName(
+                    repositoryHelper.getCompanyHome(),
+                    ContentModel.ASSOC_CONTAINS,
+                    "Data Dictionary"
+              );
+        rd.getPayload().add( dataDictionary );
+        replicationService.saveReplicationDefinition(rd);
         
-       
-        // Add a 2nd and 3rd
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        
+        assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
+        assertEquals("CancelRequested", json.get("status"));
+        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals("/api/running-action/replicationActionExecutor="+
+              actionId + "=" + instanceId, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        
+        // Check Payload
+        assertEquals(2, json.getJSONArray("payload").length());
+        
+        JSONObject payload = json.getJSONArray("payload").getJSONObject(0);
+        assertEquals(repositoryHelper.getCompanyHome().toString(), payload.get("nodeRef"));
+        assertEquals(true, payload.get("isFolder"));
+        assertEquals("Company Home", payload.get("name"));
+        assertEquals("/Company Home", payload.get("path"));
+
+        payload = json.getJSONArray("payload").getJSONObject(1);
+        assertEquals(dataDictionary.toString(), payload.get("nodeRef"));
+        assertEquals(true, payload.get("isFolder"));
+        assertEquals("Data Dictionary", payload.get("name"));
+        assertEquals("/Company Home/Data Dictionary", payload.get("path"));
+
+        
+        // Add a 2nd and 3rd definition
         rd = replicationService.createReplicationDefinition("Test2", "2nd Testing");
         replicationService.saveReplicationDefinition(rd);
         
+        rd = replicationService.createReplicationDefinition("Test3", "3rd Testing");
+        rd.setLocalTransferReport( repositoryHelper.getRootHome() );
+        rd.setRemoteTransferReport( repositoryHelper.getCompanyHome() );
+        rd.setEnabled(false);
+        
+        // Have the 3rd one flagged as having failed
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        replicationService.saveReplicationDefinition(rd);
+        actionTrackingService.recordActionExecuting(rd);
+        actionTrackingService.recordActionFailure(rd, new Exception("Test Failure"));
+        txn.commit();
+        Thread.sleep(50);
+        replicationService.saveReplicationDefinition(rd);
+        
+        
         // Original one comes back unchanged
-        // TODO
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        
+        assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
+        assertEquals("CancelRequested", json.get("status"));
+        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals("/api/running-action/replicationActionExecutor="+
+              actionId + "=" + instanceId, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        
+        // Check Payload
+        assertEquals(2, json.getJSONArray("payload").length());
+        
+        payload = json.getJSONArray("payload").getJSONObject(0);
+        assertEquals(repositoryHelper.getCompanyHome().toString(), payload.get("nodeRef"));
+        assertEquals(true, payload.get("isFolder"));
+        assertEquals("Company Home", payload.get("name"));
+        assertEquals("/Company Home", payload.get("path"));
+
+        payload = json.getJSONArray("payload").getJSONObject(1);
+        assertEquals(dataDictionary.toString(), payload.get("nodeRef"));
+        assertEquals(true, payload.get("isFolder"));
+        assertEquals("Data Dictionary", payload.get("name"));
+        assertEquals("/Company Home/Data Dictionary", payload.get("path"));
+        
         
         // They show up things as expected
-        // TODO
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test2"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        
+        assertEquals("Test2", json.get("name"));
+        assertEquals("2nd Testing", json.get("description"));
+        assertEquals("New", json.get("status"));
+        assertEquals(JSONObject.NULL, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals(JSONObject.NULL, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        assertEquals(0, json.getJSONArray("payload").length());
+        
+        
+        // And the 3rd one, which is failed
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test3"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
+        String endedAt = ISO8601DateFormat.format(rd.getExecutionEndDate());
+        
+        assertEquals("Test3", json.get("name"));
+        assertEquals("3rd Testing", json.get("description"));
+        assertEquals("Failed", json.get("status"));
+        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(endedAt, json.get("endedAt"));
+        assertEquals("Test Failure", json.get("failureMessage"));
+        assertEquals(JSONObject.NULL, json.get("executionDetails"));
+        assertEquals(repositoryHelper.getRootHome().toString(), json.get("transferLocalReport"));
+        assertEquals(repositoryHelper.getCompanyHome().toString(), json.get("transferRemoteReport"));
+        assertEquals(false, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        assertEquals(0, json.getJSONArray("payload").length());
     }
     
     @Override
@@ -417,14 +625,19 @@ System.err.println(jsonStr);
         super.setUp();
         ApplicationContext appContext = getServer().getApplicationContext();
 
-        replicationService = (ReplicationService)appContext.getBean("ReplicationService");
+        nodeService = (NodeService)appContext.getBean("nodeService");
+        replicationService = (ReplicationService)appContext.getBean("replicationService");
         actionTrackingService = (ActionTrackingService)appContext.getBean("actionTrackingService");
+        repositoryHelper = (Repository)appContext.getBean("repositoryHelper");
+        transactionService = (TransactionService)appContext.getBean("transactionService");
         
         MutableAuthenticationService authenticationService = (MutableAuthenticationService)appContext.getBean("AuthenticationService");
         PersonService personService = (PersonService)appContext.getBean("PersonService");
-        NodeService nodeService = (NodeService)appContext.getBean("NodeService");
         personManager = new TestPersonManager(authenticationService, personService, nodeService);
 
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        
         personManager.createPerson(USER_NORMAL);
         
         // Ensure we start with no replication definitions
@@ -433,6 +646,8 @@ System.err.println(jsonStr);
         for(ReplicationDefinition rd : replicationService.loadReplicationDefinitions()) {
            replicationService.deleteReplicationDefinition(rd);
         }
+        txn.commit();
+        
         AuthenticationUtil.clearCurrentSecurityContext();
     }
     
@@ -444,6 +659,9 @@ System.err.println(jsonStr);
     {
         super.tearDown();
         
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        
         personManager.clearPeople();
         
         // Zap any replication definitions we created
@@ -452,5 +670,7 @@ System.err.println(jsonStr);
            replicationService.deleteReplicationDefinition(rd);
         }
         AuthenticationUtil.clearCurrentSecurityContext();
+        
+        txn.commit();
     }
 }

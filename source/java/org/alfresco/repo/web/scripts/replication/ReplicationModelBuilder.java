@@ -57,7 +57,6 @@ public class ReplicationModelBuilder
     protected static final String DEFINITION_PAYLOAD = "payload";
     protected static final String DEFINITION_TRANSFER_LOCAL_REPORT = "transferLocalReport";
     protected static final String DEFINITION_TRANSFER_REMOTE_REPORT = "transferRemoteReport";
-    protected static final String DEFINITION_CANCEL_REQUESTED = "cancelRequested";
     protected static final String DEFINITION_ENABLED = "enabled";
     protected static final String DEFINITION_TARGET_NAME = "targetName";
     
@@ -197,7 +196,7 @@ public class ReplicationModelBuilder
        setStatus(rd, rdm);
        
        // Expand out the payload details
-       // TODO
+       rdm.put(DEFINITION_PAYLOAD, rd.getPayload());
        
        Map<String, Object> model = new HashMap<String,Object>();
        model.put(MODEL_DATA_ITEM, rdm);

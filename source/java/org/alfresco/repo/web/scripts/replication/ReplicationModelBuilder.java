@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.web.scripts.action.AbstractActionWebscript;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
@@ -47,10 +48,18 @@ public class ReplicationModelBuilder
     protected static final String MODEL_DATA_LIST = "replicationDefinitions";
     
     protected static final String DEFINITION_NAME = "name";
+    protected static final String DEFINITION_DESCRIPTION = "description";
     protected static final String DEFINITION_STATUS = "status";
     protected static final String DEFINITION_STARTED_AT = "startedAt";
     protected static final String DEFINITION_ENDED_AT = "endedAt";
+    protected static final String DEFINITION_FAILURE_MESSAGE = "failureMessage";
+    protected static final String DEFINITION_RUNNING_ACTION_ID = "runningActionId";
+    protected static final String DEFINITION_PAYLOAD = "payload";
+    protected static final String DEFINITION_TRANSFER_LOCAL_REPORT = "transferLocalReport";
+    protected static final String DEFINITION_TRANSFER_REMOTE_REPORT = "transferRemoteReport";
+    protected static final String DEFINITION_CANCEL_REQUESTED = "cancelRequested";
     protected static final String DEFINITION_ENABLED = "enabled";
+    protected static final String DEFINITION_TARGET_NAME = "targetName";
     
     protected NodeService nodeService;
     protected ReplicationService replicationService;
@@ -144,9 +153,11 @@ public class ReplicationModelBuilder
               rdm.put(DEFINITION_NAME, rd.getReplicationName());
               rdm.put(DEFINITION_ENABLED, rd.isEnabled()); 
               
-              // Do the status - end date isn't needed
+              // Do the status
               setStatus(rd, details, rdm);
+              // In the summary form, we don't need end time or details
               rdm.remove(DEFINITION_ENDED_AT);
+              rdm.remove(DEFINITION_RUNNING_ACTION_ID);
               
               // Add to the list of finished models
               models.add(rdm);
@@ -174,10 +185,15 @@ public class ReplicationModelBuilder
        
        // Set the core details
        rdm.put(DEFINITION_NAME, rd.getReplicationName());
+       rdm.put(DEFINITION_DESCRIPTION, rd.getDescription());
+       rdm.put(DEFINITION_FAILURE_MESSAGE, rd.getExecutionFailureMessage());
+       rdm.put(DEFINITION_TRANSFER_LOCAL_REPORT, rd.getLocalTransferReport());
+       rdm.put(DEFINITION_TRANSFER_REMOTE_REPORT, rd.getRemoteTransferReport());
        rdm.put(DEFINITION_ENABLED, rd.isEnabled()); 
-       // TODO
+       rdm.put(DEFINITION_TARGET_NAME, rd.getTargetName());
        
        // Do the status
+       // Includes start+end times, and running action details
        setStatus(rd, rdm);
        
        // Expand out the payload details
@@ -237,6 +253,9 @@ public class ReplicationModelBuilder
               model.put(DEFINITION_ENDED_AT, null);
            }
            
+           // It isn't running
+           model.put(DEFINITION_RUNNING_ACTION_ID, null);
+           
            return;
         }
         
@@ -248,6 +267,8 @@ public class ReplicationModelBuilder
         }
         model.put(DEFINITION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
         model.put(DEFINITION_ENDED_AT, null);
+        model.put(DEFINITION_RUNNING_ACTION_ID, 
+              AbstractActionWebscript.getRunningId(details.getExecutionSummary()));
     }
 
     /**

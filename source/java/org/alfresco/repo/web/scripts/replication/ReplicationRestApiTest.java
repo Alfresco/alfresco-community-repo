@@ -100,6 +100,21 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
         
         
+        // Ensure we didn't get any unexpected data back,
+        //  only the keys we should have done
+        JSONArray keys = jsonRD.names();
+        for(int i=0; i<keys.length(); i++) {
+           String key = keys.getString(0);
+           if(key.equals("name") || key.equals("status") ||
+               key.equals("startedAt") || key.equals("enabled") ||
+               key.equals("details")) {
+              // All good
+           } else {
+              fail("Unexpected key '"+key+"' found in json, raw json is\n" + jsonStr);
+           }
+        }
+        
+        
         // Change the status to running, and re-check
         actionTrackingService.recordActionExecuting(rd);
         String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
@@ -364,6 +379,10 @@ System.err.println(jsonStr);
         assertEquals("New", json.get("status"));
         assertEquals(true, json.get("enabled"));
         assertEquals(JSONObject.NULL, json.get("startedAt"));
+        
+        
+        // Ensure we didn't get any unexpected data back
+        // TODO
         
         
         // Change the status to running, and re-check

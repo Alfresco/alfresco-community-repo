@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -52,6 +53,8 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
     private static final String URL_DEFINITION = "api/replication-definition/";
     private static final String URL_DEFINITIONS = "api/replication-definitions";
     private static final String URL_RUNNING_ACTION = "api/running-action/";
+    
+    private static final String JSON = "application/json";
     
     private static final String USER_NORMAL = "Normal" + GUID.generate();
     
@@ -617,6 +620,63 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(false, json.get("enabled"));
         assertEquals(JSONObject.NULL, json.get("targetName"));
         assertEquals(0, json.getJSONArray("payload").length());
+    }
+    
+    public void testReplicationDefinitionsPost() throws Exception
+    {
+       Response response;
+       
+       
+       // Not allowed if you're not an admin
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, "", JSON), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, "", JSON), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+
+       
+       // Ensure there aren't any to start with
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+
+       
+       // If you don't give it name + description, it won't like you
+       JSONObject json = new JSONObject();
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
+       assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
+       
+       json.put("name", "NewDefinition");
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
+       assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
+       
+       
+       // If it has both, it'll work
+       json.put("description", "Testing");
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       
+       // Check we got the right information back
+       // TODO
+       
+     
+       // Check that the right stuff ended up in the database
+       // TODO
+       
+       
+       // Post with the full set of options
+       // TODO
+       
+       
+       // Check the response for these
+       // TODO
+       
+       
+       // Check the database for these
+       // TODO
+       
     }
     
     @Override

@@ -858,6 +858,12 @@
           parent="abstractReplicationWebScript">
     </bean>
 
+    <!-- Creates a new replication definition -->
+    <bean id="webscript.org.alfresco.repository.replication.replication-definitions.post"
+          class="org.alfresco.repo.web.scripts.replication.ReplicationDefinitionsPost"
+          parent="abstractReplicationWebScript">
+    </bean>
+
     <!-- Get the details of a replication definition -->
     <bean id="webscript.org.alfresco.repository.replication.replication-definition.get"
           class="org.alfresco.repo.web.scripts.replication.ReplicationDefinitionGet"

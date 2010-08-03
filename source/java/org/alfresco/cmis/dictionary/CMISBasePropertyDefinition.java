@@ -141,7 +141,9 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         }
         required = propDef.isMandatory();
         defaultValue = propDef.getDefaultValue();
-        if (propertyId.getId().equals(CMISDictionaryModel.PROP_OBJECT_TYPE_ID))
+        if (propertyId.getId().equals(CMISDictionaryModel.PROP_OBJECT_TYPE_ID) ||
+            propertyId.getId().equals(CMISDictionaryModel.PROP_SOURCE_ID) ||
+            propertyId.getId().equals(CMISDictionaryModel.PROP_TARGET_ID))
         {
             // Fix http://issues.alfresco.com/jira/browse/ALF-2637
             updatability = CMISUpdatabilityEnum.ON_CREATE;

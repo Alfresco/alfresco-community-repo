@@ -40,6 +40,9 @@ function postActivity()
    {
       case "file-added":
       case "file-updated":
+      case "google-docs-checkout":
+      case "google-docs-checkin":
+      case "inline-edit":
          data.title = json.get("fileName");
          strParams = "?nodeRef=" + json.get("nodeRef");
          break;

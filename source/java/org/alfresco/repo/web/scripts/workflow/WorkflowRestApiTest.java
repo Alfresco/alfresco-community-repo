@@ -126,9 +126,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(personManager.getFirstName(USER2), owner.getString("firstName"));
         assertEquals(personManager.getLastName(USER2), owner.getString("lastName"));
         
-//        JSONObject properties = result.getJSONObject("properties");
+        JSONObject properties = result.getJSONObject("properties");
+        assertNotNull(properties);
         
-        //TODO Add more tests to check property filtering and pooled actors.
+        JSONObject instance = result.getJSONObject("workflowInstance");
+        assertNotNull(instance);
+        
+        // TODO: Add more tests to check property filtering and pooled actors.
     }
 
     public void testTaskInstanceGet() throws Exception

@@ -164,12 +164,18 @@ public class WorkflowModelBuilder
         model.put(TASK_DESCRIPTION, task.getDescription());
         model.put(TASK_STATE, task.getState().name());
         model.put(TASK_TYPE_DEFINITION_TITLE, task.getDefinition().getMetadata().getTitle());
-
+        model.put(TASK_PATH, getUrl(task.getPath()));
         model.put(TASK_IS_POOLED, isPooled(task.getProperties()));
+        
         Serializable owner = task.getProperties().get(ContentModel.PROP_OWNER);
         model.put(TASK_OWNER, getPersonModel( owner));
 
+        // task properties
         model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
+        
+        // workflow instance part
+        model.put(TASK_WORKFLOW_INSTANCE, buildSimple(task.getPath().getInstance()));
+        
         return model;
     }
 
@@ -181,11 +187,6 @@ public class WorkflowModelBuilder
     public Map<String, Object> buildDetailed(WorkflowTask workflowTask)
     {
         Map<String, Object> model = buildSimple(workflowTask, null);
-
-        model.put(TASK_PATH, getUrl(workflowTask.getPath()));
-
-        // workflow instance part
-        model.put(TASK_WORKFLOW_INSTANCE, buildSimple(workflowTask.getPath().getInstance()));
 
         // definition part
         model.put(TASK_DEFINITION, buildTaskDefinition(workflowTask.getDefinition(), workflowTask));

@@ -102,6 +102,14 @@ public class WorkflowModelBuilderTest extends TestCase
         String dateStr = (String) props.get("test_date");
         assertEquals(date, ISO8601DateFormat.parse(dateStr));
         
+        Map<String, Object> workflowInstance = (Map<String, Object>)model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE);
+        assertNotNull(workflowInstance);
+        WorkflowInstance instance = task.getPath().getInstance();
+        assertEquals(instance.getId(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
+        assertEquals(instance.isActive(), workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));
+        String startDateStr = ISO8601DateFormat.format(instance.getStartDate());
+        assertEquals(startDateStr, workflowInstance.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
+        
         task.getProperties().put(WorkflowModel.ASSOC_POOLED_ACTORS, new ArrayList<NodeRef>(0));
         model = builder.buildSimple(task, null);
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_POOLED));

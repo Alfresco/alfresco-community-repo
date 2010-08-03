@@ -65,6 +65,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     private final static String USER3 = "Nick" + GUID.generate();
     private static final String URL_TASKS = "api/task-instances";
     private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
+    private static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
     
     private TestPersonManager personManager;
     private WorkflowService workflowService;
@@ -311,6 +312,68 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
             assertTrue(workflowDefinitionJSON.has("description"));
             assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
         }
+    }
+    
+    public void testWorkflowInstanceGet() throws Exception
+    {
+        //Start workflow as USER1 and assign task to USER2.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
+        startTask = workflowService.endTask(startTask.id, null);
+        
+        WorkflowInstance adhocInstance = startTask.path.instance;
+        
+        Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.id + "?includeTasks=true"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONObject result = json.getJSONObject("data");
+        assertNotNull(result);
+        
+        assertEquals(adhocInstance.id, result.getString("id"));
+        assertEquals(adhocInstance.definition.name, result.getString("name"));
+        assertEquals(adhocInstance.definition.title, result.getString("title"));
+        assertEquals(adhocInstance.definition.description, result.getString("description"));
+        assertEquals(adhocInstance.active, result.getBoolean("isActive"));
+        assertEquals(ISO8601DateFormat.format(adhocInstance.startDate), result.getString("startDate"));
+        assertNotNull(result.getString("dueDate"));
+        assertNotNull(result.getString("endDate"));
+        assertEquals(2, result.getInt("priority"));
+        JSONObject initiator = result.getJSONObject("initiator");
+        
+        assertEquals(USER1, initiator.getString("userName"));
+        assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
+        assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
+                
+        assertEquals(adhocInstance.context.toString(), result.getString("context"));
+        assertEquals(adhocInstance.workflowPackage.toString(), result.getString("package"));
+        assertNotNull(result.getString("startTaskInstanceId"));
+        
+        JSONObject jsonDefinition = result.getJSONObject("definition");
+        WorkflowDefinition adhocDefinition = adhocInstance.definition;
+        
+        assertNotNull(jsonDefinition);
+        
+        assertEquals(adhocDefinition.id, jsonDefinition.getString("id"));
+        assertEquals(adhocDefinition.name, jsonDefinition.getString("name"));
+        assertEquals(adhocDefinition.title, jsonDefinition.getString("title"));
+        assertEquals(adhocDefinition.description, jsonDefinition.getString("description"));
+        assertEquals(adhocDefinition.version, jsonDefinition.getString("version"));
+        assertEquals(adhocDefinition.getStartTaskDefinition().metadata.getName().toPrefixString(namespaceService), jsonDefinition.getString("startTaskDefinitionType"));
+        assertTrue(jsonDefinition.has("taskDefinitions"));
+        
+        JSONArray tasks = result.getJSONArray("tasks");
+        assertTrue(tasks.length() > 1);
     }
     
     @Override

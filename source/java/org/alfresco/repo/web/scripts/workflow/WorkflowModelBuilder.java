@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,8 +43,11 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -87,8 +91,15 @@ public class WorkflowModelBuilder
     public static final String TASK_WORKFLOW_INSTANCE_DESCRIPTION = "description";
     public static final String TASK_WORKFLOW_INSTANCE_IS_ACTIVE = "isActive";
     public static final String TASK_WORKFLOW_INSTANCE_START_DATE = "startDate";
+    public static final String TASK_WORKFLOW_INSTANCE_DUE_DATE = "dueDate";
     public static final String TASK_WORKFLOW_INSTANCE_END_DATE = "endDate";
+    public static final String TASK_WORKFLOW_INSTANCE_PRIORITY = "priority";
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR = "initiator";
+    public static final String TASK_WORKFLOW_INSTANCE_CONTEXT = "context";
+    public static final String TASK_WORKFLOW_INSTANCE_PACKAGE = "package";
+    public static final String TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID = "startTaskInstanceId";
+    public static final String TASK_WORKFLOW_INSTANCE_DEFINITION = "definition";
+    public static final String TASK_WORKFLOW_INSTANCE_TASKS = "tasks";
     public static final String TASK_WORKFLOW_INSTANCE_DEFINITION_URL = "definitionUrl";
 
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_USERNAME = "userName";
@@ -117,18 +128,24 @@ public class WorkflowModelBuilder
     public static final String WORKFLOW_DEFINITION_NAME = "name";
     public static final String WORKFLOW_DEFINITION_TITLE = "title";
     public static final String WORKFLOW_DEFINITION_DESCRIPTION = "description";
+    public static final String WORKFLOW_DEFINITION_VERSION = "version";
+    public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_URL = "startTaskDefinitionUrl";
+    public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE = "startTaskDefinitionType";
+    public static final String WORKFLOW_DEFINITION_TASK_DEFINITIONS = "taskDefinitions";
 
     private static final String PREFIX_SEPARATOR = Character.toString(QName.NAMESPACE_PREFIX);
 
     private final NamespaceService namespaceService;
     private final NodeService nodeService;
     private final PersonService personService;
+    private final WorkflowService workflowService;
 
-    public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, PersonService personService)
+    public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, PersonService personService, WorkflowService workflowService)
     {
         this.namespaceService = namespaceService;
         this.nodeService = nodeService;
         this.personService = personService;
+        this.workflowService = workflowService;
     }
 
     /**
@@ -168,10 +185,148 @@ public class WorkflowModelBuilder
         model.put(TASK_PATH, getUrl(workflowTask.getPath()));
 
         // workflow instance part
-        model.put(TASK_WORKFLOW_INSTANCE, buildWorkflowInstance(workflowTask.path.instance));
+        model.put(TASK_WORKFLOW_INSTANCE, buildSimple(workflowTask.getPath().getInstance()));
 
         // definition part
-        model.put(TASK_DEFINITION, buildTaskDefinition(workflowTask.definition, workflowTask));
+        model.put(TASK_DEFINITION, buildTaskDefinition(workflowTask.getDefinition(), workflowTask));
+
+        return model;
+    }
+
+    /**
+     * Returns a simple representation of a {@link WorkflowInstance}.
+     * @param workflowInstance The workflow instance to be represented.          
+     * @return
+     */
+    public Map<String, Object> buildSimple(WorkflowInstance workflowInstance)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+
+        model.put(TASK_WORKFLOW_INSTANCE_ID, workflowInstance.getId());
+        model.put(TASK_WORKFLOW_INSTANCE_URL, getUrl(workflowInstance));
+        model.put(TASK_WORKFLOW_INSTANCE_NAME, workflowInstance.getDefinition().getName());
+        model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.getDefinition().getTitle());
+        model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.getDefinition().getDescription());
+        model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.isActive());
+
+        if (workflowInstance.getStartDate() == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_START_DATE, workflowInstance.getStartDate());
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_START_DATE, ISO8601DateFormat.format(workflowInstance.getStartDate()));
+        }
+
+        if (workflowInstance.getEndDate() == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_END_DATE, workflowInstance.getEndDate());
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_END_DATE, ISO8601DateFormat.format(workflowInstance.getEndDate()));
+        }
+
+        if (workflowInstance.getInitiator() == null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, null);
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
+        }
+        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.getDefinition()));
+
+        return model;
+    }
+    
+    /**
+     * Returns a detailed representation of a {@link WorkflowInstance}.
+     * @param workflowInstance The workflow instance to be represented.
+     * @param includeTasks should we include task in model?     
+     * @return
+     */
+    public Map<String, Object> buildDetailed(WorkflowInstance workflowInstance, boolean includeTasks)
+    {
+        Map<String, Object> model = buildSimple(workflowInstance);
+
+        Serializable dueDate = null;
+        Serializable priority = null;
+        Serializable startTaskId = null;
+
+        // get all active tasks
+        List<WorkflowTask> activeTasks = workflowService.queryTasks(new WorkflowTaskQuery());
+        // get all completed tasks
+        WorkflowTaskQuery completedTasksQuery = new WorkflowTaskQuery();
+        completedTasksQuery.setTaskState(WorkflowTaskState.COMPLETED);
+        completedTasksQuery.setActive(null);
+        List<WorkflowTask> completedTasks = workflowService.queryTasks(completedTasksQuery);
+
+        ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+
+        for (WorkflowTask completedTask : completedTasks)
+        {
+            if (completedTask.path.instance.id.equals(workflowInstance.id))
+            {
+                if (completedTask.properties.get(WorkflowModel.PROP_DUE_DATE) != null)
+                {
+                    dueDate = completedTask.properties.get(WorkflowModel.PROP_DUE_DATE);
+                }
+                if (completedTask.properties.get(WorkflowModel.PROP_PRIORITY) != null)
+                {
+                    priority = completedTask.properties.get(WorkflowModel.PROP_PRIORITY);
+                }
+                if (workflowInstance.definition.getStartTaskDefinition().id.equals(completedTask.definition.id))
+                {
+                    startTaskId = completedTask.id;
+                }
+                results.add(buildSimple(completedTask, null));
+            }
+        }
+
+        for (WorkflowTask activeTask : activeTasks)
+        {
+            if (activeTask.path.instance.id.equals(workflowInstance.id))
+            {
+                if (activeTask.properties.get(WorkflowModel.PROP_DUE_DATE) != null)
+                {
+                    dueDate = activeTask.properties.get(WorkflowModel.PROP_DUE_DATE);
+                }
+                if (activeTask.properties.get(WorkflowModel.PROP_PRIORITY) != null)
+                {
+                    priority = activeTask.properties.get(WorkflowModel.PROP_PRIORITY);
+                }
+                if (workflowInstance.definition.getStartTaskDefinition().id.equals(activeTask.definition.id))
+                {
+                    startTaskId = activeTask.id;
+                }
+                results.add(buildSimple(activeTask, null));
+            }
+        }
+
+        if (includeTasks)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_TASKS, results);
+        }
+
+        if (dueDate != null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, ISO8601DateFormat.format((Date) dueDate));
+        }
+        else
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, dueDate);
+        }
+        
+        if (workflowInstance.context != null)
+        {
+            model.put(TASK_WORKFLOW_INSTANCE_CONTEXT, workflowInstance.context.toString());
+        }
+        
+        model.put(TASK_WORKFLOW_INSTANCE_PRIORITY, priority);
+        model.put(TASK_WORKFLOW_INSTANCE_PACKAGE, workflowInstance.workflowPackage.toString());
+        model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);
+        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION, buildDetailed(workflowInstance.definition));
 
         return model;
     }
@@ -195,6 +350,40 @@ public class WorkflowModelBuilder
         return model;
     }
 
+    /**
+     * Returns a detailed representation of a {@link WorkflowDefinition}.
+     * 
+     * @param workflowDefinition the WorkflowDefinition object to be represented.
+     * @return
+     */
+    public Map<String, Object> buildDetailed(WorkflowDefinition workflowDefinition)
+    {
+        Map<String, Object> model = buildSimple(workflowDefinition);
+
+        model.put(WORKFLOW_DEFINITION_VERSION, workflowDefinition.getVersion());
+        model.put(WORKFLOW_DEFINITION_START_TASK_DEFINITION_URL, getUrl(workflowDefinition.getStartTaskDefinition().getMetadata()));
+        model.put(WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE, workflowDefinition.getStartTaskDefinition().getMetadata().getName());
+
+        ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+        for (WorkflowTaskDefinition taskDefinition : workflowService.getTaskDefinitions(workflowDefinition.getId()))
+        {
+            if (taskDefinition.id.equals(workflowDefinition.getStartTaskDefinition().getId()))
+            {
+                continue;
+            }
+
+            Map<String, Object> result = new HashMap<String, Object>();
+
+            result.put(TASK_DEFINITION_URL, getUrl(taskDefinition.getMetadata()));
+            result.put(TASK_DEFINITION_TYPE, taskDefinition.getMetadata().getName());
+
+            results.add(result);
+        }
+        model.put(WORKFLOW_DEFINITION_TASK_DEFINITIONS, results);
+
+        return model;
+    }
+    
     private Object isPooled(Map<QName, Serializable> properties)
     {
         Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
@@ -240,6 +429,7 @@ public class WorkflowModelBuilder
         {
             return value;
         }
+        
         if (value instanceof Collection<?>)
         {
             Collection<?> collection = (Collection<?>) value;
@@ -250,6 +440,7 @@ public class WorkflowModelBuilder
             }
             return results;
         }
+        
         return DefaultTypeConverter.INSTANCE.convert(String.class, value);
     }
 
@@ -289,48 +480,6 @@ public class WorkflowModelBuilder
         return model;
     }
 
-    private Map<String, Object> buildWorkflowInstance(WorkflowInstance workflowInstance)
-    {
-        Map<String, Object> model = new HashMap<String, Object>();
-
-        model.put(TASK_WORKFLOW_INSTANCE_ID, workflowInstance.id);
-        model.put(TASK_WORKFLOW_INSTANCE_URL, getUrl(workflowInstance));
-        model.put(TASK_WORKFLOW_INSTANCE_NAME, workflowInstance.definition.name);
-        model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.definition.title);
-        model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.definition.description);
-        model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.active);
-
-        if (workflowInstance.startDate == null)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_START_DATE, workflowInstance.startDate);
-        }
-        else
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_START_DATE, ISO8601DateFormat.format(workflowInstance.startDate));
-        }
-
-        if (workflowInstance.endDate == null)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_END_DATE, workflowInstance.endDate);
-        }
-        else
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_END_DATE, ISO8601DateFormat.format(workflowInstance.endDate));
-        }
-
-        if (workflowInstance.initiator == null)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, null);
-        }
-        else
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, getPersonModel(nodeService.getProperty(workflowInstance.initiator, ContentModel.PROP_USERNAME)));
-        }
-        model.put(TASK_WORKFLOW_INSTANCE_DEFINITION_URL, getUrl(workflowInstance.definition));
-
-        return model;
-    }
-    
     private Map<String, Object> buildTaskDefinition(WorkflowTaskDefinition workflowTaskDefinition, WorkflowTask workflowTask)
     {
         Map<String, Object> model = new HashMap<String, Object>();
@@ -382,9 +531,11 @@ public class WorkflowModelBuilder
     private List<?> getHiddenTransitions(Map<QName, Serializable> properties)
     {
         Serializable hiddenSer = properties.get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
-        if(hiddenSer instanceof List<?>)
+        if (hiddenSer instanceof List<?>)
+        {
             return (List<?>) hiddenSer;
-        else if(hiddenSer instanceof String)
+        }
+        else if (hiddenSer instanceof String)
         {
             String hiddenStr = (String) hiddenSer;
             return Arrays.asList(hiddenStr.split(","));
@@ -399,15 +550,16 @@ public class WorkflowModelBuilder
         model.put(WORKFLOW_NODE_TRANSITION_ID, id);
         model.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.getTitle());
         model.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.getDescription());
-        model.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault);
+        model.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault());
         model.put(WORKFLOW_NODE_TRANSITION_IS_HIDDEN, isHiddenTransition(id, hiddenTransitions));
         return model;
     }
 
     private boolean isHiddenTransition(String transitionId, List<?> hiddenTransitions)
     {
-        if(hiddenTransitions == null)
+        if (hiddenTransitions == null)
             return false;
+        
         return hiddenTransitions.contains(transitionId);
     }
 

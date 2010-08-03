@@ -811,6 +811,11 @@
           class="org.alfresco.repo.web.scripts.workflow.WorkflowDefinitionsGet"
           parent="abstractWorkflowWebScript"></bean>
 
+    <!-- Retrieves a specific workflow instance, optionally with all the tasks. -->
+    <bean id="webscript.org.alfresco.repository.workflow.workflow-instance.get"
+          class="org.alfresco.repo.web.scripts.workflow.WorkflowInstanceGet"
+          parent="abstractWorkflowWebScript"></bean>
+
     <!--                                   -->
     <!--      Audit Service REST API    -->
     <!--                                   -->

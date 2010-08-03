@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
@@ -62,10 +63,12 @@ public class WorkflowModelBuilderTest extends TestCase
     private static final String firstName = "Joe";
     private static final String lastName = "Bloggs";
     private static final NodeRef person = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
+    private static final NodeRef workflowPackage = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "workflowPackage");
     
     private NamespaceService namespaceService;
     private PersonService personService;
     private NodeService nodeService;
+    private WorkflowService workflowService;
     private WorkflowModelBuilder builder;
 
     @SuppressWarnings("unchecked")
@@ -199,13 +202,50 @@ public class WorkflowModelBuilderTest extends TestCase
         WorkflowDefinition workflowDefinition = new WorkflowDefinition("The Id", "The Name", "The Version", "The Title", "The Description", workflowTaskDefinition);
         
         Map<String, Object> model = builder.buildSimple(workflowDefinition);
-        assertEquals(workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_ID));
-        assertEquals("api/workflow-definitions/" + workflowDefinition.id, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_URL));
-        assertEquals(workflowDefinition.name, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_NAME));
-        assertEquals(workflowDefinition.title, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_TITLE));
-        assertEquals(workflowDefinition.description, model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_DESCRIPTION));
+        assertEquals(workflowDefinition.getId(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_ID));
+        assertEquals("api/workflow-definitions/" + workflowDefinition.getId(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_URL));
+        assertEquals(workflowDefinition.getName(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_NAME));
+        assertEquals(workflowDefinition.getTitle(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_TITLE));
+        assertEquals(workflowDefinition.getDescription(), model.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_DESCRIPTION));
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public void testBuildWorkflowInstanceDetailed() throws Exception
+    {
+        WorkflowTaskDefinition workflowTaskDefinition = new WorkflowTaskDefinition();
+        workflowTaskDefinition.metadata = mock(TypeDefinition.class);
+        when(workflowTaskDefinition.getMetadata().getName()).thenReturn(QName.createQName("The Type Name"));
+        when(workflowTaskDefinition.getMetadata().getTitle()).thenReturn("The Type Title");
+        when(workflowTaskDefinition.getMetadata().getDescription()).thenReturn("The Type Description");
+        
+        WorkflowInstance workflowInstance = makeWorkflowInstance(workflowTaskDefinition);
+        
+        Map<String, Object> model = builder.buildDetailed(workflowInstance, true);
+        
+        assertEquals(workflowInstance.getId(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
+        assertEquals(workflowInstance.getDefinition().getName(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
+        assertEquals(workflowInstance.getDefinition().getTitle(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
+        assertEquals(workflowInstance.getDefinition().getDescription(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DESCRIPTION));
+        assertEquals(workflowInstance.isActive(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));
+        assertEquals(ISO8601DateFormat.format(workflowInstance.getStartDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
+        assertEquals(ISO8601DateFormat.format(workflowInstance.getEndDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE));
+        
+        Map<String, Object> initiator = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_INITIATOR);
+        assertEquals(userName, initiator.get(WorkflowModelBuilder.PERSON_USER_NAME));
+        assertEquals(firstName, initiator.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
+        assertEquals(lastName, initiator.get(WorkflowModelBuilder.PERSON_LAST_NAME));
+        
+        assertEquals(workflowInstance.getContext().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_CONTEXT));        
+        assertEquals(workflowInstance.getWorkflowPackage().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_PACKAGE));
+        
+        Map<String, Object> taskInstanceModel = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DEFINITION);
+        
+        assertEquals(workflowInstance.getDefinition().getVersion(), taskInstanceModel.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_VERSION));
+        assertEquals(workflowInstance.getDefinition().getStartTaskDefinition().getMetadata().getName(), 
+                    taskInstanceModel.get(WorkflowModelBuilder.WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE));
+        
+    }
+
     private WorkflowNode makeNode()
     {
         WorkflowNode node = new WorkflowNode();
@@ -273,6 +313,21 @@ public class WorkflowModelBuilderTest extends TestCase
         task.properties = makeTaskProperties(date);
         return task;
     }
+    
+    private WorkflowInstance makeWorkflowInstance(WorkflowTaskDefinition taskDefinition)
+    {
+        WorkflowInstance workflowInstance = new WorkflowInstance();
+        workflowInstance.id = "The id";
+        workflowInstance.active = true;
+        workflowInstance.startDate = new Date();
+        workflowInstance.endDate = new Date();
+        workflowInstance.initiator = person;
+        workflowInstance.definition = new WorkflowDefinition(
+                    "The Id", "The Name", "The Version", "The Title", "The Description", taskDefinition);
+        workflowInstance.workflowPackage = workflowPackage;
+        workflowInstance.context = workflowPackage;
+        return workflowInstance;
+    }
 
     private HashMap<QName, Serializable> makeTaskProperties(Date date)
     {
@@ -307,7 +362,10 @@ public class WorkflowModelBuilderTest extends TestCase
         personProps.put(ContentModel.PROP_FIRSTNAME, firstName);
         personProps.put(ContentModel.PROP_LASTNAME, lastName);
         when(nodeService.getProperties(person)).thenReturn(personProps);
+        when(nodeService.getProperty(person, ContentModel.PROP_USERNAME)).thenReturn(userName);
         
-        builder = new WorkflowModelBuilder(namespaceService, nodeService, personService);
+        workflowService = mock(WorkflowService.class);
+        
+        builder = new WorkflowModelBuilder(namespaceService, nodeService, personService, workflowService);
     }
 }

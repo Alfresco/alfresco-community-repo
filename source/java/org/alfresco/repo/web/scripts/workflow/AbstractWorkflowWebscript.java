@@ -48,7 +48,7 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        WorkflowModelBuilder modelBuilder = new WorkflowModelBuilder(namespaceService, nodeService, personService);
+        WorkflowModelBuilder modelBuilder = new WorkflowModelBuilder(namespaceService, nodeService, personService, workflowService);
         return buildModel(modelBuilder, req, status, cache);
     }
 

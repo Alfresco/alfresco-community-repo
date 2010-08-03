@@ -17,28 +17,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.forms;
+package org.alfresco.repo.forms.processor;
+
+import java.util.Map;
 
 /**
- * Interface defining a field in a {@link Form}.
- *
  * @since 3.4
  * @author Nick Smith
+ *
  */
-public interface Field
+public interface FormCreationData
 {
-    /**
-     * @return the field definition
-     */
-    FieldDefinition getFieldDefinition();
 
     /**
-     * @return the fieldName
+     * @return the itemData
      */
-    String getFieldName();
+    public abstract Object getItemData();
 
     /**
-     * @return the value for this field or <code>null</code>.
+     * @return If the <code>fieldName</code> given is a forced field then
+     *         returns <code>true</code>, otherwise returns <code>false</code>.
      */
-    Object getValue();
+    public abstract boolean isForcedField(String fieldName);
+
+    /**
+     * @return the context
+     */
+    public abstract Map<String, Object> getContext();
+
 }

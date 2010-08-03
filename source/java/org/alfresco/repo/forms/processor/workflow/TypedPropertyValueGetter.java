@@ -74,7 +74,7 @@ public class TypedPropertyValueGetter
 
             // make sure empty strings stay as empty strings, everything else
             // should be represented as null
-            if(valStr.isEmpty() && !isTextProperty(propDef))
+            if(valStr.length()==0 && !isTextProperty(propDef))
             {
                 // Do nothing, leave typedValue as null.
             }

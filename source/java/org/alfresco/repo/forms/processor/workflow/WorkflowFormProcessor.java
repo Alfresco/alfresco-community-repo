@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Temporary FormProcessor implementation that can generate and persist 
+ * FormProcessor implementation that can generate and persist 
  * Form objects for workflow definitions.
  *
  *@since 3.4

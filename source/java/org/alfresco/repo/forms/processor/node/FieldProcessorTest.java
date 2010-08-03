@@ -33,6 +33,7 @@ import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.processor.FormCreationData;
+import org.alfresco.repo.forms.processor.FormCreationDataImpl;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
@@ -132,7 +133,7 @@ public class FieldProcessorTest extends TestCase
     {
         super.setUp();
         namespaceService = makeNamespaceService();
-        data = new FormCreationData(makeItemData(), null,  null);
+        data = new FormCreationDataImpl(makeItemData(), null,  null);
     }
 
     private ItemData<Void> makeItemData()

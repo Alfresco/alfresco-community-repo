@@ -165,7 +165,7 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         formItem.setUrl(getItemURI(item));
     
         Object itemData = makeItemData(item);
-        FormCreationData data = new FormCreationData(itemData, forcedFields, context); 
+        FormCreationData data = new FormCreationDataImpl(itemData, forcedFields, context); 
         populateForm(form, fields, data);
         if (log.isDebugEnabled()) //
             log.debug("Generated form: " + form);

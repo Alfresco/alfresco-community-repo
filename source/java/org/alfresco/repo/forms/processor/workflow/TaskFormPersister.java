@@ -144,7 +144,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         {
         return updater.update();
         }
-        else if(transitionId.isEmpty())
+        else if(transitionId.length()==0)
         {
             return updater.transition();
         }

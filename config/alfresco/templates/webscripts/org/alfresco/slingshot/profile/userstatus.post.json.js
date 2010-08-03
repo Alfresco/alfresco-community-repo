@@ -17,12 +17,15 @@ function main()
       var newStatus = json.get("status");
       if (newStatus != null)
       {
+         var statusTime = new Date();
          person.properties["cm:userStatus"] = newStatus;
-         person.properties["cm:userStatusTime"] = new Date();
-      }
+         person.properties["cm:userStatusTime"] = statusTime;
+         person.save();
 
-      person.save();
-      model.success = true;
+         model.success = true;
+         model.userStatus = newStatus;
+         model.userStatusTime = statusTime;
+      }
    }
 }
 

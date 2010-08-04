@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.workflow;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -64,33 +66,37 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
             WorkflowTask workflowTask = workflowService.getTaskById(taskId);
 
             String currentUser = authenticationService.getCurrentUserName();
-
             Serializable owner = workflowTask.getProperties().get(ContentModel.PROP_OWNER);
-
             Serializable initiator = getWorkflowInitiator(workflowTask);
 
-            if (!(owner != null && currentUser.equals(owner) || initiator != null && currentUser.equals(initiator)))
+            // if the the current user is the owner of the task, the initiator of the workflow
+            // or a member of the assigned pooled actors group, updating the task is allowed
+            if ((owner != null && currentUser.equals(owner)) ||
+                (initiator != null && currentUser.equals(initiator)) ||
+                isUserInPooledActors(workflowTask, currentUser))
+            {
+                // read request json            
+                json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+                
+                // update task properties
+                workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json), null, null);
+                
+                // task was not found -> return 404
+                if (workflowTask == null)
+                {
+                    throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Failed to find workflow task with id: " + taskId);
+                }
+                
+                // build the model for ftl
+                Map<String, Object> model = new HashMap<String, Object>();
+                model.put("workflowTask", modelBuilder.buildDetailed(workflowTask));
+                
+                return model;
+            }
+            else
             {
                 throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Failed to update workflow task with id: " + taskId);
             }
-
-            // read request json            
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            // update task properties
-            workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json), null, null);
-            
-            // task was not founded -> return 404
-            if (workflowTask == null)
-            {
-                throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Failed to find workflow task with id: " + taskId);
-            }
-            
-            Map<String, Object> model = new HashMap<String, Object>();
-            // build the model for ftl
-            model.put("workflowTask", modelBuilder.buildDetailed(workflowTask));
-            
-            return model;
         }
         catch (IOException iox)
         {
@@ -171,7 +177,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
     {
         Serializable initiatorUserName = null;
         
-        NodeRef initiator = workflowTask.path.instance.initiator;
+        NodeRef initiator = workflowTask.getPath().getInstance().getInitiator();
         
         if (initiator != null)
         {
@@ -179,5 +185,21 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
         }
         
         return initiatorUserName;
+    }
+    
+    private boolean isUserInPooledActors(WorkflowTask task, String currentUser)
+    {
+        boolean result = false;
+        
+        Collection<?> actors = (Collection<?>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        if (actors != null && !actors.isEmpty())
+        {
+            // TODO: determine whether the user is in any of the groups, for now allow
+            //       pooled tasks to be updated.
+            
+            result = true;
+        }
+        
+        return result;
     }
 }

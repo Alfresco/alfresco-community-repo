@@ -246,7 +246,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     
     public void testTaskInstancePut() throws Exception
     {
-        //Start workflow as USER1 and assign task to USER2.
+        // Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
         WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
@@ -269,10 +269,12 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         jsonProperties.put(qnameToString(WorkflowModel.PROP_DESCRIPTION), "Edited description");
         jsonProperties.put(qnameToString(WorkflowModel.PROP_PRIORITY), 1);
         
+        // test USER3 can not update the task
         personManager.setUser(USER3);
         Response unauthResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 401);
         assertEquals(Status.STATUS_UNAUTHORIZED, unauthResponse.getStatus());
-        
+
+        // test USER1 (the task owner) can update the task
         personManager.setUser(USER1);
         Response putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 200);
         
@@ -285,6 +287,14 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject editedJsonProperties = result.getJSONObject("properties");
         
         compareProperties(jsonProperties, editedJsonProperties);
+        
+        // get the next task where USER2 is the owner
+        workflowService.endTask(startTask.id, null);
+        List<WorkflowPath> paths = workflowService.getWorkflowPaths(adhocPath.getInstance().getId());
+        WorkflowTask nextTask = workflowService.getTasksForWorkflowPath(paths.get(0).getId()).get(0);
+        
+        // make sure USER1 (the workflow initiator) can update
+        putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + nextTask.id, jsonProperties.toString(), "application/json"), 200);
     }
     
     public void testWorkflowDefinitionsGet() throws Exception

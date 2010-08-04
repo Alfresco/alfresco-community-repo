@@ -171,8 +171,10 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(personManager.getLastName(USER1), owner.getString("lastName"));
 
         JSONObject properties = result.getJSONObject("properties");
-
         assertNotNull(properties);
+        assertTrue(properties.has("bpm_priority"));
+        assertTrue(properties.has("bpm_description"));
+        assertTrue(properties.has("bpm_reassignable"));
         
         JSONObject instance = result.getJSONObject("workflowInstance");
         WorkflowInstance startInstance = startTask.path.instance;

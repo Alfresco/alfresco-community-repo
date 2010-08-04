@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -374,17 +375,20 @@ public class RetryingTransactionHelperTest extends TestCase
      * Checks nesting of two transactions with <code>requiresNew == true</code>,
      * but where the two transactions get involved in a concurrency struggle.
      * 
-     * Note: skip test for PostgreSQL
+     * Note: skip test for PostgreSQL and MS SQL Server
      */
-    public void testNestedWithoutPropogationConcurrentUntilFailureNotPostgreSQL() throws InterruptedException
+    public void testNestedWithoutPropogationConcurrentUntilFailureNotPostgreSQLOrMSSQL() throws InterruptedException
     {
         final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
         txnHelperForTest.setMaxRetries(1);
         
-        if (dialect instanceof PostgreSQLDialect)
+        if ((dialect instanceof PostgreSQLDialect) || (dialect instanceof AlfrescoSQLServerDialect))
         {
-            // NOOP - skip test for PostgreSQL since it does not support lock wait timeout hence will hang if concurrently "nested" (in terms of Spring) since the initial transaction does not complete
+            // NOOP
+            // skip test for PostgreSQL and MS SQL Server to avoid hang if concurrently "nested" (in terms of Spring) since the initial transaction does not complete
             // see testConcurrencyRetryingNoFailure instead
+            // Note: PostgreSQL does not support lock timeout
+            // Note: MS SQL Server does not support lock wait timeout by default (will wait forever) unless it is overridden on each connection ("set lock_timout")
         }
         else
         {

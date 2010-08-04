@@ -20,15 +20,12 @@
 package org.alfresco.repo.rating;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.rating.RatingNodeProperties.RatingStruct;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingScheme;
@@ -148,17 +145,16 @@ public class RatingServiceImpl implements RatingService
         {
             // There are no previous ratings from this user, so we create a new cm:rating child node.
             
-            // These are multivalued properties.
             Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
-            ratingProps.put(ContentModel.PROP_RATING_SCORE, toSerializableList(new Float[]{rating}));
-            ratingProps.put(ContentModel.PROP_RATED_AT, toSerializableList(new Date[]{new Date()}));
-            ratingProps.put(ContentModel.PROP_RATING_SCHEME, toSerializableList(new String[]{ratingSchemeName}));
+            ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
+            ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
+            ratingProps.put(ContentModel.PROP_RATING_SCHEME, ratingSchemeName);
 
             nodeService.createNode(targetNode, ContentModel.ASSOC_RATINGS, assocQName, ContentModel.TYPE_RATING, ratingProps);
         }
         else
         {
-            // There are previous ratings by this user. Things are a little more complex.
+            // There are previous ratings by this user.
             if (myRatingChildren.size() > 1 && log.isDebugEnabled())
             {
                 log.debug("");
@@ -166,27 +162,33 @@ public class RatingServiceImpl implements RatingService
             NodeRef myPreviousRatingsNode = myRatingChildren.get(0).getChildRef();
             
             Map<QName, Serializable> existingProps = nodeService.getProperties(myPreviousRatingsNode);
-            RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(existingProps);
+            String existingRatingScheme = (String)existingProps.get(ContentModel.PROP_RATING_SCHEME);
             
-            // If the schemes list already contains an entry matching the rating we're setting
-            // we need to delete it and then delete the score and date at the corresponding indexes.
-            int indexOfExistingRating = ratingProps.getIndexOfRating(ratingSchemeName);
-            if (indexOfExistingRating != -1)
+            // If it's a re-rating in the existing scheme, replace.
+            if (ratingScheme.getName().equals(existingRatingScheme))
             {
-                ratingProps.removeRatingAt(indexOfExistingRating);
+                Map<QName, Serializable> ratingProps = new HashMap<QName, Serializable>();
+                ratingProps.put(ContentModel.PROP_RATING_SCHEME, ratingSchemeName);
+                ratingProps.put(ContentModel.PROP_RATING_SCORE, rating);
+                ratingProps.put(ContentModel.PROP_RATED_AT, new Date());
+                
+                nodeService.setProperties(myPreviousRatingsNode, ratingProps);
             }
-            
-            ratingProps.appendRating(ratingSchemeName, rating);
-            
-            nodeService.setProperties(myPreviousRatingsNode, ratingProps.toNodeProperties());
+            // But if it's a new rating in a different scheme, we don't support this scenario.
+            else
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Cannot apply rating ")
+                   .append(rating).append(" [")
+                   .append(ratingSchemeName).append("] to node ")
+                   .append(targetNode).append(". Already rated in ")
+                   .append(existingRatingScheme);
+                
+                throw new RatingServiceException(msg.toString());
+            }
         }
     }
     
-    private Serializable toSerializableList(Object[] array)
-    {
-        return (Serializable)Arrays.asList(array);
-    }
-
     /*
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#getRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
@@ -207,27 +209,26 @@ public class RatingServiceImpl implements RatingService
             return null;
         }
         
-        // Take the last node pertaining to the current user.
-        ChildAssociationRef lastChild = ratingChildren.get(ratingChildren.size() - 1);
-        Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
+        // Take the node pertaining to the current user.
+        ChildAssociationRef ratingNodeAssoc = ratingChildren.get(0);
+        Map<QName, Serializable> properties = nodeService.getProperties(ratingNodeAssoc.getChildRef());
         
         // Find the index of the rating scheme we're interested in.
-        RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(properties);
-        int index = ratingProps.getIndexOfRating(ratingSchemeName);
-        if (index == -1)
+        String existingRatingScheme = (String)properties.get(ContentModel.PROP_RATING_SCHEME);
+        if (existingRatingScheme.equals(ratingSchemeName) == false)
         {
             // There is no rating in this scheme by the specified user.
             return null;
         }
         else
         {
-            // There is a rating and the associated data are at the index'th place in each multivalued property.
-            RatingStruct ratingStruct = ratingProps.getRatingAt(index);
+            Float existingRatingScore = (Float)properties.get(ContentModel.PROP_RATING_SCORE);
+            Date existingRatingDate = (Date)properties.get(ContentModel.PROP_RATED_AT);
             
-            Rating result = new Rating(getRatingScheme(ratingStruct.getScheme()),
-                    ratingStruct.getScore(),
+            Rating result = new Rating(getRatingScheme(existingRatingScheme),
+                    existingRatingScore,
                     user,
-                    ratingStruct.getDate());
+                    existingRatingDate);
             return result;
         }
     }
@@ -243,39 +244,29 @@ public class RatingServiceImpl implements RatingService
         return removeRating(targetNode, ratingScheme, currentUser);
     }
 
-    private Rating removeRating(NodeRef targetNode, String ratingSchemeName, String user)
+    private Rating removeRating(NodeRef targetNode, String ratingSchemeName, final String user)
     {
         List<ChildAssociationRef> ratingChildren = getRatingNodeChildren(targetNode, user);
         if (ratingChildren.isEmpty())
         {
-            // There are no ratings by any user.
             return null;
         }
-        // Take the last node pertaining to the specified user.
-        ChildAssociationRef lastChild = ratingChildren.get(ratingChildren.size() - 1);
+        ChildAssociationRef lastChild = ratingChildren.get(0);
         Map<QName, Serializable> properties = nodeService.getProperties(lastChild.getChildRef());
-
-        // Find the index of the rating scheme we're interested in.
-        RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(properties);
         
-        int index = ratingProps.getIndexOfRating(ratingSchemeName);
-        if (index == -1)
+        Rating result = null;
+        // If the rating is for the specified scheme delete it.
+        // Get the scheme name and check it.
+        if (ratingSchemeName.equals(properties.get(ContentModel.PROP_RATING_SCHEME)))
         {
-            // There is no rating in this scheme by the specified user.
-            return null;
-        }
-        else
-        {
-            // There is a rating and the associated data are at the index'th place in each property.
-            RatingStruct removed = ratingProps.removeRatingAt(index);
-
-            // Now apply the properties with one deleted.
-            Map<QName, Serializable> props = ratingProps.toNodeProperties();
-            nodeService.setProperties(lastChild.getChildRef(), props);
+            Float score = (Float) properties.get(ContentModel.PROP_RATING_SCORE);
+            Date date = (Date)properties.get(ContentModel.PROP_RATED_AT);
             
-            return new Rating(this.getRatingScheme(removed.getScheme()),
-                              removed.getScore(), user, removed.getDate());
+            nodeService.deleteNode(lastChild.getChildRef());
+            result = new Rating(getRatingScheme(ratingSchemeName), score, user, date);
         }
+        
+        return result;
     }
     
     /*
@@ -284,7 +275,7 @@ public class RatingServiceImpl implements RatingService
      */
     public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
-        //TODO Performance improvement? : put node rating total/count/average into a multi-valued
+        //TODO Performance improvement? : put node rating total/count/average into a
         //                                property in the db.
         List<ChildAssociationRef> ratingsNodes = this.getRatingNodeChildren(targetNode, null);
         
@@ -295,13 +286,10 @@ public class RatingServiceImpl implements RatingService
         float result = 0;
         for (ChildAssociationRef ratingsNode : ratingsNodes)
         {
-            List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
-            for (Rating rating : ratings)
+            Rating rating = getRatingFrom(ratingsNode.getChildRef());
+            if (rating.getScheme().getName().equals(ratingSchemeName))
             {
-                if (rating.getScheme().getName().equals(ratingSchemeName))
-                {
-                    result += rating.getScore();
-                }
+                result += rating.getScore();
             }
         }
         return result;
@@ -319,14 +307,11 @@ public class RatingServiceImpl implements RatingService
         float ratingTotal = 0;
         for (ChildAssociationRef ratingsNode : ratingsNodes)
         {
-            List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
-            for (Rating rating : ratings)
+            Rating rating = getRatingFrom(ratingsNode.getChildRef());
+            if (rating.getScheme().getName().equals(ratingSchemeName))
             {
-                if (rating.getScheme().getName().equals(ratingSchemeName))
-                {
-                    ratingCount++;
-                    ratingTotal += rating.getScore();
-                }
+                ratingCount++;
+                ratingTotal += rating.getScore();
             }
         }
         if (ratingCount == 0)
@@ -350,13 +335,10 @@ public class RatingServiceImpl implements RatingService
         int result = 0;
         for (ChildAssociationRef ratingsNode : ratingsNodes)
         {
-            List<Rating> ratings = getRatingsFrom(ratingsNode.getChildRef());
-            for (Rating rating : ratings)
+            Rating rating = getRatingFrom(ratingsNode.getChildRef());
+            if (rating.getScheme().getName().equals(ratingSchemeName))
             {
-                if (rating.getScheme().getName().equals(ratingSchemeName))
-                {
-                    result++;
-                }
+                result++;
             }
         }
         return result;
@@ -390,13 +372,11 @@ public class RatingServiceImpl implements RatingService
     }
     
     /**
-     * This method returns a List of {@link Rating} objects for the specified cm:rating
-     * node. As it's one ratingNode the results will be form one user, but will represent
-     * 0..n schemes.
+     * This method returns a {@link Rating} object for the specified cm:rating node.
      * @param ratingNode
      * @return
      */
-    private List<Rating> getRatingsFrom(NodeRef ratingNode)
+    private Rating getRatingFrom(NodeRef ratingNode)
     {
         // The appliedBy is encoded in the parent assoc qname.
         // It will be the same user for all ratings in this node.
@@ -404,16 +384,12 @@ public class RatingServiceImpl implements RatingService
         String appliedBy = parentAssoc.getQName().getLocalName();
         
         Map<QName, Serializable> properties = nodeService.getProperties(ratingNode);
-        RatingNodeProperties ratingProps = RatingNodeProperties.createFrom(properties);
         
-        List<Rating> result = new ArrayList<Rating>(ratingProps.size());
-        for (int i = 0; i < ratingProps.size(); i++)
-        {
-            final String schemeName = ratingProps.getRatingAt(i).getScheme();
-            RatingScheme scheme = getRatingScheme(schemeName);
-            result.add(new Rating(scheme, ratingProps.getRatingAt(i).getScore(),
-                    appliedBy, ratingProps.getRatingAt(i).getDate()));
-        }
+        final String schemeName = (String)properties.get(ContentModel.PROP_RATING_SCHEME);
+        final Float score = (Float)properties.get(ContentModel.PROP_RATING_SCORE);
+        final Date ratedAt = (Date)properties.get(ContentModel.PROP_RATED_AT);
+        RatingScheme scheme = getRatingScheme(schemeName);
+        Rating result = new Rating(scheme, score, appliedBy, ratedAt);
         return result;
     }
 }

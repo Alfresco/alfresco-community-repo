@@ -26,6 +26,7 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.rating.Rating;
 import org.alfresco.service.cmr.rating.RatingService;
+import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -92,10 +93,13 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
      * Applies the given rating to the specified node using the specified ratingScheme.
      * It is the responsibility of the caller to ensure that the rating scheme exists
      * and that the rating is within the limits defined for that scheme.
+     * <p/>Furthermore, only one rating scheme per user per target node is supported. Any attempt
+     * by one user to apply a second rating in a different scheme will result in a {@link RatingServiceException}.
      * 
      * @param node
      * @param rating
      * @param ratingSchemeName
+     * @throws RatingServiceException
      * @see ScriptRatingService#getMin(String)
      * @see ScriptRatingService#getMax(String)
      */

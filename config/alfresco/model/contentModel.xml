@@ -435,7 +435,6 @@
                <title>Rating</title>
                <type>d:float</type>
                <mandatory>true</mandatory>
-               <multiple>true</multiple>
                <index enabled="true">
                   <atomic>true</atomic>
                   <stored>true</stored>
@@ -446,7 +445,6 @@
                <title>Rating Scheme</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
-               <multiple>true</multiple>
                <index enabled="true">
                   <atomic>true</atomic>
                   <stored>true</stored>
@@ -457,7 +455,6 @@
                <title>Rated at</title>
                <type>d:datetime</type>
                <mandatory>true</mandatory>
-               <multiple>true</multiple>
                <index enabled="true">
                   <atomic>true</atomic>
                   <stored>true</stored>

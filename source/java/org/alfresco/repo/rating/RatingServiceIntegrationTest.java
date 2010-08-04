@@ -20,7 +20,6 @@
 package org.alfresco.repo.rating;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -179,7 +178,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         fail("Illegal rating " + illegalRating + " should have caused exception.");
     }
 
-    public void testApplyUpdateDeleteRatings_SingleUserMultipleSchemes() throws Exception
+    public void testApplyUpdateDeleteRatings() throws Exception
     {
         // We'll do all this as user 'UserOne'.
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
@@ -189,10 +188,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertNull("Expected a null rating,", nullRating);
         assertNull("Expected a null remove result.", ratingService.removeRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME));
         
-        final float likesScore = 1;
         final float fiveStarScore = 5;
         
-        ratingService.applyRating(testDoc_Admin, likesScore, LIKES_SCHEME_NAME);
         ratingService.applyRating(testDoc_Admin, fiveStarScore, FIVE_STAR_SCHEME_NAME);
         
         // Some basic node structure tests.
@@ -213,15 +210,7 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         
 
         // Now to check the persisted ratings data are ok.
-        Rating likeRating = ratingService.getRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME);
-        
         Rating fiveStarRating = ratingService.getRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
-
-        assertNotNull("'like' rating was null.", likeRating);
-        assertEquals("Wrong score for rating", likesScore, likeRating.getScore());
-        assertEquals("Wrong user for rating", AuthenticationUtil.getFullyAuthenticatedUser(), likeRating.getAppliedBy());
-        final Date likeRatingAppliedAt = likeRating.getAppliedAt();
-        assertDateIsCloseToNow(likeRatingAppliedAt);
 
         assertNotNull("'5*' rating was null.", fiveStarRating);
         assertEquals("Wrong score for rating", fiveStarScore, fiveStarRating.getScore());
@@ -248,27 +237,13 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         // Now to check the updated ratings data are ok.
         Rating updatedFiveStarRating = ratingService.getRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
 
-        // 'like' rating data should be unchanged.
-        assertNotNull("'like' rating was null.", likeRating);
-        assertEquals("Wrong score for rating", likesScore, likeRating.getScore());
-        assertEquals("Wrong user for rating", AuthenticationUtil.getFullyAuthenticatedUser(), likeRating.getAppliedBy());
-        assertEquals("Wrong date for rating", likeRatingAppliedAt, likeRating.getAppliedAt());
-
-        // But these 'five star' data should be changed - new score, new date
+        // 'five star' data should be changed - new score, new date
         assertNotNull("'5*' rating was null.", updatedFiveStarRating);
         assertEquals("Wrong score for rating", updatedFiveStarScore, updatedFiveStarRating.getScore());
         assertEquals("Wrong user for rating", AuthenticationUtil.getFullyAuthenticatedUser(), updatedFiveStarRating.getAppliedBy());
         assertTrue("five star rating date was unchanged.", fiveStarRatingAppliedAt.equals(updatedFiveStarRating.getAppliedAt()) == false);
         assertDateIsCloseToNow(updatedFiveStarRating.getAppliedAt());
         
-        // Now we'll delete the 'likes' rating.
-        Rating deletedLikesRating = ratingService.removeRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME);
-        // 'like' rating data should be unchanged.
-        assertNotNull("'like' rating was null.", deletedLikesRating);
-        assertEquals("Wrong score for rating", likesScore, deletedLikesRating.getScore());
-        assertEquals("Wrong user for rating", AuthenticationUtil.getFullyAuthenticatedUser(), deletedLikesRating.getAppliedBy());
-        assertEquals("Wrong date for rating", likeRatingAppliedAt, deletedLikesRating.getAppliedAt());
-
         // And delete the 'five star' rating.
         Rating deletedStarRating = ratingService.removeRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
         // 'five star' rating data should be unchanged.
@@ -279,7 +254,6 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         
         // And the deleted ratings should be gone.
         assertNull("5* rating not null.", ratingService.getRatingByCurrentUser(testDoc_Admin, FIVE_STAR_SCHEME_NAME));
-        assertNull("likes rating not null", ratingService.getRatingByCurrentUser(testDoc_Admin, LIKES_SCHEME_NAME));
     }
     
     /**
@@ -297,6 +271,64 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
 //        assertTrue("Date was not before 'now'", now.after(d));
 //        final long millisTolerance = 5000l; // 5 seconds
 //        assertTrue("Date was not within " + millisTolerance + "ms of 'now'.", now.getTime() - d.getTime() < millisTolerance);
+    }
+    
+    public void testOneUserRatesAndRerates() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        ratingService.applyRating(testDoc_Admin, 1.0f, FIVE_STAR_SCHEME_NAME);
+
+        // A new score in the same rating scheme by the same user should replace the previous score.
+        ratingService.applyRating(testDoc_Admin, 2.0f, FIVE_STAR_SCHEME_NAME);
+        
+        float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong mean rating.", 2f, meanRating);
+
+        float totalRating = ratingService.getTotalRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong total rating.", 2.0f, totalRating);
+
+        int ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong ratings count.", 1, ratingsCount);
+        
+        // There should only be one rating child node under the rated node.
+        assertEquals("Wrong number of child nodes", 1 , nodeService.getChildAssocs(testDoc_Admin).size());
+    }
+    
+    /**
+     * This test method ensures that if a single user attempts to rate a piece of content in two
+     * different rating schemes, then an exception should be thrown.
+     * @throws Exception
+     */
+    public void testOneUserRatesInTwoSchemes() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        ratingService.applyRating(testDoc_Admin, 1.0f, FIVE_STAR_SCHEME_NAME);
+
+        // A new score in a different rating scheme by the same user should fail.
+        boolean correctExceptionThrown = false;
+        try
+        {
+            ratingService.applyRating(testDoc_Admin, 2.0f, LIKES_SCHEME_NAME);
+        } catch (RatingServiceException expected)
+        {
+            correctExceptionThrown = true;
+        }
+        if (correctExceptionThrown == false)
+        {
+            fail("Expected exception not thrown.");
+        }
+        
+        float meanRating = ratingService.getAverageRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong mean rating.", 1f, meanRating);
+
+        float totalRating = ratingService.getTotalRating(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong total rating.", 1f, totalRating);
+
+        int ratingsCount = ratingService.getRatingsCount(testDoc_Admin, FIVE_STAR_SCHEME_NAME);
+        assertEquals("Document had wrong ratings count.", 1, ratingsCount);
+        
+        // There should only be one rating child node under the rated node.
+        assertEquals("Wrong number of child nodes", 1 , nodeService.getChildAssocs(testDoc_Admin).size());
     }
     
     public void testApplyRating_MultipleUsers() throws Exception

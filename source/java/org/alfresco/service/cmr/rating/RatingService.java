@@ -64,13 +64,18 @@ public interface RatingService
     /**
      * This method applies the given rating to the specified target node. If a rating
      * from the current user in the specified scheme already exists, it will be replaced.
+     * <p/>
+     * Note that only one rating scheme per user per targetNode is supported at present.
+     * If a user attempts to apply a second rating in a different rating scheme to any given
+     * target node, a {@link RatingServiceException} will be thrown.
      * 
      * @param targetNode the node to which the rating is to be applied.
      * @param rating the rating which is to be applied.
      * @param ratingSchemeName the name of the rating scheme to use.
      * 
      * @throws RatingServiceException if the rating is not within the range defined by the named scheme
-     *                                or if the named scheme is not registered.
+     *                                or if the named scheme is not registered or if the rating would result
+     *                                in multiple ratings by the same user.
      * @see RatingService#getRatingSchemes()
      * @see RatingScheme
      */
@@ -91,6 +96,20 @@ public interface RatingService
     @NotAuditable
     int getRatingsCount(NodeRef targetNode, String ratingSchemeName);
 
+    /**
+     * This method gets the total accumulated rating score for
+     * the specified node in the specified {@link RatingScheme}.
+     * That is, the rating scores for all users for the specified
+     * node are summed to give the result.
+     * 
+     * @param targetNode the node on which the rating total is sought.
+     * @param ratingScheme the rating scheme to use.
+     * 
+     * @return the sum of all individual ratings applied to this node in the specified scheme.
+     * @see RatingService#getRatingSchemes()
+     * @see RatingScheme
+     */
+    @NotAuditable
     float getTotalRating(NodeRef targetNode, String ratingSchemeName);
 
     /**
@@ -100,6 +119,7 @@ public interface RatingService
      * @param ratingSchemeName the rating scheme name in which the average is defined.
      * @return the average (mean) value if there is one, else -1.
      */
+    @NotAuditable
     float getAverageRating(NodeRef targetNode, String ratingSchemeName);
 
     /**

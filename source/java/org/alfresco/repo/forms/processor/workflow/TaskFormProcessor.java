@@ -201,7 +201,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
             {
                 return (List<String>) hiddenValues;
             }
-            else if (hiddenValues instanceof String)
+            else if (hiddenValues instanceof String && ((String)hiddenValues).length() > 0)
             {
                 return Arrays.asList(((String)hiddenValues).split(","));
             }

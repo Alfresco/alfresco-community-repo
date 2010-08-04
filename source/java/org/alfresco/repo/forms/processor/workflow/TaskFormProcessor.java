@@ -27,6 +27,7 @@ package org.alfresco.repo.forms.processor.workflow;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -194,9 +195,16 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     private List<String> getHiddenTransitions(WorkflowTask task)
     {
         Serializable hiddenValues = task.getProperties().get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
-        if(hiddenValues!=null && hiddenValues instanceof List<?>)
+        if (hiddenValues != null)
         {
-            return (List<String>) hiddenValues;
+            if (hiddenValues instanceof List<?>)
+            {
+                return (List<String>) hiddenValues;
+            }
+            else if (hiddenValues instanceof String)
+            {
+                return Arrays.asList(((String)hiddenValues).split(","));
+            }
         }
         return Collections.emptyList();
     }

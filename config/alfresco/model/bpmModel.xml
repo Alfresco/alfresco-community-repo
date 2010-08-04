@@ -245,6 +245,12 @@
                     <multiple>true</multiple>
                     <default></default>
                 </property>
+                
+                <!-- Flag to determine whether the owner can reassign their task -->
+                <property name="bpm:reassignable">
+                   <type>d:boolean</type>
+                   <default>true</default>
+                </property>
             </properties>
 
             <associations>

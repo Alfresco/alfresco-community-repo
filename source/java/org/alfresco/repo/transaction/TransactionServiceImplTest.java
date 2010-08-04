@@ -31,9 +31,12 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ApplicationContextHelper;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.TransientDataAccessResourceException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -49,6 +52,8 @@ public class TransactionServiceImplTest extends TestCase
     private TransactionServiceImpl transactionService;
     private NodeService nodeService;
     
+    private Dialect dialect;
+    
     public void setUp() throws Exception
     {
         transactionManager = (PlatformTransactionManager) ctx.getBean("transactionManager");
@@ -57,8 +62,10 @@ public class TransactionServiceImplTest extends TestCase
         transactionService.setAllowWrite(true);
         transactionService.setAuthenticationContext((AuthenticationContext) ctx.getBean("authenticationContext"));
         transactionService.setSysAdminParams((SysAdminParams) ctx.getBean("sysAdminParams"));
-
+        
         nodeService = (NodeService) ctx.getBean("dbNodeService");
+        
+        dialect = (Dialect) ctx.getBean("dialect");
     }
     
     public void testPropagatingTxn() throws Exception
@@ -136,15 +143,30 @@ public class TransactionServiceImplTest extends TestCase
         }
         catch (InvalidDataAccessApiUsageException e)
         {
+            // expected this ...
             @SuppressWarnings("unused")
             int i = 0;
-            // expected this ...
         }
         catch (TransientDataAccessResourceException e)
         {
+            // or this
             @SuppressWarnings("unused")
             int i = 0;
-            // or this
+        }
+        catch (UncategorizedSQLException e)
+        {
+            // or this - for PostgreSQL (org.postgresql.util.PSQLException: ERROR: transaction is read-only)
+            if (dialect instanceof PostgreSQLDialect)
+            {
+                // ALF-4226
+                @SuppressWarnings("unused")
+                int i = 0;
+                
+            }
+            else
+            {
+                throw e;
+            }
         }
         finally
         {

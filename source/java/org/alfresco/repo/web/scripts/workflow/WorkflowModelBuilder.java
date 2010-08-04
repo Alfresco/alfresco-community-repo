@@ -47,7 +47,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -255,61 +254,15 @@ public class WorkflowModelBuilder
         Serializable priority = null;
         Serializable startTaskId = null;
 
-        // get all active tasks
-        List<WorkflowTask> activeTasks = workflowService.queryTasks(new WorkflowTaskQuery());
-        // get all completed tasks
-        WorkflowTaskQuery completedTasksQuery = new WorkflowTaskQuery();
-        completedTasksQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        completedTasksQuery.setActive(null);
-        List<WorkflowTask> completedTasks = workflowService.queryTasks(completedTasksQuery);
-
-        ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-
-        for (WorkflowTask completedTask : completedTasks)
+        WorkflowTask startTask = getStartTaskForWorkflow(workflowInstance);
+        
+        if (startTask != null)
         {
-            if (completedTask.path.instance.id.equals(workflowInstance.id))
-            {
-                if (completedTask.properties.get(WorkflowModel.PROP_DUE_DATE) != null)
-                {
-                    dueDate = completedTask.properties.get(WorkflowModel.PROP_DUE_DATE);
-                }
-                if (completedTask.properties.get(WorkflowModel.PROP_PRIORITY) != null)
-                {
-                    priority = completedTask.properties.get(WorkflowModel.PROP_PRIORITY);
-                }
-                if (workflowInstance.definition.getStartTaskDefinition().id.equals(completedTask.definition.id))
-                {
-                    startTaskId = completedTask.id;
-                }
-                results.add(buildSimple(completedTask, null));
-            }
+            startTaskId = startTask.id;
+            dueDate = startTask.properties.get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+            priority = startTask.properties.get(WorkflowModel.PROP_WORKFLOW_PRIORITY);
         }
-
-        for (WorkflowTask activeTask : activeTasks)
-        {
-            if (activeTask.path.instance.id.equals(workflowInstance.id))
-            {
-                if (activeTask.properties.get(WorkflowModel.PROP_DUE_DATE) != null)
-                {
-                    dueDate = activeTask.properties.get(WorkflowModel.PROP_DUE_DATE);
-                }
-                if (activeTask.properties.get(WorkflowModel.PROP_PRIORITY) != null)
-                {
-                    priority = activeTask.properties.get(WorkflowModel.PROP_PRIORITY);
-                }
-                if (workflowInstance.definition.getStartTaskDefinition().id.equals(activeTask.definition.id))
-                {
-                    startTaskId = activeTask.id;
-                }
-                results.add(buildSimple(activeTask, null));
-            }
-        }
-
-        if (includeTasks)
-        {
-            model.put(TASK_WORKFLOW_INSTANCE_TASKS, results);
-        }
-
+        
         if (dueDate != null)
         {
             model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, ISO8601DateFormat.format((Date) dueDate));
@@ -328,6 +281,25 @@ public class WorkflowModelBuilder
         model.put(TASK_WORKFLOW_INSTANCE_PACKAGE, workflowInstance.workflowPackage.toString());
         model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);
         model.put(TASK_WORKFLOW_INSTANCE_DEFINITION, buildDetailed(workflowInstance.definition));
+
+        if (includeTasks)
+        {
+            // get all tasks for workflow
+            WorkflowTaskQuery tasksQuery = new WorkflowTaskQuery();
+            tasksQuery.setTaskState(null);
+            tasksQuery.setActive(null);
+            tasksQuery.setProcessId(workflowInstance.id);
+            List<WorkflowTask> tasks = workflowService.queryTasks(tasksQuery);
+
+            ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>(tasks.size());
+
+            for (WorkflowTask task : tasks)
+            {
+                results.add(buildSimple(task, null));
+            }
+
+            model.put(TASK_WORKFLOW_INSTANCE_TASKS, results);
+        }
 
         return model;
     }
@@ -562,6 +534,27 @@ public class WorkflowModelBuilder
             return false;
         
         return hiddenTransitions.contains(transitionId);
+    }
+
+    protected WorkflowTask getStartTaskForWorkflow(WorkflowInstance workflowInstance)
+    {
+        WorkflowTaskQuery startTaskQuery = new WorkflowTaskQuery();
+        startTaskQuery.setTaskState(null);
+        startTaskQuery.setActive(null);
+        startTaskQuery.setTaskName(workflowInstance.definition.getStartTaskDefinition().metadata.getName());
+        startTaskQuery.setProcessId(workflowInstance.id);
+        
+        List<WorkflowTask> startTasks = workflowService.queryTasks(startTaskQuery);
+        
+        if (!startTasks.isEmpty())
+        {
+            return startTasks.get(0);
+        }
+        else
+        {
+            return null;
+        }
+
     }
 
     private String getUrl(WorkflowTask task)

@@ -64,11 +64,19 @@ public class ReplicationDefinitionPut extends AbstractReplicationWebscript
            if(json.has("name")) {
               String jsonName = json.getString("name");
               if(! jsonName.equals(replicationDefinitionName)) {
-                 // Name has changed, rename it
+                 // Name has changed, ensure the new name is spare
+                 if(replicationService.loadReplicationDefinition(jsonName) != null) {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The specified new name is already in use");
+                 }
+
+                 // Rename it
                  replicationService.renameReplicationDefinition(
                        replicationDefinitionName,
                        jsonName
                  );
+                 
+                 // And grab the updated version post-rename
+                 replicationDefinition = replicationService.loadReplicationDefinition(jsonName);
               }
            }
            

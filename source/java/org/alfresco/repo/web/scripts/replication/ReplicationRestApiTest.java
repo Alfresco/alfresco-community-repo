@@ -26,6 +26,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
@@ -66,6 +67,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
     private ActionTrackingService actionTrackingService;
     
     private Repository repositoryHelper;
+    private NodeRef dataDictionary;
     
     public void testReplicationDefinitionsGet() throws Exception
     {
@@ -439,7 +441,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(startedAt, json.get("startedAt"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
-        assertEquals("/api/running-action/replicationActionExecutor="+
+        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
               actionId + "=" + instanceId, json.get("executionDetails"));
         assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
         assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
@@ -464,7 +466,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(startedAt, json.get("startedAt"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
-        assertEquals("/api/running-action/replicationActionExecutor="+
+        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
               actionId + "=" + instanceId, json.get("executionDetails"));
         assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
         assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
@@ -479,12 +481,6 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         rd.getPayload().add(
               repositoryHelper.getCompanyHome()
         );
-        NodeRef dataDictionary = 
-              nodeService.getChildByName(
-                    repositoryHelper.getCompanyHome(),
-                    ContentModel.ASSOC_CONTAINS,
-                    "Data Dictionary"
-              );
         rd.getPayload().add( dataDictionary );
         replicationService.saveReplicationDefinition(rd);
         
@@ -500,7 +496,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(startedAt, json.get("startedAt"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
-        assertEquals("/api/running-action/replicationActionExecutor="+
+        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
               actionId + "=" + instanceId, json.get("executionDetails"));
         assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
         assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
@@ -556,7 +552,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(startedAt, json.get("startedAt"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
-        assertEquals("/api/running-action/replicationActionExecutor="+
+        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
               actionId + "=" + instanceId, json.get("executionDetails"));
         assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
         assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
@@ -648,7 +644,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
        assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
        
-       json.put("name", "NewDefinition");
+       json.put("name", "New Definition");
        response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
        assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
        
@@ -660,26 +656,123 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        
        
        // Check we got the right information back
-       // TODO
+       String jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("New Definition", json.get("name"));
+       assertEquals("Testing", json.get("description"));
+       assertEquals("New", json.get("status"));
+       assertEquals(JSONObject.NULL, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals(JSONObject.NULL, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals(JSONObject.NULL, json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
        
      
-       // Check that the right stuff ended up in the database
-       // TODO
+       // Check that the right stuff ended up in the repository
+       ReplicationDefinition rd = replicationService.loadReplicationDefinition("New Definition");
+       assertEquals("New Definition", rd.getReplicationName());
+       assertEquals("Testing", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals(null, rd.getTargetName());
+       assertEquals(0, rd.getPayload().size());
+       assertEquals(true, rd.isEnabled());
        
        
        // Post with the full set of options
-       // TODO
+       json = new JSONObject();
+       json.put("name", "Test");
+       json.put("description", "Test Description");
+       json.put("targetName", "Target");
+       json.put("enabled", false);
+       JSONArray payloadRefs = new JSONArray();
+       payloadRefs.put(repositoryHelper.getCompanyHome().toString());
+       payloadRefs.put(dataDictionary.toString());
+       json.put("payload", payloadRefs);
+       
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
        
        
-       // Check the response for these
-       // TODO
+       // Check the response for this
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test", json.get("name"));
+       assertEquals("Test Description", json.get("description"));
+       assertEquals("New", json.get("status"));
+       assertEquals(JSONObject.NULL, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals(JSONObject.NULL, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(false, json.get("enabled"));
+       assertEquals("Target", json.get("targetName"));
+       assertEquals(2, json.getJSONArray("payload").length());
+       
+       JSONObject payload = json.getJSONArray("payload").getJSONObject(0);
+       assertEquals(repositoryHelper.getCompanyHome().toString(), payload.get("nodeRef"));
+       assertEquals(true, payload.get("isFolder"));
+       assertEquals("Company Home", payload.get("name"));
+       assertEquals("/Company Home", payload.get("path"));
+
+       payload = json.getJSONArray("payload").getJSONObject(1);
+       assertEquals(dataDictionary.toString(), payload.get("nodeRef"));
+       assertEquals(true, payload.get("isFolder"));
+       assertEquals("Data Dictionary", payload.get("name"));
+       assertEquals("/Company Home/Data Dictionary", payload.get("path"));
        
        
-       // Check the database for these
-       // TODO
+       // Check the database for this
+       rd = replicationService.loadReplicationDefinition("Test");
+       assertEquals("Test", rd.getReplicationName());
+       assertEquals("Test Description", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals("Target", rd.getTargetName());
+       assertEquals(false, rd.isEnabled());       
+       assertEquals(2, rd.getPayload().size());
+       assertEquals(repositoryHelper.getCompanyHome(), rd.getPayload().get(0));
+       assertEquals(dataDictionary, rd.getPayload().get(1));
+
+       
+       // Ensure that the original one wasn't changed by anything
+       rd = replicationService.loadReplicationDefinition("New Definition");
+       assertEquals("New Definition", rd.getReplicationName());
+       assertEquals("Testing", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals(null, rd.getTargetName());
+       assertEquals(0, rd.getPayload().size());
+       assertEquals(true, rd.isEnabled());
+       
        
        // Ensure we can't create with a duplicate name
-       // TODO
+       json = new JSONObject();
+       json.put("name", "Test");
+       
+       response = sendRequest(new PostRequest(URL_DEFINITIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
+       assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
     }
     
     public void testReplicationDefinitionPut() throws Exception
@@ -716,25 +809,308 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        
        
        // Check we got the right information back on it
-       // TODO
+       String jsonStr = response.getContentAsString();
+       JSONObject json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test", json.get("name"));
+       assertEquals("Testing", json.get("description"));
+       assertEquals("New", json.get("status"));
+       assertEquals(JSONObject.NULL, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals(JSONObject.NULL, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals(JSONObject.NULL, json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+       
+       
+       // Ensure we didn't get any unexpected data back
+       JSONArray keys = json.names();
+       for(int i=0; i<keys.length(); i++) {
+          String key = keys.getString(0);
+          if(key.equals("name") || key.equals("description") || 
+              key.equals("status") || key.equals("startedAt") ||
+              key.equals("endedAt") || key.equals("failureMessage") ||
+              key.equals("executionDetails") || key.equals("payload") ||
+              key.equals("transferLocalReport") ||
+              key.equals("transferRemoteReport") ||
+              key.equals("enabled")) {
+             // All good
+          } else {
+             fail("Unexpected key '"+key+"' found in json, raw json is\n" + jsonStr);
+          }
+       }
+       
+       
        
        // Change some details, and see them updated in both
        //  the JSON and on the object in the repo
-       // TODO
+       json = new JSONObject();
+       json.put("description", "Updated Description");
+       json.put("enabled", false);
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test", json.get("name"));
+       assertEquals("Updated Description", json.get("description"));
+       assertEquals("New", json.get("status"));
+       assertEquals(JSONObject.NULL, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals(JSONObject.NULL, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(false, json.get("enabled"));
+       assertEquals(JSONObject.NULL, json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+       
+       rd = replicationService.loadReplicationDefinition("Test");
+       assertEquals("Test", rd.getReplicationName());
+       assertEquals("Updated Description", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals(null, rd.getTargetName());
+       assertEquals(0, rd.getPayload().size());
+       assertEquals(false, rd.isEnabled());
+       
+       
        
        // Create a 2nd definition, and check that the correct
        //  one gets updated
-       // TODO
+       rd = replicationService.createReplicationDefinition("Test2", "Testing2");
+       rd.setTargetName("Target");
+       replicationService.saveReplicationDefinition(rd);
+       
+       json = new JSONObject();
+       json.put("description", "Updated Description 2");
+       json.put("enabled", false);
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test2", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       // Check the response we got
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test2", json.get("name"));
+       assertEquals("Updated Description 2", json.get("description"));
+       assertEquals("New", json.get("status"));
+       assertEquals(JSONObject.NULL, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals(JSONObject.NULL, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(false, json.get("enabled"));
+       assertEquals("Target", json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+       
+       // Check the 1st definition
+       rd = replicationService.loadReplicationDefinition("Test");
+       assertEquals("Test", rd.getReplicationName());
+       assertEquals("Updated Description", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals(null, rd.getTargetName());
+       assertEquals(0, rd.getPayload().size());
+       assertEquals(false, rd.isEnabled());
+       
+       // Check the 2nd definition
+       rd = replicationService.loadReplicationDefinition("Test2");
+       assertEquals("Test2", rd.getReplicationName());
+       assertEquals("Updated Description 2", rd.getDescription());
+       assertEquals(ActionStatus.New, rd.getExecutionStatus());
+       assertEquals(null, rd.getExecutionStartDate());
+       assertEquals(null, rd.getExecutionEndDate());
+       assertEquals(null, rd.getExecutionFailureMessage());
+       assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
+       assertEquals("Target", rd.getTargetName());
+       assertEquals(0, rd.getPayload().size());
+       assertEquals(false, rd.isEnabled());
+       
+       
+       // Mark it as running, then change some details and
+       //  see it change as expected
+       rd = replicationService.loadReplicationDefinition("Test");
+       actionTrackingService.recordActionExecuting(rd);
+       replicationService.saveReplicationDefinition(rd);
+       String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
+       String actionId = rd.getId();
+       int instanceId = ((ActionImpl)rd).getExecutionInstance();
+       
+       json = new JSONObject();
+       json.put("enabled", true);
+       json.put("targetName", "Another Target");
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test", json.get("name"));
+       assertEquals("Updated Description", json.get("description"));
+       assertEquals("Running", json.get("status"));
+       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+             actionId + "=" + instanceId, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals("Another Target", json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+
        
        // Change the payload, and see the right information in
        //  the response JSON for it
-       // TODO
+       JSONArray payloadRefs = new JSONArray();
+       payloadRefs.put(repositoryHelper.getCompanyHome().toString());
+       payloadRefs.put(dataDictionary.toString());
+       json = new JSONObject();
+       json.put("payload", payloadRefs);
+       
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test", json.get("name"));
+       assertEquals("Updated Description", json.get("description"));
+       assertEquals("Running", json.get("status"));
+       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+             actionId + "=" + instanceId, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals("Another Target", json.get("targetName"));
+       assertEquals(2, json.getJSONArray("payload").length());
+       
+       JSONObject payload = json.getJSONArray("payload").getJSONObject(0);
+       assertEquals(repositoryHelper.getCompanyHome().toString(), payload.get("nodeRef"));
+       assertEquals(true, payload.get("isFolder"));
+       assertEquals("Company Home", payload.get("name"));
+       assertEquals("/Company Home", payload.get("path"));
+
+       payload = json.getJSONArray("payload").getJSONObject(1);
+       assertEquals(dataDictionary.toString(), payload.get("nodeRef"));
+       assertEquals(true, payload.get("isFolder"));
+       assertEquals("Data Dictionary", payload.get("name"));
+       assertEquals("/Company Home/Data Dictionary", payload.get("path"));
+       
+       
+       // Remove the payload again
+       json = new JSONObject();
+       payloadRefs = new JSONArray();
+       json.put("payload", payloadRefs);
+       
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Test", json.get("name"));
+       assertEquals("Updated Description", json.get("description"));
+       assertEquals("Running", json.get("status"));
+       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+             actionId + "=" + instanceId, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals("Another Target", json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+
        
        // Rename to a taken name, won't be allowed
-       // TODO
+       json = new JSONObject();
+       json.put("name", "Test2");
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", json.toString(), JSON), Status.STATUS_BAD_REQUEST);
+       assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
        
-       // Rename to a spare name, will be changed
-       // TODO
+       
+       // Rename to a spare name, will be updated
+       json = new JSONObject();
+       json.put("name", "Renamed");
+       
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Renamed", json.get("name"));
+       assertEquals("Updated Description", json.get("description"));
+       assertEquals("Running", json.get("status"));
+       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+             actionId + "=" + instanceId, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals("Another Target", json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
+       
+       // Check the repo too
+       assertEquals(null, replicationService.loadReplicationDefinition("Test"));
+       assertNotNull(replicationService.loadReplicationDefinition("Renamed"));
+
+       
+       // Rename can both rename + change details
+       json = new JSONObject();
+       json.put("name", "Renamed Again");
+       json.put("description", "Was Renamed");
+       json.put("targetName", "New Target");
+       
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Renamed", json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       assertNotNull(json);
+       
+       assertEquals("Renamed Again", json.get("name"));
+       assertEquals("Was Renamed", json.get("description"));
+       assertEquals("Running", json.get("status"));
+       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(JSONObject.NULL, json.get("endedAt"));
+       assertEquals(JSONObject.NULL, json.get("failureMessage"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+             actionId + "=" + instanceId, json.get("executionDetails"));
+       assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+       assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+       assertEquals(true, json.get("enabled"));
+       assertEquals("New Target", json.get("targetName"));
+       assertEquals(0, json.getJSONArray("payload").length());
     }
     
     
@@ -766,6 +1142,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
            replicationService.deleteReplicationDefinition(rd);
         }
         txn.commit();
+        
+        // Grab a reference to the data dictionary
+        dataDictionary = nodeService.getChildByName(
+                 repositoryHelper.getCompanyHome(),
+                 ContentModel.ASSOC_CONTAINS,
+                 "Data Dictionary"
+        );
         
         AuthenticationUtil.clearCurrentSecurityContext();
     }

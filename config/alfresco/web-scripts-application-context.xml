@@ -870,4 +870,10 @@
           parent="abstractReplicationWebScript">
     </bean>
 
+    <!-- Updates a replication definition -->
+    <bean id="webscript.org.alfresco.repository.replication.replication-definition.put"
+          class="org.alfresco.repo.web.scripts.replication.ReplicationDefinitionPut"
+          parent="abstractReplicationWebScript">
+    </bean>
+
 </beans>

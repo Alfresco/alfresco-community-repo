@@ -42,6 +42,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -677,7 +678,65 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        // Check the database for these
        // TODO
        
+       // Ensure we can't create with a duplicate name
+       // TODO
     }
+    
+    public void testReplicationDefinitionPut() throws Exception
+    {
+       Response response;
+       
+       
+       // Not allowed if you're not an admin
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+       response = sendRequest(new PutRequest(URL_DEFINITION + "MadeUp", "", JSON), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+       response = sendRequest(new PutRequest(URL_DEFINITION + "MadeUp", "", JSON), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+
+       
+       // Ensure there aren't any to start with
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // You need to specify a real definition
+       response = sendRequest(new PutRequest(URL_DEFINITION + "MadeUp", "", JSON), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+       
+       
+       // Create one, and change it
+       ReplicationDefinition rd = replicationService.createReplicationDefinition("Test", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       
+       response = sendRequest(new PutRequest(URL_DEFINITION + "Test", "{}", JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       
+       // Check we got the right information back on it
+       // TODO
+       
+       // Change some details, and see them updated in both
+       //  the JSON and on the object in the repo
+       // TODO
+       
+       // Create a 2nd definition, and check that the correct
+       //  one gets updated
+       // TODO
+       
+       // Change the payload, and see the right information in
+       //  the response JSON for it
+       // TODO
+       
+       // Rename to a taken name, won't be allowed
+       // TODO
+       
+       // Rename to a spare name, will be changed
+       // TODO
+    }
+    
     
     @Override
     protected void setUp() throws Exception

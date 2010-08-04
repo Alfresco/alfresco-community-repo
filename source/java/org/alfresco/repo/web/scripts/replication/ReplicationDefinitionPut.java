@@ -18,9 +18,13 @@
  */
 package org.alfresco.repo.web.scripts.replication;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -31,7 +35,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Nick Burch
  * @since 3.4
  */
-public class ReplicationDefinitionGet extends AbstractReplicationWebscript
+public class ReplicationDefinitionPut extends AbstractReplicationWebscript
 {
    @Override
    protected Map<String, Object> buildModel(ReplicationModelBuilder modelBuilder, 
@@ -42,7 +46,7 @@ public class ReplicationDefinitionGet extends AbstractReplicationWebscript
           req.getServiceMatch().getTemplateVars().get("replication_definition_name");
        ReplicationDefinition replicationDefinition =
           replicationService.loadReplicationDefinition(replicationDefinitionName);
-       
+      
        // Does it exist?
        if(replicationDefinition == null) {
           throw new WebScriptException(
@@ -50,8 +54,40 @@ public class ReplicationDefinitionGet extends AbstractReplicationWebscript
                 "No Replication Definition found with that name"
           );
        }
+       
+       // Grab the JSON, and prepare to update 
+       try 
+       {
+           JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+           
+           // Are they trying to rename?
+           if(json.has("name")) {
+              String jsonName = json.getString("name");
+              if(! jsonName.equals(replicationDefinitionName)) {
+                 // Name has changed, rename it
+                 replicationService.renameReplicationDefinition(
+                       replicationDefinitionName,
+                       jsonName
+                 );
+              }
+           }
+           
+           // Update everything else
+           updateDefinitionProperties(replicationDefinition, json);
+           
+           // Save the changes
+           replicationService.saveReplicationDefinition(replicationDefinition);
+       }
+       catch (IOException iox)
+       {
+           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from request.", iox);
+       }
+       catch (JSONException je)
+       {
+           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from request.", je);
+       }
       
-       // Have it turned into simple models
+       // Return the new details on it
        return modelBuilder.buildDetails(replicationDefinition);
    }
 }

@@ -40,6 +40,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,6 +71,7 @@ public class RepoAdminServiceImplTest extends TestCase
     
     private RepoAdminService repoAdminService;
     private DictionaryService dictionaryService;
+    private TransactionService transactionService;
     private NodeService nodeService;
     private ContentService contentService;
     private SearchService searchService;
@@ -118,6 +121,7 @@ public class RepoAdminServiceImplTest extends TestCase
         
         repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
         nodeService = (NodeService) ctx.getBean("NodeService");
         contentService = (ContentService) ctx.getBean("ContentService");
         searchService = (SearchService) ctx.getBean("SearchService");
@@ -135,6 +139,21 @@ public class RepoAdminServiceImplTest extends TestCase
     public void testSetup() throws Exception
     {
         // NOOP
+    }
+    
+    public void xtestRepeat() throws Exception
+    {
+        int cnt = 10;
+        
+        for (int i = 1; i <= cnt; i++)
+        {
+            System.out.println("Itr: "+i+" out of "+cnt);
+            
+            testSimpleDynamicModelViaNodeService();
+            testSimpleDynamicModelViaRepoAdminService();
+            testConcurrentDynamicModelCreate();
+            testConcurrentDynamicModelDelete();
+        }
     }
     
     //
@@ -250,7 +269,7 @@ public class RepoAdminServiceImplTest extends TestCase
             
             // delete model
             nodeService.deleteNode(model1);
-            
+           
             assertEquals(defaultModelCnt, dictionaryService.getAllModels().size());
             assertNull(dictionaryService.getClass(typeName));
             
@@ -258,7 +277,6 @@ public class RepoAdminServiceImplTest extends TestCase
             
             // restore model
             nodeService.restoreNode(archiveModel1, null, null, null);
-            
             assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
             assertNotNull(dictionaryService.getClass(typeName));
             
@@ -477,34 +495,46 @@ public class RepoAdminServiceImplTest extends TestCase
     
     public void testConcurrentDynamicModelCreate() throws Exception
     {
-        final int n = 5;
+        final int n = 2;
         
         undeployModels(n);
         
         int deployedModelCount = repoAdminService.getModels().size();
-        logger.info("Existing deployed custom model count: "+deployedModelCount);
+        logger.info("Before deploy: deployed custom model count: "+deployedModelCount);
         
         int dictModelCount = getModelCount();
-        logger.info("Existing dictionary model count: "+dictModelCount);
+        logger.info("Before deploy: dictionary model count: "+dictModelCount);
         
         // concurrently deploy N models
         runConcurrentOps(n, 1); 
         
-        assertEquals(deployedModelCount+n, repoAdminService.getModels().size());
+        int newDeployedModelCount = repoAdminService.getModels().size();
+        logger.info("After deploy: deployed custom model count: "+newDeployedModelCount);
+        assertEquals(deployedModelCount+n, newDeployedModelCount);
         
         for (int i = 1; i <= n; i++)
         {
             assertTrue(isModelDeployed(modelPrefix+i));
         }
         
-        assertEquals(dictModelCount+n, getModelCount());
+        int newDictModelCount = getModelCount();
+        logger.info("After deploy: dictionary model count: "+newDictModelCount);
+        assertEquals(dictModelCount+n, newDictModelCount);
         
         undeployModels(n);
+        
+        newDeployedModelCount = repoAdminService.getModels().size();
+        logger.info("After undeploy: deployed custom model count: "+newDeployedModelCount);
+        assertEquals(deployedModelCount, newDeployedModelCount);
+        
+        newDictModelCount = getModelCount();
+        logger.info("After undeploy: dictionary model count: "+newDictModelCount);
+        assertEquals(dictModelCount, newDictModelCount);
     }
     
     public void testConcurrentDynamicModelDelete() throws Exception
     {
-        final int n = 5;
+        final int n = 2;
         
         undeployModels(n);
         
@@ -591,22 +621,30 @@ public class RepoAdminServiceImplTest extends TestCase
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                 
-                if (opType == 1)
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
-                    // Deploy model
-                    String model = MODEL_MKR_XML.replace(MKR, i+"");
-                    InputStream modelStream = new ByteArrayInputStream(model.getBytes("UTF-8"));
-                    repoAdminService.deployModel(modelStream, modelPrefix+i);
-                    
-                    logger.info("["+i+"] Deploying - test model: "+modelPrefix+i);
-                }
-                else if (opType == 2)
-                {
-                    // Undeploy model
-                    repoAdminService.undeployModel(modelPrefix+i);
-                    
-                    logger.info("["+i+"] Undeployed - test model: "+modelPrefix+i);
-                }
+                    public Object execute() throws Throwable
+                    {
+                        if (opType == 1)
+                        {
+                            // Deploy model
+                            String model = MODEL_MKR_XML.replace(MKR, i+"");
+                            InputStream modelStream = new ByteArrayInputStream(model.getBytes("UTF-8"));
+                            repoAdminService.deployModel(modelStream, modelPrefix+i);
+                            
+                            logger.info("["+i+"] Deploying - test model: "+modelPrefix+i);
+                        }
+                        else if (opType == 2)
+                        {
+                            // Undeploy model
+                            repoAdminService.undeployModel(modelPrefix+i);
+                            
+                            logger.info("["+i+"] Undeployed - test model: "+modelPrefix+i);
+                        }
+                        
+                        return null;
+                    }
+                });
             }
             catch (Throwable t)
             {

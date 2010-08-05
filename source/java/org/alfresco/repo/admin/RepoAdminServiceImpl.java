@@ -42,17 +42,20 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Repository Admin Service Implementation.
@@ -153,18 +156,26 @@ public class RepoAdminServiceImpl implements RepoAdminService
             {
                 String modelFileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 String repoVersion = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-               
-                String modelName = null;
-                    
-                ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
-                InputStream is = cr.getContentInputStream();
                 
                 try
                 {
-                    M2Model model = M2Model.createModel(is);
-                    is.close();
+                    String modelName = null;
                     
-                    modelName = model.getName();
+                    ContentReader cr = contentService.getReader(nodeRef, ContentModel.TYPE_CONTENT);
+                    
+                    if (cr != null)
+                    {
+                        InputStream is = cr.getContentInputStream();
+                        try
+                        {
+                            M2Model model = M2Model.createModel(is);
+                            modelName = model.getName();
+                        }
+                        finally
+                        {
+                            is.close();
+                        }
+                    }
                     
                     // check against models loaded in dictionary and give warning if not found
                     if (dictionaryModels.contains(modelName))
@@ -195,13 +206,13 @@ public class RepoAdminServiceImpl implements RepoAdminService
     {     
         try
         {   
-            // Check that all the passed values are not null        
+            // Check that all the passed values are not null
             ParameterCheck.mandatory("ModelStream", modelStream);
             ParameterCheck.mandatoryString("ModelFileName", modelFileName);
             
             Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
             contentProps.put(ContentModel.PROP_NAME, modelFileName);
-
+            
             StoreRef storeRef = repoModelsLocation.getStoreRef();
             NodeRef rootNode = nodeService.getRootNode(storeRef);
             
@@ -216,7 +227,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
                 // unexpected: should not find multiple nodes with same name
                 throw new AlfrescoRuntimeException("Found multiple custom models location " + repoModelsLocation.getPath());
             }
-
+            
             NodeRef customModelsSpaceNodeRef = nodeRefs.get(0);
             
             nodeRefs = searchService.selectNodes(customModelsSpaceNodeRef, "*[@cm:name='"+modelFileName+"' and "+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
@@ -233,14 +244,24 @@ public class RepoAdminServiceImpl implements RepoAdminService
             {
                 // deploy new model to the repository
                 
-                // note: dictionary model type has associated policies that will be invoked
-                ChildAssociationRef association = nodeService.createNode(customModelsSpaceNodeRef, 
-                        ContentModel.ASSOC_CONTAINS, 
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, modelFileName), 
-                        ContentModel.TYPE_DICTIONARY_MODEL,
-                        contentProps); // also invokes policies for DictionaryModelType - e.g. onUpdateProperties
-                            
-                modelNodeRef = association.getChildRef();
+                try
+                {
+                    // note: dictionary model type has associated policies that will be invoked
+                    ChildAssociationRef association = nodeService.createNode(customModelsSpaceNodeRef,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, modelFileName),
+                            ContentModel.TYPE_DICTIONARY_MODEL,
+                            contentProps); // also invokes policies for DictionaryModelType - e.g. onUpdateProperties
+                                
+                    modelNodeRef = association.getChildRef();
+                }
+                catch (DuplicateChildNodeNameException dcnne)
+                {
+                    String msg = "Model already exists: "+modelFileName+" - "+dcnne;
+                    logger.warn(msg);
+                    // for now, assume concurrency failure
+                    throw new ConcurrencyFailureException(msg);
+                }
                 
                 // add titled aspect (for Web Client display)
                 Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
@@ -409,19 +430,30 @@ public class RepoAdminServiceImpl implements RepoAdminService
      */
     public QName undeployModel(String modelFileName)
     {
-        // Check that all the passed values are not null        
+        // Check that all the passed values are not null
         ParameterCheck.mandatory("modelFileName", modelFileName);
         
         QName modelQName = null;
         
         try
-        {          
+        { 
             // find model in repository
             
-            StoreRef storeRef = repoModelsLocation.getStoreRef();                
+            StoreRef storeRef = repoModelsLocation.getStoreRef();
             NodeRef rootNode = nodeService.getRootNode(storeRef);
-                   
-            List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repoModelsLocation.getPath()+"//.[@cm:name='"+modelFileName+"' and "+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
+            
+            List<NodeRef> nodeRefs = null;
+            try
+            {
+                nodeRefs = searchService.selectNodes(rootNode, repoModelsLocation.getPath()+"//.[@cm:name='"+modelFileName+"' and "+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
+            }
+            catch (InvalidNodeRefException inre)
+            {
+                String msg = "Model no longer exists: "+modelFileName+" - "+inre;
+                logger.warn(msg);
+                // for now, assume concurrency failure
+                throw new ConcurrencyFailureException(msg);
+            }
             
             if (nodeRefs.size() == 0)
             {
@@ -467,14 +499,25 @@ public class RepoAdminServiceImpl implements RepoAdminService
         	
             // permanently remove model from repository
             nodeService.addAspect(modelNodeRef, ContentModel.ASPECT_TEMPORARY, null);
-            nodeService.deleteNode(modelNodeRef);
+            
+            try
+            {
+                nodeService.deleteNode(modelNodeRef);
+            }
+            catch (DictionaryException de)
+            {
+                String msg = "Model undeployment failed: "+modelFileName+" - "+de;
+                logger.warn(msg);
+                // for now, assume concurrency failure
+                throw new ConcurrencyFailureException(msg);
+            }
             
             // note: deleted model will be unloaded as part of DictionaryModelType.beforeCommit()
         }
         catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Model undeployment failed ", e);
-        }        
+        }
         
         return modelQName;
     }

@@ -28,10 +28,13 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.SAXParser;
@@ -67,6 +70,7 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -158,6 +162,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private TenantService tenantService;
     private RuleService ruleService;
     private PolicyComponent policyComponent;
+    private DescriptorService descriptorService;
+    private AlienProcessor alienProcessor;
+    
+    //private String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
 
     private Map<String,NodeRef> transferLockFolderMap = new ConcurrentHashMap<String, NodeRef>();
     private Map<String,NodeRef> transferTempFolderMap = new ConcurrentHashMap<String, NodeRef>();
@@ -176,17 +184,24 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         PropertyCheck.mandatory(this, "inboundTransferRecordsPath", inboundTransferRecordsPath);
         PropertyCheck.mandatory(this, "rootStagingDirectory", rootStagingDirectory);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "descriptorService", descriptorService);
+        PropertyCheck.mandatory(this, "alienProcessor", alienProcessor);
         
-//        // Register policy behaviours
-//        this.getPolicyComponent().bindAssociationBehaviour(
-//                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
-//                TransferModel.ASPECT_TRANSFERRED, 
-//                new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
-//        
-//        this.getPolicyComponent().bindClassBehaviour(
-//                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
-//                this,
-//                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));         
+        /**
+         * For every new child of a node with the trx:transferred aspect run this.onCreateChildAssociation
+         */
+        this.getPolicyComponent().bindAssociationBehaviour(
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
+                TransferModel.ASPECT_TRANSFERRED, 
+                new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
+        
+        /**
+         * For every node with the trx:alien aspect run this.beforeDeleteNode
+         */
+        this.getPolicyComponent().bindClassBehaviour(
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
+                TransferModel.ASPECT_ALIEN,
+                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));         
 
     }
 
@@ -859,14 +874,19 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
     
     /**
-     * @param progressMonitor
-     *            the progressMonitor to set
+     * Set the ruleService
+     * @param ruleService
+     *            the ruleService to set
      */
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
 
+    /**
+     * Get the rule service
+     * @return the rule service
+     */
     public RuleService getRuleService()
     {
         return this.ruleService;
@@ -935,10 +955,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * When a new node is created as a child of a Transferred node then
-     * the transferred nodes need to be marked as Alien nodes.
-     * 
-     * The tree needs to be walked upwards to mark all parent transferred nodes as alien.
+     * When a new node is created as a child of a Transferred or Alien node then
+     * the new node needs to be marked as an alien. 
+     * <p>
+     * Then the tree needs to be walked upwards to mark all parent 
+     * transferred nodes as alien.
      */
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef,
             boolean isNewNode)
@@ -946,75 +967,273 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         
         log.debug("on create child association to transferred node");
         
-        ChildAssociationRef ref = childAssocRef;
-        
-        if(childAssocRef.isPrimary())
-        {
-            while(ref != null)
-            {
-                NodeRef parentNodeRef = ref.getParentRef();
-                NodeRef childNodeRef = ref.getChildRef();
-        
-                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
-                {
-                    Boolean isAlien = (Boolean)nodeService.getProperty(parentNodeRef, TransferModel.PROP_ALIEN);
-            
-                    if (!isAlien)
-                    {
-                        log.debug("setting node as alien:" + parentNodeRef);
-                        nodeService.setProperty(parentNodeRef, TransferModel.PROP_ALIEN, Boolean.TRUE);
-                        ref = nodeService.getPrimaryParent(parentNodeRef);
-                    }
-                    else
-                    {
-                        log.debug("parent node is already alien");
-                        ref = null;
-                    }   
-                }
-                else
-                {
-                    log.debug("parent is not a transferred node");
-                    ref = null;
-                }
-            }
-        }    
+        final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
+        alienProcessor.onCreateChild(childAssocRef, localRepositoryId);
+//        
+//        ChildAssociationRef currentAssoc = childAssocRef;
+//        
+//        final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
+//        
+//        // TODO Needs to check assoc is a cm:contains or subtype
+//        if(childAssocRef.isPrimary())
+//        {
+//            NodeRef parentNodeRef = currentAssoc.getParentRef();
+//            NodeRef childNodeRef = currentAssoc.getChildRef();
+//            
+//            /**
+//             * Make the new child node ref an alien node
+//             */
+//            setAlien(childNodeRef, localRepositoryId);
+//            
+//            /**
+//             * Now deal with the parents of this alien node
+//             */
+//            while(currentAssoc != null)
+//            {
+//                parentNodeRef = currentAssoc.getParentRef();
+//                childNodeRef = currentAssoc.getChildRef();
+//        
+//                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+//                {
+//                    if (!isInvaded(parentNodeRef, localRepositoryId))
+//                    {
+//                        if(log.isDebugEnabled())
+//                        {
+//                            log.debug("alien invades parent node:" + parentNodeRef + ", repositoryId:" + localRepositoryId);
+//                        }
+//                        
+//                        final NodeRef newAlien = parentNodeRef; 
+//                     
+//                       /**
+//                        * Parent may be locked or not be editable by the current user 
+//                        * turn off auditing and lock service for this transaction and 
+//                        * run as admin.
+//                        */
+//                        RunAsWork<Void> actionRunAs = new RunAsWork<Void>()
+//                        {
+//                            public Void doWork() throws Exception
+//                            {
+//                                behaviourFilter.disableBehaviour(newAlien, ContentModel.ASPECT_AUDITABLE);
+//                                behaviourFilter.disableBehaviour(newAlien, ContentModel.ASPECT_LOCKABLE);
+//                                setAlien(newAlien, localRepositoryId);
+//                                return null;
+//                            }          
+//                        };
+//                        AuthenticationUtil.runAs(actionRunAs, AuthenticationUtil.getSystemUserName());
+//             
+//                        // Yes the parent has been invaded so step up to the parent's parent             
+//                        currentAssoc = nodeService.getPrimaryParent(parentNodeRef);
+//                    }
+//                    else
+//                    {
+//                        log.debug("parent node is already invaded");
+//                        currentAssoc = null;
+//                    }   
+//                }
+//                else
+//                {
+//                    log.debug("parent is not a transferred node");
+//                    currentAssoc = null;
+//                }
+//            }
+//        }    
     }
  
     /**
-     * When an old node is deleted that is a child of a transferred node the tree may need to be walked to
-     * mark parent folder as non alien.  
+     * When an alien node is deleted the it may be the last alien invader
+     * <p>
+     * Walk the tree checking the invasion status!
      */
-    public void beforeDeleteNode(NodeRef nodeRef)
+    public void beforeDeleteNode(NodeRef deletedNodeRef)
     {
         log.debug("on delete node - need to check for transferred node");
-        
-        ChildAssociationRef ref = nodeService.getPrimaryParent(nodeRef);
-        
-        while(ref != null)
-        {
-            NodeRef parentNodeRef = ref.getParentRef();
-            
-            /**
-             * Was the parent node transferred ?
-             */
-            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
-            {
-                log.debug("parent node was transferred - check siblings");
-                
-                /**
-                 * Check the siblings of this node to see whether there are any other alien nodes.
-                 */
-                // nodeService.getChildAssocs(parentNodeRef);
-                // BUGBUG Code not complete
-                ref = null;
-        
-                
-            }
-            else
-            {
-                log.debug("parent is not a transferred node");
-                ref = null;
-            }
-        }      
+        alienProcessor.beforeDeleteAlien(deletedNodeRef);
+//        
+//        List<String>stuff = (List<String>)nodeService.getProperty(deletedNodeRef, TransferModel.PROP_INVADED_BY);
+//        
+//        Vector<String> exInvaders = new Vector<String>(stuff);
+//        
+//        ChildAssociationRef currentAssoc = nodeService.getPrimaryParent(deletedNodeRef);
+//     
+//        while(currentAssoc != null && exInvaders != null && exInvaders.size() > 0)
+//        {
+//            NodeRef parentNodeRef = currentAssoc.getParentRef();
+//            NodeRef currentNodeRef = currentAssoc.getChildRef();
+//            
+//            /**
+//             * Does the parent have alien invaders ?
+//             */
+//            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+//            {
+//                log.debug("parent node is alien - check siblings");
+//                
+//                /**
+//                 * For each invader of the deletedNode
+//                 */
+//                Iterator<String> i = exInvaders.listIterator();
+//                while(i.hasNext())
+//                {
+//                    String exInvader = i.next();
+//                    log.debug("Checking exInvader:" + exInvader);
+//                    
+//                    /**
+//                     * Check the siblings of this node to see whether there are any other alien nodes for this invader.
+//                     */
+//                    //TODO replace with a more efficient query
+//                    List<ChildAssociationRef> refs = nodeService.getChildAssocs(parentNodeRef);
+//                    
+//                    for(ChildAssociationRef ref : refs)
+//                    {
+//                        NodeRef childRef = ref.getChildRef();
+//                        List<String>invadedBy = (List<String>)nodeService.getProperty(childRef, TransferModel.PROP_INVADED_BY);
+//                        
+//                        if(childRef.equals(currentNodeRef))
+//                        {
+//                            // do nothing - this is the node we are working with.
+//                        }    
+//                        else 
+//                        {
+//                            if(invadedBy != null && invadedBy.contains(exInvader))
+//                            {
+//                                // There is a sibling so remove this from the list of ex invaders.
+//                                log.debug("yes there is a sibling so it remains an invader");
+//                                i.remove();
+//                                break;
+//                            }
+//                        }
+//                    } // for each child assoc
+//                    
+//                } // for each invader
+//                
+//                log.debug("end of checking siblings");
+//                
+//                if(exInvaders.size() > 0)
+//                {
+//                    log.debug("removing invaders from parent node:" + parentNodeRef);
+//                    List<String> parentInvaders = (List<String>)nodeService.getProperty(parentNodeRef, TransferModel.PROP_INVADED_BY);
+//                    
+//                    final List<String> newInvaders = new ArrayList<String>(10);
+//                    for(String invader : parentInvaders)
+//                    {
+//                        if(exInvaders.contains(invader))
+//                        {
+//                            log.debug("removing invader:" + invader);
+//                        }
+//                        else
+//                        {
+//                            newInvaders.add(invader);
+//                        }
+//                    }
+//                        
+//                    final NodeRef oldAlien = parentNodeRef;
+//                  
+//                    /**
+//                     * Parent may be locked or not be editable by the current user 
+//                     * turn off auditing and lock service for this transaction and 
+//                     * run as admin.
+//                     */
+//                    RunAsWork<Void> actionRunAs = new RunAsWork<Void>()
+//                    {
+//                        public Void doWork() throws Exception
+//                        {
+//                            behaviourFilter.disableBehaviour(oldAlien, ContentModel.ASPECT_AUDITABLE);
+//                            behaviourFilter.disableBehaviour(oldAlien, ContentModel.ASPECT_LOCKABLE);
+//                            if(newInvaders.size() > 0)
+//                            {
+//                                nodeService.setProperty(oldAlien, TransferModel.PROP_INVADED_BY, (Serializable)newInvaders);
+//                            }
+//                            else
+//                            {
+//                                log.debug("parent node no is no longer alien");
+//                                nodeService.removeAspect(oldAlien, TransferModel.ASPECT_ALIEN);
+//                            }
+//                            return null;
+//                        }          
+//                    };
+//                    AuthenticationUtil.runAs(actionRunAs, AuthenticationUtil.getSystemUserName());
+//                }
+//                
+//                /**
+//                 * Now step up to the parent's parent
+//                 */
+//                 currentAssoc = nodeService.getPrimaryParent(parentNodeRef);
+//            }
+//            else
+//            {
+//                log.debug("parent is not an alien node");
+//                currentAssoc = null;
+//            }
+//        } // end of while      
+    }
+    
+//    /**
+//     * Is this node invaded ?
+//     * @param nodeRef
+//     * @param invader
+//     * @return true, this node has been invaded by the invader
+//     */
+//    private boolean isInvaded(NodeRef nodeRef, String invader)
+//    {
+//        List<String>invadedBy = (List<String>)nodeService.getProperty(nodeRef, TransferModel.PROP_INVADED_BY);
+//        
+//        if(invadedBy == null)
+//        {
+//            return false;
+//        }
+//        
+//        return invadedBy.contains(invader);
+//    }
+//    
+//    /**
+//     * Mark the specified node as an alien node, invadedby the invader.
+//     * @param newAlien
+//     * @param invader
+//     */
+//    private void setAlien(NodeRef newAlien, String invader)
+//    {
+//        // Introduce a Multi-valued property
+//        List<String> invadedBy = (List<String>)nodeService.getProperty(newAlien, 
+//                TransferModel.PROP_INVADED_BY);
+//        
+//        if(invadedBy == null)
+//        {
+//            nodeService.setProperty(newAlien, TransferModel.PROP_ALIEN, Boolean.TRUE);
+//            invadedBy = new ArrayList<String>(1);
+//        }
+//        invadedBy.add(invader);
+//        
+//        /**
+//         * Set the invaded by property
+//         */
+//        nodeService.setProperty(newAlien, TransferModel.PROP_INVADED_BY, (Serializable) invadedBy);
+//        
+//        /**
+//         * Experiment with a residual property
+//         */ 
+//        nodeService.setProperty(newAlien, QName.createQName(TransferModel.TRANSFER_MODEL_1_0_URI, 
+//                "invader" + invader), Boolean.TRUE);
+//  
+//    }
+    
+    
+
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+
+    public DescriptorService getDescriptorService()
+    {
+        return descriptorService;
+    }
+    
+    public void setAlienProcessor(AlienProcessor alienProcessor)
+    {
+        this.alienProcessor = alienProcessor;
+    }
+
+    public AlienProcessor getAlienProcessor()
+    {
+        return alienProcessor;
     }
 }

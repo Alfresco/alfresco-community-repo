@@ -89,6 +89,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
+    private AlienProcessor alienProcessor;
        
     // State within this class
     /**
@@ -148,18 +149,35 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             // Does a corresponding node exist in this repo?
             if (resolvedNodes.resolvedChild != null)
             {
+                NodeRef exNode = resolvedNodes.resolvedChild;
                 // Yes, it does. Delete it.
                 if (log.isDebugEnabled())
                 {
                     log.debug("Incoming deleted noderef " + node.getNodeRef()
-                            + " has been resolved to existing local noderef " + resolvedNodes.resolvedChild
+                            + " has been resolved to existing local noderef " + exNode
                             + "  - deleting");
                 }
-                logProgress("Deleting local node: " + resolvedNodes.resolvedChild);
-                nodeService.deleteNode(resolvedNodes.resolvedChild);
-                if (log.isDebugEnabled())
+
+                //TODO : do we have a business rule that only the "from" repo can delete a node?  Yes we do.
+                if(alienProcessor.isAlien(exNode))
                 {
-                    log.debug("Deleted local node: " + resolvedNodes.resolvedChild);
+                    logProgress("Pruning local node: " + exNode);
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Node to be deleted is alien prune rather than delete: " + exNode);
+                    }
+                    alienProcessor.pruneNode(exNode, header.getRepositoryId());
+                }
+                else
+                {
+                    // TODO Need to restrict to the "from" repo Id.
+                    // Not alien - delete it.
+                    logProgress("Deleting local node: " + exNode);
+                    nodeService.deleteNode(exNode);
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Deleted local node: " + exNode);
+                    }
                 }
             }
             else
@@ -204,7 +222,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // Does a corresponding node exist in this repo?
         if (resolvedNodes.resolvedChild != null)
         {
-            // Yes, it does. Update it.
+            // Yes, the corresponding node does exist. Update it.
             if (log.isDebugEnabled())
             {
                 log.debug("Incoming noderef " + node.getNodeRef() + " has been resolved to existing local noderef "
@@ -214,8 +232,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         }
         else
         {
-            // No, there is no corresponding node. Worth just quickly checking
-            // the archive store...
+            // No, there is no corresponding node. 
             NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node.getNodeRef().getId());
             if (nodeService.exists(archiveNodeRef))
             {
@@ -240,6 +257,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
+     * Create new node.
      * 
      * @param node
      * @param resolvedNodes
@@ -285,14 +303,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // Split out the content properties and sanitise the others
         Map<QName, Serializable> contentProps = processProperties(null, props, null);
         
-        // inject transferred property here
-        if(!contentProps.containsKey(TransferModel.PROP_REPOSITORY_ID))
-        {
-            log.debug("injecting repositoryId property");
-            props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
-        }
-        props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
-        
+        injectTransferred(props);
+            
+        // Remove the invadedBy property since that is used by the transfer service 
+        // and is local to this repository.
+        props.remove(TransferModel.PROP_INVADED_BY);
+         
         // Do we need to worry about locking this new node ?
         if(header.isReadOnly())
         {
@@ -305,12 +321,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // Create the corresponding node...
         ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName, node
                 .getType(), props);
-
+        
         if (log.isDebugEnabled())
         {
             log.debug("Created new node (" + newNode.getChildRef() + ") parented by node " + newNode.getParentRef());
         }
-
+        
         // Deal with the content properties
         writeContent(newNode.getChildRef(), contentProps);
 
@@ -322,7 +338,6 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             nodeService.addAspect(newNode.getChildRef(), aspect, null);
         }
-        
         
         ManifestAccessControl acl = node.getAccessControl();        
         // Apply new ACL to this node
@@ -344,6 +359,15 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 }
             }
         }
+        
+        /**
+         * are we adding an alien node here? The transfer service has policies disabled 
+         * so have to call the consequence of the policy directly.
+         */ 
+        if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+        {
+            alienProcessor.onCreateChild(newNode, header.getRepositoryId());
+        }
 
         // Is the node that we've just added the parent of any orphans that
         // we've found earlier?
@@ -359,8 +383,16 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             for (ChildAssociationRef orphan : orphansToClaim)
             {
                 logProgress("Re-parenting previously orphaned node (" + orphan.getChildRef() + ") with found parent " + orphan.getParentRef());
-                nodeService.moveNode(orphan.getChildRef(), orphan.getParentRef(), orphan.getTypeQName(), orphan
+                ChildAssociationRef newRef = nodeService.moveNode(orphan.getChildRef(), orphan.getParentRef(), orphan.getTypeQName(), orphan
                         .getQName());
+                
+                /**
+                 * We may be creating an alien node here and the policies are turned off.
+                 */
+                if(nodeService.hasAspect(newRef.getParentRef(), TransferModel.ASPECT_TRANSFERRED))
+                {
+                    alienProcessor.onCreateChild(newRef, header.getRepositoryId());
+                }
             }
             // We can now remove the record of these orphans, as their parent
             // has been found
@@ -402,9 +434,25 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 || !currentParent.getTypeQName().equals(parentAssocType)
                 || !currentParent.getQName().equals(parentAssocName))
         {
+            
+            /**
+             * Yes, the parent assoc has changed so we need to move the node
+             */
+            // the parent node may no longer be an alien
+            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+            {
+                alienProcessor.beforeDeleteAlien(node.getNodeRef());
+            }
+            
             // Yes, we need to move the node
-            nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
+            ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
             logProgress("Moved node " + nodeToUpdate + " to be under parent node " + parentNodeRef);
+            
+            //  We may have created a new alien.
+            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+            {
+                alienProcessor.onCreateChild(newNode, header.getRepositoryId());
+            }
         }
 
         log.info("Resolved parent node to " + parentNodeRef);
@@ -418,12 +466,18 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
             
             // inject transferred property here
-            if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
-            {
-                log.debug("injecting repositoryId property");
-                props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
-            }
-            props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
+            injectTransferred(props);
+            
+//            if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
+//            {
+//                log.debug("injecting repositoryId property");
+//                props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
+//            }
+//            props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
+            
+            // Remove the invadedBy property since that is used by the transfer service 
+            // and is local to this repository.
+            props.remove(TransferModel.PROP_INVADED_BY);
             
             // Do we need to worry about locking this updated ?
             if(header.isReadOnly())
@@ -436,6 +490,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
             // Split out the content properties and sanitise the others
             Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, existingProps);
+            
+            // If there was already a value for invadedBy then leave it alone rather than replacing it.
+            if(existingProps.containsKey(TransferModel.PROP_INVADED_BY))
+            {
+                props.put(TransferModel.PROP_INVADED_BY, existingProps.get(TransferModel.PROP_INVADED_BY));
+            }
 
             // Update the non-content properties
             nodeService.setProperties(nodeToUpdate, props);
@@ -461,7 +521,13 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
             
             aspectsToRemove.removeAll(suppliedAspects);
+            
+            /**
+             * Don't remove the aspects that the transfer service uses itself.
+             */
             aspectsToRemove.remove(TransferModel.ASPECT_TRANSFERRED);
+            aspectsToRemove.remove(TransferModel.ASPECT_ALIEN);
+            
             suppliedAspects.removeAll(existingAspects);
 
             // Now aspectsToRemove contains the set of aspects to remove
@@ -541,6 +607,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
         }
     }
+    
 
     /**
      * This method takes all the received properties and separates them into two parts. The content properties are
@@ -796,6 +863,29 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     public PermissionService getPermissionService()
     {
         return permissionService;
+    }
+
+    /**
+     * inject transferred
+     */
+    private void injectTransferred(Map<QName, Serializable> props)
+    {
+        if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
+        {
+            log.debug("injecting repositoryId property");
+            props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
+        }
+        props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
+    }
+
+    public void setAlienProcessor(AlienProcessor alienProcessor)
+    {
+        this.alienProcessor = alienProcessor;
+    }
+
+    public AlienProcessor getAlienProcessor()
+    {
+        return alienProcessor;
     }
 
 }

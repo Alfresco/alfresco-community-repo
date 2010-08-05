@@ -40,6 +40,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     private DictionaryService dictionaryService;
     private PermissionService permissionService;
     private CorrespondingNodeResolverFactory nodeResolverFactory;
+    private AlienProcessor alienProcessor;
 
     /*
      * (non-Javadoc)
@@ -57,6 +58,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         primaryProcessor.setNodeService(nodeService);
         primaryProcessor.setDictionaryService(dictionaryService);
         primaryProcessor.setPermissionService(getPermissionService());
+        primaryProcessor.setAlienProcessor(getAlienProcessor());
         processors.add(primaryProcessor);
         
         RepoSecondaryManifestProcessorImpl secondaryProcessor = new RepoSecondaryManifestProcessorImpl(receiver, transferId);
@@ -65,8 +67,8 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         processors.add(secondaryProcessor);
         
         RepoTertiaryManifestProcessorImpl tertiaryProcessor = new RepoTertiaryManifestProcessorImpl(receiver, transferId);
-        tertiaryProcessor.setNodeResolver(nodeResolver);
         tertiaryProcessor.setNodeService(nodeService);
+        tertiaryProcessor.setAlienProcessor(getAlienProcessor());
         processors.add(tertiaryProcessor);
         
         return processors;
@@ -113,8 +115,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     {
         RepoRequsiteManifestProcessorImpl processor = new RepoRequsiteManifestProcessorImpl(receiver, transferId, out);
        
-        CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();
-       
+        CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();       
         processor.setNodeResolver(nodeResolver);
         processor.setNodeService(nodeService);
        
@@ -129,6 +130,16 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     public PermissionService getPermissionService()
     {
         return permissionService;
+    }
+
+    public void setAlienProcessor(AlienProcessor alienProcessor)
+    {
+        this.alienProcessor = alienProcessor;
+    }
+
+    public AlienProcessor getAlienProcessor()
+    {
+        return alienProcessor;
     }
 
 }

@@ -18,9 +18,11 @@
  */
 package org.alfresco.repo.transfer;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -35,12 +37,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -76,8 +75,6 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ResourceUtils;
@@ -109,7 +106,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
 
-    
+    String REPO_ID_A = "RepoIdA";
+    String REPO_ID_B = "RepoIdB";
+    String REPO_ID_C = "RepoIdC";
     
     @Override
     public void runBare() throws Throwable
@@ -145,10 +144,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         authenticationComponent.setSystemUserAsCurrentUser();
         setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
-        assertNotNull("receiver is null", this.receiver);
-        
-
-        
+        assertNotNull("receiver is null", this.receiver);     
     }
     
     /**
@@ -345,7 +341,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     /**
-     * Test of Get All Trabsfer Targets By Group
+     * Test of Get All Transfer Targets By Group
      */
     //TODO Test not complete - can't yet put targets in different groups
     public void testGetAllTransferTargetsByGroup() throws Exception
@@ -605,6 +601,21 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test the transfer method by sending one node.
      * 
+     * Step 1: Create a new node (No content)
+     * transfer
+     * 
+     * Step 2: Update Node title property
+     * transfer
+     *  
+     * Step 3: Update Content property
+     * transfer
+     * 
+     * Step 4: Transfer again
+     * transfer (Should transfer but not request the content item)
+     * 
+     * Step 5: Negative test : transfer no nodes
+     * transfer (should throw exception)
+     * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
     public void testTransferOneNode() throws Exception
@@ -620,6 +631,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          *  For unit test 
          *  - replace the HTTP transport with the in-process transport
          *  - replace the node factory with one that will map node refs, paths etc.
+         *  
+         *  Fake Repository Id
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -628,7 +641,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         /**
           * Now go ahead and create our first transfer target
           */
@@ -657,11 +673,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             contentNodeRef = child.getChildRef();
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_NAME, name);
-            
-            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-            writer.setLocale(CONTENT_LOCALE);
-            writer.putContent(CONTENT_STRING);
-              
+                        
             if(!transferService.targetExists(targetName))
             {
                 transferMe = createTransferTarget(targetName);
@@ -681,7 +693,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         try 
         {
            /**
-             * Transfer our transfer target node which has no content
+             * Step 1: Transfer our node which has no content
              */
             {
                     TransferDefinition definition = new TransferDefinition();
@@ -718,8 +730,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             
             logger.debug("srcCreatedDate : " + srcCreatedDate + " destCreatedDate : " + destCreatedDate);
             assertTrue("dest created date is not correct", destCreatedDate.compareTo(srcCreatedDate)== 0);
-      
-            
             
             // Check injected transferred aspect.
             assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
@@ -737,6 +747,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         try
         {
             /**
+             * Step 2:
              * Transfer our node again - so this is an update of the title property
              */
             {
@@ -777,17 +788,22 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             // Check injected transferred aspect.
             assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
 
+            ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+  
         }
         finally
         {
             endTransaction();
         }
         
-        logger.debug("Transfer again - this is an update");
+        logger.debug("Transfer again - this is an update with new content");
         startNewTransaction();
         try
         {
             /**
+             * Step 3:
              * Transfer our node again - so this is an update
              */
             {
@@ -804,6 +820,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
   
         /**
+         * Step 4:
          * Now transfer nothing - content items do not need to be transferred since its already on 
          * the destination.
          */
@@ -841,6 +858,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         /**
+          * Step 5
           * Negative test transfer nothing
           */
         logger.debug("Transfer again - with no content - should throw exception");
@@ -897,6 +915,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
           
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         TransferTarget transferMe;
         
         startNewTransaction();
@@ -1159,7 +1180,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-         
+       
+       DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+       transferServiceImpl.setDescriptorService(mockedDescriptorService);
+       
+       
        String CONTENT_TITLE = "ContentTitle";
        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
        String CONTENT_NAME = GUID.generate();
@@ -1316,7 +1341,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         /**
           * Now go ahead and create our first transfer target
           * This needs to be committed before we can call transfer asycnc.
@@ -1524,7 +1552,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         /**
           * Now go ahead and create our first transfer target
           * This needs to be committed before we can call transfer asycnc.
@@ -1756,7 +1787,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         /**
           * Now go ahead and create our first transfer target
           * This needs to be committed before we can call transfer asycnc.
@@ -2031,7 +2065,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         /**
           * Now go ahead and create our first transfer target
           */
@@ -2695,637 +2732,749 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
     }
     
-//    /**
-//     * Test the transfer method behaviour with respect to sync with alien nodes.
-//     * 
-//     * In general an alien node will prevent deletion of the parent folders
-//     * 
-//     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
-//     * 
-//     * Tree of nodes
-//     * 
-//     *      A1
-//     *      |      |                      | 
-//     *      A2     A3 (Content Node)      B9 Alien Content Node
-//     *      |
-//     *   A4 A5 B10 (Alien Content Node)   A6
-//     *   |                                |
-//     *   A7 B11 (Alien Content Node)      A8 B12 B13 Alien Contact Nodes
-//     * 
-//     * Test steps - 
-//     * 1 add A1, A2, A3, A4, A5, A6, A7, A8
-//     *   transfer(sync)
-//     * 2 add Alien node B9.  A1 becomes Alien.
-//     * 3 remove alien node B9.  A1 becomes non Alien.
-//     * 4 add Alien node B10. A1 and A2 become Alien
-//     * 5 remove Alien node B10.  A1 and A2 become non Alien
-//     * 6 add B12 A6, A2, A1 becomes Alien
-//     * 7 add B13 A6, A2, A1 remains Alien
-//     * 8 remove B13 A6, A2, A1 remains Alien
-//     * 9 remove B12 A6, A2, A1 becomes non Alien.
-//     * 10 add B9 and B10 A1 and A2 become Alien
-//     * 11 remove B10 A2 becomes non alien A1 remains alien.
-//     * 12 delete A2 containing alien node B11
-//     * transfer
-//     * (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)
-//     * 
-//     */
-//    public void testSyncWithAlienNodes() throws Exception
-//    {
-//        setDefaultRollback(false);
-//        
-//        String CONTENT_TITLE = "ContentTitle";
-//        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-//        Locale CONTENT_LOCALE = Locale.JAPAN; 
-//        String CONTENT_STRING = "Hello";
-//
-//        /**
-//         *  For unit test 
-//         *  - replace the HTTP transport with the in-process transport
-//         *  - replace the node factory with one that will map node refs, paths etc.
-//         */
-//        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
-//        transferServiceImpl.setTransmitter(transmitter);
-//        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
-//        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
-//        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-//        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-//        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-//        
-//        /**
-//          * Now go ahead and create our first transfer target
-//          */
-//        String targetName = "testSyncWithAlienNodes";
-//        TransferTarget transferMe;
-//        
-//        NodeRef A1NodeRef;
-//        NodeRef A2NodeRef;
-//        NodeRef A3NodeRef;
-//        NodeRef A4NodeRef;
-//        NodeRef A5NodeRef;
-//        NodeRef A6NodeRef;
-//        NodeRef A7NodeRef;
-//        NodeRef A8NodeRef;
-//        NodeRef B9NodeRef;
-//        NodeRef B10NodeRef;
-//        NodeRef B11NodeRef;
-//        NodeRef B12NodeRef;
-//        NodeRef B13NodeRef;
-//        
-//        NodeRef destNodeRef;
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            /**
-//              * Get guest home
-//              */
-//            String guestHomeQuery = "/app:company_home/app:guest_home";
-//            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-//            assertEquals("", 1, guestHomeResult.length());
-//            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-//    
-//            /**
-//             * Create a test nodes A1 through A8 that we will read and write
-//             */
-//            {
-//                // Node A1
-//                String name = GUID.generate();
-//                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
-//                A1NodeRef = child.getChildRef();
-//                nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A1NodeRef, ContentModel.PROP_NAME, name);
-//            }
-//       
-//            {
-//                // Node A2
-//                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_FOLDER);
-//                A2NodeRef = child.getChildRef();
-//                nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A2NodeRef, ContentModel.PROP_NAME, "A2");
-//            }
-//            
-//            {
-//                // Node A3
-//                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A3"), ContentModel.TYPE_CONTENT);
-//                A3NodeRef = child.getChildRef();
-//                nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A3NodeRef, ContentModel.PROP_NAME, "A3");
-//            
-//                ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
-//                writer.setLocale(CONTENT_LOCALE);
-//                writer.putContent(CONTENT_STRING);
-//            }
-//            {
-//                // Node A4
-//                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A4"), ContentModel.TYPE_FOLDER);
-//                A4NodeRef = child.getChildRef();
-//                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
-//            }
-//            {
-//                // Node A5
-//                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_CONTENT);
-//                A5NodeRef = child.getChildRef();
-//                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
-//                
-//                ContentWriter writer = contentService.getWriter(A5NodeRef, ContentModel.PROP_CONTENT, true);
-//                writer.setLocale(CONTENT_LOCALE);
-//                writer.putContent(CONTENT_STRING);
-//            }
-//            
-//            {
-//                // Node A6
-//                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A6"), ContentModel.TYPE_FOLDER);
-//                A6NodeRef = child.getChildRef();
-//                nodeService.setProperty(A6NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A6NodeRef, ContentModel.PROP_NAME, "A6");            
-//            }
-//            {
-//                // Node A7
-//                ChildAssociationRef child = nodeService.createNode(A4NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A7"), ContentModel.TYPE_CONTENT);
-//                A7NodeRef = child.getChildRef();
-//                nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A7NodeRef, ContentModel.PROP_NAME, "A7");
-//            
-//                ContentWriter writer = contentService.getWriter(A7NodeRef, ContentModel.PROP_CONTENT, true);
-//                writer.setLocale(CONTENT_LOCALE);
-//                writer.putContent(CONTENT_STRING);
-//            }
-//            {
-//                // Node A8
-//                ChildAssociationRef child = nodeService.createNode(A6NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A8"), ContentModel.TYPE_CONTENT);
-//                A8NodeRef = child.getChildRef();
-//                nodeService.setProperty(A8NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//                nodeService.setProperty(A8NodeRef, ContentModel.PROP_NAME, "A8");
-//            
-//                ContentWriter writer = contentService.getWriter(A8NodeRef, ContentModel.PROP_CONTENT, true);
-//                writer.setLocale(CONTENT_LOCALE);
-//                writer.putContent(CONTENT_STRING);
-//            }
-// 
-//            // Create the transfer target if it does not already exist
-//            if(!transferService.targetExists(targetName))
-//            {
-//                transferMe = createTransferTarget(targetName);
-//            }            else
-//            {
-//                transferMe = transferService.getTransferTarget(targetName);
-//            }
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }    
-//
-//        
-//        /**
-//         * Step 1. add A1, A2, A3, A4, A5, A6, A7, A8
-//         *   transfer(sync)
-//         */
-//        startNewTransaction();
-//        try 
-//        {
-//           /**
-//             * Transfer Nodes A1 through A8
-//             */
-//            {
-//                TransferDefinition definition = new TransferDefinition();
-//                Set<NodeRef>nodes = new HashSet<NodeRef>();
-//                nodes.add(A1NodeRef);
-//                nodes.add(A2NodeRef);
-//                nodes.add(A3NodeRef);
-//                nodes.add(A4NodeRef);
-//                nodes.add(A5NodeRef);
-//                nodes.add(A6NodeRef);
-//                nodes.add(A7NodeRef);
-//                nodes.add(A8NodeRef);
-//                definition.setNodes(nodes);
-//                definition.setSync(true);
-//                transferService.transfer(targetName, definition);
-//            }  
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists and has similar properties to the source
-//            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
-//            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
-//            assertEquals("title is wrong", (String)nodeService.getProperty(destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
-//            assertEquals("type is wrong", nodeService.getType(A1NodeRef), nodeService.getType(destNodeRef));
-//            
-//            // Check injected transferred aspect.
-//            assertNotNull("transferredAspect", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//      /**
-//        * Step 2 add Alien node B9 child of A1(dest).  A1(dest) becomes Alien because it contains an alien child.
-//        */
-//        startNewTransaction();
-//        try 
-//        {
-//            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//            ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B9"), ContentModel.TYPE_CONTENT);
-//            B9NodeRef = child.getChildRef();
-//            nodeService.setProperty(B9NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//            nodeService.setProperty(B9NodeRef, ContentModel.PROP_NAME, "B9");
-//        
-//            ContentWriter writer = contentService.getWriter(B9NodeRef, ContentModel.PROP_CONTENT, true);
-//            writer.setLocale(CONTENT_LOCALE);
-//            writer.putContent(CONTENT_STRING);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists and has similar properties to the source
-//            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
-//            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
-//            // Check injected transferred aspect.        
-//            assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(destNodeRef, TransferModel.PROP_ALIEN));         
-//            assertNotNull("repository id is null", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
-//            assertNotNull("from repository id is null", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//       
-//       /** 
-//        * Step 3 remove alien node B9.  A1 becomes non Alien.
-//        */ 
-//        startNewTransaction();
-//        try 
-//        {
-//            logger.debug("delete node B9");
-//            nodeService.deleteNode(B9NodeRef);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists and has similar properties to the source
-//            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//            assertFalse("unit test stuffed up - comparing with self", destNodeRef.equals(transferMe.getNodeRef()));
-//            assertTrue("dest node ref does not exist", nodeService.exists(destNodeRef));
-//
-//            assertFalse("node A1 is still alien", (Boolean)nodeService.getProperty(destNodeRef, TransferModel.PROP_ALIEN));         
-//            assertNotNull("repository id is null", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
-//            assertNotNull("from repository id is null", (String)nodeService.getProperty(destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//       /**
-//        * 4 add Alien node B10 child of A2. A1 and A2 become Alien
-//        */
-//        startNewTransaction();
-//        try 
-//        {
-//            destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//            ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B10"), ContentModel.TYPE_CONTENT);
-//            B10NodeRef = child.getChildRef();
-//            nodeService.setProperty(B10NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//            nodeService.setProperty(B10NodeRef, ContentModel.PROP_NAME, "B10");
-//        
-//            ContentWriter writer = contentService.getWriter(B10NodeRef, ContentModel.PROP_CONTENT, true);
-//            writer.setLocale(CONTENT_LOCALE);
-//            writer.putContent(CONTENT_STRING);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists and has similar properties to the source
-//            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//            NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//                
-//            assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//            assertTrue("node A2 is not alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//        }
-//         
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        /**
-//         * 5 remove Alien node B10.  A1 and A2 become non Alien
-//         */ 
-//        /** 
-//         * Step 9 remove B12 A6, A2, A1 becomes non Alien.
-//         */
-//        startNewTransaction();
-//        try 
-//        {
-//            nodeService.deleteNode(B10NodeRef);
-//        }
-//        finally
-//        {
-//            endTransaction();
-//        }
-//        
-//        startNewTransaction();
-//        try
-//        {
-//            // Now validate that the target node exists and has similar properties to the source
-//            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//            NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//            
-//            // BUGBUG
-//            //assertFalse("node A1 is still alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//            //assertFalse("node A2 is still alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));      
-//        }
-//         
-//        finally
-//        {
-//            endTransaction();
-//        }
-//
-//
-//        /**
-//          * Step 6 
-//          * add B12 (child of A6) A6, A2, A1 becomes Alien
-//          */
-//         startNewTransaction();
-//         try 
-//         {
-//             destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//             ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B12"), ContentModel.TYPE_CONTENT);
-//             B12NodeRef = child.getChildRef();
-//             nodeService.setProperty(B12NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//             nodeService.setProperty(B12NodeRef, ContentModel.PROP_NAME, "B12");
-//         
-//             ContentWriter writer = contentService.getWriter(B12NodeRef, ContentModel.PROP_CONTENT, true);
-//             writer.setLocale(CONTENT_LOCALE);
-//             writer.putContent(CONTENT_STRING);
-//         }
-//         finally
-//         {
-//             endTransaction();
-//         }
-//         
-//         startNewTransaction();
-//         try
-//         {
-//             // Now validate that the target node exists and has similar properties to the source
-//             NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//             NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//             NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//                 
-//             assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//             assertTrue("node A2 is not alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//             assertTrue("node A6 is not alien", (Boolean)nodeService.getProperty(A6destNodeRef, TransferModel.PROP_ALIEN));   
-//         }
-//          
-//         finally
-//         {
-//             endTransaction();
-//         }
-//
-//        
-//        /**
-//         * Step 7 
-//         * add B13 A6, A2, A1 remains Alien
-//         */
-//          startNewTransaction();
-//          try 
-//          {
-//              destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//              ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B13"), ContentModel.TYPE_CONTENT);
-//              B13NodeRef = child.getChildRef();
-//              nodeService.setProperty(B13NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//              nodeService.setProperty(B13NodeRef, ContentModel.PROP_NAME, "B13");
-//          
-//              ContentWriter writer = contentService.getWriter(B13NodeRef, ContentModel.PROP_CONTENT, true);
-//              writer.setLocale(CONTENT_LOCALE);
-//              writer.putContent(CONTENT_STRING);
-//          }
-//          finally
-//          {
-//              endTransaction();
-//          }
-//          
-//          startNewTransaction();
-//          try
-//          {
-//              // Now validate that the target node exists and has similar properties to the source
-//              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//                  
-//              assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//              assertTrue("node A2 is not alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//              assertTrue("node A6 is not alien", (Boolean)nodeService.getProperty(A6destNodeRef, TransferModel.PROP_ALIEN));   
-//          }
-//           
-//          finally
-//          {
-//              endTransaction();
-//          }
-//          
-//          /**
-//           * Step 8 remove B13 A6, A2, A1 remains Alien Due to B12
-//           */ 
-//          startNewTransaction();
-//          try 
-//          {
-//              nodeService.deleteNode(B13NodeRef);
-//          }
-//          finally
-//          {
-//              endTransaction();
-//          }
-//          
-//          startNewTransaction();
-//          try
-//          {
-//              // Now validate that the target node exists and has similar properties to the source
-//              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//                  
-//              assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//              assertTrue("node A2 is not alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//              assertTrue("node A6 is not alien", (Boolean)nodeService.getProperty(A6destNodeRef, TransferModel.PROP_ALIEN));   
-//          }
-//           
-//          finally
-//          {
-//              endTransaction();
-//          }
-//
-//          
-//          /** 
-//           * Step 9 remove B12 A6, A2, A1 becomes non Alien.
-//           */
-//          startNewTransaction();
-//          try 
-//          {
-//              nodeService.deleteNode(B12NodeRef);
-//          }
-//          finally
-//          {
-//              endTransaction();
-//          }
-//          
-//          startNewTransaction();
-//          try
-//          {
-//              // Now validate that the target node exists and has similar properties to the source
-//              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//              
-//              // BUGBUG
-//              //assertFalse("node A1 is still alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//              //assertFalse("node A2 is still alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//              //assertFalse("node A6 is still alien", (Boolean)nodeService.getProperty(A6destNodeRef, TransferModel.PROP_ALIEN));   
-//          }
-//           
-//          finally
-//          {
-//              endTransaction();
-//          }
-//
-//         /**
-//          *  Step 10 add B9 and B10 A1 and A2 become Alien
-//          */
-//          startNewTransaction();
-//          try 
-//          {
-//              destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//              ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B9"), ContentModel.TYPE_CONTENT);
-//              B9NodeRef = child.getChildRef();
-//              nodeService.setProperty(B9NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//              nodeService.setProperty(B9NodeRef, ContentModel.PROP_NAME, "B9");
-//          
-//              ContentWriter writer = contentService.getWriter(B9NodeRef, ContentModel.PROP_CONTENT, true);
-//              writer.setLocale(CONTENT_LOCALE);
-//              writer.putContent(CONTENT_STRING);
-//              
-//              destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//              child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B10"), ContentModel.TYPE_CONTENT);
-//              B10NodeRef = child.getChildRef();
-//              nodeService.setProperty(B10NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-//              nodeService.setProperty(B10NodeRef, ContentModel.PROP_NAME, "B10");
-//          
-//              writer = contentService.getWriter(B10NodeRef, ContentModel.PROP_CONTENT, true);
-//              writer.setLocale(CONTENT_LOCALE);
-//              writer.putContent(CONTENT_STRING);
-//          }
-//          finally
-//          {
-//              endTransaction();
-//          }
-//          
-//          startNewTransaction();
-//          try
-//          {
-//              // Now validate that the target node exists and has similar properties to the source
-//              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//              
-//              assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//              assertTrue("node A2 is not alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//          }
-//          finally
-//          {
-//              endTransaction();
-//          }
-//
-//         
-//          /**
-//          * Step 11 remove B10 A2 becomes non alien A1 remains alien.
-//          */
-//          startNewTransaction();
-//          try 
-//          {
-//              nodeService.deleteNode(B10NodeRef);
-//          }
-//          finally
-//          {
-//              endTransaction();
-//          }
-//          
-//          startNewTransaction();
-//          try
-//          {
-//              // Now validate that the target node exists and has similar properties to the source
-//              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
-//              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
-//              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-//              
-//              // BUGBUG
-//              assertTrue("node A1 is still alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
-//              //assertFalse("node A2 is still alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
-//       
-//          }
-//           
-//          finally
-//          {
-//              endTransaction();
-//          }
-//
-//         
-//          /**
-//          * 12 delete A2 containing alien node B11
-//          * transfer sync
-//          * (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)
-//          */ 
-//      
-//     }
-//    
+    /**
+     * Test the transfer method behaviour with respect to sync with (local) alien nodes.
+     * 
+     * So we have Repository A transferring content and Repository B is the local repo that we
+     * add and delete alien nodes.
+     * 
+     * In general an alien node will prevent deletion of the parent folders
+     * 
+     * <pre>
+     * Tree of nodes
+     * 
+     *      A1
+     *      |      |                      | 
+     *      A2     A3 (Content Node)      B9 Alien Content Node
+     *      |
+     *   A4 A5 B10 (Alien Content Node)   A6
+     *   |                                |
+     *   A7 B11 (Alien Content Node)      A8 B12 B13 Alien Contact Nodes
+     * </pre>
+     * Test steps -
+     * <ol> 
+     * <li>add A1, A2, A3, A4, A5, A6, A7, A8
+     *   transfer(sync)</li>
+     * <li>add Alien node B9.  A1 becomes Alien.</li>
+     * <li>remove alien node B9.  A1 becomes non Alien.</li>
+     * <li>add Alien node B10. A1 and A2 become Alien</li>
+     * <li>remove Alien node B10.  A1 and A2 become non Alien</li>
+     * <li>add B12 A6, A2, A1 becomes Alien</li>
+     * <li>add B13 A6, A2, A1 remains Alien</li>
+     * <li>remove B13 A6, A2, A1 remains Alien</li>
+     * <li>remove B12 A6, A2, A1 becomes non Alien.</li>
+     * <li>add B9 and B10 A1 and A2 become Alien</li>
+     * <li>remove B10 A2 becomes non alien A1 remains alien.</li>
+     * <li>Add B11, delete A2
+     * transfer sync</li>
+     * (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)</li>
+     * </ol>   
+     *
+     * TODO test move and alien
+     *
+     * TODO test restore and alien
+     * 
+     */
+    public void testTransferInvadedByLocalAlienNodes() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.JAPAN; 
+        String CONTENT_STRING = "Hello";
+
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *
+         * Mock the transfer service to be from Repo A
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        
+        final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testSyncWithAlienNodes";
+        TransferTarget transferMe;
+        
+        NodeRef A1NodeRef;
+        NodeRef A2NodeRef;
+        NodeRef A3NodeRef;
+        NodeRef A4NodeRef;
+        NodeRef A5NodeRef;
+        NodeRef A6NodeRef;
+        NodeRef A7NodeRef;
+        NodeRef A8NodeRef;
+        NodeRef B9NodeRef;
+        NodeRef B10NodeRef;
+        NodeRef B11NodeRef;
+        NodeRef B12NodeRef;
+        NodeRef B13NodeRef;
+        
+        NodeRef destNodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test nodes A1 through A8 that we will read and write
+             */
+            {
+                // Node A1
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                A1NodeRef = child.getChildRef();
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_NAME, name);
+            }
+       
+            {
+                // Node A2
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_FOLDER);
+                A2NodeRef = child.getChildRef();
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_NAME, "A2");
+            }
+            
+            {
+                // Node A3
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A3"), ContentModel.TYPE_CONTENT);
+                A3NodeRef = child.getChildRef();
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_NAME, "A3");
+            
+                ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A4
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A4"), ContentModel.TYPE_FOLDER);
+                A4NodeRef = child.getChildRef();
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
+            }
+            {
+                // Node A5
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_CONTENT);
+                A5NodeRef = child.getChildRef();
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
+                
+                ContentWriter writer = contentService.getWriter(A5NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            
+            {
+                // Node A6
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A6"), ContentModel.TYPE_FOLDER);
+                A6NodeRef = child.getChildRef();
+                nodeService.setProperty(A6NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A6NodeRef, ContentModel.PROP_NAME, "A6");            
+            }
+            {
+                // Node A7
+                ChildAssociationRef child = nodeService.createNode(A4NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A7"), ContentModel.TYPE_CONTENT);
+                A7NodeRef = child.getChildRef();
+                nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A7NodeRef, ContentModel.PROP_NAME, "A7");
+            
+                ContentWriter writer = contentService.getWriter(A7NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A8
+                ChildAssociationRef child = nodeService.createNode(A6NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A8"), ContentModel.TYPE_CONTENT);
+                A8NodeRef = child.getChildRef();
+                nodeService.setProperty(A8NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A8NodeRef, ContentModel.PROP_NAME, "A8");
+            
+                ContentWriter writer = contentService.getWriter(A8NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+ 
+            // Create the transfer target if it does not already exist
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+
+        
+        /**
+         * Step 1. add A1, A2, A3, A4, A5, A6, A7, A8
+         *   transfer(sync)
+         */
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Nodes A1 through A8
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                nodes.add(A2NodeRef);
+                nodes.add(A3NodeRef);
+                nodes.add(A4NodeRef);
+                nodes.add(A5NodeRef);
+                nodes.add(A6NodeRef);
+                nodes.add(A7NodeRef);
+                nodes.add(A8NodeRef);
+                definition.setNodes(nodes);
+                definition.setSync(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertFalse("unit test stuffed up - comparing with self", A1destNodeRef.equals(transferMe.getNodeRef()));
+            assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+            assertEquals("title is wrong", (String)nodeService.getProperty(A1destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
+            assertEquals("type is wrong", nodeService.getType(A1NodeRef), nodeService.getType(A1destNodeRef));
+            assertFalse("A1 is alien", nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
+            
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+      /**
+        * Step 2 add Alien node B9 child of A1(dest).  A1(dest) becomes Alien because it contains an alien child.
+        */
+        startNewTransaction();
+        try 
+        {
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B9"), ContentModel.TYPE_CONTENT);
+            B9NodeRef = child.getChildRef();
+            nodeService.setProperty(B9NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(B9NodeRef, ContentModel.PROP_NAME, "B9");
+        
+            ContentWriter writer = contentService.getWriter(B9NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            
+            assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+            // Check injected transferred aspect.        
+            assertTrue("node A1 is not alien prop", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));  
+            assertTrue("node A1 is not alien aspect", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));     
+            assertNotNull("repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+            assertNotNull("from repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
+            assertTrue("node B9 is not alien", (Boolean)nodeService.hasAspect(B9NodeRef, TransferModel.ASPECT_ALIEN));
+            
+            // Temp code
+            List<String> invaders =  (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
+            assertTrue("invaders contains local repository Id", invaders.contains(localRepositoryId));
+            assertFalse("invaders contains REPO_ID_A", invaders.contains(REPO_ID_A));
+            logger.debug("MER WOZ ERE" + invaders);
+
+        }
+        finally
+        {
+            endTransaction();
+        }
+       
+       /** 
+        * Step 3 remove alien node B9.  A1 becomes non Alien.
+        */ 
+        startNewTransaction();
+        try 
+        {
+            logger.debug("delete node B9");
+            nodeService.deleteNode(B9NodeRef);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            NodeRef A3destNodeRef = testNodeFactory.getMappedNodeRef(A3NodeRef);
+            
+            // Temp code
+            List<String> invaders =  (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
+            logger.debug("MER WOZ ERE AFTER B9 deleted" + invaders);
+
+            assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+            assertFalse("node A1 is still alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));  
+            assertFalse("node A3 is alien", (Boolean)nodeService.hasAspect(A3destNodeRef, TransferModel.ASPECT_ALIEN));         
+            assertNotNull("repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+            assertNotNull("from repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+       /**
+        * 4 add Alien node B10 child of A2. A1 and A2 become Alien
+        */
+        startNewTransaction();
+        try 
+        {
+            destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+            ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B10"), ContentModel.TYPE_CONTENT);
+            B10NodeRef = child.getChildRef();
+            nodeService.setProperty(B10NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(B10NodeRef, ContentModel.PROP_NAME, "B10");
+        
+            ContentWriter writer = contentService.getWriter(B10NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+                
+            assertTrue("node A1 is not alien", (Boolean)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_ALIEN));         
+            assertTrue("node A2 is not alien", (Boolean)nodeService.getProperty(A2destNodeRef, TransferModel.PROP_ALIEN));   
+            
+            assertTrue("node A1 is not alien aspect", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+            assertTrue("node A2 is not alien aspect", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));        
+        }
+         
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         * 5 remove Alien node B10.  A1 and A2 become non Alien
+         */ 
+        startNewTransaction();
+        try 
+        {
+            logger.debug("delete node B10");
+            nodeService.deleteNode(B10NodeRef);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+                
+            assertFalse("node A1 is still alien aspect", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+            assertFalse("node A2 is still alien aspect", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));        
+        }
+         
+        finally
+        {
+            endTransaction();
+        }
+ 
+        /**
+          * Step 6 
+          * add B12 (child of A6) A6, A2, A1 becomes Alien
+          */
+         startNewTransaction();
+         try 
+         {
+             destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+             ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B12"), ContentModel.TYPE_CONTENT);
+             B12NodeRef = child.getChildRef();
+             nodeService.setProperty(B12NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+             nodeService.setProperty(B12NodeRef, ContentModel.PROP_NAME, "B12");
+         
+             ContentWriter writer = contentService.getWriter(B12NodeRef, ContentModel.PROP_CONTENT, true);
+             writer.setLocale(CONTENT_LOCALE);
+             writer.putContent(CONTENT_STRING);
+         }
+         finally
+         {
+             endTransaction();
+         }
+         
+         startNewTransaction();
+         try
+         {
+             // Now validate that the target node exists and has similar properties to the source
+             NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+             NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+             NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+                 
+             assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+             assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+             assertTrue("node A6 is not alien", (Boolean)nodeService.hasAspect(A6destNodeRef, TransferModel.ASPECT_ALIEN));   
+         }
+          
+         finally
+         {
+             endTransaction();
+         }
+
+        /**
+         * Step 7 
+         * add B13 A6, A2, A1 remains Alien
+         */
+          startNewTransaction();
+          try 
+          {
+              destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+              ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B13"), ContentModel.TYPE_CONTENT);
+              B13NodeRef = child.getChildRef();
+              nodeService.setProperty(B13NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+              nodeService.setProperty(B13NodeRef, ContentModel.PROP_NAME, "B13");
+          
+              ContentWriter writer = contentService.getWriter(B13NodeRef, ContentModel.PROP_CONTENT, true);
+              writer.setLocale(CONTENT_LOCALE);
+              writer.putContent(CONTENT_STRING);
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try
+          {
+              // Now validate that the target node exists and has similar properties to the source
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+                  
+              assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+              assertTrue("node A6 is not alien", (Boolean)nodeService.hasAspect(A6destNodeRef, TransferModel.ASPECT_ALIEN));   
+          }
+           
+          finally
+          {
+              endTransaction();
+          }
+          
+          /**
+           * Step 8 remove B13 A6, A2, A1 remains Alien Due to B12
+           */ 
+          startNewTransaction();
+          try 
+          {
+              nodeService.deleteNode(B13NodeRef);
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try
+          {
+              // Now validate that the target node exists and has similar properties to the source
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+                  
+              assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+              assertTrue("node A6 is not alien", (Boolean)nodeService.hasAspect(A6destNodeRef, TransferModel.ASPECT_ALIEN));   
+          }
+           
+          finally
+          {
+              endTransaction();
+          }
+
+          /** 
+           * Step 9 remove B12 A6, A2, A1 becomes non Alien.
+           */
+          startNewTransaction();
+          try 
+          {
+              nodeService.deleteNode(B12NodeRef);
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try
+          {
+              // Now validate that the target node exists and has similar properties to the source
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+              
+              assertFalse("node A1 is still alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertFalse("node A2 is still alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+              assertFalse("node A6 is still alien", (Boolean)nodeService.hasAspect(A6destNodeRef, TransferModel.ASPECT_ALIEN));   
+          }
+           
+          finally
+          {
+              endTransaction();
+          }
+
+         /**
+          *  Step 10 add B9 and B10 A1 and A2 become Alien
+          */
+          startNewTransaction();
+          try 
+          {
+              destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B9"), ContentModel.TYPE_CONTENT);
+              B9NodeRef = child.getChildRef();
+              nodeService.setProperty(B9NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+              nodeService.setProperty(B9NodeRef, ContentModel.PROP_NAME, "B9");
+          
+              ContentWriter writer = contentService.getWriter(B9NodeRef, ContentModel.PROP_CONTENT, true);
+              writer.setLocale(CONTENT_LOCALE);
+              writer.putContent(CONTENT_STRING);
+              
+              destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B10"), ContentModel.TYPE_CONTENT);
+              B10NodeRef = child.getChildRef();
+              nodeService.setProperty(B10NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+              nodeService.setProperty(B10NodeRef, ContentModel.PROP_NAME, "B10");
+          
+              writer = contentService.getWriter(B10NodeRef, ContentModel.PROP_CONTENT, true);
+              writer.setLocale(CONTENT_LOCALE);
+              writer.putContent(CONTENT_STRING);
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try
+          {
+              // Now validate that the target node exists and has similar properties to the source
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              
+              assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+          }
+          finally
+          {
+              endTransaction();
+          }
+
+         
+          /**
+          * Step 11 remove B10 A2 becomes non alien A1 remains alien.
+          */
+          startNewTransaction();
+          try 
+          {
+              nodeService.deleteNode(B10NodeRef);
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try
+          {
+              // Now validate that the target node exists and has similar properties to the source
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              
+              // BUGBUG
+              assertTrue("node A1 is still alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertFalse("node A2 is still alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+          }
+           
+          finally
+          {
+              endTransaction();
+          }
+
+         
+          /**
+          * 12 Add Alien node B11.
+          * delete A2 (will cascade delete A4, A5, A6, A7, A8
+          * transfer sync
+          * (A5, A6, A7, A8 and should be deleted A2 and A4 remain since they contain alien content.)
+          */ 
+          logger.debug("Step 12 Add Node B11, Delete A2 and sync");
+          startNewTransaction();
+          try 
+          {
+              destNodeRef = testNodeFactory.getMappedNodeRef(A4NodeRef);
+              ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B11"), ContentModel.TYPE_CONTENT);
+              B11NodeRef = child.getChildRef();
+              nodeService.setProperty(B11NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+              nodeService.setProperty(B11NodeRef, ContentModel.PROP_NAME, "B11");
+          
+              ContentWriter writer = contentService.getWriter(B11NodeRef, ContentModel.PROP_CONTENT, true);
+              writer.setLocale(CONTENT_LOCALE);
+              writer.putContent(CONTENT_STRING);
+              
+              nodeService.deleteNode(A2NodeRef);
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try 
+          {
+              // Now validate A1, A2 and A4 are alien
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              NodeRef A4destNodeRef = testNodeFactory.getMappedNodeRef(A4NodeRef);
+              
+                  
+              assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+              assertTrue("node A4 is not alien", (Boolean)nodeService.hasAspect(A4destNodeRef, TransferModel.ASPECT_ALIEN));   
+   
+              assertFalse("test error: node A2 not deleted", nodeService.exists(A2NodeRef));
+              assertFalse("test error: node A4 not deleted", nodeService.exists(A4NodeRef));
+              assertFalse("test error: node A5 not deleted", nodeService.exists(A5NodeRef));
+              assertFalse("test error: node A6 not deleted", nodeService.exists(A6NodeRef));
+              assertFalse("test error: node A7 not deleted", nodeService.exists(A7NodeRef));
+              assertFalse("test error: node A8 not deleted", nodeService.exists(A8NodeRef));
+              
+              /**
+               * Transfer Nodes A1 through A8
+               */
+              {
+                  TransferDefinition definition = new TransferDefinition();
+                  Set<NodeRef>nodes = new HashSet<NodeRef>();
+                  nodes.add(A1NodeRef);
+                  nodes.add(A3NodeRef);
+                  definition.setNodes(nodes);
+                  definition.setSync(true);
+                  transferService.transfer(targetName, definition);
+              }  
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          startNewTransaction();
+          try
+          {
+              // Now validate that the target node exists and has similar properties to the source
+              NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+              NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+              NodeRef A3destNodeRef = testNodeFactory.getMappedNodeRef(A3NodeRef);
+              NodeRef A4destNodeRef = testNodeFactory.getMappedNodeRef(A4NodeRef);
+              NodeRef A5destNodeRef = testNodeFactory.getMappedNodeRef(A5NodeRef);
+              NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+              NodeRef A7destNodeRef = testNodeFactory.getMappedNodeRef(A7NodeRef);
+              NodeRef A8destNodeRef = testNodeFactory.getMappedNodeRef(A8NodeRef);
+              
+              assertTrue("node A1 not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+              assertTrue("node A2 not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));
+              assertTrue("node A4 not alien", (Boolean)nodeService.hasAspect(A4destNodeRef, TransferModel.ASPECT_ALIEN));
+              assertTrue("node B11 does not exist", nodeService.exists(B11NodeRef));
+            
+              assertTrue("node A3 deleted", nodeService.exists(A3destNodeRef));
+              
+              assertFalse("node A5 not deleted", nodeService.exists(A5destNodeRef));
+              assertFalse("node A6 not deleted", nodeService.exists(A6destNodeRef));
+              assertFalse("node A7 not deleted", nodeService.exists(A7destNodeRef));
+              assertFalse("node A8 not deleted", nodeService.exists(A8destNodeRef));  
+          }
+           
+          finally
+          {
+              endTransaction();
+          }
+     }
+    
     /**
      * Test the transfer method with regard to permissions on a node.
-     * 
+     * <p>
      * Step 1:  
      * Create a node with a single permission 
      *     Inherit:false
      *     Read, Admin, Allow
      *     Transfer
-     * 
+     * <p>
      * Step 2:
      * Update it to have several permissions 
      *     Inherit:false
      *     Read, Everyone, DENY
      *     Read, Admin, Allow
-     * 
+     * <p>
      * Step 3:
      * Remove a permission
      *     Inherit:false
      *     Read, Admin, Allow
-     * 
+     * <p>
      * Step 4:
      * Revert to inherit all permissions
      *     Inherit:true
-     * 
+     * <p>
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
     public void testTransferWithPermissions() throws Exception
@@ -3349,7 +3498,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         /**
           * Now go ahead and create our transfer target
           */
@@ -3712,7 +3864,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
         TransferTarget transferMe;
         
         startNewTransaction();
@@ -4062,15 +4217,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * id and the from repository id
      * b) to support hub and spoke - when syncing don't imply delete nodes that are not "from" the transferring system
      * 
-     * 
-     * Q. What about non sync transfer? Assume that this will update.
-     * 
      *      * Tree of nodes 
      *      A1
      *   |      |    
      *   A2     A3 (Content Node) B6 (Content Node)   
      *   |
-     * A4 A5 A7
+     * A4 A5 B7
      * 
      * Step 1
      * Hub and Spoke Sync
@@ -4099,12 +4251,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      *  //Update A5
      *  //Transfer A5 (normal) - should update
      */
-    public void testMultiRepoSync() throws Exception
+    public void testTwoRepoSync() throws Exception
     {
-        
-        Descriptor descriptor = descriptorService.getCurrentRepositoryDescriptor();
-        String repositoryId = descriptor.getId();
-        
         /**
         * Step 1
         * create Tree A1...A6
@@ -4120,8 +4268,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         Locale CONTENT_LOCALE = Locale.GERMAN; 
         String CONTENT_STRING = "Hello";
         
-        String REPO_ID_B = "RepoB";
-
         /**
          *  For unit test 
          *  - replace the HTTP transport with the in-process transport
@@ -4134,7 +4280,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-          
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+
+        String repositoryId = REPO_ID_A;
+        
         /**
           * Now go ahead and create our first transfer target
           */
@@ -4276,10 +4427,15 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             ChildAssociationRef child = nodeService.createNode(a1Dest, ContentModel.ASSOC_CONTAINS, QName.createQName("B6"), ContentModel.TYPE_CONTENT);
             B6NodeRef = child.getChildRef();
             nodeService.setProperty(B6NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-            nodeService.setProperty(B6NodeRef, ContentModel.PROP_NAME, "B4");
-            nodeService.setProperty(B6NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
-            nodeService.setProperty(B6NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
-            nodeService.setProperty(B6NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_NAME, "B6");    
+            
+            /**
+             * The first tranfer was mocked to repository A - this is repository B.
+             */
+            
+            // This is repository B so there's no need to fake it
+//            nodeService.setProperty(B6NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+//            nodeService.setProperty(B6NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
         
             ContentWriter writer = contentService.getWriter(B6NodeRef, ContentModel.PROP_CONTENT, true);
             writer.setLocale(CONTENT_LOCALE);
@@ -4309,6 +4465,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             // Does node B6 still exist ?
             assertTrue("dest node B6 does not exist", nodeService.exists(B6NodeRef));
+            assertTrue("B6 not alien", nodeService.hasAspect(B6NodeRef, TransferModel.ASPECT_ALIEN));
         }
         finally
         {
@@ -4342,7 +4499,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             nodeService.setProperty(A3NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
             nodeService.setProperty(A3NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
             
-            // Fake Node A7 
+            /**
+             * The repository was mocked to repoistory A.   This is repository B
+             */
             ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A7"), ContentModel.TYPE_CONTENT);
             A7NodeRef = child.getChildRef();
             nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
@@ -4395,8 +4554,342 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
-    }
+    } // test two repo sync
 
+    /**
+     * Transfer sync from multiple repos.
+     * 
+     * This is a unit test so does lots of shenanigans to fake transfer from three repositories on a single repo.
+     * 
+     * Trees of nodes
+     *  
+     *      A1
+     *      |          
+     *    images    
+     *      |
+     *      A2
+     *
+     *      B
+     *      |
+     *    images
+     *      |
+     *      B2
+     *    
+     *      C1
+     *      |
+     *    images
+     *      |
+     *      C2    
+     *         
+     * 
+     */
+    public void testMultiRepoSync() throws Exception
+    {
+        /**
+        * Step 1
+        * create DesTree A1...A6
+        * transfer (sync)
+        * check the transfered aspect
+        * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
+        * transfer (sync)
+        */
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.GERMAN; 
+        String CONTENT_STRING = "Hello";
+        
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+
+        String repositoryId = REPO_ID_A;
+        
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testTransferSyncNodes";
+        TransferTarget transferMe;
+        NodeRef A1NodeRef;
+        NodeRef A2NodeRef;
+        NodeRef A3NodeRef;
+        NodeRef A4NodeRef;
+        NodeRef A5NodeRef;
+        NodeRef B6NodeRef;
+        NodeRef A7NodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test nodes A1 through A5 that we will read and write
+             */
+            {
+                // Node A1
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                A1NodeRef = child.getChildRef();
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_NAME, name);
+            }
+       
+            {
+                // Node A2
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_FOLDER);
+                A2NodeRef = child.getChildRef();
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A2NodeRef, ContentModel.PROP_NAME, "A2");
+            }
+            
+            {
+                // Node A3
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A3"), ContentModel.TYPE_CONTENT);
+                A3NodeRef = child.getChildRef();
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A3NodeRef, ContentModel.PROP_NAME, "A3");
+            
+                ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A4
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A4"), ContentModel.TYPE_CONTENT);
+                A4NodeRef = child.getChildRef();
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
+            
+                ContentWriter writer = contentService.getWriter(A4NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+            {
+                // Node A5
+                ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_CONTENT);
+                A5NodeRef = child.getChildRef();
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
+            
+                ContentWriter writer = contentService.getWriter(A5NodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setLocale(CONTENT_LOCALE);
+                writer.putContent(CONTENT_STRING);
+            }
+ 
+            // Create the transfer target if it does not already exist
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }    
+        
+        Set<NodeRef>nodes = new HashSet<NodeRef>();
+        nodes.add(A1NodeRef);
+        nodes.add(A2NodeRef);
+        nodes.add(A3NodeRef);
+        nodes.add(A4NodeRef);
+        nodes.add(A5NodeRef);
+
+        /**
+          * transfer (sync)
+          * check the transfered aspect
+          * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
+          * transfer (sync)
+          */ 
+        startNewTransaction();
+        try 
+        {
+            {
+                TransferDefinition definition = new TransferDefinition();
+                definition.setNodes(nodes);
+                definition.setSync(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        startNewTransaction();
+        try 
+        {
+            // Node B6 - faked transfer from repository B.  Child of Destination node A1
+            NodeRef a1Dest = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            
+            assertTrue("dest node A does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A1NodeRef)));
+            assertEquals("dest node A1 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A1 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A2 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A2 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A3 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A3 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A4 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A4 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A5 From RepositoryId", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+            assertEquals("dest node A5 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.PROP_REPOSITORY_ID), repositoryId);
+            
+            ChildAssociationRef child = nodeService.createNode(a1Dest, ContentModel.ASSOC_CONTAINS, QName.createQName("B6"), ContentModel.TYPE_CONTENT);
+            B6NodeRef = child.getChildRef();
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_NAME, "B6");    
+            
+            /**
+             * The first tranfer was mocked to repository A - this is repository B.
+             */
+            
+            // This is repository B so there's no need to fake it
+//            nodeService.setProperty(B6NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+//            nodeService.setProperty(B6NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+        
+            ContentWriter writer = contentService.getWriter(B6NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        
+        startNewTransaction();
+        try 
+        {
+            TransferDefinition definition = new TransferDefinition();
+            definition.setNodes(nodes);
+            definition.setSync(true);
+            transferService.transfer(targetName, definition);  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            // Does node B6 still exist ?
+            assertTrue("dest node B6 does not exist", nodeService.exists(B6NodeRef));
+            assertTrue("B6 not alien", nodeService.hasAspect(B6NodeRef, TransferModel.ASPECT_ALIEN));
+        }
+        finally
+        {
+            endTransaction();
+        }         
+       
+       /** Step 2
+        * Chain Sync
+        * Change Nodes A1 ... A5 source to be received "from repo B"
+        * Create Node A7 - Fake it to be received "from repo B"
+        * transfer
+        */ 
+        String NEW_TITLE="Chain sync";
+
+        
+        startNewTransaction();
+        try 
+        {
+            nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A1NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A1NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A1NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+
+            nodeService.setProperty(A2NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A2NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A2NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A2NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+
+            nodeService.setProperty(A3NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A3NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A3NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A3NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+            
+            /**
+             * The repository was mocked to repoistory A.   This is repository B
+             */
+            ChildAssociationRef child = nodeService.createNode(A2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A7"), ContentModel.TYPE_CONTENT);
+            A7NodeRef = child.getChildRef();
+            nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A7NodeRef, ContentModel.PROP_NAME, "A7");
+            nodeService.setProperty(A7NodeRef, ContentModel.PROP_TITLE, NEW_TITLE);   
+            nodeService.setProperty(A7NodeRef, TransferModel.PROP_ALIEN, Boolean.FALSE);
+            nodeService.setProperty(A7NodeRef, TransferModel.PROP_FROM_REPOSITORY_ID, REPO_ID_B);
+            nodeService.setProperty(A7NodeRef, TransferModel.PROP_REPOSITORY_ID, REPO_ID_B);
+            
+            ContentWriter writer = contentService.getWriter(A3NodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setLocale(CONTENT_LOCALE);
+            writer.putContent(CONTENT_STRING);
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        nodes.add(A7NodeRef);
+        
+        startNewTransaction();
+        try 
+        {
+            TransferDefinition definition = new TransferDefinition();
+            definition.setNodes(nodes);
+            definition.setSync(true);
+            transferService.transfer(targetName, definition);  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        try 
+        {   
+            assertTrue("dest node A7 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A7NodeRef)));
+            
+            assertEquals("dest node A1 Title", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), ContentModel.PROP_TITLE), NEW_TITLE);
+            assertEquals("dest node A1 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_REPOSITORY_ID), REPO_ID_B);
+            assertEquals("dest node A1 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+ 
+            assertEquals("dest node A2 Title", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), ContentModel.PROP_TITLE), NEW_TITLE);
+            assertEquals("dest node A2 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_REPOSITORY_ID), REPO_ID_B);
+            assertEquals("dest node A2 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A2NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+ 
+            assertEquals("dest node A3 Title", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), ContentModel.PROP_TITLE), NEW_TITLE);
+            assertEquals("dest node A3 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_REPOSITORY_ID), REPO_ID_B);
+            assertEquals("dest node A3 Repository Id", nodeService.getProperty(testNodeFactory.getMappedNodeRef(A3NodeRef), TransferModel.PROP_FROM_REPOSITORY_ID), repositoryId);
+        }
+        finally
+        {
+            endTransaction();
+        }
+    } // test multi repo sync
+
+    
+    
     // Utility methods below.
     private TransferTarget createTransferTarget(String name)
     {   
@@ -4416,7 +4909,15 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         return target;
     }
     
-
+//    /**
+//     * transfer should only be able to update and delete nodes that are "from" the transferring system
+//     * 
+//     * not yet implemented.
+//     */
+//    public void testFromRepo()
+//    {
+//        assertTrue("not yet implemented", false);
+//    }
     
     private void createUser(String userName, String password)
     {
@@ -4434,4 +4935,15 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             this.personService.createPerson(ppOne);
         }        
     }
+    
+    private DescriptorService getMockDescriptorService(String repositoryId)
+    {
+        DescriptorService descriptorService = mock(DescriptorService.class);
+        Descriptor descriptor = mock(Descriptor.class);
+        
+        when(descriptor.getId()).thenReturn(repositoryId);
+        when(descriptorService.getCurrentRepositoryDescriptor()).thenReturn(descriptor);
+        
+        return descriptorService;
+    }    
 }

@@ -306,17 +306,23 @@ public class ReplicationServiceIntegrationTest extends TestCase
        replicationService.deleteReplicationDefinition(rd2);
        assertEquals(1, replicationService.loadReplicationDefinitions().size());
        assertEquals(ACTION_NAME, replicationService.loadReplicationDefinitions().get(0).getReplicationName());
+       assertNotNull(replicationService.loadReplicationDefinition(ACTION_NAME));
+       assertNull(replicationService.loadReplicationDefinition(ACTION_NAME2));
        
        
        // Re-delete already deleted, no change
        replicationService.deleteReplicationDefinition(rd2);
        assertEquals(1, replicationService.loadReplicationDefinitions().size());
        assertEquals(ACTION_NAME, replicationService.loadReplicationDefinitions().get(0).getReplicationName());
+       assertNotNull(replicationService.loadReplicationDefinition(ACTION_NAME));
+       assertNull(replicationService.loadReplicationDefinition(ACTION_NAME2));
        
        
        // Delete the 2nd
        replicationService.deleteReplicationDefinition(rd1);
        assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       assertNull(replicationService.loadReplicationDefinition(ACTION_NAME));
+       assertNull(replicationService.loadReplicationDefinition(ACTION_NAME2));
        
        
        // Can add back in again after being deleted

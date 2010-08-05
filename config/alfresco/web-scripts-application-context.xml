@@ -876,4 +876,10 @@
           parent="abstractReplicationWebScript">
     </bean>
 
+    <!-- Deletes a replication definition -->
+    <bean id="webscript.org.alfresco.repository.replication.replication-definition.delete"
+          class="org.alfresco.repo.web.scripts.replication.ReplicationDefinitionDelete"
+          parent="abstractReplicationWebScript">
+    </bean>
+
 </beans>

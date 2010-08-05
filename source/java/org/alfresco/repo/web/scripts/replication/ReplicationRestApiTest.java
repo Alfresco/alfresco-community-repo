@@ -44,6 +44,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -1113,6 +1114,117 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(0, json.getJSONArray("payload").length());
     }
     
+    public void testReplicationDefinitionDelete() throws Exception 
+    {
+       Response response;
+       
+       
+       // Not allowed if you're not an admin
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "MadeUp"), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "MadeUp"), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+
+       
+       // Ensure there aren't any to start with
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // You need to specify a real definition
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "MadeUp"), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+       
+       
+       // Create one, and then delete it
+       ReplicationDefinition rd = replicationService.createReplicationDefinition("Test", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       
+       // Because some of the delete operations happen post-commit, and
+       //  because we don't have real transactions, fake it
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       // Call the delete webscript
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test"), Status.STATUS_GONE);
+       assertEquals(Status.STATUS_GONE, response.getStatus());
+       
+       // Let the node service do its work
+       txn.commit();
+       Thread.sleep(50);
+       
+       
+       // Check the details webscript to ensure it went
+       response = sendRequest(new GetRequest(URL_DEFINITION + "Test"), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+       
+       
+       // Check the replication service to ensure it went
+       assertNull(replicationService.loadReplicationDefinition("Test"));
+       assertEquals(0, replicationService.loadReplicationDefinitions().size());
+       
+       
+       // If there are several, make sure the right one goes
+       rd = replicationService.createReplicationDefinition("Test", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       rd = replicationService.createReplicationDefinition("Test 2", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       rd = replicationService.createReplicationDefinition("Test 3", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       
+       // Delete one of three, correct one goes
+       assertEquals(3, replicationService.loadReplicationDefinitions().size());
+       
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test"), Status.STATUS_GONE);
+       assertEquals(Status.STATUS_GONE, response.getStatus());
+       
+       txn.commit();
+       Thread.sleep(50);
+       
+       assertEquals(2, replicationService.loadReplicationDefinitions().size());
+       assertNull(replicationService.loadReplicationDefinition("Test"));
+       assertNotNull(replicationService.loadReplicationDefinition("Test 2"));
+       assertNotNull(replicationService.loadReplicationDefinition("Test 3"));
+       
+       // Delete the next one, correct one goes
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test 3"), Status.STATUS_GONE);
+       assertEquals(Status.STATUS_GONE, response.getStatus());
+       
+       txn.commit();
+       Thread.sleep(50);
+       
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertNull(replicationService.loadReplicationDefinition("Test"));
+       assertNotNull(replicationService.loadReplicationDefinition("Test 2"));
+       assertNull(replicationService.loadReplicationDefinition("Test 3"));
+       
+       
+       // Ensure you can't delete for a 2nd time
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test 3"), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+       
+       txn.commit();
+       Thread.sleep(50);
+       
+       assertEquals(1, replicationService.loadReplicationDefinitions().size());
+       assertNull(replicationService.loadReplicationDefinition("Test"));
+       assertNotNull(replicationService.loadReplicationDefinition("Test 2"));
+       assertNull(replicationService.loadReplicationDefinition("Test 3"));
+    }
+    
     
     @Override
     protected void setUp() throws Exception
@@ -1121,7 +1233,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         ApplicationContext appContext = getServer().getApplicationContext();
 
         nodeService = (NodeService)appContext.getBean("nodeService");
-        replicationService = (ReplicationService)appContext.getBean("replicationService");
+        replicationService = (ReplicationService)appContext.getBean("ReplicationService");
         actionTrackingService = (ActionTrackingService)appContext.getBean("actionTrackingService");
         repositoryHelper = (Repository)appContext.getBean("repositoryHelper");
         transactionService = (TransactionService)appContext.getBean("transactionService");

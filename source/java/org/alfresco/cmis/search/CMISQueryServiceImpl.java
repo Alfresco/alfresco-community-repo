@@ -36,6 +36,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 
 /**
@@ -135,7 +136,12 @@ public class CMISQueryServiceImpl implements CMISQueryService
                 wrapped.put(selector, current);
             }
         }
-        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, alfrescoDictionaryService);
+        LimitBy limitBy = null;
+        if ((null != results.getResults()) && !results.getResults().isEmpty() && (null != results.getResults().values()) && !results.getResults().values().isEmpty())
+        {
+            limitBy = results.getResults().values().iterator().next().getResultSetMetaData().getLimitedBy();
+        }
+        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, limitBy, nodeService, query, cmisDictionaryService, alfrescoDictionaryService);
         return cmis;
     }
 

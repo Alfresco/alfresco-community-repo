@@ -99,6 +99,9 @@
       <property name="eagerContentStoreCleaner" >
          <ref bean="eagerContentStoreCleaner" />
       </property>
+      <property name="ignoreEmptyContent" >
+         <value>${policy.content.update.ignoreEmpty}</value>
+      </property>
    </bean>
    
    <bean id="contentService" parent="baseContentService">

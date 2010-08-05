@@ -316,7 +316,6 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                 field = expandAttributeFieldName(field);
                                 PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
 
-                                // Handle .size and .mimetype
                                 if(propertyDef == null)
                                 {   
                                     if(field.endsWith(".size"))

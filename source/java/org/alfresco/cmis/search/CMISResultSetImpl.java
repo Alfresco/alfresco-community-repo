@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 
@@ -48,6 +49,8 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     private static final long serialVersionUID = 2014688399588268994L;
 
     private Map<String, ResultSet> wrapped;
+    
+    private LimitBy limitBy;
 
     CMISQueryOptions options;
 
@@ -59,11 +62,12 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
 
     DictionaryService alfrescoDictionaryService;
 
-    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService,
-            DictionaryService alfrescoDictionaryService)
+    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, LimitBy limitBy, NodeService nodeService, Query query,
+            CMISDictionaryService cmisDictionaryService, DictionaryService alfrescoDictionaryService)
     {
         this.wrapped = wrapped;
         this.options = options;
+        this.limitBy = limitBy;
         this.nodeService = nodeService;
         this.query = query;
         this.cmisDictionaryService = cmisDictionaryService;
@@ -94,7 +98,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
      */
     public CMISResultSetMetaData getMetaData()
     {
-        return new CMISResultSetMetaDataImpl(options, query, cmisDictionaryService, alfrescoDictionaryService);
+        return new CMISResultSetMetaDataImpl(options, query, limitBy, cmisDictionaryService, alfrescoDictionaryService);
     }
 
     /*

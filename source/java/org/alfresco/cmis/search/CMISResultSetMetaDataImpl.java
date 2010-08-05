@@ -49,16 +49,18 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
 {
     private CMISQueryOptions options;
     private SearchParameters searchParams;
+    private LimitBy limitBy;
 
     private Map<String, CMISResultSetColumn> columnMetaData;
 
     private Map<String, CMISResultSetSelector> selectorMetaData;
 
-    public CMISResultSetMetaDataImpl(CMISQueryOptions options, Query query, CMISDictionaryService cmisDictionaryService, DictionaryService alfrescoDictionaryService)
+    public CMISResultSetMetaDataImpl(CMISQueryOptions options, Query query, LimitBy limitBy, CMISDictionaryService cmisDictionaryService,
+            DictionaryService alfrescoDictionaryService)
     {
         this.options = options;
         this.searchParams = new SearchParameters(options);
-
+        this.limitBy = limitBy;
         Map<String, Selector> selectors = query.getSource().getSelectors();
         selectorMetaData = new LinkedHashMap<String, CMISResultSetSelector>();
         for(Selector selector : selectors.values())
@@ -177,7 +179,7 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
 
     public LimitBy getLimitedBy()
     {
-        throw new UnsupportedOperationException();
+        return limitBy;
     }
 
     public PermissionEvaluationMode getPermissionEvaluationMode()

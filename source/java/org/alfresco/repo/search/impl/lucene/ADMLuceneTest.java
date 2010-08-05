@@ -1099,8 +1099,35 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 //        ftsQueryWithCount(searcher, "TEXT:(brown *(5) dog)", 1);
 //        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
 //
-//        // ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
-//        // ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+//        try
+//        {
+//            ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
+//            fail("Range query should not be supported against type d:content");
+//        }
+//        catch(UnsupportedOperationException e)
+//        {
+//            
+//        }
+//        
+//        try
+//        {
+//            ftsQueryWithCount(searcher, "TEXT:brown..dog", 1);
+//            fail("Range query should not be supported against type d:content");
+//        }
+//        catch(UnsupportedOperationException e)
+//        {
+//            
+//        }
+//        
+//        try
+//        {
+//            ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+//            fail("Range query should not be supported against type d:content");
+//        }
+//        catch(UnsupportedOperationException e)
+//        {
+//            
+//        }
 //
 //        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
 //        ftsQueryWithCount(searcher, qname + ":3.40", 1);
@@ -3068,6 +3095,25 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results = searcher.query(spN);
         results.close();
 
+        // test sort on unkown properties ALF-4193
+        
+        spN = new SearchParameters();
+        spN.addStore(rootNodeRef.getStoreRef());
+        spN.setLanguage(SearchService.LANGUAGE_LUCENE);
+        spN.setQuery("PATH:\"//.\"");
+        spN.addSort("PARENT", false);
+        results = searcher.query(spN);
+        results.close();
+        
+        spN = new SearchParameters();
+        spN.addStore(rootNodeRef.getStoreRef());
+        spN.setLanguage(SearchService.LANGUAGE_LUCENE);
+        spN.setQuery("PATH:\"//.\"");
+        spN.addSort("@PARENT:PARENT", false);
+        results = searcher.query(spN);
+        results.close();
+
+        
         luceneFTS.resume();
         
 

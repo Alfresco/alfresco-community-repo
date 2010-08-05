@@ -96,6 +96,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /** the store for all temporarily created content */
     private ContentStore tempStore;
     private ContentTransformer imageMagickContentTransformer;
+    /** Should we consider zero byte content to be the same as no content? */
+    private boolean ignoreEmptyContent;
     
     /**
      * The policy component
@@ -153,8 +155,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.imageMagickContentTransformer = imageMagickContentTransformer;
     }
-    
-    
+
+    public void setIgnoreEmptyContent(boolean ignoreEmptyContent)
+    {
+        this.ignoreEmptyContent = ignoreEmptyContent;
+    }
+
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -232,8 +238,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             {
                 ContentData beforeValue = (ContentData) before.get(propertyQName);
                 ContentData afterValue = (ContentData) after.get(propertyQName);
-                boolean hasContentBefore = ContentData.hasContent(beforeValue);
-                boolean hasContentAfter = ContentData.hasContent(afterValue);
+                boolean hasContentBefore = ContentData.hasContent(beforeValue)
+                        && (!ignoreEmptyContent || beforeValue.getSize() > 0);
+                boolean hasContentAfter = ContentData.hasContent(afterValue)
+                        && (!ignoreEmptyContent || afterValue.getSize() > 0);
                 
                 // There are some shortcuts here
                 if (!hasContentBefore && !hasContentAfter)

@@ -39,6 +39,7 @@ import org.alfresco.cmis.CMISResultSetColumn;
 import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.PropertyFilter;
+import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -91,6 +92,7 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         // execute query
         // TODO: If the select clause includes properties from more than a single type reference, then the repository SHOULD throw an exception if includeRelationships or
         // includeAllowableActions is specified as true.
+        options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         CMISResultSet resultSet = cmisQueryService.query(options);
         CMISResultSetColumn[] columns = resultSet.getMetaData().getColumns();
 

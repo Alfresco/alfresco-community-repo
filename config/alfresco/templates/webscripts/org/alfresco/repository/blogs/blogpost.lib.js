@@ -14,7 +14,7 @@ function setOrUpdateReleasedAndUpdatedDates(node)
    
    // (re-)enable permission inheritance which got disable for draft posts
    // only set if was previously draft - as only the owner/admin can do this
-   if (!node.inheritsPermissions)
+   if (!node.inheritsPermissions())
    {
       node.setInheritsPermissions(true);
    }

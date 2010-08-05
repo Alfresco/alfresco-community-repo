@@ -43,11 +43,5 @@ script:
     model.resultset = paged.result;
     model.cursor = paged.cursor;
     
-    // check includeFlags are valid for query
-    var multiNodeResultSet = false;  // TODO: calculate from result set (for now, don't support joins)
-    if (!multiNodeResultSet && (model.includeAllowableActions))
-    {
-        status.setCode(status.STATUS_BAD_REQUEST, "Can't includeAllowableActions for multi-selector column result sets");
-        break script;
-    }
+    // TODO: check includeFlags are valid for query (with multiple types referenced in selectors)
 }

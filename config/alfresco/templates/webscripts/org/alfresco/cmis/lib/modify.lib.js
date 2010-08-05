@@ -248,22 +248,32 @@ function unpackProperties(node, typeDef, props, exclude, validator, vals)
            // extract value
            var val = null;
            var prop = (props == null) ? null : props.find(propName);
-           if (prop != null && !prop.isNull())
+           if (prop != null)
            {
-               if (prop.isMultiValued())
+               if (prop.type !== propDef.dataType.label)
                {
-                   if (propDef.updatability === CMISCardinalityEnum.MULTI_VALUED)
-                   {
-                       status.code = 500;
-                       status.message = "Property " + propName + " is single valued."
-                       status.redirect = true;
-                       return null;
-                   }
-                   val = prop.nativeValues;
+                   status.code = 500;
+                   status.message = "Property " + propName + " has a data type " + prop.type + " which is different to its property definition type " + propDef.dataType.label;
+                   status.redirect = true;
+                   return null;
                }
-               else
+               if (!prop.isNull())
                {
-                   val = prop.nativeValue;
+                   if (prop.isMultiValued())
+                   {
+                       if (propDef.updatability === CMISCardinalityEnum.MULTI_VALUED)
+                       {
+                           status.code = 500;
+                           status.message = "Property " + propName + " is single valued."
+                           status.redirect = true;
+                           return null;
+                       }
+                       val = prop.nativeValues;
+                   }
+                   else
+                   {
+                       val = prop.nativeValue;
+                   }
                }
            }
            

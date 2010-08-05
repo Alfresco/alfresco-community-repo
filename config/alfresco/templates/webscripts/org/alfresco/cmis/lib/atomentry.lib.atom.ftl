@@ -201,8 +201,8 @@
 [#macro row row renditionfilter="cmis:none" includeallowableactions=false includerelationships="none"]
 [@entry]
 [#-- TODO: calculate multiNodeResultSet from result set --]
-[#if row.nodes?? && row.nodes?size == 1][#assign node = row.nodes?first/][/#if]
-[#if node??]
+[#if row.node??]
+[#assign node = row.node/]
 <author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
 <id>urn:uuid:${node.id}</id>

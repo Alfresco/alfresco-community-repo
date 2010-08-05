@@ -191,6 +191,20 @@ public class CMISTemplateResultSet implements Serializable
             }
 
             /**
+             * @return  node (if there is only a single node associated with the row), otherwise null
+             */
+            public TemplateNode getNode()
+            {
+                try
+                {
+                    NodeRef nodeRef = row.getNodeRef();
+                    return new TemplateNode(nodeRef, serviceRegistry, imageResolver);
+                }
+                catch(UnsupportedOperationException e) {}
+                return null;
+            }
+            
+            /**
              * Builds a map of Template Nodes for the nodes associated with this row
              * 
              * @return  templates nodes indexed by selector

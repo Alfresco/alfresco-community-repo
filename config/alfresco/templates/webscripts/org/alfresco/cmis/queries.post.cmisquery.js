@@ -68,18 +68,14 @@ script:
     model.resultset = paged.result;
     model.cursor = paged.cursor;
     
-    // check includeFlags are valid for query
-    var multiNodeResultSet = false;  // todo: calculate from result set (for now, don't support joins)
-    if (multiNodeResultSet && (model.includeAllowableActions))
-    {
-        status.setCode(status.STATUS_BAD_REQUEST, "Can't includeAllowableActions for multi-selector column result sets");
-        break script;
-    }
-
+    // TODO: check includeFlags are valid for query (with multiple types referenced in selectors)
+    
     // construct query uri
     model.queryUri = "/cmis/query";
     model.queryArgs = cmis.ARG_QUERY_STATEMENT + "=" + model.statement;
-    if (model.includeAllowableActions) model.queryArgs += "&" + cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS + "=true";
+    if (model.includeAllowableActions) model.queryArgs += "&" + cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS + "=" + model.includeAllowableActions;
+    if (model.includeRelationships != "none") model.queryArgs += "&" + cmis.ARG_INCLUDE_RELATIONSHIPS + "=" + model.includeRelationships;
+    if (model.renditionFilter != "cmis:none") model.queryArgs += "&" + cmis.ARG_RENDITION_FILTER + "=" + model.renditionFilter;
     model.queryArgs += "&" + cmis.ARG_SKIP_COUNT + "=" + page.number;
     model.queryArgs += "&" + cmis.ARG_MAX_ITEMS + "=" + page.size;
     

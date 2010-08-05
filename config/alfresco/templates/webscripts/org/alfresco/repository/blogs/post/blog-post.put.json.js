@@ -12,14 +12,14 @@ function updateBlogPostDraftMode(postNode)
    var isDraft = json.has("draft") && json.get("draft").toString() == "true";
    
    // requested draft, previously non-draft: throw an exception
-   if (isDraft && ! currentDraft)
+   if (isDraft && !currentDraft)
    {
        // set an error
       status.setCode(status.STATUS_BAD_REQUEST, "Cannot put a published post back into draft mode");
       return null;
    }
    
-   if (! isDraft)
+   if (!isDraft)
    {
       setOrUpdateReleasedAndUpdatedDates(postNode);
    }

@@ -80,6 +80,9 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -139,6 +142,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private CMISDictionaryService cmisDictionaryService;
     private SearchService searchService;
     private NodeService nodeService;
+    private FileFolderService fileFolderService;
     private ContentService contentService;
     private TenantAdminService tenantAdminService;
     private CMISRenditionService cmisRenditionService;
@@ -247,6 +251,14 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * @param fileFolderService
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -940,7 +952,26 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         {
             throw new CMISConstraintException("Unable to set property " + propertyName);
         }
-        nodeService.setProperty(nodeRef, property, value);
+        
+        if (property.equals(ContentModel.PROP_NAME))
+        {
+            try
+            {
+                fileFolderService.rename(nodeRef, value.toString());
+            }
+            catch (FileExistsException e)
+            {
+                throw new CMISConstraintException("Object already exists with name " + value.toString());
+            }
+            catch (FileNotFoundException e)
+            {
+                throw new CMISInvalidArgumentException("Object with id " + nodeRef.toString() + " not found");
+            }
+        }
+        else
+        {
+            nodeService.setProperty(nodeRef, property, value);
+        }
     }
 
     /*

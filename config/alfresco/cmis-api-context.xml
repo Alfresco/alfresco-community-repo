@@ -24,6 +24,7 @@
         <property name="transactionHelper" ref="retryingTransactionHelper" />
         <property name="tenantAdminService" ref="tenantAdminService" />
         <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
         <property name="contentService" ref="ContentService" />
         <property name="repository" ref="repositoryHelper" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />

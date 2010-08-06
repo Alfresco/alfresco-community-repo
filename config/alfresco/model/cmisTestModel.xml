@@ -41,6 +41,10 @@
                 <type>d:boolean</type>
                 <multiple>true</multiple>
             </property>
+            <property name="cmiscustom:docprop_datetime">
+                <title>Custom Document Property (datetime)</title>
+                <type>d:datetime</type>
+            </property>
          </properties>
          <associations>
             <association name="cmiscustom:assoc">

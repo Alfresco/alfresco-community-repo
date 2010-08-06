@@ -19,6 +19,7 @@
 package org.alfresco.repo.web.scripts.workflow;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     private static final String URL_TASKS = "api/task-instances";
     private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     private static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
+    private static final String URL_WORKFLOW_INSTANCES_FOR_DEFINITION = "api/workflow-definitions/{0}/workflow-instances";
     
     private TestPersonManager personManager;
     private WorkflowService workflowService;
@@ -392,6 +394,99 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(tasks.length() > 1);
     }
     
+    public void testWorkflowInstancesGet() throws Exception
+    {
+        //Start workflow as USER1 and assign task to USER2.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        
+        WorkflowInstance adhocInstance = startTask.getPath().getInstance();        
+        
+        // Get Workflow Instance Collection 
+        Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONArray result = json.getJSONArray("data");
+        assertNotNull(result);
+        
+        for (int i = 0; i < result.length(); i++)
+        {
+            checkSimpleWorkflowInstanceResponse(result.getJSONObject(i));
+        }
+        
+        Response forDefinitionResponse = sendRequest(new GetRequest(MessageFormat.format(URL_WORKFLOW_INSTANCES_FOR_DEFINITION, adhocDef.getId())), 200);
+        assertEquals(Status.STATUS_OK, forDefinitionResponse.getStatus());
+        String forDefinitionJsonStr = forDefinitionResponse.getContentAsString();
+        JSONObject forDefinitionJson = new JSONObject(forDefinitionJsonStr);
+        JSONArray forDefinitionResult = forDefinitionJson.getJSONArray("data");
+        assertNotNull(forDefinitionResult);
+        
+        for (int i = 0; i < forDefinitionResult.length(); i++)
+        {
+            checkSimpleWorkflowInstanceResponse(forDefinitionResult.getJSONObject(i));
+        }
+        
+        // filter by initiator
+        String initiatorFilter = "?initiator=" + USER1;
+        Response initiatorFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + initiatorFilter), 200);
+        
+        assertEquals(Status.STATUS_OK, initiatorFilteredResponse.getStatus());
+        String initiatorFilteredJsonStr = initiatorFilteredResponse.getContentAsString();
+        JSONObject initiatorFilteredJson = new JSONObject(initiatorFilteredJsonStr);
+        JSONArray initiatorFilteredResult = initiatorFilteredJson.getJSONArray("data");
+        assertNotNull(initiatorFilteredResult);
+        
+        assertEquals(1, initiatorFilteredResult.length());
+        assertEquals(adhocInstance.getId(), initiatorFilteredResult.getJSONObject(0).getString("id"));
+        
+        // filter by date
+        String dateFilter = "?date=" + ISO8601DateFormat.format(adhocInstance.startDate);
+        Response dateFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + dateFilter), 200);
+        
+        assertEquals(Status.STATUS_OK, dateFilteredResponse.getStatus());
+        String dateFilteredJsonStr = dateFilteredResponse.getContentAsString();
+        JSONObject dateFilteredJson = new JSONObject(dateFilteredJsonStr);
+        JSONArray dateFilteredResult = dateFilteredJson.getJSONArray("data");
+        assertNotNull(dateFilteredResult);
+        
+        assertTrue(dateFilteredResult.length() > 0);
+        
+        // filter by priority
+        String priorityFilter = "?priority=1";
+        Response priorityFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + priorityFilter), 200);
+        
+        assertEquals(Status.STATUS_OK, priorityFilteredResponse.getStatus());
+        String priorityFilteredJsonStr = priorityFilteredResponse.getContentAsString();
+        JSONObject priorityFilteredJson = new JSONObject(priorityFilteredJsonStr);
+        JSONArray priorityFilteredResult = priorityFilteredJson.getJSONArray("data");
+        assertNotNull(priorityFilteredResult);
+        
+        assertTrue(priorityFilteredResult.length() > 1);
+        
+        // filter by state
+        String stateFilter = "?state=active";
+        Response stateFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + stateFilter), 200);
+        
+        assertEquals(Status.STATUS_OK, stateFilteredResponse.getStatus());
+        String stateFilteredJsonStr = stateFilteredResponse.getContentAsString();
+        JSONObject stateFilteredJson = new JSONObject(stateFilteredJsonStr);
+        JSONArray stateFilteredResult = stateFilteredJson.getJSONArray("data");
+        assertNotNull(stateFilteredResult);
+        
+        assertTrue(stateFilteredResult.length() > 1);
+    }
+    
     @Override
     protected void setUp() throws Exception
     {
@@ -448,5 +543,42 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
                 }
             }
         }
+    }
+    
+    private void checkSimpleWorkflowInstanceResponse(JSONObject json) throws JSONException
+    {
+        assertTrue(json.has("id"));
+        assertTrue(json.getString("id").length() > 0);
+        
+        assertTrue(json.has("url"));
+        assertTrue(json.getString("url").startsWith(URL_WORKFLOW_INSTANCES));
+        
+        assertTrue(json.has("name"));
+        assertTrue(json.getString("name").length() > 0);
+        
+        assertTrue(json.has("title"));
+        assertTrue(json.getString("title").length() > 0);
+        
+        assertTrue(json.has("description"));
+        assertTrue(json.getString("description").length() > 0);
+        
+        assertTrue(json.has("isActive"));        
+        
+        assertTrue(json.has("startDate"));
+        assertTrue(json.getString("startDate").length() > 0);
+        
+        assertTrue(json.has("endDate"));        
+        
+        assertTrue(json.has("initiator"));
+        Object initiator = json.get("initiator");
+        if (!initiator.equals(JSONObject.NULL))
+        {
+            assertTrue(((JSONObject)initiator).has("userName"));
+            assertTrue(((JSONObject)initiator).has("firstName"));
+            assertTrue(((JSONObject)initiator).has("lastName"));
+        }
+        
+        assertTrue(json.has("definitionUrl"));
+        assertTrue(json.getString("definitionUrl").startsWith(URL_WORKFLOW_DEFINITIONS));
     }
 }

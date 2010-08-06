@@ -218,6 +218,33 @@ public class WorkflowModelBuilderTest extends TestCase
     }
 
     @SuppressWarnings("unchecked")
+    public void testBuildWorkflowInstance() throws Exception
+    {
+        WorkflowInstance workflowInstance = makeWorkflowInstance(null);                        
+        
+        Map<String, Object> model = builder.buildSimple(workflowInstance);
+        
+        assertEquals(workflowInstance.getId(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_ID));
+        assertTrue(model.containsKey(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_URL));
+        assertEquals(workflowInstance.getDefinition().getName(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_NAME));
+        assertEquals(workflowInstance.getDefinition().getTitle(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_TITLE));
+        assertEquals(workflowInstance.getDefinition().getDescription(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DESCRIPTION));
+        assertEquals(workflowInstance.isActive(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_IS_ACTIVE));        
+        assertEquals(ISO8601DateFormat.format(workflowInstance.getStartDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_START_DATE));
+        assertEquals(ISO8601DateFormat.format(workflowInstance.getEndDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE));
+        
+        Map<String, Object> initiator = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_INITIATOR);
+        if (initiator != null)
+        {
+            assertEquals(userName, initiator.get(WorkflowModelBuilder.PERSON_USER_NAME));
+            assertEquals(firstName, initiator.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
+            assertEquals(lastName, initiator.get(WorkflowModelBuilder.PERSON_LAST_NAME));
+        }
+        
+        assertTrue(model.containsKey(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_DEFINITION_URL));
+    }
+    
+    @SuppressWarnings("unchecked")
     public void testBuildWorkflowInstanceDetailed() throws Exception
     {
         WorkflowTaskDefinition workflowTaskDefinition = new WorkflowTaskDefinition();
@@ -239,9 +266,12 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(ISO8601DateFormat.format(workflowInstance.getEndDate()), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_END_DATE));
         
         Map<String, Object> initiator = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_INITIATOR);
-        assertEquals(userName, initiator.get(WorkflowModelBuilder.PERSON_USER_NAME));
-        assertEquals(firstName, initiator.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
-        assertEquals(lastName, initiator.get(WorkflowModelBuilder.PERSON_LAST_NAME));
+        if (initiator != null)
+        {
+            assertEquals(userName, initiator.get(WorkflowModelBuilder.PERSON_USER_NAME));
+            assertEquals(firstName, initiator.get(WorkflowModelBuilder.PERSON_FIRST_NAME));
+            assertEquals(lastName, initiator.get(WorkflowModelBuilder.PERSON_LAST_NAME));
+        }
         
         assertEquals(workflowInstance.getContext().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_CONTEXT));        
         assertEquals(workflowInstance.getWorkflowPackage().toString(), model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE_PACKAGE));

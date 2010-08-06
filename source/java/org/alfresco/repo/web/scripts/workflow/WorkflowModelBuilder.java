@@ -227,7 +227,7 @@ public class WorkflowModelBuilder
             model.put(TASK_WORKFLOW_INSTANCE_END_DATE, ISO8601DateFormat.format(workflowInstance.getEndDate()));
         }
 
-        if (workflowInstance.getInitiator() == null)
+        if (workflowInstance.getInitiator() == null || !nodeService.exists(workflowInstance.getInitiator()))
         {
             model.put(TASK_WORKFLOW_INSTANCE_INITIATOR, null);
         }

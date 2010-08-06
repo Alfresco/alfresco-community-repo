@@ -347,7 +347,11 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
         List<NodeRef> parents = new LinkedList<NodeRef>();
         for (ChildAssociationRef childParentAssociation : nodeService.getParentAssocs(objectId))
         {
-            parents.add(childParentAssociation.getParentRef());
+            NodeRef parentRef = childParentAssociation.getParentRef();
+            if (!parentRef.equals(nodeService.getRootNode(parentRef.getStoreRef())))
+            {
+                parents.add(parentRef);
+            }
         }
         return parents;
     }

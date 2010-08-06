@@ -137,7 +137,15 @@ function updateNode(node, entry, exclude, validator)
     // update node values
     for (val in vals)
     {
-        node.properties[val] = vals[val];
+        if (val == "{http://www.alfresco.org/model/content/1.0}name")
+        {
+            // force rename
+            node.setName(vals[val]);
+        }
+        else
+        {
+            node.properties[val] = vals[val];
+        }
         updated = true;
     }
 

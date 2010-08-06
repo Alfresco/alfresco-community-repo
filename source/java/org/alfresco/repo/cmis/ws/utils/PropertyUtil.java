@@ -208,6 +208,12 @@ public class PropertyUtil
         else if (cmisProperty instanceof CmisPropertyDateTime)
         {
             convertedValue = ((CmisPropertyDateTime) cmisProperty).getValue();
+            List<GregorianCalendar> dates = new ArrayList<GregorianCalendar>(convertedValue.size());
+            for (Object date : convertedValue)
+            {
+                dates.add(((XMLGregorianCalendar)date).toGregorianCalendar());
+            }
+            convertedValue = dates;
         }
         else if (cmisProperty instanceof CmisPropertyDecimal)
         {

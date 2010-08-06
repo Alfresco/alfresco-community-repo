@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>List Running Actions</shortname>
+  <description>
+  Returns (limited) details on all currently running actions.
+  </description>
+  <url>/api/running-actions?type={type?}&amp;nodeRef={nodeRef?}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

@@ -18,9 +18,19 @@
  */
 package org.alfresco.repo.web.scripts.action;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.ExecutionDetails;
+import org.alfresco.service.cmr.action.ExecutionSummary;
+import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * Builds up models for running actions
@@ -33,6 +43,15 @@ public class RunningActionModelBuilder
     protected static final String MODEL_DATA_ITEM = "runningAction";
     protected static final String MODEL_DATA_LIST = "runningActions";
     
+    protected static final String ACTION_ID = "id";
+    protected static final String ACTION_TYPE = "type";
+    protected static final String ACTION_INSTANCE = "instance";
+    protected static final String ACTION_NODE_REF = "nodeRef";
+    protected static final String ACTION_STARTED_AT = "startedAt";
+    protected static final String ACTION_RUNNING_ON = "runningOn";
+    protected static final String ACTION_CANCEL_REQUESTED = "cancelRequested";
+    protected static final String ACTION_KEY = "key";
+    
     
     protected NodeService nodeService;
     protected ActionService actionService;
@@ -44,5 +63,41 @@ public class RunningActionModelBuilder
        this.nodeService = nodeService;
        this.actionService = actionService;
        this.actionTrackingService = actionTrackingService;
+    }
+    
+    
+    /**
+     * Build a model containing a list of running actions for the given
+     *  list of Running Actions
+     */
+    protected Map<String,Object> buildSimpleList(List<ExecutionSummary> runningActions)
+    {
+        List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
+        
+        for(ExecutionSummary summary : runningActions) {
+           ExecutionDetails details = actionTrackingService.getExecutionDetails(summary);
+           
+           // Only record if still running - may have finished
+           //  between getting the list and now
+           if(details != null) {
+              Map<String, Object> ram = new HashMap<String,Object>();
+              ram.put(ACTION_ID, summary.getActionId());
+              ram.put(ACTION_TYPE, summary.getActionType());
+              ram.put(ACTION_INSTANCE, summary.getExecutionInstance());
+              ram.put(ACTION_KEY, AbstractActionWebscript.getRunningId(summary));
+              
+              ram.put(ACTION_NODE_REF, details.getPersistedActionRef());
+              ram.put(ACTION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
+              ram.put(ACTION_RUNNING_ON, details.getRunningOn());
+              ram.put(ACTION_CANCEL_REQUESTED, details.isCancelRequested());
+              
+              models.add(ram);
+           }
+        }
+        
+        // Finish up
+        Map<String, Object> model = new HashMap<String,Object>();
+        model.put(MODEL_DATA_LIST, models);
+        return model;
     }
 }

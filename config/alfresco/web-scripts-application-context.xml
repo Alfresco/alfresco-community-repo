@@ -839,9 +839,9 @@
           parent="abstractAuditWebScript">
     </bean>
 
-    <!--                                   -->
+    <!--                                      -->
     <!--      Replication Service REST API    -->
-    <!--                                   -->
+    <!--                                      -->
 
     <!-- abstract replication web script -->
     <bean id="abstractReplicationWebScript"
@@ -880,6 +880,27 @@
     <bean id="webscript.org.alfresco.repository.replication.replication-definition.delete"
           class="org.alfresco.repo.web.scripts.replication.ReplicationDefinitionDelete"
           parent="abstractReplicationWebScript">
+    </bean>
+
+
+    <!--                                    -->
+    <!--      Running Actions REST API      -->
+    <!--                                    -->
+
+    <!-- abstract action web script -->
+    <bean id="abstractActionWebScript"
+          class="org.alfresco.repo.web.scripts.action.AbstractActionWebscript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="actionService" ref="ActionService"/>
+        <property name="runtimeActionService" ref="actionService"/>
+        <property name="actionTrackingService" ref="actionTrackingService" />
+    </bean>
+
+    <!-- Lists the running actions -->
+    <bean id="webscript.org.alfresco.repository.action.running-actions.get"
+          class="org.alfresco.repo.web.scripts.action.RunningActionsGet"
+          parent="abstractActionWebScript">
     </bean>
 
 </beans>

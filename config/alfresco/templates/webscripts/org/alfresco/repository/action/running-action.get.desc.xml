@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Get Running Action Details</shortname>
+  <description>
+  Returns (limited) details on a currently running actions.
+  </description>
+  <url>/api/running-action/{action_tracking_id}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

@@ -19,7 +19,6 @@
 package org.alfresco.repo.web.scripts.action;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
-import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ISO8601DateFormat;
 
@@ -67,6 +65,20 @@ public class RunningActionModelBuilder
     
     
     /**
+     * Build a model containing a single running action
+     */
+    protected Map<String,Object> buildSimpleModel(ExecutionSummary summary)
+    {
+       Map<String, Object> ram = buildModel(summary);
+       if(ram != null) {
+          Map<String, Object> model = new HashMap<String,Object>();
+          model.put(MODEL_DATA_ITEM, ram);
+          return model;
+       }
+       return null;
+    }
+    
+    /**
      * Build a model containing a list of running actions for the given
      *  list of Running Actions
      */
@@ -75,22 +87,8 @@ public class RunningActionModelBuilder
         List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
         
         for(ExecutionSummary summary : runningActions) {
-           ExecutionDetails details = actionTrackingService.getExecutionDetails(summary);
-           
-           // Only record if still running - may have finished
-           //  between getting the list and now
-           if(details != null) {
-              Map<String, Object> ram = new HashMap<String,Object>();
-              ram.put(ACTION_ID, summary.getActionId());
-              ram.put(ACTION_TYPE, summary.getActionType());
-              ram.put(ACTION_INSTANCE, summary.getExecutionInstance());
-              ram.put(ACTION_KEY, AbstractActionWebscript.getRunningId(summary));
-              
-              ram.put(ACTION_NODE_REF, details.getPersistedActionRef());
-              ram.put(ACTION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
-              ram.put(ACTION_RUNNING_ON, details.getRunningOn());
-              ram.put(ACTION_CANCEL_REQUESTED, details.isCancelRequested());
-              
+           Map<String, Object> ram = buildModel(summary);
+           if(ram != null) {
               models.add(ram);
            }
         }
@@ -99,5 +97,37 @@ public class RunningActionModelBuilder
         Map<String, Object> model = new HashMap<String,Object>();
         model.put(MODEL_DATA_LIST, models);
         return model;
+    }
+    
+    /**
+     * Build a model for a single action
+     */
+    private Map<String,Object> buildModel(ExecutionSummary summary)
+    {
+        if(summary == null) {
+           return null;
+        }
+        
+        // Get the details, if we can
+        ExecutionDetails details = actionTrackingService.getExecutionDetails(summary);
+        
+        // Only record if still running - may have finished
+        //  between getting the list and now
+        if(details != null) {
+           Map<String, Object> ram = new HashMap<String,Object>();
+           ram.put(ACTION_ID, summary.getActionId());
+           ram.put(ACTION_TYPE, summary.getActionType());
+           ram.put(ACTION_INSTANCE, summary.getExecutionInstance());
+           ram.put(ACTION_KEY, AbstractActionWebscript.getRunningId(summary));
+           
+           ram.put(ACTION_NODE_REF, details.getPersistedActionRef());
+           ram.put(ACTION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
+           ram.put(ACTION_RUNNING_ON, details.getRunningOn());
+           ram.put(ACTION_CANCEL_REQUESTED, details.isCancelRequested());
+           
+           return ram;
+        }
+        
+        return null;
     }
 }

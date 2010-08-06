@@ -19,6 +19,7 @@
 package org.alfresco.repo.web.scripts.action;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.alfresco.repo.action.ActionTrackingServiceImpl;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -30,6 +31,7 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
 
 /**
  * @author Nick Burch
@@ -112,7 +114,13 @@ public abstract class AbstractActionWebscript extends DeclarativeWebScript
        
        private static ExecutionSummary getSummaryFromKey(String key)
        {
-          return ActionTrackingServiceImpl.buildExecutionSummary(key);
+          try {
+             // Try to have the key turned into a summary for us
+             return ActionTrackingServiceImpl.buildExecutionSummary(key);
+          } catch(NoSuchElementException e) {
+             // Wrong format
+             return null;
+          }
        }
     }
 }

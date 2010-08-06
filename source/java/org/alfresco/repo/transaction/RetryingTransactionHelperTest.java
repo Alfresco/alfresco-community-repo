@@ -27,7 +27,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -42,9 +41,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.PostgreSQLDialect;
+import org.hibernate.dialect.MySQLInnoDBDialect;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -60,6 +61,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class RetryingTransactionHelperTest extends TestCase
 {
+    private static Log logger = LogFactory.getLog("org.alfresco.repo.transaction.RetryingTransactionHelperTest");
+    
     private static final QName PROP_CHECK_VALUE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "check_value");
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -375,20 +378,18 @@ public class RetryingTransactionHelperTest extends TestCase
      * Checks nesting of two transactions with <code>requiresNew == true</code>,
      * but where the two transactions get involved in a concurrency struggle.
      * 
-     * Note: skip test for PostgreSQL and MS SQL Server
+     * Note: skip test for non-MySQL
      */
-    public void testNestedWithoutPropogationConcurrentUntilFailureNotPostgreSQLOrMSSQL() throws InterruptedException
+    public void testNestedWithoutPropogationConcurrentUntilFailureMySQL() throws InterruptedException
     {
         final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
         txnHelperForTest.setMaxRetries(1);
         
-        if ((dialect instanceof PostgreSQLDialect) || (dialect instanceof AlfrescoSQLServerDialect))
+        if (! (dialect instanceof MySQLInnoDBDialect))
         {
-            // NOOP
-            // skip test for PostgreSQL and MS SQL Server to avoid hang if concurrently "nested" (in terms of Spring) since the initial transaction does not complete
+            // NOOP - skip test for non-MySQL DB dialects to avoid hang if concurrently "nested" (in terms of Spring) since the initial transaction does not complete
             // see testConcurrencyRetryingNoFailure instead
-            // Note: PostgreSQL does not support lock timeout
-            // Note: MS SQL Server does not support lock wait timeout by default (will wait forever) unless it is overridden on each connection ("set lock_timout")
+            logger.warn("NOTE: Skipping testNestedWithoutPropogationConcurrentUntilFailureMySQLOnly for dialect: "+dialect);
         }
         else
         {

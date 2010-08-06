@@ -53,6 +53,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -487,6 +488,31 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(stateFilteredResult.length() > 1);
     }
     
+    public void testWorkflowInstanceDelete() throws Exception
+    {
+        //Start workflow as USER1 and assign task to USER2.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        startTask = workflowService.endTask(startTask.getId(), null);
+
+        WorkflowInstance adhocInstance = startTask.getPath().getInstance();
+
+        Response response = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 204);
+        assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
+        
+        assertNull(workflowService.getWorkflowById(adhocInstance.getId()));
+    }
+
     @Override
     protected void setUp() throws Exception
     {

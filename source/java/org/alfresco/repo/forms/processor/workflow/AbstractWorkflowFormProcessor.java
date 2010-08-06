@@ -136,6 +136,7 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         fields.add("bpm:context");
         fields.add("sys:node-uuid");
         fields.add("bpm:hiddenTransitions");
+        fields.add("bpm:reassignable");
         fields.add("cm:creator");
         fields.add("cm:modifier");
         fields.add("bpm:packageActionGroup");

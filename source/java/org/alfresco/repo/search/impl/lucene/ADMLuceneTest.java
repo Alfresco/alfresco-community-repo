@@ -3748,7 +3748,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASSOCTYPEQNAME:\"sys:children\"", null);
-        assertEquals(4, results.length());
+        assertEquals(5, results.length());
         results.close();
 
         // Type search tests

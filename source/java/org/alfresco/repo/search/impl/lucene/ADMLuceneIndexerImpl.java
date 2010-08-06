@@ -727,7 +727,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         // not a root node
         {
             xdoc.add(new Field("QNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-            xdoc.add(new Field("ASSOCTYPEQNAME", qNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+            xdoc.add(new Field("ASSOCTYPEQNAME", assocTypeQNameBuffer.toString(), Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
             // xdoc.add(new Field("PARENT", parentBuffer.toString(), true, true,
             // true));
 

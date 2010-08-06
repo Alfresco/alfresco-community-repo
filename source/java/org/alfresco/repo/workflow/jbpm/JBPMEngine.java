@@ -783,6 +783,28 @@ public class JBPMEngine extends BPMEngine
     @SuppressWarnings("unchecked")
     public List<WorkflowInstance> getActiveWorkflows(final String workflowDefinitionId)
     {
+        return getWorkflowsInternal(workflowDefinitionId, true);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getCompletedWorkflows(java.lang.String)
+     */    
+    public List<WorkflowInstance> getCompletedWorkflows(final String workflowDefinitionId)
+    {
+        return getWorkflowsInternal(workflowDefinitionId, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#getWorkflows(java.lang.String)
+     */
+    public List<WorkflowInstance> getWorkflows(final String workflowDefinitionId)
+    {
+        return getWorkflowsInternal(workflowDefinitionId, null);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<WorkflowInstance> getWorkflowsInternal(final String workflowDefinitionId, final Boolean active)
+    {
         try
         {
             return (List<WorkflowInstance>) jbpmTemplate.execute(new JbpmCallback()
@@ -794,7 +816,7 @@ public class JBPMEngine extends BPMEngine
                     List<WorkflowInstance> workflowInstances = new ArrayList<WorkflowInstance>(processInstances.size());
                     for (ProcessInstance processInstance : processInstances)
                     {
-                        if (!processInstance.hasEnded())
+                        if ((active == null) || (!active && processInstance.hasEnded()) || (active && !processInstance.hasEnded()))
                         {
                             WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
                             workflowInstances.add(workflowInstance);

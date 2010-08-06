@@ -194,13 +194,31 @@ public interface WorkflowService
     public WorkflowPath startWorkflowFromTemplate(NodeRef templateDefinition);
     
     /**
-     * Gets all "in-flight" workflow instances of the specified Workflow Definition
+     * Gets all "in-flight" active workflow instances of the specified Workflow Definition
      * 
      * @param workflowDefinitionId  the workflow definition id
      * @return  the list of "in-flight" workflow instances
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId);
+
+    /**
+     * Gets all "in-flight" completed workflow instances of the specified Workflow Definition
+     * 
+     * @param workflowDefinitionId  the workflow definition id
+     * @return  the list of "in-flight" workflow instances
+     */
+    @Auditable(parameters = {"workflowDefinitionId"})
+    public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId);
+    
+    /**
+     * Gets all "in-flight" workflow instances (both active and completed) of the specified Workflow Definition
+     * 
+     * @param workflowDefinitionId  the workflow definition id     
+     * @return  the list of "in-flight" workflow instances
+     */
+    @Auditable(parameters = {"workflowDefinitionId"})
+    public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
 
     /**
      * Gets a specific workflow instances

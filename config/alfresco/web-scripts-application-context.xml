@@ -925,4 +925,11 @@
           parent="abstractActionWebScript">
     </bean>
 
+    <!-- Lists the running replication actions -->
+    <bean id="webscript.org.alfresco.repository.action.running-replication-actions.get"
+          class="org.alfresco.repo.web.scripts.action.RunningReplicationActionsGet"
+          parent="abstractActionWebScript">
+        <property name="replicationService" ref="ReplicationService" />
+    </bean>
+
 </beans>

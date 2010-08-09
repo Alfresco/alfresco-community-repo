@@ -24,6 +24,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.replication.ReplicationDefinitionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -58,7 +59,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
 {
     private static final String URL_RUNNING_ACTION = "api/running-action/";
     private static final String URL_RUNNING_ACTIONS = "api/running-actions";
-    private static final String URL_RUNNING_REPLICATION_ACTIONS = "api/running-replication-actions/";
+    private static final String URL_RUNNING_REPLICATION_ACTIONS = "api/running-replication-actions";
     
     private static final String JSON = "application/json";
     
@@ -121,7 +122,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         JSONObject jsonRD = (JSONObject)results.get(0);
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt, jsonRD.get("startedAt"));
@@ -161,7 +162,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         jsonRD = (JSONObject)results.get(0);
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt, jsonRD.get("startedAt"));
@@ -263,7 +264,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         jsonRD = (JSONObject)results.get(0);
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt, jsonRD.get("startedAt"));
@@ -288,7 +289,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         jsonRD = (JSONObject)results.get(0);
         assertNotNull(jsonRD);
         assertEquals(id2, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance2, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt2, jsonRD.get("startedAt"));
@@ -367,6 +368,222 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
     }
     
     
+    public void testRunningReplicationActionsGet() throws Exception
+    {
+       Response response;
+       
+       
+       // Not allowed if you're not an admin
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+      
+       // If nothing running, you don't get anything back
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       String jsonStr = response.getContentAsString();
+       JSONObject json = new JSONObject(jsonStr);
+       JSONArray results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(0, results.length());
+
+       
+       // Add a running action, it should show up
+       ReplicationDefinition rd = replicationService.createReplicationDefinition("Test1", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       actionTrackingService.recordActionExecuting(rd);
+       String id = rd.getId();
+       String instance = Integer.toString( ((ActionImpl)rd).getExecutionInstance() );
+       String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate()); 
+       
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(1, results.length());
+       
+       JSONObject jsonRD = (JSONObject)results.get(0);
+       assertNotNull(jsonRD);
+       assertEquals(id, jsonRD.get("actionId"));
+       assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
+       assertEquals(instance, jsonRD.get("actionInstance"));
+       assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
+       assertEquals(startedAt, jsonRD.get("startedAt"));
+       assertEquals(false, jsonRD.getBoolean("cancelRequested"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor=" +
+             id + "=" + instance, jsonRD.get("details"));
+       
+       
+       // Ensure we didn't get any unexpected data back,
+       //  only the keys we should have done
+       JSONArray keys = jsonRD.names();
+       for(int i=0; i<keys.length(); i++) {
+          String key = keys.getString(0);
+          if(key.equals("actionId") || key.equals("actionType") ||
+              key.equals("actionInstance") || key.equals("actionNodeRef") ||
+              key.equals("startedAt") || key.equals("cancelRequested") ||
+              key.equals("details")) {
+             // All good
+          } else {
+             fail("Unexpected key '"+key+"' found in json, raw json is\n" + jsonStr);
+          }
+       }
+       
+       
+       // Change the status to pending cancel, and re-check
+       actionTrackingService.requestActionCancellation(rd);
+       
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(1, results.length());
+       
+       jsonRD = (JSONObject)results.get(0);
+       assertNotNull(jsonRD);
+       assertEquals(id, jsonRD.get("actionId"));
+       assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
+       assertEquals(instance, jsonRD.get("actionInstance"));
+       assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
+       assertEquals(startedAt, jsonRD.get("startedAt"));
+       assertEquals(true, jsonRD.getBoolean("cancelRequested"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor=" +
+             id + "=" + instance, jsonRD.get("details"));
+       
+      
+       // Add a 2nd and 3rd
+       rd = replicationService.createReplicationDefinition("Test2", "2nd Testing");
+       replicationService.saveReplicationDefinition(rd);
+       actionTrackingService.recordActionExecuting(rd);
+       String id2 = rd.getId();
+       String instance2 = Integer.toString( ((ActionImpl)rd).getExecutionInstance() );
+       String startedAt2 = ISO8601DateFormat.format(rd.getExecutionStartDate()); 
+       
+       rd = replicationService.createReplicationDefinition("AnotherTest", "3rd Testing");
+       replicationService.saveReplicationDefinition(rd);
+       actionTrackingService.recordActionExecuting(rd);
+       String id3 = rd.getId();
+
+       
+       // Check we got all 3
+       boolean has1 = false;
+       boolean has2 = false;
+       boolean has3 = false;
+
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(3, results.length());
+       
+       for(int i=0; i<3; i++) {
+          jsonRD = (JSONObject)results.get(i);
+          if(jsonRD.get("actionId").equals(id)) {
+             has1 = true;
+          }
+          if(jsonRD.get("actionId").equals(id2)) {
+             has2 = true;
+          }
+          if(jsonRD.get("actionId").equals(id3)) {
+             has3 = true;
+          }
+       }
+       assertTrue(has1);
+       assertTrue(has2);
+       assertTrue(has3);
+       
+       
+       // Remove one, check it goes
+       actionTrackingService.recordActionComplete(rd);
+       has1 = false;
+       has2 = false;
+       has3 = false;
+       
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(2, results.length());
+       
+       for(int i=0; i<2; i++) {
+          jsonRD = (JSONObject)results.get(i);
+          if(jsonRD.get("actionId").equals(id)) {
+             has1 = true;
+          }
+          if(jsonRD.get("actionId").equals(id2)) {
+             has2 = true;
+          }
+          if(jsonRD.get("actionId").equals(id3)) {
+             has3 = true;
+          }
+       }
+       assertTrue(has1);
+       assertTrue(has2);
+       assertFalse(has3);
+
+       
+       // Check we correctly filter by name
+       rd = replicationService.loadReplicationDefinition("Test1");
+       
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS + "?name=Test1"), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(1, results.length());
+       
+       jsonRD = (JSONObject)results.get(0);
+       assertNotNull(jsonRD);
+       assertEquals(id, jsonRD.get("actionId"));
+       assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
+       assertEquals(instance, jsonRD.get("actionInstance"));
+       assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
+       assertEquals(startedAt, jsonRD.get("startedAt"));
+       assertEquals(true, jsonRD.getBoolean("cancelRequested"));
+       assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor=" +
+             id + "=" + instance, jsonRD.get("details"));
+       
+
+       // Check we correctly filter by type
+       ActionImpl alt1 = new ActionImpl(null, "12345", "MadeUp1");
+       ActionImpl alt2 = new ActionImpl(null, "54321", "MadeUp2");
+       actionTrackingService.recordActionExecuting(alt1);
+       actionTrackingService.recordActionExecuting(alt2);
+       String startAtAlt2 = ISO8601DateFormat.format( alt2.getExecutionStartDate() );
+       String instanceAlt2 = Integer.toString( alt2.getExecutionInstance() );
+       
+       // 2 replication actions
+       response = sendRequest(new GetRequest(URL_RUNNING_REPLICATION_ACTIONS), 200);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       jsonStr = response.getContentAsString();
+       json = new JSONObject(jsonStr);
+       results = json.getJSONArray("data");
+       assertNotNull(results);
+       assertEquals(2, results.length());
+    }
+    
+    
     public void testRunningActionGet() throws Exception
     {
         Response response;
@@ -406,7 +623,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         JSONObject jsonRD = new JSONObject(jsonStr);
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt, jsonRD.get("startedAt"));
@@ -448,7 +665,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         jsonRD = new JSONObject(jsonStr);
         assertNotNull(jsonRD);
         assertEquals(id2, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance2, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt2, jsonRD.get("startedAt"));
@@ -465,7 +682,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         jsonRD = new JSONObject(jsonStr);
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
-        assertEquals("replicationActionExecutor", jsonRD.get("actionType"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
         assertEquals(instance, jsonRD.get("actionInstance"));
         assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
         assertEquals(startedAt, jsonRD.get("startedAt"));

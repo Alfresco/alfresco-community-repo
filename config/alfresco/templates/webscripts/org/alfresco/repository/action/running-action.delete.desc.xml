@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Cancel a Running Action</shortname>
+  <description>Requests the cancellation of a currently running action.</description>
+  <url>/api/running-action/{action_tracking_id}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>

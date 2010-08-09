@@ -473,6 +473,54 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         assertEquals("/" + URL_RUNNING_ACTION + key1, jsonRD.get("details"));
     }
     
+    public void testRunningActionCancel() throws Exception 
+    {
+       Response response;
+       
+       
+       // Not allowed if you're not an admin
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + "MadeUp"), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + "MadeUp"), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+      
+       // If not found, you get a 404
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + "MadeUp"), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+
+       
+       // Create one
+       ReplicationDefinition rd = replicationService.createReplicationDefinition("Test1", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       actionTrackingService.recordActionExecuting(rd);
+       String id = rd.getId();
+       String instance = Integer.toString( ((ActionImpl)rd).getExecutionInstance() );
+       String key = "replicationActionExecutor=" + id + "=" + instance;
+       
+       assertEquals(false, actionTrackingService.isCancellationRequested(rd));
+
+       
+       // Request it to cancel
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key), Status.STATUS_GONE);
+       assertEquals(Status.STATUS_GONE, response.getStatus());
+       
+       
+       // Check it was cancelled
+       assertEquals(true, actionTrackingService.isCancellationRequested(rd));
+       
+       
+       // Request again - no change
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key), Status.STATUS_GONE);
+       assertEquals(Status.STATUS_GONE, response.getStatus());
+       
+       assertEquals(true, actionTrackingService.isCancellationRequested(rd));
+    }
+    
     
     @Override
     protected void setUp() throws Exception

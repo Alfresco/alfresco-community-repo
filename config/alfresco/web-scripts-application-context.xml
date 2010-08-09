@@ -913,6 +913,12 @@
           parent="abstractActionWebScript">
     </bean>
 
+    <!-- Cancels a running action -->
+    <bean id="webscript.org.alfresco.repository.action.running-action.delete"
+          class="org.alfresco.repo.web.scripts.action.RunningActionDelete"
+          parent="abstractActionWebScript">
+    </bean>
+
     <!-- Lists the running actions -->
     <bean id="webscript.org.alfresco.repository.action.running-actions.get"
           class="org.alfresco.repo.web.scripts.action.RunningActionsGet"

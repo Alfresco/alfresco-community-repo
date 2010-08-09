@@ -16,7 +16,7 @@ function main()
    // convert the JSONArray object into a native JavaScript array
    var jsonItems = json.get("items"),
       numItems = jsonItems.length(),
-      item, result, resultObj;
+      item, result;
    
    for (count = 0; count < numItems; count++)
    {
@@ -34,6 +34,10 @@ function main()
             else if (result.isSubType("cm:authorityContainer"))
             {
                result = createGroupResult(result);
+            }
+            else
+            {
+               result = createNodeResult(result);
             }
             
             results.push(

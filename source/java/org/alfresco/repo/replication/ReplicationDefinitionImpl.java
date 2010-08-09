@@ -40,6 +40,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
     private static final long serialVersionUID = 3183721054220388564L;
 
+    public static final String EXECUTOR_NAME = "replicationActionExecutor";
     public static final String REPLICATION_DEFINITION_NAME = "replicationActionName";
     public static final String REPLICATION_DEFINITION_TARGET = "replicationTarget";
     public static final String REPLICATION_DEFINITION_PAYLOAD = "replicationPayload";
@@ -68,7 +69,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
     public ReplicationDefinitionImpl(String id, String replicationName, String description)
     {
-        super(null, id, "replicationActionExecutor");
+        super(null, id, EXECUTOR_NAME);
         setReplicationQName(QName.createQName(null, replicationName));
         setDescription(description);
     }

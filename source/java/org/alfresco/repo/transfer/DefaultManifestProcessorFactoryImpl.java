@@ -69,6 +69,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         RepoTertiaryManifestProcessorImpl tertiaryProcessor = new RepoTertiaryManifestProcessorImpl(receiver, transferId);
         tertiaryProcessor.setNodeService(nodeService);
         tertiaryProcessor.setAlienProcessor(getAlienProcessor());
+        tertiaryProcessor.setNodeResolver(nodeResolver);
         processors.add(tertiaryProcessor);
         
         return processors;

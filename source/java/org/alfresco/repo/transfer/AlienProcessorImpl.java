@@ -148,7 +148,7 @@ public class AlienProcessorImpl implements AlienProcessor
 
     public void beforeDeleteAlien(NodeRef deletedNodeRef)
     {
-    log.debug("on delete node - need to check for transferred node");
+        log.debug("before delete node - need to check for alien invaders");
         
         List<String>stuff = (List<String>)nodeService.getProperty(deletedNodeRef, TransferModel.PROP_INVADED_BY);
         
@@ -272,12 +272,18 @@ public class AlienProcessorImpl implements AlienProcessor
         return nodeService.hasAspect(nodeRef, TransferModel.ASPECT_ALIEN);
     }
 
-    public void pruneNode(NodeRef parentNodeRef, String fromRepositoryId)
+    public void pruneNode(NodeRef nodeToPrune, String fromRepositoryId)
     {
         Stack<NodeRef> nodesToPrune = new Stack<NodeRef>();
-        Stack<NodeRef> foldersToRecalculate = new Stack<NodeRef>(); 
-        nodesToPrune.add(parentNodeRef);
-                
+        nodesToPrune.add(nodeToPrune);
+        
+        ChildAssociationRef startingParent = nodeService.getPrimaryParent(nodeToPrune);
+        
+        Stack<NodeRef> foldersToRecalculate = new Stack<NodeRef>();
+        
+        /**
+         * Now go and do the pruning.        
+         */
         while(!nodesToPrune.isEmpty())
         {
             /**
@@ -297,6 +303,7 @@ public class AlienProcessorImpl implements AlienProcessor
                 List<String>invadedBy = (List<String>)getNodeService().getProperty(currentNodeRef, TransferModel.PROP_INVADED_BY);
                 if(invadedBy.contains(fromRepositoryId))
                 {
+                    // Yes we are invaded by fromRepositoryId
                     if(invadedBy.size() == 1)
                     {
                         // we are invaded by a single repository which must be fromRepositoryId
@@ -307,23 +314,24 @@ public class AlienProcessorImpl implements AlienProcessor
                     {
                         log.debug("folder has multiple invaders");
                         // multiple invasion - so it must be a folder
+                        
                         //TODO replace with a more efficient query
-                        List<ChildAssociationRef> refs = getNodeService().getChildAssocs(parentNodeRef);
+                        List<ChildAssociationRef> refs = getNodeService().getChildAssocs(currentNodeRef);
                         for(ChildAssociationRef ref : refs)
                         {
                             if(log.isDebugEnabled())
                             {
                                 log.debug("will need to check child:" + ref);
                             }
-                            nodesToPrune.push(ref.getChildRef()); 
-                            
-                            /**
-                             * This folder can't be deleted so its invaded flag needs to be re-calculated 
-                             */
-                            if(!foldersToRecalculate.contains(ref.getParentRef()))
-                            {
-                                foldersToRecalculate.push(ref.getParentRef());
-                            }
+                            nodesToPrune.push(ref.getChildRef());        
+                        }
+                        
+                        /**
+                         * Yes we might do something to the children of this node.
+                         */
+                        if(!foldersToRecalculate.contains(currentNodeRef))
+                        {
+                            foldersToRecalculate.push(currentNodeRef);
                         }
                     }
                 }
@@ -353,9 +361,9 @@ public class AlienProcessorImpl implements AlienProcessor
                                 /**
                                  * This folder can't be deleted so its invaded flag needs to be re-calculated 
                                  */
-                                if(!foldersToRecalculate.contains(ref.getParentRef()))
+                                if(!foldersToRecalculate.contains(currentNodeRef))
                                 {
-                                    foldersToRecalculate.push(ref.getParentRef());
+                                    foldersToRecalculate.push(currentNodeRef);
                                 }
                             }
                         }
@@ -379,43 +387,51 @@ public class AlienProcessorImpl implements AlienProcessor
         }
         
         /**
-         * Now ripple the "invadedBy" flag upwards.
+         * Now recalculate the "invadedBy" flag for those folders we could not delete.
          */
-        
         while(!foldersToRecalculate.isEmpty())
         {
             NodeRef folderNodeRef = foldersToRecalculate.pop();
             
             log.debug("recalculate invadedBy :" + folderNodeRef);
             
-            List<String>folderInvadedBy = (List<String>)getNodeService().getProperty(folderNodeRef, TransferModel.PROP_INVADED_BY);
-            
-            boolean stillInvaded = false;
-            //TODO need a more efficient query here
-            List<ChildAssociationRef> refs = getNodeService().getChildAssocs(folderNodeRef);
-            for(ChildAssociationRef ref : refs)
+            recalcInvasion(folderNodeRef, fromRepositoryId);
+        }
+        
+        /**
+         * Now ripple up the invaded flag - may be a alien retreat.
+         */
+        log.debug("now ripple upwards");
+        
+        ChildAssociationRef ripple = startingParent;
+        while(ripple != null)
+        {
+            if(log.isDebugEnabled())
             {
-                NodeRef childNode = ref.getChildRef();
-                List<String>childInvadedBy = (List<String>)getNodeService().getProperty(childNode, TransferModel.PROP_INVADED_BY);
-                
-                if(childInvadedBy.contains(fromRepositoryId))
+                log.debug("Checking parent:" + ripple);
+            }
+            
+            if(nodeService.hasAspect(ripple.getParentRef(), TransferModel.ASPECT_ALIEN))
+            {
+                if(recalcInvasion(ripple.getParentRef(), fromRepositoryId))
                 {
-                    log.debug("folder is still invaded");
-                    stillInvaded = true;
-                    break;
+                    log.debug("parent is still invaded");
+                    ripple = null;   
+                }
+                else
+                {
+                    log.debug("parent is no longer invaded");
+                    ripple = nodeService.getPrimaryParent(ripple.getParentRef());            
                 }
             }
-            
-            if(!stillInvaded)
+            else
             {
-                List<String> newInvadedBy = new ArrayList<String>(folderInvadedBy);
-                folderInvadedBy.remove(fromRepositoryId);
-                getNodeService().setProperty(folderNodeRef, TransferModel.PROP_INVADED_BY, (Serializable)newInvadedBy);
-            }
+                ripple = null;
+            } 
         }
+        
         log.debug("pruneNode: end");        
     }
-    
     
     /**
      * Is this node invaded ?
@@ -436,9 +452,9 @@ public class AlienProcessorImpl implements AlienProcessor
     }
     
     /**
-     * Mark the specified node as an alien node, invadedby the invader.
-     * @param newAlien
-     * @param invader
+     * Mark the specified node as an alien node, invaded by the specified invader.
+     * @param newAlien node that has been invaded.
+     * @param invader the repository id of the invading repo.
      */
     private void setAlien(NodeRef newAlien, String invader)
     {
@@ -448,23 +464,70 @@ public class AlienProcessorImpl implements AlienProcessor
         
         if(invadedBy == null)
         {
-            nodeService.setProperty(newAlien, TransferModel.PROP_ALIEN, Boolean.TRUE);
             invadedBy = new ArrayList<String>(1);
         }
-        invadedBy.add(invader);
+        
+        if(!invadedBy.contains(invader))
+        {
+            invadedBy.add(invader);
+        }
         
         /**
          * Set the invaded by property
          */
-        nodeService.setProperty(newAlien, TransferModel.PROP_INVADED_BY, (Serializable) invadedBy);
-        
-//        /**
-//         * Experiment with a residual property
-//         */ 
-//        nodeService.setProperty(newAlien, QName.createQName(TransferModel.TRANSFER_MODEL_1_0_URI, 
-//                "invader" + invader), Boolean.TRUE);
-  
+        nodeService.setProperty(newAlien, TransferModel.PROP_INVADED_BY, (Serializable) invadedBy);  
     }
+    
+    /**
+     * Recalculate the whether this node is invaded by the specified repository
+     * @param folderNodeRef the node to re-calculate
+     * @param fromRepositoryId the repository who is transferring.
+     * 
+     * @return true - still invaded, false, no longer invaded
+     */
+    private boolean recalcInvasion(NodeRef folderNodeRef, String fromRepositoryId)
+    {
+        List<String>folderInvadedBy = (List<String>)nodeService.getProperty(folderNodeRef, TransferModel.PROP_INVADED_BY);
+             
+        boolean stillInvaded = false;
+        
+        //TODO need a more efficient query here
+        List<ChildAssociationRef> refs = nodeService.getChildAssocs(folderNodeRef);
+        for(ChildAssociationRef ref : refs)
+        {
+            NodeRef childNode = ref.getChildRef();
+            List<String>childInvadedBy = (List<String>)getNodeService().getProperty(childNode, TransferModel.PROP_INVADED_BY);
+            
+            if(childInvadedBy != null && childInvadedBy.contains(fromRepositoryId))
+            {
+                log.debug("folder is still invaded");
+                stillInvaded = true;
+                break;
+            }
+        }
+        
+        if(!stillInvaded)
+        {
+            log.debug("folder is no longer invaded by this repo:" + folderNodeRef);
+            folderInvadedBy.remove(fromRepositoryId);
+            if(folderInvadedBy.size() > 0)
+            {
+                if(log.isDebugEnabled())
+                {
+                    log.debug("still invaded by:" + folderInvadedBy);
+                }
+                getNodeService().setProperty(folderNodeRef, TransferModel.PROP_INVADED_BY, (Serializable)folderInvadedBy);
+            }
+            else
+            {
+                log.debug("no longer alien:" + folderNodeRef);
+                getNodeService().removeAspect(folderNodeRef, TransferModel.ASPECT_ALIEN);
+            }
+        }
+        
+        return stillInvaded;
+    }
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;

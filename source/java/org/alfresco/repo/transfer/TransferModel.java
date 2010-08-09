@@ -45,7 +45,7 @@ public interface TransferModel
      */
     static final QName ASPECT_ALIEN = QName.createQName(TRANSFER_MODEL_1_0_URI, "alien");
     static final QName PROP_INVADED_BY = QName.createQName(TRANSFER_MODEL_1_0_URI, "invadedBy");
-    static final QName PROP_ALIEN = QName.createQName(TRANSFER_MODEL_1_0_URI, "alien");
+//    static final QName PROP_ALIEN = QName.createQName(TRANSFER_MODEL_1_0_URI, "alien");
 
     /*
      * Type : Transfer Group

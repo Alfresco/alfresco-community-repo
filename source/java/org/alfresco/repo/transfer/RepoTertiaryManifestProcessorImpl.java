@@ -19,23 +19,16 @@
 
 package org.alfresco.repo.transfer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
-import org.alfresco.repo.transfer.manifest.TransferManifestNodeHelper;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,6 +46,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
 {
     private NodeService nodeService;
     private AlienProcessor alienProcessor;
+    CorrespondingNodeResolver nodeResolver;
     
     private static final Log log = LogFactory.getLog(RepoTertiaryManifestProcessorImpl.class);
 
@@ -83,38 +77,48 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
 
     protected void processNode(TransferManifestNormalNode node)
     {
-        NodeRef nodeRef = node.getNodeRef();
-        log.debug("processNode : " + nodeRef);
         
-        if(isSync)
+        if (log.isDebugEnabled())
         {
-            
-            List<ChildAssociationRef> expectedChildren = node.getChildAssocs();
-            
-            List<NodeRef> expectedChildNodeRefs = new ArrayList<NodeRef>();
-            
-            for(ChildAssociationRef ref : expectedChildren)
-            {
-                if(log.isDebugEnabled())
-                {
-                    log.debug("expecting child" + ref);
-                }
-                expectedChildNodeRefs.add(ref.getChildRef());
-            }
-            
+            log.debug("Processing node with incoming noderef of " + node.getNodeRef());
+        }
+        logProgress("Processing incoming node: " + node.getNodeRef() + " --  Source path = " + node.getParentPath() + "/" + node.getPrimaryParentAssoc().getQName());
 
-            // TODO Do we need to worry about path based nodes ? Assuming no at the moment.
+
+        /**
+         * This processor only does processes sync requests.
+         */
+        if(isSync)
+        {  
+            ChildAssociationRef primaryParentAssoc = node.getPrimaryParentAssoc();
+        
+            CorrespondingNodeResolver.ResolvedParentChildPair resolvedNodes = nodeResolver.resolveCorrespondingNode(node
+                .getNodeRef(), primaryParentAssoc, node.getParentPath());    
+        
+            NodeRef nodeRef = resolvedNodes.resolvedChild;
+                               
             if(nodeService.exists(nodeRef))
             {
-                log.debug("destination node exists");
+                log.debug("destination node exists - check the children");
                 
-                /**
-                 * yes this node exists in the destination.
-                 */
+                //TODO Use more efficient query here.
+                List<ChildAssociationRef> expectedChildren = node.getChildAssocs();
+                
+                List<NodeRef> expectedChildNodeRefs = new ArrayList<NodeRef>();
+                
+                for(ChildAssociationRef ref : expectedChildren)
+                {
+                    if(log.isDebugEnabled())
+                    {
+                        log.debug("expecting child node" + ref);
+                    }
+                    expectedChildNodeRefs.add(ref.getChildRef());
+                }
+                
                 List<ChildAssociationRef> actualChildren = nodeService.getChildAssocs(nodeRef);
 
                 /**
-                 * For each destination child association
+                 * For each actual child association
                  */
                 for(ChildAssociationRef child : actualChildren)
                 {
@@ -131,45 +135,55 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                         {
                             /**
                              * An unexpected child - if this node has been transferred then
-                             * it needs to be deleted.  
+                             * it may need to be deleted.  
                              *  
-                             * another repository then we have to prune the alien children 
+                             * If from another repository then we have to prune the alien children 
                              * rather than deleting it.
                              */
-                            log.debug("an unexpected child node:" + child);
                             if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_TRANSFERRED))
                             {
+                                log.debug("an unexpected transferred child node:" + child);
                                 String fromRepositoryId = (String)nodeService.getProperty(childNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
                                 
                                 // Yes this is a transferred node.  When syncing we only delete nodes that are "from" 
                                 // the system that is transferring to this repo.
                                 if(fromRepositoryId != null &&  manifestRepositoryId != null)
                                 {
-                                    if(manifestRepositoryId.equalsIgnoreCase(fromRepositoryId))
+                                    if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_ALIEN))
                                     {
-                                        // Yes the manifest repository Id and the from repository Id match.
-                                        if(nodeService.hasAspect(childNodeRef, TransferModel.ASPECT_ALIEN))
+                                         /**
+                                         * This node can't be deleted since it contains alien content
+                                         * it needs to be "pruned" of the transferring repo's content instead.
+                                         */
+                                        log.debug("node to be deleted contains alien content so needs to be pruned." + childNodeRef);
+                                        alienProcessor.pruneNode(childNodeRef, fromRepositoryId);
+                                    }
+                                    else
+                                    {
+                                        // Node 
+                                        log.debug("node not alien");
+                                        if(manifestRepositoryId.equalsIgnoreCase(fromRepositoryId))
                                         {
-                                            /**
-                                             * This node can't be deleted since it contains alien content
-                                             * it needs to be "pruned" of the transferring repo's content instead.
-                                             */
-                                            log.debug("node to be deleted contains alien content so needs to be pruned." + childNodeRef);
-                                            alienProcessor.pruneNode(childNodeRef, fromRepositoryId);
-                                            //pruneNode(childNodeRef, fromRepositoryId);
-                                        }
-                                        else
-                                        {
-                                            // Destination node needs to be deleted.                              
+                                            // Yes the manifest repository Id and the from repository Id match.
+                                            // Destination node if from the transferring repo and needs to be deleted.                              
                                             nodeService.deleteNode(childNodeRef);
                                             log.debug("deleted node:" + childNodeRef);
                                         }
                                     }
-                                }    
+                                }
+                                else
+                                {
+                                    log.debug("node does not have a transferred aspect");
+                                }
                             }
                         }
                     }
                 }
+            }
+        
+            else
+            {
+                log.debug("not sync mode - do nothing");
             }
         }
     }
@@ -202,161 +216,6 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
         this.nodeService = nodeService;
     }
     
-//    /**
-//     * Prune out the non aliens from the specified repository
-//     * 
-//     * Need to walk the tree downwards pruning any aliens for this repository
-//     * 
-//     * Also any folders remaining need to have their invaded by field rippled upwards since they may no 
-//     * longer be invaded by the specified repository if all the alien children have been pruned.  
-//     * 
-//     * @param nodeRef the node to prune
-//     * @param fromRepositoryId the repository id of the nodes to prune.
-//     */
-//    private void pruneNode(NodeRef parentNodeRef, String fromRepositoryId)
-//    { 
-//        Stack<NodeRef> nodesToPrune = new Stack<NodeRef>();
-//        Stack<NodeRef> foldersToRecalculate = new Stack<NodeRef>(); 
-//        nodesToPrune.add(parentNodeRef);
-//                
-//        while(!nodesToPrune.isEmpty())
-//        {
-//            /**
-//             *  for all alien children
-//             * 
-//             *  if from the repo with no (other) aliens - delete
-//             *  
-//             *  if from the repo with multiple alien invasions - leave alone but process children
-//             */
-//            NodeRef currentNodeRef = nodesToPrune.pop();
-//            
-//            log.debug("pruneNode:" + currentNodeRef);
-//            
-//            if(nodeService.hasAspect(currentNodeRef, TransferModel.ASPECT_ALIEN))
-//            {
-//                // Yes this is an alien node
-//                List<String>invadedBy = (List<String>)nodeService.getProperty(currentNodeRef, TransferModel.PROP_INVADED_BY);
-//                if(invadedBy.contains(fromRepositoryId))
-//                {
-//                    if(invadedBy.size() == 1)
-//                    {
-//                        // we are invaded by a single repository which must be fromRepositoryId
-//                        log.debug("pruned - deleted node:" + currentNodeRef);
-//                        nodeService.deleteNode(currentNodeRef);
-//                    }
-//                    else
-//                    {
-//                        log.debug("folder has multiple invaders");
-//                        // multiple invasion - so it must be a folder
-//                        //TODO replace with a more efficient query
-//                        List<ChildAssociationRef> refs = nodeService.getChildAssocs(parentNodeRef);
-//                        for(ChildAssociationRef ref : refs)
-//                        {
-//                            if(log.isDebugEnabled())
-//                            {
-//                                log.debug("will need to check child:" + ref);
-//                            }
-//                            nodesToPrune.push(ref.getChildRef()); 
-//                            
-//                            /**
-//                             * This folder can't be deleted so its invaded flag needs to be re-calculated 
-//                             */
-//                            if(!foldersToRecalculate.contains(ref.getParentRef()))
-//                            {
-//                                foldersToRecalculate.push(ref.getParentRef());
-//                            }
-//                        }
-//                    }
-//                }
-//                else
-//                {
-//                    /**
-//                     * Current node has been invaded by another repository  
-//                     *
-//                     * Need to check fromRepositoryId since its children may need to be pruned
-//                     */
-//                    nodeService.hasAspect(currentNodeRef, TransferModel.ASPECT_TRANSFERRED);
-//                    {
-//                        String fromRepoId = (String)nodeService.getProperty(currentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
-//                        if(fromRepositoryId.equalsIgnoreCase(fromRepoId))
-//                        {
-//                            log.debug("folder is from the transferring repository");
-//                            // invaded from somewhere else - so it must be a folder
-//                            List<ChildAssociationRef> refs = nodeService.getChildAssocs(currentNodeRef);
-//                            for(ChildAssociationRef ref : refs)
-//                            {
-//                                if(log.isDebugEnabled())
-//                                {
-//                                    log.debug("will need to check child:" + ref);
-//                                }
-//                                nodesToPrune.push(ref.getChildRef()); 
-//                                
-//                                /**
-//                                 * This folder can't be deleted so its invaded flag needs to be re-calculated 
-//                                 */
-//                                if(!foldersToRecalculate.contains(ref.getParentRef()))
-//                                {
-//                                    foldersToRecalculate.push(ref.getParentRef());
-//                                }
-//                            }
-//                        }
-//                    }        
-//                }
-//            }
-//            else
-//            {
-//                // Current node does not contain alien nodes so it can be deleted.
-//                nodeService.hasAspect(currentNodeRef, TransferModel.ASPECT_TRANSFERRED);
-//                {
-//                    String fromRepoId = (String)nodeService.getProperty(currentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
-//                    if(fromRepositoryId.equalsIgnoreCase(fromRepoId))
-//                    {
-//                        // we are invaded by a single repository
-//                        log.debug("pruned - deleted non alien node:" + currentNodeRef);
-//                        nodeService.deleteNode(currentNodeRef);
-//                    }
-//                }
-//            }
-//        }
-//        
-//        /**
-//         * Now ripple the "invadedBy" flag upwards.
-//         */
-//        
-//        while(!foldersToRecalculate.isEmpty())
-//        {
-//            NodeRef folderNodeRef = foldersToRecalculate.pop();
-//            
-//            log.debug("recalculate invadedBy :" + folderNodeRef);
-//            
-//            List<String>folderInvadedBy = (List<String>)nodeService.getProperty(folderNodeRef, TransferModel.PROP_INVADED_BY);
-//            
-//            boolean stillInvaded = false;
-//            //TODO need a more efficient query here
-//            List<ChildAssociationRef> refs = nodeService.getChildAssocs(folderNodeRef);
-//            for(ChildAssociationRef ref : refs)
-//            {
-//                NodeRef childNode = ref.getChildRef();
-//                List<String>childInvadedBy = (List<String>)nodeService.getProperty(childNode, TransferModel.PROP_INVADED_BY);
-//                
-//                if(childInvadedBy.contains(fromRepositoryId))
-//                {
-//                    log.debug("folder is still invaded");
-//                    stillInvaded = true;
-//                    break;
-//                }
-//            }
-//            
-//            if(!stillInvaded)
-//            {
-//                List<String> newInvadedBy = new ArrayList<String>(folderInvadedBy);
-//                folderInvadedBy.remove(fromRepositoryId);
-//                nodeService.setProperty(folderNodeRef, TransferModel.PROP_INVADED_BY, (Serializable)newInvadedBy);
-//            }
-//        }
-//        log.debug("pruneNode: end");
-//    }
-
     public void setAlienProcessor(AlienProcessor alienProcessor)
     {
         this.alienProcessor = alienProcessor;
@@ -365,5 +224,14 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     public AlienProcessor getAlienProcessor()
     {
         return alienProcessor;
+    }
+    
+    /**
+     * @param nodeResolver
+     *            the nodeResolver to set
+     */
+    public void setNodeResolver(CorrespondingNodeResolver nodeResolver)
+    {
+        this.nodeResolver = nodeResolver;
     }
 }

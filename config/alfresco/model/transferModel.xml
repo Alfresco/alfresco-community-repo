@@ -208,14 +208,8 @@
         
         <aspect name="trx:alien">
             <title>Alien Node</title>
-            <description>Nodes with this aspect are either alien nodes or have been invaded by alien content</description>
+            <description>Nodes with this aspect are either alien nodes or have been invaded by other alien nodes</description>
             <properties>
-                <property name="trx:alien">
-                    <title>Alien Content</title>
-                    <type>d:boolean</type>
-                    <mandatory enforced="false">false</mandatory>
-                    <default>false</default>
-                </property>
                 <property name="trx:invadedBy">
                     <title>The repositories that have invaded this node</title>
                     <type>d:text</type>

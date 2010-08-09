@@ -136,63 +136,35 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // If we can find a corresponding node then we'll delete it.
         // If we can't find a corresponding node then we'll do nothing.
         logProgress("Processing incoming deleted node: " + node.getNodeRef());
-        if (!nodeService.exists(node.getNodeRef()))
+        
+        ChildAssociationRef origPrimaryParent = node.getPrimaryParentAssoc();
+        NodeRef origNodeRef = new NodeRef(origPrimaryParent.getParentRef().getStoreRef(), node.getNodeRef().getId());
+
+        CorrespondingNodeResolver.ResolvedParentChildPair resolvedNodes = nodeResolver.resolveCorrespondingNode(
+                origNodeRef, origPrimaryParent, node.getParentPath());
+
+        // Does a corresponding node exist in this repo?
+        if (resolvedNodes.resolvedChild != null)
         {
-            // It's not in our archive store. Check to see if we can find it in
-            // its original store...
-            ChildAssociationRef origPrimaryParent = node.getPrimaryParentAssoc();
-            NodeRef origNodeRef = new NodeRef(origPrimaryParent.getParentRef().getStoreRef(), node.getNodeRef().getId());
-
-            CorrespondingNodeResolver.ResolvedParentChildPair resolvedNodes = nodeResolver.resolveCorrespondingNode(
-                    origNodeRef, origPrimaryParent, node.getParentPath());
-
-            // Does a corresponding node exist in this repo?
-            if (resolvedNodes.resolvedChild != null)
+            NodeRef exNode = resolvedNodes.resolvedChild;
+            // Yes, it does. Delete it.
+            if (log.isDebugEnabled())
             {
-                NodeRef exNode = resolvedNodes.resolvedChild;
-                // Yes, it does. Delete it.
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Incoming deleted noderef " + node.getNodeRef()
-                            + " has been resolved to existing local noderef " + exNode
-                            + "  - deleting");
-                }
-
-                //TODO : do we have a business rule that only the "from" repo can delete a node?  Yes we do.
-                if(alienProcessor.isAlien(exNode))
-                {
-                    logProgress("Pruning local node: " + exNode);
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Node to be deleted is alien prune rather than delete: " + exNode);
-                    }
-                    alienProcessor.pruneNode(exNode, header.getRepositoryId());
-                }
-                else
-                {
-                    // TODO Need to restrict to the "from" repo Id.
-                    // Not alien - delete it.
-                    logProgress("Deleting local node: " + exNode);
-                    nodeService.deleteNode(exNode);
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Deleted local node: " + exNode);
-                    }
-                }
+                log.debug("Incoming deleted noderef " + node.getNodeRef()
+                        + " has been resolved to existing local noderef " + exNode
+                        + "  - deleting");
             }
-            else
-            {
-                logProgress("Unable to find corresponding node for incoming deleted node: " + node.getNodeRef());
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Incoming deleted noderef has no corresponding local noderef: " + node.getNodeRef()
-                            + "  - ignoring");
-                }
-            }
+                
+            delete(exNode);
         }
         else
         {
-            logProgress("Incoming deleted node is already in the local archive store - ignoring: " + node.getNodeRef());
+            logProgress("Unable to find corresponding node for incoming deleted node: " + node.getNodeRef());
+            if (log.isDebugEnabled())
+            {
+                log.debug("Incoming deleted noderef has no corresponding local noderef: " + node.getNodeRef()
+                            + "  - ignoring");
+            }
         }
     }
 
@@ -373,6 +345,51 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // we've found earlier?
         checkOrphans(newNode.getChildRef());
     }
+    
+    /**
+     * Delete this node
+     * @param exNode
+     */
+    protected void delete(NodeRef nodeToDelete)
+    {
+        if(alienProcessor.isAlien(nodeToDelete))
+        {
+            logProgress("Pruning local node: " + nodeToDelete);
+            if (log.isDebugEnabled())
+            {
+                log.debug("Node to be deleted is alien prune rather than delete: " + nodeToDelete);
+            }
+            alienProcessor.pruneNode(nodeToDelete, header.getRepositoryId());
+        }
+        else
+        {
+            /**
+             * Check that if the destination is "from" the transferring repo if it is "from" another repo then ignore
+             */
+            if(nodeService.hasAspect(nodeToDelete, TransferModel.ASPECT_TRANSFERRED))
+            {
+                String fromRepository = (String)nodeService.getProperty(nodeToDelete, TransferModel.PROP_FROM_REPOSITORY_ID);
+                String transferringRepo = header.getRepositoryId();
+                
+                if(fromRepository != null && transferringRepo != null)
+                {
+                    if(!fromRepository.equalsIgnoreCase(transferringRepo))
+                    {
+                        logProgress("Not deleting local node (not from the transferring repository): " + nodeToDelete);
+                        return;
+                    }
+                }
+            }
+            
+            // Not alien or from another repo - delete it.
+            logProgress("Deleting local node: " + nodeToDelete);
+            nodeService.deleteNode(nodeToDelete);
+            if (log.isDebugEnabled())
+            {
+                log.debug("Deleted local node: " + nodeToDelete);
+            }
+        }
+    }
 
     private void checkOrphans(NodeRef parentNode)
     {
@@ -410,7 +427,26 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             ChildAssociationRef primaryParentAssoc)
     {
         NodeRef nodeToUpdate = resolvedNodes.resolvedChild;
+        
 
+        /**
+         * Check that if the destination is "from" the transferring repo if it is "from" another repo then ignore
+         */
+        if(nodeService.hasAspect(nodeToUpdate, TransferModel.ASPECT_TRANSFERRED))
+        {
+            String fromRepository = (String)nodeService.getProperty(nodeToUpdate, TransferModel.PROP_FROM_REPOSITORY_ID);
+            String transferringRepo = header.getRepositoryId();
+            
+            if(fromRepository != null && transferringRepo != null)
+            {
+                if(!fromRepository.equalsIgnoreCase(transferringRepo))
+                {
+                    logProgress("Not updating local node (not from the transferring repository): " + node.getNodeRef());
+                    return;
+                }
+            }
+        }
+        
         logProgress("Updating local node: " + node.getNodeRef());
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
@@ -425,7 +461,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             parentAssocType = tempLocation.getTypeQName();
             parentAssocName = tempLocation.getQName();
             storeOrphanNode(primaryParentAssoc);
-        }
+        }        
+        
         // First of all, do we need to move the node? If any aspect of the
         // primary parent association has changed
         // then the answer is "yes"
@@ -438,9 +475,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             /**
              * Yes, the parent assoc has changed so we need to move the node
              */
-            // the parent node may no longer be an alien
-            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+            if(nodeService.hasAspect(currentParent.getParentRef(), TransferModel.ASPECT_ALIEN))
             {
+                // old parent node ref may be alien
                 alienProcessor.beforeDeleteAlien(node.getNodeRef());
             }
             

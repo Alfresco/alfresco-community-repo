@@ -372,14 +372,14 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         // Check more if we have a real principal we expect to work
 
-        env = new Hashtable<String, String>(defaultEnvironment.size());
-        env.putAll(defaultEnvironment);
-        if (env.get(Context.SECURITY_PRINCIPAL) != null)
+        String principal = defaultEnvironment.get(Context.SECURITY_PRINCIPAL);
+        if (principal != null)
         {
             // Correct principal invalid password
 
-            env = new Hashtable<String, String>(defaultEnvironment.size());
-            env.putAll(defaultEnvironment);
+            env = new Hashtable<String, String>(authenticatedEnvironment.size());
+            env.putAll(authenticatedEnvironment);
+            env.put(Context.SECURITY_PRINCIPAL, principal);
             env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
             try
             {

@@ -1496,6 +1496,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxIdA, webAppA, "A1", "A1");
         
+        // wait for submit to complete
         pollForSnapshotCount(stagingSandboxIdA, 1);
         
         assets = sbService.listChangedWebApp(authorSandboxIdA, webAppA, false);
@@ -1531,6 +1532,9 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         assertEquals(1, assetService.listAssets(authorSandboxIdB, -1, authorSandboxPathB, false).size());
         
+        assets = sbService.listChangedWebApp(authorSandboxIdB, webAppB, false);
+        assertEquals(0, assets.size());
+        
         // modify file
         final String MYFILE_MODIFIED = "This is testfile.txt modified in BBB";
         
@@ -1542,17 +1546,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assets = sbService.listChangedWebApp(authorSandboxIdB, webAppB, false);
         assertEquals(1, assets.size());
         
-        // ETHREEOH_2836
+        // ETHREEOH-2836
         assertEquals(AVMDifference.NEWER, assets.get(0).getDiffCode());
         
         // initiate submit (modified asset)
         sbService.submitWebApp(authorSandboxIdB, webAppB, "B1", "B1");
-        
-        assets = sbService.listChangedWebApp(authorSandboxIdB, webAppB, false);
-        assertEquals(1, assets.size());
-        
-        // ETHREEOH_2836
-        assertEquals(AVMDifference.NEWER, assets.get(0).getDiffCode());
         
         // wait for submit to complete
         pollForSnapshotCount(stagingSandboxIdB, 1);

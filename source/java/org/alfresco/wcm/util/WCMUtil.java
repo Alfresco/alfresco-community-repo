@@ -195,9 +195,8 @@ public class WCMUtil extends AVMUtil
          storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
       }
       final int index = storeName.indexOf(WCMUtil.STORE_SEPARATOR);
-      return (index == -1
-              ? null
-              : storeName.substring(index + WCMUtil.STORE_SEPARATOR.length()));
+      return (index == -1 ? null : unescapeStoreNameComponent(storeName.substring(index
+            + WCMUtil.STORE_SEPARATOR.length())));
    }
    
    /**
@@ -304,6 +303,104 @@ public class WCMUtil extends AVMUtil
    }
    
    /**
+    * Utility function for escaping part of a compound store name (delimited by STORE_SEPARATOR sequences). Uses ISO
+    * 9075 style encoding to escape otherwise problematic character sequences.
+    * 
+    * @param component
+    *           the component
+    * @return the escaped string
+    */
+   private static final String escapeStoreNameComponent(String component)
+   {
+      StringBuilder builder = null;
+      int length = component.length();
+      // If the component matches one of the common suffixes, encode it
+      if (component.equals(STORE_PREVIEW) || component.equals(STORE_WORKFLOW))
+      {
+         builder = new StringBuilder(length + 5);
+         appendEncoded(builder, component);
+         return builder.toString();
+      }
+
+      // Look for problematic character sequences
+      Matcher matcher = PATTERN_ILLEGAL_SEQUENCE.matcher(component);
+      int lastAppendPosition = 0;
+      while (matcher.find())
+      {
+         if (builder == null)
+         {
+            builder = new StringBuilder(length + 5);
+         }
+         if (matcher.start() != lastAppendPosition)
+         {
+            builder.append(component, lastAppendPosition, matcher.start());
+         }
+         lastAppendPosition = matcher.end();
+         appendEncoded(builder, matcher.group());
+      }
+      if (builder == null)
+      {
+         return component;
+      }
+      if (lastAppendPosition < length)
+      {
+         builder.append(component, lastAppendPosition, length);
+      }
+
+      return builder.toString();
+   }
+
+   /**
+    * Utility function for decoding from Strings produced by the above method.
+    * 
+    * @param component
+    *           the encoded component
+    * @return the decoded component
+    */
+   private static String unescapeStoreNameComponent(String component)
+   {
+      StringBuilder builder = null;
+      int length = component.length();
+      int lastAppendPosition = 0;
+      int escapeIndex;
+      while ((escapeIndex = component.indexOf("_x", lastAppendPosition)) != -1)
+      {
+         if (builder == null)
+         {
+            builder = new StringBuilder(length + 5);
+         }
+         if (escapeIndex != lastAppendPosition)
+         {
+            builder.append(component, lastAppendPosition, escapeIndex);
+         }
+         lastAppendPosition = component.indexOf('_', escapeIndex + 2);
+         builder.appendCodePoint(Integer.parseInt(component.substring(escapeIndex + 2, lastAppendPosition), 16));
+         lastAppendPosition++;
+      }
+      if (builder == null)
+      {
+         return component;
+      }
+      if (lastAppendPosition < length)
+      {
+         builder.append(component, lastAppendPosition, length);
+      }
+
+      return builder.toString();
+   }
+
+   private static final void appendEncoded(StringBuilder builder, String sequence)
+   {
+      builder.append("_x").append(Integer.toString(sequence.codePointAt(0), 16).toUpperCase()).append("_");
+      int length = sequence.length();
+      int next = sequence.offsetByCodePoints(0, 1);
+      if (next < length)
+      {
+         builder.append(sequence, next, length);
+      }
+   }
+
+   /**
     * Returns the main staging store name for the specified web project
     * 
     * @param wpStoreId   web project store id to build staging store name for
@@ -340,7 +437,7 @@ public class WCMUtil extends AVMUtil
                                                final String userName)
    {
        ParameterCheck.mandatoryString("userName", userName);
-       String fixedUserName = FileNameValidator.getValidFileName(userName);
+       String fixedUserName = escapeStoreNameComponent(userName);
        return (WCMUtil.buildStagingStoreName(storeId) + WCMUtil.STORE_SEPARATOR + 
                fixedUserName);
    }
@@ -753,6 +850,9 @@ public class WCMUtil extends AVMUtil
    
    // Component Separator.
    protected static final String STORE_SEPARATOR = "--";
+
+   /** Matches character sequences that must be escaped in a compound store name. */   
+   protected static final Pattern PATTERN_ILLEGAL_SEQUENCE = Pattern.compile(FileNameValidator.FILENAME_ILLEGAL_REGEX + "|_x|" + STORE_SEPARATOR);
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private

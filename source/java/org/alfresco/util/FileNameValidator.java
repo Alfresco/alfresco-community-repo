@@ -29,12 +29,12 @@ public class FileNameValidator
     /**
      * The bad file name pattern.
      */
-    private static final Pattern FILENAME_ILLEGAL_PATTERN = Pattern.compile(".*[\"\\*\\\\><\\?/:\\|]+.*");
-    private static final Pattern FILENAME_ILLEGAL_PATTERN_REPLACE = Pattern.compile("[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]");
+    public static final String FILENAME_ILLEGAL_REGEX = "[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]";
+    private static final Pattern FILENAME_ILLEGAL_PATTERN_REPLACE = Pattern.compile(FILENAME_ILLEGAL_REGEX);
     
     public static boolean isValid(String name)
     {
-        return !FILENAME_ILLEGAL_PATTERN.matcher(name).matches();
+        return !FILENAME_ILLEGAL_PATTERN_REPLACE.matcher(name).find();
     }
     
     /**

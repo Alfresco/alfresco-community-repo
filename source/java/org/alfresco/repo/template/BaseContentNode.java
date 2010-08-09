@@ -404,25 +404,29 @@ public abstract class BaseContentNode implements TemplateContent
     {
         try
         {
-            List<FileInfo> paths = this.services.getFileFolderService().getNamePath(null, getNodeRef());
-            
-            // build up the webdav url
-            StringBuilder path = new StringBuilder(128);
-            path.append("/webdav");
-            
-            // build up the path skipping the first path as it is the root folder
-            for (int i=1; i<paths.size(); i++)
+            if (getIsContainer() || getIsDocument())
             {
-                path.append("/")
-                    .append(URLEncoder.encode(paths.get(i).getName()));
+                List<FileInfo> paths = this.services.getFileFolderService().getNamePath(null, getNodeRef());
+                
+                // build up the webdav url
+                StringBuilder path = new StringBuilder(128);
+                path.append("/webdav");
+                
+                // build up the path skipping the first path as it is the root folder
+                for (int i=1; i<paths.size(); i++)
+                {
+                    path.append("/")
+                        .append(URLEncoder.encode(paths.get(i).getName()));
+                }
+                return path.toString();
             }
-            return path.toString();
         }
         catch (FileNotFoundException nodeErr)
         {
             // cannot build path if file no longer exists
             return "";
         }
+        return "";
     }
     
     /**

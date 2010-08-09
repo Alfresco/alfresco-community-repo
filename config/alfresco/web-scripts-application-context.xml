@@ -907,6 +907,13 @@
         <property name="actionTrackingService" ref="actionTrackingService" />
     </bean>
 
+    <!-- abstract start execution action web script -->
+    <bean id="abstractExecuteActionWebScript"
+          class="org.alfresco.repo.web.scripts.action.AbstractExecuteActionWebscript"
+          parent="abstractActionWebScript" abstract="true">
+        <property name="transactionService" ref="TransactionService" />
+    </bean>
+
     <!-- Gets the details of a running action -->
     <bean id="webscript.org.alfresco.repository.action.running-action.get"
           class="org.alfresco.repo.web.scripts.action.RunningActionGet"
@@ -929,6 +936,19 @@
     <bean id="webscript.org.alfresco.repository.action.running-replication-actions.get"
           class="org.alfresco.repo.web.scripts.action.RunningReplicationActionsGet"
           parent="abstractActionWebScript">
+        <property name="replicationService" ref="ReplicationService" />
+    </bean>
+
+    <!-- Starts a new action running -->
+    <bean id="webscript.org.alfresco.repository.action.running-actions.post"
+          class="org.alfresco.repo.web.scripts.action.RunningActionsPost"
+          parent="abstractExecuteActionWebScript">
+    </bean>
+
+    <!-- Starts a new replication action running -->
+    <bean id="webscript.org.alfresco.repository.action.running-replication-actions.post"
+          class="org.alfresco.repo.web.scripts.action.RunningReplicationActionsPost"
+          parent="abstractExecuteActionWebScript">
         <property name="replicationService" ref="ReplicationService" />
     </bean>
 

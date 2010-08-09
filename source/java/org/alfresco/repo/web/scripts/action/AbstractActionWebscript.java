@@ -21,9 +21,12 @@ package org.alfresco.repo.web.scripts.action;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.ActionTrackingServiceImpl;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -78,7 +81,7 @@ public abstract class AbstractActionWebscript extends DeclarativeWebScript
           WebScriptRequest req,
           Status status, Cache cache
     );
-
+    
     
     /**
      * Takes a running action ID, and returns an 
@@ -89,6 +92,25 @@ public abstract class AbstractActionWebscript extends DeclarativeWebScript
     public static ExecutionSummary getSummaryFromKey(String key)
     {
        return WrappedActionTrackingService.getSummaryFromKey(key);
+    }
+    
+    /**
+     * Returns the ExecutionSummary for the given action if it
+     *  is currently executing, or null if it isn't
+     */
+    public static ExecutionSummary getSummaryFromAction(Action action)
+    {
+       // Is it running?
+       if(action.getExecutionStatus() == ActionStatus.Running) {
+          return WrappedActionTrackingService.buildExecutionSummary(action);
+       }
+       // Has it been given a execution id?
+       // (eg has already finished, but this one was run)
+       if( ((ActionImpl)action).getExecutionInstance() != -1 ) {
+          return WrappedActionTrackingService.buildExecutionSummary(action);
+       }
+       // Not running, and hasn't run, we can't help
+       return null;
     }
     
     /**
@@ -110,6 +132,11 @@ public abstract class AbstractActionWebscript extends DeclarativeWebScript
        private static String getRunningId(ExecutionSummary summary)
        {
           return ActionTrackingServiceImpl.generateCacheKey(summary);
+       }
+       
+       protected static ExecutionSummary buildExecutionSummary(Action action)
+       {
+          return ActionTrackingServiceImpl.buildExecutionSummary(action);
        }
        
        private static ExecutionSummary getSummaryFromKey(String key)

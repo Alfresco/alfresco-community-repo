@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Start a new Replication Action Executing</shortname>
+  <description>
+   Starts the execution of a replication action, and returns its running details
+  </description>
+  <url>/api/running-replication-actions?name={name?}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <!-- Transactions handled by the parent class -->
+  <transaction>none</transaction>
+</webscript>

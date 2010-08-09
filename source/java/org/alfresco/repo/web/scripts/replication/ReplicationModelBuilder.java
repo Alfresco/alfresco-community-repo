@@ -259,12 +259,17 @@ public class ReplicationModelBuilder
         }
         
         // Use the details of the running copy
+        // TODO Update this following pending actions changes
         if(details.isCancelRequested()) {
            model.put(DEFINITION_STATUS, "CancelRequested");
         } else {
            model.put(DEFINITION_STATUS, "Running");
         }
-        model.put(DEFINITION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
+        if(details.getStartedAt() != null) {
+           model.put(DEFINITION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
+        } else {
+           model.put(DEFINITION_STARTED_AT, null);
+        }
         model.put(DEFINITION_ENDED_AT, null);
         model.put(DEFINITION_RUNNING_ACTION_ID, 
               AbstractActionWebscript.getRunningId(details.getExecutionSummary()));

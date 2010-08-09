@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Start a new Action Executing</shortname>
+  <description>
+   Starts the execution of a new action, and returns its running details
+  </description>
+  <url>/api/running-actions?nodeRef={nodeRef?}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <!-- Transactions handled by the parent class -->
+  <transaction>none</transaction>
+</webscript>

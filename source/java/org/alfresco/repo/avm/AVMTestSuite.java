@@ -77,11 +77,12 @@ public class AVMTestSuite extends TestSuite
         suite.addTestSuite(AVMServicePermissionsTest.class);
         suite.addTestSuite(AVMServiceIndexTest.class);
         suite.addTestSuite(AVMServicePerfTest.class);
-        suite.addTestSuite(AVMCrawlTestP.class);
-        suite.addTestSuite(AVMScaleTestP.class);
-        suite.addTestSuite(AVMStressTestP.class);
         
-        //suite.addTestSuite(PurgeTestP.class);
+        //suite.addTestSuite(AVMCrawlTestP.class);
+        suite.addTestSuite(AVMScaleTestP.class);
+        //suite.addTestSuite(AVMStressTestP.class);
+        
+        //suite.addTestSuite(PurgeTestP.class); // see above
         
         suite.addTestSuite(SimultaneousLoadTest.class);
         suite.addTestSuite(AVMDiffPerformanceTest.class);

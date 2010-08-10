@@ -98,6 +98,10 @@ public class ExecutionDetails implements Serializable {
        return runningOn;
     }
 
+    /**
+     * Returns when this action started executing, or
+     *  null if it is still pending
+     */
     public Date getStartedAt() {
        return startedAt;
     }

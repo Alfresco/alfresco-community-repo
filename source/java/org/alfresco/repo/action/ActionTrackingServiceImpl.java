@@ -113,7 +113,12 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
    }
    public void recordActionPending(ActionImpl action)
    {
+      // Set the status
       action.setExecutionStatus(ActionStatus.Pending);
+      
+      // Have it put into the cache, so we can tell it
+      //  is waiting to be run
+      placeActionInCache(action);
    }
    
    public void recordActionComplete(Action action) 
@@ -152,10 +157,47 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
          logger.debug("Action " + action + " has begun exection");
       }
       
+      // Grab what status it was before
+      ActionStatus previousStatus = action.getExecutionStatus();
+      
       // Mark the action as starting
       action.setExecutionStartDate(new Date());
       action.setExecutionStatus(ActionStatus.Running);
-      
+    
+      // If it's a synchronous execution, put it into the cache
+      if(previousStatus != ActionStatus.Pending)
+      {
+         placeActionInCache(action);
+      }
+      else
+      {
+         // If it's async, update the existing cache entry
+         String key = generateCacheKey(action); 
+         ExecutionDetails details = executingActionsCache.get(key);
+         
+         // Check it's really there, warn + fix if not
+         if(details == null) {
+            logger.warn(
+                  "Went to mark the start of execution of " +
+                  action + " but it wasn't in the running actions cache! " +
+                  "Your running actions cache is probably too small"
+            );
+         }
+         
+         // Update and save into the cache
+         details = buildExecutionDetails(action);
+         executingActionsCache.put(key, details);
+      }
+   }
+   
+   /**
+    * For an action that needs to go into the cache
+    *  (async action that is pending, or sync action
+    *  that is running), assign an execution instance
+    *  and put into the cache
+    */
+   private void placeActionInCache(ActionImpl action)
+   {
       // Assign it a (unique) execution ID
       // (Keep checking to see if the key is used as we
       //  increase nextExecutionId until it isn't)

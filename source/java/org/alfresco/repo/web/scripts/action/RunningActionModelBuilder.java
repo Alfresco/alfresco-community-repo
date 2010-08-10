@@ -121,9 +121,14 @@ public class RunningActionModelBuilder
            ram.put(ACTION_KEY, AbstractActionWebscript.getRunningId(summary));
            
            ram.put(ACTION_NODE_REF, details.getPersistedActionRef());
-           ram.put(ACTION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
            ram.put(ACTION_RUNNING_ON, details.getRunningOn());
            ram.put(ACTION_CANCEL_REQUESTED, details.isCancelRequested());
+           
+           if(details.getStartedAt() != null) {
+              ram.put(ACTION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
+           } else {
+              ram.put(ACTION_STARTED_AT, null);
+           }
            
            return ram;
         }

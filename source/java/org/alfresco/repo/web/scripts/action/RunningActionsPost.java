@@ -59,10 +59,14 @@ public class RunningActionsPost extends AbstractExecuteActionWebscript
          }
       }
       
-      // Load the specified action
+      // Does it exist in the repo?
       NodeRef actionNodeRef = new NodeRef(nodeRef);
+      if(! nodeService.exists(actionNodeRef)) {
+         return null;
+      }
+      
+      // Load the specified action
       Action action = runtimeActionService.createAction(actionNodeRef);
-
       return action;
    }
 }

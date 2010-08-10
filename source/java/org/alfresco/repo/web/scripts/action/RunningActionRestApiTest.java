@@ -171,7 +171,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
               id + "=" + instance, jsonRD.get("details"));
         
        
-        // Add a 2nd and 3rd
+        // Add a 2nd and 3rd - one pending, one running
         rd = replicationService.createReplicationDefinition("Test2", "2nd Testing");
         replicationService.saveReplicationDefinition(rd);
         actionTrackingService.recordActionExecuting(rd);
@@ -181,7 +181,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         
         rd = replicationService.createReplicationDefinition("AnotherTest", "3rd Testing");
         replicationService.saveReplicationDefinition(rd);
-        actionTrackingService.recordActionExecuting(rd);
+        actionTrackingService.recordActionPending(rd);
         String id3 = rd.getId();
 
         
@@ -464,7 +464,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
              id + "=" + instance, jsonRD.get("details"));
        
       
-       // Add a 2nd and 3rd
+       // Add a 2nd and 3rd, one running and one pending
        rd = replicationService.createReplicationDefinition("Test2", "2nd Testing");
        replicationService.saveReplicationDefinition(rd);
        actionTrackingService.recordActionExecuting(rd);
@@ -474,7 +474,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        
        rd = replicationService.createReplicationDefinition("AnotherTest", "3rd Testing");
        replicationService.saveReplicationDefinition(rd);
-       actionTrackingService.recordActionExecuting(rd);
+       actionTrackingService.recordActionPending(rd);
        String id3 = rd.getId();
 
        
@@ -688,6 +688,29 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         assertEquals(startedAt, jsonRD.get("startedAt"));
         assertEquals(false, jsonRD.getBoolean("cancelRequested"));
         assertEquals("/" + URL_RUNNING_ACTION + key1, jsonRD.get("details"));
+        
+        
+        // Add one that is pending - has everything except start date
+        rd = replicationService.createReplicationDefinition("Test3", "Testing");
+        replicationService.saveReplicationDefinition(rd);
+        actionTrackingService.recordActionPending(rd);
+        String id3 = rd.getId();
+        String instance3 = Integer.toString( ((ActionImpl)rd).getExecutionInstance() );
+        String key3 = "replicationActionExecutor=" + id3 + "=" + instance3; 
+        
+        response = sendRequest(new GetRequest(URL_RUNNING_ACTION + key3), Status.STATUS_OK);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        jsonRD = new JSONObject(jsonStr);
+        assertNotNull(jsonRD);
+        assertEquals(id3, jsonRD.get("actionId"));
+        assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
+        assertEquals(instance3, jsonRD.get("actionInstance"));
+        assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
+        assertEquals(JSONObject.NULL, jsonRD.get("startedAt"));
+        assertEquals(false, jsonRD.getBoolean("cancelRequested"));
+        assertEquals("/" + URL_RUNNING_ACTION + key3, jsonRD.get("details"));
     }
     
     public void testRunningActionCancel() throws Exception 
@@ -736,13 +759,40 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_GONE, response.getStatus());
        
        assertEquals(true, actionTrackingService.isCancellationRequested(rd));
+       
+       
+       // You can ask a pending action to cancel
+       // At this time, it will remain in the queue though
+       rd = replicationService.createReplicationDefinition("Test2", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       actionTrackingService.recordActionPending(rd);
+       String id2 = rd.getId();
+       String instance2 = Integer.toString( ((ActionImpl)rd).getExecutionInstance() );
+       String key2 = "replicationActionExecutor=" + id2 + "=" + instance2;
+       
+       
+       // Should be in the cache, but not not running and not cancelled
+       assertEquals(false, actionTrackingService.isCancellationRequested(rd));
+       assertEquals(null, rd.getExecutionStartDate());
+       
+       assertNotNull(executingActionsCache.get(key2));
+       assertFalse(executingActionsCache.get(key2).isCancelRequested());
+
+       
+       // Ask for it to be cancelled via the webscript
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key2), Status.STATUS_GONE);
+       assertEquals(Status.STATUS_GONE, response.getStatus());
+       
+       
+       // Should still be in the cache, not running but cancelled
+       assertNotNull(executingActionsCache.get(key2));
+       assertTrue(executingActionsCache.get(key2).isCancelRequested());
+       
+       assertEquals(true, actionTrackingService.isCancellationRequested(rd));
+       assertEquals(null, rd.getExecutionStartDate());
     }
     
-    /**
-     * TODO Fix this up after the changes to the action tracking
-     *  service for pending actions have been made
-     */
-    public void DISABLEDtestRunningActionsPost() throws Exception
+    public void testRunningActionsPost() throws Exception
     {
        Response response;
        
@@ -792,22 +842,25 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
        assertEquals(false, jsonRD.getBoolean("cancelRequested"));
        
-       // Wait a bit for it to be run + fail
-       // Check that it failed due to insufficient definition options
+       // Should be pending 
+       // Wait for it to fail (we didn't
+       //  specify enough options for a valid transfer)
        for(int i=0; i<50; i++) {
           txn = transactionService.getUserTransaction();
           txn.begin();
           rd = replicationService.loadReplicationDefinition("Test1");
           txn.commit();
-          
-          if(rd.getExecutionStatus() == ActionStatus.New ||
-                rd.getExecutionStatus() == ActionStatus.Pending ||
-                rd.getExecutionStatus() == ActionStatus.Running) {
+             
+          if(rd.getExecutionStatus() == ActionStatus.New) {
+             // Still pending, or maybe running
              try {
                 Thread.sleep(100);
              } catch(InterruptedException e) {}
-          } else {
+          } else if (rd.getExecutionStatus() == ActionStatus.Failed) {
+             // We're done
              break;
+          } else {
+             fail("Unexpected status in repo of " + rd.getExecutionStatus());
           }
        }
        assertEquals(ActionStatus.Failed, rd.getExecutionStatus());
@@ -817,14 +870,93 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        json = new JSONObject();
        json.put("nodeRef", "XX"+rd.getNodeRef().toString()+"ZZ");
 
-       response = sendRequest(new PostRequest(URL_RUNNING_ACTIONS, json.toString(), JSON), Status.STATUS_BAD_REQUEST);
-       assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
+       response = sendRequest(new PostRequest(URL_RUNNING_ACTIONS, json.toString(), JSON), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
     }
     
+    public void testRunningReplicationsActionsPost() throws Exception
+    {
+       Response response;
+       
+       
+       // Not allowed if you're not an admin
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
+       response = sendRequest(new PostRequest(URL_RUNNING_REPLICATION_ACTIONS, "{}", JSON), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+       AuthenticationUtil.setFullyAuthenticatedUser(USER_NORMAL);
+       response = sendRequest(new PostRequest(URL_RUNNING_REPLICATION_ACTIONS, "{}", JSON), Status.STATUS_UNAUTHORIZED);
+       assertEquals(Status.STATUS_UNAUTHORIZED, response.getStatus());
+       
+      
+       // If no noderef supplied, will get an error
+       AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+       response = sendRequest(new PostRequest(URL_RUNNING_REPLICATION_ACTIONS, "{}", JSON), Status.STATUS_BAD_REQUEST);
+       assertEquals(Status.STATUS_BAD_REQUEST, response.getStatus());
+       
+       
+       // Add a running action
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+       
+       ReplicationDefinition rd = replicationService.createReplicationDefinition("Test1", "Testing");
+       replicationService.saveReplicationDefinition(rd);
+       String id = rd.getId();
+       
+       txn.commit();
+       
+       
+       // Ask for it to be started
+       // (It should start but fail due to missing definition parts)
+       JSONObject json = new JSONObject();
+       json.put("name", "Test1");
+
+       response = sendRequest(new PostRequest(URL_RUNNING_REPLICATION_ACTIONS, json.toString(), JSON), Status.STATUS_OK);
+       assertEquals(Status.STATUS_OK, response.getStatus());
+       
+       // Check we got back some details on it
+       String jsonStr = response.getContentAsString();
+       JSONObject jsonRD = new JSONObject(jsonStr);
+       assertNotNull(jsonRD);
+       
+       assertEquals(id, jsonRD.get("actionId"));
+       assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
+       assertEquals(rd.getNodeRef().toString(), jsonRD.get("actionNodeRef"));
+       assertEquals(false, jsonRD.getBoolean("cancelRequested"));
+       
+       // Should be pending 
+       // Wait for it to fail (we didn't
+       //  specify enough options for a valid transfer)
+       for(int i=0; i<50; i++) {
+          txn = transactionService.getUserTransaction();
+          txn.begin();
+          rd = replicationService.loadReplicationDefinition("Test1");
+          txn.commit();
+             
+          if(rd.getExecutionStatus() == ActionStatus.New) {
+             // Still pending, or maybe running
+             try {
+                Thread.sleep(100);
+             } catch(InterruptedException e) {}
+          } else if (rd.getExecutionStatus() == ActionStatus.Failed) {
+             // We're done
+             break;
+          } else {
+             fail("Unexpected status in repo of " + rd.getExecutionStatus());
+          }
+       }
+       assertEquals(ActionStatus.Failed, rd.getExecutionStatus());
+       
+       
+       // Ensure you can't start with an invalid name
+       json = new JSONObject();
+       json.put("name", "MadeUpName");
+
+       response = sendRequest(new PostRequest(URL_RUNNING_REPLICATION_ACTIONS, json.toString(), JSON), Status.STATUS_NOT_FOUND);
+       assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
+    }
     
-    // TODO - Running Replication Actions POST unit tests
-    
-    
+        
     @Override
     protected void setUp() throws Exception
     {

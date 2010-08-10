@@ -20,12 +20,8 @@ package org.alfresco.repo.web.scripts.action;
 
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ExecutionSummary;
-import org.alfresco.service.transaction.TransactionService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -38,64 +34,34 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public abstract class AbstractExecuteActionWebscript extends AbstractActionWebscript
 {
-    protected TransactionService transactionService;
-    
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-    
     protected Map<String, Object> buildModel(
           RunningActionModelBuilder modelBuilder,
           WebScriptRequest req,
           Status status, Cache cache)
     {
         try { 
-           // Start our transaction
-           UserTransaction txn = transactionService.getUserTransaction();
-           txn.begin();
-          
            // Have the action to run be identified
            Action action = identifyAction(req, status, cache);
            if(action == null) {
-              txn.rollback();
               throw new WebScriptException(
                     Status.STATUS_NOT_FOUND, 
-                    "No Running Action found with the supplied details"
+                    "No Runnable Action found with the supplied details"
               );
            }
            
            // Ask for it to be run in the background
+           // It will be available to execute once the webscript finishes
            actionService.executeAction(
                  action, null, 
                  false, true
            );
    
-           // Have it begin
-           txn.commit();
-           
-           // TODO Update this after changes to the 
-           //  action tracking service for pending actions
-           //  have been made
-           
-           // Wait up to 5 seconds for it to kick off
-           long beganWaitingAt = System.currentTimeMillis();
-           while(beganWaitingAt + 5000 > System.currentTimeMillis() &&
-                 action.getExecutionStatus() == ActionStatus.Pending)
-           {
-              try {
-                 Thread.sleep(50);
-              } catch(InterruptedException e) {}
-           }
-           
            // Return the details if we can
-System.err.println(action);           
-System.err.println(action.getExecutionStatus());           
            ExecutionSummary summary = getSummaryFromAction(action);
            if(summary == null) {
               throw new WebScriptException(
                     Status.STATUS_EXPECTATION_FAILED, 
-                    "Action failed to start in the required timeframe"
+                    "Action failed to be added to the pending queue"
               );
            }
            

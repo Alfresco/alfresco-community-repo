@@ -6,6 +6,5 @@
   <url>/api/running-actions?nodeRef={nodeRef?}</url>
   <format default="json"/>
   <authentication>admin</authentication>
-  <!-- Transactions handled by the parent class -->
-  <transaction>none</transaction>
+  <transaction>required</transaction>
 </webscript>

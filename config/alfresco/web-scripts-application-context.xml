@@ -922,7 +922,6 @@
     <bean id="abstractExecuteActionWebScript"
           class="org.alfresco.repo.web.scripts.action.AbstractExecuteActionWebscript"
           parent="abstractActionWebScript" abstract="true">
-        <property name="transactionService" ref="TransactionService" />
     </bean>
 
     <!-- Gets the details of a running action -->

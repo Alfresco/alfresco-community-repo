@@ -6,6 +6,5 @@
   <url>/api/running-replication-actions?name={name?}</url>
   <format default="json"/>
   <authentication>admin</authentication>
-  <!-- Transactions handled by the parent class -->
-  <transaction>none</transaction>
+  <transaction>required</transaction>
 </webscript>

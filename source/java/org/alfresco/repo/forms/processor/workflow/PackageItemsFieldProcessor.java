@@ -53,7 +53,7 @@ public class PackageItemsFieldProcessor extends TransientFieldProcessor
     protected FieldDefinition makeTransientFieldDefinition()
     {
         AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(
-                    KEY, "cm:content", Direction.TARGET);
+                    KEY, KEY, Direction.TARGET);
         fieldDef.setLabel(I18NUtil.getMessage(MSG_LABEL));
         fieldDef.setDescription(I18NUtil.getMessage(MSG_DESCRIPTION));
         fieldDef.setProtectedField(false);

@@ -170,7 +170,7 @@ public class LuceneQueryEngine implements QueryEngine
                 {
                     LuceneSearcher luceneSearcher = (LuceneSearcher) searchService;
                     ClosingIndexSearcher searcher = luceneSearcher.getClosingIndexSearcher();
-                    LuceneQueryBuilderContext luceneContext = new LuceneQueryBuilderContext(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher.getDefaultMLSearchAnalysisMode(),
+                    LuceneQueryBuilderContext luceneContext = new LuceneQueryBuilderContextImpl(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher.getDefaultMLSearchAnalysisMode(),
                             searcher.getIndexReader());
 
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;

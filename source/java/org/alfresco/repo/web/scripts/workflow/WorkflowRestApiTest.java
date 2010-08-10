@@ -25,12 +25,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -64,16 +69,22 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 {
     private final static String USER1 = "Bob" + GUID.generate();
     private final static String USER2 = "Jane" + GUID.generate();
-    private final static String USER3 = "Nick" + GUID.generate();
+    private final static String USER3 = "Nick" + GUID.generate();    
     private static final String URL_TASKS = "api/task-instances";
     private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     private static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
     private static final String URL_WORKFLOW_INSTANCES_FOR_DEFINITION = "api/workflow-definitions/{0}/workflow-instances";
+    private static final String URL_WORKFLOW_INSTANCES_FOR_NODE = "api/node/{0}/{1}/{2}/workflow-instances";
+    
+    private static final String COMPANY_HOME = "/app:company_home";
+    private static final String TEST_CONTENT = "TestContent";
     
     private TestPersonManager personManager;
     private WorkflowService workflowService;
+    private NodeService nodeService;
     private NamespaceService namespaceService;
     private NodeRef packageRef;
+    private NodeRef contentNodeRef;
     
     public void testTaskInstancesGet() throws Exception
     {
@@ -473,7 +484,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONArray priorityFilteredResult = priorityFilteredJson.getJSONArray("data");
         assertNotNull(priorityFilteredResult);
         
-        assertTrue(priorityFilteredResult.length() > 1);
+        assertTrue(priorityFilteredResult.length() > 0);
         
         // filter by state
         String stateFilter = "?state=active";
@@ -486,6 +497,48 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(stateFilteredResult);
         
         assertTrue(stateFilteredResult.length() > 1);
+    }
+    
+    public void testWorkflowInstancesForNodeGet() throws Exception
+    {
+        //Start workflow as USER1 and assign task to USER2.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        
+        nodeService.addChild(packageRef, contentNodeRef, 
+                WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                QName.createValidLocalName((String)nodeService.getProperty(
+                        contentNodeRef, ContentModel.PROP_NAME))));
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);        
+        
+        String url = MessageFormat.format(URL_WORKFLOW_INSTANCES_FOR_NODE, contentNodeRef.getStoreRef().getProtocol(), contentNodeRef.getStoreRef().getIdentifier(), contentNodeRef.getId());
+        Response response = sendRequest(new GetRequest(url), 200);
+        
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONArray result = json.getJSONArray("data");
+        assertNotNull(result);
+        
+        assertTrue(result.length() > 0);
+        
+        workflowService.cancelWorkflow(adhocPath.getInstance().getId());
+        
+        Response afterCancelResponse = sendRequest(new GetRequest(url), 200);
+        
+        assertEquals(Status.STATUS_OK, afterCancelResponse.getStatus());
+        String afterCancelJsonStr = afterCancelResponse.getContentAsString();
+        JSONObject afterCancelJson = new JSONObject(afterCancelJsonStr);
+        JSONArray afterCancelResult = afterCancelJson.getJSONArray("data");
+        assertNotNull(afterCancelResult);
+        
+        assertTrue(afterCancelResult.length() == 0);
     }
     
     public void testWorkflowInstanceDelete() throws Exception
@@ -523,7 +576,9 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         workflowService = (WorkflowService)appContext.getBean("WorkflowService");
         MutableAuthenticationService authenticationService = (MutableAuthenticationService)appContext.getBean("AuthenticationService");
         PersonService personService = (PersonService)appContext.getBean("PersonService");
-        NodeService nodeService = (NodeService)appContext.getBean("NodeService");
+        SearchService searchService = (SearchService)appContext.getBean("SearchService");
+        FileFolderService fileFolderService = (FileFolderService)appContext.getBean("FileFolderService");
+        nodeService = (NodeService)appContext.getBean("NodeService");
         personManager = new TestPersonManager(authenticationService, personService, nodeService);
         
         personManager.createPerson(USER1);
@@ -531,6 +586,15 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         personManager.createPerson(USER3);
         
         packageRef = workflowService.createPackage(null);
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        NodeRef companyHome = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                COMPANY_HOME, null, namespaceService, false).get(0);
+        
+        contentNodeRef = fileFolderService.create(companyHome, TEST_CONTENT + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     /* (non-Javadoc)

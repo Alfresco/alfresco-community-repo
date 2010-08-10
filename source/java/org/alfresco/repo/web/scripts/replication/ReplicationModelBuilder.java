@@ -257,14 +257,17 @@ public class ReplicationModelBuilder
            
            return;
         }
-        
-        // Use the details of the running copy
-        // TODO Update this following pending actions changes
+
+        // As it is running / about to run, return the
+        //  details of the running/pending version
         if(details.isCancelRequested()) {
            model.put(DEFINITION_STATUS, "CancelRequested");
+        } else if(details.getStartedAt() == null) {
+           model.put(DEFINITION_STATUS, "Pending");
         } else {
            model.put(DEFINITION_STATUS, "Running");
         }
+        
         if(details.getStartedAt() != null) {
            model.put(DEFINITION_STARTED_AT, ISO8601DateFormat.format(details.getStartedAt()));
         } else {

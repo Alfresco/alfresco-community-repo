@@ -133,6 +133,26 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         }
         
         
+        // Mark it as pending execution, and re-check
+        actionTrackingService.recordActionPending(rd);
+        response = sendRequest(new GetRequest(URL_DEFINITIONS), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        results = json.getJSONArray("data");
+        assertNotNull(results);
+        assertEquals(1, results.length());
+        
+        jsonRD = (JSONObject)results.get(0);
+        assertNotNull(jsonRD);
+        assertEquals("Test1", jsonRD.get("name"));
+        assertEquals("Pending", jsonRD.get("status"));
+        assertEquals(true, jsonRD.get("enabled"));
+        assertEquals(JSONObject.NULL, jsonRD.get("startedAt"));
+        assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
+        
+        
         // Change the status to running, and re-check
         actionTrackingService.recordActionExecuting(rd);
         String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
@@ -424,11 +444,38 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         }
         
         
+        // Mark it as pending, and check
+        actionTrackingService.recordActionPending(rd);
+        String actionId = rd.getId();
+        int instanceId = ((ActionImpl)rd).getExecutionInstance();
+        
+        response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        
+        jsonStr = response.getContentAsString();
+        json = new JSONObject(jsonStr);
+        
+        assertEquals("Test1", json.get("name"));
+        assertEquals("Testing", json.get("description"));
+        assertEquals("Pending", json.get("status"));
+        assertEquals(JSONObject.NULL, json.get("startedAt"));
+        assertEquals(JSONObject.NULL, json.get("endedAt"));
+        assertEquals(JSONObject.NULL, json.get("failureMessage"));
+        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
+              actionId + "=" + instanceId, json.get("executionDetails"));
+        assertEquals(JSONObject.NULL, json.get("transferLocalReport"));
+        assertEquals(JSONObject.NULL, json.get("transferRemoteReport"));
+        assertEquals(true, json.get("enabled"));
+        assertEquals(JSONObject.NULL, json.get("targetName"));
+        // Payload is empty
+        assertEquals(0, json.getJSONArray("payload").length());
+        
+        
         // Change the status to running, and re-check
         actionTrackingService.recordActionExecuting(rd);
-        String actionId = rd.getId();
+        assertEquals(actionId, rd.getId());
+        assertEquals(instanceId, ((ActionImpl)rd).getExecutionInstance());
         String startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
-        int instanceId = ((ActionImpl)rd).getExecutionInstance();
         
         response = sendRequest(new GetRequest(URL_DEFINITION + "Test1"), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());

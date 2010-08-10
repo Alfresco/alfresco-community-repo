@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Node Metadata Bulk Retrieval Service</shortname>
+  <description>Node Metadata Bulk Retrieval Service</description>
+  <url>/api/bulkmetadata</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>draft</lifecycle>
+</webscript>

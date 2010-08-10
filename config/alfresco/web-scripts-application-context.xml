@@ -773,7 +773,6 @@
           parent="abstractRatingWebScript">
     </bean>
     
-    
     <!--                                   -->
     <!--      Workflow Service REST API    -->
     <!--                                   -->
@@ -852,6 +851,13 @@
     <bean id="webscript.org.alfresco.repository.audit.control.post"
           class="org.alfresco.repo.web.scripts.audit.AuditControlPost"
           parent="abstractAuditWebScript">
+    </bean>
+
+    <!-- Get bulk node metadata -->
+    <bean id="webscript.org.alfresco.repository.metadata.bulkmetadata.post"
+          class="org.alfresco.repo.web.scripts.metadata.BulkMetadataGet"
+          parent="webscript">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
 
     <!--                                      -->

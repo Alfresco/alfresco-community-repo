@@ -149,7 +149,13 @@ public class TransactionServiceImplTest extends TestCase
         }
         catch (TransientDataAccessResourceException e)
         {
-            // or this
+            // or this - for MySQL (java.sql.SQLException: Connection is read-only. Queries leading to data modification are not allowed.)
+            @SuppressWarnings("unused")
+            int i = 0;
+        }
+        catch (IllegalStateException e)
+        {
+            // or this - for MS SQLServer, DB2, Oracle (via AbstractNodeDAOImpl.getCurrentTransaction)
             @SuppressWarnings("unused")
             int i = 0;
         }

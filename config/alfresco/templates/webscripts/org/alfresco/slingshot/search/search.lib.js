@@ -1,17 +1,22 @@
 /**
  * Search Component
  * 
- * Inputs:
- *   optional: site = the site to search into, null for all sites
- *   optional: container = the component the search in, null for all components in the site
- *   optional: term = search terms, should be supplied if tag is not
- *   optional: tag = search tag, should be supplied if term is not
- *   maxResults = maximum results to return
+ * Takes the following object as Input:
+ *    params
+ *    {
+ *       siteId: the site identifier to search into, null for all sites
+ *       containerId: the component the search in, null for all components in the site
+ *       term: search terms
+ *       tag: search tag
+ *       query: advanced search query json
+ *       sort: sort parameter
+ *       maxResults: maximum results to return
+ *    };
  * 
  * Outputs:
  *  items - Array of objects containing the search results
  */
-const DEFAULT_MAX_RESULTS = 100;
+const DEFAULT_MAX_RESULTS = 250;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 const QUERY_TEMPLATES = [
    {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT)"}];
@@ -499,12 +504,18 @@ function processResults(nodes, maxResults)
  * 
  * "or" is the default operator, AND and NOT are also supported - as is any other valid fts-alfresco
  * elements such as "quoted terms" and (bracket terms) and also propname:propvalue syntax.
+ * 
+ * @param params  Object containing search parameters - see API description above
  */
-function getSearchResults(term, tag, maxResults, siteId, containerId, sort)
+function getSearchResults(params)
 {
-   var nodes;
+   var nodes,
+      ftsQuery = "",
+      term = params.term,
+      tag = params.tag,
+      formData = params.query;
    
-   var ftsQuery = "";
+   // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
    {
       ftsQuery = "(" + term + ") PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\"";
@@ -514,35 +525,81 @@ function getSearchResults(term, tag, maxResults, siteId, containerId, sort)
       ftsQuery = "PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\"";
    }
    
+   // Advanced search form data search.
+   // Supplied as json in the standard Alfresco Forms data structure:
+   //    prop_<name>:value|assoc_<name>:value
+   //    name = namespace_propertyname|pseudopropertyname
+   //    value = string value - comma separated for multi-value, no escaping yet!
+   // - underscore represents colon character in name
+   // - pseudo property is one of any cm:content url property: mimetype|encoding|size
+   // - always string values - interogate DD for type data
+   if (formData !== null && formData.length !== 0)
+   {
+      var formJson = jsonUtils.toObject(formData);
+      
+      // extract form data and generate search query
+      for (var p in formJson)
+      {
+         // retrieve value and check there is someting to search for
+         // currently all values are returned as strings
+         var propValue = formJson[p];
+         if (propValue.length !== 0)
+         {
+            if (p.indexOf("prop_") === 0)
+            {
+               // found a property - is it namespace_propertyname or pseudo property format?
+               var propName = p.substr(5);
+               if (propName.indexOf("_") !== -1)
+               {
+                  // property name - convert to DD property name format
+                  propName = propName.replace("_", ":");
+                  // TODO: inspect DD type - handle boolean, number etc?
+                  ftsQuery += ' ' + propName + ':"' + propValue + '"';
+               }
+               else
+               {
+                  // pseudo cm:content property
+                  // TODO: andyh to fix query parser impl
+                  ftsQuery += ' cm:content.' + propName + ':' + propValue;
+               }
+            }
+         }
+      }
+      
+      // extract data type for this search
+      ftsQuery = 'TYPE:"' + formJson.datatype + '" AND (' + ftsQuery + ')';
+   }
+   
    if (ftsQuery.length !== 0)
    {
       // we processed the search terms, so suffix the PATH query
       var path = SITES_SPACE_QNAME_PATH;
-      if (siteId !== null && siteId.length > 0)
+      if (params.siteId !== null && params.siteId.length > 0)
       {
-         path += "cm:" + search.ISO9075Encode(siteId) + "/";
+         path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
       }
       else
       {
          path += "*/";
       }
-      if (containerId !== null && containerId.length > 0)
+      if (params.containerId !== null && params.containerId.length > 0)
       {
-         path += "cm:" + search.ISO9075Encode(containerId) + "/";
+         path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
       }
       else
       {
          path += "*/";
       }
    	
-      ftsQuery  = "PATH:\"" + path + "/*\" AND (" + ftsQuery + ") ";
-      ftsQuery += "AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+      ftsQuery  = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
+      ftsQuery += 'AND -TYPE:"cm:thumbnail"';
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name
       //  - pseudo cm:content field starting with "." such as: .size
       //  - any other directly supported search field such as: TYPE
       var sortColumns = [];
+      var sort = params.sort;
       if (sort != null && sort.length != 0)
       {
          var asc = true;
@@ -579,7 +636,7 @@ function getSearchResults(term, tag, maxResults, siteId, containerId, sort)
       var queryDef = {
          query: ftsQuery,
          language: "fts-alfresco",
-         page: {maxItems: maxResults},
+         page: {maxItems: params.maxResults},
          templates: QUERY_TEMPLATES,
          defaultField: "keywords",
          onerror: "no-results",
@@ -593,5 +650,5 @@ function getSearchResults(term, tag, maxResults, siteId, containerId, sort)
       nodes = [];
    }
    
-   return processResults(nodes, maxResults);
+   return processResults(nodes, params.maxResults);
 }

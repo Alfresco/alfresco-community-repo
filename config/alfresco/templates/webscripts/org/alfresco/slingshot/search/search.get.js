@@ -1,14 +1,18 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/search/search.lib.js">
 function main()
 {
-   var siteId = (args.site !== undefined) ? args.site : null;
-   var containerId = (args.container !== undefined) ? args.container : null;
-   var term = (args.term !== undefined) ? args.term : null;
-   var tag = (args.tag !== undefined) ? args.tag : null;
-   var sort = (args.sort !== undefined) ? args.sort : null;
-   var maxResults = (args.maxResults !== undefined) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS;
+   var params =
+   {
+      siteId: (args.site !== null) ? args.site : null,
+      containerId: (args.container !== null) ? args.container : null,
+      term: (args.term !== null) ? args.term : null,
+      tag: (args.tag !== null) ? args.tag : null,
+      query: (args.query !== null) ? args.query : null,
+      sort: (args.sort !== null) ? args.sort : null,
+      maxResults: (args.maxResults !== null) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS
+   };
    
-   model.data = getSearchResults(term, tag, maxResults, siteId, containerId, sort);
+   model.data = getSearchResults(params);
 }
 
 main();

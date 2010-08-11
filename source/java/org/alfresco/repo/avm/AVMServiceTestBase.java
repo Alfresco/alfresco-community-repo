@@ -92,7 +92,6 @@ public class AVMServiceTestBase extends TestCase
     
     public void testSetup() throws Exception
     {
-        setupBasicTree();
     }
     
     /**
@@ -289,7 +288,6 @@ public class AVMServiceTestBase extends TestCase
         throws IOException
     {
         setupBasicTree0();
-        runQueriesAgainstBasicTree("main");
     }
 
     protected void runQueriesAgainstBasicTree(String store)

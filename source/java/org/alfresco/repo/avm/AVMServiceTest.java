@@ -98,6 +98,12 @@ public class AVMServiceTest extends AVMServiceTestBase
         super.testSetup();
     }
     
+    public void testSetupAndQueriesAgainstBasicTree() throws Exception
+    {
+        setupBasicTree();
+        runQueriesAgainstBasicTree("main");
+    }
+    
     public void test_ALF_786() throws Exception
     {
         int threads= 4;

@@ -2789,11 +2789,13 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      *      A1
      *      |      |                      | 
-     *      A2     A3 (Content Node)      B9 Alien Content Node
+     *      A2     A3 (Content Node)      B9 (Alien Content Node)
      *      |
      *   A4 A5 B10 (Alien Content Node)   A6
      *   |                                |
-     *   A7 B11 (Alien Content Node)      A8 B12 B13 Alien Contact Nodes
+     *   A7 B11 (Alien Content Node)      A8 B12 B13 (Alien Content Node)
+     *                                        |
+     *                                       B14
      * </pre>
      * Test steps -
      * <ol> 
@@ -2801,9 +2803,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      *   transfer(sync)</li>
      * <li>add Alien node B9.  A1 becomes Alien.</li>
      * <li>remove alien node B9.  A1 becomes non Alien.</li>
+       <li>restore alien node B9.  A1 becomes non Alien again.</li>
      * <li>add Alien node B10. A1 and A2 become Alien</li>
      * <li>remove Alien node B10.  A1 and A2 become non Alien</li>
-     * <li>add B12 A6, A2, A1 becomes Alien</li>
+     * <li>add B12 and B14 A6, A2, A1 becomes Alien</li>
+     * <li>remove B14, B12, A6, A2, A1 remain Alien</li>
      * <li>add B13 A6, A2, A1 remains Alien</li>
      * <li>remove B13 A6, A2, A1 remains Alien</li>
      * <li>remove B12 A6, A2, A1 becomes non Alien.</li>
@@ -2813,11 +2817,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * transfer sync</li>
      * (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)</li>
      * </ol>   
-     *
-     * TODO test move and alien
-     *
-     * TODO test restore and alien
-     * 
      */
     public void testTransferInvadedByLocalAlienNodes() throws Exception
     {
@@ -2867,6 +2866,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         NodeRef B11NodeRef;
         NodeRef B12NodeRef;
         NodeRef B13NodeRef;
+        NodeRef B14NodeRef;
         
         NodeRef destNodeRef;
         
@@ -3091,11 +3091,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
             NodeRef A3destNodeRef = testNodeFactory.getMappedNodeRef(A3NodeRef);
-            
-            // Temp code
             List<String> invaders =  (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
-            logger.debug("MER WOZ ERE AFTER B9 deleted" + invaders);
-
             assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
             assertFalse("node A1 is still alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));  
             assertFalse("node A3 is alien", (Boolean)nodeService.hasAspect(A3destNodeRef, TransferModel.ASPECT_ALIEN));         
@@ -3176,20 +3172,21 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
  
         /**
           * Step 6 
-          * add B12 (child of A6) A6, A2, A1 becomes Alien
+          * add B12 (child of A6) and B14 A6, A2, A1 becomes Alien
           */
          startNewTransaction();
          try 
          {
              destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
-             ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B12"), ContentModel.TYPE_CONTENT);
+             ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B12"), ContentModel.TYPE_FOLDER);
              B12NodeRef = child.getChildRef();
              nodeService.setProperty(B12NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
-             nodeService.setProperty(B12NodeRef, ContentModel.PROP_NAME, "B12");
-         
-             ContentWriter writer = contentService.getWriter(B12NodeRef, ContentModel.PROP_CONTENT, true);
-             writer.setLocale(CONTENT_LOCALE);
-             writer.putContent(CONTENT_STRING);
+             nodeService.setProperty(B12NodeRef, ContentModel.PROP_NAME, "B12"); 
+             
+             child = nodeService.createNode(B12NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B14"), ContentModel.TYPE_CONTENT);
+             B14NodeRef = child.getChildRef();
+             nodeService.setProperty(B14NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+             nodeService.setProperty(B14NodeRef, ContentModel.PROP_NAME, "B14");  
          }
          finally
          {
@@ -3207,6 +3204,41 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
              assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
              assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
              assertTrue("node A6 is not alien", (Boolean)nodeService.hasAspect(A6destNodeRef, TransferModel.ASPECT_ALIEN));   
+             assertTrue("node B14 is not alien", (Boolean)nodeService.hasAspect(B14NodeRef, TransferModel.ASPECT_ALIEN));   
+             assertTrue("node B12 is not alien", (Boolean)nodeService.hasAspect(B12NodeRef, TransferModel.ASPECT_ALIEN));   
+         }
+          
+         finally
+         {
+             endTransaction();
+         }
+         
+        /**
+          * Step 6a.
+          * Delete B14.   B12 remains alien
+          */
+         startNewTransaction();
+         try 
+         {
+             nodeService.deleteNode(B14NodeRef);
+         }
+         finally
+         {
+             endTransaction();
+         }
+         
+         startNewTransaction();
+         try
+         {
+             // Now validate that the target node exists and has similar properties to the source
+             NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+             NodeRef A2destNodeRef = testNodeFactory.getMappedNodeRef(A2NodeRef);
+             NodeRef A6destNodeRef = testNodeFactory.getMappedNodeRef(A6NodeRef);
+                 
+             assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));         
+             assertTrue("node A2 is not alien", (Boolean)nodeService.hasAspect(A2destNodeRef, TransferModel.ASPECT_ALIEN));   
+             assertTrue("node A6 is not alien", (Boolean)nodeService.hasAspect(A6destNodeRef, TransferModel.ASPECT_ALIEN));   
+             assertTrue("node B12 is not alien", (Boolean)nodeService.hasAspect(B12NodeRef, TransferModel.ASPECT_ALIEN));   
          }
           
          finally
@@ -3490,6 +3522,341 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
               endTransaction();
           }
      }
+    
+    /**
+     * Test restore of a local node.
+     * <pre>
+     * Tree of nodes
+     *     A1   B1
+     *     |
+     *     B2
+     *     |
+     *     B3
+     * <pre>
+     * <ol>    
+     *     <li>Add B2.   A1 is alien.</li>
+     *     <li>Delete B2.  A1 not alien</li>
+     *     <li>Restore B2. A1 is alien</li>
+     *     <li>Add B3.  A1 is alien</li>
+     *     <li>Delete B2.  A1 not alien</li>
+     *     <li>Restore to B1.  B2 and B3 not alien.</li>
+     * </ol>
+     * @throws Exception
+     */
+    public void testLocalAlienRestore() throws Exception
+    {
+        setDefaultRollback(false);
+        
+        String CONTENT_TITLE = "ContentTitle";
+        String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        Locale CONTENT_LOCALE = Locale.JAPAN; 
+        String CONTENT_STRING = "Hello";
+
+          
+        /**
+          * Now go ahead and create our first transfer target
+          */
+        String targetName = "testRestoreOfAlienNodes";
+        TransferTarget transferMe;
+        
+        NodeRef S0NodeRef;
+        NodeRef A0NodeRef;
+        NodeRef A1NodeRef;
+        NodeRef B1NodeRef;
+        NodeRef B2NodeRef;
+        NodeRef B3NodeRef;
+        
+        NodeRef destNodeRef;
+        
+        startNewTransaction();
+        try
+        {
+            /**
+              * Get guest home
+              */
+            String guestHomeQuery = "/app:company_home/app:guest_home";
+            ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+            assertEquals("", 1, guestHomeResult.length());
+            NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+    
+            /**
+             * Create a test nodes A1 through A8 that we will read and write
+             */
+            {
+                // Node S0
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                S0NodeRef = child.getChildRef();
+                nodeService.setProperty(S0NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(S0NodeRef, ContentModel.PROP_NAME, name);
+            }
+            {
+                // Node A1
+                ChildAssociationRef child = nodeService.createNode(S0NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A0"), ContentModel.TYPE_FOLDER);
+                A0NodeRef = child.getChildRef();
+                nodeService.setProperty(A0NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A0NodeRef, ContentModel.PROP_NAME, "A0");
+            }
+            {
+                // Node A1
+                ChildAssociationRef child = nodeService.createNode(A0NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A1"), ContentModel.TYPE_FOLDER);
+                A1NodeRef = child.getChildRef();
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(A1NodeRef, ContentModel.PROP_NAME, "A1");
+            }
+            {
+                // Node B1
+                ChildAssociationRef child = nodeService.createNode(S0NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B1"), ContentModel.TYPE_FOLDER);
+                B1NodeRef = child.getChildRef();
+                nodeService.setProperty(B1NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(B1NodeRef, ContentModel.PROP_NAME, "B1");
+            }
+ 
+            // Create the transfer target if it does not already exist
+            if(!transferService.targetExists(targetName))
+            {
+                transferMe = createTransferTarget(targetName);
+            }            
+            else
+            {
+                transferMe = transferService.getTransferTarget(targetName);
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *
+         * Mock the transfer service to be from Repo A
+         */
+        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        pathMap.add(new Pair(nodeService.getPath(A0NodeRef), nodeService.getPath(B1NodeRef)));     
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        /**
+         * Step 1. add A1
+         *   transfer(sync)
+         */
+        startNewTransaction();
+        try 
+        {
+           /**
+             * Transfer Nodes A1
+             */
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(A1NodeRef);
+                definition.setNodes(nodes);
+                definition.setSync(true);
+                transferService.transfer(targetName, definition);
+            }  
+        }
+        finally
+        {
+            endTransaction();
+        }
+
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+            assertFalse("A1 is alien", nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));       
+            // Check injected transferred aspect.
+            assertNotNull("transferredAspect", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+      /**
+        * Step 2 add Alien node B1 child of A1(dest).  
+        */
+        startNewTransaction();
+        try 
+        {
+            destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            ChildAssociationRef child = nodeService.createNode(destNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B2"), ContentModel.TYPE_FOLDER);
+            B2NodeRef = child.getChildRef();
+            nodeService.setProperty(B2NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+            nodeService.setProperty(B2NodeRef, ContentModel.PROP_NAME, "B2");
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            // Now validate that the target node exists and has similar properties to the source
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            
+            assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+            // Check injected transferred aspect.        
+            assertTrue("node A1 is not alien aspect", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));     
+            assertNotNull("repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+            assertNotNull("from repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
+            assertTrue("node B2 is not alien", (Boolean)nodeService.hasAspect(B2NodeRef, TransferModel.ASPECT_ALIEN));
+        }
+        finally
+        {
+            endTransaction();
+        }
+       
+       /** 
+        * Step 3 remove alien node B2.  A1 becomes non Alien.
+        */ 
+        startNewTransaction();
+        try 
+        {
+            logger.debug("delete node B2");
+            nodeService.deleteNode(B2NodeRef);
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try
+        {
+            NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+            List<String> invaders =  (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
+            assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+            assertFalse("node A1 is still alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));  
+            assertNotNull("repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+            assertNotNull("from repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        /** 
+         * Step 4 restore alien node B2.  A1 becomes Alien again
+         */ 
+         startNewTransaction();
+         try 
+         {
+             logger.debug("restore node B2");
+             NodeRef B2ArchiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, B2NodeRef.getId());
+             nodeService.restoreNode(B2ArchiveNodeRef, testNodeFactory.getMappedNodeRef(A1NodeRef),  ContentModel.ASSOC_CONTAINS, QName.createQName("B2"));
+         }
+         finally
+         {
+             endTransaction();
+         }
+         
+         startNewTransaction();
+         try
+         {
+             NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+             assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+             assertTrue("node A1 is not alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));  
+             assertNotNull("repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+             assertNotNull("from repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID));      
+         }
+         finally
+         {
+             endTransaction();
+         }
+         
+         /**
+          * Step 5 - add B3
+          */
+          startNewTransaction();
+          try 
+          {
+              ChildAssociationRef child = nodeService.createNode(B2NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B3"), ContentModel.TYPE_FOLDER);
+              B3NodeRef = child.getChildRef();
+              nodeService.setProperty(B3NodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+              nodeService.setProperty(B3NodeRef, ContentModel.PROP_NAME, "B3");
+          }
+          finally
+          {
+              endTransaction();
+          }
+          startNewTransaction();
+          try
+          {
+              assertTrue("node B3 is not alien", (Boolean)nodeService.hasAspect(B3NodeRef, TransferModel.ASPECT_ALIEN));     
+          }
+          finally
+          {
+              endTransaction();
+          }
+          
+          /** 
+           * Step 5 remove alien node B2.  A1 becomes non Alien (again).
+           */ 
+           startNewTransaction();
+           try 
+           {
+               logger.debug("delete node B2");
+               nodeService.deleteNode(B2NodeRef);
+           }
+           finally
+           {
+               endTransaction();
+           }
+           
+           startNewTransaction();
+           try
+           {
+               NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(A1NodeRef);
+               List<String> invaders =  (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
+               assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
+               assertFalse("node A1 is still alien", (Boolean)nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));  
+               assertNotNull("repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_REPOSITORY_ID)); 
+               assertNotNull("from repository id is null", (String)nodeService.getProperty(A1destNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID)); 
+           }
+           finally
+           {
+               endTransaction();
+           }
+           
+           /**
+            * Step6 restore B2 and B3 to B1. 
+            */
+           startNewTransaction();
+           try 
+           {
+               logger.debug("restore node B2");
+               NodeRef B2ArchiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, B2NodeRef.getId());
+               nodeService.restoreNode(B2ArchiveNodeRef, B1NodeRef,  ContentModel.ASSOC_CONTAINS, QName.createQName("B2"));
+           }
+           finally
+           {
+               endTransaction();
+           }
+           
+           startNewTransaction();
+           try
+           {
+               assertFalse("node A1 is still alien", (Boolean)nodeService.hasAspect(testNodeFactory.getMappedNodeRef(A1NodeRef), TransferModel.ASPECT_ALIEN));  
+               assertFalse("node A2 is still alien", (Boolean)nodeService.hasAspect(B2NodeRef, TransferModel.ASPECT_ALIEN));  
+               assertFalse("node A3 is still alien", (Boolean)nodeService.hasAspect(B3NodeRef, TransferModel.ASPECT_ALIEN));  
+           }
+           finally
+           {
+               endTransaction();
+           }
+    }
+    
     
        
     /**
@@ -5034,16 +5401,31 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * Tree
      * <pre>
      *         B1
-     *    |          |
-     *    C2(p1)    C3(p2)
+     *    |          |         |
+     *    C2(p1)    C3(p2)     A4
+     *    |          
+     *    A5        
      *    |
-     *    A4
+     *    B6
      * </pre>
      * 
-     * Setup tree above. Validate that A1 is child of C2.
+     * Step 1: Tansfer in C's nodes to Repo B
      * 
-     * Step 1.   Move A4 fron C2 to C3 via transfer.   
-     * C2Dest should stop being invaded C3Dest should be invaded.
+     * Step 2. Transfer in A's nodes to Repo B
+     * 
+     * Setup tree above. Validate that A2 is child of C2 dest.
+     * A4 is a child of B1
+     * 
+     * Step 3. Move A5 from C2 to C3 via transfer.   
+     * C2Dest should stop being invaded by A5, C3Dest should be invaded by A5.
+     * 
+     * Step 4. Invade A5 by B6. Move from C3 to C2 via transfer.
+     * C2Dest should be invaded by A and B.
+     * C3Dest should not be invaded.
+     * 
+     * Step 5. Move A5 to A4.
+     * A4 should be invaded by B due to B6 but not by A.
+     * C2Dest should not be invaded.
      */
     public void testMultiRepoTransferMove() throws Exception
     {
@@ -5063,6 +5445,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         NodeRef C2NodeRef;
         NodeRef C3NodeRef;
         NodeRef A4NodeRef;
+        NodeRef A5NodeRef;
+        NodeRef B6NodeRef;
         NodeRef C2DummyNodeRef;
         NodeRef C3DummyNodeRef;
         QName C2Path = QName.createQName("p2");
@@ -5148,10 +5532,18 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             
             {
                 // Node A4
-                ChildAssociationRef child = nodeService.createNode(C2DummyNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("C4"), ContentModel.TYPE_FOLDER);
+                ChildAssociationRef child = nodeService.createNode(A1NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("C4"), ContentModel.TYPE_FOLDER);
                 A4NodeRef = child.getChildRef();
-                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, "C4");   
-                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "C4");
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_TITLE, "A4");   
+                nodeService.setProperty(A4NodeRef, ContentModel.PROP_NAME, "A4");
+            }
+            
+            {
+                // Node A5
+                ChildAssociationRef child = nodeService.createNode(C2DummyNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"), ContentModel.TYPE_FOLDER);
+                A5NodeRef = child.getChildRef();
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_TITLE, "A5");   
+                nodeService.setProperty(A5NodeRef, ContentModel.PROP_NAME, "A5");
             }
      
             // Create the transfer target if it does not already exist
@@ -5240,6 +5632,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             TransferDefinition definition = new TransferDefinition();
             Collection<NodeRef> nodes = new ArrayList<NodeRef>();
             nodes.add(A4NodeRef);
+            nodes.add(A5NodeRef);
             definition.setNodes(nodes);
             definition.setSync(true);
             transferService.transfer(targetName, definition);  
@@ -5252,14 +5645,17 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try 
         {
-            assertTrue("dest node A4 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertTrue("dest node A5 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
             assertTrue("dest node C3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C3NodeRef)));
             assertTrue("dest node C2 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C2NodeRef)));
-            // Check that A4 dest is a child of C2Dest which is a child of B1
-            ChildAssociationRef A4Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A4NodeRef));
-            assertEquals("A4 dest is connected to the wrong node", A4Ref.getParentRef(), testNodeFactory.getMappedNodeRef(C2NodeRef));
+            ChildAssociationRef A5Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A5NodeRef));
+            assertEquals("A5 dest is connected to the wrong node", A5Ref.getParentRef(), testNodeFactory.getMappedNodeRef(C2NodeRef));
             assertTrue("C2 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C2NodeRef), TransferModel.ASPECT_ALIEN));
             assertFalse("C3 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C3NodeRef), TransferModel.ASPECT_ALIEN));
+            
+            ChildAssociationRef A4Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A4NodeRef));
+            assertEquals("A4 dest is connected to the wrong node", A4Ref.getParentRef(), B1NodeRef);
+  
           }
         finally
         {
@@ -5269,12 +5665,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         /**
          * Step 3
          * Now move A3
-         * C2 (Dest) gets invaded by A4
+         * C2 (Dest) gets invaded by A5
          */
         startNewTransaction();
         try 
         {
-            nodeService.moveNode(A4NodeRef, C3DummyNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("C4"));
+            nodeService.moveNode(A5NodeRef, C3DummyNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("C4"));
         }
         finally
         {
@@ -5286,7 +5682,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             TransferDefinition definition = new TransferDefinition();
             Collection<NodeRef> nodes = new ArrayList<NodeRef>();
-            nodes.add(A4NodeRef);
+            nodes.add(A5NodeRef);
             definition.setNodes(nodes);
             definition.setSync(true);
             transferService.transfer(targetName, definition);  
@@ -5299,14 +5695,14 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try 
         {
-            assertTrue("dest node A4 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A4NodeRef)));
+            assertTrue("dest node A5 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
             assertTrue("dest node C3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C3NodeRef)));
             assertTrue("dest node C2 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C2NodeRef)));
             
             // Check that A4 dest is a child of C3Dest which is a child of B1 
-            ChildAssociationRef A4Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A4NodeRef));
-            assertEquals("A4 dest is connected to the wrong node", A4Ref.getParentRef(), testNodeFactory.getMappedNodeRef(C3NodeRef));
-            assertTrue("A4 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.ASPECT_ALIEN));
+            ChildAssociationRef A5Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A5NodeRef));
+            assertEquals("A5 dest is connected to the wrong node", A5Ref.getParentRef(), testNodeFactory.getMappedNodeRef(C3NodeRef));
+            assertTrue("A5 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.ASPECT_ALIEN));
             assertTrue("C3 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C3NodeRef), TransferModel.ASPECT_ALIEN));
             assertFalse("C2 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C2NodeRef), TransferModel.ASPECT_ALIEN));
         }
@@ -5314,16 +5710,121 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
-
+        
+        /**
+         * Step 4 - multi invasion move via transfer service.
+         * Invade A5 by B6.  Transfer from C3 back to C2.
+         */
+        startNewTransaction();
+        try 
+        {
+            nodeService.moveNode(A5NodeRef, C2DummyNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B6"));
+            
+            // Node B5
+            ChildAssociationRef child = nodeService.createNode(testNodeFactory.getMappedNodeRef(A5NodeRef), ContentModel.ASSOC_CONTAINS, QName.createQName("B6"), ContentModel.TYPE_FOLDER);
+            B6NodeRef = child.getChildRef();
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_TITLE, "B6");   
+            nodeService.setProperty(B6NodeRef, ContentModel.PROP_NAME, "B6");
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            TransferDefinition definition = new TransferDefinition();
+            Collection<NodeRef> nodes = new ArrayList<NodeRef>();
+            nodes.add(A5NodeRef);
+            definition.setNodes(nodes);
+            definition.setSync(true);
+            transferService.transfer(targetName, definition);  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            assertTrue("dest node A5 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            assertTrue("dest node C3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C3NodeRef)));
+            assertTrue("dest node C2 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C2NodeRef)));
+            
+            // Check that A4 dest is a child of C2Dest which is a child of B1 
+            ChildAssociationRef A5Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A5NodeRef));
+            ChildAssociationRef B6Ref = nodeService.getPrimaryParent(B6NodeRef);
+            assertEquals("A5 dest is connected to the wrong node", A5Ref.getParentRef(), testNodeFactory.getMappedNodeRef(C2NodeRef));
+            assertEquals("B6 connected to the wrong node", B6Ref.getParentRef(), testNodeFactory.getMappedNodeRef(A5NodeRef));
+            assertTrue("A5 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.ASPECT_ALIEN));
+            assertTrue("C2 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C2NodeRef), TransferModel.ASPECT_ALIEN));
+            assertFalse("C3 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C3NodeRef), TransferModel.ASPECT_ALIEN));
+            List<String>invaders = (List<String>)nodeService.getProperty(testNodeFactory.getMappedNodeRef(C2NodeRef), TransferModel.PROP_INVADED_BY);
+            assertTrue("invaders is too small", invaders.size() > 1);
+            assertTrue("invaders does not contain REPO A", invaders.contains(REPO_ID_A));
+        }
+        finally
+        {
+            endTransaction();
+        }  
+        
+        /**
+         * Step 5
+         * Move
+         */
+        startNewTransaction();
+        try 
+        {
+            nodeService.moveNode(A5NodeRef, A4NodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A5"));
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            TransferDefinition definition = new TransferDefinition();
+            Collection<NodeRef> nodes = new ArrayList<NodeRef>();
+            nodes.add(A5NodeRef);
+            definition.setNodes(nodes);
+            definition.setSync(true);
+            transferService.transfer(targetName, definition);  
+        }
+        finally
+        {
+            endTransaction();
+        }
+        
+        startNewTransaction();
+        try 
+        {
+            assertTrue("dest node A5 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(A5NodeRef)));
+            assertTrue("dest node C3 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C3NodeRef)));
+            assertTrue("dest node C2 does not exist", nodeService.exists(testNodeFactory.getMappedNodeRef(C2NodeRef)));
+            
+            // Check that A5dest is a child of A4Dest which is a child of B1 
+            ChildAssociationRef A5Ref = nodeService.getPrimaryParent(testNodeFactory.getMappedNodeRef(A5NodeRef));
+            assertEquals("A5 dest is connected to the wrong node", A5Ref.getParentRef(), testNodeFactory.getMappedNodeRef(A4NodeRef));
+            assertTrue("A4 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.ASPECT_ALIEN));
+            assertTrue("A5 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(A5NodeRef), TransferModel.ASPECT_ALIEN));
+            assertTrue("B6 dest is not invaded", nodeService.hasAspect(B6NodeRef, TransferModel.ASPECT_ALIEN));
+            assertFalse("C2 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C2NodeRef), TransferModel.ASPECT_ALIEN));
+            assertFalse("C3 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(C3NodeRef), TransferModel.ASPECT_ALIEN));
+   
+            List<String>invaders = (List<String>)nodeService.getProperty(testNodeFactory.getMappedNodeRef(A4NodeRef), TransferModel.PROP_INVADED_BY);
+            assertTrue("invaders is too big", invaders.size() < 2);
+            assertFalse("invaders contains REPO A", invaders.contains(REPO_ID_A));
+   
+        }
+        finally
+        {
+            endTransaction();
+        }  
     }   
-    
-    /**
-     * transfer should only be able to update and delete nodes that are "from" the transferring system
-     */
-    public void testFromRepo()
-    {
-        assertTrue("not yet implemented", false);
-    }
     
     private void createUser(String userName, String password)
     {

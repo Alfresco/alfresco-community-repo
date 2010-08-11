@@ -220,6 +220,7 @@ public interface NodeServicePolicies
     
     public interface OnRestoreNodePolicy extends ClassPolicy
     {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRestoreNode");
         /**
          * Called after an archived node is restored.
          * 

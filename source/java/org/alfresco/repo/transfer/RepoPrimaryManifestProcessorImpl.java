@@ -338,7 +338,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
          */ 
         if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
         {
-            alienProcessor.onCreateChild(newNode, header.getRepositoryId());
+            alienProcessor.onCreateChild(newNode, header.getRepositoryId(), true);
         }
 
         // Is the node that we've just added the parent of any orphans that
@@ -408,7 +408,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                  */
                 if(nodeService.hasAspect(newRef.getParentRef(), TransferModel.ASPECT_TRANSFERRED))
                 {
-                    alienProcessor.onCreateChild(newRef, header.getRepositoryId());
+                    alienProcessor.onCreateChild(newRef, header.getRepositoryId(), true);
                 }
             }
             // We can now remove the record of these orphans, as their parent
@@ -477,19 +477,16 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
              */
             if(nodeService.hasAspect(currentParent.getParentRef(), TransferModel.ASPECT_ALIEN))
             {
-                // old parent node ref may be alien
-                alienProcessor.beforeDeleteAlien(node.getNodeRef());
+                // old parent node ref may be alien so treat as a delete
+                alienProcessor.beforeDeleteAlien(currentParent.getChildRef(), null);
             }
             
             // Yes, we need to move the node
             ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
             logProgress("Moved node " + nodeToUpdate + " to be under parent node " + parentNodeRef);
             
-            //  We may have created a new alien.
-            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
-            {
-                alienProcessor.onCreateChild(newNode, header.getRepositoryId());
-            }
+            alienProcessor.afterMoveAlien(newNode);
+            
         }
 
         log.info("Resolved parent node to " + parentNodeRef);

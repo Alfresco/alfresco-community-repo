@@ -19,6 +19,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -32,6 +33,7 @@ public class AlienProcessorImpl implements AlienProcessor
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
     private DictionaryService dictionaryService;
+    private DescriptorService descriptorService;
     
     private static final Log log = LogFactory.getLog(AlienProcessorImpl.class);
     
@@ -40,21 +42,26 @@ public class AlienProcessorImpl implements AlienProcessor
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "dictionaryService", getDictionaryService());
+        PropertyCheck.mandatory(this, "descriptorService", descriptorService);
     }
 
-    public void onCreateChild(ChildAssociationRef childAssocRef, final String repositoryId)
+    public void onCreateChild(ChildAssociationRef childAssocRef, final String repositoryId, boolean isNewNode)
     {
         log.debug("on create child association to transferred node");
         
         ChildAssociationRef currentAssoc = childAssocRef;
-           
+        NodeRef parentNodeRef = currentAssoc.getParentRef();
+        NodeRef childNodeRef = currentAssoc.getChildRef();
+                  
         if(!childAssocRef.isPrimary())
         {
             log.debug("not a primary assoc - do nothing");
             return;
         }
-        
-        // TODO Needs to check assoc is a cm:contains or subtype of cm:contains
+                
+        /**
+         * check assoc is a cm:contains or subtype of cm:contains
+         */
         if(!childAssocRef.getTypeQName().equals(ContentModel.ASSOC_CONTAINS))
         {
             Collection<QName> subAspects = dictionaryService.getSubAspects(ContentModel.ASSOC_CONTAINS, true);
@@ -64,14 +71,11 @@ public class AlienProcessorImpl implements AlienProcessor
                 return; 
             }
         }
-  
-        NodeRef parentNodeRef = currentAssoc.getParentRef();
-        NodeRef childNodeRef = currentAssoc.getChildRef();
             
-        if(!nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+        if(!(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN)))
         {
-                log.debug("parent was not transferred - do nothing");
-                return;
+            log.debug("parent was not transferred or alien - do nothing");
+            return;
         }   
             
         if(!nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
@@ -83,8 +87,8 @@ public class AlienProcessorImpl implements AlienProcessor
                {
                    log.debug("parent was not alien and this node is from the same repo - do nothing");
                    return;
-                }
-            }
+               }
+           }
         }
             
         /**
@@ -143,30 +147,64 @@ public class AlienProcessorImpl implements AlienProcessor
                 log.debug("parent is not a transferred node");
                 currentAssoc = null;
             }
-       }            
-    }
-
-    public void beforeDeleteAlien(NodeRef deletedNodeRef)
+        }            
+    }   
+ 
+    public void beforeDeleteAlien(NodeRef deletedNodeRef, ChildAssociationRef oldAssoc)
     {
         log.debug("before delete node - need to check for alien invaders");
         
-        List<String>stuff = (List<String>)nodeService.getProperty(deletedNodeRef, TransferModel.PROP_INVADED_BY);
-        
+        List<String>stuff = (List<String>)nodeService.getProperty(deletedNodeRef, TransferModel.PROP_INVADED_BY);        
         Vector<String> exInvaders = new Vector<String>(stuff);
         
-        ChildAssociationRef currentAssoc = nodeService.getPrimaryParent(deletedNodeRef);
+        /**
+         * some fudge to get this to run after the node has been moved.
+         */
+        ChildAssociationRef currentAssoc;
+        if(oldAssoc != null)
+        {
+            currentAssoc = oldAssoc;
+        }
+        else
+        {
+            currentAssoc = nodeService.getPrimaryParent(deletedNodeRef);
+        }
      
         while(currentAssoc != null && exInvaders != null && exInvaders.size() > 0)
         {
             NodeRef parentNodeRef = currentAssoc.getParentRef();
-            NodeRef currentNodeRef = currentAssoc.getChildRef();
+            NodeRef currentNodeRef;
+            
+            if(currentAssoc == oldAssoc)
+            { 
+                currentNodeRef = deletedNodeRef;
+            }
+            else
+            {
+                currentNodeRef = currentAssoc.getChildRef();   
+            }
             
             /**
              * Does the parent have alien invaders ?
              */
             if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
             {
-                log.debug("parent node is alien - check siblings");
+                log.debug("parent node is invaded by aliens");
+                
+                /**
+                 * Remove the parent's origin from the list of exInvaders since the parent also invades.
+                 */
+                String parentRepoId; 
+                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+                {
+                    parentRepoId = (String)nodeService.getProperty(parentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
+                }                
+                else
+                {
+                    parentRepoId = descriptorService.getCurrentRepositoryDescriptor().getId(); 
+                }
+                
+                exInvaders.remove(parentRepoId);
                 
                 /**
                  * For each invader of the deletedNode
@@ -178,8 +216,8 @@ public class AlienProcessorImpl implements AlienProcessor
                     log.debug("Checking exInvader:" + exInvader);
                     
                     /**
-                     * Check the siblings of this node to see whether there are any other alien nodes for this invader.
-                     */
+                      * Check the siblings of this node to see whether there are any other alien nodes for this invader.
+                      */
                     //TODO replace with a more efficient query
                     List<ChildAssociationRef> refs = nodeService.getChildAssocs(parentNodeRef);
                     
@@ -190,7 +228,7 @@ public class AlienProcessorImpl implements AlienProcessor
                         
                         if(childRef.equals(currentNodeRef))
                         {
-                            // do nothing - this is the node we are working with.
+                                // do nothing - this is the node we are working with.
                         }    
                         else 
                         {
@@ -266,7 +304,223 @@ public class AlienProcessorImpl implements AlienProcessor
             }
         } // end of while              
     }
-
+    
+    
+    public void afterMoveAlien(ChildAssociationRef newAssocRef)
+    {
+        log.debug("after move alien: newAssocRef");
+        
+        NodeRef parentNodeRef = newAssocRef.getParentRef();
+        NodeRef childNodeRef = newAssocRef.getChildRef();
+        
+        List<String> childInvadedBy = (List<String>)nodeService.getProperty(childNodeRef, TransferModel.PROP_INVADED_BY);
+        
+        if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+        {
+            List<String>aliensToAdd = new ArrayList<String>();
+            
+            log.debug("new parent is transferred or alien");
+                          
+            /**
+             * check assoc is a cm:contains or subtype of cm:contains
+             */
+            if(!newAssocRef.getTypeQName().equals(ContentModel.ASSOC_CONTAINS))
+            {
+                Collection<QName> subAspects = dictionaryService.getSubAspects(ContentModel.ASSOC_CONTAINS, true);
+                if(!subAspects.contains(newAssocRef.getTypeQName()))
+                {
+                    log.debug("not a subtype of cm:contains - may need to uninvade");
+                   
+                    String parentRepoId = descriptorService.getCurrentRepositoryDescriptor().getId(); 
+                    retreatDownwards(childNodeRef, parentRepoId);            
+                    
+                    return; 
+                }
+            }
+                                
+            if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+            {
+                // parent is already alien
+                List<String>parentInvadedBy = (List<String>)nodeService.getProperty(parentNodeRef, TransferModel.PROP_INVADED_BY);
+                for(String invader : childInvadedBy)
+                {
+                    if(!parentInvadedBy.contains(invader))
+                    {
+                        aliensToAdd.add(invader);
+                    }
+                }
+            }
+            else
+            {
+                // parent is transfered but does not yet contain aliens
+               String parentFromRepo = (String)nodeService.getProperty(parentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
+               {
+                   for(String invader : childInvadedBy)
+                   {
+                       if(invader.equalsIgnoreCase(parentFromRepo))
+                       {
+                           // The invader is the same repo
+                           log.debug("child node is from the same repo as a non invaded node");
+                           retreatDownwards(childNodeRef, parentFromRepo);
+                       }
+                       else
+                       {
+                           aliensToAdd.add(invader);
+                       }
+                   }
+               }
+            }
+            
+            /**
+              * Now deal with the parents of this alien node
+              */
+            ChildAssociationRef currentAssoc = newAssocRef;
+            while(currentAssoc != null && aliensToAdd.size() > 0)
+            {
+                parentNodeRef = currentAssoc.getParentRef();
+                childNodeRef = currentAssoc.getChildRef();
+            
+                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+                {
+                    for(String alienRepoId : aliensToAdd)
+                    {
+                        if (!isInvaded(parentNodeRef, alienRepoId))
+                        {
+                            if(log.isDebugEnabled())
+                            {
+                                log.debug("alien invades parent node:" + parentNodeRef + ", repositoryId:" + alienRepoId);
+                            }
+                            
+                            final NodeRef newAlien = parentNodeRef; 
+                            final String fAlien = alienRepoId;
+                            /**
+                             * Parent may be locked or not be editable by the current user 
+                             * turn off auditing and lock service for this transaction and 
+                             * run as admin.
+                             */
+                            RunAsWork<Void> actionRunAs = new RunAsWork<Void>()
+                            {
+                                public Void doWork() throws Exception
+                                {
+                                    getBehaviourFilter().disableBehaviour(newAlien, ContentModel.ASPECT_AUDITABLE);
+                                    getBehaviourFilter().disableBehaviour(newAlien, ContentModel.ASPECT_LOCKABLE);
+                                    setAlien(newAlien, fAlien);
+                                    return null;
+                                }          
+                            };
+                            AuthenticationUtil.runAs(actionRunAs, AuthenticationUtil.getSystemUserName());
+                        }
+                        else
+                        {
+                            log.debug("parent node is already invaded by:" + alienRepoId);
+                            aliensToAdd.remove(alienRepoId);
+                        }
+                        
+                        // Yes the parent has been invaded so step up to the parent's parent             
+                        currentAssoc = nodeService.getPrimaryParent(parentNodeRef);
+                    }
+                }
+                else
+                {
+                    log.debug("parent is not a transferred node");
+                    currentAssoc = null;
+                }
+            }            
+        }
+        else
+        {
+            log.debug("parent was not transferred or alien");
+            
+            // TODO Need to remove the alien flags
+            String parentRepoId = descriptorService.getCurrentRepositoryDescriptor().getId(); 
+            retreatDownwards(childNodeRef, parentRepoId);
+            
+            return;
+        }   
+    } // after move alien 
+    
+    /**
+     * Top down un-invasion
+     * <p>
+     * Steps down the tree retreating from all the invaded nodes.
+     * <p>
+     * The retreat will stop is there is a "sub-invasion".
+     * <p>   
+     * @param nodeRef the top of the tree
+     * @param repoId the repository that is retreating.
+     */
+    private void retreatDownwards(NodeRef nodeRef, String fromRepositoryId)
+    {
+        Stack<NodeRef> nodesToRetreat = new Stack<NodeRef>();
+        nodesToRetreat.add(nodeRef);
+        
+        /**
+         * Now go and do the retreat.        
+         */
+        while(!nodesToRetreat.isEmpty())
+        {
+            if(log.isDebugEnabled())
+            {
+                log.debug("retreat :" + nodeRef + ", repoId:" + fromRepositoryId);
+            }
+            
+            /**
+             *  for the current node and all alien children
+             *  
+             *  if they are "from" the retreating repository then 
+             */
+            NodeRef currentNodeRef = nodesToRetreat.pop();
+            
+            log.debug("retreatNode:" + currentNodeRef);
+            
+            if(getNodeService().hasAspect(currentNodeRef, TransferModel.ASPECT_ALIEN))
+            {
+                // Yes this is an alien node
+                List<String>invadedBy = (List<String>)getNodeService().getProperty(currentNodeRef, TransferModel.PROP_INVADED_BY);
+                
+                String parentRepoId; 
+                if(nodeService.hasAspect(currentNodeRef, TransferModel.ASPECT_TRANSFERRED))
+                {
+                    log.debug("node is transferred");
+                    parentRepoId = (String)nodeService.getProperty(currentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
+                }                
+                else
+                {
+                    log.debug("node is local");
+                    parentRepoId = descriptorService.getCurrentRepositoryDescriptor().getId(); 
+                }
+                
+                if(fromRepositoryId.equalsIgnoreCase(parentRepoId))
+                {
+                    // This node is "owned" by the retreating repo
+                    // Yes we are invaded by fromRepositoryId
+                    if(invadedBy.size() == 1)
+                    {
+                        // we are invaded by a single repository which must be fromRepositoryId
+                        log.debug("no longe alien:" + currentNodeRef);
+                        getNodeService().removeAspect(currentNodeRef, TransferModel.ASPECT_ALIEN);
+                    }
+                    else
+                    {
+                       invadedBy.remove(parentRepoId);
+                       getNodeService().setProperty(currentNodeRef, TransferModel.PROP_INVADED_BY, (Serializable)invadedBy);
+                    }
+                    
+                    //TODO replace with a more efficient query
+                    List<ChildAssociationRef> refs = getNodeService().getChildAssocs(currentNodeRef);
+                    for(ChildAssociationRef ref : refs)
+                    {
+                        if(log.isDebugEnabled())
+                        {
+                            log.debug("will need to check child:" + ref);
+                        }
+                        nodesToRetreat.push(ref.getChildRef());        
+                    }        
+                }
+            } 
+        }
+    } // retreatDownwards
+   
     public boolean isAlien(NodeRef nodeRef)
     {
         return nodeService.hasAspect(nodeRef, TransferModel.ASPECT_ALIEN);
@@ -479,7 +733,7 @@ public class AlienProcessorImpl implements AlienProcessor
     }
     
     /**
-     * Recalculate the whether this node is invaded by the specified repository
+     * Determine whether the specified node is invaded by the specified repository
      * @param folderNodeRef the node to re-calculate
      * @param fromRepositoryId the repository who is transferring.
      * 
@@ -527,7 +781,7 @@ public class AlienProcessorImpl implements AlienProcessor
         
         return stillInvaded;
     }
-    
+            
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -556,5 +810,15 @@ public class AlienProcessorImpl implements AlienProcessor
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
+    }
+    
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+
+    public DescriptorService getDescriptorService()
+    {
+        return descriptorService;
     }
 }

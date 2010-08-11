@@ -41,7 +41,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -86,7 +88,9 @@ import org.springframework.util.FileCopyUtils;
  */
 public class RepoTransferReceiverImpl implements TransferReceiver,  
     NodeServicePolicies.OnCreateChildAssociationPolicy,
-    NodeServicePolicies.BeforeDeleteNodePolicy
+    NodeServicePolicies.BeforeDeleteNodePolicy,
+    NodeServicePolicies.OnRestoreNodePolicy,
+    NodeServicePolicies.OnMoveNodePolicy
     
 {
     /**
@@ -196,13 +200,37 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
         
         /**
+         * For every new child of a node with the trx:alien aspect run this.onCreateChildAssociation
+         */
+        this.getPolicyComponent().bindAssociationBehaviour(
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
+                TransferModel.ASPECT_ALIEN, 
+                new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.EVERY_EVENT));
+        
+        /**
          * For every node with the trx:alien aspect run this.beforeDeleteNode
          */
         this.getPolicyComponent().bindClassBehaviour(
                 NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
                 TransferModel.ASPECT_ALIEN,
-                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));         
-
+                new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));   
+        
+        /**
+         * For every restore of a node with the trx:alien aspect
+         */
+        this.getPolicyComponent().bindClassBehaviour(
+                NodeServicePolicies.OnRestoreNodePolicy.QNAME,
+                TransferModel.ASPECT_ALIEN, 
+                new JavaBehaviour(this, "onRestoreNode", NotificationFrequency.EVERY_EVENT));
+        
+        /**
+         * For every move of a node with the trx:alien aspect.
+         */
+        this.getPolicyComponent().bindClassBehaviour(
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                TransferModel.ASPECT_ALIEN, 
+                new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
+                
     }
 
     /*
@@ -968,7 +996,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         log.debug("on create child association to transferred node");
         
         final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
-        alienProcessor.onCreateChild(childAssocRef, localRepositoryId);   
+        alienProcessor.onCreateChild(childAssocRef, localRepositoryId, isNewNode);   
     }
  
     /**
@@ -979,7 +1007,36 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     public void beforeDeleteNode(NodeRef deletedNodeRef)
     {
         log.debug("on delete node - need to check for transferred node");
-        alienProcessor.beforeDeleteAlien(deletedNodeRef);
+        alienProcessor.beforeDeleteAlien(deletedNodeRef, null);
+    }
+    
+    /**
+     * When a transferred node is restored it may be a new invader or it may no 
+     * longer be an invader.
+     * <p>
+     * Walk the tree checking the invasion status!
+     */
+    public void onRestoreNode(ChildAssociationRef childAssocRef)
+    {
+        log.debug("on restore node");
+        final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId(); 
+        log.debug("restoredAssocRef:" + childAssocRef);
+        alienProcessor.afterMoveAlien(childAssocRef);
+    }
+    
+    /**
+     * When an alien node is moved it may un-invade its old location and invade a new 
+     * location.   The node may also cease to be alien.
+     */
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef,
+            ChildAssociationRef newChildAssocRef)
+    {
+
+        log.debug("onMoveNode"); 
+        log.debug("oldChildAssocRef:" + oldChildAssocRef);
+        log.debug("newChildAssocRef:" + newChildAssocRef);
+        alienProcessor.beforeDeleteAlien(newChildAssocRef.getChildRef(), oldChildAssocRef);
+        alienProcessor.afterMoveAlien(newChildAssocRef);
     }
        
     public void setDescriptorService(DescriptorService descriptorService)

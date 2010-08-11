@@ -54,8 +54,8 @@ public class ReplicationDefinitionDelete extends AbstractReplicationWebscript
        // Delete it
        replicationService.deleteReplicationDefinition(replicationDefinition);
        
-       // Report it as gone
-       status.setCode(Status.STATUS_GONE);
+       // Report that we have deleted it
+       status.setCode(Status.STATUS_NO_CONTENT);
        status.setMessage("Replication Definition deleted");
        status.setRedirect(true);
        return null;

@@ -1197,8 +1197,8 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        txn.begin();
        
        // Call the delete webscript
-       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test"), Status.STATUS_GONE);
-       assertEquals(Status.STATUS_GONE, response.getStatus());
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test"), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
        
        // Let the node service do its work
        txn.commit();
@@ -1229,8 +1229,8 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        txn = transactionService.getUserTransaction();
        txn.begin();
        
-       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test"), Status.STATUS_GONE);
-       assertEquals(Status.STATUS_GONE, response.getStatus());
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test"), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
        
        txn.commit();
        Thread.sleep(50);
@@ -1244,8 +1244,8 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        txn = transactionService.getUserTransaction();
        txn.begin();
        
-       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test 3"), Status.STATUS_GONE);
-       assertEquals(Status.STATUS_GONE, response.getStatus());
+       response = sendRequest(new DeleteRequest(URL_DEFINITION + "Test 3"), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
        
        txn.commit();
        Thread.sleep(50);

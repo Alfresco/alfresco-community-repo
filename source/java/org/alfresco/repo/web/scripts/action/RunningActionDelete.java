@@ -63,8 +63,8 @@ public class RunningActionDelete extends AbstractActionWebscript
       // Request the cancel
       actionTrackingService.requestActionCancellation(action);
       
-      // Report it cancelled
-      status.setCode(Status.STATUS_GONE);
+      // Report it as having been cancelled
+      status.setCode(Status.STATUS_NO_CONTENT);
       status.setMessage("Action cancellation requested");
       status.setRedirect(true);
       return null;

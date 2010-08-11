@@ -746,8 +746,8 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
 
        
        // Request it to cancel
-       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key), Status.STATUS_GONE);
-       assertEquals(Status.STATUS_GONE, response.getStatus());
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
        
        
        // Check it was cancelled
@@ -755,8 +755,8 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        
        
        // Request again - no change
-       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key), Status.STATUS_GONE);
-       assertEquals(Status.STATUS_GONE, response.getStatus());
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
        
        assertEquals(true, actionTrackingService.isCancellationRequested(rd));
        
@@ -780,8 +780,8 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
 
        
        // Ask for it to be cancelled via the webscript
-       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key2), Status.STATUS_GONE);
-       assertEquals(Status.STATUS_GONE, response.getStatus());
+       response = sendRequest(new DeleteRequest(URL_RUNNING_ACTION + key2), Status.STATUS_NO_CONTENT);
+       assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
        
        
        // Should still be in the cache, not running but cancelled

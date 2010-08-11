@@ -560,8 +560,8 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         WorkflowInstance adhocInstance = startTask.getPath().getInstance();
 
-        Response response = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 204);
-        assertEquals(Status.STATUS_NO_CONTENT, response.getStatus());
+        Response response = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
         
         assertNull(workflowService.getWorkflowById(adhocInstance.getId()));
     }

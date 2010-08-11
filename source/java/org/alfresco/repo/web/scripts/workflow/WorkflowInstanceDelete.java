@@ -20,8 +20,6 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -55,7 +53,6 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
             workflowService.cancelWorkflow(workflowInstanceId);
         }
         
-        status.setCode(HttpServletResponse.SC_NO_CONTENT);
         return null;
     }
     

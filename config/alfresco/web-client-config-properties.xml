@@ -750,6 +750,17 @@
       </property-sheet>
    </config>
    
+   <config evaluator="aspect-name" condition="trx:alien">
+      <property-sheet>
+         <show-property name="trx:invadedBy" read-only="true" display-label-id="trx.invadedBy" show-in-edit-mode="false"/>
+      </property-sheet>
+   </config>
    
+   <config evaluator="aspect-name" condition="trx:transferred">
+      <property-sheet>
+         <show-property name="trx:repositoryId" read-only="true" display-label-id="trx.repositoryId" show-in-edit-mode="false"/>
+         <show-property name="trx:fromRepositoryId" read-only="true" display-label-id="trx.fromRepositoryId" />
+      </property-sheet>
+   </config>
    
 </alfresco-config>

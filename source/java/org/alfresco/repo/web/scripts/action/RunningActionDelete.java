@@ -64,9 +64,9 @@ public class RunningActionDelete extends AbstractActionWebscript
       actionTrackingService.requestActionCancellation(action);
       
       // Report it cancelled
-      throw new WebScriptException(
-            Status.STATUS_GONE,
-            "Action cancellation requested"
-      );
+      status.setCode(Status.STATUS_GONE);
+      status.setMessage("Action cancellation requested");
+      status.setRedirect(true);
+      return null;
    }
 }

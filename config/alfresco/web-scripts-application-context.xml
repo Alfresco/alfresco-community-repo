@@ -782,11 +782,12 @@
           class="org.alfresco.repo.web.scripts.workflow.AbstractWorkflowWebscript"
           parent="webscript" abstract="true">
         <property name="namespaceService" ref="NamespaceService" />
-        <property name="nodeService" ref="NodeService"/>
-        <property name="personService" ref="PersonService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
-        <property name="authenticationService" ref="AuthenticationService"/>
-        <property name="workflowService" ref="WorkflowService"/>
+        <property name="nodeService" ref="NodeService" />
+        <property name="personService" ref="PersonService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="authenticationService" ref="AuthenticationService" />
+        <property name="authorityService" ref="AuthorityService" />
+        <property name="workflowService" ref="WorkflowService" />
     </bean>
 
     <!-- Lists the task instances, filtered by task owner and state. -->

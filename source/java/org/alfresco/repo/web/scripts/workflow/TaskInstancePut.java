@@ -25,14 +25,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -191,13 +194,27 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
     {
         boolean result = false;
         
-        Collection<?> actors = (Collection<?>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        // get groups that the current user has to belong (at least one of them)
+        final Collection<?> actors = (Collection<?>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
         if (actors != null && !actors.isEmpty())
         {
-            // TODO: determine whether the user is in any of the groups, for now allow
-            //       pooled tasks to be updated.
-            
-            result = true;
+            for (Object actor : actors)
+            {
+                // retrieve the name of the group
+                Map<QName, Serializable> props = nodeService.getProperties((NodeRef)actor);
+                String name = (String)props.get(ContentModel.PROP_AUTHORITY_NAME);
+                
+                // retrieve the users of the group
+                Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, name, true);
+                
+                // see if the user is one of the users in the group
+                if (users != null && !users.isEmpty() && users.contains(currentUser))
+                {
+                    // they are a member of the group so stop looking!
+                    result = true;
+                    break;
+                }
+            }
         }
         
         return result;

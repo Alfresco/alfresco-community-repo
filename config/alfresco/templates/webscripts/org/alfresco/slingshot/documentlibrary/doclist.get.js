@@ -135,6 +135,11 @@ function getDoclist()
                file: node.name
             };
          }
+         location.parent = {};
+         if (node.parent != null && node.parent.hasPermission("Read"))
+         {
+            location.parent.nodeRef = String(node.parent.nodeRef.toString());  
+         }
          
          // Resolved location
          item.location = location;
@@ -163,6 +168,7 @@ function getDoclist()
          totalRecords: totalRecords,
          startIndex: startIndex
       },
+      container: parsedArgs.rootNode,
       parent: parent,
       onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
       itemCount:

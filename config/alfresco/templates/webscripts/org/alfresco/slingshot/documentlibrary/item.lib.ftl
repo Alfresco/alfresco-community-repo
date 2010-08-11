@@ -63,7 +63,16 @@
       "siteTitle": "${item.location.siteTitle!""}",
       "container": "${item.location.container!""}",
       "path": "${item.location.path!""}",
-      "file": "${item.location.file!""}"
+      "file": "${item.location.file!""}",
+      "parent":
+      {
+      <#if item.location.parent??>
+         <#assign parentLocation = item.location.parent>
+         <#if parentLocation??>
+         "nodeRef": "${parentLocation.nodeRef!""}"
+         </#if>
+      </#if>      
+      }
    },
    "permissions":
    {

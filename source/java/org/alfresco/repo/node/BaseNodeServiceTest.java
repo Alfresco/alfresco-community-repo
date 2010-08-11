@@ -35,7 +35,6 @@ import java.util.Set;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -44,7 +43,6 @@ import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -71,10 +69,9 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.alfresco.util.PropertyMap;
+import org.hibernate.dialect.DB2Dialect;
+import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
-
-import sun.security.action.GetBooleanAction;
 
 /**
  * Provides a base set of tests of the various {@link org.alfresco.service.cmr.repository.NodeService}
@@ -152,6 +149,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected AuthenticationComponent authenticationComponent;
     protected NodeService nodeService;
+    protected Dialect dialect;
     /** populated during setup */
     protected NodeRef rootNodeRef;
     private NodeRef cat;
@@ -160,6 +158,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+        
+        dialect = (Dialect) applicationContext.getBean("dialect");
+        
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
@@ -896,7 +897,14 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         StringBuilder sb = new StringBuilder(2056);
         for (int i = 0; i < 1024; i++)
         {
-            sb.append("\u1234");
+            if (dialect instanceof DB2Dialect)
+            {
+                sb.append("A"); // pending ALF-4300
+            }
+            else
+            {
+                sb.append("\u1234");
+            }
         }
         String longString = sb.toString();
         int len = longString.length();

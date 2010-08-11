@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <view:reference xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" view:pathref="/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default/rule:ruleFolder">
+      <view:associations>
+        <cm:contains>
+          <rule:rule view:childName="rule:rules3245de8b-2cfe-42ed-8f8b-44089f99b265">
+            <view:aspects>
+              <cm:titled></cm:titled>
+            </view:aspects>
+            <view:properties>
+              <rule:ruleType>
+                <view:values>
+                  <view:value>inbound</view:value>
+                </view:values>
+              </rule:ruleType>
+              <rule:disabled>false</rule:disabled>
+              <cm:title>
+                <view:mlvalue view:locale="en_US">Specialise child folders into Transfer Targets</view:mlvalue>
+              </cm:title>
+              <rule:applyToChildren>false</rule:applyToChildren>
+              <rule:executeAsynchronously>false</rule:executeAsynchronously>
+              <cm:description>
+                <view:mlvalue view:locale="en_US"></view:mlvalue>
+              </cm:description>
+            </view:properties>
+            <view:associations>
+              <rule:action>
+                <act:compositeaction view:childName="rule:action">
+                  <view:aspects>
+                    <act:actions></act:actions>
+                  </view:aspects>
+                  <view:properties>
+                    <act:executeAsynchronously>false</act:executeAsynchronously>
+                    <act:executionEndDate>2010-08-11T13:06:18.419+01:00</act:executionEndDate>
+                    <act:executionStartDate>2010-08-11T13:06:18.408+01:00</act:executionStartDate>
+                    <act:actionTitle>
+                      <view:value view:isNull="true"></view:value>
+                    </act:actionTitle>
+                    <act:actionDescription>
+                      <view:value view:isNull="true"></view:value>
+                    </act:actionDescription>
+                    <act:executionFailureMessage>
+                      <view:value view:isNull="true"></view:value>
+                    </act:executionFailureMessage>
+                    <act:definitionName>composite-action</act:definitionName>
+                    <act:executionActionStatus>Completed</act:executionActionStatus>
+                  </view:properties>
+                  <view:associations>
+                    <act:actionFolder>
+                      <cm:systemfolder view:childName="act:actionFolder"/>
+                    </act:actionFolder>
+                    <act:actions>
+                      <act:action view:childName="act:actions">
+                        <view:properties>
+                          <act:executeAsynchronously>false</act:executeAsynchronously>
+                          <act:executionEndDate>
+                            <view:value view:isNull="true"></view:value>
+                          </act:executionEndDate>
+                          <act:executionStartDate>
+                            <view:value view:isNull="true"></view:value>
+                          </act:executionStartDate>
+                          <act:actionTitle>
+                            <view:value view:isNull="true"></view:value>
+                          </act:actionTitle>
+                          <act:actionDescription>
+                            <view:value view:isNull="true"></view:value>
+                          </act:actionDescription>
+                          <act:executionFailureMessage>
+                            <view:value view:isNull="true"></view:value>
+                          </act:executionFailureMessage>
+                          <act:definitionName>specialise-type</act:definitionName>
+                          <act:executionActionStatus>New</act:executionActionStatus>
+                        </view:properties>
+                        <view:associations>
+                          <act:parameters>
+                            <act:actionparameter view:childName="act:parameters">
+                              <view:properties>
+                                <act:parameterName>type-name</act:parameterName>
+                                <act:parameterValue>
+                                  <view:value view:datatype="d:qname">{http://www.alfresco.org/model/transfer/1.0}transferTarget</view:value>
+                                </act:parameterValue>
+                              </view:properties>
+                            </act:actionparameter>
+                          </act:parameters>
+                        </view:associations>
+                      </act:action>
+                    </act:actions>
+                    <act:conditions>
+                      <act:actioncondition view:childName="act:conditions">
+                        <view:properties>
+                          <act:definitionName>is-subtype</act:definitionName>
+                          <act:invert>false</act:invert>
+                        </view:properties>
+                        <view:associations>
+                          <act:parameters>
+                            <act:actionparameter view:childName="act:parameters">
+                              <view:properties>
+                                <act:parameterName>type</act:parameterName>
+                                <act:parameterValue>
+                                  <view:value view:datatype="d:qname">{http://www.alfresco.org/model/content/1.0}folder</view:value>
+                                </act:parameterValue>
+                              </view:properties>
+                            </act:actionparameter>
+                          </act:parameters>
+                        </view:associations>
+                      </act:actioncondition>
+                    </act:conditions>
+                  </view:associations>
+                </act:compositeaction>
+              </rule:action>
+            </view:associations>
+          </rule:rule>
+        </cm:contains>
+      </view:associations>
+  </view:reference>
+</view:view>

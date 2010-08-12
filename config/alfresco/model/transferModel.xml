@@ -66,6 +66,7 @@
 					<title>Endpoint Path</title>
 					<type>d:text</type>
 					<mandatory enforced="false">true</mandatory>
+               <default>/alfresco/service/api/transfer</default>
 				</property>
 
 				<property name="trx:endpointprotocol">

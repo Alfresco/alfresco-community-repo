@@ -128,6 +128,16 @@
         </property>         
     </bean>
 
+   <!-- JavaScript API support for action tracking -->
+   <bean id="actionTrackingServiceScript" parent="baseJavaScriptExtension"
+         class="org.alfresco.repo.action.script.ScriptActionTrackingService">
+        <property name="extensionName">
+            <value>actionTrackingService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="actionTrackingService" ref="actionTrackingService"/>
+    </bean>
+
 
    <!-- Actions Aspect -->
    

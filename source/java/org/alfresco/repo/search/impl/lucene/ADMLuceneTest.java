@@ -670,1743 +670,1751 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     }
 
-//    public void testQuoting() throws Exception
-//    {
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-//        sp.setQuery("TEXT:\"te\\\"thing\\\"st\"");
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.excludeDataInTheCurrentTransaction(true);
-//
-//        ResultSet results = serviceRegistry.getSearchService().query(sp);
-//        results.close();
-//    }
-//
-//    public void testPublicServiceSearchServicePaging() throws Exception
-//    {
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        List<NodeRef> expected = new ArrayList<NodeRef>(15);
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.setQuery("PATH:\"//.\"");
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.excludeDataInTheCurrentTransaction(true);
-//
-//        ResultSet results;
-//        ResultSetMetaData md;
-//
-//        results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(16, results.length());
-//        md = results.getResultSetMetaData();
-//        for (ResultSetRow row : results)
-//        {
-//            expected.add(row.getNodeRef());
-//        }
-//        results.close();
-//        for (int skip = 0; skip < 20; skip++)
-//        {
-//            for (int max = 0; max < 20; max++)
-//            {
-//                doPage(expected, skip, max, sp, serviceRegistry.getSearchService());
-//            }
-//        }
-//
-//        this.authenticationComponent.setCurrentUser("admin");
-//        sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-//        sp.setQuery("PATH:\"//.\"");
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.excludeDataInTheCurrentTransaction(true);
-//
-//        results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(16, results.length());
-//        results.close();
-//
-//        sp.setMaxPermissionChecks(2);
-//        results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(2, results.length());
-//        results.close();
-//
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.setMaxPermissionChecks(2);
-//        results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(2, results.length());
-//        results.close();
-//
-//        // Even though it is picked up they go though before the time moves on
-//        // sp.setMaxPermissionChecks(-1);
-//        // sp.setMaxPermissionCheckTimeMillis(0);
-//        // results = serviceRegistry.getSearchService().query(sp);
-//        // assertEquals(0, results.length());
-//        // results.close();
-//
-//    }
-//
-//    private void doPage(List<NodeRef> expected, int skip, int max, SearchParameters sp, SearchService searcher)
-//    {
-//        sp.setSkipCount(skip);
-//        sp.setMaxItems(max);
-//        ResultSet results = searcher.query(sp);
-//        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
-//        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
-//        assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
-//        int actualPosition = skip;
-//        for (ResultSetRow row : results)
-//        {
-//            NodeRef nodeRef = row.getNodeRef();
-//            assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
-//            actualPosition++;
-//        }
-//        results.close();
-//    }
-//
-//    public void testNonPublicSearchServicePaging() throws InterruptedException
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-//
-//        List<NodeRef> expected = new ArrayList<NodeRef>(15);
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.setQuery("PATH:\"//.\"");
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.excludeDataInTheCurrentTransaction(true);
-//
-//        ResultSet results;
-//        ResultSetMetaData md;
-//
-//        results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//        md = results.getResultSetMetaData();
-//        for (ResultSetRow row : results)
-//        {
-//            expected.add(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        for (int skip = 0; skip < 20; skip++)
-//        {
-//            for (int max = 0; max < 20; max++)
-//            {
-//                doPage(expected, skip, max, sp, searcher);
-//            }
-//        }
-//
-//    }
-//
-//    private void doPage(List<NodeRef> expected, int skip, int max, SearchParameters sp, ADMLuceneSearcherImpl searcher)
-//    {
-//        sp.setSkipCount(skip);
-//        sp.setMaxItems(max);
-//        ResultSet results = searcher.query(sp);
-//        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
-//        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
-//        assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
-//        int actualPosition = skip;
-//        for (ResultSetRow row : results)
-//        {
-//            NodeRef nodeRef = row.getNodeRef();
-//            assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
-//            actualPosition++;
-//        }
-//        results.close();
-//    }
-//
-//    public void testAlfrescoSql() throws InterruptedException
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-//
-//        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT", 1);
-//        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT D JOIN CM:OWNABLE O ON D.CMIS:OBJECTID = O.CMIS:OBJECTID", 0);
-//    }
-//
-//    public void alfrescoSqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
-//    {
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_CMIS_ALFRESCO, query, null);
-//        assertEquals(count, results.length());
-//        results.getResultSetMetaData();
-//        results.close();
-//    }
-//
-//    public void testCmisSql() throws InterruptedException
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-//
-//        sqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT", 1);
-//        sqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT D WHERE CONTAINS(D,'lazy')", 1);
-//    }
-//
-//    public void sqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
-//    {
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_CMIS_STRICT, query, null);
-//        assertEquals(count, results.length());
-//        results.getResultSetMetaData();
-//        results.close();
-//    }
-//
-//    public void testFtsSort() throws Throwable
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery("-eager or -dog");
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.addSort(ContentModel.PROP_NODE_UUID.toString(), true);
-//        ResultSet results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//
-//        String f = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
-//            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
-//            if (f != null)
-//            {
-//                assertTrue(f.compareTo(currentBun) <= 0);
-//            }
-//            f = currentBun;
-//        }
-//
-//        results.close();
-//
-//        sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery("-eager or -dog");
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.addSort(ContentModel.PROP_NODE_UUID.toString(), false);
-//        results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//
-//        f = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
-//            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
-//            if (f != null)
-//            {
-//                assertTrue(f.compareTo(currentBun) >= 0);
-//            }
-//            f = currentBun;
-//        }
-//
-//        results.close();
-//
-//        sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery("-eager or -dog");
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.addSort("@" + ContentModel.PROP_NODE_UUID.toString(), false);
-//        results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//
-//        f = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
-//            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
-//            if (f != null)
-//            {
-//                assertTrue(f.compareTo(currentBun) >= 0);
-//            }
-//            f = currentBun;
-//        }
-//
-//        results.close();
-//
-//        sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery("-eager or -dog");
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.addSort("cm:name", false);
-//        results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//
-//        f = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
-//            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
-//            if (f != null)
-//            {
-//                assertTrue(f.compareTo(currentBun) >= 0);
-//            }
-//            f = currentBun;
-//        }
-//
-//        results.close();
-//
-//        sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery("-eager or -dog");
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.addSort("test:neverIndexed", false);
-//        results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//        results.close();
-//
-//    }
-//
-//    public void testFTS() throws InterruptedException
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-//
-//        ftsQueryWithCount(searcher, "\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "lazy and dog", 1);
-//        ftsQueryWithCount(searcher, "-lazy and -dog", 15);
-//        ftsQueryWithCount(searcher, "-lazy and dog", 0);
-//        ftsQueryWithCount(searcher, "lazy and -dog", 0);
-//        ftsQueryWithCount(searcher, "|lazy and |dog", 1);
-//        ftsQueryWithCount(searcher, "|eager and |dog", 1);
-//        ftsQueryWithCount(searcher, "|lazy and |wolf", 1);
-//        ftsQueryWithCount(searcher, "|eager and |wolf", 0);
-//        ftsQueryWithCount(searcher, "-lazy or -dog", 15);
-//        ftsQueryWithCount(searcher, "-eager or -dog", 16);
-//        ftsQueryWithCount(searcher, "-lazy or -wolf", 16);
-//        ftsQueryWithCount(searcher, "-eager or -wolf", 16);
-//        ftsQueryWithCount(searcher, "lazy dog", 1);
-//        ftsQueryWithCount(searcher, "lazy and not dog", 0);
-//        ftsQueryWithCount(searcher, "lazy not dog", 16);
-//        ftsQueryWithCount(searcher, "lazy and !dog", 0);
-//        ftsQueryWithCount(searcher, "lazy !dog", 16);
-//        ftsQueryWithCount(searcher, "lazy and -dog", 0);
-//        ftsQueryWithCount(searcher, "lazy -dog", 16);
-//        ftsQueryWithCount(searcher, "TEXT:\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "cm_content:\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "cm:content:big OR cm:content:lazy", 1);
-//        ftsQueryWithCount(searcher, "cm:content:big AND cm:content:lazy", 0);
-//        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "=lazy", 1);
-//        ftsQueryWithCount(searcher, "@cm:content:big OR @cm:content:lazy", 1);
-//        ftsQueryWithCount(searcher, "@cm:content:big AND @cm:content:lazy", 0);
-//        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "~@cm:content:big OR ~@cm:content:lazy", 1);
-//        ftsQueryWithCount(searcher, "brown * quick", 0);
-//        ftsQueryWithCount(searcher, "brown * dog", 1);
-//        ftsQueryWithCount(searcher, "brown * dog", 1);
-//        ftsQueryWithCount(searcher, "brown *(0) dog", 0);
-//        ftsQueryWithCount(searcher, "brown *(1) dog", 0);
-//        ftsQueryWithCount(searcher, "brown *(2) dog", 0);
-//        ftsQueryWithCount(searcher, "brown *(3) dog", 0);
-//        ftsQueryWithCount(searcher, "brown *(4) dog", 1); // "the" does not count
-//        ftsQueryWithCount(searcher, "brown *(5) dog", 1);
-//        ftsQueryWithCount(searcher, "brown *(6) dog", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(\"lazy\")", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy and dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(-lazy and -dog)", 15);
-//        ftsQueryWithCount(searcher, "TEXT:(-lazy and dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(|lazy and |dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(|eager and |dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(|lazy and |wolf)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(|eager and |wolf)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(-lazy or -dog)", 15);
-//        ftsQueryWithCount(searcher, "TEXT:(-eager or -dog)", 16);
-//        ftsQueryWithCount(searcher, "TEXT:(-lazy or -wolf)", 16);
-//        ftsQueryWithCount(searcher, "TEXT:(-eager or -wolf)", 16);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy and not dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy not dog)", 16);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy and !dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy !dog)", 16);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(lazy -dog)", 16);
-//        ftsQueryWithCount(searcher, "cm_content:(\"lazy\")", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(big OR lazy)", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(big AND lazy)", 0);
-//        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(=lazy)", 1);
-//        ftsQueryWithCount(searcher, "@cm:content:(big) OR @cm:content:(lazy)", 1);
-//        ftsQueryWithCount(searcher, "@cm:content:(big) AND @cm:content:(lazy)", 0);
-//        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
-//        ftsQueryWithCount(searcher, "@cm:content:(~big OR ~lazy)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(brown * quick)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(brown * dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(brown * dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(0) dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(1) dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(2) dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(3) dog)", 0);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(4) dog)", 1); // "the" does not count
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(5) dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
-//
-//        try
-//        {
-//            ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
-//            fail("Range query should not be supported against type d:content");
-//        }
-//        catch(UnsupportedOperationException e)
-//        {
-//            
-//        }
-//        
-//        try
-//        {
-//            ftsQueryWithCount(searcher, "TEXT:brown..dog", 1);
-//            fail("Range query should not be supported against type d:content");
-//        }
-//        catch(UnsupportedOperationException e)
-//        {
-//            
-//        }
-//        
-//        try
-//        {
-//            ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
-//            fail("Range query should not be supported against type d:content");
-//        }
-//        catch(UnsupportedOperationException e)
-//        {
-//            
-//        }
-//
-//        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
-//        ftsQueryWithCount(searcher, qname + ":3.40", 1);
-//        ftsQueryWithCount(searcher, qname + ":3..4", 1);
-//        ftsQueryWithCount(searcher, qname + ":3..3.39", 0);
-//        ftsQueryWithCount(searcher, qname + ":3..3.40", 1);
-//        ftsQueryWithCount(searcher, qname + ":3.41..3.9", 0);
-//        ftsQueryWithCount(searcher, qname + ":3.40..3.9", 1);
-//
-//        ftsQueryWithCount(searcher, qname + ":[3 TO 4]", 1);
-//        ftsQueryWithCount(searcher, qname + ":[3 TO 3.39]", 0);
-//        ftsQueryWithCount(searcher, qname + ":[3 TO 3.4]", 1);
-//        ftsQueryWithCount(searcher, qname + ":[3.41 TO 4]", 0);
-//        ftsQueryWithCount(searcher, qname + ":[3.4 TO 4]", 1);
-//        ftsQueryWithCount(searcher, qname + ":[3 TO 3.4>", 0);
-//        ftsQueryWithCount(searcher, qname + ":<3.4 TO 4]", 0);
-//        ftsQueryWithCount(searcher, qname + ":<3.4 TO 3.4>", 0);
-//
-//        ftsQueryWithCount(searcher, qname + ":(3.40)", 1);
-//        ftsQueryWithCount(searcher, qname + ":(3..4)", 1);
-//        ftsQueryWithCount(searcher, qname + ":(3..3.39)", 0);
-//        ftsQueryWithCount(searcher, qname + ":(3..3.40)", 1);
-//        ftsQueryWithCount(searcher, qname + ":(3.41..3.9)", 0);
-//        ftsQueryWithCount(searcher, qname + ":(3.40..3.9)", 1);
-//
-//        ftsQueryWithCount(searcher, qname + ":([3 TO 4])", 1);
-//        ftsQueryWithCount(searcher, qname + ":([3 TO 3.39])", 0);
-//        ftsQueryWithCount(searcher, qname + ":([3 TO 3.4])", 1);
-//        ftsQueryWithCount(searcher, qname + ":([3.41 TO 4])", 0);
-//        ftsQueryWithCount(searcher, qname + ":([3.4 TO 4])", 1);
-//        ftsQueryWithCount(searcher, qname + ":([3 TO 3.4>)", 0);
-//        ftsQueryWithCount(searcher, qname + ":(<3.4 TO 4])", 0);
-//        ftsQueryWithCount(searcher, qname + ":(<3.4 TO 3.4>)", 0);
-//
-//        ftsQueryWithCount(searcher, "test:float_x002D_ista:3.40", 1);
-//
-//        ftsQueryWithCount(searcher, "lazy", 1);
-//        ftsQueryWithCount(searcher, "laz*", 1);
-//        ftsQueryWithCount(searcher, "l*y", 1);
-//        ftsQueryWithCount(searcher, "l??y", 1);
-//        ftsQueryWithCount(searcher, "?az?", 1);
-//        ftsQueryWithCount(searcher, "*zy", 1);
-//
-//        ftsQueryWithCount(searcher, "\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "\"laz*\"", 1);
-//        ftsQueryWithCount(searcher, "\"l*y\"", 1);
-//        ftsQueryWithCount(searcher, "\"l??y\"", 1);
-//        ftsQueryWithCount(searcher, "\"?az?\"", 1);
-//        ftsQueryWithCount(searcher, "\"*zy\"", 1);
-//
-//        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
-//        ftsQueryWithCount(searcher, "cm:content:laz*", 1);
-//        ftsQueryWithCount(searcher, "cm:content:l*y", 1);
-//        ftsQueryWithCount(searcher, "cm:content:l??y", 1);
-//        ftsQueryWithCount(searcher, "cm:content:?az?", 1);
-//        ftsQueryWithCount(searcher, "cm:content:*zy", 1);
-//
-//        ftsQueryWithCount(searcher, "cm:content:\"lazy\"", 1);
-//        ftsQueryWithCount(searcher, "cm:content:\"laz*\"", 1);
-//        ftsQueryWithCount(searcher, "cm:content:\"l*y\"", 1);
-//        ftsQueryWithCount(searcher, "cm:content:\"l??y\"", 1);
-//        ftsQueryWithCount(searcher, "cm:content:\"?az?\"", 1);
-//        ftsQueryWithCount(searcher, "cm:content:\"*zy\"", 1);
-//
-//        ftsQueryWithCount(searcher, "cm:content:(lazy)", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(laz*)", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(l*y)", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(l??y)", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(?az?)", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(*zy)", 1);
-//
-//        ftsQueryWithCount(searcher, "cm:content:(\"lazy\")", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(\"laz*\")", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(\"l*y\")", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(\"l??y\")", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(\"?az?\")", 1);
-//        ftsQueryWithCount(searcher, "cm:content:(\"*zy\")", 1);
-//
-//        ftsQueryWithCount(searcher, "lazy^2 dog^4.2", 1);
-//
-//        ftsQueryWithCount(searcher, "lazy~0.7", 1);
-//        ftsQueryWithCount(searcher, "cm:content:laxy~0.7", 1);
-//        ftsQueryWithCount(searcher, "laxy~0.7", 1);
-//        ftsQueryWithCount(searcher, "=laxy~0.7", 1);
-//        ftsQueryWithCount(searcher, "~laxy~0.7", 1);
-//
-//        ftsQueryWithCount(searcher, "\"quick fox\"~0", 0);
-//        ftsQueryWithCount(searcher, "\"quick fox\"~1", 1);
-//        ftsQueryWithCount(searcher, "\"quick fox\"~2", 1);
-//        ftsQueryWithCount(searcher, "\"quick fox\"~3", 1);
-//
-//        ftsQueryWithCount(searcher, "\"fox quick\"~0", 0);
-//        ftsQueryWithCount(searcher, "\"fox quick\"~1", 0);
-//        ftsQueryWithCount(searcher, "\"fox quick\"~2", 0);
-//        ftsQueryWithCount(searcher, "\"fox quick\"~3", 1);
-//
-//        ftsQueryWithCount(searcher, "lazy", 1);
-//        ftsQueryWithCount(searcher, "-lazy", 15);
-//        ftsQueryWithCount(searcher, "lazy -lazy", 16, null, n14);
-//        ftsQueryWithCount(searcher, "lazy^20 -lazy", 16, n14, null);
-//        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 16, null, n14);
-//
-//        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
-//        // Simple template
-//        ftsQueryWithCount(searcher, "ANDY:lazy", 1);
-//        // default namesapce cm
-//        ftsQueryWithCount(searcher, "content:lazy", 1);
-//
-//        ftsQueryWithCount(searcher, "PATH:\"//.\"", 16);
-//
-//        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
-//        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
-//        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
-//                0);
-//
-//        ftsQueryWithCount(searcher, "(brown *(6) dog)", 1);
-//        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
-//        ftsQueryWithCount(searcher, "\"//.\"", 0);
-//        ftsQueryWithCount(searcher, "PATH", "\"//.\"", 16);
-//        ftsQueryWithCount(searcher, "cm:content:brown", 1);
-//        ftsQueryWithCount(searcher, "ANDY:brown", 1);
-//        ftsQueryWithCount(searcher, "ANDY", "brown", 1);
-//        
-//        // test date ranges - note: expected 2 results = n14 (cm:content) and n15 (cm:thumbnail)
-//        ftsQueryWithCount(searcher, "modified:*", 2, Arrays.asList(new NodeRef[]{n14,n15}));
-//        ftsQueryWithCount(searcher, "modified:[MIN TO NOW]", 2, Arrays.asList(new NodeRef[]{n14,n15}));
-//    }
-//    
-//    
-//    private ADMLuceneSearcherImpl buildSearcher()
-//    {
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
-//        return searcher;
-//    }
-//    
-//    public void testFTSandSort() throws Exception
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//        ADMLuceneSearcherImpl searcher = buildSearcher();
-//        
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery( "PATH:\"//.\"");
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.addSort("@"+ContentModel.PROP_CONTENT.toString()+".size", true);
-//        ResultSet results = searcher.query(sp);
-//        assertEquals(16, results.length());
-//        results.close();
-//    }
-//
-//    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
-//    {
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery(query);
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        ResultSet results = searcher.query(sp);
-//        assertEquals(count, results.length());
-//        results.close();
-//    }
-//    
-//    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String defaultFieldName, String query, int count)
-//    {
-//        SearchParameters sp = new SearchParameters();
-//        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setQuery(query);
-//        sp.addQueryTemplate("ANDY", "%cm:content");
-//        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
-//        sp.excludeDataInTheCurrentTransaction(true);
-//        sp.setDefaultFieldName(defaultFieldName);
-//        ResultSet results = searcher.query(sp);
-//        assertEquals(count, results.length());
-//        results.close();
-//    }
-//
-//    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, NodeRef first, NodeRef last)
-//    {
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
-//        for (ResultSetRow row : results)
-//        {
-//            System.out.println("" + row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
-//        }
-//        assertEquals(count, results.length());
-//        if (first != null)
-//        {
-//            assertEquals(first, results.getNodeRef(0));
-//        }
-//        if (last != null)
-//        {
-//            assertEquals(last, results.getNodeRef(results.length() - 1));
-//        }
-//        results.close();
-//    }
-//    
-//    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, List<NodeRef> expectedList)
-//    {
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
-//        for (ResultSetRow row : results)
-//        {
-//            System.out.println("" + row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
-//        }
-//        assertEquals(count, results.length());
-//        
-//        List<NodeRef> actualList = results.getNodeRefs();
-//        
-//        for (NodeRef expected : expectedList)
-//        {
-//            assertTrue("did not find "+expected, actualList.contains(expected));
-//        }
-//        
-//        results.close();
-//    }
-//
-//    public void testOverWritetoZeroSize() throws Exception
-//    {
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//        runBaseTests();
-//        luceneFTS.resume();
-//        testTX.commit();
-//
-//        for (int i = 0; i < 50; i++)
-//        {
-//            testTX = transactionService.getUserTransaction();
-//            testTX.begin();
-//            runBaseTests();
-//            nodeService.setProperty(rootNodeRef, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n1, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n2, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n3, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n4, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n5, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n6, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n7, QName.createQName("{namespace}property-A"), "A");
-//            runBaseTests();
-//            testTX.commit();
-//
-//            testTX = transactionService.getUserTransaction();
-//            testTX.begin();
-//            runBaseTests();
-//            nodeService.setProperty(n8, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n9, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n10, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n11, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n12, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n13, QName.createQName("{namespace}property-A"), "A");
-//            nodeService.setProperty(n14, QName.createQName("{namespace}property-A"), "A");
-//            runBaseTests();
-//            testTX.commit();
-//        }
-//
-//    }
-//
-//    public void testBulkResultSet1() throws Exception
-//    {
-//        doBulkTest(1);
-//    }
-//
-//    public void testBulkResultSet10() throws Exception
-//    {
-//        doBulkTest(10);
-//    }
-//
-//    public void testBulkResultSet100() throws Exception
-//    {
-//
-//        doBulkTest(100);
-//    }
-//
-//    public void testBulkResultSet1000() throws Exception
-//    {
-//        doBulkTest(1000);
-//    }
-//
-//    public void xtestBulkResultSet10000() throws Exception
-//    {
-//        doBulkTest(10000);
-//    }
-//
-//    private void doBulkTest(int n) throws Exception
-//    {
-//        Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
-//        testProperties.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"), "BULK");
-//        for (int i = 0; i < n; i++)
-//        {
-//            nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas-" + i), testSuperType, testProperties).getChildRef();
-//        }
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(false);
-//        results.setBulkFetchSize(10);
-//        assertEquals(n, results.length());
-//        results.close();
-//
-//        getCold(searcher, n);
-//        getWarm(searcher, n);
-//        getCold(searcher, n);
-//        getCold10(searcher, n);
-//        getCold100(searcher, n);
-//        getCold1000(searcher, n);
-//        getCold10000(searcher, n);
-//
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//    }
-//
-//    private void getCold(ADMLuceneSearcherImpl searcher, int n)
-//    {
-//        nodeBulkLoader.clear();
-//
-//        long start;
-//
-//        long end;
-//
-//        start = System.nanoTime();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(false);
-//        results.setBulkFetchSize(0);
-//        for (ResultSetRow row : results)
-//        {
-//            nodeService.getAspects(row.getNodeRef());
-//            nodeService.getProperties(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        end = System.nanoTime();
-//
-//        System.out.println(n + " Cold in " + ((end - start) / 10e9));
-//    }
-//
-//    private void getWarm(ADMLuceneSearcherImpl searcher, int n)
-//    {
-//
-//        long start;
-//
-//        long end;
-//
-//        start = System.nanoTime();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(false);
-//        results.setBulkFetchSize(0);
-//        for (ResultSetRow row : results)
-//        {
-//            nodeService.getAspects(row.getNodeRef());
-//            nodeService.getProperties(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        end = System.nanoTime();
-//
-//        System.out.println(n + " Warm in " + ((end - start) / 10e9));
-//    }
-//
-//    private void getCold10(ADMLuceneSearcherImpl searcher, int n)
-//    {
-//        nodeBulkLoader.clear();
-//
-//        long start;
-//
-//        long end;
-//
-//        start = System.nanoTime();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(true);
-//        results.setBulkFetchSize(10);
-//        for (ResultSetRow row : results)
-//        {
-//            nodeService.getAspects(row.getNodeRef());
-//            nodeService.getProperties(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        end = System.nanoTime();
-//
-//        System.out.println(n + " Prefetch 10 in " + ((end - start) / 10e9));
-//    }
-//
-//    private void getCold100(ADMLuceneSearcherImpl searcher, int n)
-//    {
-//        nodeBulkLoader.clear();
-//
-//        long start;
-//
-//        long end;
-//
-//        start = System.nanoTime();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(true);
-//        results.setBulkFetchSize(100);
-//        for (ResultSetRow row : results)
-//        {
-//            nodeService.getAspects(row.getNodeRef());
-//            nodeService.getProperties(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        end = System.nanoTime();
-//
-//        System.out.println(n + " Prefetch 100 in " + ((end - start) / 10e9));
-//    }
-//
-//    private void getCold1000(ADMLuceneSearcherImpl searcher, int n)
-//    {
-//        nodeBulkLoader.clear();
-//
-//        long start;
-//
-//        long end;
-//
-//        start = System.nanoTime();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(true);
-//        results.setBulkFetchSize(1000);
-//        for (ResultSetRow row : results)
-//        {
-//            nodeService.getAspects(row.getNodeRef());
-//            nodeService.getProperties(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        end = System.nanoTime();
-//
-//        System.out.println(n + " Prefetch 1000 in " + ((end - start) / 10e9));
-//    }
-//
-//    private void getCold10000(ADMLuceneSearcherImpl searcher, int n)
-//    {
-//        nodeBulkLoader.clear();
-//
-//        long start;
-//
-//        long end;
-//
-//        start = System.nanoTime();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage("lucene");
-//        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
-//        ResultSet results = searcher.query(sp);
-//        results.setBulkFetch(true);
-//        results.setBulkFetchSize(10000);
-//        for (ResultSetRow row : results)
-//        {
-//            nodeService.getAspects(row.getNodeRef());
-//            nodeService.getProperties(row.getNodeRef());
-//        }
-//        results.close();
-//
-//        end = System.nanoTime();
-//
-//        System.out.println(n + " Prefetch 10000 in " + ((end - start) / 10e9));
-//    }
-//
-//    /**
-//     * Test bug fix
-//     * 
-//     * @throws Exception
-//     */
-//    public void testSortIssue_AR_1515__AND__AR_1466() throws Exception
-//    {
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//        runBaseTests();
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        runBaseTests();
-//
-//        SearchParameters sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-//        sp.setQuery("PATH:\"//.\"");
-//        sp.excludeDataInTheCurrentTransaction(false);
-//        sp.addSort("ID", true);
-//        ResultSet results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(16, results.length());
-//
-//        String current = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String id = row.getNodeRef().getId();
-//
-//            if (current != null)
-//            {
-//                if (current.compareTo(id) > 0)
-//                {
-//                    fail();
-//                }
-//            }
-//            current = id;
-//        }
-//        results.close();
-//
-//        assertEquals(5, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
-//        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas"), testSuperType).getChildRef();
-//        assertEquals(6, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
-//
-//        sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-//        sp.setQuery("PATH:\"//.\"");
-//        sp.excludeDataInTheCurrentTransaction(false);
-//        sp.addSort("ID", true);
-//        results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(17, results.length());
-//        current = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String id = row.getNodeRef().getId();
-//
-//            if (current != null)
-//            {
-//                if (current.compareTo(id) > 0)
-//                {
-//                    fail();
-//                }
-//            }
-//            current = id;
-//        }
-//        results.close();
-//
-//        assertEquals(6, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
-//        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas"), testSuperType).getChildRef();
-//        assertEquals(7, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
-//
-//        sp = new SearchParameters();
-//        sp.addStore(rootNodeRef.getStoreRef());
-//        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-//        sp.setQuery("PATH:\"//.\"");
-//        sp.excludeDataInTheCurrentTransaction(false);
-//        sp.addSort("ID", true);
-//        results = serviceRegistry.getSearchService().query(sp);
-//        assertEquals(18, results.length());
-//        current = null;
-//        for (ResultSetRow row : results)
-//        {
-//            String id = row.getNodeRef().getId();
-//
-//            if (current != null)
-//            {
-//                if (current.compareTo(id) > 0)
-//                {
-//                    fail();
-//                }
-//            }
-//            current = id;
-//        }
-//        results.close();
-//
-//        testTX.rollback();
-//
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void testAuxDataIsPresent() throws Exception
-//    {
-//        luceneFTS.pause();
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        runBaseTests();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null);
-//        assertEquals(1, results.length()); // one node
-//        results.close();
-//
-//        nodeService.addAspect(n14, aspectWithChildren, null);
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null);
-//        assertEquals(10, results.length()); // one node + 9 aux paths to n14
-//        results.close();
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void testFirst() throws Exception
-//    {
-//        testReadAgainstDelta();
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void test0() throws Exception
-//    {
-//        luceneFTS.pause();
-//        buildBaseIndex();
-//        runBaseTests();
-//        luceneFTS.resume();
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void testDeleteSecondaryAssocToContainer() throws Exception
-//    {
-//        luceneFTS.pause();
-//
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        runBaseTests();
-//        nodeService.removeChild(n2, n13);
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:link\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
-//        assertEquals(7, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null);
-//        assertEquals(6, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
-//        assertEquals(4, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
-//        assertEquals(7, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
-//        assertEquals(4, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-//        assertEquals(16, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-//        assertEquals(24, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-//        assertEquals(23, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-//        assertEquals(23, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-//        assertEquals(23, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-//        assertEquals(23, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-//        assertEquals(23, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-//        assertEquals(7, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-//        assertEquals(10, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
-//        assertEquals(8, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        luceneFTS.resume();
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void testDeleteSecondaryAssocToLeaf() throws Exception
-//    {
-//        luceneFTS.pause();
-//
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        runBaseTests();
-//        nodeService.removeChild(n12, n14);
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
-//        assertEquals(0, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
-//        assertEquals(6, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
-//        assertEquals(8, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
-//        assertEquals(6, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
-//        assertEquals(4, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
-//        assertEquals(6, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
-//        assertEquals(8, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
-//        assertEquals(6, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
-//        assertEquals(4, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
-//        assertEquals(5, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
-//        assertEquals(16, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
-//        assertEquals(27, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
-//        assertEquals(26, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
-//        assertEquals(26, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
-//        assertEquals(26, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
-//        assertEquals(26, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
-//        assertEquals(15, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
-//        assertEquals(26, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
-//        assertEquals(7, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
-//        assertEquals(9, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
-//        assertEquals(8, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
-//        assertEquals(1, results.length());
-//        results.close();
-//        luceneFTS.resume();
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void testDeleteIssue() throws Exception
-//    {
-//
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        ChildAssociationRef testFind = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}testFind"), testSuperType);
-//        testTX.commit();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
-//        assertEquals(1, results.length());
-//        results.close();
-//
-//        RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
-//        {
-//            public Object execute() throws Throwable
-//            {
-//                for (int i = 0; i < 100; i+=10)
-//                {
-//                    HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
-//                    for (int j = 0; j < i; j++)
-//                    {
-//                        ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"), testSuperType);
-//                        refs.add(test);
-//                    }
-//
-//                    for (ChildAssociationRef car : refs)
-//                    {
-//                        nodeService.deleteNode(car.getChildRef());
-//                    }
-//                }
-//                return null;
-//            }
-//        };
-//        retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
-//
-//        UserTransaction tx3 = transactionService.getUserTransaction();
-//        tx3.begin();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
-//        assertEquals(1, results.length());
-//        results.close();
-//        tx3.commit();
-//    }
-//
-//    /**
-//     * @throws Exception
-//     */
-//    public void testMTDeleteIssue() throws Exception
-//    {
-//        luceneFTS.pause();
-//        testTX.commit();
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        ChildAssociationRef testFind = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}testFind"), testSuperType);
-//        testTX.commit();
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//
-//        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
-//        searcher.setNodeService(nodeService);
-//        searcher.setDictionaryService(dictionaryService);
-//        searcher.setTenantService(tenantService);
-//        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
-//        searcher.setQueryRegister(queryRegisterComponent);
-//
-//        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
-//        assertEquals(1, results.length());
-//        results.close();
-//        testTX.commit();
-//
-//        Thread runner = null;
-//
-//        for (int i = 0; i < 20; i++)
-//        {
-//            runner = new Nester("Concurrent-" + i, runner);
-//        }
-//        if (runner != null)
-//        {
-//            runner.start();
-//
-//            try
-//            {
-//                runner.join();
-//            }
-//            catch (InterruptedException e)
-//            {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        testTX = transactionService.getUserTransaction();
-//        testTX.begin();
-//        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
-//        assertEquals(1, results.length());
-//        results.close();
-//        testTX.commit();
-//    }
-//
-//    class Nester extends Thread
-//    {
-//        Thread waiter;
-//
-//        Nester(String name, Thread waiter)
-//        {
-//            super(name);
-//            this.setDaemon(true);
-//            this.waiter = waiter;
-//        }
-//
-//        public void run()
-//        {
-//            authenticationComponent.setSystemUserAsCurrentUser();
-//            if (waiter != null)
-//            {
-//                waiter.start();
-//            }
-//            try
-//            {
-//                System.out.println("Start " + this.getName());
-//                RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
-//                {
-//                    public Object execute() throws Throwable
-//                    {
-//                        for (int i = 0; i < 20; i++)
-//                        {
-//                            HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
-//                            for (int j = 0; j < i; j++)
-//                            {
-//                                ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test_"
-//                                        + getName() + "_" + i + "_" + j), testSuperType);
-//                                refs.add(test);
-//                            }
-//
-//                            for (ChildAssociationRef car : refs)
-//                            {
-//                                nodeService.deleteNode(car.getChildRef());
-//                            }
-//                        }
-//                        return null;
-//                    }
-//                };
-//                retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
-//                System.out.println("End " + this.getName());
-//            }
-//            catch (Exception e)
-//            {
-//                System.out.println("End " + this.getName() + " with error " + e.getMessage());
-//                e.printStackTrace();
-//            }
-//            finally
-//            {
-//                authenticationComponent.clearCurrentSecurityContext();
-//            }
-//            if (waiter != null)
-//            {
-//                try
-//                {
-//                    waiter.join();
-//                }
-//                catch (InterruptedException e)
-//                {
-//                }
-//            }
-//        }
-//
-//    }
+    public void testQuoting() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TEXT:\"te\\\"thing\\\"st\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        ResultSet results = serviceRegistry.getSearchService().query(sp);
+        results.close();
+    }
+
+    public void testPublicServiceSearchServicePaging() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        List<NodeRef> expected = new ArrayList<NodeRef>(15);
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        ResultSet results;
+        ResultSetMetaData md;
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(16, results.length());
+        md = results.getResultSetMetaData();
+        for (ResultSetRow row : results)
+        {
+            expected.add(row.getNodeRef());
+        }
+        results.close();
+        for (int skip = 0; skip < 20; skip++)
+        {
+            for (int max = 0; max < 20; max++)
+            {
+                doPage(expected, skip, max, sp, serviceRegistry.getSearchService());
+            }
+        }
+
+        this.authenticationComponent.setCurrentUser("admin");
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(16, results.length());
+        results.close();
+
+        sp.setMaxPermissionChecks(2);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(2, results.length());
+        results.close();
+
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setMaxPermissionChecks(2);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(2, results.length());
+        results.close();
+
+        // Even though it is picked up they go though before the time moves on
+        // sp.setMaxPermissionChecks(-1);
+        // sp.setMaxPermissionCheckTimeMillis(0);
+        // results = serviceRegistry.getSearchService().query(sp);
+        // assertEquals(0, results.length());
+        // results.close();
+
+    }
+
+    private void doPage(List<NodeRef> expected, int skip, int max, SearchParameters sp, SearchService searcher)
+    {
+        sp.setSkipCount(skip);
+        sp.setMaxItems(max);
+        ResultSet results = searcher.query(sp);
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
+        assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
+        int actualPosition = skip;
+        for (ResultSetRow row : results)
+        {
+            NodeRef nodeRef = row.getNodeRef();
+            assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
+            actualPosition++;
+        }
+        results.close();
+    }
+
+    public void testNonPublicSearchServicePaging() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        List<NodeRef> expected = new ArrayList<NodeRef>(15);
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("PATH:\"//.\"");
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(true);
+
+        ResultSet results;
+        ResultSetMetaData md;
+
+        results = searcher.query(sp);
+        assertEquals(16, results.length());
+        md = results.getResultSetMetaData();
+        for (ResultSetRow row : results)
+        {
+            expected.add(row.getNodeRef());
+        }
+        results.close();
+
+        for (int skip = 0; skip < 20; skip++)
+        {
+            for (int max = 0; max < 20; max++)
+            {
+                doPage(expected, skip, max, sp, searcher);
+            }
+        }
+
+    }
+
+    private void doPage(List<NodeRef> expected, int skip, int max, SearchParameters sp, ADMLuceneSearcherImpl searcher)
+    {
+        sp.setSkipCount(skip);
+        sp.setMaxItems(max);
+        ResultSet results = searcher.query(sp);
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
+        assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
+        int actualPosition = skip;
+        for (ResultSetRow row : results)
+        {
+            NodeRef nodeRef = row.getNodeRef();
+            assertEquals("Skip = " + skip + " max  = " + max + " actual = " + actualPosition, expected.get(actualPosition), nodeRef);
+            actualPosition++;
+        }
+        results.close();
+    }
+
+    public void testAlfrescoSql() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT", 1);
+        alfrescoSqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT D JOIN CM:OWNABLE O ON D.CMIS:OBJECTID = O.CMIS:OBJECTID", 0);
+    }
+
+    public void alfrescoSqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_CMIS_ALFRESCO, query, null);
+        assertEquals(count, results.length());
+        results.getResultSetMetaData();
+        results.close();
+    }
+
+    public void testCmisSql() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        sqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT", 1);
+        sqlQueryWithCount(searcher, "SELECT * FROM CMIS:DOCUMENT D WHERE CONTAINS(D,'lazy')", 1);
+    }
+
+    public void sqlQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_CMIS_STRICT, query, null);
+        assertEquals(count, results.length());
+        results.getResultSetMetaData();
+        results.close();
+    }
+
+    public void testFtsSort() throws Throwable
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort(ContentModel.PROP_NODE_UUID.toString(), true);
+        ResultSet results = searcher.query(sp);
+        assertEquals(16, results.length());
+
+        String f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) <= 0);
+            }
+            f = currentBun;
+        }
+
+        results.close();
+
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort(ContentModel.PROP_NODE_UUID.toString(), false);
+        results = searcher.query(sp);
+        assertEquals(16, results.length());
+
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+
+        results.close();
+
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("@" + ContentModel.PROP_NODE_UUID.toString(), false);
+        results = searcher.query(sp);
+        assertEquals(16, results.length());
+
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+
+        results.close();
+
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("cm:name", false);
+        results = searcher.query(sp);
+        assertEquals(16, results.length());
+
+        f = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NODE_UUID));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if (f != null)
+            {
+                assertTrue(f.compareTo(currentBun) >= 0);
+            }
+            f = currentBun;
+        }
+
+        results.close();
+
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery("-eager or -dog");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("test:neverIndexed", false);
+        results = searcher.query(sp);
+        assertEquals(16, results.length());
+        results.close();
+
+    }
+
+    public void testFTS() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+
+        ftsQueryWithCount(searcher, "\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "lazy and dog", 1);
+        ftsQueryWithCount(searcher, "-lazy and -dog", 15);
+        ftsQueryWithCount(searcher, "-lazy and dog", 0);
+        ftsQueryWithCount(searcher, "lazy and -dog", 0);
+        ftsQueryWithCount(searcher, "|lazy and |dog", 1);
+        ftsQueryWithCount(searcher, "|eager and |dog", 1);
+        ftsQueryWithCount(searcher, "|lazy and |wolf", 1);
+        ftsQueryWithCount(searcher, "|eager and |wolf", 0);
+        ftsQueryWithCount(searcher, "-lazy or -dog", 15);
+        ftsQueryWithCount(searcher, "-eager or -dog", 16);
+        ftsQueryWithCount(searcher, "-lazy or -wolf", 16);
+        ftsQueryWithCount(searcher, "-eager or -wolf", 16);
+        ftsQueryWithCount(searcher, "lazy dog", 1);
+        ftsQueryWithCount(searcher, "lazy and not dog", 0);
+        ftsQueryWithCount(searcher, "lazy not dog", 16);
+        ftsQueryWithCount(searcher, "lazy and !dog", 0);
+        ftsQueryWithCount(searcher, "lazy !dog", 16);
+        ftsQueryWithCount(searcher, "lazy and -dog", 0);
+        ftsQueryWithCount(searcher, "lazy -dog", 16);
+        ftsQueryWithCount(searcher, "TEXT:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "cm_content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:big OR cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "cm:content:big AND cm:content:lazy", 0);
+        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "=lazy", 1);
+        ftsQueryWithCount(searcher, "@cm:content:big OR @cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "@cm:content:big AND @cm:content:lazy", 0);
+        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "~@cm:content:big OR ~@cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "brown * quick", 0);
+        ftsQueryWithCount(searcher, "brown * dog", 1);
+        ftsQueryWithCount(searcher, "brown * dog", 1);
+        ftsQueryWithCount(searcher, "brown *(0) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(1) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(2) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(3) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(4) dog", 1); // "the" does not count
+        ftsQueryWithCount(searcher, "brown *(5) dog", 1);
+        ftsQueryWithCount(searcher, "brown *(6) dog", 1);
+        ftsQueryWithCount(searcher, "TEXT:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy and -dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy and dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(|lazy and |dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(|eager and |dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(|lazy and |wolf)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(|eager and |wolf)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy or -dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(-eager or -dog)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy or -wolf)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(-eager or -wolf)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(lazy dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and not dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy not dog)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and !dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy !dog)", 16);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy -dog)", 16);
+        ftsQueryWithCount(searcher, "cm_content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(big OR lazy)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(big AND lazy)", 0);
+        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "TEXT:(=lazy)", 1);
+        ftsQueryWithCount(searcher, "@cm:content:(big) OR @cm:content:(lazy)", 1);
+        ftsQueryWithCount(searcher, "@cm:content:(big) AND @cm:content:(lazy)", 0);
+        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "@cm:content:(~big OR ~lazy)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown * quick)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown * dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown * dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(0) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(1) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(2) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(3) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(4) dog)", 1); // "the" does not count
+        ftsQueryWithCount(searcher, "TEXT:(brown *(5) dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
+        
+        ftsQueryWithCount(searcher, "cm:content.mimetype:\"text/plain\"", 1);
+        ftsQueryWithCount(searcher, "cm_content.mimetype:\"text/plain\"", 1);
+        ftsQueryWithCount(searcher, "@cm:content.mimetype:\"text/plain\"", 1);
+        ftsQueryWithCount(searcher, "@cm_content.mimetype:\"text/plain\"", 1);
+        ftsQueryWithCount(searcher, "content.mimetype:\"text/plain\"", 1);
+        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1);
+        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content.mimetype:\"text/plain\"", 1);
+
+        try
+        {
+            ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
+            fail("Range query should not be supported against type d:content");
+        }
+        catch(UnsupportedOperationException e)
+        {
+            
+        }
+        
+        try
+        {
+            ftsQueryWithCount(searcher, "TEXT:brown..dog", 1);
+            fail("Range query should not be supported against type d:content");
+        }
+        catch(UnsupportedOperationException e)
+        {
+            
+        }
+        
+        try
+        {
+            ftsQueryWithCount(searcher, "cm:content:brown..dog", 1);
+            fail("Range query should not be supported against type d:content");
+        }
+        catch(UnsupportedOperationException e)
+        {
+            
+        }
+
+        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
+        ftsQueryWithCount(searcher, qname + ":3.40", 1);
+        ftsQueryWithCount(searcher, qname + ":3..4", 1);
+        ftsQueryWithCount(searcher, qname + ":3..3.39", 0);
+        ftsQueryWithCount(searcher, qname + ":3..3.40", 1);
+        ftsQueryWithCount(searcher, qname + ":3.41..3.9", 0);
+        ftsQueryWithCount(searcher, qname + ":3.40..3.9", 1);
+
+        ftsQueryWithCount(searcher, qname + ":[3 TO 4]", 1);
+        ftsQueryWithCount(searcher, qname + ":[3 TO 3.39]", 0);
+        ftsQueryWithCount(searcher, qname + ":[3 TO 3.4]", 1);
+        ftsQueryWithCount(searcher, qname + ":[3.41 TO 4]", 0);
+        ftsQueryWithCount(searcher, qname + ":[3.4 TO 4]", 1);
+        ftsQueryWithCount(searcher, qname + ":[3 TO 3.4>", 0);
+        ftsQueryWithCount(searcher, qname + ":<3.4 TO 4]", 0);
+        ftsQueryWithCount(searcher, qname + ":<3.4 TO 3.4>", 0);
+
+        ftsQueryWithCount(searcher, qname + ":(3.40)", 1);
+        ftsQueryWithCount(searcher, qname + ":(3..4)", 1);
+        ftsQueryWithCount(searcher, qname + ":(3..3.39)", 0);
+        ftsQueryWithCount(searcher, qname + ":(3..3.40)", 1);
+        ftsQueryWithCount(searcher, qname + ":(3.41..3.9)", 0);
+        ftsQueryWithCount(searcher, qname + ":(3.40..3.9)", 1);
+
+        ftsQueryWithCount(searcher, qname + ":([3 TO 4])", 1);
+        ftsQueryWithCount(searcher, qname + ":([3 TO 3.39])", 0);
+        ftsQueryWithCount(searcher, qname + ":([3 TO 3.4])", 1);
+        ftsQueryWithCount(searcher, qname + ":([3.41 TO 4])", 0);
+        ftsQueryWithCount(searcher, qname + ":([3.4 TO 4])", 1);
+        ftsQueryWithCount(searcher, qname + ":([3 TO 3.4>)", 0);
+        ftsQueryWithCount(searcher, qname + ":(<3.4 TO 4])", 0);
+        ftsQueryWithCount(searcher, qname + ":(<3.4 TO 3.4>)", 0);
+
+        ftsQueryWithCount(searcher, "test:float_x002D_ista:3.40", 1);
+
+        ftsQueryWithCount(searcher, "lazy", 1);
+        ftsQueryWithCount(searcher, "laz*", 1);
+        ftsQueryWithCount(searcher, "l*y", 1);
+        ftsQueryWithCount(searcher, "l??y", 1);
+        ftsQueryWithCount(searcher, "?az?", 1);
+        ftsQueryWithCount(searcher, "*zy", 1);
+
+        ftsQueryWithCount(searcher, "\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "\"laz*\"", 1);
+        ftsQueryWithCount(searcher, "\"l*y\"", 1);
+        ftsQueryWithCount(searcher, "\"l??y\"", 1);
+        ftsQueryWithCount(searcher, "\"?az?\"", 1);
+        ftsQueryWithCount(searcher, "\"*zy\"", 1);
+
+        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "cm:content:laz*", 1);
+        ftsQueryWithCount(searcher, "cm:content:l*y", 1);
+        ftsQueryWithCount(searcher, "cm:content:l??y", 1);
+        ftsQueryWithCount(searcher, "cm:content:?az?", 1);
+        ftsQueryWithCount(searcher, "cm:content:*zy", 1);
+
+        ftsQueryWithCount(searcher, "cm:content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"laz*\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"l*y\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"l??y\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"?az?\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"*zy\"", 1);
+
+        ftsQueryWithCount(searcher, "cm:content:(lazy)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(laz*)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(l*y)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(l??y)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(?az?)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(*zy)", 1);
+
+        ftsQueryWithCount(searcher, "cm:content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"laz*\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"l*y\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"l??y\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"?az?\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"*zy\")", 1);
+
+        ftsQueryWithCount(searcher, "lazy^2 dog^4.2", 1);
+
+        ftsQueryWithCount(searcher, "lazy~0.7", 1);
+        ftsQueryWithCount(searcher, "cm:content:laxy~0.7", 1);
+        ftsQueryWithCount(searcher, "laxy~0.7", 1);
+        ftsQueryWithCount(searcher, "=laxy~0.7", 1);
+        ftsQueryWithCount(searcher, "~laxy~0.7", 1);
+
+        ftsQueryWithCount(searcher, "\"quick fox\"~0", 0);
+        ftsQueryWithCount(searcher, "\"quick fox\"~1", 1);
+        ftsQueryWithCount(searcher, "\"quick fox\"~2", 1);
+        ftsQueryWithCount(searcher, "\"quick fox\"~3", 1);
+
+        ftsQueryWithCount(searcher, "\"fox quick\"~0", 0);
+        ftsQueryWithCount(searcher, "\"fox quick\"~1", 0);
+        ftsQueryWithCount(searcher, "\"fox quick\"~2", 0);
+        ftsQueryWithCount(searcher, "\"fox quick\"~3", 1);
+
+        ftsQueryWithCount(searcher, "lazy", 1);
+        ftsQueryWithCount(searcher, "-lazy", 15);
+        ftsQueryWithCount(searcher, "lazy -lazy", 16, null, n14);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy", 16, n14, null);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 16, null, n14);
+
+        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
+        // Simple template
+        ftsQueryWithCount(searcher, "ANDY:lazy", 1);
+        // default namesapce cm
+        ftsQueryWithCount(searcher, "content:lazy", 1);
+
+        ftsQueryWithCount(searcher, "PATH:\"//.\"", 16);
+
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\"", 0);
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"", 15);
+        ftsQueryWithCount(searcher, "+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" AND -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"",
+                0);
+
+        ftsQueryWithCount(searcher, "(brown *(6) dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
+        ftsQueryWithCount(searcher, "\"//.\"", 0);
+        ftsQueryWithCount(searcher, "PATH", "\"//.\"", 16);
+        ftsQueryWithCount(searcher, "cm:content:brown", 1);
+        ftsQueryWithCount(searcher, "ANDY:brown", 1);
+        ftsQueryWithCount(searcher, "ANDY", "brown", 1);
+        
+        // test date ranges - note: expected 2 results = n14 (cm:content) and n15 (cm:thumbnail)
+        ftsQueryWithCount(searcher, "modified:*", 2, Arrays.asList(new NodeRef[]{n14,n15}));
+        ftsQueryWithCount(searcher, "modified:[MIN TO NOW]", 2, Arrays.asList(new NodeRef[]{n14,n15}));
+    }
+    
+    
+    private ADMLuceneSearcherImpl buildSearcher()
+    {
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+        return searcher;
+    }
+    
+    public void testFTSandSort() throws Exception
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+        ADMLuceneSearcherImpl searcher = buildSearcher();
+        
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery( "PATH:\"//.\"");
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.addSort("@"+ContentModel.PROP_CONTENT.toString()+".size", true);
+        ResultSet results = searcher.query(sp);
+        assertEquals(16, results.length());
+        results.close();
+    }
+
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery(query);
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        ResultSet results = searcher.query(sp);
+        assertEquals(count, results.length());
+        results.close();
+    }
+    
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String defaultFieldName, String query, int count)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setQuery(query);
+        sp.addQueryTemplate("ANDY", "%cm:content");
+        sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
+        sp.excludeDataInTheCurrentTransaction(true);
+        sp.setDefaultFieldName(defaultFieldName);
+        ResultSet results = searcher.query(sp);
+        assertEquals(count, results.length());
+        results.close();
+    }
+
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, NodeRef first, NodeRef last)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
+        for (ResultSetRow row : results)
+        {
+            System.out.println("" + row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
+        }
+        assertEquals(count, results.length());
+        if (first != null)
+        {
+            assertEquals(first, results.getNodeRef(0));
+        }
+        if (last != null)
+        {
+            assertEquals(last, results.getNodeRef(results.length() - 1));
+        }
+        results.close();
+    }
+    
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count, List<NodeRef> expectedList)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null);
+        for (ResultSetRow row : results)
+        {
+            System.out.println("" + row.getScore() + nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_NAME));
+        }
+        assertEquals(count, results.length());
+        
+        List<NodeRef> actualList = results.getNodeRefs();
+        
+        for (NodeRef expected : expectedList)
+        {
+            assertTrue("did not find "+expected, actualList.contains(expected));
+        }
+        
+        results.close();
+    }
+
+    public void testOverWritetoZeroSize() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        luceneFTS.pause();
+        buildBaseIndex();
+        runBaseTests();
+        luceneFTS.resume();
+        testTX.commit();
+
+        for (int i = 0; i < 50; i++)
+        {
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+            runBaseTests();
+            nodeService.setProperty(rootNodeRef, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n1, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n2, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n3, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n4, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n5, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n6, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n7, QName.createQName("{namespace}property-A"), "A");
+            runBaseTests();
+            testTX.commit();
+
+            testTX = transactionService.getUserTransaction();
+            testTX.begin();
+            runBaseTests();
+            nodeService.setProperty(n8, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n9, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n10, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n11, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n12, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n13, QName.createQName("{namespace}property-A"), "A");
+            nodeService.setProperty(n14, QName.createQName("{namespace}property-A"), "A");
+            runBaseTests();
+            testTX.commit();
+        }
+
+    }
+
+    public void testBulkResultSet1() throws Exception
+    {
+        doBulkTest(1);
+    }
+
+    public void testBulkResultSet10() throws Exception
+    {
+        doBulkTest(10);
+    }
+
+    public void testBulkResultSet100() throws Exception
+    {
+
+        doBulkTest(100);
+    }
+
+    public void testBulkResultSet1000() throws Exception
+    {
+        doBulkTest(1000);
+    }
+
+    public void xtestBulkResultSet10000() throws Exception
+    {
+        doBulkTest(10000);
+    }
+
+    private void doBulkTest(int n) throws Exception
+    {
+        Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"), "BULK");
+        for (int i = 0; i < n; i++)
+        {
+            nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas-" + i), testSuperType, testProperties).getChildRef();
+        }
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(false);
+        results.setBulkFetchSize(10);
+        assertEquals(n, results.length());
+        results.close();
+
+        getCold(searcher, n);
+        getWarm(searcher, n);
+        getCold(searcher, n);
+        getCold10(searcher, n);
+        getCold100(searcher, n);
+        getCold1000(searcher, n);
+        getCold10000(searcher, n);
+
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+    }
+
+    private void getCold(ADMLuceneSearcherImpl searcher, int n)
+    {
+        nodeBulkLoader.clear();
+
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(false);
+        results.setBulkFetchSize(0);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Cold in " + ((end - start) / 10e9));
+    }
+
+    private void getWarm(ADMLuceneSearcherImpl searcher, int n)
+    {
+
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(false);
+        results.setBulkFetchSize(0);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Warm in " + ((end - start) / 10e9));
+    }
+
+    private void getCold10(ADMLuceneSearcherImpl searcher, int n)
+    {
+        nodeBulkLoader.clear();
+
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(true);
+        results.setBulkFetchSize(10);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 10 in " + ((end - start) / 10e9));
+    }
+
+    private void getCold100(ADMLuceneSearcherImpl searcher, int n)
+    {
+        nodeBulkLoader.clear();
+
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(true);
+        results.setBulkFetchSize(100);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 100 in " + ((end - start) / 10e9));
+    }
+
+    private void getCold1000(ADMLuceneSearcherImpl searcher, int n)
+    {
+        nodeBulkLoader.clear();
+
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(true);
+        results.setBulkFetchSize(1000);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 1000 in " + ((end - start) / 10e9));
+    }
+
+    private void getCold10000(ADMLuceneSearcherImpl searcher, int n)
+    {
+        nodeBulkLoader.clear();
+
+        long start;
+
+        long end;
+
+        start = System.nanoTime();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic")) + ":\"BULK\"");
+        ResultSet results = searcher.query(sp);
+        results.setBulkFetch(true);
+        results.setBulkFetchSize(10000);
+        for (ResultSetRow row : results)
+        {
+            nodeService.getAspects(row.getNodeRef());
+            nodeService.getProperties(row.getNodeRef());
+        }
+        results.close();
+
+        end = System.nanoTime();
+
+        System.out.println(n + " Prefetch 10000 in " + ((end - start) / 10e9));
+    }
+
+    /**
+     * Test bug fix
+     * 
+     * @throws Exception
+     */
+    public void testSortIssue_AR_1515__AND__AR_1466() throws Exception
+    {
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        luceneFTS.pause();
+        buildBaseIndex();
+        runBaseTests();
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        runBaseTests();
+
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        sp.addSort("ID", true);
+        ResultSet results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(16, results.length());
+
+        String current = null;
+        for (ResultSetRow row : results)
+        {
+            String id = row.getNodeRef().getId();
+
+            if (current != null)
+            {
+                if (current.compareTo(id) > 0)
+                {
+                    fail();
+                }
+            }
+            current = id;
+        }
+        results.close();
+
+        assertEquals(5, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas"), testSuperType).getChildRef();
+        assertEquals(6, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        sp.addSort("ID", true);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(17, results.length());
+        current = null;
+        for (ResultSetRow row : results)
+        {
+            String id = row.getNodeRef().getId();
+
+            if (current != null)
+            {
+                if (current.compareTo(id) > 0)
+                {
+                    fail();
+                }
+            }
+            current = id;
+        }
+        results.close();
+
+        assertEquals(6, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+        serviceRegistry.getNodeService().createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}texas"), testSuperType).getChildRef();
+        assertEquals(7, serviceRegistry.getNodeService().getChildAssocs(rootNodeRef).size());
+
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("PATH:\"//.\"");
+        sp.excludeDataInTheCurrentTransaction(false);
+        sp.addSort("ID", true);
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(18, results.length());
+        current = null;
+        for (ResultSetRow row : results)
+        {
+            String id = row.getNodeRef().getId();
+
+            if (current != null)
+            {
+                if (current.compareTo(id) > 0)
+                {
+                    fail();
+                }
+            }
+            current = id;
+        }
+        results.close();
+
+        testTX.rollback();
+
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void testAuxDataIsPresent() throws Exception
+    {
+        luceneFTS.pause();
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        runBaseTests();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null);
+        assertEquals(1, results.length()); // one node
+        results.close();
+
+        nodeService.addAspect(n14, aspectWithChildren, null);
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ID:\"" + n14 + "\"", null);
+        assertEquals(10, results.length()); // one node + 9 aux paths to n14
+        results.close();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void testFirst() throws Exception
+    {
+        testReadAgainstDelta();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void test0() throws Exception
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+        runBaseTests();
+        luceneFTS.resume();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void testDeleteSecondaryAssocToContainer() throws Exception
+    {
+        luceneFTS.pause();
+
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        runBaseTests();
+        nodeService.removeChild(n2, n13);
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:link\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        assertEquals(7, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*/namespace:*\"", null);
+        assertEquals(6, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        assertEquals(4, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        assertEquals(7, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        assertEquals(4, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        assertEquals(16, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        assertEquals(24, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        assertEquals(23, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        assertEquals(23, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        assertEquals(23, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        assertEquals(23, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        assertEquals(23, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        assertEquals(7, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        assertEquals(10, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        assertEquals(8, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        luceneFTS.resume();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void testDeleteSecondaryAssocToLeaf() throws Exception
+    {
+        luceneFTS.pause();
+
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        runBaseTests();
+        nodeService.removeChild(n12, n14);
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:three\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:four\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:eight-0\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:five\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:one\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:two\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:one\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:two\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:six\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:seven\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-1\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-2\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-2\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-1\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:two/namespace:eight-0\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:eight-0\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:ten\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:eleven\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:fourteen\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:thirteen/namespace:common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:five/namespace:twelve/namespace:common\"", null);
+        assertEquals(0, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*\"", null);
+        assertEquals(6, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/namespace:*/namespace:*\"", null);
+        assertEquals(8, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:*/namespace:*\"", null);
+        assertEquals(6, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*\"", null);
+        assertEquals(4, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:*/namespace:five/namespace:*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/namespace:*/namespace:nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"", null);
+        assertEquals(6, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/*/*\"", null);
+        assertEquals(8, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"", null);
+        assertEquals(6, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*\"", null);
+        assertEquals(4, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/namespace:five/*\"", null);
+        assertEquals(5, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/namespace:one/*/namespace:nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//.\"", null);
+        assertEquals(16, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//.\"", null);
+        assertEquals(27, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*\"", null);
+        assertEquals(26, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/.\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/.\"", null);
+        assertEquals(26, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//*/./.\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//*/./.\"", null);
+        assertEquals(26, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//./*\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//./*\"", null);
+        assertEquals(26, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//././*/././.\"", null);
+        assertEquals(15, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"//././*/././.\"", null);
+        assertEquals(26, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//common\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//*\"", null);
+        assertEquals(7, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH_WITH_REPEATS:\"/one/five//*\"", null);
+        assertEquals(9, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one/five//.\"", null);
+        assertEquals(8, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//five/nine\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/one//thirteen/fourteen\"", null);
+        assertEquals(1, results.length());
+        results.close();
+        luceneFTS.resume();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void testDeleteIssue() throws Exception
+    {
+
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        ChildAssociationRef testFind = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}testFind"), testSuperType);
+        testTX.commit();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
+        assertEquals(1, results.length());
+        results.close();
+
+        RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                for (int i = 0; i < 100; i+=10)
+                {
+                    HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
+                    for (int j = 0; j < i; j++)
+                    {
+                        ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test"), testSuperType);
+                        refs.add(test);
+                    }
+
+                    for (ChildAssociationRef car : refs)
+                    {
+                        nodeService.deleteNode(car.getChildRef());
+                    }
+                }
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
+
+        UserTransaction tx3 = transactionService.getUserTransaction();
+        tx3.begin();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
+        assertEquals(1, results.length());
+        results.close();
+        tx3.commit();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public void testMTDeleteIssue() throws Exception
+    {
+        luceneFTS.pause();
+        testTX.commit();
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        ChildAssociationRef testFind = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}testFind"), testSuperType);
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
+        assertEquals(1, results.length());
+        results.close();
+        testTX.commit();
+
+        Thread runner = null;
+
+        for (int i = 0; i < 20; i++)
+        {
+            runner = new Nester("Concurrent-" + i, runner);
+        }
+        if (runner != null)
+        {
+            runner.start();
+
+            try
+            {
+                runner.join();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "QNAME:\"namespace:testFind\"");
+        assertEquals(1, results.length());
+        results.close();
+        testTX.commit();
+    }
+
+    class Nester extends Thread
+    {
+        Thread waiter;
+
+        Nester(String name, Thread waiter)
+        {
+            super(name);
+            this.setDaemon(true);
+            this.waiter = waiter;
+        }
+
+        public void run()
+        {
+            authenticationComponent.setSystemUserAsCurrentUser();
+            if (waiter != null)
+            {
+                waiter.start();
+            }
+            try
+            {
+                System.out.println("Start " + this.getName());
+                RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        for (int i = 0; i < 20; i++)
+                        {
+                            HashSet<ChildAssociationRef> refs = new HashSet<ChildAssociationRef>();
+                            for (int j = 0; j < i; j++)
+                            {
+                                ChildAssociationRef test = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}test_"
+                                        + getName() + "_" + i + "_" + j), testSuperType);
+                                refs.add(test);
+                            }
+
+                            for (ChildAssociationRef car : refs)
+                            {
+                                nodeService.deleteNode(car.getChildRef());
+                            }
+                        }
+                        return null;
+                    }
+                };
+                retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
+                System.out.println("End " + this.getName());
+            }
+            catch (Exception e)
+            {
+                System.out.println("End " + this.getName() + " with error " + e.getMessage());
+                e.printStackTrace();
+            }
+            finally
+            {
+                authenticationComponent.clearCurrentSecurityContext();
+            }
+            if (waiter != null)
+            {
+                try
+                {
+                    waiter.join();
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+        }
+
+    }
 
     /**
      * @throws Exception

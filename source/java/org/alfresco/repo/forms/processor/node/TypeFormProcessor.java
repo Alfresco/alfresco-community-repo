@@ -47,6 +47,7 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
  * types in the Alfresco content model.
  * 
  * @author Gavin Cornwell
+ * @author Nick Smith
  * @author 3.4
  */
 public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition, NodeRef>

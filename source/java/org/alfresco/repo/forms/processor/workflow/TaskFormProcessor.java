@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
-import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -198,9 +198,9 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         if (hiddenValues != null)
         {
             if (hiddenValues instanceof List<?>)
-            {
-                return (List<String>) hiddenValues;
-            }
+        {
+            return (List<String>) hiddenValues;
+        }
             else if (hiddenValues instanceof String && ((String)hiddenValues).length() > 0)
             {
                 return Arrays.asList(((String)hiddenValues).split(","));
@@ -215,7 +215,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     @Override
     protected ContentModelFormPersister<WorkflowTask> makeFormPersister(WorkflowTask item)
     {
-        ItemData<WorkflowTask> itemData = makeItemData(item);
+        ContentModelItemData<WorkflowTask> itemData = makeItemData(item);
         return new TaskFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, LOGGER);
     }
 }

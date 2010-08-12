@@ -22,7 +22,7 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.WorkflowBuilder;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,7 +44,7 @@ public class WorkflowFormPersister extends ContentModelFormPersister<WorkflowIns
 {
     private final WorkflowBuilder builder;
     
-    public WorkflowFormPersister(ItemData<?> itemData,
+    public WorkflowFormPersister(ContentModelItemData<?> itemData,
                 NamespaceService namespaceService,
                 DictionaryService dictionaryService,
                 WorkflowService workflowService,

@@ -41,7 +41,7 @@ import org.alfresco.service.namespace.QName;
  * @since 3.4
  * @author Nick Smith
  */
-public class ItemData<ItemType> implements TransientValueGetter
+public class ContentModelItemData<ItemType> implements TransientValueGetter
 {
     private final ItemType item;
     private final Map<QName, PropertyDefinition> propDefs;
@@ -50,7 +50,7 @@ public class ItemData<ItemType> implements TransientValueGetter
     private final Map<QName, Serializable> assocValues;
     private final Map<String, Object> transientValues;
 
-    public ItemData(ItemType item,
+    public ContentModelItemData(ItemType item,
                 Map<QName, PropertyDefinition> propDefs,
                 Map<QName, AssociationDefinition> assocDefs,
                 Map<QName, Serializable> propValues,

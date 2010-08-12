@@ -47,7 +47,7 @@ public class DefaultFieldBuilder
     private static final Log MY_LOGGER = LogFactory.getLog(DefaultFieldBuilder.class);
     
     private final FormCreationData formData;
-    private final ItemData<?> ItemData;
+    private final ContentModelItemData<?> ItemData;
     private final FieldProcessorRegistry registry;
     private final NamespaceService namespaceService;
     private final List<String> ignoredFields;
@@ -73,7 +73,7 @@ public class DefaultFieldBuilder
         this.registry = registry;
         this.namespaceService = namespaceService;
         this.ignoredFields = getNonNullList(ignoredFields );
-        this.ItemData = (ItemData<?>) formData.getItemData();
+        this.ItemData = (ContentModelItemData<?>) formData.getItemData();
     }
 
     /**

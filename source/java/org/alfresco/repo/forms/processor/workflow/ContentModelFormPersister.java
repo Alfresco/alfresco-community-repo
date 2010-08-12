@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.repo.forms.FormData.FieldData;
-import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -51,9 +51,9 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
     protected final DataKeyMatcher keyMatcher;
     protected final DictionaryService dictionaryService;
     protected final Log logger;
-    protected final ItemData<?> itemData; 
+    protected final ContentModelItemData<?> itemData; 
     
-    public ContentModelFormPersister(ItemData<?> itemData, NamespaceService namespaceService, DictionaryService dictionaryService, Log logger)
+    public ContentModelFormPersister(ContentModelItemData<?> itemData, NamespaceService namespaceService, DictionaryService dictionaryService, Log logger)
     {
         this.dictionaryService= dictionaryService;
         this.logger = logger==null ? LOGGER : logger;

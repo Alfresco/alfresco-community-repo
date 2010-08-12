@@ -72,7 +72,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     }
 
     @Override
-    protected PropertyDefinition getTypeDefinition(QName fullName, ItemData<?> itemData, boolean isForcedField)
+    protected PropertyDefinition getTypeDefinition(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {
         PropertyDefinition propDef = itemData.getPropertyDefinition(fullName);
         if (propDef == null)
@@ -100,7 +100,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     }
 
     @Override
-    public Object getValue(QName name, ItemData<?> data)
+    public Object getValue(QName name, ContentModelItemData<?> data)
     {
         Serializable value = data.getPropertyValue(name);
         if (value == null)
@@ -127,7 +127,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         return value;
     }
 
-    private Object getDefaultValue(QName name, ItemData<?> data)
+    private Object getDefaultValue(QName name, ContentModelItemData<?> data)
     {
         PropertyDefinition propDef = data.getPropertyDefinition(name);
         if(propDef !=null)

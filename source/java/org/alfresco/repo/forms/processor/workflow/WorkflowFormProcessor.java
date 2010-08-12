@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -150,7 +150,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     @Override
     protected ContentModelFormPersister<WorkflowInstance> makeFormPersister(WorkflowDefinition item)
     {
-        ItemData<WorkflowDefinition> itemData = makeItemData(item);
+        ContentModelItemData<WorkflowDefinition> itemData = makeItemData(item);
         return new WorkflowFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, logger);
     }
 }

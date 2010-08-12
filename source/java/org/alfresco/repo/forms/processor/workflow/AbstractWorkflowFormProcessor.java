@@ -30,7 +30,7 @@ import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
-import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.ParameterCheck;
@@ -54,7 +54,7 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         super.populateForm(form, fields, data);
     
         // Add package actions to FormData.
-        ItemData<?> itemData = (ItemData<?>) data.getItemData();
+        ContentModelItemData<?> itemData = (ContentModelItemData<?>) data.getItemData();
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ACTION_GROUP, form, itemData);
         addPropertyDataIfRequired(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP, form, itemData);
     }

@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.repo.forms.FormData.FieldData;
-import org.alfresco.repo.forms.processor.node.ItemData;
+import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.TaskUpdater;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,7 +45,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     private final TaskUpdater updater;
     private String transitionId = null;
     
-    public TaskFormPersister(ItemData<WorkflowTask> itemData,
+    public TaskFormPersister(ContentModelItemData<WorkflowTask> itemData,
                 NamespaceService namespaceService,
                 DictionaryService dictionaryService,
                 WorkflowService workflowService,

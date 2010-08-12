@@ -136,7 +136,7 @@ public class FieldProcessorTest extends TestCase
         data = new FormCreationDataImpl(makeItemData(), null,  null);
     }
 
-    private ItemData<Void> makeItemData()
+    private ContentModelItemData<Void> makeItemData()
     {
         Map<QName, PropertyDefinition> propDefs = makePropertyDefs();
         Map<QName, AssociationDefinition> assocDefs = makeAssociationDefs();
@@ -144,7 +144,7 @@ public class FieldProcessorTest extends TestCase
         Map<QName, Serializable> propValues = new HashMap<QName, Serializable>();
         Map<QName, Serializable> assocValues = new HashMap<QName, Serializable>();
         Map<String, Object> transientValues = new HashMap<String, Object>();
-        return new ItemData<Void>(null, propDefs, assocDefs, propValues, assocValues, transientValues);
+        return new ContentModelItemData<Void>(null, propDefs, assocDefs, propValues, assocValues, transientValues);
     }
 
     private Map<QName, AssociationDefinition> makeAssociationDefs()

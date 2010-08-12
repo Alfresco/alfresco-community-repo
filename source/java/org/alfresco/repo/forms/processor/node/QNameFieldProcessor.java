@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @param <Type>
  */
-public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition> extends AbstractFieldProcessor<ItemData<?>>
+public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition> extends AbstractFieldProcessor<ContentModelItemData<?>>
 {
     protected NamespaceService namespaceService;
     protected DictionaryService dictionaryService;
@@ -57,7 +57,7 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
      * @see org.alfresco.repo.forms.field.processor.AbstractFieldProcessor#generateTypedField(java.lang.String, java.lang.Object)
      */
     @Override
-    protected Field generateTypedField(String fieldName, FormCreationData formData, ItemData<?> typedData)
+    protected Field generateTypedField(String fieldName, FormCreationData formData, ContentModelItemData<?> typedData)
     {
         QName fullName = getFullName(fieldName);
         boolean isForcedField = formData.isForcedField(fieldName);
@@ -78,7 +78,7 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
         return attribDef.getName().toPrefixString(namespaceService);
     }
 
-    public Field generateField(QName fullName, ItemData<?> itemData, boolean isForcedField) 
+    public Field generateField(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField) 
     {
         Type propDef = getTypeDefinition(fullName, itemData, isForcedField);
         Field field = null;
@@ -137,11 +137,11 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
      */
     @SuppressWarnings("unchecked")
     @Override
-    protected Class<ItemData<?>> getExpectedDataType()
+    protected Class<ContentModelItemData<?>> getExpectedDataType()
     {
         // This is nasty but unavoidable because of generics.
-        Object clazz = ItemData.class;
-        return (Class<ItemData<?>>)clazz;
+        Object clazz = ContentModelItemData.class;
+        return (Class<ContentModelItemData<?>>)clazz;
     }
     
     /**
@@ -164,7 +164,7 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
 
     protected abstract FieldGroup getGroup(Type typeDef);
 
-    protected abstract Object getValue(QName fullName, ItemData<?> itemData);
+    protected abstract Object getValue(QName fullName, ContentModelItemData<?> itemData);
 
-    protected abstract Type getTypeDefinition(QName fullName, ItemData<?> itemData, boolean isForcedField);
+    protected abstract Type getTypeDefinition(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField);
 }

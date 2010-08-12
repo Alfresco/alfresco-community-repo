@@ -61,7 +61,7 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     }
 
     @Override
-    public Field generateField(QName fullName, ItemData<?> itemData, boolean isForcedField) 
+    public Field generateField(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField) 
     {
         Field fieldInfo = propProcessor.generateField(fullName, itemData, isForcedField);
         if (fieldInfo == null) 
@@ -100,7 +100,7 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
      * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getTypeDefinition(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData, boolean)
      */
     @Override
-    protected ClassAttributeDefinition getTypeDefinition(QName fullName, ItemData<?> itemData, boolean isForcedField)
+    protected ClassAttributeDefinition getTypeDefinition(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {
         throw new UnsupportedOperationException("This method should never be called!");
     }
@@ -109,7 +109,7 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
      * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getValue(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData)
      */
     @Override
-    protected Object getValue(QName fullName, ItemData<?> itemData)
+    protected Object getValue(QName fullName, ContentModelItemData<?> itemData)
     {
         throw new UnsupportedOperationException("This method should never be called!");
     }

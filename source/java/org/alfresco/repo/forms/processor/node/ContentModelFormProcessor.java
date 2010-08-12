@@ -27,7 +27,6 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DAT
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,6 @@ import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
@@ -64,7 +62,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -164,7 +161,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         this.contentService = contentService;
     }
 
-    protected void addPropertyDataIfRequired(QName propName, Form form, ItemData<?> itemData)
+    protected void addPropertyDataIfRequired(QName propName, Form form, ContentModelItemData<?> itemData)
     {
         String dataKey = makePropDataKey(propName);
         if(form.dataExists(dataKey)== false)
@@ -190,22 +187,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         return defaultFieldBuilder.buildDefaultFields();
     }
 
-    protected Map<QName, AssociationDefinition> populateAssociations(TypeDefinition typeDef)
-    {
-        // we only get the associations of the actual type so
-        // we also need to manually get associations from any
-        // mandatory aspects
-        HashMap<QName, AssociationDefinition> allAssocs = new HashMap<QName, AssociationDefinition>();
-        allAssocs.putAll(typeDef.getAssociations());
-        List<AspectDefinition> aspects = typeDef.getDefaultAspects(true);
-        for (AspectDefinition aspect : aspects) {
-            allAssocs.putAll(aspect.getAssociations());
-        }
-        return Collections.unmodifiableMap(allAssocs);
-    }
-
     @Override
-    protected ItemData<ItemType> makeItemData(ItemType item)
+    protected ContentModelItemData<ItemType> makeItemData(ItemType item)
     {
         TypeDefinition baseType = getBaseType(item);
         Set<QName> aspects = getAspectNames(item);
@@ -215,7 +198,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         Map<QName, Serializable> propValues = getPropertyValues(item);
         Map<QName, Serializable> assocValues = getAssociationValues(item);
         Map<String, Object> transientValues = getTransientValues(item);
-        return new ItemData<ItemType>(item, propDefs, assocDefs, propValues, assocValues, transientValues);
+        return new ContentModelItemData<ItemType>(item, propDefs, assocDefs, propValues, assocValues, transientValues);
     }
 
     protected Set<QName> getAspectNames(ItemType item)
@@ -230,33 +213,6 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected abstract Map<String, Object> getTransientValues(ItemType item);
 
     protected abstract TypeDefinition getBaseType(ItemType item);
-
-    /**
-     * Retrieves the values of the given association definition on the given
-     * node.
-     * 
-     * @param nodeRef The node to get the association values for
-     * @param assocDef The association definition to look for values for
-     * @return List of values for association or null of the association does
-     *         not exist for the given node.
-     */
-    @SuppressWarnings("unchecked")
-    protected List retrieveAssociationValues(NodeRef nodeRef, AssociationDefinition assocDef)
-    {
-        List assocValues = null;
-
-        // get the list of values (if any) for the association
-        if (assocDef instanceof ChildAssociationDefinition)
-        {
-            assocValues = this.nodeService.getChildAssocs(nodeRef, assocDef.getName(), RegexQNamePattern.MATCH_ALL);
-        }
-        else
-        {
-            assocValues = this.nodeService.getTargetAssocs(nodeRef, assocDef.getName());
-        }
-
-        return assocValues;
-    }
 
     /**
      * Persists the given FormData on the given NodeRef

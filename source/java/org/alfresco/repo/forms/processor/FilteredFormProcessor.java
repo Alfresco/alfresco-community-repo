@@ -36,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
  * the filter mechanism.
  * 
  * @author Gavin Cornwell
+ * @author Nick Smith
  */
 public abstract class FilteredFormProcessor<ItemType, PersistType> extends AbstractFormProcessor
 {
@@ -68,10 +69,8 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         this.ignoredFields = ignoredFields;
     }
 
-    /*
-     * @see
-     * org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco
-     * .repo.forms.Item, java.util.List, java.util.List, java.util.Map)
+    /**
+     * {@inheritDoc}
      */
     public Form generate(Item item, List<String> fields, List<String> forcedFields, Map<String, Object> context)
     {
@@ -101,7 +100,6 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
                 filter.afterGenerate(typedItem, fields, forcedFields, form, context);
             }
         }
-
         return form;
     }
 
@@ -171,6 +169,12 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
             log.debug("Generated form: " + form);
     }
 
+    /**
+     * This method generates all the fields to be added and adds them to the Form, together with the associated field data.
+     * @param form The {@link Form} to which the fields are added. 
+     * @param fields The names of all the fields to be added.
+     * @param data {@link FormCreationData} used to generate all the fields.
+     */
     protected void populateForm(Form form, List<String> fields, FormCreationData data)
     {
         List<Field> fieldsToAdd;
@@ -225,6 +229,18 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
         return fieldData;
     }
 
+    
+    /**
+     * Sets the field processor registry.
+     * 
+     * @param fieldProcessorRegistry
+     *            The {@link FieldProcessorRegistry} to use.
+     */
+    public void setFieldProcessorRegistry(FieldProcessorRegistry fieldProcessorRegistry)
+    {
+        this.fieldProcessorRegistry = fieldProcessorRegistry;
+    }
+
     /**
      * Creates a data object used by the {@link FormProcessor} and {@link FieldProcessor FieldProcessors} to create {@link Field Fields}
      * @return
@@ -263,17 +279,6 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
      * @return
      */
     protected abstract String getItemURI(ItemType item);
-
-    /**
-     * Sets the field processor registry.
-     * 
-     * @param fieldProcessorRegistry
-     *            The {@link FieldProcessorRegistry} to use.
-     */
-    public void setFieldProcessorRegistry(FieldProcessorRegistry fieldProcessorRegistry)
-    {
-        this.fieldProcessorRegistry = fieldProcessorRegistry;
-    }
     
     /**
      * Persists the form data.
@@ -284,5 +289,13 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
      */
     protected abstract PersistType internalPersist(ItemType item, FormData data);
 
+    /**
+     * When a {@link Form} is generated with no field names specifically set then a default {@link Form} is created.
+     * The default {@link Form} contains all the properties and associations related to the {@link Item}, excluding a 
+     * blacklist of ignored fields which defaults to the return value of this method.
+     * The default ignored values can be overridden by setting the property <code>ignoredFields</code>.
+     * 
+     * @return the names of all the fields to be excluded from the default {@link Form} if no <code>defaultFields</code> property is explicitly set.
+     */
     protected abstract List<String> getDefaultIgnoredFields();
 }

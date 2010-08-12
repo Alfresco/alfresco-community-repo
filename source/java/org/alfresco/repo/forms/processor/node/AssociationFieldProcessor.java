@@ -60,14 +60,14 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
     }
 
     /**
-     * Gets the associated value from the {@link ItemData}.
+     * Gets the associated value from the {@link ContentModelItemData}.
      * If the value is <code>null</code> the method returns an empty {@link List}.
      * If the value is a single Object (assumed to be a NodeRef) it returns a {@link List} containing a {@link String} representation of that object.
      * If the value is a {@link Collection} of Objects, returns a {@link List} containing {@link String} representations of all the objects.
      * @return An {@link ArrayList} of Strings or <code>null</code>.
      */
     @Override
-    protected Object getValue(QName name, ItemData<?> data)
+    protected Object getValue(QName name, ContentModelItemData<?> data)
     {
         Serializable values = data.getAssociationValue(name);
         if (values == null)
@@ -116,7 +116,7 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
      * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getTypeDefinition(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData, boolean)
      */
     @Override
-    protected AssociationDefinition getTypeDefinition(QName fullName, ItemData<?> itemData, boolean isForcedField)
+    protected AssociationDefinition getTypeDefinition(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {
         AssociationDefinition assocDefinition = itemData.getAssociationDefinition(fullName);
         if (assocDefinition == null)

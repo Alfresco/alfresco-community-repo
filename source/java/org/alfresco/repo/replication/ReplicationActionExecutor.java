@@ -197,7 +197,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          toTransfer = expandPayload(replicationDef);
       } catch(Exception e) {
          lock.close();
-         throw new ReplicationServiceException("Error processing payload list", e);
+         throw new ReplicationServiceException("Error processing payload list - " + e.getMessage(), e);
       }
       
       // Ask the transfer service to do the replication
@@ -220,7 +220,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
          if(! (e instanceof TransferCancelledException))
          {
             lock.close();
-            throw new ReplicationServiceException("Error executing transfer", e);
+            throw new ReplicationServiceException("Error executing transfer - " + e.getMessage(), e);
          }
       }
       

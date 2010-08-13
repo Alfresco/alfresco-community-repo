@@ -21,8 +21,10 @@ package org.alfresco.repo.web.scripts;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.web.scripts.action.RunningActionRestApiTest;
 import org.alfresco.repo.web.scripts.activities.SiteActivitySystemTest;
 import org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest;
+import org.alfresco.repo.web.scripts.audit.AuditWebScriptTest;
 import org.alfresco.repo.web.scripts.blog.BlogServiceTest;
 import org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest;
 import org.alfresco.repo.web.scripts.discussion.DiscussionServiceTest;
@@ -33,6 +35,8 @@ import org.alfresco.repo.web.scripts.invitation.InvitationTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
+import org.alfresco.repo.web.scripts.rating.RatingRestApiTest;
+import org.alfresco.repo.web.scripts.replication.ReplicationRestApiTest;
 import org.alfresco.repo.web.scripts.rule.RuleServiceTest;
 import org.alfresco.repo.web.scripts.search.PersonSearchTest;
 import org.alfresco.repo.web.scripts.site.SiteServiceTest;
@@ -43,7 +47,8 @@ import org.alfresco.repo.web.scripts.wcm.WebProjectTest;
 import org.alfresco.repo.web.scripts.wcm.membership.WebProjectMembershipTest;
 import org.alfresco.repo.web.scripts.wcm.sandbox.AssetTest;
 import org.alfresco.repo.web.scripts.wcm.sandbox.SandboxTest;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
+import org.alfresco.repo.web.scripts.workflow.WorkflowRestApiTest;
 
 /**
  * Web Scripts test suite
@@ -58,29 +63,35 @@ public class WebScriptTestSuite extends TestSuite
         TestWebScriptRepoServer.getTestServer();
         
         // Add the tests
+        suite.addTestSuite( AuditWebScriptTest.class );
+        suite.addTestSuite( BlogServiceTest.class );
+        suite.addTestSuite( DictionaryRestApiTest.class );
+        suite.addTestSuite( DiscussionServiceTest.class );
+        suite.addTestSuite( FeedControlTest.class );
+        suite.addTestSuite( FormRestApiGet_Test.class );
+        suite.addTestSuite( FormRestApiJsonPost_Test.class );
+        suite.addTestSuite( GroupsTest.class );
+        suite.addTestSuite( InvitationTest.class );
+        suite.addTestSuite( InviteServiceTest.class );
+        suite.addTestSuite( LoginTest.class );
+        suite.addTestSuite( PersonSearchTest.class );
+        suite.addTestSuite( PersonServiceTest.class );
+        suite.addTestSuite( PreferenceServiceTest.class );
+        suite.addTestSuite( RatingRestApiTest.class );
+        suite.addTestSuite( ReplicationRestApiTest.class );
+        suite.addTestSuite( RepositoryContainerTest.class );
+        suite.addTestSuite( RuleServiceTest.class );
+        suite.addTestSuite( RunningActionRestApiTest.class );
+        suite.addTestSuite( SandboxTest.class );
+        suite.addTestSuite( SiteActivitySystemTest.class );
+        suite.addTestSuite( SiteServiceTest.class );
+        suite.addTestSuite( TaggingServiceTest.class );
         suite.addTestSuite( ThumbnailServiceTest.class );
         suite.addTestSuite( TransferWebScriptTest.class );
-        suite.addTestSuite( DiscussionServiceTest.class );
-        suite.addTestSuite( LoginTest.class );
-        suite.addTestSuite( FormRestApiJsonPost_Test.class );
-        suite.addTestSuite( FormRestApiGet_Test.class );
-        suite.addTestSuite( TaggingServiceTest.class );
-        suite.addTestSuite( PersonServiceTest.class );
-        suite.addTestSuite( SiteServiceTest.class );
-        suite.addTestSuite( RepositoryContainerTest.class );
-        suite.addTestSuite( FeedControlTest.class );
-        suite.addTestSuite( InvitationTest.class );
-        suite.addTestSuite( PreferenceServiceTest.class );
-        suite.addTestSuite( RuleServiceTest.class );
-        suite.addTestSuite( GroupsTest.class );
-        suite.addTestSuite( InviteServiceTest.class );
         suite.addTestSuite( WebProjectMembershipTest.class );
         suite.addTestSuite( WebProjectTest.class );
-        suite.addTestSuite( SandboxTest.class );
-        suite.addTestSuite( BlogServiceTest.class );
-        suite.addTestSuite( PersonSearchTest.class );
-        suite.addTestSuite( DictionaryRestApiTest.class );
-        suite.addTestSuite( ThumbnailServiceTest.class );
+        suite.addTestSuite( WorkflowModelBuilderTest.class );
+        suite.addTestSuite( WorkflowRestApiTest.class );
 
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
@@ -89,4 +100,4 @@ public class WebScriptTestSuite extends TestSuite
         
         return suite;
     }
-}
+}       

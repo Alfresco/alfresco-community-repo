@@ -620,7 +620,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         String jsonStr = response.getContentAsString();
-        JSONObject jsonRD = new JSONObject(jsonStr);
+        JSONObject jsonRD = new JSONObject(jsonStr).getJSONObject("data");
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
         assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
@@ -662,7 +662,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        jsonRD = new JSONObject(jsonStr);
+        jsonRD = new JSONObject(jsonStr).getJSONObject("data");
         assertNotNull(jsonRD);
         assertEquals(id2, jsonRD.get("actionId"));
         assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
@@ -679,7 +679,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         
         rd = replicationService.loadReplicationDefinition("Test1");
         jsonStr = response.getContentAsString();
-        jsonRD = new JSONObject(jsonStr);
+        jsonRD = new JSONObject(jsonStr).getJSONObject("data");
         assertNotNull(jsonRD);
         assertEquals(id, jsonRD.get("actionId"));
         assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
@@ -702,7 +702,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        jsonRD = new JSONObject(jsonStr);
+        jsonRD = new JSONObject(jsonStr).getJSONObject("data");
         assertNotNull(jsonRD);
         assertEquals(id3, jsonRD.get("actionId"));
         assertEquals(ReplicationDefinitionImpl.EXECUTOR_NAME, jsonRD.get("actionType"));
@@ -834,7 +834,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        
        // Check we got back some details on it
        String jsonStr = response.getContentAsString();
-       JSONObject jsonRD = new JSONObject(jsonStr);
+       JSONObject jsonRD = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(jsonRD);
        
        assertEquals(id, jsonRD.get("actionId"));
@@ -916,7 +916,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        
        // Check we got back some details on it
        String jsonStr = response.getContentAsString();
-       JSONObject jsonRD = new JSONObject(jsonStr);
+       JSONObject jsonRD = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(jsonRD);
        
        assertEquals(id, jsonRD.get("actionId"));

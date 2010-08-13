@@ -171,7 +171,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt, jsonRD.get("startedAt"));
+        assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
         
        
@@ -204,7 +204,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt, jsonRD.get("startedAt"));
+        assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
         
         jsonRD = (JSONObject)results.get(2);
@@ -250,7 +250,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt, jsonRD.get("startedAt"));
+        assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
                 
         
@@ -277,7 +277,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test2", jsonRD.get("name"));
         assertEquals("Completed", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt2, jsonRD.get("startedAt"));
+        assertEquals(startedAt2, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test2", jsonRD.get("details"));
         
         // New
@@ -295,7 +295,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt, jsonRD.get("startedAt"));
+        assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
         
         
@@ -324,7 +324,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test2", jsonRD.get("name"));
         assertEquals("Completed", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt2, jsonRD.get("startedAt"));
+        assertEquals(startedAt2, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test2", jsonRD.get("details"));
         
         // Ran least recently
@@ -333,7 +333,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt, jsonRD.get("startedAt"));
+        assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
         
        
@@ -359,7 +359,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("AnotherTest", jsonRD.get("name"));
         assertEquals("CancelRequested", jsonRD.get("status"));
         assertEquals(false, jsonRD.get("enabled"));
-        assertEquals(startedAt3, jsonRD.get("startedAt"));
+        assertEquals(startedAt3, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/AnotherTest", jsonRD.get("details"));
         
         jsonRD = (JSONObject)results.get(1);
@@ -367,7 +367,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test1", jsonRD.get("name"));
         assertEquals("Running", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt, jsonRD.get("startedAt"));
+        assertEquals(startedAt, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test1", jsonRD.get("details"));
         
         jsonRD = (JSONObject)results.get(2);
@@ -375,7 +375,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals("Test2", jsonRD.get("name"));
         assertEquals("Completed", jsonRD.get("status"));
         assertEquals(true, jsonRD.get("enabled"));
-        assertEquals(startedAt2, jsonRD.get("startedAt"));
+        assertEquals(startedAt2, jsonRD.getJSONObject("startedAt").get("iso8601"));
         assertEquals("/api/replication-definition/Test2", jsonRD.get("details"));
     }
     
@@ -407,7 +407,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         String jsonStr = response.getContentAsString();
-        JSONObject json = new JSONObject(jsonStr);
+        JSONObject json = new JSONObject(jsonStr).getJSONObject("data");
         assertNotNull(json);
         
         // Check 
@@ -453,7 +453,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         
         assertEquals("Test1", json.get("name"));
         assertEquals("Testing", json.get("description"));
@@ -481,12 +481,12 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         
         assertEquals("Test1", json.get("name"));
         assertEquals("Testing", json.get("description"));
         assertEquals("Running", json.get("status"));
-        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
         assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -506,12 +506,12 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         
         assertEquals("Test1", json.get("name"));
         assertEquals("Testing", json.get("description"));
         assertEquals("CancelRequested", json.get("status"));
-        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
         assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -536,12 +536,12 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         
         assertEquals("Test1", json.get("name"));
         assertEquals("Testing", json.get("description"));
         assertEquals("CancelRequested", json.get("status"));
-        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
         assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -592,12 +592,12 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         
         assertEquals("Test1", json.get("name"));
         assertEquals("Testing", json.get("description"));
         assertEquals("CancelRequested", json.get("status"));
-        assertEquals(startedAt, json.get("startedAt"));
+        assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
         assertEquals(JSONObject.NULL, json.get("endedAt"));
         assertEquals(JSONObject.NULL, json.get("failureMessage"));
         assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -628,7 +628,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         
         assertEquals("Test2", json.get("name"));
         assertEquals("2nd Testing", json.get("description"));
@@ -649,15 +649,15 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         assertEquals(Status.STATUS_OK, response.getStatus());
         
         jsonStr = response.getContentAsString();
-        json = new JSONObject(jsonStr);
+        json = new JSONObject(jsonStr).getJSONObject("data");
         startedAt = ISO8601DateFormat.format(rd.getExecutionStartDate());
         String endedAt = ISO8601DateFormat.format(rd.getExecutionEndDate());
         
         assertEquals("Test3", json.get("name"));
         assertEquals("3rd Testing", json.get("description"));
         assertEquals("Failed", json.get("status"));
-        assertEquals(startedAt, json.get("startedAt"));
-        assertEquals(endedAt, json.get("endedAt"));
+        assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
+        assertEquals(endedAt, json.getJSONObject("endedAt").get("iso8601"));
         assertEquals("Test Failure", json.get("failureMessage"));
         assertEquals(JSONObject.NULL, json.get("executionDetails"));
         assertEquals(repositoryHelper.getRootHome().toString(), json.get("transferLocalReport"));
@@ -705,7 +705,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        
        // Check we got the right information back
        String jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("New Definition", json.get("name"));
@@ -754,7 +754,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        
        // Check the response for this
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test", json.get("name"));
@@ -858,7 +858,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        
        // Check we got the right information back on it
        String jsonStr = response.getContentAsString();
-       JSONObject json = new JSONObject(jsonStr);
+       JSONObject json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test", json.get("name"));
@@ -903,7 +903,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_OK, response.getStatus());
        
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test", json.get("name"));
@@ -948,7 +948,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        
        // Check the response we got
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test2", json.get("name"));
@@ -1009,13 +1009,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_OK, response.getStatus());
        
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test", json.get("name"));
        assertEquals("Updated Description", json.get("description"));
        assertEquals("Running", json.get("status"));
-       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
        assertEquals(JSONObject.NULL, json.get("endedAt"));
        assertEquals(JSONObject.NULL, json.get("failureMessage"));
        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -1039,13 +1039,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_OK, response.getStatus());
        
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test", json.get("name"));
        assertEquals("Updated Description", json.get("description"));
        assertEquals("Running", json.get("status"));
-       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
        assertEquals(JSONObject.NULL, json.get("endedAt"));
        assertEquals(JSONObject.NULL, json.get("failureMessage"));
        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -1078,13 +1078,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_OK, response.getStatus());
        
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Test", json.get("name"));
        assertEquals("Updated Description", json.get("description"));
        assertEquals("Running", json.get("status"));
-       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
        assertEquals(JSONObject.NULL, json.get("endedAt"));
        assertEquals(JSONObject.NULL, json.get("failureMessage"));
        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -1111,13 +1111,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_OK, response.getStatus());
        
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Renamed", json.get("name"));
        assertEquals("Updated Description", json.get("description"));
        assertEquals("Running", json.get("status"));
-       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
        assertEquals(JSONObject.NULL, json.get("endedAt"));
        assertEquals(JSONObject.NULL, json.get("failureMessage"));
        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+
@@ -1143,13 +1143,13 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
        assertEquals(Status.STATUS_OK, response.getStatus());
        
        jsonStr = response.getContentAsString();
-       json = new JSONObject(jsonStr);
+       json = new JSONObject(jsonStr).getJSONObject("data");
        assertNotNull(json);
        
        assertEquals("Renamed Again", json.get("name"));
        assertEquals("Was Renamed", json.get("description"));
        assertEquals("Running", json.get("status"));
-       assertEquals(startedAt, json.get("startedAt"));
+       assertEquals(startedAt, json.getJSONObject("startedAt").get("iso8601"));
        assertEquals(JSONObject.NULL, json.get("endedAt"));
        assertEquals(JSONObject.NULL, json.get("failureMessage"));
        assertEquals("/" + URL_RUNNING_ACTION + "replicationActionExecutor="+

@@ -9,42 +9,32 @@
     >
 
     <DataExtractors>
-       <DataExtractor name="simpleValue" class="org.alfresco.repo.audit.extractor.SimpleValueDataExtractor"/>
-       <!--
-       <DataExtractor name="stackTrace" class="org.alfresco.repo.audit.extractor.StackTraceDataExtractor"/>
-       <DataExtractor name="storeRootNode" class="org.alfresco.repo.audit.extractor.StoreRootNodeDataExtractor"/>
-       -->
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+       <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue"/>
     </DataExtractors>
 
     <DataGenerators>
-       <DataGenerator name="transactionId" class="org.alfresco.repo.audit.generator.TransactionIdDataGenerator"/>
+       <DataGenerator name="personFullName" registeredName="auditModel.generator.personFullName"/>
     </DataGenerators>
 
     <PathMappings>
-        <PathMap source="/repository" target="/repository"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate" target="/repository/login"/>
     </PathMappings>
 
-    <Application name="Alfresco Repository" key="repository">
-        <AuditPath key="services">
-            <GenerateValue key="txn" dataGenerator="transactionId"/>
-            <AuditPath key="nodeservice">
-                <AuditPath key="createstore">
-                    <AuditPath key="protocol">
-                        <RecordValue key="value" dataExtractor="simpleValue"/>
-                    </AuditPath>
-                    <AuditPath key="identifier">
-                        <RecordValue key="value" dataExtractor="simpleValue"/>
-                    </AuditPath>
-                    <AuditPath key="return">
-                        <RecordValue key="value" dataExtractor="simpleValue"/>
-<!--
-                        <RecordValue key="root-node" dataExtractor="storeRootNode"/>
-                    </AuditPath>
-                    <AuditPath key="error">
-                        <RecordValue key="value" dataExtractor="stackTrace"/>
--->
-                    </AuditPath>
+    <Application name="AlfrescoRepository" key="repository">
+        <AuditPath key="login">
+            <AuditPath key="args">
+                <AuditPath key="userName">
+                    <RecordValue key="value" dataExtractor="simpleValue"/>
                 </AuditPath>
+            </AuditPath>
+            <!--
+            <AuditPath key="no-error">
+                <GenerateValue key="fullName" dataGenerator="personFullName"/>
+            </AuditPath>
+            -->
+            <AuditPath key="error">
+                <RecordValue key="value" dataExtractor="nullValue"/>
             </AuditPath>
         </AuditPath>
     </Application>

@@ -37,6 +37,14 @@ import org.alfresco.util.PropertyCheck;
  * A listener that ensures that an event is audited for every deleted node in a tree of nodes, not just the top one
  * captured by {@link AuditMethodInterceptor}!
  * 
+ * The values passed to the audit component are:
+ * <pre>
+ * /alfresco-node
+ *    /beforeDeleteNode
+ *       /node=&lt;nodeRef&gt;
+ * 
+ * </pre>
+ * 
  * @author dward
  */
 public class NodeAuditor implements InitializingBean, NodeServicePolicies.BeforeDeleteNodePolicy

@@ -18,7 +18,8 @@
  */
 package org.alfresco.repo.audit;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -67,9 +68,20 @@ public class AuditServiceImpl implements AuditService
      * @since 3.4
      */
     @Override
-    public Set<String> getAuditApplications()
+    public Map<String, AuditApplication> getAuditApplications()
     {
-        return auditComponent.getAuditApplications();
+        Map<String, org.alfresco.repo.audit.model.AuditApplication> apps = auditComponent.getAuditApplications();
+
+        Map<String, AuditApplication> ret = new HashMap<String, AuditApplication>(apps.size() * 2);
+        for (String app : apps.keySet())
+        {
+            String name = app;
+            String key = org.alfresco.repo.audit.model.AuditApplication.AUDIT_PATH_SEPARATOR + apps.get(app).getApplicationKey();
+            boolean enabled = auditComponent.isAuditPathEnabled(app, key);
+            AuditApplication auditApplication = new AuditApplication(name, key, enabled);
+            ret.put(name, auditApplication);
+        }
+        return ret;
     }
 
     /**

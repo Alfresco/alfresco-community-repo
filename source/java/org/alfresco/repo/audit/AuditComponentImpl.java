@@ -48,7 +48,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * The default audit component implementation. TODO: Implement before, after and exception filtering. At the moment
+ * The default audit component implementation.
+ * <TODO: Implement before, after and exception filtering. At the moment
  * these filters are ignored. TODO: Respect audit internal - at the moment audit internal is fixed to false.
  * <p/>
  * The V3.2 audit functionality is contained within the same component.  When the newer audit
@@ -190,10 +191,9 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * @since 3.4
      */
-    public Set<String> getAuditApplications()
+    public Map<String, AuditApplication> getAuditApplications()
     {
-        Map<String, AuditApplication> auditApps = auditModelRegistry.getAuditApplications();
-        return auditApps.keySet();
+        return auditModelRegistry.getAuditApplications();
     }
 
     /**

@@ -199,11 +199,12 @@ public class AuditApplication
     {
         if (path == null || path.length() == 0)
         {
-            throw new AuditModelException("Empty or null audit path");
+            throw new AuditModelException("Empty or null audit path: " + path);
         }
         else if (!path.matches(AUDIT_PATH_REGEX))
         {
-            throw new AuditModelException("An audit must match regular expression: " + AUDIT_PATH_REGEX);
+            throw new AuditModelException(
+                        "Audit path '" + path + "' does not match regular expression: " + AUDIT_PATH_REGEX);
         }
     }
     

@@ -20,7 +20,6 @@ package org.alfresco.service.cmr.audit;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.PublicService;
 
@@ -47,15 +46,49 @@ public interface AuditService
      * @since 3.4
      */
     void setAuditEnabled(boolean enable);
+
+    /**
+     * Helper bean to carry information about an audit application.
+     * 
+     * @author Derek Hulley
+     * @since 3.4
+     */
+    public static class AuditApplication
+    {
+        private final String name;
+        private final String key;
+        private final boolean enabled;
+        /**
+         * Constructor for final variables
+         */
+        public AuditApplication(String name, String key, boolean enabled)
+        {
+            this.name = name;
+            this.key = key;
+            this.enabled = enabled;
+        }
+        public String getName()
+        {
+            return name;
+        }
+        public String getKey()
+        {
+            return key;
+        }
+        public boolean isEnabled()
+        {
+            return enabled;
+        }
+    }
     
     /**
      * Get all registered audit applications
      * 
-     * @return                  Returns a set of all available audit applications
+     * @return                  Returns a map of audit applications keyed by their name
      * 
      * @since 3.4
      */
-    Set<String> getAuditApplications();
+    Map<String, AuditApplication> getAuditApplications();
     
     /**
      * @param applicationName   the name of the application to check 

@@ -20,7 +20,6 @@ package org.alfresco.repo.audit;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelRegistry;
@@ -56,11 +55,11 @@ public interface AuditComponent
     /**
      * Get all registered audit applications, whether active or not.
      * 
-     * @return                  Returns a set of registered audit applications
+     * @return                  Returns a map of registered audit applications keyed by name
      * 
      * @since 3.4
      */
-    public Set<String> getAuditApplications();
+    public Map<String, AuditApplication> getAuditApplications();
     
     /**
      * Determines whether the given source path is mapped to any audit applications. Allows optimizations to be made in

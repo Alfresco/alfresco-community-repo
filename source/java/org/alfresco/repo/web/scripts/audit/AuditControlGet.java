@@ -18,15 +18,15 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
  * @author Derek Hulley
@@ -35,60 +35,40 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
 public class AuditControlGet extends AbstractAuditWebScript
 {
     @Override
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        // return the unique transfer id (the lock id)
-        JSONWriter json = new JSONWriter(res.getWriter());
-
-        String app = getApp(req, false);
+        Map<String, Object> model = new HashMap<String, Object>(7);
+        
+        String appName = getAppName(req);
         String path = getPath(req);
-        Set<String> apps = auditService.getAuditApplications();
+        boolean enabledGlobal = auditService.isAuditEnabled();
+        Map<String, AuditApplication> appsByName = auditService.getAuditApplications();
         
         // Check that the application exists
-        if (app != null)
+        if (appName != null)
         {
-            if (apps.contains(app))
+            if (path == null)
             {
-                apps = Collections.singleton(app);
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.path.notProvided");
             }
-            else
+            
+            AuditApplication app = appsByName.get(appName);
+            if (app == null)
             {
-                apps = Collections.emptySet();
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "audit.err.app.notFound", app);
             }
+            // Discard all the other applications
+            appsByName = Collections.singletonMap(appName, app);
         }
         
-        boolean enabledGlobal = auditService.isAuditEnabled();
-        json.startObject();
-        {
-            json.writeValue(JSON_KEY_ENABLED, enabledGlobal);
-            json.startValue(JSON_KEY_APPLICATIONS);
-            {
-                json.startArray();
-                {
-                    for (String appName : apps)
-                    {
-                        boolean enabled = auditService.isAuditEnabled(appName, path);
-                        json.startObject();
-                        {
-                            json.writeValue(JSON_KEY_NAME, appName);
-                            json.writeValue(JSON_KEY_PATH, path);
-                            json.writeValue(JSON_KEY_ENABLED, enabled);
-                        }
-                        json.endObject();
-                    }
-                }
-                json.endArray();
-            }
-            json.endValue();
-        }
-        json.endObject();
+        model.put(JSON_KEY_ENABLED, enabledGlobal);
+        model.put(JSON_KEY_APPLICATIONS, appsByName.values());
         
-        // Close off
-        res.getWriter().close();
-
-        res.setContentType("application/json");
-        res.setContentEncoding(Charset.defaultCharset().displayName());     // TODO: Should be settable on JSONWriter
-        //        res.addHeader("Content-Length", "" + length);             // TODO: Do we need this?
-        res.setStatus(Status.STATUS_OK);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
+        }
+        return model;
     }
 }

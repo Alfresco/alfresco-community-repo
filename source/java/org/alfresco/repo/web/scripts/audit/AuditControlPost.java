@@ -18,11 +18,12 @@
  */
 package org.alfresco.repo.web.scripts.audit;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * @author Derek Hulley
@@ -31,14 +32,16 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 public class AuditControlPost extends AbstractAuditWebScript
 {
     @Override
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String app = getApp(req, false);
+        Map<String, Object> model = new HashMap<String, Object>(7);
+
+        String appName = getAppName(req);
         String path = getPath(req);
         
         boolean enable = getEnableDisable(req);
         
-        if (app == null)
+        if (appName == null)
         {
             // Global operation
             auditService.setAuditEnabled(enable);
@@ -46,12 +49,22 @@ public class AuditControlPost extends AbstractAuditWebScript
         else
         {
             // Apply to a specific application
-            auditService.enableAudit(app, path);
+            if (enable)
+            {
+                auditService.enableAudit(appName, path);
+            }
+            else
+            {
+                auditService.disableAudit(appName, path);
+            }
         }
-
-//        res.setContentType("application/json");
-//        res.setContentEncoding(Charset.defaultCharset().displayName());     // TODO: Should be settable on JSONWriter
-        //        res.addHeader("Content-Length", "" + length);             // TODO: Do we need this?
-        res.setStatus(Status.STATUS_OK);
+        model.put(JSON_KEY_ENABLED, enable);
+        
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
+        }
+        return model;
     }
 }

@@ -1965,6 +1965,9 @@
         <property name="controlDAO">
             <ref bean="controlDAO" />
         </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
     </bean>
     
     <bean id="patch.redeployNominatedInvitationProcessWithPropsForShare" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >

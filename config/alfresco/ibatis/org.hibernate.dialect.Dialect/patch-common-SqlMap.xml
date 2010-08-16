@@ -302,8 +302,8 @@
         update
             alf_child_assoc
         set
-            qname_crc = ?,
-            child_node_name_crc = ?
+            child_node_name_crc = ?,
+            qname_crc = ?
         where
             id = ?
     </update>

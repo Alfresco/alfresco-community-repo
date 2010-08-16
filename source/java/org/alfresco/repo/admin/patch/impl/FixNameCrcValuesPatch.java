@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
@@ -39,6 +40,7 @@ import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
@@ -59,6 +61,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.fixNameCrcValues.result";
     private static final String MSG_REWRITTEN = "patch.fixNameCrcValues.fixed";
     private static final String MSG_UNABLE_TO_CHANGE = "patch.fixNameCrcValues.unableToChange";
+    private static final String ERR_ASSOCIATION_TYPE_NOT_DEFINED = "patch.fixNameCrcValues.associationTypeNotDefined";
+    private static final String ERR_ASSOCIATION_TYPE_NOT_CHILD = "patch.fixNameCrcValues.associationTypeNotChild";
     
     private PatchDAO patchDAO;
     private QNameDAO qnameDAO;
@@ -107,6 +111,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch
         super.checkProperties();
         checkPropertyNotNull(patchDAO, "patchDAO");
         checkPropertyNotNull(qnameDAO, "qnameDAO");
+        checkPropertyNotNull(controlDAO, "controlDAO");
+        checkPropertyNotNull(dictionaryService, "dictionaryService");
         checkPropertyNotNull(applicationEventPublisher, "applicationEventPublisher");
     }
 
@@ -236,11 +242,29 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     ChildAssocEntity entity = new ChildAssocEntity();
                     entity.setChildNodeNameAll(dictionaryService, typeQName, childNodeName);
                     entity.setQNameAll(qnameDAO, qname, false);
-                    // Check the CRC values for cm:name
-                    if (entity.getChildNodeNameCrc().equals(childNodeNameCrc))
+                    Long childNodeNameCrcNew = entity.getChildNodeNameCrc();
+                    Long qnameCrcNew = entity.getQnameCrc();
+                    entity = null;                                          // Just checking that we don't misuse it
+                    
+                    AssociationDefinition assocDef = dictionaryService.getAssociation(typeQName);
+                    if (assocDef == null)
                     {
-                        // Check the CRC for the QName
-                        if (entity.getQnameCrc().equals(qnameCrc))
+                        throw new DictionaryException(ERR_ASSOCIATION_TYPE_NOT_DEFINED, typeQName, assocId);
+                    }
+                    else if (!assocDef.isChild())
+                    {
+                        throw new DictionaryException(ERR_ASSOCIATION_TYPE_NOT_CHILD, typeQName, assocId);
+                    }
+                    ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+                    boolean requiresNameConstraint = !childAssocDef.getDuplicateChildNamesAllowed();
+                    
+                    // Check the CRC for the QName
+                    if (qnameCrcNew.equals(qnameCrc))
+                    {
+                        // Check the CRC values for cm:name
+                        // - value might have stayed the same
+                        // - Any existing name crc negative value is fine if the name constraint need not be enforced
+                        if (childNodeNameCrcNew.equals(childNodeNameCrc) || (childNodeNameCrc < 0 && !requiresNameConstraint))
                         {
                             // This child assoc is good
                             return;
@@ -250,22 +274,16 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                     Savepoint savepoint = null;
                     try
                     {
-                        AssociationDefinition assocDef = dictionaryService.getAssociation(typeQName);
-                        if (assocDef == null)
-                        {
-                            throw new DictionaryException("Association type not defined: " + typeQName);
-                        }
-                        
                         // Being here indicates that the association needs to be updated
                         savepoint = controlDAO.createSavepoint("FixNameCrcValuesPatch");
-                        patchDAO.updateChildAssocCrc(assocId, childNodeNameCrc, qnameCrc);
+                        patchDAO.updateChildAssocCrc(assocId, childNodeNameCrcNew, qnameCrcNew);
                         controlDAO.releaseSavepoint(savepoint);
                         
                         String msg = I18NUtil.getMessage(
                                     MSG_REWRITTEN,
                                     assocId,
-                                    childNodeName, childNodeNameCrc, entity.getChildNodeNameCrc(),
-                                    qname, qnameCrc, entity.getQnameCrc());
+                                    childNodeName, childNodeNameCrc, childNodeNameCrcNew,
+                                    qname, qnameCrc, qnameCrcNew);
                         writeLine(msg);
                     }
                     catch (Throwable e)
@@ -277,8 +295,8 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                         String msg = I18NUtil.getMessage(
                                 MSG_UNABLE_TO_CHANGE,
                                 assocId,
-                                childNodeName, childNodeNameCrc, entity.getChildNodeNameCrc(),
-                                qname, qnameCrc, entity.getQnameCrc(),
+                                childNodeName, childNodeNameCrc, childNodeNameCrcNew,
+                                qname, qnameCrc, qnameCrcNew,
                                 e.getMessage());
                         // We just log this and add details to the message file
                         if (logger.isDebugEnabled())
@@ -289,7 +307,9 @@ public class FixNameCrcValuesPatch extends AbstractPatch
                         {
                             logger.warn(msg);
                         }
-                        writeLine(msg);
+                        StringBuilder sb = new StringBuilder(1024);
+                        StackTraceUtil.buildStackTrace(msg, e.getStackTrace(), sb, 0);
+                        writeLine(sb.toString());
                     }
                 }
                 

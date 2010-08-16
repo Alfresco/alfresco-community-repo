@@ -22,6 +22,9 @@ import java.util.Date;
 
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 
 /**
  * The scheduling wrapper around a persisted
@@ -33,16 +36,25 @@ import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
  */
 public class ScheduledPersistedActionImpl implements ScheduledPersistedAction 
 {
+   private NodeRef persistedAtNodeRef;
    private Action action;
    private Date scheduleStart;
    private Integer intervalCount;
    private IntervalPeriod intervalPeriod;
    
-   public ScheduledPersistedActionImpl(Action action) 
+   protected ScheduledPersistedActionImpl(Action action) 
    {
       this.action = action;
    }
    
+   
+   /**
+    * Get the persisted nodeRef for this schedule
+    */
+   protected NodeRef getPersistedAtNodeRef()
+   {
+      return persistedAtNodeRef;
+   }
    
    /** Get the action which the schedule applies to */
    public Action getAction() 
@@ -122,5 +134,73 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
          return null;
       }
       return intervalCount.toString() + intervalPeriod.getLetter();
+   }
+   
+   /**
+    * Returns a Quartz trigger definition based on the current
+    *  scheduling details.
+    * May only be called once this object has been persisted
+    */
+   public Trigger asTrigger()
+   {
+      if(persistedAtNodeRef == null)
+         throw new IllegalStateException("Must be persisted first");
+      
+      // Use our nodeRef as the unique title
+      String triggerName = persistedAtNodeRef.toString();
+      
+      // Monthly is a special case, since the period
+      //  will vary
+      // TODO - Make more things use DateIntervalTrigger
+      if(intervalPeriod == IntervalPeriod.Month)
+      {
+// TODO
+//         DateIntervalTrigger trigger = new DateIntervalTrigger(
+//               triggerName, null,
+//               scheduleStart, null,
+//               DateIntervalTrigger.IntervalUnit.MONTH,
+//               intervalCount
+//         );
+//         trigger.setMisfireInstruction( DateIntervalTrigger.MISFIRE_INSTRUCTION_FIRE_NOW );
+      }
+      
+      SimpleTrigger trigger = null;
+      
+      // Is it Start Date + Repeat Interval?
+      if(scheduleStart != null && getScheduleInterval() != null)
+      {
+         trigger = new SimpleTrigger(
+               triggerName, null,
+               scheduleStart, null,
+               SimpleTrigger.REPEAT_INDEFINITELY,
+               intervalCount * intervalPeriod.getInterval()
+         );
+      }
+      
+      // Is it a single Start Date?
+      if(scheduleStart != null && getScheduleInterval() == null)
+      {
+         trigger = new SimpleTrigger(
+               triggerName, null,
+               scheduleStart
+         );
+      }
+      
+      // Is it start now, run with Repeat Interval?
+      if(getScheduleInterval() != null)
+      {
+         trigger = new SimpleTrigger(
+               triggerName, null,
+               SimpleTrigger.REPEAT_INDEFINITELY,
+               intervalCount * intervalPeriod.getInterval()
+         );
+      }
+      
+      if(trigger != null)
+      {
+         // If we miss running, run as soon after as we can
+         trigger.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+      }
+      return trigger;
    }
 }

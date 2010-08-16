@@ -86,14 +86,14 @@ public class ReplicationDefinitionPersisterImpl implements ReplicationDefinition
 
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(REPLICATION_ACTION_ROOT_NODE_REF, ACTION_TYPES);
 
-        List<ReplicationDefinition> renderingActions = new ArrayList<ReplicationDefinition>(childAssocs.size());
+        List<ReplicationDefinition> replicationActions = new ArrayList<ReplicationDefinition>(childAssocs.size());
         for (ChildAssociationRef actionAssoc : childAssocs)
         {
             Action nextAction = runtimeActionService.createAction(actionAssoc.getChildRef());
-            renderingActions.add(new ReplicationDefinitionImpl(nextAction));
+            replicationActions.add(new ReplicationDefinitionImpl(nextAction));
         }
 
-        return renderingActions;
+        return replicationActions;
     }
     
     public List<ReplicationDefinition> loadReplicationDefinitions(String targetName)

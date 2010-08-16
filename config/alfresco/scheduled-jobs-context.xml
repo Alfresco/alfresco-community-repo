@@ -484,7 +484,7 @@
     </bean>
     
     <!-- Supports scheduled, persisted actions -->
-    <bean id="scheduledPersistedActionService" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl" init-method="schedulePreviouslyPersisted">
+    <bean id="scheduledPersistedActionService" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl">
         <property name="nodeService" ref="NodeService" />
         <property name="startupNodeService" ref="nodeService" />
         <property name="startupSearchService" ref="searchService"/>

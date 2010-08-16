@@ -21,6 +21,8 @@ package org.alfresco.repo.action.scheduled;
 import java.util.List;
 
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 
 /**
  * A service which handles the scheduling of the
@@ -32,7 +34,7 @@ import org.alfresco.service.cmr.action.Action;
  * @author Nick Burch
  * @since 3.4
  */
-public interface ScheduledPersistedActionService {
+public interface ScheduledPersistedActionServiceImpl extends ScheduledPersistedActionService {
    /**
     * Creates a new schedule, for the specified Action.
     */

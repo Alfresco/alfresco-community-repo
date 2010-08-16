@@ -21,6 +21,7 @@ package org.alfresco.repo.action.scheduled;
 import java.util.Date;
 
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 
 /**
  * The scheduling wrapper around a persisted
@@ -30,23 +31,44 @@ import org.alfresco.service.cmr.action.Action;
  * @author Nick Burch
  * @since 3.4
  */
-public interface ScheduledPersistedAction {
+public class ScheduledPersistedActionImpl implements ScheduledPersistedAction 
+{
+   private Action action;
+   private Date scheduleStart;
+   private Integer intervalCount;
+   private IntervalPeriod intervalPeriod;
+   
+   public ScheduledPersistedActionImpl(Action action) 
+   {
+      this.action = action;
+   }
+   
+   
    /** Get the action which the schedule applies to */
-   public Action getAction();
+   public Action getAction() 
+   {
+      return action;
+   }
    
    /** 
     * Get the first date that the action should be run
     *  on or after, or null if it should start shortly
     *  after each startup.  
     */
-   public Date getScheduleStart();
+   public Date getScheduleStart() 
+   {
+      return scheduleStart;
+   }
    
    /**
     * Sets the first date that the action should be
     *  run on or after. Set to null if the action
     *  should be run shortly after each startup.
     */
-   public void setScheduleStart(Date startDate);
+   public void setScheduleStart(Date startDate) 
+   {
+      this.scheduleStart = startDate;
+   }
 
    
    /**
@@ -55,36 +77,50 @@ public interface ScheduledPersistedAction {
     * Will be null if the action isn't scheduled to
     *  be repeated.
     */
-   public Integer getScheduleIntervalCount();
+   public Integer getScheduleIntervalCount() 
+   {
+      return intervalCount;
+   }
    
    /**
     * Sets how many periods should be waited between
     *  each execution, or null if it shouldn't be
     *  repeated. 
     */
-   public void setScheduleIntervalCount(Integer count);
+   public void setScheduleIntervalCount(Integer count) 
+   {
+      this.intervalCount = count;
+   }
 
    
    /**
     * How long are {@link #getScheduleIntervalCount()} counts
     *  measured in?
     */
-   public IntervalPeriod getScheduleIntervalPeriod();
+   public IntervalPeriod getScheduleIntervalPeriod() 
+   {
+      return intervalPeriod;
+   }
    
    /**
     * Sets the interval period
     */
-   public void setScheduleIntervalPeriod(IntervalPeriod period);
+   public void setScheduleIntervalPeriod(IntervalPeriod period) {
+      this.intervalPeriod = period;
+   }
    
    
    /**
     * Returns the interval in a form like 1D (1 day)
-    *  or 2h (2 hours)
+    *  or 2h (2 hours), or null if a period+count
+    *  hasn't been set
     */
-   public String getScheduleInterval();
-   
-   
-   public static enum IntervalPeriod {
-      Month, Week, Day, Hour, Minute
+   public String getScheduleInterval() 
+   {
+      if(intervalCount == null || intervalPeriod == null) 
+      {
+         return null;
+      }
+      return intervalCount.toString() + intervalPeriod.getLetter();
    }
 }

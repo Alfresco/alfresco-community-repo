@@ -215,8 +215,49 @@
          </properties>
      </type>
 
+     <type name="act:actionSchedule">
+        <title>Persistent Action Schedule</title>
+        <parent>cm:cmobject</parent>
+        <properties>
+            <property name="act:startDate">
+                <type>d:datetime</type>
+                <mandatory>true</mandatory>
+            </property>
+            <property name="act:intervalCount">
+                <type>d:int</type>
+                <mandatory>true</mandatory>
+            </property>
+            <property name="act:intervalPeriod">
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <constraints>
+                    <constraint type="LIST">
+                        <parameter name="caseSensitive"><value>true</value></parameter>
+                        <parameter name="allowedValues">
+                            <list>
+                                <value>M</value>
+                                <value>W</value>
+                                <value>D</value>
+                                <value>h</value>
+                                <value>m</value>
+                            </list>
+                        </parameter>
+                    </constraint>
+                </constraints>
+            </property>
+        </properties>
+        <associations>
+            <association name="act:scheduledAction">
+               <target>
+                  <class>act:action</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+        </associations>
+     </type>
+     
    </types>
-
 
    <aspects>
    

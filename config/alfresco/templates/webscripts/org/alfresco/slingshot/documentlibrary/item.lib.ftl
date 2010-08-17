@@ -67,9 +67,8 @@
       "parent":
       {
       <#if item.location.parent??>
-         <#assign parentLocation = item.location.parent>
-         <#if parentLocation??>
-         "nodeRef": "${parentLocation.nodeRef!""}"
+         <#if item.location.parent.nodeRef??>
+         "nodeRef": "${item.location.parent.nodeRef!""}"
          </#if>
       </#if>      
       }

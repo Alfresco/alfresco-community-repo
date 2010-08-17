@@ -78,7 +78,8 @@ function createPersonResult(node)
    // define properties for person
    personObject.properties.userName = node.properties.userName;
    personObject.properties.name = (node.properties.firstName ? node.properties.firstName + " " : "") + 
-      (node.properties.lastName ? node.properties.lastName : "");
+      (node.properties.lastName ? node.properties.lastName : "") +
+         " (" + node.properties.userName + ")";
    personObject.properties.jobtitle = (node.properties.jobtitle ? node.properties.jobtitle  : "");
    
    return personObject;

@@ -1265,11 +1265,13 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        public static final String NAME = "sleep-action";
        public static final String GO_BANG = "GoBang";
        private int sleepMs;
+       
+       private Thread executingThread;
       
        private int timesExecuted = 0;
        private void incrementTimesExecutedCount() {timesExecuted++;}
        public int getTimesExecuted() {return timesExecuted;}
-       private Thread executingThread;
+       public void resetTimesExecuted() {timesExecuted=0;}
        
        private ActionTrackingService actionTrackingService;
               
@@ -1341,11 +1343,12 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
              throw new RuntimeException("Bang!");
           }
           
-          CancellableSleepAction ca = (CancellableSleepAction)action;
-          boolean cancelled = actionTrackingService.isCancellationRequested(ca);
-          if(cancelled)
+          if(action instanceof CancellableSleepAction)
           {
-             throw new ActionCancelledException(ca);
+             CancellableSleepAction ca = (CancellableSleepAction)action;
+             boolean cancelled = actionTrackingService.isCancellationRequested(ca);
+             if(cancelled)
+                throw new ActionCancelledException(ca);
           }
        }
     }

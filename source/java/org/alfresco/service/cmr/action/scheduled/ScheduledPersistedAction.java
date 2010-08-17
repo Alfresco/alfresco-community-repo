@@ -94,7 +94,8 @@ public interface ScheduledPersistedAction
       Week ('W'), 
       Day ('D'), 
       Hour ('h'), 
-      Minute ('m');
+      Minute ('m'),
+      Second ('s');
       
       private final char letter;
       IntervalPeriod(char letter) {

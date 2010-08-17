@@ -301,6 +301,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     {
        final SleepActionExecuter sleepActionExec = 
           (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
+       sleepActionExec.resetTimesExecuted();
        sleepActionExec.setSleepMs(10000);
 
        // Have it run asynchronously

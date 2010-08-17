@@ -58,6 +58,14 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
       return persistedAtNodeRef;
    }
    
+   /** 
+    * Record where this schedule is persisted
+    */
+   protected void setPersistedAtNodeRef(NodeRef nodeRef)
+   {
+      this.persistedAtNodeRef = nodeRef;
+   }
+   
    /** Get the action which the schedule applies to */
    public Action getAction() 
    {

@@ -24,11 +24,18 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction.IntervalPeriod;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -56,11 +63,16 @@ public class ScheduledPersistedActionServiceTest extends TestCase
    private static ConfigurableApplicationContext ctx = 
       (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
 
+   private ScheduledPersistedActionService service;
+   private Scheduler scheduler;
+   
    private TransactionService transactionService;
+   private RuntimeActionService runtimeActionService;
    private ActionService actionService;
    private NodeService nodeService;
    private Repository repositoryHelper;
    
+   private Action testAction;
    private NodeRef scheduledRoot;
    
    @Override
@@ -70,6 +82,9 @@ public class ScheduledPersistedActionServiceTest extends TestCase
       nodeService = (NodeService) ctx.getBean("nodeService");
       repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
       transactionService = (TransactionService) ctx.getBean("transactionService");
+      runtimeActionService = (RuntimeActionService) ctx.getBean("actionService");
+      service = (ScheduledPersistedActionService) ctx.getBean("scheduledPersistedActionService");
+      scheduler = (Scheduler) ctx.getBean("schedulerFactory");
       
       
       // Set the current security context as admin
@@ -88,6 +103,18 @@ public class ScheduledPersistedActionServiceTest extends TestCase
             nodeService.deleteNode(child.getChildRef());
          }
       }
+      
+      // Register the test executor, if needed
+      SleepActionExecuter.registerIfNeeded(ctx);
+      
+      // Persist an action that uses the test executor
+      testAction = new TestAction(actionService.createAction(SleepActionExecuter.NAME));
+      NodeRef actionNodeRef = runtimeActionService.createActionNodeRef(//
+            testAction,
+            ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+            ContentModel.ASSOC_CONTAINS,
+            QName.createQName("TestAction")
+      );
       
       // Finish setup
       txn.commit();
@@ -161,27 +188,161 @@ public class ScheduledPersistedActionServiceTest extends TestCase
     */
    public void testExecution() throws Exception
    {
-      // A job due to start in 2 seconds
-      // TODO
+      final SleepActionExecuter sleepActionExec = 
+         (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
+      sleepActionExec.resetTimesExecuted();
+      sleepActionExec.setSleepMs(1);
       
-      // A job that runs every 2 seconds
-      // TODO
+      ScheduledPersistedAction schedule;
+      
+      
+      // Until the schedule is persisted, nothing will happen
+      schedule = service.createSchedule(testAction);
+      assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      
+      
+      // A job due to start in 1 second, and run once
+      schedule = service.createSchedule(testAction);
+      schedule.setScheduleStart(
+            new Date(System.currentTimeMillis()+1000)
+      );
+      assertNull(schedule.getScheduleInterval());
+      assertNull(schedule.getScheduleIntervalCount());
+      assertNull(schedule.getScheduleIntervalPeriod());
+      
+      // TODO - Remove this hacky workaround when real persistence is in
+      ((ScheduledPersistedActionImpl)schedule).setPersistedAtNodeRef(
+            testAction.getNodeRef()
+      );
+      System.out.println("Job starts in 1 second, no repeat...");
+      service.saveSchedule(schedule);
+      
+      // Check it went in
+      assertEquals(1, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      
+      // Let it run
+      Thread.sleep(2000);
+      
+      // Ensure it did properly run the once
+      assertEquals(1, sleepActionExec.getTimesExecuted());
+      
+      // Should have removed itself now the schedule is over
+      assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      
+      // Zap it
+      service.deleteSchedule(schedule);
+      assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+
+      
+      // ==========================
+      
+      
+      // A job that runs every 2 seconds, for the next 3.5 seconds
+      // (Should get to run twice, now and @2 secs)
+      schedule = service.createSchedule(testAction);
+      schedule.setScheduleStart(
+            new Date(0)
+      );
+      ((ScheduledPersistedActionImpl)schedule).setScheduleEnd(
+            new Date(System.currentTimeMillis()+3500)
+      );
+      schedule.setScheduleIntervalCount(2);
+      schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+      assertEquals("2s", schedule.getScheduleInterval());
+      
+      // Reset count
+      sleepActionExec.resetTimesExecuted();
+      assertEquals(0, sleepActionExec.getTimesExecuted());
+      
+      // TODO - Remove this hacky workaround when real persistence is in
+      ((ScheduledPersistedActionImpl)schedule).setPersistedAtNodeRef(
+            testAction.getNodeRef()
+      );
+      System.out.println("Job starts now, repeats twice @ 2s");
+      service.saveSchedule(schedule);
+      
+      Thread.sleep(4000);
+      
+      // Ensure it did properly run twice times
+      assertEquals(2, sleepActionExec.getTimesExecuted());
+      
+      // Zap it
+      service.deleteSchedule(schedule);
+      assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      
+      
+      // ==========================
+      
       
       // A job that starts in 2 seconds time, and runs
-      //  every second
+      //  every second until we kill it
+      schedule = service.createSchedule(testAction);
+      schedule.setScheduleStart(
+            new Date(System.currentTimeMillis()+2000)
+      );
+      schedule.setScheduleIntervalCount(1);
+      schedule.setScheduleIntervalPeriod(IntervalPeriod.Second);
+      assertEquals("1s", schedule.getScheduleInterval());
+      
+      // Reset count
+      sleepActionExec.resetTimesExecuted();
+      assertEquals(0, sleepActionExec.getTimesExecuted());
+      
+      // TODO - Remove this hacky workaround when real persistence is in
+      ((ScheduledPersistedActionImpl)schedule).setPersistedAtNodeRef(
+            testAction.getNodeRef()
+      );
+      System.out.println("Job starts in 2s, repeats @ 1s");
+      service.saveSchedule(schedule);
+      
+      // Let it run a few times
+      Thread.sleep(5000);
+      
+      // Zap it - should still be live
+      assertEquals(1, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      service.deleteSchedule(schedule);
+      assertEquals(0, scheduler.getJobNames(ScheduledPersistedActionServiceImpl.SCHEDULER_GROUP).length);
+      
+      // Check it ran an appropriate number of times
+      assertEquals(
+            "Didn't run enough - " + sleepActionExec.getTimesExecuted(),
+            true,
+            sleepActionExec.getTimesExecuted() >= 3
+      );
+      assertEquals(
+            "Ran too much - " + sleepActionExec.getTimesExecuted(),
+            true,
+            sleepActionExec.getTimesExecuted() < 5
+      );
+      
+      // Ensure it finished shutting down
+      Thread.sleep(500);
+   }
+   
+   /**
+    * Tests that when we have more than one schedule
+    *  defined and active, then the correct things run
+    *  at the correct times, and we never get confused
+    */
+   public void DISABLEDtestMultipleExecutions() throws Exception
+   {
+      // Create one that starts running in 2 seconds, runs every 2 seconds
+      //  until 9 seconds are up (will run 4 times) 
+      
+      // Create one that starts running now, every second until 9.5 seconds
+      //  are up (will run 9-10 times)
+      
+      // Set them going
+      
+      // Wait
+      
+      // Check that they really did run properly
       // TODO
    }
    
    // ============================================================================
 
-   /**
-    * An action that updates a static count, so we
-    *  can tell how often it is run.
-    * We have one of these persisted in the repository during
-    *  the tests
-    * TODO
-    */
-   
+  
    /**
     * For unit testing only - not thread safe!
     */
@@ -204,4 +365,13 @@ public class ScheduledPersistedActionServiceTest extends TestCase
          ran = true;
       }
    }
+   
+   protected static class TestAction extends ActionImpl
+   {
+      protected TestAction(Action action)
+      {
+         super(action);
+      }
+   }
+   
 }

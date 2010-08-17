@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
@@ -150,10 +151,16 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
      */
     public void saveSchedule(ScheduledPersistedAction schedule)
     {
+        // Remove if already there
         removeFromScheduler((ScheduledPersistedActionImpl) schedule);
+        
+        // TODO Create the node + relationship if not already there
+        
+        // Save to the repo
+        // TODO Persist details
+        
+        // Add to the scheduler again 
         addToScheduler((ScheduledPersistedActionImpl) schedule);
-
-        // TODO
     }
 
     /**
@@ -162,8 +169,10 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
      */
     public void deleteSchedule(ScheduledPersistedAction schedule)
     {
+        // Remove from the scheduler
         removeFromScheduler((ScheduledPersistedActionImpl) schedule);
 
+        // Now remove from the repo
         // TODO
     }
 
@@ -173,7 +182,8 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
      */
     public ScheduledPersistedAction getSchedule(Action persistedAction)
     {
-        // TODO
+        // TODO look for a relationship of the special type from
+        //  the action, then if we find it load the schedule via it
         return null;
     }
 
@@ -209,6 +219,11 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     protected void removeFromScheduler(ScheduledPersistedActionImpl schedule)
     {
         // Jobs are indexed by the persisted node ref
+        // So, only try to remove if persisted
+        if(schedule.getPersistedAtNodeRef() == null) 
+           return;
+       
+        // Ask to remove it
         try
         {
             scheduler.deleteJob(schedule.getPersistedAtNodeRef().toString(), SCHEDULER_GROUP);
@@ -307,9 +322,14 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
        public void execute(JobExecutionContext jobContext)
        {
+          // Do all this work as system
+          // TODO - See if we can pinch some bits from the existing scheduled
+          //  actions around who to run as
+          AuthenticationUtil.setRunAsUserSystem();
+          
           // Create the action object
           NodeRef actionNodeRef = new NodeRef(
-                (String)jobContext.get(JOB_ACTION_NODEREF)
+                jobContext.getMergedJobDataMap().getString(JOB_ACTION_NODEREF)
           );
           Action action = runtimeActionService.createAction(
                 actionNodeRef

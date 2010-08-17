@@ -43,6 +43,8 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * A service which handles the scheduling of the execution of persisted actions.
@@ -118,6 +120,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         this.namespaceService = namespaceService;
     }
 
+    
     /**
      * Find all our previously persisted scheduled actions, and tell the
      * scheduler to start handling them. Called by spring when startup is
@@ -258,5 +261,31 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         // TODO
 
         return detail;
+    }
+    
+    
+    /**
+     * This is used to trigger the loading of previously persisted schedules on
+     *  an application startup. It is an additional bean to make the context
+     *  files cleaner.
+     */
+    public static class ScheduledPersistedActionServiceBootstrap extends AbstractLifecycleBean
+    {
+       private ScheduledPersistedActionServiceImpl service;
+       public void setScheduledPersistedActionService(ScheduledPersistedActionServiceImpl scheduledPersistedActionService)
+       {
+          this.service = scheduledPersistedActionService;
+       }
+       
+       public void onBootstrap(ApplicationEvent event)
+       {
+          service.schedulePreviouslyPersisted();
+       }
+       
+       public void onShutdown(ApplicationEvent event)
+       {
+          // We don't need to do anything here, as the scheduler shutdown
+          //  will stop running our jobs for us
+       }
     }
 }

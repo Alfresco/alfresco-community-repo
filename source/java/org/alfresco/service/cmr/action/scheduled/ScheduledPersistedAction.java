@@ -86,28 +86,18 @@ public interface ScheduledPersistedAction
    
    
    public static enum IntervalPeriod {
-      Month ('M', -1), 
-      Week ('W', 7*24*60*60*1000), 
-      Day ('D', 24*60*60*1000), 
-      Hour ('h', 60*60*1000), 
-      Minute ('m', 60*1000);
+      Month ('M'), 
+      Week ('W'), 
+      Day ('D'), 
+      Hour ('h'), 
+      Minute ('m');
       
       private final char letter;
-      private final long interval;
-      
-      IntervalPeriod(char letter, long interval) {
+      IntervalPeriod(char letter) {
          this.letter = letter;
-         this.interval = interval;
       }
       public char getLetter() {
          return letter;
-      }
-      /**
-       * Returns the interval of one of these
-       *  periods, in milliseconds
-       */
-      public long getInterval() {
-         return interval;
       }
    }
 }

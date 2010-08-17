@@ -9,18 +9,21 @@
 
     The pattern for adding new initialisation to the bootstrap sequence is as follows:
 
-    1) Develop a bean that implements the Spring interface ApplicationListener
-    2) Place the initialisation logic in the method onApplicationEvent(ApplicationEvent event)...
+    1) Develop a bean that extends the Spring Surf class AbstractLifecycleBean
+    2) Place the initialisation logic in the method onBootstrap(ApplicationEvent event)...
 
-       public void onApplicationEvent(ApplicationEvent event)
+       public void onBootstrap(ApplicationEvent event)
        {
-          if (event instanceof ContextRefreshedEvent)
-          {
-             // initialisation logic here
-          }
+          // initialisation logic here
+       }
+    3) Place the shutdown logic (if any) in the method onShutdown(ApplicationEvent event)...
+
+       public void onShutdown(ApplicationEvent event)
+       {
+          // cleanup logic here
        }
 
-    3) Add the bean definition to this file - Note: the beans are initialised in the order they are specified.
+    4) Add the bean definition to this file - Note: the beans are initialised in the order they are specified.
 -->
 
 <beans>
@@ -602,6 +605,11 @@
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
+
+    <!-- Scheduled persisted actions - load into quartz -->
+    <bean id="scheduledPersistedActionServiceBootstrap" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl$ScheduledPersistedActionServiceBootstrap">
+       <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
+    </bean>
 
     <!-- Startup Message -->
 

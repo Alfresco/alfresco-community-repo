@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.action.scheduled;
 import java.util.Date;
 
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * The scheduling wrapper around a persisted
@@ -34,6 +35,9 @@ public interface ScheduledPersistedAction
 {
    /** Get the action which the schedule applies to */
    public Action getAction();
+   
+   /** Get the persisted {@link NodeRef} of the action this applies to */
+   public NodeRef getActionNodeRef();
    
    /** 
     * Get the first date that the action should be run

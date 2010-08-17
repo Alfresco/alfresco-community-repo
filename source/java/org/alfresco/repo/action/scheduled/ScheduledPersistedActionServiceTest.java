@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.action.scheduled;
 
+import java.util.Date;
+
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -33,6 +35,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.quartz.Job;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.Scheduler;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
+import org.quartz.core.jmx.JobDetailSupport;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -114,6 +127,36 @@ public class ScheduledPersistedActionServiceTest extends TestCase
     */
    
    /**
+    * Tests that things get properly injected onto the job bean
+    */
+   public void testJobBeanInjection() throws Exception
+   {
+      // The job should run almost immediately
+      Job job = new TestJob();
+      JobDetail details = new JobDetail(
+            "ThisIsATest", null, job.getClass()
+      );
+      Trigger now = new SimpleTrigger(
+            "TestTrigger", new Date(1)
+      );
+      now.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+      
+      Scheduler scheduler = (Scheduler)ctx.getBean("schedulerFactory");
+      scheduler.scheduleJob(details, now);
+
+      // Allow it to run
+      for(int i=0; i<20; i++)
+      {
+         if(! TestJob.ran) 
+            Thread.sleep(50);
+      }
+      
+      // Ensure it ran, and it got a copy of the context
+      assertEquals(true, TestJob.ran);
+      assertEquals(true, TestJob.gotContext);
+   }
+   
+   /**
     * Tests that things actually get run correctly
     */
    public void testExecution() throws Exception
@@ -127,5 +170,38 @@ public class ScheduledPersistedActionServiceTest extends TestCase
       // A job that starts in 2 seconds time, and runs
       //  every second
       // TODO
+   }
+   
+   // ============================================================================
+
+   /**
+    * An action that updates a static count, so we
+    *  can tell how often it is run.
+    * We have one of these persisted in the repository during
+    *  the tests
+    * TODO
+    */
+   
+   /**
+    * For unit testing only - not thread safe!
+    */
+   public static class TestJob implements Job, ApplicationContextAware
+   {
+      private static boolean gotContext = false;
+      private static boolean ran = false;
+      
+      public TestJob() {
+         gotContext = false;
+         ran = false;
+      }
+      
+      public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
+         gotContext = true;
+      }
+      public void execute(JobExecutionContext paramJobExecutionContext)
+            throws JobExecutionException {
+         ran = true;
+      }
    }
 }

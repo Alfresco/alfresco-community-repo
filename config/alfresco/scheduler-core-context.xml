@@ -30,6 +30,9 @@
         <property name="schedulerFactoryClass">
             <value>org.alfresco.repo.scheduler.AlfrescoSchedulerFactory</value>
         </property>
+        <property name="jobFactory">
+            <bean class="org.alfresco.repo.scheduler.AlfrescoJobFactory" />
+        </property>
         <property name="quartzProperties">
             <ref bean="schedulerProperties" />
         </property>

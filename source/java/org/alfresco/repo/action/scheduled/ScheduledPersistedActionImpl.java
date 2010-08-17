@@ -64,6 +64,12 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
       return action;
    }
    
+   /** Get where the action lives */
+   public NodeRef getActionNodeRef()
+   {
+      return action.getNodeRef();
+   }
+   
    /** 
     * Get the first date that the action should be run
     *  on or after, or null if it should start shortly

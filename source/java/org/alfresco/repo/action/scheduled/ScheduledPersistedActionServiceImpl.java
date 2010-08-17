@@ -24,8 +24,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
@@ -33,16 +35,17 @@ import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -56,8 +59,9 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  */
 public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedActionService
 {
-    protected static final String SCHEDULED_ACTION_ROOT_PATH = "/app:company_home/app:dictionary/cm:Scheduled_x0020_Actions";
-
+    protected static final String JOB_SCHEDULE_NODEREF = "ScheduleNodeRef";
+    protected static final String JOB_ACTION_NODEREF = "ActionNodeRef";
+    
     protected static NodeRef SCHEDULED_ACTION_ROOT_NODE_REF;
 
     protected static final Set<QName> ACTION_TYPES = new HashSet<QName>(Arrays
@@ -68,18 +72,10 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     private static final Log log = LogFactory.getLog(ScheduledPersistedActionServiceImpl.class);
 
     private Scheduler scheduler;
-
     private NodeService nodeService;
-
     private NodeService startupNodeService;
-
-    private ActionService actionService;
-
-    private SearchService startupSearchService;
-
-    private NamespaceService namespaceService;
-
     private RuntimeActionService runtimeActionService;
+    private Repository repositoryHelper;
 
     public void setScheduler(Scheduler scheduler)
     {
@@ -100,26 +96,30 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         this.startupNodeService = startupNodeService;
     }
 
-    public void setStartupSearchService(SearchService startupSearchService)
+    public void setRepositoryHelper(Repository repositoryHelper)
     {
-        this.startupSearchService = startupSearchService;
+        this.repositoryHelper = repositoryHelper;
     }
 
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
-
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService) 
     {
         this.runtimeActionService = runtimeActionService;
     }
+    
 
-    public void setNamespaceService(NamespaceService namespaceService)
+    protected void locatePersistanceFolder()
     {
-        this.namespaceService = namespaceService;
+        NodeRef dataDictionary = startupNodeService.getChildByName(
+              repositoryHelper.getCompanyHome(),
+              ContentModel.ASSOC_CONTAINS,
+              "data dictionary"
+        );
+        SCHEDULED_ACTION_ROOT_NODE_REF = startupNodeService.getChildByName(
+              dataDictionary,
+              ContentModel.ASSOC_CONTAINS,
+              "Scheduled Actions"
+        );
     }
-
     
     /**
      * Find all our previously persisted scheduled actions, and tell the
@@ -128,18 +128,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
      */
     public void schedulePreviouslyPersisted()
     {
-        // Grab the path of our bit of the data dictionary
-        StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        List<NodeRef> nodes = startupSearchService.selectNodes(startupNodeService
-                    .getRootNode(spacesStore), SCHEDULED_ACTION_ROOT_PATH, null, namespaceService,
-                    false);
-        if (nodes.size() != 1) { throw new IllegalStateException(
-                    "Tries to find the Scheduled Actions Data Dictionary" + " folder at "
-                                + SCHEDULED_ACTION_ROOT_PATH + " but got " + nodes.size()
-                                + "results"); }
-        SCHEDULED_ACTION_ROOT_NODE_REF = nodes.get(0);
-
-        // Now, look up our persisted actions and schedule
+        // Look up our persisted actions and schedule
         List<ScheduledPersistedAction> actions = listSchedules(startupNodeService);
         for (ScheduledPersistedAction action : actions)
         {
@@ -254,12 +243,23 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
     protected JobDetail buildJobDetail(ScheduledPersistedActionImpl schedule)
     {
+        // Build the details
         JobDetail detail = new JobDetail(schedule.getPersistedAtNodeRef().toString(),
-                    SCHEDULER_GROUP, null // TODO
+                    SCHEDULER_GROUP, 
+                    ScheduledJobWrapper.class
         );
 
-        // TODO
-
+        // Record the action that is to be executed
+        detail.getJobDataMap().put(
+              JOB_ACTION_NODEREF,
+              schedule.getActionNodeRef().toString()
+        );
+        detail.getJobDataMap().put(
+              JOB_SCHEDULE_NODEREF,
+              schedule.getPersistedAtNodeRef().toString()
+        );
+        
+        // All done
         return detail;
     }
     
@@ -279,6 +279,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
        
        public void onBootstrap(ApplicationEvent event)
        {
+          service.locatePersistanceFolder();
           service.schedulePreviouslyPersisted();
        }
        
@@ -286,6 +287,39 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
        {
           // We don't need to do anything here, as the scheduler shutdown
           //  will stop running our jobs for us
+       }
+    }
+    
+    /**
+     * The thing that Quartz runs when the schedule fires.
+     * Handles fetching the action, and having it run asynchronously
+     */
+    public static class ScheduledJobWrapper implements Job, ApplicationContextAware
+    {
+       private ActionService actionService;
+       private RuntimeActionService runtimeActionService;
+       
+       public void setApplicationContext(ApplicationContext applicationContext)
+       {
+          actionService = (ActionService)applicationContext.getBean("ActionService");
+          runtimeActionService = (RuntimeActionService)applicationContext.getBean("actionService");
+       }
+
+       public void execute(JobExecutionContext jobContext)
+       {
+          // Create the action object
+          NodeRef actionNodeRef = new NodeRef(
+                (String)jobContext.get(JOB_ACTION_NODEREF)
+          );
+          Action action = runtimeActionService.createAction(
+                actionNodeRef
+          );
+          
+          // Have it executed asynchronously
+          actionService.executeAction(
+                action, (NodeRef)null,
+                false, true
+          );
        }
     }
 }

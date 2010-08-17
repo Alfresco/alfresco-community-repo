@@ -19,6 +19,8 @@
 
 package org.alfresco.repo.transfer;
 
+import java.io.InputStream;
+
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -27,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
- *
  */
 public class LoggingTransferProgressMonitorImpl implements TransferProgressMonitor
 {
@@ -143,5 +144,11 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
                 log.info(message, ex);
             }
         }
+    }
+
+    public InputStream getLogInputStream(String transferId)
+            throws TransferException
+    {
+        return delegate.getLogInputStream(transferId);
     }
 }

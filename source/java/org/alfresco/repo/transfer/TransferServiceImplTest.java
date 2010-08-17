@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferEventBegin;
+import org.alfresco.service.cmr.transfer.TransferEventReport;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferService;
@@ -1916,6 +1917,32 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 transferReport = transferService.transfer(targetName, definition, callbacks);
                 assertNotNull("transfer report is null", transferReport);
                 // Can't dirty read transfer report here
+                
+                boolean foundSourceReport = false;
+                boolean foundDestReport = false;
+                
+                for(TransferEvent event : callback.getEvents())
+                {
+                    if(event instanceof TransferEventReport)
+                    {
+                        TransferEventReport reportEvent = (TransferEventReport)event;
+                        switch (reportEvent.getReportType())
+                        {
+                            case DESTINATION:
+                                foundDestReport = true;
+                                assertNotNull("dest transfer nodeId null", reportEvent.getNodeRef());
+                                assertFalse("dest transfer nodeId not correct", transferReport.equals(reportEvent.getNodeRef()));
+                                break;
+                            case SOURCE:
+                                foundSourceReport = true;
+                                assertEquals("source transfer nodeId not correct", transferReport, reportEvent.getNodeRef());
+                                break; 
+                        }
+                    }
+                }
+                
+                assertTrue("source report not found", foundSourceReport);
+                assertTrue("dest report not found", foundDestReport);
             }
         }
         finally
@@ -2803,7 +2830,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      *   transfer(sync)</li>
      * <li>add Alien node B9.  A1 becomes Alien.</li>
      * <li>remove alien node B9.  A1 becomes non Alien.</li>
-       <li>restore alien node B9.  A1 becomes non Alien again.</li>
      * <li>add Alien node B10. A1 and A2 become Alien</li>
      * <li>remove Alien node B10.  A1 and A2 become non Alien</li>
      * <li>add B12 and B14 A6, A2, A1 becomes Alien</li>
@@ -3214,7 +3240,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          }
          
         /**
-          * Step 6a.
+          * Step 7
           * Delete B14.   B12 remains alien
           */
          startNewTransaction();
@@ -3247,7 +3273,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          }
 
         /**
-         * Step 7 
+         * Step 8 
          * add B13 A6, A2, A1 remains Alien
          */
           startNewTransaction();
@@ -3287,7 +3313,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
           }
           
           /**
-           * Step 8 remove B13 A6, A2, A1 remains Alien Due to B12
+           * Step 9 remove B13 A6, A2, A1 remains Alien Due to B12
            */ 
           startNewTransaction();
           try 
@@ -3318,7 +3344,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
           }
 
           /** 
-           * Step 9 remove B12 A6, A2, A1 becomes non Alien.
+           * Step 10 remove B12 A6, A2, A1 becomes non Alien.
            */
           startNewTransaction();
           try 
@@ -3349,7 +3375,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
           }
 
          /**
-          *  Step 10 add B9 and B10 A1 and A2 become Alien
+          *  Step 11 add B9 and B10 A1 and A2 become Alien
           */
           startNewTransaction();
           try 
@@ -3396,7 +3422,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 
          
           /**
-          * Step 11 remove B10 A2 becomes non alien A1 remains alien.
+          * Step 12 remove B10 A2 becomes non alien A1 remains alien.
           */
           startNewTransaction();
           try 
@@ -3427,10 +3453,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 
          
           /**
-          * 12 Add Alien node B11.
-          * delete A2 (will cascade delete A4, A5, A6, A7, A8
-          * transfer sync
-          * (A5, A6, A7, A8 and should be deleted A2 and A4 remain since they contain alien content.)
+          * 13 Add Alien node B11.
           */ 
           logger.debug("Step 12 Add Node B11, Delete A2 and sync");
           startNewTransaction();
@@ -3453,6 +3476,12 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
               endTransaction();
           }
           
+          /**
+          * Step 14
+          * delete A2 (will cascade delete A4, A5, A6, A7, A8
+          * transfer sync
+          * (A5, A6, A7, A8 and should be deleted A2 and A4 remain since they contain alien content.)
+          */ 
           startNewTransaction();
           try 
           {
@@ -3472,6 +3501,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
               assertFalse("test error: node A6 not deleted", nodeService.exists(A6NodeRef));
               assertFalse("test error: node A7 not deleted", nodeService.exists(A7NodeRef));
               assertFalse("test error: node A8 not deleted", nodeService.exists(A8NodeRef));
+              
+              assertTrue("test error: node does not exist", nodeService.exists(A3NodeRef));
               
               /**
                * Transfer Nodes A1 through A8
@@ -4984,7 +5015,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * </pre>
      * Step 1.  Transfer from A to B. 
      * Step 2.  Transfer from C to B (crossing over on A2Dest) 
-     * Step 3.  Invade A3Dest via C
+     * Step 3.  Invade A3Dest via C4
      * Step 4.  Delete C4. Sync from C 
      * Step 5.  Delete C3  - A2 dest images folder uninvaded.
        
@@ -5665,7 +5696,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         /**
          * Step 3
          * Now move A3
-         * C2 (Dest) gets invaded by A5
+         * C3 (Dest) gets invaded by A5
          */
         startNewTransaction();
         try 
@@ -5720,7 +5751,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             nodeService.moveNode(A5NodeRef, C2DummyNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("B6"));
             
-            // Node B5
+            // Node B6
             ChildAssociationRef child = nodeService.createNode(testNodeFactory.getMappedNodeRef(A5NodeRef), ContentModel.ASSOC_CONTAINS, QName.createQName("B6"), ContentModel.TYPE_FOLDER);
             B6NodeRef = child.getChildRef();
             nodeService.setProperty(B6NodeRef, ContentModel.PROP_TITLE, "B6");   

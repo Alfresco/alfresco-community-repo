@@ -84,6 +84,7 @@ public interface TransferModel
      * Type : Transfer report
      */
     static final QName TYPE_TRANSFER_REPORT = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferReport");
+    static final QName TYPE_TRANSFER_REPORT_DEST = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferReportDest");
 
     /*
      * Type : Temp Transfer Storage

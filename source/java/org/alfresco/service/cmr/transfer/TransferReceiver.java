@@ -122,7 +122,23 @@ public interface TransferReceiver
      */
     void commit(String transferId) throws TransferException;
     
+    /**
+     * 
+     * @param transferId
+     * @return the trabsfer progress
+     * @throws TransferException
+     */
     TransferProgress getStatus(String transferId) throws TransferException;
     
+    /**
+     * 
+     * @return
+     */
     TransferProgressMonitor getProgressMonitor();
+    
+    /**
+     * get the transfer report for the specified transfer
+     * @param transferId
+     */
+    InputStream getTransferReport(String transferId);
 }

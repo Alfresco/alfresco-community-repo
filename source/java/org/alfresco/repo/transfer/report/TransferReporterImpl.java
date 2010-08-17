@@ -38,6 +38,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transfer.Transfer;
 import org.alfresco.repo.transfer.TransferModel;
+import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
@@ -54,6 +55,8 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -65,6 +68,8 @@ public class TransferReporterImpl implements TransferReporter
     private NodeService nodeService;
     private ContentService contentService;
     
+    private static Log logger = LogFactory.getLog(TransferReporterImpl.class);
+    
     /** Default encoding **/
     private static String DEFAULT_ENCODING = "UTF-8";
     
@@ -74,14 +79,19 @@ public class TransferReporterImpl implements TransferReporter
         PropertyCheck.mandatory(this, "contentService", contentService);
     }
     
-    
+    public NodeRef createDestinationTransferReport(TransferTarget target)
+    {
+        return null;
+        
+    }
     
     /**
      * Write exception transfer report
      * 
      * @return NodeRef the node ref of the new transfer report
      */
-    public NodeRef createTransferReport(Exception e, 
+    public NodeRef createTransferReport(String transferName,
+                Exception e, 
                 TransferTarget target,
                 TransferDefinition definition, 
                 List<TransferEvent> events, 
@@ -89,12 +99,9 @@ public class TransferReporterImpl implements TransferReporter
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
         
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmssSSSZ");
-        String timeNow = format.format(new Date());
-     
-        String title = "Transfer report, error,  " + timeNow;
-        String description = "Transfer error report";
-        String name = "Transfer error report, " + timeNow;
+        String title = transferName + " , error";
+        String description = "Transfer error report, " + transferName + " targetName " + target.getName();
+        String name = transferName;
         
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
@@ -151,20 +158,18 @@ public class TransferReporterImpl implements TransferReporter
      * 
      * @return NodeRef the node ref of the new transfer report
      */
-    public NodeRef createTransferReport(Transfer transfer, 
+    public NodeRef createTransferReport(String transferName,
+                Transfer transfer, 
                 TransferTarget target,
                 TransferDefinition definition, 
                 List<TransferEvent> events, 
                 File snapshotFile)
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
-        
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmssSSSZ");
-        String timeNow = format.format(new Date());
-        
-        String title = "Transfer report, " + timeNow + "success";
-        String description = "Transfer report success targetName : " + target.getName();
-        String name = "Transfer report, " + timeNow;
+               
+        String title = transferName + ", success";
+        String description = "Transfer success report : " + transferName + " targetName: " + target.getName();
+        String name = transferName;
         
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(ContentModel.PROP_TITLE, title);
@@ -276,6 +281,42 @@ public class TransferReporterImpl implements TransferReporter
                 error.printStackTrace();
             }
         }
+    }
+    
+    /*
+     */
+    public NodeRef writeDestinationReport(String transferName,
+            TransferTarget target,
+            File tempFile)
+    {
+       
+        String title = transferName + ", destination, success";
+        String description = "Transfer Destination Report, success, targetName : " + target.getName();
+        String name = transferName + " destination";
+        
+        logger.debug("writing destination transfer report " + title);
+        logger.debug("parent node ref " + target.getNodeRef());
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable> ();
+        properties.put(ContentModel.PROP_NAME, name);
+        properties.put(ContentModel.PROP_TITLE, title);
+        properties.put(ContentModel.PROP_DESCRIPTION, description);
+        ChildAssociationRef ref = nodeService.createNode(target.getNodeRef(), 
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
+                TransferModel.TYPE_TRANSFER_REPORT_DEST, 
+                properties);
+        
+        ContentWriter writer = contentService.getWriter(ref.getChildRef(), 
+                ContentModel.PROP_CONTENT, true);
+        writer.setLocale(Locale.getDefault());
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding(DEFAULT_ENCODING);
+        writer.putContent(tempFile);
+        
+        logger.debug("written " + name + ", " + ref.getChildRef());
+        
+        return ref.getChildRef();
     }
     
     

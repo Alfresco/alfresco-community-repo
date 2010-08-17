@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferEventBegin;
@@ -33,6 +34,7 @@ import org.alfresco.service.cmr.transfer.TransferEventError;
 import org.alfresco.service.cmr.transfer.TransferEventSendingContent;
 import org.alfresco.service.cmr.transfer.TransferEventSendingSnapshot;
 import org.alfresco.service.cmr.transfer.TransferEventSuccess;
+import org.alfresco.service.cmr.transfer.TransferEventReport;
 
 /**
  * Class to bring together all the transfer event stuff.
@@ -167,6 +169,16 @@ public class TransferEventProcessor
     public void commit()
     {
         setState(TransferEvent.TransferState.COMMITTING);
+        notifyObservers();
+    }
+    
+    public void writeReport(NodeRef nodeRef, TransferEventReport.ReportType reportType)
+    {
+        TransferEventReport event = new TransferEventReport();
+        event.setNodeRef(nodeRef);
+        event.setReportType(reportType); 
+        event.setMessage("report nodeRef:" + nodeRef + ", reportType :" + reportType );
+        queue.add(event);
         notifyObservers();
     }
     

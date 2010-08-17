@@ -20,11 +20,13 @@ package org.alfresco.repo.transfer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -44,6 +47,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -64,6 +68,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -75,10 +80,12 @@ import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
+import org.alfresco.service.cmr.transfer.TransferEventReport;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -517,6 +524,9 @@ public class TransferServiceImpl implements TransferService
             logger.debug("transfer started to :" + targetName);
         }
         
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmssSSSZ");
+        String transferName = format.format(new Date());
+        
         /**
          * Wire in the transferReport - so any callbacks are stored in transferReport
          */
@@ -561,8 +571,8 @@ public class TransferServiceImpl implements TransferService
             File tempDir = TempFileProvider.getLongLifeTempDir("transfer");
             snapshotFile = TempFileProvider.createTempFile(prefix, suffix, tempDir);
             reqFile = TempFileProvider.createTempFile("TRX-REQ", suffix, tempDir);
-            FileOutputStream reqOutput = new FileOutputStream(reqFile);
-  
+            
+            FileOutputStream reqOutput = new FileOutputStream(reqFile);  
             FileWriter snapshotWriter = new FileWriter(snapshotFile);
             
             // Write the manifest file
@@ -802,29 +812,56 @@ public class TransferServiceImpl implements TransferService
                     checkCancel(transfer.getTransferId());
                     prepared = true;
                     
-                    logger.debug("committed - write transfer report transferId:" + transferId);
+                    logger.debug("committed transferId:" + transferId);
                     
+                    /**
+                     * Now pull back and persist the destination transfer report.
+                     */
+                    logger.debug("now pull back the destination transfer report");
+                    NodeRef destReportNode = persistDestinationTransferReport(transferName, transfer, target, tempDir);
+                    if(destReportNode != null)
+                    {
+                        eventProcessor.writeReport(destReportNode, TransferEventReport.ReportType.DESTINATION);
+                    }
+
                     /**
                      *  Write the Successful transfer report if we get here
                      */
-                    NodeRef reportNode = persistTransferReport(transfer, target, definition, transferReport, snapshotFile);
-                                       
+                    logger.debug("now persist the client side transfer report");
+                    NodeRef reportNode = persistTransferReport(transferName, transfer, target, definition, transferReport, snapshotFile);                                       
+                    if(reportNode != null)
+                    {
+                        eventProcessor.writeReport(reportNode, TransferEventReport.ReportType.SOURCE);
+                    }
+                    
                     logger.debug("success - at end of method transferId:" + transferId);
                     return reportNode;
                 }
                 finally
                 {
+                    
                     logger.debug("remove monitoring for transferId:" + transferId);
                     transferMonitoring.remove(transferId);
                     logger.debug("removed monitoring for transferId:" + transferId);
                     
                     if(!prepared)
                     {
+                        
                         logger.debug("abort incomplete transfer");
                         transmitter.abort(transfer);
+                        
+                        /**
+                         * Now pull back and persist the destination error transfer report.
+                         */
+                        logger.debug("now pull back the destination transfer report");
+                        NodeRef destReportNode = persistDestinationTransferReport(transferName + " error", transfer, target, tempDir);
+                        if(destReportNode != null)
+                        {
+                            eventProcessor.writeReport(destReportNode, TransferEventReport.ReportType.DESTINATION);
+                        }
                     }
                 }
-            }
+            } // end of transfer
             
             //TODO Do we ever get here ?
             logger.debug("returning null - unable lock target");
@@ -840,7 +877,11 @@ public class TransferServiceImpl implements TransferService
              */
             if(target != null )
             {
-                persistTransferReport(t, target, definition, transferReport, snapshotFile);
+                NodeRef reportNode = persistTransferReport(transferName, t, target, definition, transferReport, snapshotFile);
+                if(reportNode != null)
+                {
+                    eventProcessor.writeReport(reportNode, TransferEventReport.ReportType.SOURCE);
+                }          
             }
             throw t;
         }
@@ -855,7 +896,11 @@ public class TransferServiceImpl implements TransferService
              */
             if(target != null )
             {
-                persistTransferReport(t, target, definition, transferReport, snapshotFile);
+                NodeRef reportNode = persistTransferReport(transferName, t, target, definition, transferReport, snapshotFile);
+                if(reportNode != null)
+                {
+                    eventProcessor.writeReport(reportNode, TransferEventReport.ReportType.SOURCE);
+                }
             }
             
             /**
@@ -879,6 +924,7 @@ public class TransferServiceImpl implements TransferService
                 reqFile.delete();
             }
             logger.debug("req file deleted");
+            
 
         } 
     } // end of transferImpl
@@ -1085,10 +1131,11 @@ public class TransferServiceImpl implements TransferService
         }
     }
     
+  
     /**
      * Success transfer report
      */
-    private NodeRef persistTransferReport(final Transfer transfer, final TransferTarget target, final TransferDefinition definition, final List<TransferEvent> events, final File snapshotFile)
+    private NodeRef persistTransferReport(final String transferName, final Transfer transfer, final TransferTarget target, final TransferDefinition definition, final List<TransferEvent> events, final File snapshotFile)
     {
         /**
          * persist the transfer report in its own transaction so it cannot be rolled back
@@ -1099,7 +1146,7 @@ public class TransferServiceImpl implements TransferService
                         public NodeRef execute() throws Throwable
                         {
                             logger.debug("transfer report starting");
-                            NodeRef reportNode = transferReporter.createTransferReport(transfer, target, definition, events, snapshotFile);
+                            NodeRef reportNode = transferReporter.createTransferReport(transferName, transfer, target, definition, events, snapshotFile);
                             logger.debug("transfer report done");
                             return reportNode;
                         }
@@ -1110,20 +1157,77 @@ public class TransferServiceImpl implements TransferService
     /**
      * Error Transfer report
      */
-    private NodeRef persistTransferReport(final Exception t, final TransferTarget target, final TransferDefinition definition, final List<TransferEvent> events, final File snapshotFile)
+    private NodeRef persistTransferReport(final String transferName, final Exception t, final TransferTarget target, final TransferDefinition definition, final List<TransferEvent> events, final File snapshotFile)
     {
-        // in its own transaction so it cannot be rolled back
+        /**
+         * in its own transaction so it cannot be rolled back and equally if it does roll back itself 
+         * then it does not affect the enclosing transfer.
+         */
+        
         NodeRef reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(
                     new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
                     {
                         public NodeRef execute() throws Throwable
                         {
                             logger.debug("transfer report starting");
-                            NodeRef reportNode = transferReporter.createTransferReport(t, target, definition, events, snapshotFile);
+                            NodeRef reportNode = transferReporter.createTransferReport(transferName, t, target, definition, events, snapshotFile);
                             logger.debug("transfer report done");
                             return reportNode;
                         }
                     }, false, true);
+        return reportNode;
+    }
+    
+    /**
+     * Destination Transfer report
+     * @return the node ref of the transfer report or null if there isn't one.
+     */
+    private NodeRef persistDestinationTransferReport(final String transferName, 
+            final Transfer transfer, 
+            final TransferTarget target, 
+            final File tempDir)
+    {
+       /**
+         *  in its own transaction so it cannot be rolled back
+         */
+        NodeRef reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                   try
+                   {
+                        File destReportFile = TempFileProvider.createTempFile("TRX-DREP", ".xml", tempDir);
+                        FileOutputStream destReportOutput = new FileOutputStream(destReportFile); 
+                        transmitter.getTransferReport(transfer, destReportOutput);
+                        logger.debug("transfer report (destination) starting");
+
+                        NodeRef reportNode = transferReporter.writeDestinationReport(transferName, target, destReportFile);
+                        logger.debug("transfer report (destination) done");
+
+                        if(destReportFile != null)
+                        {
+                            destReportFile.delete();
+                        }
+                        logger.debug("destination report temp file deleted");
+
+                        return reportNode;
+                    }
+                    catch(FileNotFoundException ie)
+                    {
+                        // there's nothing we can do here. - but we do not want the exception to propogate up.
+                        logger.debug("unexpected error while obtaining destination transfer report", ie);
+                        return null;
+                    }
+                    catch(TransferException ie)
+                    {
+                        // there's nothing we can do here. - but we do not want the exception to propogate up.
+                        logger.debug("unexpected error while obtaining destination transfer report", ie);
+                        return null;
+                    }
+                } // end execute
+            });
+            
         return reportNode;
     }
     
@@ -1196,6 +1300,8 @@ public class TransferServiceImpl implements TransferService
         String transferId;
         boolean cancelMe = false;
     }
+    
+
 
 
 }

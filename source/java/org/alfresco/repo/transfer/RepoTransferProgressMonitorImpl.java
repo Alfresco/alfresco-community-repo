@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.transfer;
 
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
@@ -30,6 +31,7 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -248,6 +250,16 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
         }
         return channel;
     }
+    
+    public InputStream getLogInputStream(String transferId)
+            throws TransferException
+    {
+        NodeRef transferRecord = getTransferRecord(transferId);
+        
+        ContentReader reader = contentService.getReader(transferRecord, ContentModel.PROP_CONTENT); 
+        
+        return reader.getContentInputStream();
+    }
 
     /**
      * @param nodeService
@@ -275,4 +287,5 @@ public class RepoTransferProgressMonitorImpl implements TransferProgressMonitor
     {
         this.transactionService = transactionService;
     }
+
 }

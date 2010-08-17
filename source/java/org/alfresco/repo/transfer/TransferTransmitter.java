@@ -95,4 +95,13 @@ public interface TransferTransmitter
      */
     TransferProgress getStatus(Transfer transfer) throws TransferException;
     
+    /**
+     * Get the destination side transfer report from the destination and write it to the specified output stream.
+     * <p>
+     * The result stream will be closed.
+     * @param transfer the transfer object returned by an earlier call to begin 
+     * @param results - where to write the contents of the transfer report. 
+     */
+    void getTransferReport(Transfer transfer, OutputStream results);
+    
 }

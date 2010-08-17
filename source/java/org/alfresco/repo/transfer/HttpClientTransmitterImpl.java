@@ -563,7 +563,65 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         }
     }
     
+    /**
+     * 
+     */
+    public void getTransferReport(Transfer transfer, OutputStream result)
+    {
+        TransferTarget target = transfer.getTransferTarget();
+        PostMethod getReportRequest = new PostMethod();
+        MultipartRequestEntity requestEntity;
+             
+        try
+        {
+            HostConfiguration hostConfig = getHostConfig(target);
+            HttpState httpState = getHttpState(target);
+            
+            try
+            {
+                getReportRequest.setPath(target.getEndpointPath() + "/report");
+                
+                //Put the transferId on the query string
+                getReportRequest.setQueryString(
+                        new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                  
+                int responseStatus = httpClient.executeMethod(hostConfig, getReportRequest, httpState);
+                checkResponseStatus("getReport", responseStatus, getReportRequest);
+                
+               
+                InputStream is = getReportRequest.getResponseBodyAsStream();
+                InputStreamReader reader = new InputStreamReader(is);
+                
+                BufferedReader br = new BufferedReader(reader);                
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(result));
 
+                String s = br.readLine();
+                while(s != null)
+                {
+                    bw.write(s);
+                    s = br.readLine();
+                }
+                bw.close();
+                           
+                return;
+            } 
+            catch (RuntimeException e)
+            {
+                throw e;
+            } 
+            catch (Exception e)
+            {
+                String error = "Failed to execute HTTP request to target";
+                log.debug(error, e);
+                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[]{"sendManifest", target.toString(), e.toString()}, e);
+            }
+        } 
+        finally
+        {
+            getReportRequest.releaseConnection();
+        }        
+    }
+    
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
@@ -573,8 +631,4 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     {
         return contentService;
     }
-
-
-
-
 } // end of class

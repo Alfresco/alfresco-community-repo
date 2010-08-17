@@ -971,6 +971,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             }
         }
     }
+    
+    public InputStream getTransferReport(String transferId)
+    {
+        return progressMonitor.getLogInputStream(transferId);
+    }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -1058,4 +1063,5 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     {
         return alienProcessor;
     }
+
 }

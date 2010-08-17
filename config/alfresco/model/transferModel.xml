@@ -160,6 +160,12 @@
 			<description>Transfer Report</description>
 			<parent>cm:content</parent>
 		</type>
+		
+		<type name="trx:transferReportDest">
+            <title>Transfer Report From Destination</title>
+            <description>Transfer Report (Destination)</description>
+            <parent>cm:content</parent>
+        </type>
 
 	</types>
 

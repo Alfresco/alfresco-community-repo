@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.transfer;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  * using any networking.
  *
  * It is used for unit testing the transfer service without requiring two instance 
- * of the repository to be running.
+ * of the repository (and a http server) to be running.
  *
  * @author Mark Rogers
  */
@@ -179,5 +180,30 @@ public class UnitTestInProcessTransmitterImpl implements TransferTransmitter
     {
         return contentService;
     }
-    
+
+    public void getTransferReport(Transfer transfer, OutputStream results)
+    {
+        String transferId = transfer.getTransferId();
+        
+        InputStream is = receiver.getTransferReport(transferId);
+        
+        try 
+        {
+            BufferedInputStream br = new BufferedInputStream(is);
+            byte[] buffer = new byte[1000];
+            int i = br.read(buffer);
+            while(i > 0)
+            {
+                results.write(buffer, 0, i);
+                i = br.read(buffer);
+            }
+            results.flush();
+            results.close();
+        }
+        catch(IOException ie)
+        {
+                log.error("Error in unit test code: should not get this", ie);
+                return;
+        }
+    }
 }

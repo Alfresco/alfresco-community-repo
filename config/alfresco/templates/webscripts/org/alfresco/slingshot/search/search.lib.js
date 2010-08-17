@@ -558,8 +558,7 @@ function getSearchResults(params)
                }
                else
                {
-                  // pseudo cm:content property
-                  // TODO: andyh to fix query parser impl
+                  // pseudo cm:content property - e.g. mimetype, size or encoding
                   ftsQuery += ' cm:content.' + propName + ':' + propValue;
                }
             }

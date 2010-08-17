@@ -736,6 +736,11 @@
                       <property name="receiver" ref="transferReceiver" />
                    </bean>
                 </entry>
+                <entry key="report">
+                    <bean class="org.alfresco.repo.web.scripts.transfer.ReportCommandProcessor">
+                        <property name="receiver" ref="transferReceiver" />
+                    </bean>
+                </entry>
             </map>
         </property>
     </bean>

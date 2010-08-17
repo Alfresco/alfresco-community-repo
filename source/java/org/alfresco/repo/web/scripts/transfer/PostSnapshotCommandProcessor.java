@@ -94,20 +94,6 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
                     receiver.saveSnapshot(transferId, item.openStream());
                 }
             }
-
-//   <formdata multipart-processing="false" /> so the following code does not work          
-//            WebScriptServletRequest alfRequest = (WebScriptServletRequest)req;
-//            FormField field = alfRequest.getFileField(TransferCommons.PART_NAME_MANIFEST);
-//          
-//            if(field != null)
-//            {
-//               logger.debug("got manifest file");
-//               receiver.saveSnapshot(transferId, field.getInputStream());
-//            }
-//            else
-//            {
-//               logger.debug("manifest is missing");    
-//            }
           
             logger.debug("success");
             resp.setStatus(Status.STATUS_OK);

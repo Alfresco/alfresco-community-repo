@@ -59,6 +59,11 @@
 
       <type name="inwf:acceptInviteTask">
          <parent>bpm:workflowTask</parent>
+         <overrides>
+            <property name="bpm:reassignable">
+                <default>false</default>
+            </property>
+         </overrides>
          <mandatory-aspects>
              <aspect>inwf:nominatedInvitationStats</aspect>
          </mandatory-aspects>
@@ -66,6 +71,11 @@
 
       <type name="inwf:rejectInviteTask">
          <parent>bpm:workflowTask</parent>
+         <overrides>
+            <property name="bpm:reassignable">
+                <default>false</default>
+            </property>
+         </overrides>
          <mandatory-aspects>
              <aspect>inwf:nominatedInvitationStats</aspect>
          </mandatory-aspects>

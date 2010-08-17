@@ -518,11 +518,11 @@ function getSearchResults(params)
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
    {
-      ftsQuery = "(" + term + ") PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\"";
+      ftsQuery = "(" + term + ") PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(term) + "/member\" ";
    }
    else if (tag !== null && tag.length !== 0)
    {
-      ftsQuery = "PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\"";
+      ftsQuery = "PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
    }
    
    // Advanced search form data search.
@@ -538,6 +538,7 @@ function getSearchResults(params)
       var formJson = jsonUtils.toObject(formData);
       
       // extract form data and generate search query
+      var first = true;
       for (var p in formJson)
       {
          // retrieve value and check there is someting to search for
@@ -553,20 +554,21 @@ function getSearchResults(params)
                {
                   // property name - convert to DD property name format
                   propName = propName.replace("_", ":");
-                  // TODO: inspect DD type - handle boolean, number etc?
-                  ftsQuery += ' ' + propName + ':"' + propValue + '"';
+                  // TODO: adv search in jsf uses quotes for boolean, number etc... dates!
+                  ftsQuery += (first ? '(' : ' AND ') + propName + ':"' + propValue + '"';
                }
                else
                {
                   // pseudo cm:content property - e.g. mimetype, size or encoding
-                  ftsQuery += ' cm:content.' + propName + ':' + propValue;
+                  ftsQuery += (first ? '(' : ' AND ') + 'cm:content.' + propName + ':' + propValue;
                }
+               first = false;
             }
          }
       }
       
       // extract data type for this search
-      ftsQuery = 'TYPE:"' + formJson.datatype + '" AND (' + ftsQuery + ')';
+      ftsQuery = 'TYPE:"' + formJson.datatype + '" AND (' + ftsQuery + (!first ? '))' : ')');
    }
    
    if (ftsQuery.length !== 0)

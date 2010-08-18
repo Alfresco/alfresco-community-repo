@@ -138,6 +138,16 @@
         <property name="actionTrackingService" ref="actionTrackingService"/>
     </bean>
 
+    <!-- Supports scheduled, persisted actions -->
+    <bean id="scheduledPersistedActionService" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl">
+        <property name="nodeService" ref="NodeService" />
+        <property name="startupNodeService" ref="nodeService" />
+        <property name="runtimeActionService" ref="actionService"/>
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+    </bean>
 
    <!-- Actions Aspect -->
    

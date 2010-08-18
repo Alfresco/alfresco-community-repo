@@ -701,4 +701,12 @@ public class NodeServiceImpl implements NodeService, VersionModel
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
+
+    @Override
+    public List<ChildAssociationRef> getChildAssocsByPropertyValue(
+            NodeRef nodeRef, QName propertyQName, Serializable value)
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
 }

@@ -299,7 +299,7 @@ public class NodePropertyHelper
      * @param value the value, which will be converted according to the definition - may be null
      * @return Returns the persistable property value
      */
-    private NodePropertyValue makeNodePropertyValue(PropertyDefinition propertyDef, Serializable value)
+    public NodePropertyValue makeNodePropertyValue(PropertyDefinition propertyDef, Serializable value)
     {
         // get property attributes
         final QName propertyTypeQName;

@@ -2221,4 +2221,47 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             return true;
         }
     }
-}
+    
+    @Override
+    public List<ChildAssociationRef> getChildAssocsByPropertyValue(NodeRef nodeRef,
+            QName propertyQName, 
+            Serializable value)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        Long nodeId = nodePair.getFirst();
+
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
+        // We have a callback handler to filter results
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+        {
+            public boolean preLoadNodes()
+            {
+                return false;
+            }
+            
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                results.add(childAssocPair.getSecond());
+                return true;
+            }
+
+            public void done()
+            {
+            }                               
+        };
+        
+        // Get the assocs pointing to it
+        nodeDAO.getChildAssocsByPropertyValue(nodeId, propertyQName, value, callback);
+        
+        // sort the results
+        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
+        
+        // Done
+        return orderedList;
+    }
+    
+  }

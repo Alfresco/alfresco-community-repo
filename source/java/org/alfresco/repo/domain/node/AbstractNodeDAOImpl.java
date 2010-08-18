@@ -2527,6 +2527,35 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     parentNodeId, assocTypeQName, childNames,
                     new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
+    
+    public void getChildAssocsByPropertyValue(
+            Long parentNodeId,
+            QName propertyQName,
+            Serializable value,
+            ChildAssocRefQueryCallback resultsCallback)
+    {   
+        PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+        NodePropertyValue nodeValue = nodePropertyHelper.makeNodePropertyValue(propertyDef, value);
+        
+        if(nodeValue != null)
+        {
+            switch (nodeValue.getPersistedType())
+            {
+                case 3: // long
+                case 5: // double
+                case 6: // string
+                    break;
+                
+                default:
+                    throw new IllegalArgumentException("method not supported for persisted value type "  + nodeValue.getPersistedType());
+            }
+        
+            selectChildAssocsByPropertyValue(parentNodeId, 
+                propertyQName, 
+                nodeValue,
+                new ChildAssocRefBatchingQueryCallback(resultsCallback));
+        }
+    }
 
     public void getChildAssocsByChildTypes(
             Long parentNodeId,
@@ -3172,6 +3201,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long parentNodeId,
             QName assocTypeQName,
             Collection<String> childNames,
+            ChildAssocRefQueryCallback resultsCallback);
+    protected abstract void selectChildAssocsByPropertyValue(
+            Long parentNodeId,
+            QName propertyQName,
+            NodePropertyValue nodeValue,
             ChildAssocRefQueryCallback resultsCallback);
     protected abstract void selectChildAssocsByChildTypes(
             Long parentNodeId,

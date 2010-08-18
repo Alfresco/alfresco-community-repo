@@ -617,4 +617,17 @@ public interface NodeDAO extends NodeBulkLoader
     public Long getMinTxnCommitTime();
     
     public Long getMaxTxnCommitTime();
+    
+    /**
+     * 
+     * @param parentNodeId
+     * @param childNodeTypeQNames
+     * @param value
+     * @param resultsCallback
+     */
+    public void getChildAssocsByPropertyValue(Long parentNodeId,
+            QName propertyQName, 
+            Serializable nodeValue,
+            ChildAssocRefQueryCallback resultsCallback);
+ 
 }

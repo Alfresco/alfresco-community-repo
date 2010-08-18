@@ -218,8 +218,8 @@ public class AlienProcessorImpl implements AlienProcessor
                     /**
                       * Check the siblings of this node to see whether there are any other alien nodes for this invader.
                       */
-                    //TODO replace with a more efficient query
-                    List<ChildAssociationRef> refs = nodeService.getChildAssocs(parentNodeRef);
+                    //List<ChildAssociationRef> refs = nodeService.getChildAssocs(parentNodeRef);
+                    List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, TransferModel.PROP_INVADED_BY, exInvader);
                     
                     for(ChildAssociationRef ref : refs)
                     {
@@ -431,7 +431,6 @@ public class AlienProcessorImpl implements AlienProcessor
         {
             log.debug("parent was not transferred or alien");
             
-            // TODO Need to remove the alien flags
             String parentRepoId = descriptorService.getCurrentRepositoryDescriptor().getId(); 
             retreatDownwards(childNodeRef, parentRepoId);
             
@@ -506,8 +505,8 @@ public class AlienProcessorImpl implements AlienProcessor
                        getNodeService().setProperty(currentNodeRef, TransferModel.PROP_INVADED_BY, (Serializable)invadedBy);
                     }
                     
-                    //TODO replace with a more efficient query
-                    List<ChildAssociationRef> refs = getNodeService().getChildAssocs(currentNodeRef);
+                    //List<ChildAssociationRef> refs = getNodeService().getChildAssocs(currentNodeRef);
+                    List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(currentNodeRef, TransferModel.PROP_INVADED_BY, fromRepositoryId);
                     for(ChildAssociationRef ref : refs)
                     {
                         if(log.isDebugEnabled())
@@ -568,9 +567,7 @@ public class AlienProcessorImpl implements AlienProcessor
                     {
                         log.debug("folder has multiple invaders");
                         // multiple invasion - so it must be a folder
-                        
-                        //TODO replace with a more efficient query
-                        List<ChildAssociationRef> refs = getNodeService().getChildAssocs(currentNodeRef);
+                        List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(currentNodeRef, TransferModel.PROP_INVADED_BY, fromRepositoryId);
                         for(ChildAssociationRef ref : refs)
                         {
                             if(log.isDebugEnabled())

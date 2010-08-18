@@ -1999,4 +1999,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     	throw new UnsupportedOperationException("getNodeAclId is unsupported for AVMNodeService");
     }
 
+    @Override
+    public List<ChildAssociationRef> getChildAssocsByPropertyValue(
+            NodeRef nodeRef, QName propertyQName, Serializable value)
+    {
+        throw new UnsupportedOperationException("AVM does not support this operation.");
+    }
+
 }

@@ -37,6 +37,7 @@ import java.util.SortedSet;
 
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
+import org.alfresco.repo.domain.node.ChildPropertyEntity;
 import org.alfresco.repo.domain.node.NodeAspectsEntity;
 import org.alfresco.repo.domain.node.NodeAssocEntity;
 import org.alfresco.repo.domain.node.NodeEntity;
@@ -110,6 +111,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String UPDATE_CHILD_ASSOCS_UNIQUE_NAME = "alfresco.node.update_ChildAssocsUniqueName";
     private static final String DELETE_CHILD_ASSOCS_TO_AND_FROM = "alfresco.node.delete_ChildAssocsToAndFrom";
     private static final String SELECT_CHILD_ASSOC_BY_ID = "alfresco.node.select_ChildAssocById";
+    private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_ChildAssocsOfParent";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
@@ -1322,5 +1324,30 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected Long selectMaxTxnCommitTime()
     {
         return (Long) template.queryForObject(SELECT_TXN_MAX_COMMIT_TIME);
+    }
+
+    @Override
+    protected void selectChildAssocsByPropertyValue(Long parentNodeId,
+            QName propertyQName, 
+            NodePropertyValue nodeValue,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        ChildPropertyEntity assocProp = new ChildPropertyEntity();
+     
+        // Parent
+        assocProp.setNodeId(parentNodeId);
+        
+        Pair<Long,QName> propName = qnameDAO.getQName(propertyQName);
+        
+        if(propName != null)
+        {
+            // Property
+            assocProp.setValue(nodeValue);
+            assocProp.setPropertyQNameId(propName.getFirst());
+        
+            ChildAssocRowHandler rowHandler = new ChildAssocRowHandler(resultsCallback);
+            template.queryWithRowHandler(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, rowHandler);
+            resultsCallback.done();
+        }
     }
 }

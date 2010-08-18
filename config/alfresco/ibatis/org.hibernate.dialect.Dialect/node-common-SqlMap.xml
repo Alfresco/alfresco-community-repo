@@ -24,6 +24,7 @@
     <typeAlias alias="NodeAspects" type="org.alfresco.repo.domain.node.NodeAspectsEntity"/>
     <typeAlias alias="NodeAssoc" type="org.alfresco.repo.domain.node.NodeAssocEntity"/>
     <typeAlias alias="ChildAssoc" type="org.alfresco.repo.domain.node.ChildAssocEntity"/>
+    <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
     <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
     <typeAlias alias="Aspect" type="org.alfresco.repo.domain.node.AspectEntity"/>
     
@@ -919,6 +920,20 @@
             max(commit_time_ms)
         from
             alf_transaction
+    </select>
+    
+    <select id="select_ChildAssocsByPropertyValue" parameterClass="ChildProperty" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+           join alf_node_properties prop on (childNode.id = prop.node_id)
+        where
+            parentNode.id = #nodeId#
+            and prop.qname_id = #propertyQNameId#
+        <isEqual property="value.persistedType" compareValue="6"> and prop.string_value = #value.stringValue#</isEqual>
+        <isEqual property="value.persistedType" compareValue="5"> and prop.double_value = #value.doubleValue#</isEqual>
+        <isEqual property="value.persistedType" compareValue="3"> and prop.long_value = #value.longValue#</isEqual>
+        
+        <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
     </select>
 
 </sqlMap>

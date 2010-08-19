@@ -207,6 +207,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        assertEquals(0, replicationAction.getPayload().size());
        
        assertNull(replicationAction.getLocalTransferReport());
+       assertNull(replicationAction.getRemoteTransferReport());
     }
     
     public void testCreateSaveLoad() throws Exception
@@ -672,6 +673,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
        rd.getPayload().add(folder2a);
        
        assertEquals(null, rd.getLocalTransferReport());
+       assertEquals(null, rd.getRemoteTransferReport());
        
        txn = transactionService.getUserTransaction();
        txn.begin();
@@ -744,20 +746,30 @@ public class ReplicationServiceIntegrationTest extends TestCase
           }
        }
        
-       // Check we got a transfer report, and it looks sensible
-       NodeRef transferReport = rd.getLocalTransferReport();
-       assertNotNull(transferReport);
+       // Check we got transfer reports, and they look sensible
+       NodeRef localReport = rd.getLocalTransferReport();
+       assertNotNull(localReport);
+       NodeRef remoteReport = rd.getRemoteTransferReport();
+       assertNotNull(remoteReport);
        
        txn = transactionService.getUserTransaction();
        txn.begin();
        
-       ContentReader transferReader = 
-          contentService.getReader(transferReport, ContentModel.PROP_CONTENT);
-       String report = transferReader.getContentString();
+       ContentReader localReader = 
+          contentService.getReader(localReport, ContentModel.PROP_CONTENT);
+       String localReportContent = localReader.getContentString();
        
-       assertTrue("XML not found in:\n" + report, report.contains("<?xml"));
-       assertTrue("Report XML not found in:\n" + report, report.contains("<report:transferReport"));
+       assertTrue("XML not found in:\n" + localReportContent, localReportContent.contains("<?xml"));
+       assertTrue("Report XML not found in:\n" + localReportContent, localReportContent.contains("<report:transferReport"));
+
+       ContentReader remoteReader = 
+           contentService.getReader(remoteReport, ContentModel.PROP_CONTENT);
+       String remoteReportContent = remoteReader.getContentString();
        
+       // TODO: update these tests when transfer report is converted to XML
+       assertFalse("XML found in:\n" + remoteReportContent, remoteReportContent.contains("<?xml"));
+       assertTrue("Report Status not found in:\n" + remoteReportContent, remoteReportContent.contains("Status update: COMPLETE"));
+
        txn.commit();
     }
     

@@ -65,6 +65,7 @@ public class ReplicationServiceImplTest extends TestCase
        assertEquals(0, replicationAction.getPayload().size());
        
        assertNull(replicationAction.getLocalTransferReport());
+       assertNull(replicationAction.getRemoteTransferReport());
     }
 
 }

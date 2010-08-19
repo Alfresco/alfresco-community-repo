@@ -535,7 +535,8 @@ function getSearchResults(params)
    // - always string values - interogate DD for type data
    if (formData !== null && formData.length !== 0)
    {
-      var formJson = jsonUtils.toObject(formData);
+      var formQuery = "",
+          formJson = jsonUtils.toObject(formData);
       
       // extract form data and generate search query
       var first = true;
@@ -555,20 +556,22 @@ function getSearchResults(params)
                   // property name - convert to DD property name format
                   propName = propName.replace("_", ":");
                   // TODO: adv search in jsf uses quotes for boolean, number etc... dates!
-                  ftsQuery += (first ? '(' : ' AND ') + propName + ':"' + propValue + '"';
+                  formQuery += (first ? '' : ' AND ') + propName + ':"' + propValue + '"';
                }
                else
                {
                   // pseudo cm:content property - e.g. mimetype, size or encoding
-                  ftsQuery += (first ? '(' : ' AND ') + 'cm:content.' + propName + ':' + propValue;
+                  formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':' + propValue;
                }
                first = false;
             }
          }
       }
       
-      // extract data type for this search
-      ftsQuery = 'TYPE:"' + formJson.datatype + '" AND (' + ftsQuery + (!first ? '))' : ')');
+      // extract data type for this search - advanced search query is type specific
+      ftsQuery = 'TYPE:"' + formJson.datatype + '"' +
+                 (formQuery.length > 0 ? ' AND (' + formQuery + ')' : '') +
+                 (ftsQuery.length > 0 ? ' AND (' + ftsQuery + ')' : '');
    }
    
    if (ftsQuery.length !== 0)

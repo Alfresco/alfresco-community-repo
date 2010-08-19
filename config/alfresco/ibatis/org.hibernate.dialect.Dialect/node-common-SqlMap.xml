@@ -927,11 +927,15 @@
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
            join alf_node_properties prop on (childNode.id = prop.node_id)
         where
-            parentNode.id = #nodeId#
+            parentNode.id = #parentNodeId#
             and prop.qname_id = #propertyQNameId#
         <isEqual property="value.persistedType" compareValue="6"> and prop.string_value = #value.stringValue#</isEqual>
         <isEqual property="value.persistedType" compareValue="5"> and prop.double_value = #value.doubleValue#</isEqual>
         <isEqual property="value.persistedType" compareValue="3"> and prop.long_value = #value.longValue#</isEqual>
+        <isEqual property="value.persistedType" compareValue="1" > 
+           <isEqual property="value.booleanValue" compareValue="true" >and prop.boolean_value = 1</isEqual>
+           <isEqual property="value.booleanValue" compareValue="false" >and prop.boolean_value = 0</isEqual>
+        </isEqual>
         
         <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
     </select>

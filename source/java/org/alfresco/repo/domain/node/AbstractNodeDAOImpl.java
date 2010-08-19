@@ -2541,9 +2541,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             switch (nodeValue.getPersistedType())
             {
+                case 1: // Boolean
                 case 3: // long
                 case 5: // double
                 case 6: // string
+                // no floats due to the range errors testing equality on a float.
                     break;
                 
                 default:

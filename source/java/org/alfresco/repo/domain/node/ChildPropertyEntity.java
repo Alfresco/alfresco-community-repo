@@ -6,17 +6,17 @@ package org.alfresco.repo.domain.node;
  */
 public class ChildPropertyEntity
 {
-    private Long nodeId;
+    private Long parentNodeId;
     private Long propertyQNameId;
     private NodePropertyValue value;
     
-    public void setNodeId(Long nodeId)
+    public void setParentNodeId(Long nodeId)
     {
-        this.nodeId = nodeId;
+        this.parentNodeId = nodeId;
     }
-    public Long getNodeId()
+    public Long getParentNodeId()
     {
-        return nodeId;
+        return parentNodeId;
     }
     public void setPropertyQNameId(Long propertyQNameId)
     {

@@ -425,4 +425,121 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
            throw e;
        }
     }
+    
+    /**
+     * Test Get Child Assocs By Property Value
+     * @throws Exception
+     */
+    public void testGetChildAssocsByPropertyValue() throws Exception
+    {
+        Map<QName, ChildAssociationRef> assocRefs;
+        
+        assocRefs = buildNodeGraph();
+        
+        ChildAssociationRef rootRef = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root"));
+        ChildAssociationRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1"));
+        ChildAssociationRef n2Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n2"));
+        
+        /**
+         *  Positive test - get n1 and n2 by the value of a text property in this case PROP_SUBJECT which 
+         *  contains "Hello World"
+         */
+        {
+            NodeRef parentNodeRef = n1Ref.getParentRef();
+            NodeRef childNodeRef =   n1Ref.getChildRef();
+            assertTrue(nodeService.exists(parentNodeRef));
+            assertTrue(nodeService.exists(childNodeRef));
+            
+            String subject = "Hello World";
+            nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_SUBJECT, subject);      
+            List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_SUBJECT, subject);
+            assertTrue("failed to read one assoc", refs.size() == 1);
+            assertTrue("content not correct", refs.contains(n1Ref));
+            
+            // Now go for another two documents.
+            nodeService.setProperty(n2Ref.getChildRef(), ContentModel.PROP_SUBJECT, subject);      
+            refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_SUBJECT, subject);
+            assertTrue("failed to read two assocs", refs.size() == 2);
+            assertTrue("content not correct", refs.contains(n1Ref));
+            assertTrue("content not correct", refs.contains(n2Ref));
+        }
+        
+        /**
+         * Positive tests of various types that should be accepted by the query 
+         */
+        {
+            NodeRef parentNodeRef = n1Ref.getParentRef();
+            NodeRef childNodeRef =   n1Ref.getChildRef();
+            assertTrue(nodeService.exists(parentNodeRef));
+            assertTrue(nodeService.exists(childNodeRef));
+            
+            // integer
+            int count = 123;
+            nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_COUNTER, count);      
+            List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_COUNTER, count);
+            assertTrue("failed to read one assoc", refs.size() == 1);
+            assertTrue("content not correct", refs.contains(n1Ref));
+            
+            // Double
+            Double alfLat = new Double(51.5216666);
+            Double alfLon = new Double(0.43);
+            nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_LATITUDE, alfLat);      
+            refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_LATITUDE, alfLat);
+            assertTrue("failed to read one assoc", refs.size() == 1);
+            assertTrue("content not correct", refs.contains(n1Ref));
+            
+            // float
+            // not implemeted due to float precision issues with float equals.
+            //float score = 1.3f;
+            //nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_RATING_SCORE, score);      
+            //refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_RATING_SCORE, score);
+            //assertTrue("failed to read one assoc", refs.size() == 1);
+            //assertTrue("content not correct", refs.contains(n1Ref));
+            
+            // Boolean TRUE
+            Boolean beauty = Boolean.TRUE;
+            nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_ENABLED, beauty); 
+            assertTrue((Boolean)nodeService.getProperty(n1Ref.getChildRef(), ContentModel.PROP_ENABLED));
+            refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_ENABLED, beauty);
+            assertTrue("failed to read one assoc", refs.size() == 1);
+            assertTrue("content not correct", refs.contains(n1Ref));
+            
+            // Boolean FALSE
+            beauty = Boolean.FALSE;
+            nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_ENABLED, beauty); 
+            assertTrue(!(Boolean)nodeService.getProperty(n1Ref.getChildRef(), ContentModel.PROP_ENABLED));
+            refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_ENABLED, beauty);
+            assertTrue("failed to read one assoc", refs.size() == 1);
+           
+        }
+        
+        /**
+         * Negative test - invalid to search on sys:node-dbid
+         */
+        try
+        {
+            List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(n1Ref.getParentRef(), ContentModel.PROP_NODE_DBID, "Fail");
+            fail("sys:node-dbid not rejected");
+        }
+        catch (IllegalArgumentException ie)
+        {
+            // expect to go here
+        }
+        
+        /**
+         * Negative test - invalid to search on type MLText
+         */
+        try
+        {
+            Serializable title = (String)nodeService.getProperty(n1Ref.getChildRef(), ContentModel.PROP_TITLE);
+            List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(n1Ref.getParentRef(), ContentModel.PROP_NAME, title);
+            fail("MLText type not rejected");
+        }
+        catch (IllegalArgumentException ie)
+        {
+            // expect to go here
+        }
+        
+
+    }
 }

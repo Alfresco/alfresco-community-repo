@@ -2222,6 +2222,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
     
+    private static List<QName> getChildAssocsByPropertyValueBannedProps = new ArrayList<QName>();
+    static 
+    {
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_DBID);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_UUID);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NAME);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_MODIFIED);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_MODIFIER);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATED);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATOR);
+    }
+    
     @Override
     public List<ChildAssociationRef> getChildAssocsByPropertyValue(NodeRef nodeRef,
             QName propertyQName, 
@@ -2231,6 +2243,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
 
+        // Check the QName is not one of the "special" system maintained ones.
+        
+        if(getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
+        {
+            throw new IllegalArgumentException("getChildAssocsByPropertyValue does not allow search of system maintaied properties: " + propertyQName);
+        }
+                
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
         // We have a callback handler to filter results
         ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()

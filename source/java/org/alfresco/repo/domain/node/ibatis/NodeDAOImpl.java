@@ -1335,8 +1335,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ChildPropertyEntity assocProp = new ChildPropertyEntity();
      
         // Parent
-        assocProp.setNodeId(parentNodeId);
+        assocProp.setParentNodeId(parentNodeId);
         
+        // Property name
         Pair<Long,QName> propName = qnameDAO.getQName(propertyQName);
         
         if(propName != null)

@@ -13,7 +13,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,7 +36,7 @@ public class BulkMetadataGet extends AbstractWebScript {
     private ServiceRegistry services;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
-    
+
     private String getMimeType(ContentData contentProperty)
     {
         String mimetype = null;
@@ -49,7 +48,7 @@ public class BulkMetadataGet extends AbstractWebScript {
 
         return mimetype;
     }
-    
+
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
@@ -86,6 +85,7 @@ public class BulkMetadataGet extends AbstractWebScript {
                         for(int i = 0; i < nodeRefsArray.length(); i++)
                         {
                             NodeRef nodeRef = new NodeRef(nodeRefsArray.getString(i));
+
                             if(nodeService.exists(nodeRef))
                             {
                                 NodeRef parentNodeRef = null;
@@ -107,12 +107,10 @@ public class BulkMetadataGet extends AbstractWebScript {
                                     jsonOut.writeValue("shortType", shortType);
                                     TypeDefinition typeDef = dictionaryService.getType(type);
                                     jsonOut.writeValue("typeTitle", typeDef.getTitle());
-                                    // TODO is this always cm:title? what if custom type?
-                                    jsonOut.writeValue("name", properties.get(ContentModel.PROP_NAME).toString());
-                                    jsonOut.writeValue("title", properties.get(ContentModel.PROP_TITLE).toString());
+
+                                    jsonOut.writeValue("name", (String)properties.get(ContentModel.PROP_NAME));
+                                    jsonOut.writeValue("title", (String)properties.get(ContentModel.PROP_TITLE));
                                     jsonOut.writeValue("mimeType", getMimeType((ContentData)properties.get(ContentModel.PROP_CONTENT)));
-                                    Path path = nodeService.getPath(nodeRef);
-                                    jsonOut.writeValue("path", path.toString());
                                 }
                                 jsonOut.endObject();
                             }

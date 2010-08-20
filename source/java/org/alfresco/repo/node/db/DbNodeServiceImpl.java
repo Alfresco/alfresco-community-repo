@@ -1782,6 +1782,72 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // done
         return results;
     }
+    
+    /**
+     * Specific properties <b>not</b> supported by {@link #getChildAssocsByPropertyValue(NodeRef, QName, Serializable)}
+     */
+    private static List<QName> getChildAssocsByPropertyValueBannedProps = new ArrayList<QName>();
+    static 
+    {
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_DBID);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_UUID);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NAME);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_MODIFIED);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_MODIFIER);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATED);
+        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATOR);
+    }
+    
+    @Override
+    public List<ChildAssociationRef> getChildAssocsByPropertyValue(
+            NodeRef nodeRef,
+            QName propertyQName, 
+            Serializable value)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        Long nodeId = nodePair.getFirst();
+
+        // Check the QName is not one of the "special" system maintained ones.
+        
+        if (getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
+        {
+            throw new IllegalArgumentException(
+                    "getChildAssocsByPropertyValue does not allow search of system maintaied properties: " + propertyQName);
+        }
+                
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
+        // We have a callback handler to filter results
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+        {
+            public boolean preLoadNodes()
+            {
+                return false;
+            }
+            
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                results.add(childAssocPair.getSecond());
+                return true;
+            }
+
+            public void done()
+            {
+            }                               
+        };
+        
+        // Get the assocs pointing to it
+        nodeDAO.getChildAssocsByPropertyValue(nodeId, propertyQName, value, callback);
+        
+        // sort the results
+        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
+        
+        // Done
+        return orderedList;
+    }
 
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException
@@ -2221,66 +2287,4 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             return true;
         }
     }
-    
-    private static List<QName> getChildAssocsByPropertyValueBannedProps = new ArrayList<QName>();
-    static 
-    {
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_DBID);
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_UUID);
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NAME);
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_MODIFIED);
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_MODIFIER);
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATED);
-        getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATOR);
-    }
-    
-    @Override
-    public List<ChildAssociationRef> getChildAssocsByPropertyValue(NodeRef nodeRef,
-            QName propertyQName, 
-            Serializable value)
-    {
-        // Get the node
-        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        Long nodeId = nodePair.getFirst();
-
-        // Check the QName is not one of the "special" system maintained ones.
-        
-        if(getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
-        {
-            throw new IllegalArgumentException("getChildAssocsByPropertyValue does not allow search of system maintaied properties: " + propertyQName);
-        }
-                
-        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
-        // We have a callback handler to filter results
-        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
-        {
-            public boolean preLoadNodes()
-            {
-                return false;
-            }
-            
-            public boolean handle(
-                    Pair<Long, ChildAssociationRef> childAssocPair,
-                    Pair<Long, NodeRef> parentNodePair,
-                    Pair<Long, NodeRef> childNodePair)
-            {
-                results.add(childAssocPair.getSecond());
-                return true;
-            }
-
-            public void done()
-            {
-            }                               
-        };
-        
-        // Get the assocs pointing to it
-        nodeDAO.getChildAssocsByPropertyValue(nodeId, propertyQName, value, callback);
-        
-        // sort the results
-        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
-        
-        // Done
-        return orderedList;
-    }
-    
-  }
+}

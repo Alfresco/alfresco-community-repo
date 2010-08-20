@@ -539,7 +539,5 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         {
             // expect to go here
         }
-        
-
     }
 }

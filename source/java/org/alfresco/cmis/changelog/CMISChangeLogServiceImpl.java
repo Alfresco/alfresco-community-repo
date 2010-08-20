@@ -46,12 +46,42 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CMISChangeLogServiceImpl implements CMISChangeLogService
 {
+    private static final String PATH_DELIMITER = "/";
+    private static final int DEFAULT_RETURN_SIZE = 100;
+
     private AuditService auditService;
     private String cmisAuditApplicationName;
     private List<CMISBaseObjectTypeIds> changesOnTypeCapability;
 
-    private static final String PATH_DELIMITER = "/";
-    private static final int DEFAULT_RETURN_SIZE = 100;
+    /**
+     * Set the AuditService.
+     * 
+     * @param auditService AuditService
+     */
+    public void setAuditService(AuditService auditService)
+    {
+        this.auditService = auditService;
+    }
+
+    /**
+     * Set the Audit Application Name.
+     * 
+     * @param cmisAuditApplicationName Audit Application Name
+     */
+    public void setCmisAuditApplicationName(String cmisAuditApplicationName)
+    {
+        this.cmisAuditApplicationName = cmisAuditApplicationName;
+    }
+
+    /**
+     * Set the ChangesOnTypeCapability.
+     * 
+     * @param changesOnTypeCapability list of CMISBaseObjectTypeIds
+     */
+    public void setChangesOnTypeCapability(List<CMISBaseObjectTypeIds> changesOnTypeCapability)
+    {
+        this.changesOnTypeCapability = changesOnTypeCapability;
+    }
 
     /**
      * @see org.alfresco.cmis.CMISChangeLogService#getCapability()
@@ -178,36 +208,6 @@ public class CMISChangeLogServiceImpl implements CMISChangeLogService
             changesOnTypeCapability = new LinkedList<CMISBaseObjectTypeIds>();
         }
         return changesOnTypeCapability;
-    }
-
-    /**
-     * Set the AuditService.
-     * 
-     * @param auditService AuditService
-     */
-    public void setAuditService(AuditService auditService)
-    {
-        this.auditService = auditService;
-    }
-
-    /**
-     * Set the Audit Application Name.
-     * 
-     * @param cmisAuditApplicationName Audit Application Name
-     */
-    public void setCmisAuditApplicationName(String cmisAuditApplicationName)
-    {
-        this.cmisAuditApplicationName = cmisAuditApplicationName;
-    }
-
-    /**
-     * Set the ChangesOnTypeCapability.
-     * 
-     * @param changesOnTypeCapability list of CMISBaseObjectTypeIds
-     */
-    public void setChangesOnTypeCapability(List<CMISBaseObjectTypeIds> changesOnTypeCapability)
-    {
-        this.changesOnTypeCapability = changesOnTypeCapability;
     }
 
     /**

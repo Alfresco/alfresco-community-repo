@@ -96,4 +96,16 @@ public interface ControlDAO
      * @see #createSavepoint(String)
      */
     public void releaseSavepoint(Savepoint savepoint);
+    
+    /**
+     * Change the current transaction isolation level.
+     * <p/>
+     * <b>Note:</b> The isolation level should not - and for some DBs, cannot - be changed
+     *              except at the very start of the transaction
+     * 
+     * @param isolationLevel        the transaction isolation level
+     * @return                      Returns the previously-set isolation
+     * @throws IllegalStateException    if the isolation level is invalid or cannot be changed
+     */
+    public int setTransactionIsolationLevel(int isolationLevel);
 }

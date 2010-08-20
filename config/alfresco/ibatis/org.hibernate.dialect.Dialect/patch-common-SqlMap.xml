@@ -74,6 +74,10 @@
     <!-- Parameter Maps -->
     <!--                -->
     
+    <parameterMap id="parameter_IdMap" class="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="long"/>
+    </parameterMap>
+
     <parameterMap id="parameter_admNewContentProp" class="map">
         <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -268,6 +272,47 @@
             alf_global_attributes ga
         where
             name not in ('alfresco-tenants', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
+    </select>
+    
+    <select id="select_AllAclIds" resultClass="long">
+        select
+            id
+        from
+            alf_access_control_list
+    </select>
+    
+    <!-- for patch -->
+    <select id="select_UsedAclIds" resultClass="long">
+        select acl_id from avm_nodes where acl_id is not null
+        union select acl_id from avm_stores where acl_id is not null
+        union select acl_id from alf_node where acl_id is not null
+        union select acl_id from alf_attributes where acl_id is not null
+    </select>
+    
+    <!-- for patch -->
+    <select id="select_MaxAclId" resultClass="long">
+        select
+            max(acl.id)
+        from
+            alf_access_control_list acl
+    </select>
+    
+    <!-- for patch -->
+    <select id="select_DmNodeCount">
+        select
+            count(*)
+        from
+            alf_node
+    </select>
+    
+    <!-- for patch -->
+    <select id="select_DmNodeCountWherePermissionsHaveChanged" parameterMap="parameter_IdMap">
+        select
+            count(*)
+        from
+            alf_node
+        where
+            acl_id > ?
     </select>
     
     <!--                -->

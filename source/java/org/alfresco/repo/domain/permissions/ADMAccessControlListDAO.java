@@ -159,6 +159,11 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         // Do the children first
 
         Long aclId = nodeDAO.getNodeAclId(nodeId);
+        if (aclId == null)
+        {
+            // TODO: What happens here?  It's causing NPEs
+            throw new IllegalStateException("Null aclId is causing NPEs.  Node: " + nodeId);
+        }
         Acl existingAcl = aclDaoComponent.getAcl(aclId);
         
         Long toInherit = null;

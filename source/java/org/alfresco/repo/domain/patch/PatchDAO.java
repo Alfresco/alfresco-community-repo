@@ -40,16 +40,9 @@ import com.ibatis.sqlmap.client.event.RowHandler;
  */
 public interface PatchDAO
 {
-    /**
-     * Does the underlying connection support isolation level 1 (dirty read)
-     * 
-     * @return true if we can do a dirty db read and so track changes (Oracle can not)
-     */
-    public boolean supportsProgressTracking();
-    
     // AVM-related
     
-    public Long getAVMNodesCountWhereNewInStore();
+    public long getAVMNodesCountWhereNewInStore();
     
     public List<AVMNodeEntity> getEmptyGUIDS(int count);
     
@@ -57,7 +50,7 @@ public interface PatchDAO
     
     public List<AVMNodeEntity> getNullVersionLayeredFiles(int count);
     
-    public Long getMaxAvmNodeID();
+    public long getMaxAvmNodeID();
     
     public List<Long> getAvmNodesWithOldContentProperties(Long minNodeId, Long maxNodeId);
     
@@ -67,7 +60,7 @@ public interface PatchDAO
     
     // DM-related
     
-    public Long getMaxAdmNodeID();
+    public long getMaxAdmNodeID();
     
     /**
      * Migrates DM content properties from the old V3.1 format (String-based {@link ContentData#toString()})
@@ -111,7 +104,7 @@ public interface PatchDAO
      * 
      * @return - max acl id
      */
-    public Long getMaxAclId();
+    public long getMaxAclId();
     
     /**
      * How many DM nodes are there?

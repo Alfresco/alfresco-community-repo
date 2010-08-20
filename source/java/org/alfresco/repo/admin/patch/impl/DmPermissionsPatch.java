@@ -21,11 +21,14 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.Map;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.permissions.AccessControlListDAO;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -33,69 +36,101 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DmPermissionsPatch extends AbstractPatch
 {
-
     private static final String MSG_SUCCESS = "patch.updateDmPermissions.result";
     
+    private static Log logger = LogFactory.getLog(DmPermissionsPatch.class);
+    
     private AccessControlListDAO accessControlListDao;
-    
     private PatchDAO patchDAO;
+    private ControlDAO controlDAO;
     
-    @Override
-    protected String applyInternal() throws Exception
-    {
-        Thread progressThread = null;
-        if (this.patchDAO.supportsProgressTracking())
-        {
-            progressThread = new Thread(new ProgressWatcher(), "DMPatchProgressWatcher");
-            progressThread.start();
-        }
-
-        Map<ACLType, Integer> summary = this.accessControlListDao.patchAcls();
-
-        if (progressThread != null)
-        {
-            progressThread.interrupt();
-            progressThread.join();
-        }
-
-        // build the result message
-        String msg = I18NUtil.getMessage(DmPermissionsPatch.MSG_SUCCESS, summary.get(ACLType.DEFINING));
-        // done
-        return msg;
-    }
-
-    /**
-     * Set the access control list dao
-     * 
-     * @param accessControlListDao
-     */
     public void setAccessControlListDao(AccessControlListDAO accessControlListDao)
     {
         this.accessControlListDao = accessControlListDao;
     }
     
-    /**
-     * Set the patch dao
-     * 
-     * @param patchDAO
-     */
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
     }
 
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
+    }
+
+    @Override
+    protected String applyInternal() throws Exception
+    {
+        Thread progressThread = null;
+        progressThread = new Thread(new ProgressWatcher(), "DMPatchProgressWatcher");
+        progressThread.start();
+
+        try
+        {
+            Map<ACLType, Integer> summary = this.accessControlListDao.patchAcls();
+            // build the result message
+            String msg = I18NUtil.getMessage(DmPermissionsPatch.MSG_SUCCESS, summary.get(ACLType.DEFINING));
+            // done
+            return msg;
+        }
+        finally
+        {
+            progressThread.interrupt();
+            progressThread.join();
+        }
+    }
+
     private class ProgressWatcher implements Runnable
     {
         private boolean running = true;
-
         Long toDo;
-
         Long max;
 
         public void run()
         {
             while (this.running)
             {
+                if (this.running)
+                {
+                    RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    txHelper.setMaxRetries(1);
+                    RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
+                    {
+                        public Long execute() throws Throwable
+                        {
+                            // Change isolation level
+                            try
+                            {
+                                controlDAO.setTransactionIsolationLevel(1);
+                            }
+                            catch (IllegalStateException e)
+                            {
+                                // Can't be set.  We're done here.
+                                running = false;
+                                return 0L;
+                            }
+                            
+                            if (toDo == null)
+                            {
+                                toDo = patchDAO.getDmNodeCount();
+                                max = patchDAO.getMaxAclId();
+                            }
+                            return patchDAO.getDmNodeCountWithNewACLs(ProgressWatcher.this.max);
+                        }
+                    };
+                    try
+                    {
+                        Long done = txHelper.doInTransaction(callback, true, true);
+                        reportProgress(this.toDo, done);
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error("Failure in ProgressWatcher", e);
+                        this.running = false;
+                    }
+                }
+                
                 try
                 {
                     Thread.sleep(60000);
@@ -104,33 +139,7 @@ public class DmPermissionsPatch extends AbstractPatch
                 {
                     this.running = false;
                 }
-
-                if (this.running)
-                {
-                    RetryingTransactionHelper txHelper = DmPermissionsPatch.this.transactionService
-                            .getRetryingTransactionHelper();
-                    txHelper.setMaxRetries(1);
-                    Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
-
-                        public Long execute() throws Throwable
-                        {
-                            if (ProgressWatcher.this.toDo == null)
-                            {
-                                ProgressWatcher.this.toDo = DmPermissionsPatch.this.patchDAO
-                                        .getDmNodeCount();
-                                ProgressWatcher.this.max = DmPermissionsPatch.this.patchDAO.getMaxAclId();
-                            }
-                            return DmPermissionsPatch.this.patchDAO
-                                    .getDmNodeCountWithNewACLs(ProgressWatcher.this.max);
-                        }
-                    }, true, true);
-
-                    reportProgress(this.toDo, done);
-                }
             }
         }
-
     }
-
 }

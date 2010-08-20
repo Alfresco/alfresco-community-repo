@@ -145,4 +145,28 @@ public class ControlDAOImpl extends AbstractControlDAOImpl
             }
         }
     }
+
+    @Override
+    public int setTransactionIsolationLevel(int isolationLevel)
+    {
+        Connection connection = DataSourceUtils.getConnection(template.getDataSource());
+        if (connection == null)
+        {
+            throw new NullPointerException("There is no current connection");
+        }
+        try
+        {
+            if (!connection.getMetaData().supportsTransactionIsolationLevel(isolationLevel))
+            {
+                throw new IllegalStateException("Transaction isolation level not supported: " + isolationLevel);
+            }
+            int isolationLevelWas = connection.getTransactionIsolation();
+            connection.setTransactionIsolation(isolationLevel);
+            return isolationLevelWas;
+        }
+        catch (SQLException e)
+        {
+            throw new IllegalStateException("Failed to set transaction isolation level: " + isolationLevel, e);
+        }
+    }
 }

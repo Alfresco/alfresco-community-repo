@@ -57,15 +57,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     /**
      * {@inheritDoc}
      */
-    public boolean supportsProgressTracking()
-    {
-        return supportsProgressTrackingImpl();
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public Long getAVMNodesCountWhereNewInStore()
+    public long getAVMNodesCountWhereNewInStore()
     {
         return getAVMNodeEntitiesCountWhereNewInStore();
     }
@@ -95,15 +87,14 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
         return updateAVMNodeEntitiesSetAcl(aclId, nodeIds);
     }
     
-    protected abstract boolean supportsProgressTrackingImpl();
-    protected abstract Long getAVMNodeEntitiesCountWhereNewInStore();
+    protected abstract long getAVMNodeEntitiesCountWhereNewInStore();
     protected abstract List<AVMNodeEntity> getAVMNodeEntitiesWithEmptyGUID(int maxResults);
     protected abstract List<AVMNodeEntity> getNullVersionLayeredDirectoryNodeEntities(int maxResults);
     protected abstract List<AVMNodeEntity> getNullVersionLayeredFileNodeEntities(int maxResults);
     protected abstract int updateAVMNodeEntitiesNullifyAcl(List<Long> nodeIds);
     protected abstract int updateAVMNodeEntitiesSetAcl(long aclId, List<Long> nodeIds);
     
-    public Long getMaxAclId()
+    public long getMaxAclId()
     {
         return getMaxAclEntityId();
     }
@@ -225,7 +216,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
             Long localeId,
             Long longValue);
     
-    protected abstract Long getMaxAclEntityId();
+    protected abstract long getMaxAclEntityId();
     protected abstract long getDmNodeEntitiesCount();
     protected abstract long getDmNodeEntitiesCountWithNewACLs(Long above);
     protected abstract List<Long> selectAllAclEntityIds();

@@ -94,7 +94,6 @@
        </property>
        <property name="preUpdateScriptPatches">
           <list>
-             <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
              <ref bean="patch.db-V2.2-ACL" />
              <ref bean="patch.db-V2.2-CleanNodeStatuses" />
@@ -114,10 +113,6 @@
        </property>
        <property name="postUpdateScriptPatches">
           <list>
-             <ref bean="patch.db-V2.0-ContentUrls" />
-             <ref bean="patch.db-V2.1-JBPMData" />
-             <ref bean="patch.db-V2.1-VersionColumns2" />
-             <ref bean="patch.db-V2.1-JBPMProcessKey" />
              <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
              <ref bean="patch.db-V2.1-AuditPathIndex" />
              <ref bean="patch.db-V3.0-ActivityTables" />

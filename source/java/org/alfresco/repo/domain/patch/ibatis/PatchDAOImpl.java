@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.domain.patch.ibatis;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.CrcHelper;
@@ -41,7 +39,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
-import com.ibatis.sqlmap.client.SqlMapSession;
 import com.ibatis.sqlmap.client.event.RowHandler;
 import com.ibatis.sqlmap.engine.execution.SqlExecutor;
 
@@ -65,8 +62,11 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_ADM_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_admOldContentProperties";
     private static final String SELECT_USERS_WITHOUT_USAGE_PROP = "alfresco.usage.select_GetUsersWithoutUsageProp";
     private static final String SELECT_AUTHORITIES_AND_CRC = "alfresco.patch.select_authoritiesAndCrc";
-    private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.permissions.select_AllAclIds";
-    private static final String SELECT_PERMISSIONS_USED_ACL_IDS = "alfresco.permissions.select_UsedAclIds";
+    private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.patch.select_AllAclIds";
+    private static final String SELECT_PERMISSIONS_USED_ACL_IDS = "alfresco.patch.select_UsedAclIds";
+    private static final String SELECT_PERMISSIONS_MAX_ACL_ID = "alfresco.patch.select_MaxAclId";
+    private static final String SELECT_PERMISSIONS_DM_NODE_COUNT = "alfresco.patch.select_DmNodeCount";
+    private static final String SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS = "alfresco.patch.select_DmNodeCountWherePermissionsHaveChanged";
     private static final String SELECT_CHILD_ASSOCS_COUNT = "alfresco.patch.select_allChildAssocsCount";
     private static final String SELECT_CHILD_ASSOCS_FOR_CRCS = "alfresco.patch.select_allChildAssocsForCrcs";
     private static final String SELECT_NODES_BY_TYPE_AND_NAME_PATTERN = "alfresco.patch.select_nodesByTypeAndNamePattern";
@@ -76,10 +76,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String UPDATE_AVM_NODE_LIST_NULLIFY_ACL = "alfresco.avm.update_AVMNodeList_nullifyAcl";
     private static final String UPDATE_AVM_NODE_LIST_SET_ACL = "alfresco.avm.update_AVMNodeList_setAcl";
     private static final String UPDATE_CHILD_ASSOC_CRC = "alfresco.patch.update_childAssocCrc";
-    
-    private static final String SELECT_PERMISSIONS_MAX_ACL_ID = "alfresco.permissions.select_MaxAclId";
-    private static final String SELECT_PERMISSIONS_DM_NODE_COUNT = "alfresco.permissions.select_DmNodeCount";
-    private static final String SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS = "alfresco.permissions.select_DmNodeCountWherePermissionsHaveChanged";
     
     private static final String DELETE_PERMISSIONS_UNUSED_ACES = "alfresco.permissions.delete_UnusedAces";
     private static final String DELETE_PERMISSIONS_ACL_LIST = "alfresco.permissions.delete_AclList";
@@ -134,22 +130,10 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     }
 
     @Override
-    protected boolean supportsProgressTrackingImpl()
+    protected long getAVMNodeEntitiesCountWhereNewInStore()
     {
-        try
-        {
-            return template.getSqlMapClient().getCurrentConnection().getMetaData().supportsTransactionIsolationLevel(1);
-        }
-        catch (SQLException e)
-        {
-            return false;
-        }
-    }
-    
-    @Override
-    protected Long getAVMNodeEntitiesCountWhereNewInStore()
-    {
-        return (Long) template.queryForObject(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
+        Long count = (Long) template.queryForObject(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
+        return count == null ? 0L : count;
     }
     
     @SuppressWarnings("unchecked")
@@ -188,9 +172,10 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         return (List<AVMNodeEntity>) template.queryForList(SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION, 0, maxResults);
     }
 
-    public Long getMaxAvmNodeID()
+    public long getMaxAvmNodeID()
     {
-        return (Long) template.queryForObject(SELECT_AVM_MAX_NODE_ID);
+        Long count = (Long) template.queryForObject(SELECT_AVM_MAX_NODE_ID);
+        return count == null ? 0L : count;
     }
 
     @SuppressWarnings("unchecked")
@@ -202,9 +187,10 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         return (List<Long>) template.queryForList(SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES, ids);
     }
 
-    public Long getMaxAdmNodeID()
+    public long getMaxAdmNodeID()
     {
-        return (Long) template.queryForObject(SELECT_ADM_MAX_NODE_ID);
+        Long count = (Long) template.queryForObject(SELECT_ADM_MAX_NODE_ID);
+        return count == null ? 0L : count;
     }
 
     @SuppressWarnings("unchecked")
@@ -301,104 +287,26 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     }
     
     @Override
-    protected Long getMaxAclEntityId()
+    protected long getMaxAclEntityId()
     {
-        SqlMapSession session = null;
-        try
-        {
-            session = template.getSqlMapClient().openSession();
-            Connection conn = template.getSqlMapClient().getCurrentConnection();
-            int isolationLevel = conn.getTransactionIsolation();
-            try
-            {
-                conn.setTransactionIsolation(1);
-                return (Long)template.queryForObject(SELECT_PERMISSIONS_MAX_ACL_ID, null);
-            }
-            finally
-            {
-                conn.setTransactionIsolation(isolationLevel);
-            }
-        }
-        catch (SQLException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
-        }
-        finally
-        {
-            if (session != null)
-            {
-                session.close();
-            }
-        }
+        Long count = (Long) template.queryForObject(SELECT_PERMISSIONS_MAX_ACL_ID, null);
+        return count == null ? 0L : count;
     }
     
     @Override
     protected long getDmNodeEntitiesCount()
     {
-        SqlMapSession session = null;
-        try
-        {
-            session = template.getSqlMapClient().openSession();
-            Connection conn = template.getSqlMapClient().getCurrentConnection();
-            int isolationLevel = conn.getTransactionIsolation();
-            try
-            {
-                conn.setTransactionIsolation(1);
-                
-                return (Long)template.queryForObject(SELECT_PERMISSIONS_DM_NODE_COUNT, null);
-            }
-            finally
-            {
-                conn.setTransactionIsolation(isolationLevel);
-            }
-        }
-        catch (SQLException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
-        }
-        finally
-        {
-            if (session != null)
-            {
-                session.close();
-            }
-        }
+        Long count = (Long) template.queryForObject(SELECT_PERMISSIONS_DM_NODE_COUNT, null);
+        return count == null ? 0L : count;
     }
     
     @Override
     protected long getDmNodeEntitiesCountWithNewACLs(Long above)
     {
-        SqlMapSession session = null;
-        try
-        {
-            session = template.getSqlMapClient().openSession();
-            Connection conn = template.getSqlMapClient().getCurrentConnection();
-            int isolationLevel = conn.getTransactionIsolation();
-            try
-            {
-                conn.setTransactionIsolation(1);
-                
-                Map<String, Object> params = new HashMap<String, Object>(1);
-                params.put("id", above);
-                
-                return (Long)template.queryForObject(SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS, params);
-            }
-            finally
-            {
-                conn.setTransactionIsolation(isolationLevel);
-            }
-        }
-        catch (SQLException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to set TX isolation level", e);
-        }
-        finally
-        {
-            if (session != null)
-            {
-                session.close();
-            }
-        }
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("id", above);
+        Long count = (Long) template.queryForObject(SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS, params);
+        return count == null ? 0L : count;
     }
     
     @SuppressWarnings("unchecked")

@@ -602,8 +602,9 @@
    </bean>
 
     <!-- Scheduled persisted actions - load into quartz -->
-    <bean id="scheduledPersistedActionServiceBootstrap" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl$ScheduledPersistedActionServiceBootstrap">
+   <bean id="scheduledPersistedActionServiceBootstrap" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl$ScheduledPersistedActionServiceBootstrap">
        <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
+       <property name="transactionHelper" ref="retryingTransactionHelper" />
     </bean>
 
     <!-- Startup Message -->

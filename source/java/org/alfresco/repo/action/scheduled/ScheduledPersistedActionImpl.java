@@ -75,7 +75,7 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
    /** Get where the action lives */
    public NodeRef getActionNodeRef()
    {
-      return action.getNodeRef();
+      return action == null ? null : action.getNodeRef();
    }
    
    /** 
@@ -157,8 +157,8 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
    
    
    /**
-    * Returns the interval in a form like 1D (1 day)
-    *  or 2h (2 hours), or null if a period+count
+    * Returns the interval in a form like 1Day (1 day)
+    *  or 2Hour (2 hours), or null if a period+count
     *  hasn't been set
     */
    public String getScheduleInterval() 
@@ -167,7 +167,7 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
       {
          return null;
       }
-      return intervalCount.toString() + intervalPeriod.getLetter();
+      return intervalCount.toString() + intervalPeriod.name();
    }
    
    /**

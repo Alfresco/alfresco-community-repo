@@ -51,6 +51,12 @@ public interface ActionModel
     static final QName ASPECT_ACTIONS               = QName.createQName(ACTION_MODEL_URI, "actions");
     static final QName ASSOC_ACTION_FOLDER          = QName.createQName(ACTION_MODEL_URI, "actionFolder");
     
+    static final QName TYPE_ACTION_SCHEDULE         = QName.createQName(ACTION_MODEL_URI, "actionSchedule");
+    static final QName PROP_START_DATE              = QName.createQName(ACTION_MODEL_URI, "startDate");
+    static final QName PROP_INTERVAL_COUNT          = QName.createQName(ACTION_MODEL_URI, "intervalCount");
+    static final QName PROP_INTERVAL_PERIOD         = QName.createQName(ACTION_MODEL_URI, "intervalPeriod");
+    static final QName ASSOC_SCHEDULED_ACTION       = QName.createQName(ACTION_MODEL_URI, "scheduledAction");
+    
     //static final QName ASPECT_ACTIONABLE = QName.createQName(ACTION_MODEL_URI, "actionable");
     //static final QName ASSOC_SAVED_ACTION_FOLDERS = QName.createQName(ACTION_MODEL_URI, "savedActionFolders");
     //static final QName TYPE_SAVED_ACTION_FOLDER = QName.createQName(ACTION_MODEL_URI, "savedactionfolder");

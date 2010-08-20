@@ -235,11 +235,12 @@
                         <parameter name="caseSensitive"><value>true</value></parameter>
                         <parameter name="allowedValues">
                             <list>
-                                <value>M</value>
-                                <value>W</value>
-                                <value>D</value>
-                                <value>h</value>
-                                <value>m</value>
+                                <value>Month</value>
+                                <value>Week</value>
+                                <value>Day</value>
+                                <value>Hour</value>
+                                <value>Minute</value>
+                                <value>Second</value>
                             </list>
                         </parameter>
                     </constraint>
@@ -248,6 +249,10 @@
         </properties>
         <associations>
             <association name="act:scheduledAction">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
                <target>
                   <class>act:action</class>
                   <mandatory>true</mandatory>

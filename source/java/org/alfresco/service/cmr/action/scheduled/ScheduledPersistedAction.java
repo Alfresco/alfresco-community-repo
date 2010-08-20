@@ -83,26 +83,18 @@ public interface ScheduledPersistedAction
    
    
    /**
-    * Returns the interval in a form like 1D (1 day)
-    *  or 2h (2 hours)
+    * Returns the interval in a form like 1Day (1 day)
+    *  or 2Hour (2 hours)
     */
    public String getScheduleInterval();
    
    
    public static enum IntervalPeriod {
-      Month ('M'), 
-      Week ('W'), 
-      Day ('D'), 
-      Hour ('h'), 
-      Minute ('m'),
-      Second ('s');
-      
-      private final char letter;
-      IntervalPeriod(char letter) {
-         this.letter = letter;
-      }
-      public char getLetter() {
-         return letter;
-      }
+      Month, 
+      Week, 
+      Day, 
+      Hour, 
+      Minute,
+      Second;
    }
 }

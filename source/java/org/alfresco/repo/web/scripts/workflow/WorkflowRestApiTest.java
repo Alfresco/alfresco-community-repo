@@ -391,6 +391,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         assertEquals(adhocInstance.id, result.getString("id"));
         assertEquals(adhocInstance.definition.name, result.getString("name"));
+        assertEquals(adhocInstance.definition.name, result.getString("type"));
         assertEquals(adhocInstance.definition.title, result.getString("title"));
         assertEquals(adhocInstance.definition.description, result.getString("description"));
         assertEquals(adhocInstance.active, result.getBoolean("isActive"));

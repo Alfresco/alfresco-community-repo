@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -941,8 +942,8 @@ public class AclDAOImpl implements AclDAO
         return acls;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#deleteLocalAccessControlEntries(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
     public List<AclChange> deleteLocalAccessControlEntries(Long id)
     {
@@ -954,8 +955,8 @@ public class AclDAOImpl implements AclDAO
         return changes;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#deleteInheritedAccessControlEntries(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
     public List<AclChange> deleteInheritedAccessControlEntries(Long id)
     {
@@ -967,8 +968,8 @@ public class AclDAOImpl implements AclDAO
         return changes;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#deleteAccessControlEntries(java.lang.Long, org.alfresco.repo.security.permissions.AccessControlEntry)
+    /**
+     * {@inheritDoc}
      */
     public List<AclChange> deleteAccessControlEntries(Long id, AccessControlEntry pattern)
     {
@@ -978,24 +979,25 @@ public class AclDAOImpl implements AclDAO
         return changes;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getDbAccessControlList(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
     public Acl getAcl(Long id)
     {
         return aclCrudDAO.getAcl(id);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getAccessControlListProperties(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
     public AccessControlListProperties getAccessControlListProperties(Long id)
     {
+        ParameterCheck.mandatory("id", id);                 // Prevent unboxing failures
         return aclCrudDAO.getAcl(id);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.permissions.AclDAO#getAccessControlList(java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
     public AccessControlList getAccessControlList(Long id)
     {
@@ -1013,7 +1015,6 @@ public class AclDAOImpl implements AclDAO
     }
     
     /**
-     * @param id
      * @return the access control list
      */
     private AccessControlList getAccessControlListImpl(final Long id)

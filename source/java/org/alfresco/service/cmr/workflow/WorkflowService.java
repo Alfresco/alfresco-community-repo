@@ -207,6 +207,7 @@ public interface WorkflowService
      * 
      * @param workflowDefinitionId  the workflow definition id
      * @return  the list of "in-flight" workflow instances
+     * @since 3.4
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId);
@@ -216,6 +217,7 @@ public interface WorkflowService
      * 
      * @param workflowDefinitionId  the workflow definition id     
      * @return  the list of "in-flight" workflow instances
+     * @since 3.4
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
@@ -374,6 +376,49 @@ public interface WorkflowService
     @Auditable(parameters = {"taskId", "transitionId"})
     public WorkflowTask endTask(String taskId, String transitionId);
     
+    /**
+     * Determines if the given user can edit the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @return true if the user can edit the task
+     * @since 3.4
+     */
+    @Auditable(parameters = {"task", "username"})
+    public boolean isTaskEditable(WorkflowTask task, String username);
+    
+    /**
+     * Determines if the given user can reassign the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @return true if the user can reassign the task
+     * @since 3.4
+     */
+    @Auditable(parameters = {"task", "username"})
+    public boolean isTaskReassignable(WorkflowTask task, String username);
+    
+    /**
+     * Determines if the given user can claim the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @return true if the user can claim the task
+     * @since 3.4
+     */
+    @Auditable(parameters = {"task", "username"})
+    public boolean isTaskClaimable(WorkflowTask task, String username);
+    
+    /**
+     * Determines if the given user can release the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @return true if the user can release the task
+     * @since 3.4
+     */
+    @Auditable(parameters = {"task", "username"})
+    public boolean isTaskReleasable(WorkflowTask task, String username);
     
     //
     // Package Management

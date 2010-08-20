@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -648,6 +649,121 @@ public class WorkflowServiceImpl implements WorkflowService
     }
 
     /*
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#isTaskEditable(org.alfresco.service.cmr.workflow.WorkflowTask, java.lang.String)
+     */
+    public boolean isTaskEditable(WorkflowTask task, String username)
+    {
+        // if the task is complete it is not editable
+        if (task.getState() == WorkflowTaskState.COMPLETED)
+        {
+            return false;
+        }
+
+        if (isUserOwnerOrInitiator(task, username))
+        {
+            // editable if the current user is the task owner or initiator
+            return true;
+        }
+        
+        // if the current user is not the owner or initiator check whether they are
+        // a member of the pooled actors for the task (if it has any)
+        return isUserInPooledActors(task, username);
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#isTaskReassignable(org.alfresco.service.cmr.workflow.WorkflowTask, java.lang.String)
+     */
+    public boolean isTaskReassignable(WorkflowTask task, String username)
+    {
+        // if the task is complete it is not reassignable
+        if (task.getState() == WorkflowTaskState.COMPLETED)
+        {
+            return false;
+        }
+        
+        // if the task has the 'reassignable' property set to false it can not be reassigned
+        Map<QName, Serializable> properties = task.getProperties();
+        Boolean reassignable = (Boolean)properties.get(WorkflowModel.PROP_REASSIGNABLE);
+        if (reassignable != null && reassignable.booleanValue() == false)
+        {
+            return false;
+        }
+        
+        // if the task has pooled actors and an owner it can not be reassigned (it must be released)
+        Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        String owner = (String)properties.get(ContentModel.PROP_OWNER);
+        if (actors != null && !actors.isEmpty() && owner != null)
+        {
+            return false;
+        }
+
+        if (isUserOwnerOrInitiator(task, username))
+        {
+            // reassignable if the current user is the task owner or initiator
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#isTaskClaimable(org.alfresco.service.cmr.workflow.WorkflowTask, java.lang.String)
+     */
+    public boolean isTaskClaimable(WorkflowTask task, String username)
+    {
+        // if the task is complete it is not claimable
+        if (task.getState() == WorkflowTaskState.COMPLETED)
+        {
+            return false;
+        }
+        
+        // if the task has an owner it can not be claimed
+        if (task.getProperties().get(ContentModel.PROP_OWNER) != null)
+        {
+            return false;
+        }
+        
+        // a task can only be claimed if the user is a member of
+        // of the pooled actors for the task
+        return isUserInPooledActors(task, username);
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.workflow.WorkflowService#isTaskReleasable(org.alfresco.service.cmr.workflow.WorkflowTask, java.lang.String)
+     */
+    public boolean isTaskReleasable(WorkflowTask task, String username)
+    {
+        // if the task is complete it is not releasable
+        if (task.getState() == WorkflowTaskState.COMPLETED)
+        {
+            return false;
+        }
+        
+        // if the task doesn't have pooled actors it is not releasable
+        Map<QName, Serializable> properties = task.getProperties();
+        Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        if (actors == null || actors.isEmpty())
+        {
+            return false;
+        }
+        
+        // if the task does not have an owner it is not releasable
+        String owner = (String)properties.get(ContentModel.PROP_OWNER);
+        if (owner == null)
+        {
+            return false;
+        }
+
+        if (isUserOwnerOrInitiator(task, username))
+        {
+            // releasable if the current user is the task owner or initiator
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /*
      * (non-Javadoc)
      * @see
      * org.alfresco.service.cmr.workflow.WorkflowService#getTaskById(java.lang
@@ -836,5 +952,89 @@ public class WorkflowServiceImpl implements WorkflowService
             }
         }
         return contents;
+    }
+    
+    /**
+     * Determines if the given user is a member of the pooled actors assigned to the task
+     * 
+     * @param task The task instance to check
+     * @param username The username to check
+     * @return true if the user is a pooled actor, false otherwise
+     */
+    private boolean isUserInPooledActors(WorkflowTask task, String username)
+    {
+        // get groups that the current user has to belong (at least one of them)
+        final Collection<?> actors = (Collection<?>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
+        if (actors != null && !actors.isEmpty())
+        {
+            for (Object actor : actors)
+            {
+                // retrieve the name of the group
+                Map<QName, Serializable> props = nodeService.getProperties((NodeRef)actor);
+                String name = (String)props.get(ContentModel.PROP_AUTHORITY_NAME);
+                
+                // retrieve the users of the group
+                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, name, true);
+                
+                // see if the user is one of the users in the group
+                if (users != null && !users.isEmpty() && users.contains(username))
+                {
+                    // they are a member of the group so stop looking!
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Determines if the given user is the owner of the given task or
+     * the initiator of the workflow the task is part of
+     * 
+     * @param task The task to check
+     * @param username The username to check
+     * @return true if the user is the owner or the workflow initiator
+     */
+    private boolean isUserOwnerOrInitiator(WorkflowTask task, String username)
+    {
+        boolean result = false;
+        String owner = (String)task.getProperties().get(ContentModel.PROP_OWNER);
+
+        if (username.equals(owner))
+        {
+            // user owns the task
+            result = true;
+        }
+        else if (username.equals(getWorkflowInitiatorUsername(task)))
+        {
+            // user is the workflow initiator
+            result = true;
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Returns the username of the user that initiated the workflow the
+     * given task is part of.
+     * 
+     * @param task The task to get the workflow initiator for
+     * @return Username or null if the initiator could not be found
+     */
+    private String getWorkflowInitiatorUsername(WorkflowTask task)
+    {
+        String initiator = null;
+        
+        NodeRef initiatorRef = task.getPath().getInstance().getInitiator();
+        
+        if (initiator != null)
+        {
+            // TODO: deal with missing users!
+            
+            initiator = (String)this.nodeService.getProperty(initiatorRef, ContentModel.PROP_USERNAME);
+        }
+        
+        return initiator;
     }
 }

@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,6 +42,10 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
@@ -230,6 +235,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                 NodeServicePolicies.OnMoveNodePolicy.QNAME,
                 TransferModel.ASPECT_ALIEN, 
                 new JavaBehaviour(this, "onMoveNode", NotificationFrequency.EVERY_EVENT));
+        
+        /**
+         * For every copy of a transferred node
+         */
+        this.getPolicyComponent().bindClassBehaviour(
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                TransferModel.ASPECT_TRANSFERRED, 
+                new JavaBehaviour(this, "onCopyTransferred", NotificationFrequency.EVERY_EVENT));
                 
     }
 
@@ -1043,6 +1056,54 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         alienProcessor.beforeDeleteAlien(newChildAssocRef.getChildRef(), oldChildAssocRef);
         alienProcessor.afterMoveAlien(newChildAssocRef);
     }
+    
+    /**
+     * When a transferred node is copied,  don't copy the transferred aspect.
+     */
+    public CopyBehaviourCallback onCopyTransferred(QName classRef,
+            CopyDetails copyDetails)
+    {
+        return TransferredAspectCopyBehaviourCallback.INSTANCE;   
+    }
+    
+    /**
+     * Extends the default copy behaviour to prevent copying of transferred aspect and properties.
+     * 
+     * @author Mark Rogers
+     * @since 3.4
+     */
+    private static class TransferredAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new TransferredAspectCopyBehaviourCallback();
+        
+        /**
+         * @return          Returns an empty map
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            return Collections.emptyMap();
+        }
+        
+        /**
+         * Don't copy the transferred aspect.
+         * 
+         * @return          Returns <tt>true</tt> always
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+        {
+            if(classQName.equals(TransferModel.ASPECT_TRANSFERRED))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
        
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -1063,5 +1124,4 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     {
         return alienProcessor;
     }
-
 }

@@ -33,11 +33,11 @@ import org.alfresco.service.namespace.QName;
  *  public void init()
  *  {
  *      this.policyComponent.bindClassBehaviour(
- *              QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+ *              OnCopyNodePolicy.QNAME,
  *              ActionModel.ASPECT_ACTIONS,
  *              new JavaBehaviour(this, "getCopyCallback"));
  *      this.policyComponent.bindClassBehaviour(
- *              QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+ *              OnCopyCompletePolicy.QNAME,
  *              ActionModel.ASPECT_ACTIONS,
  *              new JavaBehaviour(this, "onCopyComplete"));
  *      ...

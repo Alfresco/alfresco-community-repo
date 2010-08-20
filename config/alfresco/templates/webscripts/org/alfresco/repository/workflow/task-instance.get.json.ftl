@@ -2,5 +2,6 @@
 
 <#import "task.lib.ftl" as taskLib />
 {
-   "data": <@taskLib.taskJSON task=workflowTask detailed=true/>
+   "data": 
+   <@taskLib.taskJSON task=workflowTask detailed=true/>
 }

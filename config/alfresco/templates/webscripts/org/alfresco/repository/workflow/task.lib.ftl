@@ -9,16 +9,21 @@
          "name": "${task.name}",
          "title": "${task.title}",
          "description": "${task.description}",
+         "type": "${task.type}",
          "state": "${task.state}",
-         "typeDefinitionTitle": "${task.typeDefinitionTitle}",
          "path": "${task.path}",
          "isPooled": ${task.isPooled?string},
+         "isEditable": ${task.isEditable?string},
+         "isReassignable": ${task.isReassignable?string},
+         "isClaimable": ${task.isClaimable?string},
+         "isReleasable": ${task.isReleasable?string},
+         "outcome": <#if task.outcome??>"${task.outcome}"<#else>null</#if>,
          "owner":
          <#if task.owner??>
          {
-            "userName": "${task.owner.userName}",
-            "firstName": "${task.owner.firstName}",
-            "lastName": "${task.owner.lastName}"
+            "userName": "${task.owner.userName}"<#if task.owner.firstName??>,
+            "firstName": "${task.owner.firstName}"</#if><#if task.owner.lastName??>,
+            "lastName": "${task.owner.lastName}"</#if>
          },
          <#else>
          null,
@@ -27,7 +32,6 @@
          <@propertiesJSON properties=task.properties />,
          "workflowInstance": 
          <@workflowInstanceJSON workflowInstance=task.workflowInstance/><#if detailed>,
-         
          "definition":
          {
             "id": "${task.definition.id}",
@@ -109,9 +113,9 @@
    "initiator": 
    <#if workflowInstance.initiator??>
    {
-      "userName": "${workflowInstance.initiator.userName}",
-      "firstName": "${workflowInstance.initiator.firstName}",
-      "lastName": "${workflowInstance.initiator.lastName}"
+      "userName": "${workflowInstance.initiator.userName}"<#if workflowInstance.initiator.firstName??>,
+      "firstName": "${workflowInstance.initiator.firstName}"</#if><#if workflowInstance.initiator.lastName??>,
+      "lastName": "${workflowInstance.initiator.lastName}"</#if>
    },
    <#else>
    null,

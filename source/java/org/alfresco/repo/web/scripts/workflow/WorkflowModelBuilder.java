@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -65,16 +67,21 @@ public class WorkflowModelBuilder
 
     public static final String TASK_PROPERTIES = "properties";
     public static final String TASK_OWNER = "owner";
-    public static final String TASK_TYPE_DEFINITION_TITLE = "typeDefinitionTitle";
     public static final String TASK_STATE = "state";
     public static final String TASK_DESCRIPTION = "description";
     public static final String TASK_TITLE = "title";
     public static final String TASK_NAME = "name";
+    public static final String TASK_TYPE = "type";
     public static final String TASK_URL = "url";
     public static final String TASK_IS_POOLED = "isPooled";
+    public static final String TASK_IS_EDITABLE = "isEditable";
+    public static final String TASK_IS_REASSIGNABLE = "isReassignable";
+    public static final String TASK_IS_CLAIMABLE = "isClaimable";
+    public static final String TASK_IS_RELEASABLE = "isReleasable";
     public static final String TASK_ID = "id";
     public static final String TASK_PATH = "path";
     public static final String TASK_DEFINITION = "definition";
+    public static final String TASK_OUTCOME = "outcome";
 
     public static final String TASK_DEFINITION_ID = "id";
     public static final String TASK_DEFINITION_URL = "url";
@@ -138,13 +145,17 @@ public class WorkflowModelBuilder
     private final NodeService nodeService;
     private final PersonService personService;
     private final WorkflowService workflowService;
+    private final AuthenticationService authenticationService;
 
-    public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, PersonService personService, WorkflowService workflowService)
+    public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, 
+                AuthenticationService authenticationService, PersonService personService, 
+                WorkflowService workflowService)
     {
         this.namespaceService = namespaceService;
         this.nodeService = nodeService;
         this.personService = personService;
         this.workflowService = workflowService;
+        this.authenticationService = authenticationService;
     }
 
     /**
@@ -155,19 +166,27 @@ public class WorkflowModelBuilder
      */
     public Map<String, Object> buildSimple(WorkflowTask task, Collection<String> propertyFilters)
     {
+        // get current username
+        String currentUser = this.authenticationService.getCurrentUserName();
+        
         HashMap<String, Object> model = new HashMap<String, Object>();
         model.put(TASK_ID, task.getId());
         model.put(TASK_URL, getUrl(task));
         model.put(TASK_NAME, task.getName());
+        model.put(TASK_TYPE, task.getDefinition().getMetadata().getName().toPrefixString(this.namespaceService));
         model.put(TASK_TITLE, task.getTitle());
         model.put(TASK_DESCRIPTION, task.getDescription());
         model.put(TASK_STATE, task.getState().name());
-        model.put(TASK_TYPE_DEFINITION_TITLE, task.getDefinition().getMetadata().getTitle());
         model.put(TASK_PATH, getUrl(task.getPath()));
+        model.put(TASK_OUTCOME, getOutcome(task));
         model.put(TASK_IS_POOLED, isPooled(task.getProperties()));
+        model.put(TASK_IS_EDITABLE, this.workflowService.isTaskEditable(task, currentUser));
+        model.put(TASK_IS_REASSIGNABLE, this.workflowService.isTaskReassignable(task, currentUser));
+        model.put(TASK_IS_CLAIMABLE, this.workflowService.isTaskClaimable(task, currentUser));
+        model.put(TASK_IS_RELEASABLE, this.workflowService.isTaskReleasable(task, currentUser));
         
         Serializable owner = task.getProperties().get(ContentModel.PROP_OWNER);
-        model.put(TASK_OWNER, getPersonModel( owner));
+        model.put(TASK_OWNER, getPersonModel(owner));
 
         // task properties
         model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
@@ -357,7 +376,7 @@ public class WorkflowModelBuilder
         return model;
     }
     
-    private Object isPooled(Map<QName, Serializable> properties)
+    private boolean isPooled(Map<QName, Serializable> properties)
     {
         Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
         return actors != null && !actors.isEmpty();
@@ -442,14 +461,19 @@ public class WorkflowModelBuilder
             return null;
 
         String name = (String) nameSer;
-        NodeRef person = personService.getPerson(name);
-        Map<QName, Serializable> properties = nodeService.getProperties(person);
 
         // TODO Person URL?
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(PERSON_USER_NAME, name);
-        model.put(PERSON_FIRST_NAME, properties.get(ContentModel.PROP_FIRSTNAME));
-        model.put(PERSON_LAST_NAME, properties.get(ContentModel.PROP_LASTNAME));
+        
+        if (personService.personExists(name))
+        {
+            NodeRef person = personService.getPerson(name);
+            Map<QName, Serializable> properties = nodeService.getProperties(person);
+            model.put(PERSON_FIRST_NAME, properties.get(ContentModel.PROP_FIRSTNAME));
+            model.put(PERSON_LAST_NAME, properties.get(ContentModel.PROP_LASTNAME));
+        }
+        
         return model;
     }
 
@@ -490,10 +514,22 @@ public class WorkflowModelBuilder
         List<?> hiddenTransitions = getHiddenTransitions(workflowTask.getProperties());
         for (WorkflowTransition workflowTransition : workflowNode.getTransitions())
         {
-            Map<String, Object> transitionModel = build(workflowTransition, hiddenTransitions);
+            Map<String, Object> transitionModel = buildTransition(workflowTransition, hiddenTransitions);
             transitions.add(transitionModel);
         }
         model.put(WORKFLOW_NODE_TRANSITIONS, transitions);
+        return model;
+    }
+
+    private Map<String, Object> buildTransition(WorkflowTransition workflowTransition, List<?> hiddenTransitions)
+    {
+        Map<String, Object> model = new HashMap<String, Object>();
+        String id = workflowTransition.getId();
+        model.put(WORKFLOW_NODE_TRANSITION_ID, id);
+        model.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.getTitle());
+        model.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.getDescription());
+        model.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault());
+        model.put(WORKFLOW_NODE_TRANSITION_IS_HIDDEN, isHiddenTransition(id, hiddenTransitions));
         return model;
     }
 
@@ -515,19 +551,7 @@ public class WorkflowModelBuilder
         }
         return null;
     }
-
-    public Map<String, Object> build(WorkflowTransition workflowTransition, List<?> hiddenTransitions)
-    {
-        Map<String, Object> model = new HashMap<String, Object>();
-        String id = workflowTransition.getId();
-        model.put(WORKFLOW_NODE_TRANSITION_ID, id);
-        model.put(WORKFLOW_NODE_TRANSITION_TITLE, workflowTransition.getTitle());
-        model.put(WORKFLOW_NODE_TRANSITION_DESCRIPTION, workflowTransition.getDescription());
-        model.put(WORKFLOW_NODE_TRANSITION_IS_DEFAULT, workflowTransition.isDefault());
-        model.put(WORKFLOW_NODE_TRANSITION_IS_HIDDEN, isHiddenTransition(id, hiddenTransitions));
-        return model;
-    }
-
+    
     private boolean isHiddenTransition(String transitionId, List<?> hiddenTransitions)
     {
         if (hiddenTransitions == null)
@@ -554,7 +578,32 @@ public class WorkflowModelBuilder
         {
             return null;
         }
-
+    }
+    
+    private String getOutcome(WorkflowTask task)
+    {
+        String outcomeLabel = null;
+        
+        // there will only be an outcome if the task is completed
+        if (task.getState().equals(WorkflowTaskState.COMPLETED))
+        {
+            String outcomeId = (String)task.getProperties().get(WorkflowModel.PROP_OUTCOME);
+            if (outcomeId != null)
+            {
+                // find the transition with the matching id and get the label
+                WorkflowTransition[] transitions = task.getDefinition().getNode().getTransitions();
+                for (WorkflowTransition transition : transitions)
+                {
+                    if (transition.getId().equals(outcomeId))
+                    {
+                        outcomeLabel = transition.getTitle();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return outcomeLabel;
     }
 
     private String getUrl(WorkflowTask task)

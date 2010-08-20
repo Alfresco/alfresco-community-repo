@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -69,6 +70,7 @@ public class WorkflowModelBuilderTest extends TestCase
     private PersonService personService;
     private NodeService nodeService;
     private WorkflowService workflowService;
+    private AuthenticationService authenticationService;
     private WorkflowModelBuilder builder;
 
     @SuppressWarnings("unchecked")
@@ -86,8 +88,14 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(task.getTitle(), model.get(WorkflowModelBuilder.TASK_TITLE));
         assertEquals(task.getDescription(), model.get(WorkflowModelBuilder.TASK_DESCRIPTION));
         assertEquals(task.getState().name(), model.get(WorkflowModelBuilder.TASK_STATE));
-        assertEquals(task.getDefinition().getMetadata().getTitle(), model.get(WorkflowModelBuilder.TASK_TYPE_DEFINITION_TITLE));
+        assertEquals(task.getDefinition().getMetadata().getName().toPrefixString(this.namespaceService), 
+                    model.get(WorkflowModelBuilder.TASK_TYPE));
+        assertNull(model.get(WorkflowModelBuilder.TASK_OUTCOME));
         assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_POOLED));
+        assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_EDITABLE));
+        assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_REASSIGNABLE));
+        assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_CLAIMABLE));
+        assertEquals(false, model.get(WorkflowModelBuilder.TASK_IS_RELEASABLE));
         
         Map<String, Object> owner = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_OWNER);
         assertEquals(userName, owner.get(WorkflowModelBuilder.PERSON_USER_NAME));
@@ -319,7 +327,7 @@ public class WorkflowModelBuilderTest extends TestCase
     private TypeDefinition makeTypeDefinition()
     {
         TypeDefinition typeDef = mock(TypeDefinition.class);
-        when(typeDef.getName()).thenReturn(QName.createQName("The Type Name"));
+        when(typeDef.getName()).thenReturn(QName.createQName(URI, "The Type Name"));
         when(typeDef.getTitle()).thenReturn("The Type Title");
         when(typeDef.getDescription()).thenReturn("The Type Description");
         return typeDef;
@@ -393,6 +401,7 @@ public class WorkflowModelBuilderTest extends TestCase
         
         personService = mock(PersonService.class);
         when(personService.getPerson(userName)).thenReturn(person);
+        when(personService.personExists(userName)).thenReturn(true);
         
         nodeService = mock(NodeService.class);
         Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
@@ -401,9 +410,12 @@ public class WorkflowModelBuilderTest extends TestCase
         personProps.put(ContentModel.PROP_LASTNAME, lastName);
         when(nodeService.getProperties(person)).thenReturn(personProps);
         when(nodeService.getProperty(person, ContentModel.PROP_USERNAME)).thenReturn(userName);
+        when(nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME)).thenReturn(firstName);
+        when(nodeService.getProperty(person, ContentModel.PROP_LASTNAME)).thenReturn(lastName);
         
         workflowService = mock(WorkflowService.class);
+        authenticationService = mock(AuthenticationService.class);
         
-        builder = new WorkflowModelBuilder(namespaceService, nodeService, personService, workflowService);
+        builder = new WorkflowModelBuilder(namespaceService, nodeService, authenticationService, personService, workflowService);
     }
 }

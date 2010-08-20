@@ -176,8 +176,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startTask.title, result.getString("title"));
         assertEquals(startTask.description, result.getString("description"));
         assertEquals(startTask.state.name(), result.getString("state"));
+        assertEquals(startTask.name, result.getString("type"));
         assertEquals( "api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
-        assertEquals(false, result.getBoolean("isPooled"));
+        assertFalse(result.getBoolean("isPooled"));
+        assertTrue(result.getBoolean("isEditable"));
+        assertTrue(result.getBoolean("isReassignable"));
+        assertFalse(result.getBoolean("isClaimable"));
+        assertFalse(result.getBoolean("isReleasable"));
 
         JSONObject owner = result.getJSONObject("owner");
         assertEquals(USER1, owner.getString("userName"));

@@ -80,20 +80,20 @@ public class PatchExecuter extends AbstractLifecycleBean
         logger.info(I18NUtil.getMessage(MSG_CHECKING));
         
         Date before = new Date(System.currentTimeMillis() - 60000L);  // 60 seconds ago
-        patchService.applyOutstandingPatches();
+        boolean applySucceeded = patchService.applyOutstandingPatches();
         Date after = new Date(System .currentTimeMillis() + 20000L);  // 20 seconds ahead
         
         // get all the patches executed in the time
         List<AppliedPatch> appliedPatches = patchService.getPatches(before, after);
         
         // don't report anything if nothing was done
-        if (appliedPatches.size() == 0)
+        if (applySucceeded && appliedPatches.size() == 0)
         {
             logger.info(I18NUtil.getMessage(MSG_NO_PATCHES_REQUIRED));
         }
         else
         {
-            boolean succeeded = true;
+            boolean allPassed = true;
             // list all patches applied, including failures
             for (AppliedPatch patchInfo : appliedPatches)
             {
@@ -108,12 +108,12 @@ public class PatchExecuter extends AbstractLifecycleBean
                 }
                 else
                 {
-                    succeeded = false;
+                    allPassed = false;
                     logger.error(I18NUtil.getMessage(MSG_FAILED, patchInfo.getId(), patchInfo.getReport()));
                }
             }
             // generate an error if there was a failure
-            if (!succeeded)
+            if (!allPassed || !applySucceeded)
             {
                 throw new AlfrescoRuntimeException("Not all patches could be applied");
             }

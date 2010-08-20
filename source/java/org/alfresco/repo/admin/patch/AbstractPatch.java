@@ -409,7 +409,6 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                     {
                         public String execute() throws Exception
                         {
-
                             // downgrade integrity checking
                             IntegrityChecker.setWarnInTransaction();
 

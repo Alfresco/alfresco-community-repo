@@ -32,7 +32,8 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
  * 
  * @since 3.4
  */
-public class BulkMetadataGet extends AbstractWebScript {
+public class BulkMetadataGet extends AbstractWebScript
+{
     private ServiceRegistry services;
     private NodeService nodeService;
     private DictionaryService dictionaryService;

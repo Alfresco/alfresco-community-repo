@@ -35,6 +35,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -64,6 +65,7 @@ public class WorkflowModelBuilder
     public static final String PERSON_LAST_NAME = "lastName";
     public static final String PERSON_FIRST_NAME = "firstName";
     public static final String PERSON_USER_NAME = "userName";
+    public static final String PERSON_AVATAR = "avatarUrl";
 
     public static final String TASK_PROPERTIES = "properties";
     public static final String TASK_OWNER = "owner";
@@ -93,6 +95,7 @@ public class WorkflowModelBuilder
     public static final String TASK_WORKFLOW_INSTANCE_ID = "id";
     public static final String TASK_WORKFLOW_INSTANCE_URL = "url";
     public static final String TASK_WORKFLOW_INSTANCE_NAME = "name";
+    public static final String TASK_WORKFLOW_INSTANCE_TYPE = "type";
     public static final String TASK_WORKFLOW_INSTANCE_TITLE = "title";
     public static final String TASK_WORKFLOW_INSTANCE_DESCRIPTION = "description";
     public static final String TASK_WORKFLOW_INSTANCE_IS_ACTIVE = "isActive";
@@ -224,6 +227,7 @@ public class WorkflowModelBuilder
         model.put(TASK_WORKFLOW_INSTANCE_ID, workflowInstance.getId());
         model.put(TASK_WORKFLOW_INSTANCE_URL, getUrl(workflowInstance));
         model.put(TASK_WORKFLOW_INSTANCE_NAME, workflowInstance.getDefinition().getName());
+        model.put(TASK_WORKFLOW_INSTANCE_TYPE, workflowInstance.getDefinition().getName());
         model.put(TASK_WORKFLOW_INSTANCE_TITLE, workflowInstance.getDefinition().getTitle());
         model.put(TASK_WORKFLOW_INSTANCE_DESCRIPTION, workflowInstance.getDefinition().getDescription());
         model.put(TASK_WORKFLOW_INSTANCE_IS_ACTIVE, workflowInstance.isActive());
@@ -472,6 +476,13 @@ public class WorkflowModelBuilder
             Map<QName, Serializable> properties = nodeService.getProperties(person);
             model.put(PERSON_FIRST_NAME, properties.get(ContentModel.PROP_FIRSTNAME));
             model.put(PERSON_LAST_NAME, properties.get(ContentModel.PROP_LASTNAME));
+            
+            // add the avatar, id present
+            List<AssociationRef> avatar = nodeService.getTargetAssocs(person, ContentModel.ASSOC_AVATAR);
+            if (avatar != null && !avatar.isEmpty())
+            {
+                model.put(PERSON_AVATAR, getAvatarUrl(avatar.get(0).getTargetRef()));
+            }
         }
         
         return model;
@@ -636,4 +647,8 @@ public class WorkflowModelBuilder
         return "api/workflow-instances/" + workflowInstance.getId();
     }
 
+    private String getAvatarUrl(NodeRef avatarRef)
+    {
+        return "api/node/" + avatarRef.toString().replace("://", "/") + "/content/thumbnails/avatar";
+    }
 }

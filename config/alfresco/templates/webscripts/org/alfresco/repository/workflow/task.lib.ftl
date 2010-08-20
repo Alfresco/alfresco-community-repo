@@ -23,7 +23,8 @@
          {
             "userName": "${task.owner.userName}"<#if task.owner.firstName??>,
             "firstName": "${task.owner.firstName}"</#if><#if task.owner.lastName??>,
-            "lastName": "${task.owner.lastName}"</#if>
+            "lastName": "${task.owner.lastName}"</#if><#if task.owner.avatar??>,
+            "avatar": "${task.owner.avatar}"</#if>
          },
          <#else>
          null,
@@ -105,6 +106,7 @@
    "id": "${workflowInstance.id}",
    "url": "${workflowInstance.url}",
    "name": "${workflowInstance.name}",
+   "type": "${workflowInstance.type}",
    "title": "${workflowInstance.title}",
    "description": "${workflowInstance.description}",
    "isActive": ${workflowInstance.isActive?string},
@@ -115,7 +117,8 @@
    {
       "userName": "${workflowInstance.initiator.userName}"<#if workflowInstance.initiator.firstName??>,
       "firstName": "${workflowInstance.initiator.firstName}"</#if><#if workflowInstance.initiator.lastName??>,
-      "lastName": "${workflowInstance.initiator.lastName}"</#if>
+      "lastName": "${workflowInstance.initiator.lastName}"</#if><#if workflowInstance.initiator.avatarUrl??>,
+      "avatarUrl": "${workflowInstance.initiator.avatarUrl}"</#if>
    },
    <#else>
    null,

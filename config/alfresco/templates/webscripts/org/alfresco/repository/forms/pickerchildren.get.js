@@ -6,6 +6,7 @@ function main()
       argsSelectableType = args['selectableType'],
       argsSearchTerm = args['searchTerm'],
       argsMaxResults = args['size'],
+      argsXPath = args['xpath'],
       parent = null,
       rootNode = companyhome,
       results = [],
@@ -23,10 +24,19 @@ function main()
          
    try
    {
+      var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
+      if (argsXPath != null)
+      {
+         var nodes = search.xpathSearch(argsXPath);
+         if (nodes.length > 0)
+         {
+            nodeRef = String(nodes[0].nodeRef);
+         }
+      }
+
       if (url.templateArgs.type == "node")
       {
          // nodeRef input
-         var nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
          if (nodeRef == "alfresco://company/home")
          {
             parent = companyhome;
@@ -52,8 +62,9 @@ function main()
          var query = "+PARENT:\"" + parent.nodeRef + "\"";
          if (argsFilterType != null)
          {
-            //map short name to long name
-            var types = {
+            // map short name to long name
+            var types =
+            {
               'rma:dispositionSchedule': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionSchedule',
               'rma:dispositionActionDefinition': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionActionDefinition',
               'rma:dispositionAction': '{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAction',
@@ -61,7 +72,7 @@ function main()
               'rma:transfer':'{http://www.alfresco.org/model/recordsmanagement/1.0}transfer',
               'cm:thumbnail': '{http://www.alfresco.org/model/content/1.0}thumbnail'
             };
-         
+
             var filterTypes = argsFilterType.split(',');
             for (var i=0,len=filterTypes.length; i<len; i++)
             {
@@ -70,15 +81,15 @@ function main()
                {
                   query += " -TYPE:\"" + types[identifier] + "\"";
                }
-            }            
+            }
          }
-         
+
          // make sure we don't return system folders
          query += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
-         
+
          if (logger.isLoggingEnabled())
             logger.log("query = " + query);
-         
+
          var searchResults = search.luceneSearch(query, "@{http://www.alfresco.org/model/content/1.0}name", true);
 
          // Ensure folders and folderlinks appear at the top of the list
@@ -114,8 +125,7 @@ function main()
       }
       else if (url.templateArgs.type == "category")
       {
-         var catAspect = (args["aspect"] != null) ? args["aspect"] : "cm:generalclassifiable",
-            nodeRef = url.templateArgs.store_type + "://" + url.templateArgs.store_id + "/" + url.templateArgs.id;
+         var catAspect = (args["aspect"] != null) ? args["aspect"] : "cm:generalclassifiable";
 
          // TODO: Better way of finding this
          var rootCategories = classification.getRootCategories(catAspect);

@@ -1028,10 +1028,8 @@ public class WorkflowServiceImpl implements WorkflowService
         
         NodeRef initiatorRef = task.getPath().getInstance().getInitiator();
         
-        if (initiator != null)
+        if (initiatorRef != null && this.nodeService.exists(initiatorRef))
         {
-            // TODO: deal with missing users!
-            
             initiator = (String)this.nodeService.getProperty(initiatorRef, ContentModel.PROP_USERNAME);
         }
         

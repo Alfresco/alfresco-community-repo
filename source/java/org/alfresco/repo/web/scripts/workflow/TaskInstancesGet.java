@@ -18,17 +18,21 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -41,38 +45,63 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class TaskInstancesGet extends AbstractWorkflowWebscript
 {
     public static final String PARAM_AUTHORITY = "authority";
-    public static final String PARAM_STATUS= "status";
-    public static final String PARAM_PROPERTIES= "properties";
-    public static final String PARAM_DETAILED= "detailed";
-    
+    public static final String PARAM_STATE = "state";
+    public static final String PARAM_PRIORITY = "priority";
+    public static final String PARAM_DUE_BEFORE = "dueBefore";
+    public static final String PARAM_DUE_AFTER = "dueAfter";
+    public static final String PARAM_PROPERTIES = "properties";
+    public static final String PARAM_DETAILED = "detailed";
+
     @Override
-    protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status,
-            Cache cache)
+    protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
+        Map<String, Object> filters = new HashMap<String, Object>(4);
+
+        // authority is not included into filters list as it will be taken into account before filtering
         String authority = getAuthority(req);
+        // state is also not included into filters list, for the same reason
         WorkflowTaskState state = getState(req);
+        filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
+        filters.put(PARAM_DUE_BEFORE, getDateParameter(req, PARAM_DUE_BEFORE));
+        filters.put(PARAM_DUE_AFTER, getDateParameter(req, PARAM_DUE_AFTER));
+
         List<String> properties = getProperties(req);
         boolean detailed = "true".equals(req.getParameter(PARAM_DETAILED));
 
-        //TODO Handle possible thrown exceptions here?
-        List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
-        List<WorkflowTask> pooledTasks= workflowService.getPooledTasks(authority);
-        ArrayList<WorkflowTask> allTasks = new ArrayList<WorkflowTask>(tasks.size() + pooledTasks.size());
-        allTasks.addAll(tasks);
-        allTasks.addAll(pooledTasks);
-        
-        ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        for (WorkflowTask task : allTasks) 
+        List<WorkflowTask> allTasks;
+
+        if (authority != null)
         {
-            if (detailed)
+            List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
+            List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(authority);
+            allTasks = new ArrayList<WorkflowTask>(tasks.size() + pooledTasks.size());
+            allTasks.addAll(tasks);
+            allTasks.addAll(pooledTasks);
+        }
+        else
+        {
+            // authority was not provided -> return all active tasks in the system
+            WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
+            taskQuery.setTaskState(state);
+            allTasks = workflowService.queryTasks(taskQuery);
+        }
+
+        ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+        for (WorkflowTask task : allTasks)
+        {
+            if (matches(task, filters))
             {
-                results.add(modelBuilder.buildDetailed(task));
-            }
-            else {
-                results.add(modelBuilder.buildSimple(task, properties));
+                if (detailed)
+                {
+                    results.add(modelBuilder.buildDetailed(task));
+                }
+                else
+                {
+                    results.add(modelBuilder.buildSimple(task, properties));
+                }
             }
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("taskInstances", results);
         return model;
@@ -81,7 +110,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     private List<String> getProperties(WebScriptRequest req)
     {
         String propertiesStr = req.getParameter(PARAM_PROPERTIES);
-        if(propertiesStr != null)
+        if (propertiesStr != null)
         {
             return Arrays.asList(propertiesStr.split(","));
         }
@@ -95,16 +124,16 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
      */
     private WorkflowTaskState getState(WebScriptRequest req)
     {
-        String stateName= req.getParameter(PARAM_STATUS);
-        if(stateName != null)
+        String stateName = req.getParameter(PARAM_STATE);
+        if (stateName != null)
         {
             try
             {
                 return WorkflowTaskState.valueOf(stateName.toUpperCase());
             }
-            catch(IllegalArgumentException e)
+            catch (IllegalArgumentException e)
             {
-                String msg = "Unrecognised State parameter:  "+stateName;
+                String msg = "Unrecognised State parameter:  " + stateName;
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
             }
         }
@@ -120,11 +149,89 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     private String getAuthority(WebScriptRequest req)
     {
         String authority = req.getParameter(PARAM_AUTHORITY);
-        if(authority == null)
+        if (authority == null || authority.length() == 0)
         {
-            authority = AuthenticationUtil.getFullyAuthenticatedUser();
+            authority = null;
         }
         return authority;
+    }
+
+    private Date getDateParameter(WebScriptRequest req, String name)
+    {
+        String dateString = req.getParameter(name);
+
+        if (dateString != null)
+        {
+            try
+            {
+                return ISO8601DateFormat.parse(dateString.replaceAll(" ", "+"));
+            }
+            catch (Exception e)
+            {
+                String msg = "Invalid date value: " + dateString;
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
+            }
+        }
+        return null;
+    }
+
+    /*
+     * If workflow task matches at list one filter value or if no filter was specified, then it will be included in response
+     */
+    private boolean matches(WorkflowTask task, Map<String, Object> filters)
+    {
+        // by default we assume that workflow task should be included to response
+        boolean result = true;
+        boolean firstFilter = true;
+
+        for (String key : filters.keySet())
+        {
+            Object filterValue = filters.get(key);
+
+            // skip null filters (null value means that filter was not specified)
+            if (filterValue != null)
+            {
+                // some of the filter was specified, so the decision to include or not task to response 
+                // based on matching to filter parameter (by default false)
+                if (firstFilter)
+                {
+                    result = false;
+                    firstFilter = false;
+                }
+
+                boolean matches = false;
+
+                if (key.equals(PARAM_DUE_BEFORE))
+                {
+                    Serializable dueDate = task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+
+                    if (dueDate == null || ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_DUE_AFTER))
+                {
+                    Serializable dueDate = task.getProperties().get(WorkflowModel.PROP_DUE_DATE);
+
+                    if (dueDate == null || ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_PRIORITY))
+                {
+                    if (filterValue.equals(task.getProperties().get(WorkflowModel.PROP_PRIORITY).toString()))
+                    {
+                        matches = true;
+                    }
+                }
+                // update global result
+                result = result || matches;
+            }
+        }
+
+        return result;
     }
 
 }

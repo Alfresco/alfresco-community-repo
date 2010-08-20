@@ -2,9 +2,9 @@
   <shortname>List Workflow Tasks</shortname>
   <description>
   Lists all Workflow Task Instances associated with an authority and of a given State.
-  The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.  
+  The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.
   </description>
-  <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;properties={properties?}&amp;detailed={detailed?}</url>
+  <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;detailed={detailed?}</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

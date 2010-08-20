@@ -18,10 +18,14 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -31,6 +35,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -43,26 +48,36 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
     public static final String PARAM_STATE = "state";
     public static final String PARAM_INITIATOR = "initiator";
-    public static final String PARAM_DATE = "date";
     public static final String PARAM_PRIORITY = "priority";
+    public static final String PARAM_DUE_BEFORE = "dueBefore";
+    public static final String PARAM_DUE_AFTER = "dueAfter";
+    public static final String PARAM_STARTED_BEFORE = "startedBefore";
+    public static final String PARAM_STARTED_AFTER = "startedAfter";
+    public static final String PARAM_COMPLETED_BEFORE = "completedBefore";
+    public static final String PARAM_COMPLETED_AFTER = "completedAfter";
     public static final String PARAM_DEFINITION_ID = "workflow_definition_id";
 
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
-        
+
         // get request parameters
-        Map<String, String> filters = new HashMap<String, String>(4);
+        Map<String, Object> filters = new HashMap<String, Object>(9);
         filters.put(PARAM_STATE, req.getParameter(PARAM_STATE));
         filters.put(PARAM_INITIATOR, req.getParameter(PARAM_INITIATOR));
-        filters.put(PARAM_DATE, req.getParameter(PARAM_DATE));
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
-        
+        filters.put(PARAM_DUE_BEFORE, getDateParameter(req, PARAM_DUE_BEFORE));
+        filters.put(PARAM_DUE_AFTER, getDateParameter(req, PARAM_DUE_AFTER));
+        filters.put(PARAM_STARTED_BEFORE, getDateParameter(req, PARAM_STARTED_BEFORE));
+        filters.put(PARAM_STARTED_AFTER, getDateParameter(req, PARAM_STARTED_AFTER));
+        filters.put(PARAM_COMPLETED_BEFORE, getDateParameter(req, PARAM_COMPLETED_BEFORE));
+        filters.put(PARAM_COMPLETED_AFTER, getDateParameter(req, PARAM_COMPLETED_AFTER));
+
         String workflowDefinitionId = params.get(PARAM_DEFINITION_ID);
-        
+
         List<WorkflowInstance> workflows = new ArrayList<WorkflowInstance>();
-        
+
         if (workflowDefinitionId != null)
         {
             // list workflows for specified workflow definition
@@ -71,17 +86,17 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         else
         {
             List<WorkflowDefinition> workflowDefinitions = workflowService.getAllDefinitions();
-            
+
             // list workflows for all definitions
             for (WorkflowDefinition workflowDefinition : workflowDefinitions)
             {
                 workflows.addAll(workflowService.getWorkflows(workflowDefinition.getId()));
             }
         }
-        
+
         // filter result
-        List<Map<String, Object>> results = new ArrayList<Map<String,Object>>(workflows.size());
-        
+        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(workflows.size());
+
         for (WorkflowInstance workflow : workflows)
         {
             if (matches(workflow, filters, modelBuilder))
@@ -89,18 +104,18 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 results.add(modelBuilder.buildSimple(workflow));
             }
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
         // build the model for ftl
         model.put("workflowInstances", results);
 
         return model;
     }
-    
+
     /*
-     * If workflow instance matches at list one filter value or if no filter was specified, then it will included in response
+     * If workflow instance matches at list one filter value or if no filter was specified, then it will be included in response
      */
-    private boolean matches(WorkflowInstance workflowInstance, Map<String, String> filters, WorkflowModelBuilder modelBuilder)
+    private boolean matches(WorkflowInstance workflowInstance, Map<String, Object> filters, WorkflowModelBuilder modelBuilder)
     {
         // by default we assume that workflow instance should be included to response
         boolean result = true;
@@ -108,7 +123,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
         for (String key : filters.keySet())
         {
-            String filterValue = filters.get(key);
+            Object filterValue = filters.get(key);
 
             // skip null filters (null value means that filter was not specified)
             if (filterValue != null)
@@ -125,7 +140,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
                 if (key.equals(PARAM_STATE))
                 {
-                    WorkflowState filter = WorkflowState.getState(filterValue);
+                    WorkflowState filter = WorkflowState.getState(filterValue.toString());
 
                     if (filter != null)
                     {
@@ -135,17 +150,66 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                         }
                     }
                 }
-                else if (key.equals(PARAM_DATE))
+                else if (key.equals(PARAM_DUE_BEFORE))
                 {
-                    // only workflows that was started after specified time are returned
-                    if (workflowInstance.getStartDate().getTime() >= ISO8601DateFormat.parse(filterValue.replaceAll(" ", "+")).getTime())
+                    WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
+                    Serializable dueDate = startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+
+                    if (dueDate == null || ((Date) dueDate).getTime() <= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_DUE_AFTER))
+                {
+                    WorkflowTask startTask = modelBuilder.getStartTaskForWorkflow(workflowInstance);
+                    Serializable dueDate = startTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
+
+                    if (dueDate == null || ((Date) dueDate).getTime() >= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_STARTED_BEFORE))
+                {
+                    Date startDate = workflowInstance.getStartDate();
+
+                    if (startDate == null || startDate.getTime() <= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_STARTED_AFTER))
+                {
+                    Date startDate = workflowInstance.getStartDate();
+
+                    if (startDate == null || startDate.getTime() >= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_COMPLETED_BEFORE))
+                {
+                    Date endDate = workflowInstance.getEndDate();
+
+                    if (endDate == null || endDate.getTime() <= ((Date) filterValue).getTime())
+                    {
+                        matches = true;
+                    }
+                }
+                else if (key.equals(PARAM_COMPLETED_AFTER))
+                {
+                    Date endDate = workflowInstance.getEndDate();
+
+                    if (endDate == null || endDate.getTime() >= ((Date) filterValue).getTime())
                     {
                         matches = true;
                     }
                 }
                 else if (key.equals(PARAM_INITIATOR))
                 {
-                    if (workflowInstance.getInitiator() != null && nodeService.exists(workflowInstance.getInitiator()) && filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
+                    if (workflowInstance.getInitiator() != null && nodeService.exists(workflowInstance.getInitiator())
+                            && filterValue.equals(nodeService.getProperty(workflowInstance.getInitiator(), ContentModel.PROP_USERNAME)))
                     {
                         matches = true;
                     }
@@ -163,22 +227,41 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                 result = result || matches;
             }
         }
-        
+
         return result;
     }
 
+    private Date getDateParameter(WebScriptRequest req, String name)
+    {
+        String dateString = req.getParameter(name);
+
+        if (dateString != null)
+        {
+            try
+            {
+                return ISO8601DateFormat.parse(dateString.replaceAll(" ", "+"));
+            }
+            catch (Exception e)
+            {
+                String msg = "Invalid date value: " + dateString;
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
+            }
+        }
+        return null;
+    }
+
     private enum WorkflowState
-    {        
+    {
         ACTIVE ("active"),
         COMPLETED ("completed");
-        
+
         String value;
-        
+
         WorkflowState(String value)
         {
             this.value = value;
         }
-        
+
         static WorkflowState getState(String value)
         {
             for (WorkflowState state : WorkflowState.values())
@@ -188,7 +271,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
                     return state;
                 }
             }
-            
+
             return null;
         }
     }

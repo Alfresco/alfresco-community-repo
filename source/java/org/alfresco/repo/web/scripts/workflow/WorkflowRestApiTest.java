@@ -56,9 +56,9 @@ import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -69,84 +69,98 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 {
     private final static String USER1 = "Bob" + GUID.generate();
     private final static String USER2 = "Jane" + GUID.generate();
-    private final static String USER3 = "Nick" + GUID.generate();    
+    private final static String USER3 = "Nick" + GUID.generate();
     private static final String URL_TASKS = "api/task-instances";
+    private static final String URL_USER_TASKS = "api/task-instances?authority={0}";
     private static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     private static final String URL_WORKFLOW_INSTANCES = "api/workflow-instances";
     private static final String URL_WORKFLOW_INSTANCES_FOR_DEFINITION = "api/workflow-definitions/{0}/workflow-instances";
     private static final String URL_WORKFLOW_INSTANCES_FOR_NODE = "api/node/{0}/{1}/{2}/workflow-instances";
-    
+
     private static final String COMPANY_HOME = "/app:company_home";
     private static final String TEST_CONTENT = "TestContent";
-    
+
     private TestPersonManager personManager;
     private WorkflowService workflowService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private NodeRef packageRef;
     private NodeRef contentNodeRef;
-    
+
     public void testTaskInstancesGet() throws Exception
     {
         // Check USER2 starts with no tasks.
         personManager.setUser(USER2);
-        Response response = sendRequest(new GetRequest(URL_TASKS), 200);
+        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         String jsonStr = response.getContentAsString();
         JSONObject json = new JSONObject(jsonStr);
         JSONArray results = json.getJSONArray("data");
         assertNotNull(results);
         assertTrue(results.length() == 0);
-        
+
         // Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
         WorkflowDefinition adhocDef = workflowService.getDefinitionByName("jbpm$wf:adhoc");
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
         params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
-        params.put(WorkflowModel.PROP_DUE_DATE, new Date());
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
         params.put(WorkflowModel.PROP_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
-        
+
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
         WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
         workflowService.endTask(startTask.id, null);
-        
+
         // Check USER2 now has one task.
         List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
         WorkflowTask task = tasks.get(0);
-        
+
         personManager.setUser(USER2);
-        response = sendRequest(new GetRequest(URL_TASKS), 200);
+        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2)), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         jsonStr = response.getContentAsString();
-        System.out.println(jsonStr);
         json = new JSONObject(jsonStr);
         results = json.getJSONArray("data");
         assertNotNull(results);
         assertTrue(results.length() == tasks.size());
         JSONObject result = results.getJSONObject(0);
-        
+
         String expUrl = "api/task-instances/" + task.id;
         assertEquals(expUrl, result.getString("url"));
         assertEquals(task.name, result.getString("name"));
         assertEquals(task.title, result.getString("title"));
         assertEquals(task.description, result.getString("description"));
         assertEquals(task.state.name(), result.getString("state"));
-        assertEquals(task.definition.metadata.getTitle(), result.getString("typeDefinitionTitle"));
-        assertEquals(false, result.getBoolean("isPooled"));
-        
+        assertEquals(task.definition.metadata.getName().toPrefixString(this.namespaceService), 
+                    result.getString("type"));
+        assertEquals( "api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
+        assertFalse(result.getBoolean("isPooled"));
+        assertTrue(result.getBoolean("isEditable"));
+        assertTrue(result.getBoolean("isReassignable"));
+        assertFalse(result.getBoolean("isClaimable"));
+        assertFalse(result.getBoolean("isReleasable"));
+
         JSONObject owner = result.getJSONObject("owner");
         assertEquals(USER2, owner.getString("userName"));
         assertEquals(personManager.getFirstName(USER2), owner.getString("firstName"));
         assertEquals(personManager.getLastName(USER2), owner.getString("lastName"));
-        
+
         JSONObject properties = result.getJSONObject("properties");
         assertNotNull(properties);
-        
+
         JSONObject instance = result.getJSONObject("workflowInstance");
         assertNotNull(instance);
-        
+
         // TODO: Add more tests to check property filtering and pooled actors.
+
+        // filtering        
+        checkFiltering(URL_TASKS + "?priority=2");
+
+        checkFiltering(URL_TASKS + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
+
+        checkFiltering(URL_TASKS + "?dueBefore=" + ISO8601DateFormat.format(dueDate));
     }
 
     public void testTaskInstanceGet() throws Exception
@@ -177,7 +191,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startTask.description, result.getString("description"));
         assertEquals(startTask.state.name(), result.getString("state"));
         assertEquals(startTask.name, result.getString("type"));
-        assertEquals( "api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
+        assertEquals("api/workflow-paths/" + adhocPath.getId(), result.getString("path"));
         assertFalse(result.getBoolean("isPooled"));
         assertTrue(result.getBoolean("isEditable"));
         assertTrue(result.getBoolean("isReassignable"));
@@ -194,12 +208,12 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertTrue(properties.has("bpm_priority"));
         assertTrue(properties.has("bpm_description"));
         assertTrue(properties.has("bpm_reassignable"));
-        
+
         JSONObject instance = result.getJSONObject("workflowInstance");
         WorkflowInstance startInstance = startTask.path.instance;
 
         assertNotNull(instance);
-        
+
         assertEquals(startInstance.id, instance.getString("id"));
         assertTrue(instance.has("url"));
         assertEquals(startInstance.definition.name, instance.getString("name"));
@@ -207,13 +221,13 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(startInstance.definition.description, instance.getString("description"));
         assertEquals(startInstance.active, instance.getBoolean("isActive"));
         assertTrue(instance.has("startDate"));
-        
+
         JSONObject initiator = instance.getJSONObject("initiator");
-        
+
         assertEquals(USER1, initiator.getString("userName"));
         assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
         assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
-        
+
         JSONObject definition = result.getJSONObject("definition");
         WorkflowTaskDefinition startDefinitiont = startTask.definition;
 
@@ -264,7 +278,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         }
 
     }
-    
+
     public void testTaskInstancePut() throws Exception
     {
         // Start workflow as USER1 and assign task to USER2.
@@ -278,18 +292,18 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
         WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
-        
-        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.id), 200);        
-        
+
+        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.id), 200);
+
         JSONObject jsonProperties = new JSONObject(getResponse.getContentAsString()).getJSONObject("data").getJSONObject("properties");
-        
+
         // make some changes        
         jsonProperties.remove(qnameToString(WorkflowModel.ASSOC_PACKAGE));
         jsonProperties.put(qnameToString(WorkflowModel.PROP_COMMENT), "Edited comment");
         jsonProperties.put(qnameToString(WorkflowModel.PROP_DUE_DATE), ISO8601DateFormat.format(new Date()));
         jsonProperties.put(qnameToString(WorkflowModel.PROP_DESCRIPTION), "Edited description");
         jsonProperties.put(qnameToString(WorkflowModel.PROP_PRIORITY), 1);
-        
+
         // test USER3 can not update the task
         personManager.setUser(USER3);
         Response unauthResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 401);
@@ -298,26 +312,26 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         // test USER1 (the task owner) can update the task
         personManager.setUser(USER1);
         Response putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + startTask.id, jsonProperties.toString(), "application/json"), 200);
-        
+
         assertEquals(Status.STATUS_OK, putResponse.getStatus());
         String jsonStr = putResponse.getContentAsString();
         JSONObject json = new JSONObject(jsonStr);
         JSONObject result = json.getJSONObject("data");
         assertNotNull(result);
-        
+
         JSONObject editedJsonProperties = result.getJSONObject("properties");
-        
+
         compareProperties(jsonProperties, editedJsonProperties);
-        
+
         // get the next task where USER2 is the owner
         workflowService.endTask(startTask.id, null);
         List<WorkflowPath> paths = workflowService.getWorkflowPaths(adhocPath.getInstance().getId());
         WorkflowTask nextTask = workflowService.getTasksForWorkflowPath(paths.get(0).getId()).get(0);
-        
+
         // make sure USER1 (the workflow initiator) can update
         putResponse = sendRequest(new PutRequest(URL_TASKS + "/" + nextTask.id, jsonProperties.toString(), "application/json"), 200);
     }
-    
+
     public void testWorkflowDefinitionsGet() throws Exception
     {
         Response response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS), 200);
@@ -325,30 +339,30 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject json = new JSONObject(response.getContentAsString());
         JSONArray results = json.getJSONArray("data");
         assertNotNull(results);
-        
+
         for (int i = 0; i < results.length(); i++)
         {
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
-            
+
             assertTrue(workflowDefinitionJSON.has("id"));
             assertTrue(workflowDefinitionJSON.getString("id").length() > 0);
-            
+
             assertTrue(workflowDefinitionJSON.has("url"));
             String url = workflowDefinitionJSON.getString("url");
             assertTrue(url.length() > 0);
             assertTrue(url.startsWith("api/workflow-definitions/"));
-            
+
             assertTrue(workflowDefinitionJSON.has("name"));
             assertTrue(workflowDefinitionJSON.getString("name").length() > 0);
-            
+
             assertTrue(workflowDefinitionJSON.has("title"));
             assertTrue(workflowDefinitionJSON.getString("title").length() > 0);
-            
+
             assertTrue(workflowDefinitionJSON.has("description"));
             assertTrue(workflowDefinitionJSON.getString("description").length() > 0);
         }
     }
-    
+
     public void testWorkflowInstanceGet() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.
@@ -365,16 +379,16 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
         WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.id).get(0);
         startTask = workflowService.endTask(startTask.id, null);
-        
+
         WorkflowInstance adhocInstance = startTask.path.instance;
-        
+
         Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.id + "?includeTasks=true"), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         String jsonStr = response.getContentAsString();
         JSONObject json = new JSONObject(jsonStr);
         JSONObject result = json.getJSONObject("data");
         assertNotNull(result);
-        
+
         assertEquals(adhocInstance.id, result.getString("id"));
         assertEquals(adhocInstance.definition.name, result.getString("name"));
         assertEquals(adhocInstance.definition.title, result.getString("title"));
@@ -385,20 +399,20 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result.getString("endDate"));
         assertEquals(2, result.getInt("priority"));
         JSONObject initiator = result.getJSONObject("initiator");
-        
+
         assertEquals(USER1, initiator.getString("userName"));
         assertEquals(personManager.getFirstName(USER1), initiator.getString("firstName"));
         assertEquals(personManager.getLastName(USER1), initiator.getString("lastName"));
-                
+
         assertEquals(adhocInstance.context.toString(), result.getString("context"));
         assertEquals(adhocInstance.workflowPackage.toString(), result.getString("package"));
         assertNotNull(result.getString("startTaskInstanceId"));
-        
+
         JSONObject jsonDefinition = result.getJSONObject("definition");
         WorkflowDefinition adhocDefinition = adhocInstance.definition;
-        
+
         assertNotNull(jsonDefinition);
-        
+
         assertEquals(adhocDefinition.id, jsonDefinition.getString("id"));
         assertEquals(adhocDefinition.name, jsonDefinition.getString("name"));
         assertEquals(adhocDefinition.title, jsonDefinition.getString("title"));
@@ -406,11 +420,11 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(adhocDefinition.version, jsonDefinition.getString("version"));
         assertEquals(adhocDefinition.getStartTaskDefinition().metadata.getName().toPrefixString(namespaceService), jsonDefinition.getString("startTaskDefinitionType"));
         assertTrue(jsonDefinition.has("taskDefinitions"));
-        
+
         JSONArray tasks = result.getJSONArray("tasks");
         assertTrue(tasks.length() > 1);
     }
-    
+
     public void testWorkflowInstancesGet() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.
@@ -426,9 +440,9 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
         WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
-        
-        WorkflowInstance adhocInstance = startTask.getPath().getInstance();        
-        
+
+        WorkflowInstance adhocInstance = startTask.getPath().getInstance();
+
         // Get Workflow Instance Collection 
         Response response = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
@@ -436,74 +450,55 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         JSONObject json = new JSONObject(jsonStr);
         JSONArray result = json.getJSONArray("data");
         assertNotNull(result);
-        
+
         for (int i = 0; i < result.length(); i++)
         {
             checkSimpleWorkflowInstanceResponse(result.getJSONObject(i));
         }
-        
+
         Response forDefinitionResponse = sendRequest(new GetRequest(MessageFormat.format(URL_WORKFLOW_INSTANCES_FOR_DEFINITION, adhocDef.getId())), 200);
         assertEquals(Status.STATUS_OK, forDefinitionResponse.getStatus());
         String forDefinitionJsonStr = forDefinitionResponse.getContentAsString();
         JSONObject forDefinitionJson = new JSONObject(forDefinitionJsonStr);
         JSONArray forDefinitionResult = forDefinitionJson.getJSONArray("data");
         assertNotNull(forDefinitionResult);
-        
+
         for (int i = 0; i < forDefinitionResult.length(); i++)
         {
             checkSimpleWorkflowInstanceResponse(forDefinitionResult.getJSONObject(i));
         }
-        
+
         // filter by initiator
-        String initiatorFilter = "?initiator=" + USER1;
-        Response initiatorFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + initiatorFilter), 200);
-        
-        assertEquals(Status.STATUS_OK, initiatorFilteredResponse.getStatus());
-        String initiatorFilteredJsonStr = initiatorFilteredResponse.getContentAsString();
-        JSONObject initiatorFilteredJson = new JSONObject(initiatorFilteredJsonStr);
-        JSONArray initiatorFilteredResult = initiatorFilteredJson.getJSONArray("data");
-        assertNotNull(initiatorFilteredResult);
-        
-        assertEquals(1, initiatorFilteredResult.length());
-        assertEquals(adhocInstance.getId(), initiatorFilteredResult.getJSONObject(0).getString("id"));
-        
-        // filter by date
-        String dateFilter = "?date=" + ISO8601DateFormat.format(adhocInstance.startDate);
-        Response dateFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + dateFilter), 200);
-        
-        assertEquals(Status.STATUS_OK, dateFilteredResponse.getStatus());
-        String dateFilteredJsonStr = dateFilteredResponse.getContentAsString();
-        JSONObject dateFilteredJson = new JSONObject(dateFilteredJsonStr);
-        JSONArray dateFilteredResult = dateFilteredJson.getJSONArray("data");
-        assertNotNull(dateFilteredResult);
-        
-        assertTrue(dateFilteredResult.length() > 0);
-        
-        // filter by priority
-        String priorityFilter = "?priority=1";
-        Response priorityFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + priorityFilter), 200);
-        
-        assertEquals(Status.STATUS_OK, priorityFilteredResponse.getStatus());
-        String priorityFilteredJsonStr = priorityFilteredResponse.getContentAsString();
-        JSONObject priorityFilteredJson = new JSONObject(priorityFilteredJsonStr);
-        JSONArray priorityFilteredResult = priorityFilteredJson.getJSONArray("data");
-        assertNotNull(priorityFilteredResult);
-        
-        assertTrue(priorityFilteredResult.length() > 0);
-        
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?initiator=" + USER1);
+
+        // filter by startedAfter
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?startedAfter=" + ISO8601DateFormat.format(adhocInstance.getStartDate()));
+
+        // filter by startedBefore
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?startedBefore=" + ISO8601DateFormat.format(adhocInstance.getStartDate()));
+
+        // filter by dueAfter
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?dueAfter=" + ISO8601DateFormat.format(dueDate));
+
+        // filter by dueBefore
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?dueBefore=" + ISO8601DateFormat.format(dueDate));
+
+        if (adhocInstance.getEndDate() != null)
+        {
+            // filter by completedAfter
+            checkFiltering(URL_WORKFLOW_INSTANCES + "?completedAfter=" + ISO8601DateFormat.format(adhocInstance.getEndDate()));
+
+            // filter by completedBefore
+            checkFiltering(URL_WORKFLOW_INSTANCES + "?completedBefore=" + ISO8601DateFormat.format(adhocInstance.getEndDate()));
+        }
+
+        // filter by priority        
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?priority=1");
+
         // filter by state
-        String stateFilter = "?state=active";
-        Response stateFilteredResponse = sendRequest(new GetRequest(URL_WORKFLOW_INSTANCES + stateFilter), 200);
-        
-        assertEquals(Status.STATUS_OK, stateFilteredResponse.getStatus());
-        String stateFilteredJsonStr = stateFilteredResponse.getContentAsString();
-        JSONObject stateFilteredJson = new JSONObject(stateFilteredJsonStr);
-        JSONArray stateFilteredResult = stateFilteredJson.getJSONArray("data");
-        assertNotNull(stateFilteredResult);
-        
-        assertTrue(stateFilteredResult.length() > 1);
+        checkFiltering(URL_WORKFLOW_INSTANCES + "?state=active");
     }
-    
+
     public void testWorkflowInstancesForNodeGet() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.
@@ -514,38 +509,38 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         params.put(WorkflowModel.PROP_DUE_DATE, new Date());
         params.put(WorkflowModel.PROP_PRIORITY, 1);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
-        
+
         nodeService.addChild(packageRef, contentNodeRef, 
                 WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                 QName.createValidLocalName((String)nodeService.getProperty(
                         contentNodeRef, ContentModel.PROP_NAME))));
 
-        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);        
-        
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.id, params);
+
         String url = MessageFormat.format(URL_WORKFLOW_INSTANCES_FOR_NODE, contentNodeRef.getStoreRef().getProtocol(), contentNodeRef.getStoreRef().getIdentifier(), contentNodeRef.getId());
         Response response = sendRequest(new GetRequest(url), 200);
-        
+
         assertEquals(Status.STATUS_OK, response.getStatus());
         String jsonStr = response.getContentAsString();
         JSONObject json = new JSONObject(jsonStr);
         JSONArray result = json.getJSONArray("data");
         assertNotNull(result);
-        
+
         assertTrue(result.length() > 0);
-        
+
         workflowService.cancelWorkflow(adhocPath.getInstance().getId());
-        
+
         Response afterCancelResponse = sendRequest(new GetRequest(url), 200);
-        
+
         assertEquals(Status.STATUS_OK, afterCancelResponse.getStatus());
         String afterCancelJsonStr = afterCancelResponse.getContentAsString();
         JSONObject afterCancelJson = new JSONObject(afterCancelJsonStr);
         JSONArray afterCancelResult = afterCancelJson.getJSONArray("data");
         assertNotNull(afterCancelResult);
-        
+
         assertTrue(afterCancelResult.length() == 0);
     }
-    
+
     public void testWorkflowInstanceDelete() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.
@@ -567,7 +562,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
 
         Response response = sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
-        
+
         assertNull(workflowService.getWorkflowById(adhocInstance.getId()));
     }
 
@@ -576,32 +571,31 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
     {
         super.setUp();
         ApplicationContext appContext = getServer().getApplicationContext();
-        
-        namespaceService = (NamespaceService)appContext.getBean("NamespaceService");
-        workflowService = (WorkflowService)appContext.getBean("WorkflowService");
-        MutableAuthenticationService authenticationService = (MutableAuthenticationService)appContext.getBean("AuthenticationService");
-        PersonService personService = (PersonService)appContext.getBean("PersonService");
-        SearchService searchService = (SearchService)appContext.getBean("SearchService");
-        FileFolderService fileFolderService = (FileFolderService)appContext.getBean("FileFolderService");
-        nodeService = (NodeService)appContext.getBean("NodeService");
+
+        namespaceService = (NamespaceService) appContext.getBean("NamespaceService");
+        workflowService = (WorkflowService) appContext.getBean("WorkflowService");
+        MutableAuthenticationService authenticationService = (MutableAuthenticationService) appContext.getBean("AuthenticationService");
+        PersonService personService = (PersonService) appContext.getBean("PersonService");
+        SearchService searchService = (SearchService) appContext.getBean("SearchService");
+        FileFolderService fileFolderService = (FileFolderService) appContext.getBean("FileFolderService");
+        nodeService = (NodeService) appContext.getBean("NodeService");
         personManager = new TestPersonManager(authenticationService, personService, nodeService);
-        
+
         personManager.createPerson(USER1);
         personManager.createPerson(USER2);
         personManager.createPerson(USER3);
-        
+
         packageRef = workflowService.createPackage(null);
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
-        NodeRef companyHome = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
-                COMPANY_HOME, null, namespaceService, false).get(0);
-        
+
+        NodeRef companyHome = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), COMPANY_HOME, null, namespaceService, false).get(0);
+
         contentNodeRef = fileFolderService.create(companyHome, TEST_CONTENT + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
-        
+
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     /* (non-Javadoc)
      * @see junit.framework.TestCase#tearDown()
      */
@@ -611,14 +605,14 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
         super.tearDown();
         personManager.clearPeople();
     }
-    
+
     private String qnameToString(QName qName)
     {
         String separator = Character.toString(QName.NAMESPACE_PREFIX);
-        
+
         return qName.toPrefixString(namespaceService).replaceFirst(separator, "_");
     }
-    
+
     private void compareProperties(JSONObject before, JSONObject after) throws JSONException
     {
         for (String name : JSONObject.getNames(after))
@@ -629,7 +623,7 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
                 {
                     for (int i = 0; i < before.getJSONArray(name).length(); i++)
                     {
-                        assertEquals(before.getJSONArray(name).get(i), after.getJSONArray(name).get(i));                        
+                        assertEquals(before.getJSONArray(name).get(i), after.getJSONArray(name).get(i));
                     }
                 }
                 else
@@ -639,41 +633,54 @@ public class WorkflowRestApiTest extends BaseWebScriptTest
             }
         }
     }
-    
+
     private void checkSimpleWorkflowInstanceResponse(JSONObject json) throws JSONException
     {
         assertTrue(json.has("id"));
         assertTrue(json.getString("id").length() > 0);
-        
+
         assertTrue(json.has("url"));
         assertTrue(json.getString("url").startsWith(URL_WORKFLOW_INSTANCES));
-        
+
         assertTrue(json.has("name"));
         assertTrue(json.getString("name").length() > 0);
-        
+
         assertTrue(json.has("title"));
         assertTrue(json.getString("title").length() > 0);
-        
+
         assertTrue(json.has("description"));
         assertTrue(json.getString("description").length() > 0);
-        
-        assertTrue(json.has("isActive"));        
-        
+
+        assertTrue(json.has("isActive"));
+
         assertTrue(json.has("startDate"));
         assertTrue(json.getString("startDate").length() > 0);
-        
-        assertTrue(json.has("endDate"));        
-        
+
+        assertTrue(json.has("endDate"));
+
         assertTrue(json.has("initiator"));
         Object initiator = json.get("initiator");
         if (!initiator.equals(JSONObject.NULL))
         {
-            assertTrue(((JSONObject)initiator).has("userName"));
-            assertTrue(((JSONObject)initiator).has("firstName"));
-            assertTrue(((JSONObject)initiator).has("lastName"));
+            assertTrue(((JSONObject) initiator).has("userName"));
+            assertTrue(((JSONObject) initiator).has("firstName"));
+            assertTrue(((JSONObject) initiator).has("lastName"));
         }
-        
+
         assertTrue(json.has("definitionUrl"));
         assertTrue(json.getString("definitionUrl").startsWith(URL_WORKFLOW_DEFINITIONS));
+    }
+
+    private void checkFiltering(String url) throws Exception
+    {
+        Response response = sendRequest(new GetRequest(url), 200);
+
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONArray result = json.getJSONArray("data");
+        assertNotNull(result);
+
+        assertTrue(result.length() > 0);
     }
 }

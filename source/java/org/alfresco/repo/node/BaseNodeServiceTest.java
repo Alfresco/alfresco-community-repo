@@ -72,6 +72,7 @@ import org.alfresco.util.GUID;
 import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Provides a base set of tests of the various {@link org.alfresco.service.cmr.repository.NodeService}
@@ -1715,6 +1716,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
+     * Checks that the 'check' values all match the 'expected' values
+     */
+    private void checkProperties(Map<QName, Serializable> checkProperties, Map<QName, Serializable> expectedProperties)
+    {
+        for (QName qname : expectedProperties.keySet())
+        {
+            Serializable value = expectedProperties.get(qname);
+            Serializable checkValue = checkProperties.get(qname);
+            assertEquals("Property mismatch - " + qname, value, checkValue);
+        }
+    }
+    
+    /**
      * Check that properties go in and come out in the correct format.
      * @see #getCheckPropertyValues(Map)
      */
@@ -1759,24 +1773,97 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 TYPE_QNAME_TEST_MANY_PROPERTIES,
                 properties).getChildRef();
         
-        // persist
-        flushAndClear();
-        
         // get the properties back
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
-        // check
-        for (QName qname : expectedProperties.keySet())
-        {
-            Serializable value = expectedProperties.get(qname);
-            Serializable checkValue = checkProperties.get(qname);
-            assertEquals("Property mismatch - " + qname, value, checkValue);
-        }
+        // Check
+        checkProperties(checkProperties, expectedProperties);
         
         // check multi-valued properties are created where necessary
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, "GHI");
         Serializable checkProperty = nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertTrue("Property not converted to a Collection", checkProperty instanceof Collection);
         assertTrue("Collection doesn't contain value", ((Collection)checkProperty).contains("GHI"));
+    }
+    
+    public void testPropertyLocaleBehaviour() throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
+        properties.put(PROP_QNAME_BOOLEAN_VALUE, true);
+        properties.put(PROP_QNAME_INTEGER_VALUE, 123);
+        properties.put(PROP_QNAME_LONG_VALUE, 123L);
+        properties.put(PROP_QNAME_FLOAT_VALUE, 123.0F);
+        properties.put(PROP_QNAME_DOUBLE_VALUE, 123.0);
+        properties.put(PROP_QNAME_STRING_VALUE, "123.0");
+        properties.put(PROP_QNAME_ML_TEXT_VALUE, new MLText("This is ML text in the default language"));
+        properties.put(PROP_QNAME_DATE_VALUE, new Date());
+        // Get the check values
+        Map<QName, Serializable> expectedProperties = new HashMap<QName, Serializable>(properties);
+        getExpectedPropertyValues(expectedProperties);
+
+        Locale.setDefault(Locale.JAPANESE);
+        
+        // create a new node
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MANY_PROPERTIES,
+                properties).getChildRef();
+        
+        // Check the properties again
+        Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        // Change the locale and set the properties again
+        I18NUtil.setLocale(Locale.US);
+        nodeService.setProperties(nodeRef, properties);
+
+        // Check the properties again
+        checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        // Change the locale and set the properties again
+        I18NUtil.setLocale(Locale.UK);
+        nodeService.setProperties(nodeRef, properties);
+
+        // Check the properties again
+        checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        // Change the locale and set the properties again
+        I18NUtil.setLocale(Locale.US);
+        nodeService.addProperties(nodeRef, properties);
+
+        // Check the properties again
+        checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        // Change the locale and set the properties again
+        I18NUtil.setLocale(Locale.UK);
+        nodeService.addProperties(nodeRef, properties);
+
+        // Check the properties again
+        checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        // Change the locale and set the properties again
+        I18NUtil.setLocale(Locale.US);
+        nodeService.setProperty(nodeRef, PROP_QNAME_DATE_VALUE, properties.get(PROP_QNAME_DATE_VALUE));
+
+        // Check the properties again
+        checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        // Change the locale and set the properties again
+        I18NUtil.setLocale(Locale.UK);
+        nodeService.setProperty(nodeRef, PROP_QNAME_DATE_VALUE, properties.get(PROP_QNAME_DATE_VALUE));
+
+        // Check the properties again
+        checkProperties = nodeService.getProperties(nodeRef);
+        checkProperties(checkProperties, expectedProperties);
+        
+        setComplete();
+        endTransaction();
     }
     
     /**

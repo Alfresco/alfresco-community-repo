@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -78,10 +77,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
@@ -2435,16 +2431,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             logger.debug("OpenOffice file truncation update only, inhibit versioning, " + file.getFullName());
                     }
                 }
-
+                
                 // Update the modification date on the file/folder node
                 if (finalFileState != null && file instanceof ContentNetworkFile)
                 {
+                    NodeRef nodeRef = (NodeRef) finalFileState.getFilesystemObject();
+
                     // Check if the file data has been updated, if not then inhibit versioning for this txn
                     // so the timestamp update does not generate a new file version
                     
                     ContentNetworkFile contentFile = (ContentNetworkFile) file;
-                    if ( contentFile.isModified() == false &&
-                            nodeService.hasAspect((NodeRef) finalFileState.getFilesystemObject(), ContentModel.ASPECT_VERSIONABLE)) {
+                    if ( contentFile.isModified() == false && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE)) {
 
                         // Stop a new file version being generated
                         
@@ -2458,8 +2455,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
                     // Update the modification timestamp
                     
+                    getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
                     Date modifyDate = new Date(finalFileState.getModifyDateTime());
-                    nodeService.setProperty((NodeRef) finalFileState.getFilesystemObject(), ContentModel.PROP_MODIFIED, modifyDate);
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
 	
 	            	// Debug
 	                
@@ -3216,34 +3214,31 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             logger.debug("Set deleteOnClose=true file=" + name);
                     }
                     
-                    // Set the creation date/time
+                    // Set the creation and modified date/time
+                    Map<QName, Serializable> auditableProps = new HashMap<QName, Serializable>(5);
                     
-                    if ( info.hasSetFlag(FileInfo.SetCreationDate)) {
-                                                
+                    if ( info.hasSetFlag(FileInfo.SetCreationDate))
+                    {
                         // Set the creation date on the file/folder node
-                        
                         Date createDate = new Date( info.getCreationDateTime());
-                        nodeService.setProperty( nodeRef, ContentModel.PROP_CREATED, createDate);
-                        
-                        // DEBUG
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-                            logger.debug("Set creationDate=" + createDate + " file=" + name);
+                        auditableProps.put(ContentModel.PROP_CREATED, createDate);
                     }
-
-                    // Set the modification date/time
-                    
                     if ( info.hasSetFlag(FileInfo.SetModifyDate)) {
                         
                         // Set the modification date on the file/folder node
-
                         Date modifyDate = new Date( info.getModifyDateTime());
-                        nodeService.setProperty( nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
+                        auditableProps.put(ContentModel.PROP_MODIFIED, modifyDate);
+                    }
+
+                    // Did we have any cm:auditable properties?
+                    if (auditableProps.size() > 0)
+                    {
+                        getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                        nodeService.addProperties(nodeRef, auditableProps);
                         
                         // DEBUG
-                        
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-                            logger.debug("Set modifyDate=" + modifyDate + " file=" + name);
+                            logger.debug("Set auditable props: " + auditableProps + " file=" + name);
                     }
                     
                     return null;

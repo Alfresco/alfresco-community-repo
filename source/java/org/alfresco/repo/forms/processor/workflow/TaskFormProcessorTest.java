@@ -374,12 +374,28 @@ public class TaskFormProcessorTest extends TestCase
         verify(workflowService, never()).endTask(eq(TASK_ID), anyString());
         
         // Check default transition.
-        String dataKey =makeDataKeyName(TransitionFieldProcessor.KEY);
+        String dataKey = makeDataKeyName(TransitionFieldProcessor.KEY);
         processPersist(dataKey, null);
         verify(workflowService, times(1)).endTask(TASK_ID, null);
         
         // Check specific transition.
         processPersist(dataKey, "foo");
+        verify(workflowService, times(1)).endTask(TASK_ID, "foo");
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testPersistPropertyAndTransition() throws Exception
+    {
+        FormData data = new FormData();
+        data.addFieldData("prop_bpm_foo", "bar");
+        String dataKey = makeDataKeyName(TransitionFieldProcessor.KEY);
+        data.addFieldData(dataKey, "foo");
+        Item item = new Item("task", TASK_ID);
+        WorkflowTask persistedItem = (WorkflowTask) processor.persist(item, data);
+        
+        // make sure task is correct and update and endTask were called
+        assertEquals(newTask, persistedItem);
+        verify(workflowService, times(1)).updateTask(eq(TASK_ID), anyMap(), anyMap(), anyMap());
         verify(workflowService, times(1)).endTask(TASK_ID, "foo");
     }
     

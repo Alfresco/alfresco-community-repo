@@ -37,10 +37,10 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 
 /**
+ * Helper class that persists a form, transitioning the task if requested.
  * 
  * @since 3.4
  * @author Nick Smith
- *
  */
 public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
 {
@@ -103,11 +103,12 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     @Override
     protected boolean addTransientAssociation(String fieldName, List<NodeRef> values)
     {
-        if(PackageItemsFieldProcessor.KEY.equals(fieldName))
+        if (PackageItemsFieldProcessor.KEY.equals(fieldName))
         {
             updater.addPackageItems(values);
             return true;
         }
+        
         return false;
     }
     
@@ -117,11 +118,12 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     @Override
     protected boolean removeTransientAssociation(String fieldName, List<NodeRef> values)
     {
-        if(PackageItemsFieldProcessor.KEY.equals(fieldName))
+        if (PackageItemsFieldProcessor.KEY.equals(fieldName))
         {
             updater.removePackageItems(values);
             return true;
         }
+        
         return false;
     }
     
@@ -131,16 +133,18 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     @Override
     protected boolean updateTransientProperty(String fieldName, FieldData fieldData)
     {
-        if(TransitionFieldProcessor.KEY.equals(fieldName))
+        if (TransitionFieldProcessor.KEY.equals(fieldName))
         {
             Object value = fieldData.getValue();
-            if(value == null)
+            if (value == null)
             {
                 value = "";
             }
+            
             transitionId = value.toString();
             return true;
         }
+        
         return false;
     }
     
@@ -150,16 +154,26 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     @Override
     public WorkflowTask persist()
     {
-        if(transitionId == null)
+        if (transitionId == null)
         {
-        return updater.update();
+            // just update the task
+            return updater.update();
         }
-        else if(transitionId.length()==0)
+        else
         {
-            return updater.transition();
+            // update the task first
+            updater.update();
+            
+            if (transitionId.length() == 0)
+            {
+                // transition with the default transition
+                return updater.transition();
+            }
+            else
+            {
+                // transition with the given transition id
+                return updater.transition(transitionId);
+            }
         }
-        return updater.transition(transitionId);
-    }
-
-    
+    }    
 }

@@ -24,10 +24,12 @@ import java.util.List;
 
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.TaskUpdater;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
@@ -50,10 +52,18 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
                 DictionaryService dictionaryService,
                 WorkflowService workflowService,
                 NodeService nodeService,
+                AuthenticationService authenticationService,
                 Log logger)
     {
         super(itemData, namespaceService, dictionaryService, logger);
         WorkflowTask item = itemData.getItem();
+        
+        // make sure the current user is able to edit the task
+        if (!workflowService.isTaskEditable(item, authenticationService.getCurrentUserName()))
+        {
+            throw new AccessDeniedException("Failed to update task with id '" + item.getId() + "'.");
+        }
+        
         this.updater = new TaskUpdater(item.id, workflowService, nodeService);
     }
     

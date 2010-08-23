@@ -38,7 +38,10 @@ import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
@@ -58,6 +61,8 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     /** Logger */
     private static final Log LOGGER = LogFactory.getLog(TaskFormProcessor.class);
 
+    protected AuthenticationService authenticationService;
+    
     // Constructor for Spring
     public TaskFormProcessor()
     {
@@ -66,14 +71,26 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     // Constructor for tests.
     public TaskFormProcessor(WorkflowService workflowService, NamespaceService namespaceService,
-            DictionaryService dictionaryService, FieldProcessorRegistry fieldProcessorRegistry)
+            DictionaryService dictionaryService, AuthenticationService authenticationService,
+            FieldProcessorRegistry fieldProcessorRegistry)
     {
         this.workflowService = workflowService;
         this.namespaceService = namespaceService;
         this.dictionaryService = dictionaryService;
+        this.authenticationService = authenticationService;
         this.fieldProcessorRegistry = fieldProcessorRegistry;
     }
 
+    /**
+     * Sets the authentication service
+     * 
+     * @param authenticationService The AuthenticationService instance
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#getTypedItemForDecodedId(java.lang.String)
      */
@@ -216,6 +233,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     protected ContentModelFormPersister<WorkflowTask> makeFormPersister(WorkflowTask item)
     {
         ContentModelItemData<WorkflowTask> itemData = makeItemData(item);
-        return new TaskFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, LOGGER);
+        return new TaskFormPersister(itemData, namespaceService, dictionaryService, 
+                    workflowService, nodeService, authenticationService, LOGGER);
     }
 }

@@ -35,6 +35,7 @@ import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.forms.processor.node.TypeFormProcessor;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -114,9 +115,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String LABEL_CONTAINS = "Contains";
     
     private static final String USER_ONE = "UserOne_FormServiceImplTest";
+    private static final String USER_TWO = "UserTwo_FormServiceImplTest";
     private static final String NODE_FORM_ITEM_KIND = "node";
     private static final String TYPE_FORM_ITEM_KIND = "type";
     private static final String WORKFLOW_FORM_ITEM_KIND = "workflow";
+    private static final String TASK_FORM_ITEM_KIND = "task";
     
     /**
      * Called during the transaction setup
@@ -135,8 +138,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
         this.workflowService = (WorkflowService)this.applicationContext.getBean("WorkflowService");
         
-        // Do the tests as userOne
+        // create users
         createUser(USER_ONE);
+        createUser(USER_TWO);
+        
+        // Do the tests as userOne
         authenticationComponent.setCurrentUser(USER_ONE);
         
         String guid = GUID.generate();
@@ -1304,7 +1310,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         return fields;
     }
     
-    public void testWorkflowForm() throws Exception
+    public void testWorkflowForms() throws Exception
     {
         // generate a form for a well known workflow-definition supplying
         // a legitimate set of fields for the workflow
@@ -1374,6 +1380,33 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // check workflow instance details
         assertEquals("jbpm$wf:adhoc", workflow.definition.name);
+        
+        // update the first task in the users list
+        String taskId = tasks.get(0).getId();
+        String comment = "This is a comment";
+        data = new FormData();
+        data.addFieldData("prop_bpm_comment", comment);
+        this.formService.saveForm(new Item(TASK_FORM_ITEM_KIND, taskId), data);
+        
+        // check the comment was updated
+        WorkflowTask task = workflowService.getTaskById(taskId);
+        String taskComment = (String)task.getProperties().get(WorkflowModel.PROP_COMMENT);
+        assertEquals(comment, taskComment);
+        
+        // make sure unauthorized user can not update the task
+        authenticationComponent.setCurrentUser(USER_TWO);
+        
+        try
+        {
+            // try and update task
+            this.formService.saveForm(new Item(TASK_FORM_ITEM_KIND, taskId), data);
+            
+            fail("Task was updated by an unauthorized user");
+        }
+        catch (AccessDeniedException ade)
+        {
+            // expected
+        }
     }
     
     public void testNoForm() throws Exception

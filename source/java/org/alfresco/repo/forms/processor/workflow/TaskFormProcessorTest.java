@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -119,6 +120,7 @@ public class TaskFormProcessorTest extends TestCase
     private TaskFormProcessor processor;
     private WorkflowTask task;
     private NamespaceService namespaceService;
+    private AuthenticationService authenticationService;
     private WorkflowTask newTask;
     private Map<QName, Serializable> actualProperties = null;
     private Map<QName, List<NodeRef>> actualAdded= null;
@@ -523,6 +525,7 @@ public class TaskFormProcessorTest extends TestCase
         nodeService = makeNodeService();
         DictionaryService dictionaryService = makeDictionaryService();
         namespaceService = makeNamespaceService();
+        authenticationService = makeAuthenticationService();
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
                     dictionaryService);
         DefaultFieldProcessor defaultProcessor = makeDefaultFieldProcessor(dictionaryService);
@@ -537,6 +540,7 @@ public class TaskFormProcessorTest extends TestCase
         processor1.setNodeService(nodeService);
         processor1.setNamespaceService(namespaceService);
         processor1.setDictionaryService(dictionaryService);
+        processor1.setAuthenticationService(authenticationService);
         processor1.setFieldProcessorRegistry(fieldProcessorRegistry);
         return processor1;
     }
@@ -670,6 +674,13 @@ public class TaskFormProcessorTest extends TestCase
         return mock;
     }
 
+    private AuthenticationService makeAuthenticationService()
+    {
+        AuthenticationService mock = mock(AuthenticationService.class);
+        when(mock.getCurrentUserName()).thenReturn("admin");
+        return mock;
+    }
+
     @SuppressWarnings("unchecked")
     private WorkflowService makeWorkflowService()
     {
@@ -707,6 +718,9 @@ public class TaskFormProcessorTest extends TestCase
         
         when(service.endTask(eq(TASK_ID), anyString()))
             .thenReturn(newTask);
+        
+        when(service.isTaskEditable((WorkflowTask)any(), anyString())).thenReturn(true);
+        
         return service;
     }
     

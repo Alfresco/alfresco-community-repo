@@ -156,7 +156,7 @@
 
     <bean id="workflowFormProcessor"
         class="org.alfresco.repo.forms.processor.workflow.WorkflowFormProcessor"
-      parent="baseFormProcessor">
+        parent="baseFormProcessor">
         <property name="filterRegistry" ref="workflowFilterRegistry" />
         <property name="workflowService" ref="WorkflowService" />
         <property name="matchPattern">
@@ -167,8 +167,9 @@
    <bean id="taskFormProcessor"
       class="org.alfresco.repo.forms.processor.workflow.TaskFormProcessor"
       parent="baseFormProcessor">
-        <property name="filterRegistry" ref="taskFilterRegistry" />
+      <property name="filterRegistry" ref="taskFilterRegistry" />
       <property name="workflowService" ref="workflowServiceImpl" />
+      <property name="authenticationService" ref="AuthenticationService" />
       <property name="matchPattern">
          <value>task</value>
       </property>

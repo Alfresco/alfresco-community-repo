@@ -253,8 +253,6 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertEquals(now, retrieved.getScheduleStart());
         assertEquals(new Integer(3), retrieved.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Month, retrieved.getScheduleIntervalPeriod());
-        
-        // TODO: associated action
     }
     
     /**
@@ -317,13 +315,15 @@ public class ScheduledPersistedActionServiceTest extends TestCase
        assertEquals(2, service.listSchedules().size());
        NodeRef schedule1NodeRef = ((ScheduledPersistedActionImpl)schedule1).getPersistedAtNodeRef();
        NodeRef schedule2NodeRef = ((ScheduledPersistedActionImpl)schedule2).getPersistedAtNodeRef();
-
+       
        // Delete one - the correct one goes!
        service.deleteSchedule(schedule2);
        assertEquals(1, service.listSchedules().size());
        assertEquals(testAction.getNodeRef(), service.listSchedules().get(0).getActionNodeRef());
        assertNotNull(serviceImpl.loadPersistentSchedule(schedule1NodeRef));
        assertNull(serviceImpl.loadPersistentSchedule(schedule2NodeRef));
+       assertNotNull(service.getSchedule(testAction));
+       assertNull(service.getSchedule(testAction2));
 
        // Re-delete already deleted, no change
        service.deleteSchedule(schedule2);
@@ -331,17 +331,23 @@ public class ScheduledPersistedActionServiceTest extends TestCase
        assertEquals(testAction.getNodeRef(), service.listSchedules().get(0).getActionNodeRef());
        assertNotNull(serviceImpl.loadPersistentSchedule(schedule1NodeRef));
        assertNull(serviceImpl.loadPersistentSchedule(schedule2NodeRef));
+       assertNotNull(service.getSchedule(testAction));
+       assertNull(service.getSchedule(testAction2));
 
        // Delete the 2nd
        service.deleteSchedule(schedule1);
        assertEquals(0, service.listSchedules().size());
        assertNull(serviceImpl.loadPersistentSchedule(schedule1NodeRef));
        assertNull(serviceImpl.loadPersistentSchedule(schedule2NodeRef));
+       assertNull(service.getSchedule(testAction));
+       assertNull(service.getSchedule(testAction2));
        
        // Can add back in again after being deleted
        service.saveSchedule(schedule1);
        assertEquals(1, service.listSchedules().size());
        assertEquals(testAction.getNodeRef(), service.listSchedules().get(0).getActionNodeRef());
+       assertNotNull(service.getSchedule(testAction));
+       assertNull(service.getSchedule(testAction2));
     }
     
     /**

@@ -441,14 +441,3 @@ CREATE TABLE alf_node_properties
     CONSTRAINT fk_alf_nprop_n FOREIGN KEY (node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id)
 ) ENGINE=InnoDB;
-
-CREATE TABLE alf_usage_delta
-(
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    version BIGINT NOT NULL,
-    node_id BIGINT NOT NULL,
-    delta_size BIGINT NOT NULL,
-    PRIMARY KEY (id),
-    KEY fk_alf_usaged_n (node_id),
-    CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES alf_node (id)
-) ENGINE=InnoDB;

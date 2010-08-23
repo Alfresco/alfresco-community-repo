@@ -464,15 +464,3 @@ CREATE TABLE alf_node_properties
 CREATE INDEX fk_alf_nprop_n ON alf_node_properties (node_id);
 CREATE INDEX fk_alf_nprop_qn ON alf_node_properties (qname_id);
 CREATE INDEX fk_alf_nprop_loc ON alf_node_properties (locale_id);
-
-CREATE TABLE alf_usage_delta
-(
-    id INT8 NOT NULL,
-    version INT8 NOT NULL,
-    node_id INT8 NOT NULL,
-    delta_size INT8 NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES alf_node (id)
-);
-CREATE INDEX fk_alf_usaged_n ON alf_usage_delta (node_id);
-CREATE SEQUENCE alf_usage_delta_seq START WITH 1 INCREMENT BY 1;

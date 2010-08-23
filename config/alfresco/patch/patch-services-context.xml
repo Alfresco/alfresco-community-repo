@@ -847,6 +847,23 @@
         </property>
     </bean>
     
+   <bean id="patch.db-V3.4-UsageTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-UsageTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>113</value></property>
+        <property name="targetSchema"><value>114</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
+        </property>
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
+                <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
+            </list>
+        </property>
+    </bean>
+    
     <bean id="patch.deploymentMigration" class="org.alfresco.repo.admin.patch.impl.DeploymentMigrationPatch" parent="basePatch" >
         <property name="id"><value>patch.deploymentMigration</value></property>
         <property name="description"><value>patch.deploymentMigration.description</value></property>

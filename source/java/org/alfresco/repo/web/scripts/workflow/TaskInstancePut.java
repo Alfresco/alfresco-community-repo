@@ -21,21 +21,15 @@ package org.alfresco.repo.web.scripts.workflow;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -67,16 +61,10 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
         try
         {
             WorkflowTask workflowTask = workflowService.getTaskById(taskId);
-
             String currentUser = authenticationService.getCurrentUserName();
-            Serializable owner = workflowTask.getProperties().get(ContentModel.PROP_OWNER);
-            Serializable initiator = getWorkflowInitiator(workflowTask);
 
-            // if the the current user is the owner of the task, the initiator of the workflow
-            // or a member of the assigned pooled actors group, updating the task is allowed
-            if ((owner != null && currentUser.equals(owner)) ||
-                (initiator != null && currentUser.equals(initiator)) ||
-                isUserInPooledActors(workflowTask, currentUser))
+            // if the the current user is able to edit, updating the task is allowed
+            if (this.workflowService.isTaskEditable(workflowTask, currentUser))
             {
                 // read request json            
                 json = new JSONObject(new JSONTokener(req.getContent().getContent()));
@@ -168,55 +156,5 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
             }
         }
         return props;
-    }
-
-    /**
-     * Retrieves the workflow initiator for the given workflow task.
-     * 
-     * @param workflowTask The task to get the initiator for
-     * @return The user name of the initiator or null if there isn't one
-     */
-    private Serializable getWorkflowInitiator(WorkflowTask workflowTask)
-    {
-        Serializable initiatorUserName = null;
-        
-        NodeRef initiator = workflowTask.getPath().getInstance().getInitiator();
-        
-        if (initiator != null)
-        {
-            initiatorUserName = this.nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
-        }
-        
-        return initiatorUserName;
-    }
-    
-    private boolean isUserInPooledActors(WorkflowTask task, String currentUser)
-    {
-        boolean result = false;
-        
-        // get groups that the current user has to belong (at least one of them)
-        final Collection<?> actors = (Collection<?>)task.getProperties().get(WorkflowModel.ASSOC_POOLED_ACTORS);
-        if (actors != null && !actors.isEmpty())
-        {
-            for (Object actor : actors)
-            {
-                // retrieve the name of the group
-                Map<QName, Serializable> props = nodeService.getProperties((NodeRef)actor);
-                String name = (String)props.get(ContentModel.PROP_AUTHORITY_NAME);
-                
-                // retrieve the users of the group
-                Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, name, true);
-                
-                // see if the user is one of the users in the group
-                if (users != null && !users.isEmpty() && users.contains(currentUser))
-                {
-                    // they are a member of the group so stop looking!
-                    result = true;
-                    break;
-                }
-            }
-        }
-        
-        return result;
     }
 }

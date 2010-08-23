@@ -39,7 +39,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.debug.NodeStoreInspector;
-import org.apache.chemistry.tck.atompub.fixture.AssertNotExistVisitor;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -228,9 +227,11 @@ public class AuditableAspectTest extends TestCase
     }
     
     /**
-     * ALF-2565: Allow cm:auditable values to be set programmatically
+     * ALF-2565: Allow cm:auditable values to be set programmatically<br/>
+     * ALF-4117: NodeDAO: Allow cm:auditable to be set
+     * ALF-3569: Alfresco repository CIFS driver not setting timestamps
      */
-    public void testCreateNodeWithAuditableProperties_ALF_2565()
+    public void testCreateAndUpdateAuditableProperties()
     {
         // Create a person (which doesn't have auditable capability by default)
         Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
@@ -271,7 +272,11 @@ public class AuditableAspectTest extends TestCase
             {
                 behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);        // Lasts for txn
                 // Set the auditable properties explicitly
-                auditableProps.put(ContentModel.PROP_MODIFIER, "ThisUser");
+                Long currentTime = System.currentTimeMillis();
+                auditableProps.put(ContentModel.PROP_CREATOR, "Creator-" +currentTime);
+                auditableProps.put(ContentModel.PROP_CREATED, new Date(currentTime - 1000L));
+                auditableProps.put(ContentModel.PROP_MODIFIER, "Modifier-" + currentTime);
+                auditableProps.put(ContentModel.PROP_MODIFIED, new Date(currentTime - 1000L));
                 nodeService.addProperties(nodeRef, auditableProps);
                 // Done
                 return null;

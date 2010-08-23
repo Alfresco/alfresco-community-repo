@@ -1269,13 +1269,15 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 if (auditableProps != null)
                 {
                     nodeUpdate.setAuditableProperties(auditableProps);
+                    nodeUpdate.setUpdateAuditableProperties(true);
                 }
             }
-            // else
-            // {
-            //     // SAIL-390: NodeDAO: Allow cm:auditable to be set
-            //     // The nodeUpdate had auditable properties set, so we just use that directly
-            // }
+            else
+            {
+                // ALF-4117: NodeDAO: Allow cm:auditable to be set
+                // The nodeUpdate had auditable properties set, so we just use that directly
+                nodeUpdate.setUpdateAuditableProperties(true);
+            }
         }
         else
         {
@@ -1582,7 +1584,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      *                              <tt>false</tt> if the properties are a complete set
      * @return                      Returns <tt>true</tt> if any properties were changed
      */
-    private boolean setNodePropertiesImpl(Long nodeId,
+    private boolean setNodePropertiesImpl(
+            Long nodeId,
             Map<QName, Serializable> newProps,
             boolean isAddOnly)
     {
@@ -1599,7 +1602,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         AuditablePropertiesEntity auditableProps = null;
         if (!policyBehaviourFilter.isEnabled(node.getNodeRef(), ContentModel.ASPECT_AUDITABLE))
         {
-            auditableProps = new AuditablePropertiesEntity();
+            auditableProps = node.getAuditableProperties();
+            if (auditableProps == null)
+            {
+                auditableProps = new AuditablePropertiesEntity();
+            }
             boolean containedAuditProperties = auditableProps.setAuditValues(null, null, newProps);
             if (!containedAuditProperties)
             {
